@@ -30,6 +30,8 @@ namespace PSADT.AccountManagement
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+                CallerGroups = identity.Groups?.Select(static g => (SecurityIdentifier)g).ToList().AsReadOnly();
+                CallerIsServiceAccount = CallerGroups?.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null)) == true;
                 CallerUsername = new(identity.Name);
                 CallerSid = identity.User!;
             }
@@ -65,6 +67,8 @@ namespace PSADT.AccountManagement
 
             // Determine if the caller is the local system account.
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
+            CallerIsLocalService = CallerSid.IsWellKnown(WellKnownSidType.LocalServiceSid);
+            CallerIsNetworkService = CallerSid.IsWellKnown(WellKnownSidType.NetworkServiceSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
             CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
 
@@ -96,6 +100,22 @@ namespace PSADT.AccountManagement
         public static readonly bool CallerIsAdmin;
 
         /// <summary>
+        /// Gets the list of security identifiers that represent the groups to which the current caller belongs.
+        /// </summary>
+        /// <remarks>This property is read-only and can be used to determine the group memberships of the
+        /// caller for authorization or auditing purposes. The value may be null if group information is unavailable for
+        /// the caller.</remarks>
+        public static readonly IReadOnlyList<SecurityIdentifier>? CallerGroups;
+
+        /// <summary>
+        /// Gets a value indicating whether the current caller is a service account.
+        /// </summary>
+        /// <remarks>This field is static and read-only. It is set to <see langword="true"/> if the
+        /// current execution context represents a service account; otherwise, it is <see langword="false"/>. Use this
+        /// property to determine if privileged or automated account logic should be applied.</remarks>
+        public static readonly bool CallerIsServiceAccount;
+
+        /// <summary>
         /// Returns the current user's username.
         /// </summary>
         public static readonly NTAccount CallerUsername;
@@ -121,6 +141,16 @@ namespace PSADT.AccountManagement
         /// Indicates whether the caller is the local system account.
         /// </summary>
         public static readonly bool CallerIsLocalSystem;
+
+        /// <summary>
+        /// Gets a value indicating whether the current caller is a local service.
+        /// </summary>
+        public static readonly bool CallerIsLocalService;
+
+        /// <summary>
+        /// Gets a value indicating whether the current process is running under the Network Service account.
+        /// </summary>
+        public static readonly bool CallerIsNetworkService;
 
         /// <summary>
         /// Indicates whether the current caller is running in an interactive system environment.

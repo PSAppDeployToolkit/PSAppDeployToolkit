@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
+using PSADT.AccountManagement;
 using PSADT.Interop.Extensions;
 using PSADT.TerminalServices;
 
@@ -15,6 +18,35 @@ namespace PSADT.Foundation
     [DataContract]
     public sealed record RunAsActiveUser
     {
+        /// <summary>
+        /// Gets the active user session associated with the caller, or the most recent active user session if the
+        /// caller's session is not active.
+        /// </summary>
+        /// <remarks>If the caller's session is active, it is prioritized; otherwise, the method searches
+        /// for the most recent active user session based on logon time.</remarks>
+        /// <param name="sessionInfo">An optional list of session information to filter through. If not provided, the method retrieves the current
+        /// session information.</param>
+        /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
+        /// session is found.</returns>
+        public static RunAsActiveUser? Get(IReadOnlyList<SessionInfo>? sessionInfo = null)
+        {
+            // Get all active sessions for subsequent filtration.
+            sessionInfo ??= SessionManager.GetSessionInfo();
+
+            // Determine the account that will be used to execute client/server commands in the user's context.
+            // Favour the caller's session if it's found and is currently an active user session on the device.
+            foreach (SessionInfo session in sessionInfo)
+            {
+                if (session.SID == AccountUtilities.CallerSid && session.IsActiveUserSession)
+                {
+                    return session.ToRunAsActiveUser();
+                }
+            }
+
+            // The caller SID isn't the active user session, try to find the best available match.
+            return sessionInfo.Where(static s => s.IsActiveUserSession).OrderByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser();
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RunAsActiveUser"/> class with the specified account details.
         /// </summary>

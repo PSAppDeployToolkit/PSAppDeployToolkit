@@ -198,5 +198,22 @@ namespace PSADT.Utilities
         {
             return NativeMethods.FindWindow("Shell_TrayWnd", null);
         }
+
+        /// <summary>
+        /// Gets the full path to the user profiles directory on the system.
+        /// </summary>
+        /// <remarks>This method retrieves the path to the user profiles directory using the Windows Shell
+        /// API. Callers should handle the potential exception if the directory path cannot be determined.</remarks>
+        /// <returns>A string that represents the absolute path to the user profiles directory. The returned path is guaranteed
+        /// to be non-null and non-empty if the operation succeeds.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the user profiles directory path cannot be retrieved.</exception>
+        internal static string GetUserProfilesDirectory()
+        {
+            Guid userProfilesFolderId = PInvoke.FOLDERID_UserProfiles;
+            _ = NativeMethods.SHGetKnownFolderPath(userProfilesFolderId, 0, null, out PWSTR ppszPath);
+            return ppszPath.ToString() is not string ppszPathStr || string.IsNullOrWhiteSpace(ppszPathStr)
+                ? throw new InvalidOperationException("Failed to retrieve user profiles directory path.")
+                : ppszPathStr;
+        }
     }
 }

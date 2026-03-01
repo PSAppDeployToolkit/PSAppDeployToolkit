@@ -198,5 +198,20 @@ namespace PSADT.TerminalServices
         /// The Windows NT build number of the client.
         /// </summary>
         public uint? ClientBuildNumber { get; }
+
+        /// <summary>
+        /// Returns a string that provides a detailed, multi-line summary of the current user session, including
+        /// account, session, and client information.
+        /// </summary>
+        /// <remarks>This method is useful for logging or debugging purposes, as it provides a
+        /// comprehensive overview of the session's attributes in a human-readable format.</remarks>
+        /// <returns>A formatted string containing the values of key session properties, each on a separate line. The string
+        /// includes NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession,
+        /// IsConsoleSession, IsActiveUserSession, IsValidUserSession, IsUserSession, IsRdpSession, IsLocalAdmin,
+        /// LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, and ClientBuildNumber.</returns>
+        public override string ToString()
+        {
+            return $"NTAccount           : {NTAccount}{Environment.NewLine}SID                 : {SID}{Environment.NewLine}UserName            : {UserName}{Environment.NewLine}DomainName          : {DomainName}{Environment.NewLine}SessionId           : {SessionId}{Environment.NewLine}SessionName         : {SessionName}{Environment.NewLine}ConnectState        : {ConnectState}{Environment.NewLine}IsCurrentSession    : {IsCurrentSession}{Environment.NewLine}IsConsoleSession    : {IsConsoleSession}{Environment.NewLine}IsActiveUserSession : {IsActiveUserSession}{Environment.NewLine}IsValidUserSession  : {IsValidUserSession}{Environment.NewLine}IsUserSession       : {IsUserSession}{Environment.NewLine}IsRdpSession        : {IsRdpSession}{Environment.NewLine}IsLocalAdmin        : {IsLocalAdmin}{Environment.NewLine}LogonTime           : {LogonTime}{Environment.NewLine}IdleTime            : {IdleTime}{Environment.NewLine}DisconnectTime      : {DisconnectTime}{Environment.NewLine}ClientName          : {ClientName}{Environment.NewLine}ClientProtocolType  : {ClientProtocolType}{Environment.NewLine}ClientDirectory     : {ClientDirectory}{Environment.NewLine}ClientBuildNumber   : {ClientBuildNumber}";
+        }
     }
 }

@@ -46,7 +46,7 @@ function Get-ADTEnvironmentTable
     )
 
     # Return the environment database if initialized.
-    if (!$Script:ADT.Environment -or !$Script:ADT.Environment.get_Count())
+    if (!$Script:ADT.Environment)
     {
         $naerParams = @{
             Exception = [System.InvalidOperationException]::new("Please ensure that [Initialize-ADTModule] is called before using any $($MyInvocation.get_MyCommand().get_Module().get_Name()) functions.")

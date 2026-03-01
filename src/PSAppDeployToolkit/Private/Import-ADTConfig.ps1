@@ -124,7 +124,7 @@ function Private:Import-ADTConfig
     }
 
     # Expand out environment variables and asset file paths.
-    ($adtEnv = Get-ADTEnvironmentTable).GetEnumerator() | & { process { New-Variable -Name $_.get_Key() -Value $_.get_Value() -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.get_SessionState() } }
+    ($adtEnv = Get-ADTEnvironmentTable).PSObject.get_Properties() | & { process { New-Variable -Name $_.get_Name() -Value $_.get_Value() -Option Constant } end { Expand-ADTVariablesInHashtable -Hashtable $config -SessionState $ExecutionContext.get_SessionState() } }
     $config.Assets | Update-ADTAssetFilePath
 
     # Change paths to user accessible ones if user isn't an admin.

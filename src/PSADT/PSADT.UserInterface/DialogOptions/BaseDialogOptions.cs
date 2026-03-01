@@ -172,7 +172,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// Gets the culture information representing the language associated with this instance.
         /// </summary>
         [IgnoreDataMember]
-        public CultureInfo Language => CultureInfo.GetCultureInfo(LanguageName);
+        public CultureInfo Language => new(LanguageName);
 
         /// <summary>
         /// The accent color for the dialog.

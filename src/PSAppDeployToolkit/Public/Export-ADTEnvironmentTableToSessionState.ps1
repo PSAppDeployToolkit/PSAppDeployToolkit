@@ -76,7 +76,7 @@ function Export-ADTEnvironmentTableToSessionState
         {
             try
             {
-                $null = $ExecutionContext.get_InvokeCommand().InvokeScript($SessionState, { $args[1].GetEnumerator() | . { process { & $args[0] -Name $_.get_Key() -Value $_.get_Value() -Option ReadOnly -Force } } $args[0] }.get_Ast().GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv)
+                $null = $ExecutionContext.get_InvokeCommand().InvokeScript($SessionState, { $args[1].PSObject.get_Properties() | . { process { & $args[0] -Name $_.get_Name() -Value $_.get_Value() -Option ReadOnly -Force } } $args[0] }.get_Ast().GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv)
             }
             catch
             {

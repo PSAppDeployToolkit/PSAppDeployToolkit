@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Host;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -56,7 +55,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Establish initial variable values.
                 PSObject adtData = ModuleDatabase.Get();
-                IReadOnlyDictionary<string, object> adtEnv = ModuleDatabase.GetEnvironment();
+                EnvironmentTable adtEnv = ModuleDatabase.GetEnvironment();
                 IDictionary adtConfig = ModuleDatabase.GetConfig();
                 IDictionary configUI = (IDictionary)adtConfig["UI"]!;
                 IDictionary configToolkit = (IDictionary)adtConfig["Toolkit"]!;
@@ -64,15 +63,15 @@ namespace PSAppDeployToolkit.Foundation
                 bool writtenDivider = false;
 
                 // Pre-cache reused environment variables.
-                string appDeployToolkitName = (string)adtEnv["appDeployToolkitName"]!;
-                string appDeployMainScriptVersion = ((Version)adtEnv["appDeployMainScriptVersion"]!).ToString();
-                bool IsProcessUserInteractive = (bool)adtEnv["IsProcessUserInteractive"]!;
-                ReadOnlyCollection<NTAccount>? usersLoggedOn = (ReadOnlyCollection<NTAccount>?)adtEnv["usersLoggedOn"];
-                RunAsActiveUser? RunAsActiveUser = (RunAsActiveUser?)adtEnv["RunAsActiveUser"];
-                string currentLanguage = (string)adtEnv["currentLanguage"]!;
-                Architecture envOSArchitecture = (Architecture)adtEnv["envOSArchitecture"]!;
-                NTAccount processNtAccount = (NTAccount)adtEnv["ProcessNTAccount"]!;
-                bool isAdmin = (bool)adtEnv["IsAdmin"]!;
+                string appDeployToolkitName = adtEnv.AppDeployToolkitName;
+                string appDeployMainScriptVersion = adtEnv.AppDeployMainScriptVersion.ToString();
+                bool IsProcessUserInteractive = adtEnv.IsProcessUserInteractive;
+                IReadOnlyList<NTAccount>? usersLoggedOn = adtEnv.UsersLoggedOn;
+                RunAsActiveUser? RunAsActiveUser = adtEnv.RunAsActiveUser;
+                string currentLanguage = adtEnv.CurrentLanguage;
+                Architecture envOSArchitecture = adtEnv.EnvOSArchitecture;
+                NTAccount processNtAccount = adtEnv.ProcessNTAccount;
+                bool isAdmin = adtEnv.IsAdmin;
 
                 // Set up constant values for the lifetime of the deployment session.
                 DefaultExitCode = (int)configUI["DefaultExitCode"]!;
@@ -463,7 +462,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     InstallName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor}_" : null)}{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
                 }
-                Regex invalidChars = (Regex)adtEnv["invalidFileNameCharsRegExPattern"]!;
+                Regex invalidChars = adtEnv.InvalidFileNameCharsRegexPattern;
                 InstallName = invalidChars.Replace(Regex.Replace(InstallName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
 
                 // Set the Defer History registry path.
@@ -479,7 +478,7 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    string logTempFolder = Path.Combine((string)adtEnv["envTemp"]!, $"{InstallName}_{DeploymentType}");
+                    string logTempFolder = Path.Combine(adtEnv.EnvTemp, $"{InstallName}_{DeploymentType}");
                     if (Directory.Exists(logTempFolder))
                     {
                         Directory.Delete(logTempFolder, true);
@@ -516,7 +515,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
-                DefaultLogName = invalidChars.Replace($"{InstallName}_{{0}}_{DeploymentType}{(!isAdmin ? $"_{adtEnv["envUserName"]}" : null)}.log", string.Empty);
+                DefaultLogName = invalidChars.Replace($"{InstallName}_{{0}}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName);
                 string logFile = Path.Combine(LogPath, LogName);
                 FileInfo logFileInfo = new(logFile);
@@ -620,7 +619,7 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"[{appDeployToolkitName}] module version is [{appDeployMainScriptVersion}].");
                 WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
-                WriteLogEntry($"[{appDeployToolkitName}] module path is ['{adtEnv["appDeployToolkitPath"]}'].");
+                WriteLogEntry($"[{appDeployToolkitName}] module path is ['{adtEnv.AppDeployToolkitPath}'].");
                 if (adtConfigDirs?.Length > 0)
                 {
                     WriteLogEntry($"[{appDeployToolkitName}] config path is ['{string.Join("', '", adtConfigDirs)}'].");
@@ -653,16 +652,19 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Report on all determined system info.
-                WriteLogEntry($"Computer Name is [{adtEnv["envComputerNameFQDN"]}].");
+                WriteLogEntry($"Computer Name is [{adtEnv.EnvComputerNameFQDN}].");
                 WriteLogEntry($"Current User is [{processNtAccount}].");
-                WriteLogEntry($"OS Version is [{adtEnv["envOSName"]} {envOSArchitecture} {adtEnv["envOSVersion"]}].");
-                WriteLogEntry($"OS Type is [{adtEnv["envOSProductTypeName"]}].");
-                WriteLogEntry($"Hardware Platform is [{adtEnv["envHardwareType"]}].");
-                WriteLogEntry($"Current Culture is [{adtEnv["culture"]}], language is [{currentLanguage}] and UI language is [{adtEnv["currentUILanguage"]}].");
-                WriteLogEntry($"PowerShell Host is [{((PSHost)adtEnv["envHost"]!).Name}] with version [{adtEnv["envHostVersionSemantic"] ?? adtEnv["envHostVersion"]}].");
-                WriteLogEntry($"PowerShell Version is [{adtEnv["envPSVersionSemantic"] ?? adtEnv["envPSVersion"]} {adtEnv["psArchitecture"]}].");
-                WriteLogEntry($"PowerShell Process Path is [{adtEnv["envPSProcessPath"]}].");
-                if (adtEnv["envCLRVersion"] is Version envCLRVersion)
+                WriteLogEntry($"OS Version is [{adtEnv.EnvOSName} {envOSArchitecture} {adtEnv.EnvOSVersion}].");
+                WriteLogEntry($"OS Type is [{adtEnv.EnvOSProductTypeName}].");
+                if (adtEnv.EnvHardwareType is string envHardwareType)
+                {
+                    WriteLogEntry($"Hardware Platform is [{envHardwareType}].");
+                }
+                WriteLogEntry($"Current Culture is [{adtEnv.Culture}], language is [{currentLanguage}] and UI language is [{adtEnv.CurrentUILanguage}].");
+                WriteLogEntry($"PowerShell Host is [{adtEnv.EnvHost.Name}] with version [{adtEnv.EnvHostVersion}].");
+                WriteLogEntry($"PowerShell Version is [{adtEnv.EnvPSVersion} {adtEnv.PSArchitecture}].");
+                WriteLogEntry($"PowerShell Process Path is [{adtEnv.EnvPSProcessPath}].");
+                if (adtEnv.EnvCLRVersion is Version envCLRVersion)
                 {
                     WriteLogEntry($"PowerShell CLR (.NET) version is [{envCLRVersion}].");
                 }
@@ -677,10 +679,10 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
-                    WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{adtEnv["LoggedOnUserSessionsText"]}", false);
+                    WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, adtEnv.LoggedOnUserSessions.Select(static s => s.ToString() + Environment.NewLine)).TrimEnd()}", false);
 
                     // Check if the current process is running in the context of one of the logged on users
-                    if (adtEnv["CurrentLoggedOnUserSession"] is SessionInfo CurrentLoggedOnUserSession)
+                    if (adtEnv.CurrentLoggedOnUserSession is SessionInfo CurrentLoggedOnUserSession)
                     {
                         WriteLogEntry($"Current process is running with user account [{processNtAccount}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
                     }
@@ -690,7 +692,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
 
                     // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
-                    if (adtEnv["CurrentConsoleUserSession"] is SessionInfo CurrentConsoleUserSession)
+                    if (adtEnv.CurrentConsoleUserSession is SessionInfo CurrentConsoleUserSession)
                     {
                         WriteLogEntry($"The following user is the console user [{CurrentConsoleUserSession.NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
                     }
@@ -733,7 +735,7 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Log which language's UI messages are loaded from the config file
-                WriteLogEntry($"The current execution context has a primary UI language of [{adtEnv["uiculture"]}].");
+                WriteLogEntry($"The current execution context has a primary UI language of [{adtEnv.UICulture}].");
 
                 // Advise whether the UI language was overridden.
                 if (configUI["LanguageOverride"] is string languageOverride)
@@ -748,11 +750,11 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Check if script is running from a SCCM Task Sequence.
-                if ((bool)adtEnv["RunningTaskSequence"]!)
+                if (adtEnv.RunningTaskSequence)
                 {
                     WriteLogEntry("Detected that the deployment script is running within a ConfigMgr task sequence.");
                 }
-                else if ((bool)adtEnv["RunningDeployrTaskSequence"]!)
+                else if (adtEnv.RunningDeployrTaskSequence)
                 {
                     WriteLogEntry("Detected that the deployment script is running within a DeployR task sequence.");
                 }
@@ -841,7 +843,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Perform session 0 evaluation.
-                if ((bool)adtEnv["SessionZero"]!)
+                if (adtEnv.SessionZero)
                 {
                     if (deployModeChanged)
                     {
@@ -1053,7 +1055,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment()["appDeployToolkitName"]} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {

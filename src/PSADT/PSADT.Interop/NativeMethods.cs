@@ -3762,6 +3762,26 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Retrieves the full path of a known folder identified by the specified folder ID.
+        /// </summary>
+        /// <remarks>If the operation fails, an exception is thrown corresponding to the HRESULT error
+        /// code. The caller must release the memory allocated for the returned path to avoid memory leaks.</remarks>
+        /// <param name="rfid">The GUID that uniquely identifies the known folder whose path is to be retrieved.</param>
+        /// <param name="dwFlags">A value that specifies special retrieval options for the known folder path, such as whether to return the
+        /// default path or a user-specific path.</param>
+        /// <param name="hToken">An optional access token that represents a particular user. If this parameter is not specified, the current
+        /// user's context is used.</param>
+        /// <param name="ppszPath">When this method returns, contains the path of the requested known folder. The caller is responsible for
+        /// freeing the memory allocated for this path.</param>
+        /// <returns>An HRESULT value that indicates the result of the operation. S_OK indicates success; otherwise, an exception
+        /// is thrown.</returns>
+        internal static HRESULT SHGetKnownFolderPath(in Guid rfid, KNOWN_FOLDER_FLAG dwFlags, [Optional] SafeHandle? hToken, out PWSTR ppszPath)
+        {
+            HRESULT res = PInvoke.SHGetKnownFolderPath(in rfid, dwFlags, hToken, out ppszPath);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+        }
+
+        /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
         internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()

@@ -33,6 +33,7 @@ FACILITY_CODE
 FindFirstFileEx
 FindNextFile
 FindWindow
+FOLDERID_UserProfiles
 FormatMessage
 GENERIC_MAPPING
 GetApplicationUserModelId
@@ -377,6 +378,7 @@ SetSecurityInfo
 SetTokenInformation
 SHChangeNotify
 SHGetImageList
+SHGetKnownFolderPath
 SHGFI_FLAGS
 SHGSI_FLAGS
 SHIL_EXTRALARGE

@@ -66,18 +66,17 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
-        /// Retrieves the environment properties stored in the database.
+        /// Retrieves the current environment settings from the database.
         /// </summary>
-        /// <remarks>Ensure that the database is properly initialized before calling this method. The
-        /// returned dictionary provides a read-only view of the environment settings as stored in the
-        /// database.</remarks>
-        /// <returns>An <see cref="IReadOnlyDictionary{TKey, TValue}"/> containing the environment properties, where each key is
-        /// a property name and each value is the corresponding property value.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the environment properties cannot be retrieved because the database is not initialized.</exception>
+        /// <remarks>Ensure that the database is properly initialized before calling this method.
+        /// Accessing this method when the database is not ready will result in an exception.</remarks>
+        /// <returns>An <see cref="EnvironmentTable"/> instance containing the environment settings.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the environment settings cannot be retrieved because the database is uninitialized or the required
+        /// properties are missing.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        public static IReadOnlyDictionary<string, object> GetEnvironment()
+        public static EnvironmentTable GetEnvironment()
         {
-            return (IReadOnlyDictionary<string, object>?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(initErrorMessage);
+            return (EnvironmentTable?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(initErrorMessage);
         }
 
         /// <summary>
