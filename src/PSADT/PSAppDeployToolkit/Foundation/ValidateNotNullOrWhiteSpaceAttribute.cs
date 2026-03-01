@@ -52,6 +52,13 @@ namespace PSAppDeployToolkit.Foundation
                     throw new ValidationMetadataException("The argument is null or white space. Provide an argument that is not null or white space, and then try running the command again.");
                 }
             }
+            else if (arguments is ScriptBlock script)
+            {
+                if (string.IsNullOrWhiteSpace(script.ToString()))
+                {
+                    throw new ValidationMetadataException("The argument is null or white space. Provide an argument that is not null or white space, and then try running the command again.");
+                }
+            }
             else if (arguments is IDictionary dict)
             {
                 if (dict.Count == 0)
