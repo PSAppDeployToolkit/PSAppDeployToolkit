@@ -484,7 +484,7 @@ function Start-ADTMsiProcess
                 $msiPropertyTable = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msi')
                 {
                     $gmtpParams = @{ Path = $msiProduct; Table = 'Property' }; if ($Transforms) { $gmtpParams.Add('TransformPath', $Transforms) }
-                    Get-ADTMsiTableProperty @gmtpParams
+                    Get-ADTMsiTableProperty @gmtpParams -InformationAction SilentlyContinue
                 }
                 $msiPatchData = if ([System.IO.Path]::GetExtension($msiProduct) -eq '.msp')
                 {
