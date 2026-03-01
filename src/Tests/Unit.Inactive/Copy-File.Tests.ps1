@@ -54,7 +54,7 @@ Describe 'Copy-File'-ForEach @(
         $DestinationFiles = Get-ChildItem -Path $DestinationPath -Recurse -Force
         if ($DestinationFiles)
         {
-            $DebugMessage = $DestinationFiles.FullName -join "`n"
+            $DebugMessage = $DestinationFiles.FullName -join [System.Environment]::get_NewLine()
             Write-Debug "Destination files:`n$DebugMessage"
         }
         else

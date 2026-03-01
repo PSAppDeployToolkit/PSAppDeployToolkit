@@ -296,7 +296,7 @@ function Copy-ADTFile
                     $robocopyResult = Start-ADTProcess -FilePath $robocopyCommand -ArgumentList $robocopyArgs -CreateNoWindow -PassThru -SuccessExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
 
                     # Trim the last line plus leading whitespace from each line of Robocopy output.
-                    $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -replace '\n\s+', "`n" }
+                    $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -replace '\r?\n\s+', [System.Environment]::get_NewLine() }
                     Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
 
                     # Restore folder attributes in case Robocopy overwrote them.
@@ -444,7 +444,7 @@ function Copy-ADTFile
                         # Measure success.
                         if ($ContinueFileCopyOnError -and (Test-Path -LiteralPath Microsoft.PowerShell.Core\Variable::FileCopyError) -and $FileCopyError -and $FileCopyError.get_Count())
                         {
-                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join("`n", $FileCopyError.get_Exception().get_Message()))" -Severity Warning
+                            Write-ADTLogEntry -Message "The following warnings were detected while copying file(s) in path [$srcPath] to destination [$Destination].`n`n$([System.String]::Join([System.Environment]::get_NewLine(), $FileCopyError.get_Exception().get_Message()))" -Severity Warning
                         }
                         else
                         {

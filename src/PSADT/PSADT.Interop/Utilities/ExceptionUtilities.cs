@@ -34,7 +34,7 @@ namespace PSADT.Interop.Utilities
             }
 
             // Remove all invalid inner exception marker lines from the exception text and return the result.
-            string[] lines = exceptionText.ThrowIfNullOrWhiteSpace().Split(["\r\n", "\n"], StringSplitOptions.None);
+            string[] lines = exceptionText.ThrowIfNullOrWhiteSpace().Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
             List<string> result = new(lines.Length);
             for (int i = 0; i < lines.Length; i++)
             {

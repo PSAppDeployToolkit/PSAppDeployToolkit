@@ -931,7 +931,7 @@ function Start-ADTProcess
                         {
                             if ($result.$property.get_Count() -gt 1)
                             {
-                                "`n`n$([System.String]::Join("`n", $result.$property))"
+                                "`n`n$([System.String]::Join([System.Environment]::get_NewLine(), $result.$property))"
                             }
                             else
                             {

@@ -169,7 +169,7 @@ function Invoke-ADTMarkdownExport
             $content = [System.IO.File]::ReadAllText($file.FullName)
 
             # Trim the file, fix multi-line EXAMPLES, and unescape tilde characters.
-            $newContent = ($content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6').Replace('PS C:\\\>', $null).Replace('\`', '`')
+            $newContent = ($content.Trim() -replace '(## EXAMPLE [^`]+?```\r\n[^`\r\n]+?\r\n)(```\r\n\r\n)([^#]+?\r\n)(\r\n)([^#]+)(#)', '$1$3$2$4$5$6').Replace('PS C:\\\>', [System.Management.Automation.Language.NullString]::Value).Replace('\`', '`')
 
             # Escape and slashes within a parameter's `Default value` yaml property.
             $newContent = [System.Text.RegularExpressions.Regex]::Replace($newContent, '(?<=^Default value: .*?)(\\)', '\\', [System.Text.RegularExpressions.RegexOptions]::Multiline)
@@ -177,7 +177,7 @@ function Invoke-ADTMarkdownExport
             # Write the content back to disk if there's changes.
             if ($newContent -ne $content)
             {
-                [System.IO.File]::WriteAllLines($file.FullName, $newContent.Split("`n").TrimEnd())
+                [System.IO.File]::WriteAllLines($file.FullName, $newContent.Replace("`r", [System.Management.Automation.Language.NullString]::Value).Split(0x0A).TrimEnd())
             }
         }
 
@@ -201,7 +201,7 @@ function Invoke-ADTMarkdownExport
         {
             for ($i = 0; $i -lt $MissingDocumentation.Count; $i++)
             {
-                $output = ($MissingDocumentation[$i] | Select-Object -Property FileName, LineNumber, Line | Format-List -Property * | Out-String -Width ([System.Int32]::MaxValue)).Trim().Split("`n").Trim() -replace '^', "> "
+                $output = ($MissingDocumentation[$i] | Select-Object -Property FileName, LineNumber, Line | Format-List -Property * | Out-String -Width ([System.Int32]::MaxValue)).Replace("`r", [System.Management.Automation.Language.NullString]::Value).Trim().Split(0x0A).Trim() -replace '^', "> "
                 Write-ADTBuildLogEntry -Message "Output for missing documentation MatchInfo [$($i+1)/$($MissingDocumentation.Count)]" -ForegroundColor DarkRed
                 Write-ADTBuildLogEntry -Message $output -ForegroundColor DarkRed
             }

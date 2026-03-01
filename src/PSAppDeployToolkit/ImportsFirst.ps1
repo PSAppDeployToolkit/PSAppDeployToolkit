@@ -27,7 +27,7 @@ https://psappdeploytoolkit.com
 #-----------------------------------------------------------------------------
 
 # Throw if this psm1 file isn't being imported via our manifest.
-if (!([System.Environment]::get_StackTrace().Split("`n") -like '*Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
+if (!([System.Environment]::get_StackTrace().Split(0x0A) -like '*Microsoft.PowerShell.Commands.ModuleCmdletBase.LoadModuleManifest(*'))
 {
     throw [System.Management.Automation.ErrorRecord]::new(
         [System.InvalidOperationException]::new("This module must be imported via its .psd1 file, which is recommended for any module that provides such a file."),

@@ -21,7 +21,7 @@ function Invoke-ADTDocusaurusExport
             # Trim the file, fix hard-coded line breaks, and fix manually defined code fences.
             if (($content = [System.IO.File]::ReadAllText($file.FullName)) -ne ($newContent = $content.Trim().Replace('&lt;br /&gt;', '<br />').Replace('\{', '{').Replace('\}', '}') -replace '```\s+```powershell\s+```powershell\s+', "``````powershell`n"))
             {
-                [System.IO.File]::WriteAllLines($file.FullName, $newContent.Split("`n").TrimEnd())
+                [System.IO.File]::WriteAllLines($file.FullName, $newContent.Replace("`r", [System.Management.Automation.Language.NullString]::Value).Split(0x0A).TrimEnd())
             }
         }
         Complete-ADTModuleBuildFunction

@@ -18,7 +18,7 @@ filter Invoke-ADTPesterOutputHandler
         }
 
         # Process the message to remove empty lines.
-        Write-ADTBuildLogEntry -Message ($_.MessageData.Message.Split("`n", [System.StringSplitOptions]::RemoveEmptyEntries) -replace '\r' | & {
+        Write-ADTBuildLogEntry -Message ($_.MessageData.Message.Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::RemoveEmptyEntries) | & {
                 process
                 {
                     # Skip over any empty lines.

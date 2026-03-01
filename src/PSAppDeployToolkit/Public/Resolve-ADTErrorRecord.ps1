@@ -165,7 +165,7 @@ function Resolve-ADTErrorRecord
             {
                 if ($propName -eq 'TargetObject')
                 {
-                    $logErrorProperties.Add($propName, [System.String]::Join("`n", [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines([System.String[]]($errorObject.$propName | Out-String -Width ([System.Int16]::MaxValue) -Stream))))
+                    $logErrorProperties.Add($propName, [System.String]::Join([System.Environment]::get_NewLine(), [PSADT.Utilities.MiscUtilities]::TrimLeadingTrailingLines([System.String[]]($errorObject.$propName | Out-String -Width ([System.Int16]::MaxValue) -Stream))))
                 }
                 elseif ($propName -eq 'Exception')
                 {
@@ -180,7 +180,7 @@ function Resolve-ADTErrorRecord
             # Append a new line to the last value for formatting purposes.
             if (!$propCount.Equals($logErrorProperties.get_Count()))
             {
-                $logErrorProperties.($logErrorProperties.get_Keys() | Select-Object -Last 1) += "`n"
+                $logErrorProperties.($logErrorProperties.get_Keys() | Select-Object -Last 1) += [System.Environment]::get_NewLine()
             }
         }
 
@@ -190,16 +190,16 @@ function Resolve-ADTErrorRecord
             $prevPropertyIndex = ([System.String[]]$logErrorProperties.get_Keys()).IndexOf('TargetObject')
             if (($prevPropertyIndex -gt 0) -and !$logErrorProperties[$prevPropertyIndex - 1].EndsWith("`n"))
             {
-                $logErrorProperties[$prevPropertyIndex - 1] += "`n"
+                $logErrorProperties[$prevPropertyIndex - 1] += [System.Environment]::get_NewLine()
             }
             if (!$logErrorProperties.TargetObject.EndsWith("`n"))
             {
-                $logErrorProperties.TargetObject += "`n"
+                $logErrorProperties.TargetObject += [System.Environment]::get_NewLine()
             }
         }
 
         # Build out error properties.
-        $logErrorMessage = [System.String]::Join("`n", "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
+        $logErrorMessage = [System.String]::Join([System.Environment]::get_NewLine(), "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
 
         # Capture Error Inner Exception(s).
         if ($IncludeErrorInnerException -and $ErrorRecord.get_Exception() -and $ErrorRecord.get_Exception().get_InnerException())
@@ -223,7 +223,7 @@ function Resolve-ADTErrorRecord
             }
 
             # Output all inner exceptions to the caller.
-            $logErrorMessage += "`n`n`n$([System.String]::Join("`n", "Error Inner Exception(s):", "-------------------------", $null, [System.String]::Join("`n", $innerExceptions)))"
+            $logErrorMessage += "`n`n`n$([System.String]::Join([System.Environment]::get_NewLine(), "Error Inner Exception(s):", "-------------------------", $null, [System.String]::Join([System.Environment]::get_NewLine(), $innerExceptions)))"
         }
 
         # Output the error message to the caller.
