@@ -10,17 +10,7 @@ function Private:Import-ADTConfig
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
-                }
-                if (!(Test-Path -LiteralPath $_ -PathType Container))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
-                }
-                return $_
-            })]
+        [AllowNull()][PSAppDeployToolkit.Foundation.AllowNullButNotEmptyOrWhiteSpace()]
         [System.String[]]$BaseDirectory
     )
 
@@ -56,7 +46,7 @@ function Private:Import-ADTConfig
 
             # Get the asset's full path based on the supplied BaseDirectory.
             # Fall back to the module's path if the asset is unable to be found.
-            $assetPath = foreach ($directory in $($BaseDirectory[($BaseDirectory.get_Count() - 1)..(0)]; $Script:ADT.Directories.Defaults.Config))
+            $assetPath = foreach ($directory in $(if ($BaseDirectory) { $BaseDirectory[($BaseDirectory.get_Length() - 1)..(0)] }; "$Script:PSScriptRoot\Config"))
             {
                 if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.get_Key()))" -ErrorAction Ignore))
                 {

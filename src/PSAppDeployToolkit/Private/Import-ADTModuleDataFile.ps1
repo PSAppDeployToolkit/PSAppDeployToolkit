@@ -11,17 +11,7 @@ function Private:Import-ADTModuleDataFile
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
-                }
-                if (!(Test-Path -LiteralPath $_ -PathType Container))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
-                }
-                return $_
-            })]
+        [AllowNull()][PSAppDeployToolkit.Foundation.AllowNullButNotEmptyOrWhiteSpace()]
         [System.String[]]$BaseDirectory,
 
         [Parameter(Mandatory = $true)]
@@ -30,7 +20,7 @@ function Private:Import-ADTModuleDataFile
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Globalization.CultureInfo]$UICulture,
+        [System.Globalization.CultureInfo]$UICulture = [System.Globalization.CultureInfo]::CurrentUICulture,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$IgnorePolicy
@@ -70,53 +60,28 @@ function Private:Import-ADTModuleDataFile
         }
     }
 
-    # Establish directory paths for the specified input.
-    $moduleDirectory = $Script:ADT.Directories.Defaults.([System.Globalization.CultureInfo]::get_InvariantCulture().get_TextInfo().ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName)))
-    $callerDirectory = $BaseDirectory
-
-    # If we're running a release module, ensure the psd1 files haven't been tampered with.
-    if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $moduleDirectory))
-    {
-        $naerParams = @{
-            Exception = [System.Security.Cryptography.CryptographicException]::new("The module's default $FileName file has been modified from its released state.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidData
-            ErrorId = 'ADTDataFileSignatureError'
-            TargetObject = $badFiles
-            RecommendedAction = "Please re-download $($MyInvocation.get_MyCommand().get_Module().get_Name()) and try again."
-        }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-    }
-
     # Import the default data first and foremost.
-    $null = $PSBoundParameters.Remove('IgnorePolicy')
-    $PSBoundParameters.BaseDirectory = [System.Management.Automation.WildcardPattern]::Escape($moduleDirectory)
-    $importedData = Import-LocalizedData @PSBoundParameters
-
-    # Validate we imported something from our default location.
-    if (!$importedData.get_Count())
+    $section = [System.IO.Path]::GetFileNameWithoutExtension($FileName)
+    $importedData = while ($true)
     {
-        $naerParams = @{
-            Exception = [System.InvalidProgramException]::new("The importation of the module's default $FileName file returned a null or empty result.")
-            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-            ErrorId = 'ADTDataFileImportFailure'
-            TargetObject = Join-Path -Path $PSBoundParameters.BaseDirectory -ChildPath $FileName
-            RecommendedAction = "Please ensure that this module is not corrupt or missing files, then try again."
+        if ($Script:ADT.ModuleDefaults.$section.Contains($UICulture.Name))
+        {
+            $Script:ADT.ModuleDefaults.$section.($UICulture.Name).get_Ast().get_EndBlock().get_Statements().get_PipelineElements().get_Expression().SafeGetValue()
+            break
         }
-        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        $UICulture = $UICulture.Parent
     }
 
     # Super-impose the caller's data if it's different from default.
-    if (!$callerDirectory.Equals($moduleDirectory))
+    $null = $PSBoundParameters.Remove('IgnorePolicy')
+    foreach ($directory in $BaseDirectory)
     {
-        foreach ($directory in $callerDirectory)
-        {
-            $PSBoundParameters.BaseDirectory = [System.Management.Automation.WildcardPattern]::Escape($directory)
-            Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
-        }
+        $PSBoundParameters.BaseDirectory = [System.Management.Automation.WildcardPattern]::Escape($directory)
+        Update-ADTImportedDataValues -DataFile $importedData -NewData (Import-LocalizedData @PSBoundParameters)
     }
 
     # Super-impose registry values if they exist.
-    if (!$IgnorePolicy -and ($policySettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$([System.IO.Path]::GetFileNameWithoutExtension($FileName))" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable))
+    if (!$IgnorePolicy -and ($policySettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$section\$(if ($PSBoundParameters.ContainsKey('UICulture')) { $PSBoundParameters.UICulture })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable))
     {
         Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
     }

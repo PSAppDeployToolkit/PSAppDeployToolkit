@@ -615,12 +615,20 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
                 PSObject adtDurations = (PSObject)adtData.Properties["Durations"].Value;
+                string[]? adtConfigDirs = (string[]?)adtDirectories.Properties["Config"].Value;
+                string[]? adtStringDirs = (string[]?)adtDirectories.Properties["Strings"].Value;
                 WriteLogEntry($"[{appDeployToolkitName}] module version is [{appDeployMainScriptVersion}].");
                 WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
                 WriteLogEntry($"[{appDeployToolkitName}] module path is ['{adtEnv["appDeployToolkitPath"]}'].");
-                WriteLogEntry($"[{appDeployToolkitName}] config path is ['{string.Join("', '", (string[])adtDirectories.Properties["Config"].Value)}'].");
-                WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", (string[])adtDirectories.Properties["Strings"].Value)}'].");
+                if (adtConfigDirs?.Length > 0)
+                {
+                    WriteLogEntry($"[{appDeployToolkitName}] config path is ['{string.Join("', '", adtConfigDirs)}'].");
+                }
+                if (adtStringDirs?.Length > 0)
+                {
+                    WriteLogEntry($"[{appDeployToolkitName}] string path is ['{string.Join("', '", adtStringDirs)}'].");
+                }
 
                 // Announce session instantiation mode.
                 if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))

@@ -10,17 +10,7 @@ function Private:Import-ADTStringTable
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
-                }
-                if (!(Test-Path -LiteralPath $_ -PathType Container))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName BaseDirectory -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
-                }
-                return $_
-            })]
+        [AllowNull()][PSAppDeployToolkit.Foundation.AllowNullButNotEmptyOrWhiteSpace()]
         [System.String[]]$BaseDirectory,
 
         [Parameter(Mandatory = $false)]

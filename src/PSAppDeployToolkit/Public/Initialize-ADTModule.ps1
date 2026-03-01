@@ -102,7 +102,7 @@ function Initialize-ADTModule
                 }
                 else
                 {
-                    $Script:ADT.Directories.Defaults.Script
+                    $Script:PSScriptRoot
                 }
 
                 # Initialize remaining directory paths.
@@ -115,10 +115,6 @@ function Initialize-ADTModule
                             {
                                 (Join-Path -Path $directory -ChildPath $_).Trim()
                             }
-                        }
-                        if ($null -eq $Script:ADT.Directories.$_)
-                        {
-                            [System.String[]]$Script:ADT.Directories.$_ = $Script:ADT.Directories.Defaults.$_
                         }
                     }
                 }
