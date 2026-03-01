@@ -31,11 +31,11 @@ function Private:Import-ADTStringTable
         {
             foreach ($section in $($_.GetEnumerator()))
             {
-                if ($section.get_Value() -is [System.String])
+                if ($section.Value -is [System.String])
                 {
-                    $_.($section.get_Key()) = $substitutions.Replace($section.get_Value(),
+                    $_.($section.Key) = $substitutions.Replace($section.Value,
                         {
-                            return $args[0].get_Groups()[1].get_Value().Split('\') | & {
+                            return $args[0].Groups[1].Value.Split('\') | & {
                                 begin
                                 {
                                     $result = $config
@@ -51,9 +51,9 @@ function Private:Import-ADTStringTable
                             }
                         })
                 }
-                elseif ($section.get_Value() -is [System.Collections.Hashtable])
+                elseif ($section.Value -is [System.Collections.Hashtable])
                 {
-                    $section.get_Value() | & $MyInvocation.get_MyCommand()
+                    $section.Value | & $MyInvocation.MyCommand
                 }
             }
         }

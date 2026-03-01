@@ -74,7 +74,7 @@ function Get-ADTShortcut
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -84,8 +84,8 @@ function Get-ADTShortcut
         {
             try
             {
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).get_ProviderPath())
-                $Output = @{ Path = (Get-Item -LiteralPath $LiteralPath).get_FullName(); TargetPath = $null; IconIndex = $null; IconLocation = $null }
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
+                $Output = @{ Path = (Get-Item -LiteralPath $LiteralPath).FullName; TargetPath = $null; IconIndex = $null; IconLocation = $null }
             }
             catch
             {
@@ -94,7 +94,7 @@ function Get-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
             return
         }
 
@@ -110,9 +110,9 @@ function Get-ADTShortcut
                         {
                             switch ($_)
                             {
-                                { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', [System.Management.Automation.Language.NullString]::get_Value()); break }
-                                { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', [System.Management.Automation.Language.NullString]::get_Value()); break }
-                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('IconFile=', [System.Management.Automation.Language.NullString]::get_Value()); break }
+                                { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', [System.Management.Automation.Language.NullString]::Value); break }
+                                { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', [System.Management.Automation.Language.NullString]::Value); break }
+                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('IconFile=', [System.Management.Automation.Language.NullString]::Value); break }
                             }
                         }
                     }
@@ -154,7 +154,7 @@ function Get-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to read the shortcut [$($Output.Path)]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read the shortcut [$($Output.Path)]."
         }
     }
 

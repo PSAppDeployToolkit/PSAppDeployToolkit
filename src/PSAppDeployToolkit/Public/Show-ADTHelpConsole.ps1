@@ -48,7 +48,7 @@ function Show-ADTHelpConsole
 
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
     Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser -AllowSystemFallback) -DialogType HelpConsole -DialogStyle Classic -NoWait -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{
-            ModuleHelpMap = Get-Module -Name "$($MyInvocation.get_MyCommand().get_Module().get_Name())*" | & {
+            ModuleHelpMap = Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
                 begin
                 {
                     # Open dictionary to collect all sub-dictionaries.
@@ -57,20 +57,20 @@ function Show-ADTHelpConsole
                 process
                 {
                     # Skip any module that has no exported commands.
-                    if (!$_.get_ExportedCommands().get_Count())
+                    if (!$_.ExportedCommands.Count)
                     {
                         return
                     }
 
                     # Open dictionary collect all command help.
                     $help = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
-                    foreach ($exportedCommand in $_.get_ExportedCommands().get_Keys())
+                    foreach ($exportedCommand in $_.ExportedCommands.Keys)
                     {
-                        $help.Add($exportedCommand, [System.String]::Join([System.Environment]::get_NewLine(), ((Get-Help -Name $exportedCommand -Full | Out-String -Width ([System.Int32]::MaxValue) -Stream) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', [System.Management.Automation.Language.NullString]::get_Value()) + [System.Environment]::get_NewLine())
+                        $help.Add($exportedCommand, [System.String]::Join([System.Environment]::NewLine, ((Get-Help -Name $exportedCommand -Full | Out-String -Width ([System.Int32]::MaxValue) -Stream) -replace '^\s+$').TrimEnd()).Trim().Replace('<br />', [System.Management.Automation.Language.NullString]::Value) + [System.Environment]::NewLine)
                     }
 
                     # Add the dictionary of commands and their help to the collector.
-                    $modules.Add($_.get_Name(), [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$help)
+                    $modules.Add($_.Name, [System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$help)
                 }
                 end
                 {

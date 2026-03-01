@@ -82,19 +82,19 @@ function Block-ADTAppExecution
         }
 
         # Initialise function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
-        $taskName = $adtEnv.InvalidScheduledTaskNameCharsRegExPattern.Replace("$($adtEnv.appDeployToolkitName)_$($adtSession.get_InstallName())_BlockedApps", [System.String]::Empty)
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $taskName = $adtEnv.InvalidScheduledTaskNameCharsRegExPattern.Replace("$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps", [System.String]::Empty)
         $adtEnv = Get-ADTEnvironmentTable
         $adtConfig = Get-ADTConfig
 
         # Initialise the string table.
         $sessionState = if ($adtSession)
         {
-            $adtSession.get_SessionState()
+            $adtSession.SessionState
         }
         if ($null -eq $sessionState)
         {
-            $sessionState = $PSCmdlet.get_SessionState()
+            $sessionState = $PSCmdlet.SessionState
         }
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
     }
@@ -104,10 +104,10 @@ function Block-ADTAppExecution
         # Bypass if no Admin rights.
         if (!$adtEnv.IsAdmin)
         {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.get_MyCommand().get_Name())], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $($adtEnv.ProcessNTAccount)] is not admin."
             return
         }
-        Write-ADTLogEntry -Message "Preparing to block execution of the following processes: ['$([System.String]::Join("', '", $Processes.get_Name()))']."
+        Write-ADTLogEntry -Message "Preparing to block execution of the following processes: ['$([System.String]::Join("', '", $Processes.Name))']."
 
         try
         {
@@ -138,8 +138,8 @@ function Block-ADTAppExecution
 
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{
-                    AppTitle = $adtSession.get_InstallTitle()
-                    Subtitle = $adtStrings.BlockExecutionText.Subtitle.($adtSession.get_DeploymentType().ToString())
+                    AppTitle = $adtSession.InstallTitle
+                    Subtitle = $adtStrings.BlockExecutionText.Subtitle.($adtSession.DeploymentType.ToString())
                     AppIconImage = $adtConfig.Assets.Logo
                     AppIconDarkImage = $adtConfig.Assets.LogoDark
                     AppBannerImage = $adtConfig.Assets.Banner
@@ -148,7 +148,7 @@ function Block-ADTAppExecution
                     Language = $Script:ADT.Language
                     MinimizeWindows = $false
                     DialogExpiryDuration = [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
-                    MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.get_DeploymentType().ToString())
+                    MessageText = $adtStrings.BlockExecutionText.Message.($adtSession.DeploymentType.ToString())
                     ButtonRightText = [PSADT.UserInterface.BlockExecution]::ButtonText
                     Icon = [PSADT.UserInterface.DialogSystemIcon]::Warning
                 }
@@ -191,7 +191,7 @@ function Block-ADTAppExecution
                     $nstParams = @{
                         Principal = New-ScheduledTaskPrincipal -Id Author -UserId S-1-5-18
                         Trigger = New-ScheduledTaskTrigger -AtStartup
-                        Action = New-ScheduledTaskAction -Execute (Get-ADTPowerShellProcessPath) -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Unblock-ADTAppExecutionInternal'.get_ScriptBlock())} -TaskName '$($taskName.Replace("'", "''"))'")"
+                        Action = New-ScheduledTaskAction -Execute (Get-ADTPowerShellProcessPath) -Argument "-NonInteractive -NoProfile -NoLogo -WindowStyle Hidden -EncodedCommand $(Out-ADTPowerShellEncodedCommand -Command "& {$($Script:CommandTable.'Unblock-ADTAppExecutionInternal'.ScriptBlock)} -TaskName '$($taskName.Replace("'", "''"))'")"
                         Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd -ExecutionTimeLimit ([System.TimeSpan]::FromHours(1))
                     }
                     $null = New-ScheduledTask @nstParams | Register-ScheduledTask -TaskName $taskName
@@ -203,7 +203,7 @@ function Block-ADTAppExecution
                 }
 
                 # Enumerate each process and set the debugger value to block application execution.
-                foreach ($process in $Processes.get_Name())
+                foreach ($process in $Processes.Name)
                 {
                     Write-ADTLogEntry -Message "Setting the Image File Execution Option registry key to block execution of [$process]."
                     if (!$PSCmdlet.ShouldProcess("Process [$process]", 'Block execution'))
@@ -233,7 +233,7 @@ function Block-ADTAppExecution
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

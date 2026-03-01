@@ -85,17 +85,17 @@ function Remove-ADTFolder
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
     {
         # Grab and cache all directories.
-        $directories = if (!$PSCmdlet.get_ParameterSetName().Equals('InputObject'))
+        $directories = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            foreach ($value in (Get-Variable -Name $PSCmdlet.get_ParameterSetName() -ValueOnly))
+            foreach ($value in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
             {
-                $giParams = @{ $PSCmdlet.get_ParameterSetName() = $value }
+                $giParams = @{ $PSCmdlet.ParameterSetName = $value }
                 try
                 {
                     Get-Item @giParams -Force | & {
@@ -116,7 +116,7 @@ function Remove-ADTFolder
         }
         else
         {
-            if (!$InputObject.get_Exists())
+            if (!$InputObject.Exists)
             {
                 Write-ADTLogEntry -Message "Folder [$InputObject] does not exist."
                 return
@@ -160,10 +160,10 @@ function Remove-ADTFolder
                         if ($childItem -is [System.IO.DirectoryInfo])
                         {
                             # Item is a folder. Check if its empty.
-                            if (($childItem | Get-ChildItem -Force | Measure-Object).get_Count() -eq 0)
+                            if (($childItem | Get-ChildItem -Force | Measure-Object).Count -eq 0)
                             {
                                 # The folder is empty, delete it
-                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.get_FullName() -Force
+                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.FullName -Force
                             }
                             else
                             {
@@ -174,13 +174,13 @@ function Remove-ADTFolder
                         else
                         {
                             # Item is a file. Delete it.
-                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.get_FullName() -Force
+                            Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $childItem.FullName -Force
                         }
                     }
                     if ($SubfoldersSkipped)
                     {
                         $naerParams = @{
-                            Exception = [System.IO.IOException]::new("The following subfolders are not empty ['$([System.String]::Join("'; '", $SubfoldersSkipped.get_FullName().Replace("$($item.get_FullName())\", [System.Management.Automation.Language.NullString]::get_Value())))'].")
+                            Exception = [System.IO.IOException]::new("The following subfolders are not empty ['$([System.String]::Join("'; '", $SubfoldersSkipped.FullName.Replace("$($item.FullName)\", [System.Management.Automation.Language.NullString]::Value)))'].")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                             ErrorId = 'NonEmptySubfolderError'
                             TargetObject = $SubfoldersSkipped
@@ -198,7 +198,7 @@ function Remove-ADTFolder
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to delete folder(s) and file(s) from path [$item]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete folder(s) and file(s) from path [$item]."
             }
         }
     }

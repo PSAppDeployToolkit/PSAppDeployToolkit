@@ -90,7 +90,7 @@ function New-ADTValidateScriptErrorRecord
         ErrorId = "Invalid$($ParameterName)ParameterValue"
         TargetObject = $ProvidedValue
         TargetName = $ProvidedValue.ToString()
-        TargetType = $(if ($null -ne $ProvidedValue) { $ProvidedValue.GetType().get_Name() })
+        TargetType = $(if ($null -ne $ProvidedValue) { $ProvidedValue.GetType().Name })
         RecommendedAction = "Review the supplied $($ParameterName) parameter value and try again."
     }
     return (New-ADTErrorRecord @naerParams)

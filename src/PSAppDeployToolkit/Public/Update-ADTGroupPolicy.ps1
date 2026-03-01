@@ -68,7 +68,7 @@ function Update-ADTGroupPolicy
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
     }
 
     process
@@ -78,7 +78,7 @@ function Update-ADTGroupPolicy
         {
             # Set up the parameters for Start-ADTProcess.
             $sapParams = @{
-                FilePath = "$([System.Environment]::get_SystemDirectory())\gpupdate.exe"
+                FilePath = "$([System.Environment]::SystemDirectory)\gpupdate.exe"
                 ArgumentList = $('/Target:Computer'; if ($Force) { '/Force' })
                 InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                 CreateNoWindow = $true
@@ -110,7 +110,7 @@ function Update-ADTGroupPolicy
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
                 }
             }
             else
@@ -161,7 +161,7 @@ function Update-ADTGroupPolicy
                 }
                 catch
                 {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
                 }
             }
             else

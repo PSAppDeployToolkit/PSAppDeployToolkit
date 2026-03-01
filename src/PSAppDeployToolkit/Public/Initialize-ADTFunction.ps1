@@ -75,13 +75,13 @@ function Initialize-ADTFunction
         )
 
         # Directly go up the scope tree if its an in-session function.
-        if ($SessionState.Equals($ExecutionContext.get_SessionState()))
+        if ($SessionState.Equals($ExecutionContext.SessionState))
         {
             Set-Variable -Name $Name -Value $Value -Scope 2 -Force -Confirm:$false -WhatIf:$false
         }
         else
         {
-            $SessionState.get_PSVariable().Set($Name, $Value)
+            $SessionState.PSVariable.Set($Name, $Value)
         }
     }
 
@@ -91,25 +91,25 @@ function Initialize-ADTFunction
     # Write debug log messages.
     if ($InformationPreference -notmatch '^(SilentlyContinue|Ignore)$')
     {
-        Write-ADTLogEntry -Message 'Function Start' -Source $Cmdlet.get_MyInvocation().get_MyCommand().get_Name() -DebugMessage
-        if ($Cmdlet.get_MyInvocation().get_BoundParameters().get_Count())
+        Write-ADTLogEntry -Message 'Function Start' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
+        if ($Cmdlet.MyInvocation.BoundParameters.Count)
         {
-            $CmdletBoundParameters = $Cmdlet.get_MyInvocation().get_BoundParameters() | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.get_Key())]" } }, @{ Label = 'Value'; Expression = { $_.get_Value() }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.get_Value()) { $_.get_Value().GetType().get_Name() } }; Alignment = 'Left' } -AutoSize -Wrap | Out-String -Width ([System.Int32]::MaxValue)
-            Write-ADTLogEntry -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.get_MyInvocation().get_MyCommand().get_Name() -DebugMessage
+            $CmdletBoundParameters = $Cmdlet.MyInvocation.BoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { if ($_.Value) { $_.Value.GetType().Name } }; Alignment = 'Left' } -AutoSize -Wrap | Out-String -Width ([System.Int32]::MaxValue)
+            Write-ADTLogEntry -Message "Function invoked with bound parameter(s):`n$CmdletBoundParameters" -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
         }
         else
         {
-            Write-ADTLogEntry -Message 'Function invoked without any bound parameters.' -Source $Cmdlet.get_MyInvocation().get_MyCommand().get_Name() -DebugMessage
+            Write-ADTLogEntry -Message 'Function invoked without any bound parameters.' -Source $Cmdlet.MyInvocation.MyCommand.Name -DebugMessage
         }
     }
 
     # Amend the caller's $ErrorActionPreference to archive off their provided value so we can always stop on a dime.
     # For the caller-provided values, we deliberately use a string value to escape issues when 'Ignore' is passed.
     # https://github.com/PowerShell/PowerShell/issues/1759#issuecomment-442916350
-    if ($Cmdlet.get_MyInvocation().get_BoundParameters().ContainsKey('ErrorAction'))
+    if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('ErrorAction'))
     {
         # Caller's value directly against the function.
-        Set-CallerVariable -Name OriginalErrorAction -Value $Cmdlet.get_MyInvocation().get_BoundParameters().ErrorAction.ToString()
+        Set-CallerVariable -Name OriginalErrorAction -Value $Cmdlet.MyInvocation.BoundParameters.ErrorAction.ToString()
     }
     elseif ($PSBoundParameters.ContainsKey('ErrorAction'))
     {

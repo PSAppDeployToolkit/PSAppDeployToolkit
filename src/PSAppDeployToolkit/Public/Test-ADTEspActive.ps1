@@ -49,7 +49,7 @@ function Test-ADTEspActive
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -61,7 +61,7 @@ function Test-ADTEspActive
             try
             {
                 # Test whether wwahost.exe is running. This is responsible for displaying the ESP.
-                if (!($wwaHostProcess = [System.Diagnostics.Process]::GetProcessesByName('wwahost')).get_Length())
+                if (!($wwaHostProcess = [System.Diagnostics.Process]::GetProcessesByName('wwahost')).Length)
                 {
                     Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [There is no wwahost process currently running]."
                     return $false
@@ -82,14 +82,14 @@ function Test-ADTEspActive
                 }
 
                 # Return early if the wwahost process is not owned by the currently logged on user.
-                if (!($wwaHostProcess | & { process { if ($_.get_SessionId() -eq $runAsActiveUser.SessionId) { return $_ } } } | Select-Object -First 1))
+                if (!($wwaHostProcess | & { process { if ($_.SessionId -eq $runAsActiveUser.SessionId) { return $_ } } } | Select-Object -First 1))
                 {
                     Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [The current wwahost process is not running as the actively logged on user]."
                     return $false
                 }
 
                 # Test whether there's active ESP data for the current user.
-                if (!($espData = Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\$($runAsActiveUser.get_SID())"))
+                if (!($espData = Get-ItemProperty -Path "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\$($runAsActiveUser.SID)"))
                 {
                     Write-ADTLogEntry -Message "Current ESP state is [$false]. Reason: [There is no ESP data for the actively logged on user]."
                     return $false
@@ -109,7 +109,7 @@ function Test-ADTEspActive
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Error determining whether an Enrollment Status Page is active."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Error determining whether an Enrollment Status Page is active."
         }
     }
 

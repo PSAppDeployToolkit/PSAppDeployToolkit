@@ -119,7 +119,7 @@ function Get-ADTWindowTitle
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -127,7 +127,7 @@ function Get-ADTWindowTitle
         # Bypass if no one's logged onto the device.
         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
         }
 
@@ -155,7 +155,7 @@ function Get-ADTWindowTitle
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to get requested window title(s)."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get requested window title(s)."
         }
     }
 

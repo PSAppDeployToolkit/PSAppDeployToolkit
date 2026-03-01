@@ -53,12 +53,12 @@ function Unblock-ADTAppExecution
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = "All scheduled tasks wildcard matching [PSAppDeployToolkit_*_BlockedApps].")]
-        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "$($MyInvocation.get_MyCommand().get_Module().get_Name())_*_BlockedApps" -ErrorAction Ignore)
+        [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
     )
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $uaaeiParams = @{}; if ($Tasks) { $uaaeiParams.Add('Tasks', $Tasks) }
     }
 
@@ -67,7 +67,7 @@ function Unblock-ADTAppExecution
         # Bypass if no admin rights.
         if (!(Test-ADTCallerIsAdmin))
         {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.get_MyCommand().get_Name())], because [User: $([PSADT.AccountManagement.AccountUtilities]::CallerUsername)] is not admin."
+            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([PSADT.AccountManagement.AccountUtilities]::CallerUsername)] is not admin."
             return
         }
 
@@ -81,7 +81,7 @@ function Unblock-ADTAppExecution
             try
             {
                 Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
-                Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.get_MyCommand().get_Name())
+                Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
             }
             catch
             {
@@ -90,7 +90,7 @@ function Unblock-ADTAppExecution
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

@@ -49,7 +49,7 @@ function Remove-ADTFont
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $fontsDir = [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'Fonts')
         $fontsRegKeyPath = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
     }
@@ -69,13 +69,13 @@ function Remove-ADTFont
                     if (!(Test-Path -LiteralPath (Join-Path -Path $fontsDir -ChildPath $item)))
                     {
                         # Get the file name from the registry.
-                        $displayName = $regData.PSObject.get_Properties() | & { process { if ($_.get_Name() -eq $item) { return $_.get_Name() } } } | Select-Object -First 1
-                        $fileName = $regData.PSObject.get_Properties() | & { process { if ($_.get_Name() -eq $displayName) { return $_.get_Value() } } } | Select-Object -First 1
+                        $displayName = $regData.PSObject.Properties | & { process { if ($_.Name -eq $item) { return $_.Name } } } | Select-Object -First 1
+                        $fileName = $regData.PSObject.Properties | & { process { if ($_.Name -eq $displayName) { return $_.Value } } } | Select-Object -First 1
                     }
                     else
                     {
                         # Get the display name from the registry.
-                        $displayName = $regData.PSObject.get_Properties() | & { process { if ($_.get_Value() -eq $item) { return $_.get_Name() } } } | Select-Object -First 1
+                        $displayName = $regData.PSObject.Properties | & { process { if ($_.Value -eq $item) { return $_.Name } } } | Select-Object -First 1
                         $fileName = $item
                     }
 
@@ -107,7 +107,7 @@ function Remove-ADTFont
             {
                 $iafehParams = @{
                     Cmdlet = $PSCmdlet
-                    SessionState = $ExecutionContext.get_SessionState()
+                    SessionState = $ExecutionContext.SessionState
                     ErrorRecord = $_
                     LogMessage = "Failed to uninstall font [$item]."
                 }

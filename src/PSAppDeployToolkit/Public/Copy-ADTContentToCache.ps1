@@ -61,7 +61,7 @@ function Copy-ADTContentToCache
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Path', 'PSPath')]
-        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).get_InstallName())"
+        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
     )
 
     begin
@@ -75,7 +75,7 @@ function Copy-ADTContentToCache
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -101,7 +101,7 @@ function Copy-ADTContentToCache
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to create cache folder [$LiteralPath]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create cache folder [$LiteralPath]."
                 return
             }
         }
@@ -121,7 +121,7 @@ function Copy-ADTContentToCache
             try
             {
                 # Check if source and destination are the same (already running from cache)
-                if ((Resolve-Path $scriptDir).get_Path() -eq (Resolve-Path $LiteralPath).get_Path())
+                if ((Resolve-Path $scriptDir).Path -eq (Resolve-Path $LiteralPath).Path)
                 {
                     Write-ADTLogEntry -Message "Source and destination are the same path [$LiteralPath]. Skipping copy operation."
                 }
@@ -129,8 +129,8 @@ function Copy-ADTContentToCache
                 {
                     Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $LiteralPath -Recurse
                 }
-                $adtSession.set_DirFiles((Join-Path -Path $LiteralPath -ChildPath Files))
-                $adtSession.set_DirSupportFiles((Join-Path -Path $LiteralPath -ChildPath SupportFiles))
+                $adtSession.DirFiles = Join-Path -Path $LiteralPath -ChildPath Files
+                $adtSession.DirSupportFiles = Join-Path -Path $LiteralPath -ChildPath SupportFiles
             }
             catch
             {
@@ -139,7 +139,7 @@ function Copy-ADTContentToCache
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to copy toolkit content to cache folder [$LiteralPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to copy toolkit content to cache folder [$LiteralPath]."
         }
     }
 

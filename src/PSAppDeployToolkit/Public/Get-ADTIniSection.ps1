@@ -75,7 +75,7 @@ function Get-ADTIniSection
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -87,12 +87,12 @@ function Get-ADTIniSection
             {
                 # Get the section from the INI file
                 $iniSection = [PSADT.Utilities.IniUtilities]::GetSection($FilePath, $Section)
-                if ($null -eq $iniSection -or $iniSection.get_Count() -eq 0)
+                if ($null -eq $iniSection -or $iniSection.Count -eq 0)
                 {
                     Write-ADTLogEntry -Message "INI section is empty."
                     return
                 }
-                Write-ADTLogEntry -Message "INI section content: $($iniSection.GetEnumerator() | & { process { "`n$($_.get_Key())=$($_.get_Value())" } })"
+                Write-ADTLogEntry -Message "INI section content: $($iniSection.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } })"
                 return $iniSection
             }
             catch
@@ -102,7 +102,7 @@ function Get-ADTIniSection
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to read INI section."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to read INI section."
         }
     }
 

@@ -68,7 +68,7 @@ function Private:Exit-ADTInvocation
 
     # If a callback failed and we're in a proper console, forcibly exit the process.
     # The proper closure of a blocking dialog can stall a traditional exit indefinitely.
-    if ($Force -or ($Host.get_Name().Equals('ConsoleHost') -and ($callbackErrors -or $clientOpen)))
+    if ($Force -or ($Host.Name.Equals('ConsoleHost') -and ($callbackErrors -or $clientOpen)))
     {
         [System.Environment]::Exit($ExitCode)
     }

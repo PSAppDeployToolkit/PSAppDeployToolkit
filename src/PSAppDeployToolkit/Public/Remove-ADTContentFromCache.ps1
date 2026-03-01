@@ -51,7 +51,7 @@ function Remove-ADTContentFromCache
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Path', 'PSPath')]
-        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).get_InstallName())"
+        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
     )
 
     begin
@@ -65,7 +65,7 @@ function Remove-ADTContentFromCache
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -86,8 +86,8 @@ function Remove-ADTContentFromCache
             try
             {
                 Remove-Item -LiteralPath $LiteralPath -Recurse -Force
-                $adtSession.set_DirFiles((Join-Path -Path $scriptDir -ChildPath Files))
-                $adtSession.set_DirSupportFiles((Join-Path -Path $scriptDir -ChildPath SupportFiles))
+                $adtSession.DirFiles = Join-Path -Path $scriptDir -ChildPath Files
+                $adtSession.DirSupportFiles = Join-Path -Path $scriptDir -ChildPath SupportFiles
             }
             catch
             {
@@ -96,7 +96,7 @@ function Remove-ADTContentFromCache
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$LiteralPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove cache folder [$LiteralPath]."
         }
     }
 

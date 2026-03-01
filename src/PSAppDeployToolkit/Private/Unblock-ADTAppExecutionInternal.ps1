@@ -27,7 +27,7 @@ function Private:Unblock-ADTAppExecutionInternal
                 return
             }
 
-            if ($_.PSObject.get_Properties().get_Name().Contains('FilterFullPath'))
+            if ($_.PSObject.Properties.Name.Contains('FilterFullPath'))
             {
                 Write-Verbose -Message "Removing the Image File Execution Options registry key to unblock execution of [$($_.FilterFullPath)]."
                 Remove-ItemProperty -LiteralPath $_.PSParentPath -Name UseFilter -Verbose:$false
@@ -51,7 +51,7 @@ function Private:Unblock-ADTAppExecutionInternal
     }
 
     # Remove the scheduled task if it exists.
-    switch ($PSCmdlet.get_ParameterSetName())
+    switch ($PSCmdlet.ParameterSetName)
     {
         TaskName
         {

@@ -88,15 +88,15 @@ function Set-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -104,11 +104,11 @@ function Set-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized', 'DontChange')]
@@ -124,7 +124,7 @@ function Set-ADTShortcut
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -139,7 +139,7 @@ function Set-ADTShortcut
             try
             {
                 # Make sure .NET's current directory is synced with PowerShell's.
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).get_ProviderPath())
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
                 if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
                 {
                     $URLFile = [System.IO.File]::ReadAllLines($LiteralPath) | & {
@@ -247,7 +247,7 @@ function Set-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to change the shortcut [$LiteralPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to change the shortcut [$LiteralPath]."
         }
     }
 

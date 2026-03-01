@@ -73,5 +73,5 @@ function New-ADTLogFileName
     {
         return $adtSession.NewLogFileName($Discriminator)
     }
-    return [System.IO.Path]::Combine($adtSession.get_LogPath(), $adtSession.NewLogFileName($Discriminator))
+    return [System.IO.Path]::Combine($adtSession.LogPath, $adtSession.NewLogFileName($Discriminator))
 }

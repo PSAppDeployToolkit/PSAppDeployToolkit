@@ -94,11 +94,11 @@ function New-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -106,11 +106,11 @@ function New-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized')]
@@ -126,7 +126,7 @@ function New-ADTShortcut
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -136,7 +136,7 @@ function New-ADTShortcut
         {
             try
             {
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).get_ProviderPath())
+                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
                 $FullPath = [System.IO.Path]::GetFullPath($LiteralPath)
             }
             catch
@@ -146,7 +146,7 @@ function New-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
             return
         }
 
@@ -262,7 +262,7 @@ function New-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to create shortcut [$LiteralPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to create shortcut [$LiteralPath]."
         }
     }
 

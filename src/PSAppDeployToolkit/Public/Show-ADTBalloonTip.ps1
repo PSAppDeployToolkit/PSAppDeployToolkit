@@ -118,14 +118,14 @@ function Show-ADTBalloonTip
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $adtConfig = Get-ADTConfig
         $forced = $false
 
         # Set up defaults if not specified.
         $BalloonTipTitle = if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
         {
-            $adtSession.get_InstallTitle()
+            $adtSession.InstallTitle
         }
         else
         {
@@ -148,33 +148,33 @@ function Show-ADTBalloonTip
                 # Skip balloon if in silent mode, disabled in the config, a presentation is detected, or there's no logged on user.
                 if (!$adtConfig.UI.BalloonNotifications)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
                     return
                 }
                 if (Test-ADTEspActive -InformationAction SilentlyContinue)
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is an active Enrollment Status Page (ESP) on the system."
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is an active Enrollment Status Page (ESP) on the system."
                     return
                 }
                 if ($adtSession -and $adtSession.IsSilent())
                 {
                     if (!$Force)
                     {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Mode: $($adtSession.get_DeployMode())]. BalloonTipText: $BalloonTipText"
+                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. BalloonTipText: $BalloonTipText"
                         return
                     }
                     $forced = $true
                 }
                 if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                 {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
+                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
                     return
                 }
                 if (Test-ADTUserIsBusy)
                 {
                     if (!$Force)
                     {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
+                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
                         return
                     }
                     $forced = $true
@@ -207,7 +207,7 @@ function Show-ADTBalloonTip
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

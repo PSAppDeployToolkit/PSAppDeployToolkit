@@ -83,11 +83,11 @@ function Show-ADTInstallationProgress
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StatusMessageDetail = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$StatusMessageDetail = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -141,24 +141,24 @@ function Show-ADTInstallationProgress
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $errRecord = $null
 
         # Initialise the string table.
         $sessionState = if ($adtSession)
         {
-            $adtSession.get_SessionState()
+            $adtSession.SessionState
         }
         if ($null -eq $sessionState)
         {
-            $sessionState = $PSCmdlet.get_SessionState()
+            $sessionState = $PSCmdlet.SessionState
         }
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
         [System.String]$deploymentType = if ($adtSession)
         {
-            $adtSession.get_DeploymentType()
+            $adtSession.DeploymentType
         }
         else
         {
@@ -168,7 +168,7 @@ function Show-ADTInstallationProgress
         # Set up defaults if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.get_InstallTitle())
+            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
@@ -189,14 +189,14 @@ function Show-ADTInstallationProgress
         # Return early in silent mode.
         if ($adtSession -and $adtSession.IsSilent())
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) [Mode: $($adtSession.get_DeployMode())]. Status message: $($PSBoundParameters.StatusMessage)"
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Status message: $($PSBoundParameters.StatusMessage)"
             return
         }
 
         # Bypass if no one's logged on to answer the dialog.
         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
-            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
             return
         }
 
@@ -302,7 +302,7 @@ function Show-ADTInstallationProgress
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord ($errRecord = $_)
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_)
         }
         finally
         {

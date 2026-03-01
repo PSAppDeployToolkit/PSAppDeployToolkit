@@ -148,7 +148,7 @@ function Start-ADTMspProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -158,7 +158,7 @@ function Start-ADTMspProcessAsUser
                 }
                 return $true
             })]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -195,7 +195,7 @@ function Start-ADTMspProcessAsUser
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -207,7 +207,7 @@ function Start-ADTMspProcessAsUser
         }
 
         # Just farm it out to Start-ADTMspProcess as it can do it all.
-        if (!$PSCmdlet.ShouldProcess("MSP file [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.get_NTAccount())]", 'Patch'))
+        if (!$PSCmdlet.ShouldProcess("MSP file [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]", 'Patch'))
         {
             return
         }

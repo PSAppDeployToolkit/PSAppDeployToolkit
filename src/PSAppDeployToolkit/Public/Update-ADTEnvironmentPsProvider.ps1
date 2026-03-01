@@ -49,12 +49,12 @@ function Update-ADTEnvironmentPsProvider
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Determine the user SID to base things off of.
         $userSid = if (($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
         {
-            $runAsActiveUser.get_SID()
+            $runAsActiveUser.SID
         }
         else
         {
@@ -73,12 +73,12 @@ function Update-ADTEnvironmentPsProvider
                 Get-ItemProperty -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment', "Microsoft.PowerShell.Core\Registry::HKEY_USERS\$userSid\Environment" | & {
                     process
                     {
-                        $_.PSObject.get_Properties() | & {
+                        $_.PSObject.Properties | & {
                             process
                             {
-                                if ($_.get_Name() -notmatch '^PS((Parent)?Path|ChildName|Provider)$')
+                                if ($_.Name -notmatch '^PS((Parent)?Path|ChildName|Provider)$')
                                 {
-                                    Set-Item -LiteralPath "Microsoft.PowerShell.Core\Environment::$($_.get_Name())" -Value $_.get_Value()
+                                    Set-Item -LiteralPath "Microsoft.PowerShell.Core\Environment::$($_.Name)" -Value $_.Value
                                 }
                             }
                         }
@@ -95,7 +95,7 @@ function Update-ADTEnvironmentPsProvider
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to refresh the environment variables for this PowerShell session."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to refresh the environment variables for this PowerShell session."
         }
     }
 

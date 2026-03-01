@@ -177,7 +177,7 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $true)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -188,7 +188,7 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
@@ -261,9 +261,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [ValidateScript({
-                if ($_.get_TotalMilliseconds() -lt 1)
+                if ($_.TotalMilliseconds -lt 1)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "The `-Timeout` parameter expects a `[System.TimeSpan]` object of 1ms or above; the supplied value of $($_.get_Ticks()) ticks equates to $($_.get_TotalMilliSeconds()) milliseconds. Try `-Timeout (New-Timespan -Seconds $($_.get_Ticks()))` instead."))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "The `-Timeout` parameter expects a `[System.TimeSpan]` object of 1ms or above; the supplied value of $($_.Ticks) ticks equates to $($_.TotalMilliSeconds) milliseconds. Try `-Timeout (New-Timespan -Seconds $($_.Ticks))` instead."))
                 }
                 return !!$_
             })]
@@ -336,7 +336,7 @@ function Start-ADTProcessAsUser
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -348,7 +348,7 @@ function Start-ADTProcessAsUser
         }
 
         # Just farm it out to Start-ADTProcess as it can do it all.
-        if (!$PSCmdlet.ShouldProcess("Process [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.get_NTAccount())]", 'Execute'))
+        if (!$PSCmdlet.ShouldProcess("Process [$FilePath] as user [$($PSBoundParameters.RunAsActiveUser.NTAccount)]", 'Execute'))
         {
             return
         }

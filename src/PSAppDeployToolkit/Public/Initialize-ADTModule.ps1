@@ -71,7 +71,7 @@ function Initialize-ADTModule
     begin
     {
         # Log our start time to clock the module init duration.
-        $moduleInitStart = [System.DateTime]::get_Now()
+        $moduleInitStart = [System.DateTime]::Now
 
         # Ensure this function isn't being called mid-flight.
         if (Test-ADTSessionActive)
@@ -85,7 +85,7 @@ function Initialize-ADTModule
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -InformationAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -InformationAction SilentlyContinue
         $null = $PSBoundParameters.Remove('ScriptDirectory')
     }
 
@@ -140,7 +140,7 @@ function Initialize-ADTModule
                 $Script:ADT.LastExitCode = 0
 
                 # Calculate how long this process took before finishing.
-                $Script:ADT.Durations.ModuleInit = [System.DateTime]::get_Now() - $moduleInitStart
+                $Script:ADT.Durations.ModuleInit = [System.DateTime]::Now - $moduleInitStart
                 $Script:ADT.Initialized = $true
             }
             catch
@@ -150,7 +150,7 @@ function Initialize-ADTModule
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

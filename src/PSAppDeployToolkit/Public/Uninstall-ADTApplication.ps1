@@ -175,11 +175,11 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -214,10 +214,10 @@ function Uninstall-ADTApplication
     begin
     {
         # Get the InstalledApplication object based on provided input.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
-        if ($PSCmdlet.get_ParameterSetName() -ne 'InstalledApplication')
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        if ($PSCmdlet.ParameterSetName -ne 'InstalledApplication')
         {
-            if (!($PSBoundParameters.get_Keys() -match '^(Name|ProductCode|FilterScript)$'))
+            if (!($PSBoundParameters.Keys -match '^(Name|ProductCode|FilterScript)$'))
             {
                 $naerParams = @{
                     Exception = [System.InvalidOperationException]::new('Either Name, ProductCode or FilterScript are required if not using pipeline.')
@@ -276,15 +276,15 @@ function Uninstall-ADTApplication
         {
             try
             {
-                if ($removeApplication.get_WindowsInstaller())
+                if ($removeApplication.WindowsInstaller)
                 {
-                    if (!$removeApplication.get_ProductCode())
+                    if (!$removeApplication.ProductCode)
                     {
-                        Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.get_DisplayName()) $($removeApplication.get_DisplayVersion())]. Skipping removal."
+                        Write-ADTLogEntry -Message "No ProductCode found for MSI application [$($removeApplication.DisplayName) $($removeApplication.DisplayVersion)]. Skipping removal."
                         continue
                     }
-                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.get_DisplayName())$(if ($removeApplication.get_DisplayVersion() -and !$removeApplication.get_DisplayName().Contains($removeApplication.get_DisplayVersion())) { " $($removeApplication.get_DisplayVersion())" })] with ProductCode [$($removeApplication.get_ProductCode().ToString('B'))]."
-                    if (!$PSCmdlet.ShouldProcess("MSI Application [$($removeApplication.get_DisplayName())]", 'Uninstall'))
+                    Write-ADTLogEntry -Message "Removing MSI application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })] with ProductCode [$($removeApplication.ProductCode.ToString('B'))]."
+                    if (!$PSCmdlet.ShouldProcess("MSI Application [$($removeApplication.DisplayName)]", 'Uninstall'))
                     {
                         continue
                     }
@@ -304,23 +304,23 @@ function Uninstall-ADTApplication
                 else
                 {
                     # Set up the FilePath to use for the uninstall.
-                    $uninstallProperty = if (![System.String]::IsNullOrWhiteSpace($removeApplication.get_QuietUninstallStringFilePath()) -and !$ForceUninstallString)
+                    $uninstallProperty = if (![System.String]::IsNullOrWhiteSpace($removeApplication.QuietUninstallStringFilePath) -and !$ForceUninstallString)
                     {
                         "QuietUninstallString"
                     }
-                    elseif (![System.String]::IsNullOrWhiteSpace($removeApplication.get_UninstallStringFilePath()))
+                    elseif (![System.String]::IsNullOrWhiteSpace($removeApplication.UninstallStringFilePath))
                     {
                         "UninstallString"
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.get_DisplayName())$(if ($removeApplication.get_DisplayVersion() -and !$removeApplication.get_DisplayName().Contains($removeApplication.get_DisplayVersion())) { " $($removeApplication.get_DisplayVersion())" })]. Skipping removal."
+                        Write-ADTLogEntry -Message "No UninstallString found for EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]. Skipping removal."
                         continue
                     }
                     $sapParams.FilePath = $removeApplication."$($uninstallProperty)FilePath"
                     if (!(Test-Path -LiteralPath $sapParams.FilePath -PathType Leaf) -and ($commandPath = Get-Command -Name $sapParams.FilePath -ErrorAction Ignore))
                     {
-                        $sapParams.FilePath = $commandPath.get_Source()
+                        $sapParams.FilePath = $commandPath.Source
                     }
 
                     # Set up the ArgumentList for the uninstall.
@@ -328,7 +328,7 @@ function Uninstall-ADTApplication
                     {
                         $sapParams.ArgumentList = $ArgumentList
                     }
-                    elseif (($null -ne ([System.String[]]$argv = $($removeApplication."$($uninstallProperty)ArgumentList"))) -and ($argv.get_Count() -gt 0))
+                    elseif (($null -ne ([System.String[]]$argv = $($removeApplication."$($uninstallProperty)ArgumentList"))) -and ($argv.Count -gt 0))
                     {
                         $sapParams.ArgumentList = $argv
                     }
@@ -342,7 +342,7 @@ function Uninstall-ADTApplication
                     {
                         if ($sapParams.ContainsKey('ArgumentList'))
                         {
-                            if ($AdditionalArgumentList.get_Length() -eq 1)
+                            if ($AdditionalArgumentList.Length -eq 1)
                             {
                                 $sapParams.ArgumentList += [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($AdditionalArgumentList[0])
                             }
@@ -357,14 +357,14 @@ function Uninstall-ADTApplication
                         }
                     }
 
-                    Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.get_DisplayName())$(if ($removeApplication.get_DisplayVersion() -and !$removeApplication.get_DisplayName().Contains($removeApplication.get_DisplayVersion())) { " $($removeApplication.get_DisplayVersion())" })]."
-                    if (!$PSCmdlet.ShouldProcess("EXE Application [$($removeApplication.get_DisplayName())]", 'Uninstall'))
+                    Write-ADTLogEntry -Message "Removing EXE application [$($removeApplication.DisplayName)$(if ($removeApplication.DisplayVersion -and !$removeApplication.DisplayName.Contains($removeApplication.DisplayVersion)) { " $($removeApplication.DisplayVersion)" })]."
+                    if (!$PSCmdlet.ShouldProcess("EXE Application [$($removeApplication.DisplayName)]", 'Uninstall'))
                     {
                         continue
                     }
                     try
                     {
-                        Start-ADTProcess @sapParams -CreateNoWindow:(![PSADT.FileSystem.ExecutableInfo]::Get($sapParams.FilePath).get_Subsystem().Equals([PSADT.Interop.IMAGE_SUBSYSTEM]::IMAGE_SUBSYSTEM_WINDOWS_GUI)) -ErrorAction $OriginalErrorAction
+                        Start-ADTProcess @sapParams -CreateNoWindow:(![PSADT.FileSystem.ExecutableInfo]::Get($sapParams.FilePath).Subsystem.Equals([PSADT.Interop.IMAGE_SUBSYSTEM]::IMAGE_SUBSYSTEM_WINDOWS_GUI)) -ErrorAction $OriginalErrorAction
                     }
                     catch
                     {
@@ -374,7 +374,7 @@ function Uninstall-ADTApplication
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }

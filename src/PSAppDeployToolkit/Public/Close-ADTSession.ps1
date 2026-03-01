@@ -92,13 +92,13 @@ function Close-ADTSession
 
         # Make this function continue on error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         # Change the install phase now that we're on the way out.
-        $adtSession.set_InstallPhase('Finalization')
+        $adtSession.InstallPhase = 'Finalization'
 
         # Update the session's exit code with the provided value.
         if ($PSBoundParameters.ContainsKey('ExitCode') -and (!$adtSession.GetExitCode() -or !$ExitCode.Equals(60001)))
@@ -123,10 +123,10 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.get_Name())]."
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]."
                 }
             }
-            foreach ($callback in $(if ($Script:ADT.Sessions.get_Count().Equals(1)) { $Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnFinish) }))
+            foreach ($callback in $(if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnFinish) }))
             {
                 try
                 {
@@ -141,7 +141,7 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.get_Name())]."
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.Name)]."
                 }
             }
         )
@@ -160,7 +160,7 @@ function Close-ADTSession
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.get_InstallName())]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while closing ADTSession for [$($adtSession.InstallName)]."
             $ExitCode = 60001
         }
         finally
@@ -181,7 +181,7 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failure occurred while invoking post-close callback [$($callback.get_Name())]."
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking post-close callback [$($callback.Name)]."
                 }
             }
             $null = $Script:ADT.Sessions.Remove($adtSession)
@@ -192,9 +192,9 @@ function Close-ADTSession
         $Global:LASTEXITCODE = $ExitCode
 
         # Hand over to our backend closure routine if this was the last session.
-        if (!$Script:ADT.Sessions.get_Count())
+        if (!$Script:ADT.Sessions.Count)
         {
-            Exit-ADTInvocation -ExitCode $ExitCode -NoShellExit:($NoShellExit -or !$adtSession.CanExitOnClose()) -Force:($Force -or ($Host.get_Name().Equals('ConsoleHost') -and ($preCloseErrors -or $postCloseErrors)))
+            Exit-ADTInvocation -ExitCode $ExitCode -NoShellExit:($NoShellExit -or !$adtSession.CanExitOnClose()) -Force:($Force -or ($Host.Name.Equals('ConsoleHost') -and ($preCloseErrors -or $postCloseErrors)))
         }
 
         # If we're still here and are to pass through the exit code, do so.

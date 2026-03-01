@@ -191,7 +191,7 @@ function Start-ADTMsiProcess
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
@@ -225,7 +225,7 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -289,7 +289,7 @@ function Start-ADTMsiProcess
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -299,7 +299,7 @@ function Start-ADTMsiProcess
                 }
                 return $true
             })]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Repair', 'Reinstall')]
@@ -399,7 +399,7 @@ function Start-ADTMsiProcess
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession; $adtConfig = Get-ADTConfig
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -413,15 +413,15 @@ function Start-ADTMsiProcess
                 Write-ADTLogEntry -Message "Executing MSI action [$Action]..."
 
                 # If the MSI is in the Files directory, set the full path to the MSI.
-                $msiProduct = switch ($PSCmdlet.get_ParameterSetName())
+                $msiProduct = switch ($PSCmdlet.ParameterSetName)
                 {
                     { $_.EndsWith('FilePath') }
                     {
                         if (Test-Path -LiteralPath $FilePath -PathType Leaf)
                         {
-                            (Get-Item -LiteralPath $FilePath).get_FullName()
+                            (Get-Item -LiteralPath $FilePath).FullName
                         }
-                        elseif ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.get_DirFiles()) -and (Test-Path -LiteralPath ($dirFilesPath = (Join-Path -Path $adtSession.get_DirFiles() -ChildPath $FilePath).Trim()) -PathType Leaf))
+                        elseif ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles) -and (Test-Path -LiteralPath ($dirFilesPath = (Join-Path -Path $adtSession.DirFiles -ChildPath $FilePath).Trim()) -PathType Leaf))
                         {
                             $dirFilesPath
                         }
@@ -458,9 +458,9 @@ function Start-ADTMsiProcess
                     # Iterate transforms.
                     if ($Transforms)
                     {
-                        for ($i = 0; $i -lt $Transforms.get_Length(); $i++)
+                        for ($i = 0; $i -lt $Transforms.Length; $i++)
                         {
-                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).get_DirectoryName() -ChildPath $Transforms[$i].Replace('.\', [System.Management.Automation.Language.NullString]::get_Value())).Trim()) -PathType Leaf)
+                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Transforms[$i].Replace('.\', [System.Management.Automation.Language.NullString]::Value)).Trim()) -PathType Leaf)
                             {
                                 $Transforms[$i] = $fullPath
                             }
@@ -470,9 +470,9 @@ function Start-ADTMsiProcess
                     # Iterate patches.
                     if ($Patches)
                     {
-                        for ($i = 0; $i -lt $Patches.get_Length(); $i++)
+                        for ($i = 0; $i -lt $Patches.Length; $i++)
                         {
-                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).get_DirectoryName() -ChildPath $Patches[$i].Replace('.\', [System.Management.Automation.Language.NullString]::get_Value())).Trim()) -PathType Leaf)
+                            if (Test-Path -LiteralPath ($fullPath = (Join-Path -Path (Get-Item -LiteralPath $msiProduct).DirectoryName -ChildPath $Patches[$i].Replace('.\', [System.Management.Automation.Language.NullString]::Value)).Trim()) -PathType Leaf)
                             {
                                 $Patches[$i] = $fullPath
                             }
@@ -519,7 +519,7 @@ function Start-ADTMsiProcess
                         if ($installedApps = Get-ADTApplication -ProductCode $msiProductCode -IncludeUpdatesAndHotfixes:$IncludeUpdatesAndHotfixes -InformationAction SilentlyContinue)
                         {
                             # We found the app normally. Make sure we've only got one (having more should be an impossibility).
-                            if (($installedApps | Measure-Object).get_Count() -gt 1)
+                            if (($installedApps | Measure-Object).Count -gt 1)
                             {
                                 $naerParams = @{
                                     Exception = [System.InvalidProgramException]::new("More than one InstalledApplication object was found for product code [$msiProductCode].")
@@ -533,7 +533,7 @@ function Start-ADTMsiProcess
                             Write-ADTLogEntry -Message "Found an installed instance of the product via [Get-ADTApplication -ProductCode]."
                             !!($InstalledApplication = $installedApps)
                         }
-                        elseif ($msiProductCode.get_Length() -eq 1 -and ($msiProductState = [PSADT.WindowsInstaller.MsiUtilities]::QueryProductState($msiProductCode[0])).Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT))
+                        elseif ($msiProductCode.Length -eq 1 -and ($msiProductState = [PSADT.WindowsInstaller.MsiUtilities]::QueryProductState($msiProductCode[0])).Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT))
                         {
                             # We have an installed MSI that seemingly has no ARP entry. See if we've got any info in the registry for it for logging purposes, then report we found it.
                             if (!$msiPropertyTable -and ($regPropertyTable = Get-ADTRegistryKey -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Classes\Installer\Products\$([PSADT.WindowsInstaller.MsiUtilities]::CompressGuid($msiProductCode[0]))"))
@@ -546,10 +546,10 @@ function Start-ADTMsiProcess
                             Write-ADTLogEntry -Message "Found an installed instance of the product via [MsiQueryProductState()]."
                             $msiProductState.Equals([PSADT.Interop.INSTALLSTATE]::INSTALLSTATE_DEFAULT)
                         }
-                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.get_WindowsInstaller() -and $_.get_DisplayName().Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.get_DisplayVersion()) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -InformationAction SilentlyContinue))
+                        elseif ($msiPropertyTable -and ($installedApps = Get-ADTApplication -FilterScript { $_.WindowsInstaller -and $_.DisplayName.Equals($msiPropertyTable.ProductName) -and (([System.Version]$_.DisplayVersion) -ge ([System.Version]$msiPropertyTable.ProductVersion)) } -InformationAction SilentlyContinue))
                         {
                             # We found the app normally. Make sure we've only got one (having more should be an impossibility).
-                            if (($installedApps | Measure-Object).get_Count() -gt 1)
+                            if (($installedApps | Measure-Object).Count -gt 1)
                             {
                                 $naerParams = @{
                                     Exception = [System.InvalidProgramException]::new("More than one InstalledApplication object was found for MSI application [$($msiPropertyTable.ProductName)] with version [$($msiPropertyTable.ProductVersion)].")
@@ -606,7 +606,7 @@ function Start-ADTMsiProcess
                     # Strip any found extension off to make the file name easier to handle.
                     $LogFileName -replace ([System.Text.RegularExpressions.Regex]::Escape($logFileExtension))
                 }
-                elseif (!$adtSession -or !$adtSession.get_DisableLogging())
+                elseif (!$adtSession -or !$adtSession.DisableLogging)
                 {
                     if ($InstalledApplication)
                     {
@@ -614,22 +614,22 @@ function Start-ADTMsiProcess
                         {
                             if ($msiPatchData.ChildNodes.LocalName.Contains('UpdatedVersion'))
                             {
-                                (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.get_DisplayName() + '_' + ($msiPatchData.UpdatedVersion | Select-Object -First 1))) -replace '\s+'
+                                (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + ($msiPatchData.UpdatedVersion | Select-Object -First 1))) -replace '\s+'
                             }
                             else
                             {
-                                (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.get_DisplayName()) -replace '\s+'
+                                (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
                             }
                         }
                         else
                         {
-                            if (![System.String]::IsNullOrWhiteSpace($InstalledApplication.get_DisplayVersion()))
+                            if (![System.String]::IsNullOrWhiteSpace($InstalledApplication.DisplayVersion))
                             {
-                                (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.get_DisplayName() + '_' + $InstalledApplication.get_DisplayVersion())) -replace '\s+'
+                                (Remove-ADTInvalidFileNameChars -Name ($InstalledApplication.DisplayName + '_' + $InstalledApplication.DisplayVersion)) -replace '\s+'
                             }
                             else
                             {
-                                (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.get_DisplayName()) -replace '\s+'
+                                (Remove-ADTInvalidFileNameChars -Name $InstalledApplication.DisplayName) -replace '\s+'
                             }
                         }
                     }
@@ -669,11 +669,11 @@ function Start-ADTMsiProcess
                         {
                             # Get the log directory from the session. This will factor in
                             # whether we're compressing logs, or logging to a subfolder.
-                            if (!(Test-Path -LiteralPath $adtSession.get_LogPath() -PathType Container))
+                            if (!(Test-Path -LiteralPath $adtSession.LogPath -PathType Container))
                             {
-                                $null = [System.IO.Directory]::CreateDirectory($adtSession.get_LogPath())
+                                $null = [System.IO.Directory]::CreateDirectory($adtSession.LogPath)
                             }
-                            (Join-Path -Path $adtSession.get_LogPath() -ChildPath $logFile).Trim()
+                            (Join-Path -Path $adtSession.LogPath -ChildPath $logFile).Trim()
                         }
                         else
                         {
@@ -706,11 +706,11 @@ function Start-ADTMsiProcess
                     # Append the username to the log file name if the toolkit is not running as an administrator, since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                     if ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
                     {
-                        $logPath += "_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.get_UserName())"
+                        $logPath += "_$(Remove-ADTInvalidFileNameChars -Name $RunAsActiveUser.UserName)"
                     }
-                    elseif ((![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -and [System.Environment]::get_UserInteractive()) -or !(Test-ADTCallerIsAdmin))
+                    elseif ((![PSADT.AccountManagement.AccountUtilities]::CallerIsLocalSystem -and [System.Environment]::UserInteractive) -or !(Test-ADTCallerIsAdmin))
                     {
-                        $logPath += "_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::get_UserName()))"
+                        $logPath += "_$(Remove-ADTInvalidFileNameChars -Name ([System.Environment]::UserName))"
                     }
                 }
 
@@ -768,7 +768,7 @@ function Start-ADTMsiProcess
                 }
 
                 # Set the working directory of the MSI.
-                if ($PSCmdlet.get_ParameterSetName().EndsWith('FilePath') -and !$workingDirectory)
+                if ($PSCmdlet.ParameterSetName.EndsWith('FilePath') -and !$workingDirectory)
                 {
                     $WorkingDirectory = [System.IO.Path]::GetDirectoryName($msiProduct)
                 }
@@ -792,7 +792,7 @@ function Start-ADTMsiProcess
                 # Replace default parameters if specified.
                 if ($ArgumentList)
                 {
-                    if ($ArgumentList.get_Length() -eq 1)
+                    if ($ArgumentList.Length -eq 1)
                     {
                         $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($ArgumentList[0]))
                     }
@@ -816,7 +816,7 @@ function Start-ADTMsiProcess
                 # Append parameters to default parameters if specified.
                 if ($AdditionalArgumentList)
                 {
-                    if ($AdditionalArgumentList.get_Length() -eq 1)
+                    if ($AdditionalArgumentList.Length -eq 1)
                     {
                         $msiArgs.AddRange([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($AdditionalArgumentList[0]))
                     }
@@ -841,20 +841,20 @@ function Start-ADTMsiProcess
 
                 # Build the hashtable with the options that will be passed to Start-ADTProcess using splatting.
                 $ExecuteProcessSplat = @{
-                    FilePath = "$([System.Environment]::get_SystemDirectory())\msiexec.exe"
+                    FilePath = "$([System.Environment]::SystemDirectory)\msiexec.exe"
                     ArgumentList = $msiArgs
                 }
                 $PSBoundParameters.GetEnumerator() | & {
                     begin
                     {
-                        [System.String[]]$sapParams = $Script:CommandTable.'Start-ADTProcess'.get_Parameters().get_Keys()
+                        [System.String[]]$sapParams = $Script:CommandTable.'Start-ADTProcess'.Parameters.Keys
                     }
 
                     process
                     {
-                        if ($sapParams.Contains($_.get_Key()) -and !$ExecuteProcessSplat.ContainsKey($_.get_Key()))
+                        if ($sapParams.Contains($_.Key) -and !$ExecuteProcessSplat.ContainsKey($_.Key))
                         {
-                            $ExecuteProcessSplat.Add($_.get_Key(), $_.get_Value())
+                            $ExecuteProcessSplat.Add($_.Key, $_.Value)
                         }
                     }
                 }
@@ -867,7 +867,7 @@ function Start-ADTMsiProcess
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
 
         # If we've got no parameters, we error'd out above.

@@ -77,7 +77,7 @@ function Convert-ADTRegistryPath
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -90,25 +90,25 @@ function Convert-ADTRegistryPath
                 $Script:Registry.PathReplacements.GetEnumerator() | . {
                     process
                     {
-                        if ($Key -match $_.get_Key())
+                        if ($Key -match $_.Key)
                         {
-                            foreach ($regexMatch in ($Script:Registry.PathMatches -replace '^', $_.get_Key()))
+                            foreach ($regexMatch in ($Script:Registry.PathMatches -replace '^', $_.Key))
                             {
-                                $Key = $Key -replace $regexMatch, $_.get_Value()
+                                $Key = $Key -replace $regexMatch, $_.Value
                             }
                         }
                     }
                 }
 
                 # Process the WOW6432Node values if applicable.
-                if ($Wow6432Node -and [System.Environment]::get_Is64BitProcess())
+                if ($Wow6432Node -and [System.Environment]::Is64BitProcess)
                 {
                     $Script:Registry.WOW64Replacements.GetEnumerator() | . {
                         process
                         {
-                            if ($Key -match $_.get_Key())
+                            if ($Key -match $_.Key)
                             {
-                                $Key = $Key -replace $_.get_Key(), $_.get_Value()
+                                $Key = $Key -replace $_.Key, $_.Value
                             }
                         }
                     }
@@ -161,7 +161,7 @@ function Convert-ADTRegistryPath
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

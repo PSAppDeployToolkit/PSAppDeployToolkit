@@ -68,11 +68,11 @@ function Get-ADTBoundParametersAndDefaultValues
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ParameterSetName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ParameterSetName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$HelpMessage = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$HelpMessage = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -85,7 +85,7 @@ function Get-ADTBoundParametersAndDefaultValues
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Internal function for testing parameter attributes.
         function Test-NamedAttributeArgumentAst
@@ -109,19 +109,19 @@ function Get-ADTBoundParametersAndDefaultValues
             )
 
             # Test whether we have AttributeAst objects.
-            if (!($attributes = $Parameter.get_Attributes() | & { process { if ($_ -is [System.Management.Automation.Language.AttributeAst]) { return $_ } } }))
+            if (!($attributes = $Parameter.Attributes | & { process { if ($_ -is [System.Management.Automation.Language.AttributeAst]) { return $_ } } }))
             {
                 return $false
             }
 
             # Test whether we have NamedAttributeArgumentAst objects.
-            if (!($namedArguments = $attributes.get_NamedArguments() | & { process { if ($_.get_ArgumentName().Equals($Argument)) { return $_ } } }))
+            if (!($namedArguments = $attributes.NamedArguments | & { process { if ($_.ArgumentName.Equals($Argument)) { return $_ } } }))
             {
                 return $false
             }
 
             # Test whether any NamedAttributeArgumentAst objects match our value.
-            return $namedArguments.get_Argument().get_Value().Contains($Value)
+            return $namedArguments.Argument.Value.Contains($Value)
         }
     }
 
@@ -132,31 +132,31 @@ function Get-ADTBoundParametersAndDefaultValues
             try
             {
                 # Get the parameters from the provided invocation. This can vary between simple/advanced functions and scripts.
-                $parameters = if ($Invocation.get_MyCommand().get_ScriptBlock().get_Ast() -is [System.Management.Automation.Language.FunctionDefinitionAst])
+                $parameters = if ($Invocation.MyCommand.ScriptBlock.Ast -is [System.Management.Automation.Language.FunctionDefinitionAst])
                 {
                     # Test whether this is a simple or advanced function.
-                    if ($Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_Parameters() -and $Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_Parameters().get_Count())
+                    if ($Invocation.MyCommand.ScriptBlock.Ast.Parameters -and $Invocation.MyCommand.ScriptBlock.Ast.Parameters.Count)
                     {
-                        $Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_Parameters()
+                        $Invocation.MyCommand.ScriptBlock.Ast.Parameters
                     }
-                    elseif ($Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_Body().get_ParamBlock() -and $Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_Body().get_ParamBlock().get_Parameters().get_Count())
+                    elseif ($Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Parameters.Count)
                     {
-                        $Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_Body().get_ParamBlock().get_Parameters()
+                        $Invocation.MyCommand.ScriptBlock.Ast.Body.ParamBlock.Parameters
                     }
                 }
-                elseif ($Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_ParamBlock() -and $Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_ParamBlock().get_Parameters().get_Count())
+                elseif ($Invocation.MyCommand.ScriptBlock.Ast.ParamBlock -and $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Parameters.Count)
                 {
-                    $Invocation.get_MyCommand().get_ScriptBlock().get_Ast().get_ParamBlock().get_Parameters()
+                    $Invocation.MyCommand.ScriptBlock.Ast.ParamBlock.Parameters
                 }
 
                 # Throw if we don't have any parameters at all.
-                if (!$parameters -or !$parameters.get_Count())
+                if (!$parameters -or !$parameters.Count)
                 {
                     $naerParams = @{
                         Exception = [System.InvalidOperationException]::new("Unable to find parameters within the provided invocation's scriptblock AST.")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'InvocationParametersNotFound'
-                        TargetObject = $Invocation.get_MyCommand().get_ScriptBlock().get_Ast()
+                        TargetObject = $Invocation.MyCommand.ScriptBlock.Ast
                         RecommendedAction = "Please verify your function or script parameter configuration and try again."
                     }
                     throw (New-ADTErrorRecord @naerParams)
@@ -168,23 +168,23 @@ function Get-ADTBoundParametersAndDefaultValues
                 # Inject our already bound parameters into above object.
                 if (!$CommonParameters)
                 {
-                    $Invocation.get_BoundParameters().GetEnumerator() | & {
+                    $Invocation.BoundParameters.GetEnumerator() | & {
                         process
                         {
                             # Filter out common parameters.
-                            if ($Script:PowerShellCommonParameters -notcontains $_.get_Key())
+                            if ($Script:PowerShellCommonParameters -notcontains $_.Key)
                             {
-                                $obj.Add($_.get_Key(), $_.get_Value())
+                                $obj.Add($_.Key, $_.Value)
                             }
                         }
                     }
                 }
                 else
                 {
-                    $Invocation.get_BoundParameters().GetEnumerator() | & {
+                    $Invocation.BoundParameters.GetEnumerator() | & {
                         process
                         {
-                            $obj.Add($_.get_Key(), $_.get_Value())
+                            $obj.Add($_.Key, $_.Value)
                         }
                     }
                 }
@@ -194,40 +194,40 @@ function Get-ADTBoundParametersAndDefaultValues
                     process
                     {
                         # Filter out excluded values.
-                        if ($Exclude -contains $_.get_Name().get_VariablePath().get_UserPath())
+                        if ($Exclude -contains $_.Name.VariablePath.UserPath)
                         {
-                            $null = $obj.Remove($_.get_Name().get_VariablePath().get_UserPath())
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
                         # Filter out values based on the specified parameter set.
                         if ($ParameterSetName -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument ParameterSetName -Value $ParameterSetName))
                         {
-                            $null = $obj.Remove($_.get_Name().get_VariablePath().get_UserPath())
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
                         # Filter out values based on the specified help message.
                         if ($HelpMessage -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument HelpMessage -Value $HelpMessage))
                         {
-                            $null = $obj.Remove($_.get_Name().get_VariablePath().get_UserPath())
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
                         # Filter out parameters already bound.
-                        if ($obj.ContainsKey($_.get_Name().get_VariablePath().get_UserPath()))
+                        if ($obj.ContainsKey($_.Name.VariablePath.UserPath))
                         {
                             return
                         }
 
                         # Filter out parameters without a default value.
-                        if (($null -eq $_.get_DefaultValue()) -or $_.get_DefaultValue().ToString().Equals('[System.Management.Automation.Language.NullString]::get_Value()'))
+                        if (($null -eq $_.DefaultValue) -or $_.DefaultValue.ToString().Equals('[System.Management.Automation.Language.NullString]::Value'))
                         {
                             return
                         }
 
                         # Add the parameter and its value.
-                        $obj.Add($_.get_Name().get_VariablePath().get_UserPath(), $_.get_DefaultValue().SafeGetValue())
+                        $obj.Add($_.Name.VariablePath.UserPath, $_.DefaultValue.SafeGetValue())
                     }
                 }
 
@@ -243,7 +243,7 @@ function Get-ADTBoundParametersAndDefaultValues
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

@@ -55,9 +55,9 @@ function Remove-ADTHashtableNullOrEmptyValues
     # Build a new hashtable with only valid values and then return it to the caller.
     $obj = @{}; foreach ($kvp in $Hashtable.GetEnumerator())
     {
-        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $kvp.get_Value())))
+        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $kvp.Value)))
         {
-            $obj.Add($kvp.get_Key(), $kvp.get_Value())
+            $obj.Add($kvp.Key, $kvp.Value)
         }
     }
     return $obj

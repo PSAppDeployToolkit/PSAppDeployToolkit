@@ -53,7 +53,7 @@ function Set-ADTServiceStartMode
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!$_.get_Name())
+                if (!$_.Name)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
@@ -69,7 +69,7 @@ function Set-ADTServiceStartMode
     begin
     {
         # Re-write StartMode to suit sc.exe.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         New-Variable -Name StartMode -Force -Confirm:$false -Value $(switch ($StartMode)
             {
                 'Automatic' { 'Auto'; break }
@@ -81,8 +81,8 @@ function Set-ADTServiceStartMode
 
     process
     {
-        Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.get_Name())] startup mode to [$StartMode]"))."
-        if (!$PSCmdlet.ShouldProcess($Service.get_Name(), "Set service startup mode to [$StartMode]"))
+        Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
+        if (!$PSCmdlet.ShouldProcess($Service.Name, "Set service startup mode to [$StartMode]"))
         {
             return
         }
@@ -91,10 +91,10 @@ function Set-ADTServiceStartMode
             try
             {
                 # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-                $scResult = & "$([System.Environment]::get_SystemDirectory())\sc.exe" config $Service.get_Name() start= $StartMode 2>&1
+                $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $StartMode 2>&1
                 if (!$Global:LASTEXITCODE)
                 {
-                    Write-ADTLogEntry -Message "Successfully set service [($Service.get_Name())] startup mode to [$StartMode]."
+                    Write-ADTLogEntry -Message "Successfully set service [($Service.Name)] startup mode to [$StartMode]."
                     return
                 }
 
@@ -116,7 +116,7 @@ function Set-ADTServiceStartMode
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

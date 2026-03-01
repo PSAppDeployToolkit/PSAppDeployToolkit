@@ -76,7 +76,7 @@ function Remove-ADTIniSection
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -88,7 +88,7 @@ function Remove-ADTIniSection
                 Write-ADTLogEntry -Message "Removing INI section: [$Section]."
                 if ($PSCmdlet.ShouldProcess("$FilePath\$Section", 'Remove INI section'))
                 {
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($FilePath, $Section, [System.Management.Automation.Language.NullString]::get_Value(), [System.Management.Automation.Language.NullString]::get_Value())
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($FilePath, $Section, [System.Management.Automation.Language.NullString]::Value, [System.Management.Automation.Language.NullString]::Value)
                 }
             }
             catch
@@ -98,7 +98,7 @@ function Remove-ADTIniSection
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to remove INI section."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to remove INI section."
         }
     }
 

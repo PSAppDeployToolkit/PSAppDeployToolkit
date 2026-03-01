@@ -79,7 +79,7 @@ function Get-ADTPEFileArchitecture
     begin
     {
         # Set up required constants for processing each requested file.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         [System.Int32]$PE_POINTER_OFFSET = 60; [System.Int32]$MACHINE_OFFSET = 4
         [System.Byte[]]$data = [System.Byte[]]::new(4096)
     }
@@ -87,9 +87,9 @@ function Get-ADTPEFileArchitecture
     process
     {
         # Grab and cache all files.
-        $files = if (!$PSCmdlet.get_ParameterSetName().Equals('InputObject'))
+        $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            $gciParams = @{ $PSCmdlet.get_ParameterSetName() = Get-Variable -Name $PSCmdlet.get_ParameterSetName() -ValueOnly }
+            $gciParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
             Get-ChildItem @gciParams -File
         }
         else
@@ -105,14 +105,14 @@ function Get-ADTPEFileArchitecture
                 try
                 {
                     # Read the first 4096 bytes of the file.
-                    $stream = [System.IO.FileStream]::new($file.get_FullName(), [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
-                    $null = $stream.Read($data, 0, $data.get_Count())
+                    $stream = [System.IO.FileStream]::new($file.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
+                    $null = $stream.Read($data, 0, $data.Count)
                     $stream.Flush(); $stream.Close()
 
                     # Get the file header from the header's address, factoring in any offsets.
                     $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)
                     $peArchEnum = [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_UNKNOWN; $null = [PSADT.Interop.IMAGE_FILE_MACHINE]::TryParse($peArchValue, [ref]$peArchEnum)
-                    Write-ADTLogEntry -Message "File [$($file.get_FullName())] has a detected file architecture of [$peArchEnum]."
+                    Write-ADTLogEntry -Message "File [$($file.FullName)] has a detected file architecture of [$peArchEnum]."
                     if ($PassThru)
                     {
                         $file | Add-Member -MemberType NoteProperty -Name BinaryType -Value $peArchEnum -Force -PassThru
@@ -129,7 +129,7 @@ function Get-ADTPEFileArchitecture
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }

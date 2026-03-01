@@ -156,7 +156,7 @@ function Start-ADTMspProcess
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -166,7 +166,7 @@ function Start-ADTMspProcess
                 }
                 return $true
             })]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -200,7 +200,7 @@ function Start-ADTMspProcess
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process

@@ -68,12 +68,12 @@ function New-ADTTemplate
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Destination = $ExecutionContext.get_SessionState().get_Path().get_CurrentLocation().get_Path(),
+        [System.String]$Destination = $ExecutionContext.SessionState.Path.CurrentLocation.Path,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = "PSAppDeployToolkit_<ModuleVersion>")]
-        [System.String]$Name = "$($MyInvocation.get_MyCommand().get_Module().get_Name())_$($MyInvocation.get_MyCommand().get_Module().get_Version())",
+        [System.String]$Name = "$($MyInvocation.MyCommand.Module.Name)_$($MyInvocation.MyCommand.Module.Version)",
 
         [Parameter(Mandatory = $false)]
         [ValidateRange(3, 4)]
@@ -92,18 +92,18 @@ function New-ADTTemplate
     begin
     {
         # Initialize the function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Resolve the path to handle setups like ".\", etc.
         # We can't use things like a DirectoryInfo cast as .NET doesn't
         # track when the current location in PowerShell has been changed.
         if (($resolvedDest = Resolve-Path -LiteralPath $Destination -ErrorAction Ignore))
         {
-            $Destination = $resolvedDest.get_Path()
+            $Destination = $resolvedDest.Path
         }
 
         # Set up remaining variables.
-        $moduleName = $MyInvocation.get_MyCommand().get_Module().get_Name()
+        $moduleName = $MyInvocation.MyCommand.Module.Name
         $templatePath = (Join-Path -Path $Destination -ChildPath $Name).Trim()
         $templateModulePath = if ($Version.Equals(3))
         {
@@ -122,14 +122,14 @@ function New-ADTTemplate
             try
             {
                 # If we're running a release module, ensure the psd1 files haven't been tampered with.
-                if ($Script:Module.Compiled -and $Script:Module.Signed -and ($badFiles = Get-ChildItem -LiteralPath $Script:PSScriptRoot -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.get_Status().Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
+                if ($Script:Module.Compiled -and $Script:Module.Signed -and ($badFiles = Get-ChildItem -LiteralPath $Script:PSScriptRoot -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.Status.Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
                 {
                     $naerParams = @{
                         Exception = [System.Security.Cryptography.CryptographicException]::new("One or more files within this module have invalid digital signatures.")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidData
                         ErrorId = 'ADTDataFileSignatureError'
                         TargetObject = $badFiles
-                        RecommendedAction = "Please re-download $($MyInvocation.get_MyCommand().get_Module().get_Name()) and try again."
+                        RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
                     }
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
@@ -162,21 +162,21 @@ function New-ADTTemplate
 
                 # Export default module assets to disk.
                 $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
-                $assets = $Script:ADT.ModuleDefaults.Config.''.get_Ast().get_EndBlock().get_Statements().get_PipelineElements().get_Expression().get_KeyValuePairs().Where({ $_.get_Item1().get_Value().Equals('Assets') }).get_Item2().get_PipelineElements().get_Expression().get_KeyValuePairs()
-                [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $assets.Where({ $_.get_Item1().get_Value().Equals('Banner') }).get_Item2().get_PipelineElements().get_Expression().get_Value())))
-                [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.png", [System.Convert]::FromBase64String(($logo = $assets.Where({ $_.get_Item1().get_Value().Equals('Logo') }).get_Item2().get_PipelineElements().get_Expression().get_Value())))
+                $assets = $Script:ADT.ModuleDefaults.Config.''.Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
+                [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $assets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value)))
+                [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.png", [System.Convert]::FromBase64String(($logo = $assets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value)))
                 $config = [System.Management.Automation.ScriptBlock]::Create($ADT.ModuleDefaults.Config.''.ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png'))
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
                 foreach ($stringData in $ADT.ModuleDefaults.Strings.GetEnumerator())
                 {
-                    if ([System.String]::IsNullOrWhiteSpace($stringData.get_Key()))
+                    if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
                     {
                         continue
                     }
-                    $null = New-Item -Path "$templatePath\Strings\$($stringData.get_Key())" -ItemType Directory -Force
-                    Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.get_Key())\strings.psd1"
+                    $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
+                    Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
                 }
                 Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Strings.'' -LiteralPath "$templatePath\Strings\strings.psd1"
 
@@ -188,9 +188,9 @@ function New-ADTTemplate
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
                     process
                     {
-                        if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.get_FullName())) -match '^# SIG # Begin signature block$')))
+                        if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.FullName)) -match '^# SIG # Begin signature block$')))
                         {
-                            [System.IO.File]::WriteAllLines($_.get_FullName(), $fileLines[0..($fileLines.IndexOf($sigLine) - 2)])
+                            [System.IO.File]::WriteAllLines($_.FullName, $fileLines[0..($fileLines.IndexOf($sigLine) - 2)])
                         }
                     }
                 }
@@ -203,7 +203,7 @@ function New-ADTTemplate
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
                     process
                     {
-                        $_.set_Attributes('ReadOnly')
+                        $_.Attributes = 'ReadOnly'
                     }
                 }
 
@@ -214,7 +214,7 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::get_Value()).Replace('2000-12-31', [System.DateTime]::get_Now().ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
+                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
                 }
                 else
                 {
@@ -241,7 +241,7 @@ function New-ADTTemplate
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

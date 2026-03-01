@@ -120,7 +120,7 @@ function Get-ADTUserProfiles
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $userProfileListRegKey = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList'
         $gipParams = if ($SID)
         {
@@ -241,21 +241,21 @@ function Get-ADTUserProfiles
                                 {
                                     Invoke-ADTAllUsersRegistryAction -UserProfiles $userProfile -InformationAction SilentlyContinue -ScriptBlock {
                                         [PSADT.Types.UserProfileInfo]::new(
-                                            $_.get_NTAccount(),
-                                            $_.get_SID(),
-                                            $_.get_ProfilePath(),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'TEMP' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDrive' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
-                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDriveCommercial' -SID $_.get_SID() -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.get_ProfilePath()),
+                                            $_.NTAccount,
+                                            $_.SID,
+                                            $_.ProfilePath,
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'AppData' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Local AppData' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Desktop' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Personal' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name 'Start Menu' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'TEMP' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDrive' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
+                                            $((Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Environment' -Name 'OneDriveCommercial' -SID $_.SID -DoNotExpandEnvironmentNames) -replace '%USERPROFILE%', $_.ProfilePath),
                                             $(
-                                                if (!($userLocale = Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International' -Name 'LocaleName' -SID $_.get_SID()))
+                                                if (!($userLocale = Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International' -Name 'LocaleName' -SID $_.SID))
                                                 {
-                                                    Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International\User Profile' -Name 'Languages' -SID $_.get_SID() | Select-Object -First 1
+                                                    Get-ADTRegistryKey -Key 'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Control Panel\International\User Profile' -Name 'Languages' -SID $_.SID | Select-Object -First 1
                                                 }
                                                 else
                                                 {
@@ -280,7 +280,7 @@ function Get-ADTUserProfiles
                     }
                     catch
                     {
-                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to enumerate the user profile [$($regProfile.PSChildName)]." -ErrorAction SilentlyContinue
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to enumerate the user profile [$($regProfile.PSChildName)]." -ErrorAction SilentlyContinue
                     }
                 }
 
@@ -307,7 +307,7 @@ function Get-ADTUserProfiles
                         {
                             $userProfile = [PSADT.Types.UserProfileInfo]::new(
                                 'Default',
-                                $userProfile.get_SID(),
+                                $userProfile.SID,
                                 $defaultUserProfilePath,
                                 $(if ($value = $userShellFolders.GetValue('AppData', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $defaultUserProfilePath }),
                                 $(if ($value = $userShellFolders.GetValue('Local AppData', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) { $value -replace '%USERPROFILE%', $defaultUserProfilePath }),
@@ -352,7 +352,7 @@ function Get-ADTUserProfiles
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

@@ -56,15 +56,15 @@ function Get-ADTFileVersion
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
-                if (!$_.get_Exists())
+                if (!$_.Exists)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
                 }
-                if (!$_.get_VersionInfo() -or (!$_.get_VersionInfo().get_FileVersion() -and !$_.get_VersionInfo().get_ProductVersion()))
+                if (!$_.VersionInfo -or (!$_.VersionInfo.FileVersion -and !$_.VersionInfo.ProductVersion))
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not have any version info.'))
                 }
-                return !!$_.get_VersionInfo()
+                return !!$_.VersionInfo
             })]
         [System.IO.FileInfo]$File,
 
@@ -74,18 +74,18 @@ function Get-ADTFileVersion
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
     {
         if ($ProductVersion)
         {
-            Write-ADTLogEntry -Message "Product version is [$($File.get_VersionInfo().get_ProductVersion())]."
-            return $File.get_VersionInfo().get_ProductVersion().Trim()
+            Write-ADTLogEntry -Message "Product version is [$($File.VersionInfo.ProductVersion)]."
+            return $File.VersionInfo.ProductVersion.Trim()
         }
-        Write-ADTLogEntry -Message "File version is [$($File.get_VersionInfo().get_FileVersion())]."
-        return $File.get_VersionInfo().get_FileVersion().Trim()
+        Write-ADTLogEntry -Message "File version is [$($File.VersionInfo.FileVersion)]."
+        return $File.VersionInfo.FileVersion.Trim()
     }
 
     end

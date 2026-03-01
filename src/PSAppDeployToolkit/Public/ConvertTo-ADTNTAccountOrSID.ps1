@@ -114,7 +114,7 @@ function ConvertTo-ADTNTAccountOrSID
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
 
         # Internal worker function for SID to NTAccount translation.
         function Convert-ADTSIDToNTAccount
@@ -137,7 +137,7 @@ function ConvertTo-ADTNTAccountOrSID
                 # Device likely is off the domain network and had no line of sight to a domain controller.
                 # Attempt to rummage through the group policy cache and see what's available to us.
                 # Failing this, throw out the original error as there's not much we can do otherwise.
-                if (!($TargetNtAccount = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { process { if ($_.get_SID().Equals($TargetSid)) { return $_.get_Username() } } } | Select-Object -First 1))
+                if (!($TargetNtAccount = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { process { if ($_.SID.Equals($TargetSid)) { return $_.Username } } } | Select-Object -First 1))
                 {
                     throw
                 }
@@ -166,7 +166,7 @@ function ConvertTo-ADTNTAccountOrSID
                 # Device likely is off the domain network and had no line of sight to a domain controller.
                 # Attempt to rummage through the group policy cache and see what's available to us.
                 # Failing this, throw out the original error as there's not much we can do otherwise.
-                if (!($TargetSid = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { if ($_.get_Username().Equals($TargetNtAccount)) { return $_.get_SID() } } | Select-Object -First 1))
+                if (!($TargetSid = [PSADT.AccountManagement.GroupPolicyAccountInfo]::Get() | & { if ($_.Username.Equals($TargetNtAccount)) { return $_.SID } } | Select-Object -First 1))
                 {
                     throw
                 }
@@ -175,7 +175,7 @@ function ConvertTo-ADTNTAccountOrSID
         }
 
         # Pre-calculate the domain SID.
-        $DomainSid = if ($PSCmdlet.get_ParameterSetName().StartsWith('WellKnownName') -and !$LocalHost)
+        $DomainSid = if ($PSCmdlet.ParameterSetName.StartsWith('WellKnownName') -and !$LocalHost)
         {
             try
             {
@@ -194,7 +194,7 @@ function ConvertTo-ADTNTAccountOrSID
         {
             try
             {
-                switch -regex ($PSCmdlet.get_ParameterSetName())
+                switch -regex ($PSCmdlet.ParameterSetName)
                 {
                     '^SIDToNTAccount'
                     {
@@ -227,7 +227,7 @@ function ConvertTo-ADTNTAccountOrSID
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to convert $msg. It may not be a valid account anymore or there is some other problem."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to convert $msg. It may not be a valid account anymore or there is some other problem."
         }
     }
 

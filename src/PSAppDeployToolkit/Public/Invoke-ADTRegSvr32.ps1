@@ -74,8 +74,8 @@ function Invoke-ADTRegSvr32
     begin
     {
         # Define parameters to pass to regsrv32.exe.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
-        $ActionParameters = switch ($Action = $Host.get_CurrentCulture().get_TextInfo().ToTitleCase($Action.ToLowerInvariant()))
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $ActionParameters = switch ($Action = $Host.CurrentCulture.TextInfo.ToTitleCase($Action.ToLowerInvariant()))
         {
             Register
             {
@@ -115,13 +115,13 @@ function Invoke-ADTRegSvr32
                 }
 
                 # Get the correct path to regsrv32.exe for the system and DLL file.
-                $RegSvr32Path = if ([System.Environment]::get_Is64BitOperatingSystem())
+                $RegSvr32Path = if ([System.Environment]::Is64BitOperatingSystem)
                 {
                     if ($DLLFileBitness -eq [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_AMD64)
                     {
-                        if ([System.Environment]::get_Is64BitProcess())
+                        if ([System.Environment]::Is64BitProcess)
                         {
-                            "$([System.Environment]::get_SystemDirectory())\regsvr32.exe"
+                            "$([System.Environment]::SystemDirectory)\regsvr32.exe"
                         }
                         else
                         {
@@ -135,7 +135,7 @@ function Invoke-ADTRegSvr32
                 }
                 elseif ($DLLFileBitness -eq [PSADT.Interop.IMAGE_FILE_MACHINE]::IMAGE_FILE_MACHINE_I386)
                 {
-                    "$([System.Environment]::get_SystemDirectory())\regsvr32.exe"
+                    "$([System.Environment]::SystemDirectory)\regsvr32.exe"
                 }
                 else
                 {
@@ -159,7 +159,7 @@ function Invoke-ADTRegSvr32
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to $($Action.ToLowerInvariant()) DLL file."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $($Action.ToLowerInvariant()) DLL file."
         }
     }
 

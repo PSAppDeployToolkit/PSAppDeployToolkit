@@ -93,7 +93,7 @@ function Set-ADTEnvironmentVariable
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -108,11 +108,11 @@ function Set-ADTEnvironmentVariable
                     {
                         if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                         {
-                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.get_MyCommand().get_Name()) as there is no active user logged onto the system."
+                            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
                             return
                         }
-                        Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$($runAsActiveUser.get_NTAccount())] to [$Value]"))."
-                        if ($PSCmdlet.ShouldProcess("$Variable (User: $($runAsActiveUser.get_NTAccount()))", "Set environment variable to [$Value]"))
+                        Write-ADTLogEntry -Message "Setting $(($logSuffix = "the environment variable [$Variable] for [$($runAsActiveUser.NTAccount)] to [$Value]"))."
+                        if ($PSCmdlet.ShouldProcess("$Variable (User: $($runAsActiveUser.NTAccount))", "Set environment variable to [$Value]"))
                         {
                             Invoke-ADTClientServerOperation -SetEnvironmentVariable -User $runAsActiveUser -Variable $Variable -Value $Value -Append:$Append -Remove:$Remove -Expandable:$Expandable
                         }
@@ -141,7 +141,7 @@ function Set-ADTEnvironmentVariable
         catch
         {
             # Process the caught error, log it and throw depending on the specified ErrorAction.
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to set $logSuffix."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to set $logSuffix."
         }
     }
 

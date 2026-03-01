@@ -8,7 +8,7 @@
 try
 {
     # Set all functions as read-only, export all public definitions and finalise the CommandTable.
-    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.get_Name(), $_) } }
+    Set-Item -LiteralPath $FunctionPaths -Options ReadOnly; Get-Item -LiteralPath $FunctionPaths | & { process { $CommandTable.Add($_.Name, $_) } }
     New-Variable -Name CommandTable -Value ([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.Management.Automation.CommandInfo]]::new($CommandTable)) -Option Constant -Force -Confirm:$false
     Export-ModuleMember -Function $Module.Manifest.FunctionsToExport
 
@@ -4727,7 +4727,7 @@ try
                     Close-ADTClientServerProcess
                 }
             }
-            SessionState = $ExecutionContext.get_SessionState()
+            SessionState = $ExecutionContext.SessionState
             RestartOnExitCountdown = $null
             ClientServerProcess = $null
             Sessions = [System.Collections.Generic.List[PSAppDeployToolkit.Foundation.DeploymentSession]]::new()
@@ -4763,7 +4763,7 @@ try
         }).AsReadOnly()
 
     # Array of all PowerShell common parameter names.
-    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$([System.Management.Automation.PSCmdlet]::get_CommonParameters(); [System.Management.Automation.PSCmdlet]::get_OptionalCommonParameters()))
+    New-Variable -Name PowerShellCommonParameters -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$([System.Management.Automation.PSCmdlet]::CommonParameters; [System.Management.Automation.PSCmdlet]::OptionalCommonParameters))
 
     # Lookup table for preference variables and their associated CommonParameter name.
     New-Variable -Name PreferenceVariableTable -Option Constant -Value ([ordered]@{
@@ -4785,18 +4785,18 @@ catch
 }
 
 # Ensure that the client/server process is closed on module remove.
-$ModuleInfo.set_OnRemove({
-        if ($Script:ADT.ClientServerProcess)
-        {
-            Close-ADTClientServerProcess
-        }
-        if ($Script:ADT.ProcessExitEvent)
-        {
-            Unregister-Event -SubscriptionId $Script:ADT.ProcessExitEvent.get_Id()
-        }
-        [PSAppDeployToolkit.Foundation.ModuleDatabase]::Clear()
-    })
+$ModuleInfo.OnRemove = {
+    if ($Script:ADT.ClientServerProcess)
+    {
+        Close-ADTClientServerProcess
+    }
+    if ($Script:ADT.ProcessExitEvent)
+    {
+        Unregister-Event -SubscriptionId $Script:ADT.ProcessExitEvent.Id
+    }
+    [PSAppDeployToolkit.Foundation.ModuleDatabase]::Clear()
+}
 
 # Determine how long the import took.
-$ADT.Durations.ModuleImport = [System.DateTime]::get_Now() - $ModuleImportStart
+$ADT.Durations.ModuleImport = [System.DateTime]::Now - $ModuleImportStart
 Remove-Variable -Name ModuleImportStart -Force -Confirm:$false

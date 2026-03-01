@@ -88,11 +88,11 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Source = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Source = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -101,11 +101,11 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -121,7 +121,7 @@ function Write-ADTLogEntry
     begin
     {
         # Get the caller's preference values and set them within this scope.
-        Set-ADTPreferenceVariables -SessionState $ExecutionContext.get_SessionState()
+        Set-ADTPreferenceVariables -SessionState $ExecutionContext.SessionState
 
         # Set up collector for piped in messages.
         $messages = [System.Collections.Generic.List[System.String]]::new()
@@ -150,7 +150,7 @@ function Write-ADTLogEntry
     end
     {
         # Return early if we have no messages to write out.
-        if (!$messages.get_Count())
+        if (!$messages.Count)
         {
             return
         }

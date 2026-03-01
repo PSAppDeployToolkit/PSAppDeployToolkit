@@ -48,7 +48,7 @@ function Get-ADTPresentationSettingsEnabledUsers
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -60,14 +60,14 @@ function Get-ADTPresentationSettingsEnabledUsers
             {
                 # Build out params for Invoke-ADTAllUsersRegistryAction.
                 $iaauraParams = @{
-                    ScriptBlock = { if (Get-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\MobilePC\AdaptableSettings\Activity -Name Activity -SID $_.get_SID() -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) { return $_ } }
+                    ScriptBlock = { if (Get-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\Microsoft\MobilePC\AdaptableSettings\Activity -Name Activity -SID $_.SID -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) { return $_ } }
                     UserProfiles = Get-ADTUserProfiles -ExcludeDefaultUser -InformationAction SilentlyContinue
                 }
 
                 # Return UserProfile objects for each user with "I am currently giving a presentation" enabled.
                 if ($iaauraParams.UserProfiles -and ($usersInPresentationMode = Invoke-ADTAllUsersRegistryAction @iaauraParams -SkipUnloadedProfiles -InformationAction SilentlyContinue))
                 {
-                    Write-ADTLogEntry -Message "The following users are currently in presentation mode: ['$([System.String]::Join("', '", $usersInPresentationMode.get_NTAccount()))']."
+                    Write-ADTLogEntry -Message "The following users are currently in presentation mode: ['$([System.String]::Join("', '", $usersInPresentationMode.NTAccount))']."
                     return $usersInPresentationMode
                 }
                 Write-ADTLogEntry -Message "There are no logged on users in presentation mode."
@@ -79,7 +79,7 @@ function Get-ADTPresentationSettingsEnabledUsers
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

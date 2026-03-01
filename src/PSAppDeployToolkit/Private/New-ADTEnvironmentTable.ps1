@@ -25,11 +25,11 @@ function Private:New-ADTEnvironmentTable
         $AdditionalEnvironmentVariables.GetEnumerator() | & {
             begin
             {
-                $adtEnvProps = $adtEnv.PSObject.get_Properties()
+                $adtEnvProps = $adtEnv.PSObject.Properties
             }
             process
             {
-                $adtEnvProps.Add([System.Management.Automation.PSNoteProperty]::new($_.get_Key(), $_.get_Value()))
+                $adtEnvProps.Add([System.Management.Automation.PSNoteProperty]::new($_.Key, $_.Value))
             }
         }
     }

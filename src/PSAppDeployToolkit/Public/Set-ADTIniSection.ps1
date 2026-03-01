@@ -104,7 +104,7 @@ function Set-ADTIniSection
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -138,7 +138,7 @@ function Set-ADTIniSection
 
                 if (!$Overwrite)
                 {
-                    if ($Content.get_Count() -eq 0)
+                    if ($Content.Count -eq 0)
                     {
                         Write-ADTLogEntry -Message "No content provided to write to INI section: [FilePath = $FilePath] [Section = $Section]."
                         return
@@ -146,7 +146,7 @@ function Set-ADTIniSection
                     try
                     {
                         $writeContent = [PSADT.Utilities.IniUtilities]::GetSection($FilePath, $Section)
-                        foreach ($key in $Content.get_Keys())
+                        foreach ($key in $Content.Keys)
                         {
                             $writeContent[$key] = $Content[$key]
                         }
@@ -162,7 +162,7 @@ function Set-ADTIniSection
                     $writeContent = $Content
                 }
 
-                Write-ADTLogEntry -Message "$(('Writing', 'Overwriting')[$Overwrite.ToBool()]) INI section: [FilePath = $FilePath] [Section = $Section] Content:$($Content.GetEnumerator() | & { process { "`n$($_.get_Key())=$($_.get_Value())" } })"
+                Write-ADTLogEntry -Message "$(('Writing', 'Overwriting')[$Overwrite.ToBool()]) INI section: [FilePath = $FilePath] [Section = $Section] Content:$($Content.GetEnumerator() | & { process { "`n$($_.Key)=$($_.Value)" } })"
                 if ($PSCmdlet.ShouldProcess("$FilePath\$Section", "$(('Write', 'Overwrite')[$Overwrite.ToBool()]) INI section"))
                 {
                     [PSADT.Utilities.IniUtilities]::WriteSection($FilePath, $Section, $writeContent)
@@ -175,7 +175,7 @@ function Set-ADTIniSection
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to write INI section."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to write INI section."
         }
     }
 

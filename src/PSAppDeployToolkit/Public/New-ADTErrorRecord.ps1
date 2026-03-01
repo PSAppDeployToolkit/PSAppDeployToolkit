@@ -92,19 +92,19 @@ function New-ADTErrorRecord
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$TargetName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetType = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$TargetType = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Activity = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Activity = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Reason = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Reason = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -117,24 +117,24 @@ function New-ADTErrorRecord
     # Add in all optional values, if specified.
     if ($Activity)
     {
-        $errRecord.get_CategoryInfo().set_Activity($Activity)
+        $errRecord.CategoryInfo.Activity = $Activity
     }
     if ($TargetName)
     {
-        $errRecord.get_CategoryInfo().set_TargetName($TargetName)
+        $errRecord.CategoryInfo.TargetName = $TargetName
     }
     if ($TargetType)
     {
-        $errRecord.get_CategoryInfo().set_TargetType($TargetType)
+        $errRecord.CategoryInfo.TargetType = $TargetType
     }
     if ($Reason)
     {
-        $errRecord.get_CategoryInfo().set_Reason($Reason)
+        $errRecord.CategoryInfo.Reason = $Reason
     }
     if ($RecommendedAction)
     {
-        $errRecord.set_ErrorDetails([System.Management.Automation.ErrorDetails]::new($errRecord.get_Exception().get_Message()))
-        $errRecord.get_ErrorDetails().set_RecommendedAction($RecommendedAction)
+        $errRecord.ErrorDetails = [System.Management.Automation.ErrorDetails]::new($errRecord.Exception.Message)
+        $errRecord.ErrorDetails.RecommendedAction = $RecommendedAction
     }
 
     # Return the ErrorRecord to the caller, who will then throw it.

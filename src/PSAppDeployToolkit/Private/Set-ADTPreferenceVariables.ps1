@@ -29,13 +29,13 @@ function Private:Set-ADTPreferenceVariables
     )
 
     # Get the callstack so we can enumerate bound parameters of our callers.
-    $stackParams = (Get-PSCallStack).get_InvocationInfo().get_BoundParameters().GetEnumerator().GetEnumerator()
+    $stackParams = (Get-PSCallStack).InvocationInfo.BoundParameters.GetEnumerator().GetEnumerator()
 
     # Loop through each common parameter and get the first bound value.
     foreach ($pref in $Script:PreferenceVariableTable.GetEnumerator())
     {
         # Return early if we have nothing.
-        if (!($param = $stackParams | & { process { if ($_.get_Key().Equals($pref.get_Key())) { return @{ Name = $pref.get_Value(); Value = $_.get_Value() } } } } | Select-Object -First 1))
+        if (!($param = $stackParams | & { process { if ($_.Key.Equals($pref.Key)) { return @{ Name = $pref.Value; Value = $_.Value } } } } | Select-Object -First 1))
         {
             continue
         }
@@ -52,13 +52,13 @@ function Private:Set-ADTPreferenceVariables
 
         # When we're within the same module, just go up a scope level to set the value.
         # If the caller in an external scope, we set this within their SessionState.
-        if ($SessionState.Equals($ExecutionContext.get_SessionState()))
+        if ($SessionState.Equals($ExecutionContext.SessionState))
         {
             Set-Variable @param -Scope $Scope -Force -Confirm:$false -WhatIf:$false
         }
         else
         {
-            $SessionState.get_PSVariable().Set($param.Name, $param.Value)
+            $SessionState.PSVariable.Set($param.Name, $param.Value)
         }
     }
 }

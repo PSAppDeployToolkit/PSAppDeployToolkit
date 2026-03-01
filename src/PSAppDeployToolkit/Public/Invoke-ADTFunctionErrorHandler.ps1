@@ -90,7 +90,7 @@ function Invoke-ADTFunctionErrorHandler
         [Parameter(Mandatory = $false, ParameterSetName = 'AdditionalResolveErrorProperties')]
         [Parameter(Mandatory = $false, ParameterSetName = 'DisableErrorResolving')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogMessage = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogMessage = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ResolveErrorProperties')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -109,7 +109,7 @@ function Invoke-ADTFunctionErrorHandler
     )
 
     # Store out the caller's original ErrorAction for some checks and balances.
-    $OriginalErrorAction = $SessionState.get_PSVariable().Get('OriginalErrorAction').get_Value()
+    $OriginalErrorAction = $SessionState.PSVariable.Get('OriginalErrorAction').Value
 
     # Recover true ErrorActionPreference the caller may have set,
     # unless an ErrorAction was specifically provided to this function.
@@ -117,7 +117,7 @@ function Invoke-ADTFunctionErrorHandler
     {
         $PSBoundParameters.ErrorAction
     }
-    elseif ($SessionState.Equals($ExecutionContext.get_SessionState()))
+    elseif ($SessionState.Equals($ExecutionContext.SessionState))
     {
         Get-Variable -Name OriginalErrorAction -Scope 1 -ValueOnly
     }
@@ -129,35 +129,35 @@ function Invoke-ADTFunctionErrorHandler
     # If the caller hasn't specified a LogMessage, use the ErrorRecord's message.
     if ([System.String]::IsNullOrWhiteSpace($LogMessage))
     {
-        $LogMessage = $ErrorRecord.get_Exception().get_Message()
+        $LogMessage = $ErrorRecord.Exception.Message
     }
 
     # Write-Error enforces its own name against the Activity, let's re-write it.
-    if ($ErrorRecord.get_CategoryInfo().get_Activity() -match '^Write-Error$')
+    if ($ErrorRecord.CategoryInfo.Activity -match '^Write-Error$')
     {
-        $ErrorRecord.get_CategoryInfo().set_Activity($Cmdlet.get_MyInvocation().get_MyCommand().get_Name())
+        $ErrorRecord.CategoryInfo.Activity = $Cmdlet.MyInvocation.MyCommand.Name
     }
 
     # Write out the error to the log file.
     if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -or ($PSBoundParameters.ContainsKey('DisableErrorResolving') -and !$PSBoundParameters.DisableErrorResolving))
     {
-        $raerProps = @{ ErrorRecord = $ErrorRecord }; if ($PSCmdlet.get_ParameterSetName().Equals('AdditionalResolveErrorProperties'))
+        $raerProps = @{ ErrorRecord = $ErrorRecord }; if ($PSCmdlet.ParameterSetName.Equals('AdditionalResolveErrorProperties'))
         {
-            $raerProps.Add('Property', $($Script:CommandTable.'Resolve-ADTErrorRecord'.get_ScriptBlock().get_Ast().get_Body().get_ParamBlock().get_Parameters().Where({ $_.get_Name().get_VariablePath().get_UserPath().Equals('Property') }).get_DefaultValue().get_Pipeline().get_PipelineElements().get_Expression().get_Elements().get_Value(); $AdditionalResolveErrorProperties))
+            $raerProps.Add('Property', $($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value; $AdditionalResolveErrorProperties))
         }
-        elseif ($PSCmdlet.get_ParameterSetName().Equals('ResolveErrorProperties'))
+        elseif ($PSCmdlet.ParameterSetName.Equals('ResolveErrorProperties'))
         {
             $raerProps.Add('Property', $ResolveErrorProperties)
         }
         $LogMessage += "`n$(Resolve-ADTErrorRecord @raerProps)"
     }
-    elseif ($LogMessage -ne $ErrorRecord.get_Exception().get_Message())
+    elseif ($LogMessage -ne $ErrorRecord.Exception.Message)
     {
-        $LogMessage += " $($ErrorRecord.get_Exception().get_Message())"
+        $LogMessage += " $($ErrorRecord.Exception.Message)"
     }
     if (!$Silent)
     {
-        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.get_MyInvocation().get_MyCommand().get_Name() -Severity Error
+        Write-ADTLogEntry -Message $LogMessage -Source $Cmdlet.MyInvocation.MyCommand.Name -Severity Error
     }
 
     # If we're stopping, throw a terminating error. While WriteError will terminate if stopping,

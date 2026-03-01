@@ -23,13 +23,13 @@ function Private:Expand-ADTVariablesInHashtable
         # Go recursive if we've received a hashtable, otherwise just update the values.
         foreach ($section in $($Hashtable.GetEnumerator()))
         {
-            if ($section.get_Value() -is [System.String])
+            if ($section.Value -is [System.String])
             {
-                $Hashtable.($section.get_Key()) = $SessionState.get_InvokeCommand().ExpandString($section.get_Value())
+                $Hashtable.($section.Key) = $SessionState.InvokeCommand.ExpandString($section.Value)
             }
-            elseif ($section.get_Value() -is [System.Collections.Hashtable])
+            elseif ($section.Value -is [System.Collections.Hashtable])
             {
-                & $MyInvocation.get_MyCommand() -Hashtable $section.get_Value() -SessionState $SessionState
+                & $MyInvocation.MyCommand -Hashtable $section.Value -SessionState $SessionState
             }
         }
     }

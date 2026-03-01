@@ -97,7 +97,7 @@ function Remove-ADTRegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -113,8 +113,8 @@ function Remove-ADTRegistryKey
     begin
     {
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction SilentlyContinue
-        $pathParam = @{ $PSCmdlet.get_ParameterSetName() = $PSBoundParameters.($PSCmdlet.get_ParameterSetName()) }
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        $pathParam = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters.($PSCmdlet.ParameterSetName) }
     }
 
     process
@@ -124,27 +124,27 @@ function Remove-ADTRegistryKey
             try
             {
                 # If the SID variable is specified, then convert all HKEY_CURRENT_USER key's to HKEY_USERS\$SID.
-                $pathParam.($PSCmdlet.get_ParameterSetName()) = if ($PSBoundParameters.ContainsKey('SID'))
+                $pathParam.($PSCmdlet.ParameterSetName) = if ($PSBoundParameters.ContainsKey('SID'))
                 {
-                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.get_ParameterSetName()) -Wow6432Node:$Wow6432Node -SID $SID
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node -SID $SID
                 }
                 else
                 {
-                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.get_ParameterSetName()) -Wow6432Node:$Wow6432Node
+                    Convert-ADTRegistryPath -Key $pathParam.($PSCmdlet.ParameterSetName) -Wow6432Node:$Wow6432Node
                 }
 
                 if (!$Name)
                 {
                     if (!(Test-Path @pathParam))
                     {
-                        Write-ADTLogEntry -Message "Unable to delete registry key [$($pathParam.($PSCmdlet.get_ParameterSetName()))] because it does not exist." -Severity Warning
+                        Write-ADTLogEntry -Message "Unable to delete registry key [$($pathParam.($PSCmdlet.ParameterSetName))] because it does not exist." -Severity Warning
                         return
                     }
 
                     if ($Recurse)
                     {
-                        Write-ADTLogEntry -Message "Deleting registry key recursively [$($pathParam.($PSCmdlet.get_ParameterSetName()))]."
-                        if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.get_ParameterSetName()), 'Delete registry key recursively'))
+                        Write-ADTLogEntry -Message "Deleting registry key recursively [$($pathParam.($PSCmdlet.ParameterSetName))]."
+                        if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.ParameterSetName), 'Delete registry key recursively'))
                         {
                             $null = Remove-Item @pathParam -Force -Recurse
                         }
@@ -152,8 +152,8 @@ function Remove-ADTRegistryKey
                     elseif (!(Get-ChildItem @pathParam))
                     {
                         # Check if there are subkeys of the path, if so, executing Remove-Item will hang. Avoiding this with Get-ChildItem.
-                        Write-ADTLogEntry -Message "Deleting registry key [$($pathParam.($PSCmdlet.get_ParameterSetName()))]."
-                        if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.get_ParameterSetName()), 'Delete registry key'))
+                        Write-ADTLogEntry -Message "Deleting registry key [$($pathParam.($PSCmdlet.ParameterSetName))]."
+                        if ($PSCmdlet.ShouldProcess($pathParam.($PSCmdlet.ParameterSetName), 'Delete registry key'))
                         {
                             $null = Remove-Item @pathParam -Force
                         }
@@ -161,10 +161,10 @@ function Remove-ADTRegistryKey
                     else
                     {
                         $naerParams = @{
-                            Exception = [System.InvalidOperationException]::new("Unable to delete child key(s) of [$($pathParam.($PSCmdlet.get_ParameterSetName()))] without [-Recurse] switch.")
+                            Exception = [System.InvalidOperationException]::new("Unable to delete child key(s) of [$($pathParam.($PSCmdlet.ParameterSetName))] without [-Recurse] switch.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                             ErrorId = 'SubKeyRecursionError'
-                            TargetObject = $pathParam.($PSCmdlet.get_ParameterSetName())
+                            TargetObject = $pathParam.($PSCmdlet.ParameterSetName)
                             RecommendedAction = "Please run this command again with [-Recurse]."
                         }
                         throw (New-ADTErrorRecord @naerParams)
@@ -174,11 +174,11 @@ function Remove-ADTRegistryKey
                 {
                     if (!(Test-Path @pathParam))
                     {
-                        Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.get_ParameterSetName()))] [$Name] because registry key does not exist." -Severity Warning
+                        Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name] because registry key does not exist." -Severity Warning
                         return
                     }
-                    Write-ADTLogEntry -Message "Deleting registry value [$($pathParam.($PSCmdlet.get_ParameterSetName()))] [$Name]."
-                    if (!$PSCmdlet.ShouldProcess("$($pathParam.($PSCmdlet.get_ParameterSetName()))\$Name", 'Delete registry value'))
+                    Write-ADTLogEntry -Message "Deleting registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name]."
+                    if (!$PSCmdlet.ShouldProcess("$($pathParam.($PSCmdlet.ParameterSetName))\$Name", 'Delete registry value'))
                     {
                         return
                     }
@@ -200,11 +200,11 @@ function Remove-ADTRegistryKey
         }
         catch [System.Management.Automation.PSArgumentException]
         {
-            Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.get_ParameterSetName()))] [$Name] because it does not exist." -Severity Warning
+            Write-ADTLogEntry -Message "Unable to delete registry value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name] because it does not exist." -Severity Warning
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to delete registry $(("key [$($pathParam.($PSCmdlet.get_ParameterSetName()))]", "value [$($pathParam.($PSCmdlet.get_ParameterSetName()))] [$Name]")[!!$Name])."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete registry $(("key [$($pathParam.($PSCmdlet.ParameterSetName))]", "value [$($pathParam.($PSCmdlet.ParameterSetName))] [$Name]")[!!$Name])."
         }
     }
 

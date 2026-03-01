@@ -63,7 +63,7 @@ function Add-ADTFont
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $fontsDir = [System.IO.Path]::Combine([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Windows), 'Fonts')
         $fontsRegKeyPath = 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts'
 
@@ -91,11 +91,11 @@ function Add-ADTFont
                         {
                             # If we're here, it's a file. Make sure it's valid before proceeding.
                             $fileItem = Get-Item -LiteralPath $resolvedPath -Force
-                            $extension = $fileItem.get_Extension().ToLower()
+                            $extension = $fileItem.Extension.ToLower()
                             if (!$fontTypes.ContainsKey($extension))
                             {
                                 $naerParams = @{
-                                    Exception = [System.ArgumentException]::new("File [$($fileItem.get_Name())] is not a supported font type.")
+                                    Exception = [System.ArgumentException]::new("File [$($fileItem.Name)] is not a supported font type.")
                                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                                     ErrorId = 'FontFileUnsupportedExtensionError'
                                     TargetObject = $fileItem
@@ -105,24 +105,24 @@ function Add-ADTFont
                             }
 
                             # Copy file to Fonts directory.
-                            Write-ADTLogEntry -Message "Installing font [$($fileItem.get_Name())]..."
-                            $destPath = Join-Path -Path $fontsDir -ChildPath $fileItem.get_Name()
+                            Write-ADTLogEntry -Message "Installing font [$($fileItem.Name)]..."
+                            $destPath = Join-Path -Path $fontsDir -ChildPath $fileItem.Name
                             if (!(Test-Path -LiteralPath $destPath))
                             {
-                                Copy-Item -LiteralPath $fileItem.get_FullName() -Destination $destPath -Force
+                                Copy-Item -LiteralPath $fileItem.FullName -Destination $destPath -Force
                             }
 
                             # Register font resource and set up the font name correctly in the registry.
                             $null = [PSADT.Utilities.FontUtilities]::AddFont($destPath)
                             $regName = "$([PSADT.Utilities.FontUtilities]::GetFontTitle($destPath))$($fontTypes[$extension])"
-                            Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.get_Name() -InformationAction SilentlyContinue
-                            Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.get_Name())] as [$regName]."
+                            Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name -InformationAction SilentlyContinue
+                            Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.Name)] as [$regName]."
                         }
                         elseif (Test-Path -LiteralPath $resolvedPath -PathType Container)
                         {
                             # We've got a directory. Get all font files and pipe them through.
                             $null = $PSBoundParameters.Remove('Path')
-                            Get-ChildItem -Path $resolvedPath -File -Recurse:$Recurse | & { process { if ($fontTypes.ContainsKey($_.get_Extension().ToLower())) { return $_.get_FullName() } } } | Add-ADTFont @PSBoundParameters
+                            Get-ChildItem -Path $resolvedPath -File -Recurse:$Recurse | & { process { if ($fontTypes.ContainsKey($_.Extension.ToLower())) { return $_.FullName } } } | Add-ADTFont @PSBoundParameters
                             continue
                         }
                         else
@@ -148,7 +148,7 @@ function Add-ADTFont
             {
                 $iafehParams = @{
                     Cmdlet = $PSCmdlet
-                    SessionState = $ExecutionContext.get_SessionState()
+                    SessionState = $ExecutionContext.SessionState
                     ErrorRecord = $_
                     LogMessage = "Failed to install font [$item]."
                 }

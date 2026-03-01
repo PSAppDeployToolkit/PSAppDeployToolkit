@@ -99,7 +99,7 @@ function Get-ADTMsiTableProperty
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = 'MSI file: "Property"; MSP file: "MsiPatchMetadata"')]
-        [System.String]$Table = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Table = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
@@ -118,7 +118,7 @@ function Get-ADTMsiTableProperty
     begin
     {
         # Set default values.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if (!$PSBoundParameters.ContainsKey('Table'))
         {
             $Table = ('MsiPatchMetadata', 'Property')[[System.IO.Path]::GetExtension($LiteralPath) -eq '.msi']
@@ -155,7 +155,7 @@ function Get-ADTMsiTableProperty
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to get the MSI table [$Table]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to get the MSI table [$Table]."
         }
     }
 

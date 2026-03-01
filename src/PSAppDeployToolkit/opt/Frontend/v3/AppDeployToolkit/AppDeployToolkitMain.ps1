@@ -38,7 +38,7 @@ param
 )
 
 # Remove all functions defined in this script from the function provider.
-Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.get_MyCommand().get_ScriptBlock().get_Ast().get_EndBlock().get_Statements() | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.get_Name())" } } }) -Force -ErrorAction Ignore
+Remove-Item -LiteralPath ($adtWrapperFuncs = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & { process { if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst]) { return "Microsoft.PowerShell.Core\Function::$($_.Name)" } } }) -Force -ErrorAction Ignore
 
 
 #---------------------------------------------------------------------------
@@ -64,23 +64,23 @@ function Write-Log
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Source = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Source = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 3)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 4)]
         [ValidateSet('CMTrace', 'Legacy')]
-        [System.String]$LogType = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogType = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 5)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 6)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 7)]
         [ValidateNotNullOrEmpty()]
@@ -119,13 +119,13 @@ function Write-Log
         Set-StrictMode -Version 3
 
         # Announce overall deprecation.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name() -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Write-ADTLogEntry]. Please migrate your scripts to use the new function." -Severity Warning -Source $MyInvocation.MyCommand.Name -DebugMessage:$noDepWarnings
 
         # Announce dead parameters.
         $null = ('AppendToLogFile', 'MaxLogHistory', 'MaxLogFileSizeMB', 'WriteHost', 'LogDebugMessage').ForEach({
                 if ($PSBoundParameters.ContainsKey($_))
                 {
-                    Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+                    Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
                     $PSBoundParameters.Remove($_)
                 }
             })
@@ -157,7 +157,7 @@ function Write-Log
     end
     {
         # Process provided messages if we have any.
-        if ($messages.get_Count())
+        if ($messages.Count)
         {
             try
             {
@@ -195,7 +195,7 @@ function Exit-Script
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Close-ADTSession]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTSession]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Close-ADTSession @PSBoundParameters
@@ -231,7 +231,7 @@ function Invoke-HKCURegistrySettingsForAllUsers
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTAllUsersRegistryAction]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     $PSBoundParameters.ScriptBlock = { New-Variable -Name UserProfile -Value $_ -Force }, $PSBoundParameters.ScriptBlock
     try
     {
@@ -263,7 +263,7 @@ function Get-HardwarePlatform
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [`$envHardwareType]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         return $envHardwareType
@@ -291,7 +291,7 @@ function Get-FreeDiskSpace
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Drive = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Drive = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -301,7 +301,7 @@ function Get-FreeDiskSpace
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTFreeDiskSpace]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFreeDiskSpace]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -345,7 +345,7 @@ function Remove-InvalidFileNameChars
         Set-StrictMode -Version 3
 
         # Announce deprecation of function and set up accumulator for all piped in names.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTInvalidFileNameChars]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
         $names = [System.Collections.Generic.List[System.String]]::new()
     }
 
@@ -361,7 +361,7 @@ function Remove-InvalidFileNameChars
     end
     {
         # Process provided names if we have any.
-        if ($names.get_Count())
+        if ($names.Count)
         {
             try
             {
@@ -396,7 +396,7 @@ function Get-InstalledApplication
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ProductCode = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ProductCode = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Exact,
@@ -415,7 +415,7 @@ function Get-InstalledApplication
     Set-StrictMode -Version 3
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTApplication]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     $gaiaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, RegEx
 
     if ($Exact)
@@ -478,12 +478,12 @@ function Remove-MSIApplications
         [Parameter(Mandatory = $false)]
         [Alias('Arguments', 'Parameters')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('AddParameters')]
-        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -498,11 +498,11 @@ function Remove-MSIApplications
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [Alias('LogName')]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -517,7 +517,7 @@ function Remove-MSIApplications
     Set-StrictMode -Version 3
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Uninstall-ADTApplication]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Build out hashtable for splatting.
     $uaaParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude Exact, WildCard, FilterApplication, ExcludeFromUninstall, ContinueOnError
@@ -534,7 +534,7 @@ function Remove-MSIApplications
             {
                 if ($null -ne $_)
                 {
-                    if ($_.get_Count() -eq 1 -and $_[0].get_Count() -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                    if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
                     if ($_[2] -eq 'RegEx')
                     {
                         "`$_.$($_[0]) -match '$($_[1] -replace "'","''")'"
@@ -566,7 +566,7 @@ function Remove-MSIApplications
             {
                 if ($null -ne $_)
                 {
-                    if ($_.get_Count() -eq 1 -and $_[0].get_Count() -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
+                    if ($_.Count -eq 1 -and $_[0].Count -eq 3) { $_ = $_[0] } # Handle the case where input is of the form @(, @('Prop', 'Value', 'Exact'), @('Prop', 'Value', 'Exact'))
                     if ($_[2] -eq 'RegEx')
                     {
                         "`$_.$($_[0]) -notmatch '$($_[1] -replace "'","''")'"
@@ -642,7 +642,7 @@ function Get-FileVersion
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTFileVersion]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTFileVersion]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -702,7 +702,7 @@ function Get-UserProfiles
             $PSBoundParameters.Remove("Exclude$_")
         })
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUserProfiles]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Get-ADTUserProfiles @PSBoundParameters
@@ -734,7 +734,7 @@ function Update-Desktop
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Update-ADTDesktop]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTDesktop]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Update-ADTDesktop
@@ -770,7 +770,7 @@ function Update-SessionEnvironmentVariables
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Update-ADTEnvironmentPsProvider -LoadLoggedOnUserEnvironmentVariables:$LoadLoggedOnUserEnvironmentVariables
@@ -834,7 +834,7 @@ function Copy-File
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Copy-ADTFile]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFile]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -906,7 +906,7 @@ function Remove-File
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Remove-ADTFile]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFile]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -944,7 +944,7 @@ function Copy-FileToUserProfiles
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [System.String]$Destination = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Destination = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
@@ -958,7 +958,7 @@ function Copy-FileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -991,7 +991,7 @@ function Copy-FileToUserProfiles
         Set-StrictMode -Version 3
 
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTFileToUserProfiles]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
         $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
                 if (!$PSBoundParameters."Exclude$_")
                 {
@@ -1034,7 +1034,7 @@ function Copy-FileToUserProfiles
     end
     {
         # Process provided paths if we have any.
-        if ($srcPaths.get_Count())
+        if ($srcPaths.Count)
         {
             try
             {
@@ -1066,7 +1066,7 @@ function Show-InstallationPrompt
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Title = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Title = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -1074,23 +1074,23 @@ function Show-InstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Left', 'Center', 'Right')]
-        [System.String]$MessageAlignment = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$MessageAlignment = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'None', 'Question', 'Shield', 'Warning', 'WinLogo')]
-        [System.String]$Icon = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Icon = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -1118,7 +1118,7 @@ function Show-InstallationPrompt
     Set-StrictMode -Version 3
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Show-ADTInstallationPrompt]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationPrompt]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('Icon') -and ($PSBoundParameters.Icon -eq 'None'))
@@ -1161,11 +1161,11 @@ function Show-InstallationProgress
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [System.String]$WindowLocation = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WindowLocation = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1182,7 +1182,7 @@ function Show-InstallationProgress
     Set-StrictMode -Version 3
 
     # Announce overall deprecation before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Show-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
@@ -1221,23 +1221,23 @@ function Show-DialogBox
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Title = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Title = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
-        [System.String]$Buttons = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Buttons = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('First', 'Second', 'Third')]
-        [System.String]$DefaultButton = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$DefaultButton = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Exclamation', 'Information', 'None', 'Stop', 'Question')]
-        [System.String]$Icon = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Icon = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Timeout = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Timeout = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1248,7 +1248,7 @@ function Show-DialogBox
     Set-StrictMode -Version 3
 
     # Announce overall deprecation before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Show-ADTDialogBox]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTDialogBox]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('TopMost'))
     {
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
@@ -1278,7 +1278,7 @@ function Show-InstallationWelcome
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$CloseApps = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$CloseApps = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Silent,
@@ -1316,7 +1316,7 @@ function Show-InstallationWelcome
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DeferDeadline = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$DeferDeadline = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
@@ -1345,7 +1345,7 @@ function Show-InstallationWelcome
     Set-StrictMode -Version 3
 
     # Announce overall deprecation.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Show-ADTInstallationWelcome]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationWelcome]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Tune up parameters. A lot has changed.
     if ($PSBoundParameters.ContainsKey('CloseApps'))
@@ -1420,7 +1420,7 @@ function Get-WindowTitle
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTWindowTitle]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
         $PSBoundParameters.Add('InformationAction', [System.Management.Automation.ActionPreference]::SilentlyContinue)
@@ -1476,7 +1476,7 @@ function Show-InstallationRestartPrompt
     Set-StrictMode -Version 3
 
     # Announce overall deprecation before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTInstallationRestartPrompt]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('NoSilentRestart'))
     {
         $PSBoundParameters.Add('SilentRestart', !$PSBoundParameters.NoSilentRestart)
@@ -1515,7 +1515,7 @@ function Show-BalloonTip
 
         [Parameter(Mandatory = $false, Position = 1)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$BalloonTipTitle = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$BalloonTipTitle = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]
@@ -1532,10 +1532,10 @@ function Show-BalloonTip
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Show-ADTBalloonTip]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($NoWait)
     {
-        Write-ADTLogEntry -Message "The parameter '-NoWait' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+        Write-ADTLogEntry -Message "The parameter '-NoWait' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
         $null = $PSBoundParameters.Remove('NoWait')
     }
     try
@@ -1568,7 +1568,7 @@ function Copy-ContentToCache
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Copy-ADTContentToCache]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Copy-ADTContentToCache]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Copy-ADTContentToCache @PSBoundParameters
@@ -1600,7 +1600,7 @@ function Remove-ContentFromCache
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Remove-ADTContentFromCache]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTContentFromCache]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Remove-ADTContentFromCache @PSBoundParameters
@@ -1623,7 +1623,7 @@ function Test-NetworkConnection
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-ADTNetworkConnection]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTNetworkConnection]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTNetworkConnection
@@ -1646,7 +1646,7 @@ function Get-LoggedOnUser
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTLoggedOnUser]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTLoggedOnUser]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Get-ADTLoggedOnUser
@@ -1695,7 +1695,7 @@ function Get-IniValue
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTIniValue]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTIniValue]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1757,7 +1757,7 @@ function Set-IniValue
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTIniValue]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTIniValue]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1802,7 +1802,7 @@ function New-Folder
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [New-ADTFolder]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTFolder]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1836,7 +1836,7 @@ function Test-PowerPoint
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTPowerPoint
@@ -1869,7 +1869,7 @@ function Update-GroupPolicy
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Update-ADTGroupPolicy]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTGroupPolicy]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1905,7 +1905,7 @@ function Get-UniversalDate
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DateTime = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$DateTime = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1915,7 +1915,7 @@ function Get-UniversalDate
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -1952,7 +1952,7 @@ function Test-ServiceExists
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
@@ -1965,10 +1965,10 @@ function Test-ServiceExists
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTServiceExists]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($ComputerName)
     {
-        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
         $null = $PSBoundParameters.Remove('ComputerName')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2010,7 +2010,7 @@ function Disable-TerminalServerInstallMode
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Disable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Disable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2053,7 +2053,7 @@ function Enable-TerminalServerInstallMode
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Enable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Enable-ADTTerminalServerInstallMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2115,11 +2115,11 @@ function Configure-EdgeExtension
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [$($PSCmdlet.get_ParameterSetName())-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
-    $null = $PSBoundParameters.Remove($PSCmdlet.get_ParameterSetName())
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [$($PSCmdlet.ParameterSetName)-ADTEdgeExtension]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
     try
     {
-        & "$($PSCmdlet.get_ParameterSetName())-ADTEdgeExtension" @PSBoundParameters
+        & "$($PSCmdlet.ParameterSetName)-ADTEdgeExtension" @PSBoundParameters
     }
     catch
     {
@@ -2167,7 +2167,7 @@ function Resolve-Error
         Set-StrictMode -Version 3
 
         # Announce overall deprecation and translate bad switches before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Resolve-ADTErrorRecord]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
         $null = ('ErrorRecord', 'ErrorInvocation', 'ErrorException', 'ErrorInnerException').Where({ $PSBoundParameters.ContainsKey($_) }).ForEach({
                 $PSBoundParameters.Add("Exclude$_", !$PSBoundParameters."Get$_")
                 $PSBoundParameters.Remove("Get$_")
@@ -2197,13 +2197,13 @@ function Resolve-Error
         try
         {
             # If we've collected no ErrorRecord objects, choose the latest error that occurred.
-            if (!$errRecords.get_Count())
+            if (!$errRecords.Count)
             {
                 if (($errRecord = Get-Variable -Name PSItem -Scope 1 -ValueOnly -ErrorAction Ignore) -and ($errRecord -is [System.Management.Automation.ErrorRecord]))
                 {
                     $errRecord | Resolve-ADTErrorRecord @PSBoundParameters
                 }
-                elseif ($Global:Error.get_Count())
+                elseif ($Global:Error.Count)
                 {
                     $Global:Error.Where({ $_ -is [System.Management.Automation.ErrorRecord] }, 'First', 1) | Resolve-ADTErrorRecord @PSBoundParameters
                 }
@@ -2243,7 +2243,7 @@ function Get-ServiceStartMode
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2254,10 +2254,10 @@ function Get-ServiceStartMode
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($ComputerName)
     {
-        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+        Write-ADTLogEntry -Message "The parameter '-ComputerName' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
         $null = $PSBoundParameters.Remove('ComputerName')
     }
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
@@ -2302,7 +2302,7 @@ function Set-ServiceStartMode
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StartMode = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$StartMode = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2313,7 +2313,7 @@ function Set-ServiceStartMode
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTServiceStartMode]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2388,7 +2388,7 @@ function Execute-Process
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
@@ -2411,7 +2411,7 @@ function Execute-Process
     Set-StrictMode -Version 3
 
     # Announce deprecation of this function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
     if ($PSBoundParameters.ContainsKey('MsiExecWaitTime'))
@@ -2458,7 +2458,7 @@ function Execute-MSI
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
-        [System.String]$Action = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Action = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({ ($_ -match (Get-ADTEnvironmentTable).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
@@ -2467,17 +2467,17 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Transform = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Transform = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Arguments', 'Parameters')]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('AddParameters')]
-        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [Alias('SecureParameters')]
@@ -2485,20 +2485,20 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Patch = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Patch = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('LogName')]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipMSIAlreadyInstalledCheck,
@@ -2514,7 +2514,7 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
@@ -2537,7 +2537,7 @@ function Execute-MSI
     Set-StrictMode -Version 3
 
     # Announce deprecation of this function.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Start-ADTMsiProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMsiProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
     if ($FilePath -match (Get-ADTEnvironmentTable).MSIProductCodeRegExPattern)
@@ -2601,7 +2601,7 @@ function Execute-MSP
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTMspProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Start-ADTMspProcess @PSBoundParameters
@@ -2624,7 +2624,7 @@ function Unblock-AppExecution
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unblock-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Unblock-ADTAppExecution
@@ -2655,7 +2655,7 @@ function Block-AppExecution
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Block-ADTAppExecution]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Block-ADTAppExecution @PSBoundParameters
@@ -2688,7 +2688,7 @@ function Test-RegistryValue
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node
@@ -2700,7 +2700,7 @@ function Test-RegistryValue
         Set-StrictMode -Version 3
 
         # Announce deprecation of function and set up accumulator for all piped in keys.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTRegistryValue]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
         $keys = [System.Collections.Generic.List[System.Object]]::new()
     }
 
@@ -2713,7 +2713,7 @@ function Test-RegistryValue
     end
     {
         # Process provided keys if we have any.
-        if ($keys.get_Count())
+        if ($keys.Count)
         {
             try
             {
@@ -2752,7 +2752,7 @@ function Convert-RegistryPath
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2762,7 +2762,7 @@ function Convert-RegistryPath
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Convert-ADTRegistryPath]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('DisableFunctionLogging'))
     {
         $null = $PSBoundParameters.Remove('DisableFunctionLogging')
@@ -2806,7 +2806,7 @@ function Test-MSUpdates
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -2847,7 +2847,7 @@ function Test-Battery
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTBattery]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTBattery @PSBoundParameters
@@ -2878,7 +2878,7 @@ function Start-ServiceAndDependencies
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
@@ -2902,11 +2902,11 @@ function Start-ServiceAndDependencies
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and dead parameters.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     $null = ('ComputerName', 'SkipServiceExistsTest').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
-                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
                 $PSBoundParameters.Remove($_)
             }
         })
@@ -2954,7 +2954,7 @@ function Stop-ServiceAndDependencies
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
@@ -2978,11 +2978,11 @@ function Stop-ServiceAndDependencies
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and dead parameters.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Stop-ADTServiceAndDependencies]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     $null = ('ComputerName', 'SkipServiceExistsTest').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
-                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
                 $PSBoundParameters.Remove($_)
             }
         })
@@ -3029,7 +3029,7 @@ function Set-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -3044,7 +3044,7 @@ function Set-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3055,7 +3055,7 @@ function Set-RegistryKey
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3096,14 +3096,14 @@ function Remove-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3114,7 +3114,7 @@ function Remove-RegistryKey
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Remove-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3184,7 +3184,7 @@ function Remove-FileFromUserProfiles
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and dead parameters.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFileFromUserProfiles]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     $null = ('SystemProfiles', 'ServiceProfiles').Where({ $PSBoundParameters.ContainsKey("Exclude$_") }).ForEach({
             if (!$PSBoundParameters."Exclude$_")
             {
@@ -3194,7 +3194,7 @@ function Remove-FileFromUserProfiles
         })
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
-        Write-ADTLogEntry -Message "The parameter '-ContinueOnError' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+        Write-ADTLogEntry -Message "The parameter '-ContinueOnError' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
 
@@ -3230,14 +3230,14 @@ function Get-RegistryKey
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Value')]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ReturnEmptyKeyIfExists,
@@ -3254,7 +3254,7 @@ function Get-RegistryKey
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTRegistryKey]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3296,7 +3296,7 @@ function Install-MSUpdates
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTMSUpdates]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Install-ADTMSUpdates @PSBoundParameters
@@ -3322,7 +3322,7 @@ function Get-SchedulerTask
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TaskName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$TaskName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3335,10 +3335,10 @@ function Get-SchedulerTask
         Set-StrictMode -Version 3
 
         # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorAction ('Stop', 'SilentlyContinue')[$ContinueOnError]
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction ('Stop', 'SilentlyContinue')[$ContinueOnError]
 
         # Advise that this function is considered deprecated.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity Warning
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated. Please migrate your scripts to use the built-in [Get-ScheduledTask] Cmdlet." -Severity Warning
     }
 
     process
@@ -3349,11 +3349,11 @@ function Get-SchedulerTask
             try
             {
                 # Get CSV data from the binary and confirm success.
-                $exeSchtasksResults = & "$([System.Environment]::get_SystemDirectory())\schtasks.exe" /Query /V /FO CSV 2>&1
+                $exeSchtasksResults = & "$([System.Environment]::SystemDirectory)\schtasks.exe" /Query /V /FO CSV 2>&1
                 if ($Global:LASTEXITCODE -ne 0)
                 {
                     $naerParams = @{
-                        Exception = [System.Runtime.InteropServices.ExternalException]::new("The call to [$([System.Environment]::get_SystemDirectory())\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].", $Global:LASTEXITCODE)
+                        Exception = [System.Runtime.InteropServices.ExternalException]::new("The call to [$([System.Environment]::SystemDirectory)\schtasks.exe] failed with exit code [$Global:LASTEXITCODE].", $Global:LASTEXITCODE)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'SchTasksExecutableFailure'
                         TargetObject = $exeSchtasksResults
@@ -3365,7 +3365,7 @@ function Get-SchedulerTask
                 # Convert CSV data to objects and re-process to remove non-word characters before returning data to the caller.
                 if (($schTasks = $exeSchtasksResults | ConvertFrom-Csv | & { process { if (($_.TaskName -match '^\\') -and (!$PSBoundParameters.ContainsKey('TaskName') -or ($_.TaskName -match $TaskName))) { return $_ } } }))
                 {
-                    return $schTasks | Select-Object -Property ($schTasks[0].PSObject.get_Properties().get_Name() | & {
+                    return $schTasks | Select-Object -Property ($schTasks[0].PSObject.Properties.Name | & {
                             process
                             {
                                 @{ Label = $_ -replace '[^\w]'; Expression = [scriptblock]::Create("`$_.'$_'") }
@@ -3380,7 +3380,7 @@ function Get-SchedulerTask
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to retrieve scheduled tasks."
         }
     }
 
@@ -3402,7 +3402,7 @@ function Get-PendingReboot
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPendingReboot]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Get-ADTPendingReboot
@@ -3432,7 +3432,7 @@ function Invoke-RegisterOrUnregisterDLL
         [Parameter(Mandatory = $false)]
         [ValidateSet('Register', 'Unregister')]
         [Alias('DLLAction')]
-        [System.String]$Action = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Action = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3443,7 +3443,7 @@ function Invoke-RegisterOrUnregisterDLL
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Invoke-ADTRegSvr32]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTRegSvr32]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3490,7 +3490,7 @@ function Register-DLL
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Register-ADTDll]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Register-ADTDll]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3537,7 +3537,7 @@ function Unregister-DLL
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Unregister-ADTDll]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Unregister-ADTDll]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3588,7 +3588,7 @@ function Remove-Folder
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Remove-ADTFolder]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3629,26 +3629,26 @@ function Set-ActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Key = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Key = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Version = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Version = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Locale = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [System.Management.Automation.SwitchParameter]$DisableActiveSetup,
@@ -3669,7 +3669,7 @@ function Set-ActiveSetup
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTActiveSetup]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ExecuteForCurrentUser'))
     {
         $PSBoundParameters.Add('NoExecuteForCurrentUser', !$PSBoundParameters.ExecuteForCurrentUser)
@@ -3757,7 +3757,7 @@ function Set-ItemPermission
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTItemPermission]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTItemPermission]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('Method'))
     {
         $PSBoundParameters.Method = $PSBoundParameters.Method -replace '^(Add|Set|Reset|Remove)(Specific|All)?$', '$1AccessRule$2'
@@ -3791,11 +3791,11 @@ function New-MsiTransform
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -3810,7 +3810,7 @@ function New-MsiTransform
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [New-ADTMsiTransform]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTMsiTransform]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3857,7 +3857,7 @@ function Invoke-SCCMTask
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Invoke-ADTSCCMTask]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTSCCMTask]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3908,7 +3908,7 @@ function Install-SCCMSoftwareUpdates
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Install-ADTSCCMSoftwareUpdates]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Install-ADTSCCMSoftwareUpdates]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -3944,7 +3944,7 @@ function Send-Keys
     (
         [Parameter(Mandatory = $false, Position = 0)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WindowTitle = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WindowTitle = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 1)]
         [ValidateNotNullOrEmpty()]
@@ -3956,7 +3956,7 @@ function Send-Keys
 
         [Parameter(Mandatory = $false, Position = 3)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Keys = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Keys = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, Position = 4)]
         [ValidateNotNullOrEmpty()]
@@ -3966,7 +3966,7 @@ function Send-Keys
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('WaitSeconds'))
     {
         $PSBoundParameters.WaitDuration = [System.TimeSpan]::FromSeconds($WaitSeconds)
@@ -4007,7 +4007,7 @@ function Get-Shortcut
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTShortcut]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4052,38 +4052,38 @@ function Set-Shortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconIndex = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IconIndex = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized', 'DontChange')]
-        [System.String]$WindowStyle = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WindowStyle = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Nullable[System.Boolean]]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4096,7 +4096,7 @@ function Set-Shortcut
         Set-StrictMode -Version 3
 
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTShortcut]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
             $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4113,11 +4113,11 @@ function Set-Shortcut
     process
     {
         # Add all paths to the collector.
-        if ($PSCmdlet.get_ParameterSetName().Equals('Default'))
+        if ($PSCmdlet.ParameterSetName.Equals('Default'))
         {
             $paths.Add($Path)
         }
-        elseif ($PSCmdlet.get_ParameterSetName().Equals('Pipeline') -and $PathHash.ContainsKey('Path') -and ![System.String]::IsNullOrWhiteSpace($PathHash.Path))
+        elseif ($PSCmdlet.ParameterSetName.Equals('Pipeline') -and $PathHash.ContainsKey('Path') -and ![System.String]::IsNullOrWhiteSpace($PathHash.Path))
         {
             $paths.Add($PathHash.Path)
         }
@@ -4126,7 +4126,7 @@ function Set-Shortcut
     end
     {
         # Process provided paths if we have any.
-        if ($paths.get_Count())
+        if ($paths.Count)
         {
             try
             {
@@ -4170,11 +4170,11 @@ function New-Shortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4182,22 +4182,22 @@ function New-Shortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized')]
-        [System.String]$WindowStyle = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WindowStyle = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4208,7 +4208,7 @@ function New-Shortcut
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [New-ADTShortcut]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTShortcut]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4245,7 +4245,7 @@ function Execute-ProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$UserName = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$UserName = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -4254,12 +4254,12 @@ function Execute-ProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TempPath = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$TempPath = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Parameters')]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [Alias('SecureParameters')]
@@ -4278,7 +4278,7 @@ function Execute-ProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4289,13 +4289,13 @@ function Execute-ProcessAsUser
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcessAsUser]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Announce dead parameters.
     $null = ('TempPath', 'RunLevel').ForEach({
             if ($PSBoundParameters.ContainsKey($_))
             {
-                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+                Write-ADTLogEntry -Message "The parameter '-$_' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
                 $PSBoundParameters.Remove($_)
             }
         })
@@ -4359,10 +4359,10 @@ function Close-InstallationProgress
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Close-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Close-ADTInstallationProgress]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('WaitingTime'))
     {
-        Write-ADTLogEntry -Message "The parameter '-WaitingTime' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.get_MyCommand().get_Name()
+        Write-ADTLogEntry -Message "The parameter '-WaitingTime' is discontinued and no longer has any effect." -Severity Warning -Source $MyInvocation.MyCommand.Name
     }
 
     # Invoke underlying function.
@@ -4410,7 +4410,7 @@ function ConvertTo-NTAccountOrSID
         Set-StrictMode -Version 3
 
         # Announce overall deprecation and any dead parameters before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [ConvertTo-ADTNTAccountOrSID]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
         # Set up collector for pipelined input.
         $pipedInput = [System.Collections.Generic.List[System.String]]::new()
@@ -4419,7 +4419,7 @@ function ConvertTo-NTAccountOrSID
     process
     {
         # Only add non-null strings to our collector.
-        if (![System.String]::IsNullOrWhiteSpace(($thisInput = Get-Variable -Name $PSCmdlet.get_ParameterSetName() -ValueOnly)))
+        if (![System.String]::IsNullOrWhiteSpace(($thisInput = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly)))
         {
             $pipedInput.Add($thisInput)
         }
@@ -4428,14 +4428,14 @@ function ConvertTo-NTAccountOrSID
     end
     {
         # Only proceed if we have collected input.
-        if (!$pipedInput.get_Count())
+        if (!$pipedInput.Count)
         {
             return
         }
 
         try
         {
-            $null = $PSBoundParameters.Remove($PSCmdlet.get_ParameterSetName())
+            $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
             $pipedInput | ConvertTo-ADTNTAccountOrSID @PSBoundParameters
         }
         catch
@@ -4463,7 +4463,7 @@ function Get-DeferHistory
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4502,7 +4502,7 @@ function Set-DeferHistory
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTDeferHistory]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4537,7 +4537,7 @@ function Get-MsiTableProperty
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Table = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Table = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
@@ -4559,7 +4559,7 @@ function Get-MsiTableProperty
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiTableProperty]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4615,7 +4615,7 @@ function Set-MsiProperty
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Set-ADTMsiProperty]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Set-ADTMsiProperty]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4658,7 +4658,7 @@ function Get-MsiExitCodeMessage
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTMsiExitCodeMessage]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTMsiExitCodeMessage]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4700,7 +4700,7 @@ function Get-ObjectProperty
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTObjectProperty]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTObjectProperty]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4746,7 +4746,7 @@ function Invoke-ObjectMethod
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Invoke-ADTObjectMethod]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Invoke-ADTObjectMethod]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Invoke underlying function.
     try
@@ -4789,7 +4789,7 @@ function Get-PEFileArchitecture
         Set-StrictMode -Version 3
 
         # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-        Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Get-ADTPEFileArchitecture]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTPEFileArchitecture]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
         if ($PSBoundParameters.ContainsKey('ContinueOnError'))
         {
             $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4815,7 +4815,7 @@ function Get-PEFileArchitecture
     end
     {
         # Only process if we have files in our collector.
-        if (!$filePaths.get_Count())
+        if (!$filePaths.Count)
         {
             return
         }
@@ -4900,7 +4900,7 @@ function Test-IsMutexAvailable
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and any dead parameters before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTMutexAvailability]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Convert out changed parameter.
     if ($PSBoundParameters.ContainsKey('MutexWaitTimeInMilliseconds'))
@@ -4964,7 +4964,7 @@ function New-ZipFile
     Set-StrictMode -Version 3
 
     # Announce overall deprecation and translate $ContinueOnError to an ActionPreference before executing.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been replaced by [New-ADTZipFile]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [New-ADTZipFile]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
@@ -4975,8 +4975,8 @@ function New-ZipFile
     }
 
     # Convert source path parameter.
-    $PSBoundParameters.Add('LiteralPath', $PSBoundParameters.($PSCmdlet.get_ParameterSetName()))
-    $null = $PSBoundParameters.Remove($PSCmdlet.get_ParameterSetName())
+    $PSBoundParameters.Add('LiteralPath', $PSBoundParameters.($PSCmdlet.ParameterSetName))
+    $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
 
     # Convert destination parameters.
     $PSBoundParameters.Add('DestinationPath', (Join-Path -Path $DestinationArchiveDirectoryPath -ChildPath $DestinationArchiveFileName))
@@ -5032,7 +5032,7 @@ function Set-PinnedApplication
     Set-StrictMode -Version 3
 
     # Announce that this function is no more and therefore does nothing within the deployment script.
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.get_MyCommand().get_Name())] has been removed from PSAppDeployToolkit as its functionality no longer works with Windows 10 1809 or higher targets." -Severity Warning
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been removed from PSAppDeployToolkit as its functionality no longer works with Windows 10 1809 or higher targets." -Severity Warning
 }
 
 
@@ -5070,7 +5070,7 @@ function Write-FunctionHeaderOrFooter
         Write-ADTLogEntry -Message 'Function Start' -Source ${CmdletName} -DebugMessage
 
         # Get the parameters that the calling function was invoked with.
-        if ([System.String]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.get_Key())]" } }, @{ Label = 'Value'; Expression = { $_.get_Value() }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.get_Value().GetType().get_Name() }; Alignment = 'Left' } -AutoSize -Wrap | Out-String)
+        if ([System.String]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String)
         {
             Write-ADTLogEntry -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
         }
@@ -5114,25 +5114,25 @@ else
 }
 
 # Build out parameter hashtable.
-$sessionParams = @{}; $adtModule.get_ExportedCommands().'Open-ADTSession'.get_Parameters().get_Values() | & {
+$sessionParams = @{}; $adtModule.ExportedCommands.'Open-ADTSession'.Parameters.Values | & {
     process
     {
         # Skip any Open-ADTSession params that are considered frontend params/variables.
-        if ($_.get_ParameterSets().get_Values().get_HelpMessage() -notmatch '^Frontend (Parameter|Variable)$')
+        if ($_.ParameterSets.Values.HelpMessage -notmatch '^Frontend (Parameter|Variable)$')
         {
             return
         }
 
         # Skip if we didn't get a variable value.
-        if (!($variable = Get-Variable -Name $_.get_Name() -ErrorAction Ignore))
+        if (!($variable = Get-Variable -Name $_.Name -ErrorAction Ignore))
         {
             return
         }
 
         # Add the parameter if it's not null.
-        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $variable.get_Value())))
+        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $variable.Value)))
         {
-            $sessionParams.Add($variable.get_Name(), $variable.get_Value())
+            $sessionParams.Add($variable.Name, $variable.Value)
         }
     }
 }
@@ -5142,7 +5142,7 @@ if ($sessionParams.ContainsKey('AppScriptDate'))
 {
     try
     {
-        $sessionParams.AppScriptDate = [System.DateTime]::Parse($sessionParams.AppScriptDate, $Host.get_CurrentCulture())
+        $sessionParams.AppScriptDate = [System.DateTime]::Parse($sessionParams.AppScriptDate, $Host.CurrentCulture)
     }
     catch
     {
@@ -5153,11 +5153,11 @@ if ($sessionParams.ContainsKey('AppScriptDate'))
 # Redefine DeployAppScriptParameters due bad casting in Deploy-Application.ps1.
 if ($sessionParams.ContainsKey('DeployAppScriptParameters'))
 {
-    $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[1].get_InvocationInfo().get_BoundParameters()
+    $sessionParams.DeployAppScriptParameters = (Get-PSCallStack)[1].InvocationInfo.BoundParameters
 }
 
 # Open a new deployment session.
-Open-ADTSession -SessionState $ExecutionContext.get_SessionState() @sessionParams
+Open-ADTSession -SessionState $ExecutionContext.SessionState @sessionParams
 
 # Define aliases for some functions to maintain backwards compatibility.
 New-Alias -Name Refresh-SessionEnvironmentVariables -Value Update-SessionEnvironmentVariables -Option ReadOnly -Force
@@ -5179,15 +5179,15 @@ Set-StrictMode -Version 1
 if ((Test-Path -LiteralPath "$PSScriptRoot\AppDeployToolkitExtensions.ps1" -PathType Leaf))
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'scriptParentPath', Justification = "This variable is used within a dot-sourced script that PSScriptAnalyzer has no visibility of.")]
-    $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').get_Value().get_ScriptName())
+    $scriptParentPath = if ($invokingScript = (Get-Variable -Name 'MyInvocation').Value.ScriptName)
     {
         # If this script was invoked by another script.
-        (Get-Item -LiteralPath $invokingScript).get_DirectoryName()
+        (Get-Item -LiteralPath $invokingScript).DirectoryName
     }
     else
     {
         # If this script was not invoked by another script, fall back to the directory one level above this script.
-        (Get-Item -LiteralPath $MyInvocation.get_MyCommand().get_Definition()).get_Directory().get_Parent().get_FullName()
+        (Get-Item -LiteralPath $MyInvocation.MyCommand.Definition).Directory.Parent.FullName
     }
     . "$PSScriptRoot\AppDeployToolkitExtensions.ps1"
 }

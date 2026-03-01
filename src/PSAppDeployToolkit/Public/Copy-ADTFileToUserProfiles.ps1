@@ -115,7 +115,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Destination = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$Destination = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Profile', 'AppData', 'LocalAppData', 'Desktop', 'Documents', 'StartMenu', 'Temp', 'OneDrive', 'OneDriveCommercial')]
@@ -129,13 +129,13 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$FileCopyMode = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyParams = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$RobocopyParams = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::get_Value(),
+        [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SpecifiedProfiles')]
         [ValidateNotNullOrEmpty()]
@@ -165,7 +165,7 @@ function Copy-ADTFileToUserProfiles
     begin
     {
         # Initalize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         # Define default params for Copy-ADTFile.
         $CopyFileSplat = @{
@@ -212,7 +212,7 @@ function Copy-ADTFileToUserProfiles
     process
     {
         # Add all source paths to the collection.
-        $sourcePaths.AddRange((Get-Variable -Name $PSCmdlet.get_ParameterSetName() -ValueOnly))
+        $sourcePaths.AddRange((Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
     }
 
     end
@@ -222,12 +222,12 @@ function Copy-ADTFileToUserProfiles
         {
             if ([System.String]::IsNullOrWhiteSpace($UserProfile."$BasePath`Path"))
             {
-                Write-ADTLogEntry -Message "Skipping user profile [$($UserProfile.get_NTAccount())] as path [$BasePath`Path] is not available."
+                Write-ADTLogEntry -Message "Skipping user profile [$($UserProfile.NTAccount)] as path [$BasePath`Path] is not available."
                 continue
             }
             $dest = (Join-Path -Path $UserProfile."$BasePath`Path" -ChildPath $Destination).Trim()
             Write-ADTLogEntry -Message "Copying path [$sourcePaths] to $($dest):"
-            if ($PSCmdlet.ShouldProcess($dest, "Copy files from [$sourcePaths] to user profile [$($UserProfile.get_NTAccount())]"))
+            if ($PSCmdlet.ShouldProcess($dest, "Copy files from [$sourcePaths] to user profile [$($UserProfile.NTAccount)]"))
             {
                 Copy-ADTFile -Path $sourcePaths -Destination $dest @CopyFileSplat
             }

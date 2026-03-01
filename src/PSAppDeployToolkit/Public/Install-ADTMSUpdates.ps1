@@ -63,7 +63,7 @@ function Install-ADTMSUpdates
     begin
     {
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if (!($updates = if ([System.IO.Directory]::Exists($LiteralPath)) { Get-ChildItem @PSBoundParameters -Filter *.msu -Recurse -ErrorAction Ignore } else { $LiteralPath }))
         {
             $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified path contains no updates.'))
@@ -83,9 +83,9 @@ function Install-ADTMSUpdates
         }
         foreach ($update in $updates)
         {
-            if ($PSCmdlet.ShouldProcess("Microsoft Update [$($update.get_Name())]", 'Install'))
+            if ($PSCmdlet.ShouldProcess("Microsoft Update [$($update.Name)]", 'Install'))
             {
-                Start-ADTProcess -FilePath $update.get_FullName() -ArgumentList '/quiet /norestart' -WindowStyle 'Hidden'
+                Start-ADTProcess -FilePath $update.FullName -ArgumentList '/quiet /norestart' -WindowStyle 'Hidden'
             }
         }
     }

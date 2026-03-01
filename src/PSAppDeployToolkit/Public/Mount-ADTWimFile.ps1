@@ -80,11 +80,11 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
                 }
-                if (!$_.get_Exists())
+                if (!$_.Exists)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be found.'))
                 }
-                if ([System.Uri]::new($_).get_IsUnc())
+                if ([System.Uri]::new($_).IsUnc)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
                 }
@@ -99,7 +99,7 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
                 }
-                if ([System.Uri]::new($_).get_IsUnc())
+                if ([System.Uri]::new($_).IsUnc)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path cannot be a network share.'))
                 }
@@ -146,7 +146,7 @@ function Mount-ADTWimFile
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
     process
@@ -164,7 +164,7 @@ function Mount-ADTWimFile
                 # Provide a warning if this WIM file is already mounted.
                 if (($wimFile = Get-ADTMountedWimFile -ImagePath $ImagePath))
                 {
-                    Write-ADTLogEntry -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.get_Path())] and will be mounted again." -Severity Warning
+                    Write-ADTLogEntry -Message "The WIM file [$ImagePath] is already mounted at [$($wimFile.Path)] and will be mounted again." -Severity Warning
                 }
 
                 # If we're using the force, forcibly remove the existing directory.
@@ -192,7 +192,7 @@ function Mount-ADTWimFile
                 if (!(Test-Path -LiteralPath $Path -PathType Container))
                 {
                     Write-ADTLogEntry -Message "Creating path [$Path] as it does not exist."
-                    $Path = [System.IO.Directory]::CreateDirectory($Path).get_FullName()
+                    $Path = [System.IO.Directory]::CreateDirectory($Path).FullName
                 }
 
                 # Mount the WIM file.
@@ -218,7 +218,7 @@ function Mount-ADTWimFile
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage 'Error occurred while attemping to mount WIM file.'
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage 'Error occurred while attemping to mount WIM file.'
         }
     }
 

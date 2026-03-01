@@ -806,11 +806,11 @@ function Show-ADTInstallationWelcome
         # Initialise the string table.
         $sessionState = if ($adtSession)
         {
-            $adtSession.get_SessionState()
+            $adtSession.SessionState
         }
         if ($null -eq $sessionState)
         {
-            $sessionState = $PSCmdlet.get_SessionState()
+            $sessionState = $PSCmdlet.SessionState
         }
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
@@ -838,13 +838,13 @@ function Show-ADTInstallationWelcome
     begin
     {
         # Throw if we have duplicated process objects.
-        if ($CloseProcesses -and !($CloseProcesses.Name | Sort-Object | Get-Unique | Measure-Object).get_Count().Equals($CloseProcesses.get_Count()))
+        if ($CloseProcesses -and !($CloseProcesses.Name | Sort-Object | Get-Unique | Measure-Object).Count.Equals($CloseProcesses.Count))
         {
             $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcesses -ProvidedValue $CloseProcesses -ExceptionMessage 'The specified CloseProcesses array contains duplicate processes.'))
         }
 
         # Initialize function.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $welcomeState = @{
             Initialized = $false
             Retries = 0
@@ -853,7 +853,7 @@ function Show-ADTInstallationWelcome
         # Set up DeploymentType if not specified.
         $DeploymentType = if ($adtSession)
         {
-            $adtSession.get_DeploymentType()
+            $adtSession.DeploymentType
         }
         else
         {
@@ -863,7 +863,7 @@ function Show-ADTInstallationWelcome
         # Set up remainder if not specified.
         if (!$PSBoundParameters.ContainsKey('Title'))
         {
-            $PSBoundParameters.Add('Title', $adtSession.get_InstallTitle())
+            $PSBoundParameters.Add('Title', $adtSession.InstallTitle)
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
@@ -871,7 +871,7 @@ function Show-ADTInstallationWelcome
         }
 
         # Instantiate new object to hold all data needed within this call.
-        $currentDateTimeLocal = [System.DateTime]::get_Now()
+        $currentDateTimeLocal = [System.DateTime]::Now
         $deferDeadlineDateTime = $null
         $promptResult = $null
 
@@ -939,7 +939,7 @@ function Show-ADTInstallationWelcome
             }
 
             # Only call `Set-ADTDeferHistory` if there's values to update.
-            if ($sadhParams.get_Count())
+            if ($sadhParams.Count)
             {
                 Set-ADTDeferHistory @sadhParams
             }
@@ -969,7 +969,7 @@ function Show-ADTInstallationWelcome
             return $runningApps | & {
                 process
                 {
-                    if ($_.get_SID() -eq $runAsActiveUser.get_SID())
+                    if ($_.SID -eq $runAsActiveUser.SID)
                     {
                         return $_
                     }
@@ -987,14 +987,14 @@ function Show-ADTInstallationWelcome
                 # If running in NonInteractive mode, force the processes to close silently.
                 if (!$PSBoundParameters.ContainsKey('Silent') -and $adtSession -and ($adtSession.IsNonInteractive() -or $adtSession.IsSilent()))
                 {
-                    Write-ADTLogEntry -Message "Running $($MyInvocation.get_MyCommand().get_Name()) silently as the current deployment is NonInteractive or Silent."
+                    Write-ADTLogEntry -Message "Running $($MyInvocation.MyCommand.Name) silently as the current deployment is NonInteractive or Silent."
                     $Silent = $true
                 }
 
                 # Bypass if no one's logged on to answer the dialog.
                 if (!$Silent -and !($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
                 {
-                    Write-ADTLogEntry -Message "Running $($MyInvocation.get_MyCommand().get_Name()) silently as there is no active user logged onto the system."
+                    Write-ADTLogEntry -Message "Running $($MyInvocation.MyCommand.Name) silently as there is no active user logged onto the system."
                     $Silent = $true
                 }
 
@@ -1271,8 +1271,8 @@ function Show-ADTInstallationWelcome
                                     Write-ADTLogEntry -Message "The parameter [-PromptToSave] not specified, force closing the application(s)."
                                     foreach ($runningApp in $runningApps)
                                     {
-                                        Write-ADTLogEntry -Message "Stopping process [$($runningApp.get_Process().get_ProcessName())]..."
-                                        Stop-Process -Name $runningApp.get_Process().get_ProcessName() -Force -ErrorAction Ignore
+                                        Write-ADTLogEntry -Message "Stopping process [$($runningApp.Process.ProcessName)]..."
+                                        Stop-Process -Name $runningApp.Process.ProcessName -Force -ErrorAction Ignore
                                     }
                                 }
                                 else
@@ -1385,7 +1385,7 @@ function Show-ADTInstallationWelcome
                     {
                         # Force the processes to close silently, without prompting the user.
                         Write-ADTLogEntry -Message "Force closing application(s) ['$([System.String]::Join("', '", $runningApps.Description))'] that the user had no permissions to close."
-                        Stop-Process -InputObject $runningApps.get_Process() -Force -ErrorAction Ignore
+                        Stop-Process -InputObject $runningApps.Process -Force -ErrorAction Ignore
                         [System.Threading.Thread]::Sleep(2000)
                     }
                 }
@@ -1393,7 +1393,7 @@ function Show-ADTInstallationWelcome
                 {
                     # Force the processes to close silently, without prompting the user.
                     Write-ADTLogEntry -Message "Force closing application(s) ['$([System.String]::Join("', '", $runningApps.Description))'] without prompting user."
-                    Stop-Process -InputObject $runningApps.get_Process() -Force -ErrorAction Ignore
+                    Stop-Process -InputObject $runningApps.Process -Force -ErrorAction Ignore
                     [System.Threading.Thread]::Sleep(2000)
                 }
 
@@ -1421,7 +1421,7 @@ function Show-ADTInstallationWelcome
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
         finally
         {

@@ -102,7 +102,7 @@ function Remove-ADTFileFromUserProfiles
 
     begin
     {
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $RemoveFileSplat = @{
             Recurse = $Recurse
         }
@@ -117,19 +117,19 @@ function Remove-ADTFileFromUserProfiles
         }
 
         # Store variable based on ParameterSetName.
-        $pathVar = Get-Variable -Name $PSCmdlet.get_ParameterSetName()
+        $pathVar = Get-Variable -Name $PSCmdlet.ParameterSetName
     }
 
     process
     {
-        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).get_ProfilePath())
+        foreach ($UserProfilePath in (Get-ADTUserProfiles @GetUserProfileSplat).ProfilePath)
         {
-            Write-ADTLogEntry -Message "Removing $($pathVar.get_Name()) [$($pathVar.get_Value())] from $UserProfilePath`:"
-            if (!$PSCmdlet.ShouldProcess($UserProfilePath, "Remove $($pathVar.get_Name()) [$($pathVar.get_Value())] from user profile"))
+            Write-ADTLogEntry -Message "Removing $($pathVar.Name) [$($pathVar.Value)] from $UserProfilePath`:"
+            if (!$PSCmdlet.ShouldProcess($UserProfilePath, "Remove $($pathVar.Name) [$($pathVar.Value)] from user profile"))
             {
                 continue
             }
-            $RemoveFileSplat.Path = $pathVar.get_Value() | & { process { Join-Path -Path $UserProfilePath -ChildPath $_ } }
+            $RemoveFileSplat.Path = $pathVar.Value | & { process { Join-Path -Path $UserProfilePath -ChildPath $_ } }
             try
             {
                 try
@@ -143,7 +143,7 @@ function Remove-ADTFileFromUserProfiles
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
             }
         }
     }

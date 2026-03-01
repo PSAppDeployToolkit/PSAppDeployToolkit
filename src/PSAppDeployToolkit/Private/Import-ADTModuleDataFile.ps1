@@ -45,17 +45,17 @@ function Private:Import-ADTModuleDataFile
         foreach ($section in $NewData.GetEnumerator())
         {
             # Recursively process hashtables, otherwise just update the value.
-            if ($section.get_Value() -is [System.Collections.Hashtable])
+            if ($section.Value -is [System.Collections.Hashtable])
             {
-                if (!$DataFile.ContainsKey($section.get_Key()) -or ($DataFile.($section.get_Key()) -isnot [System.Collections.Hashtable]))
+                if (!$DataFile.ContainsKey($section.Key) -or ($DataFile.($section.Key) -isnot [System.Collections.Hashtable]))
                 {
-                    $DataFile.($section.get_Key()) = @{}
+                    $DataFile.($section.Key) = @{}
                 }
-                & $MyInvocation.get_MyCommand() -DataFile $DataFile.($section.get_Key()) -NewData $section.get_Value()
+                & $MyInvocation.MyCommand -DataFile $DataFile.($section.Key) -NewData $section.Value
             }
-            elseif (!$DataFile.ContainsKey($section.get_Key()) -or ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.get_Value())))
+            elseif (!$DataFile.ContainsKey($section.Key) -or ![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
             {
-                $DataFile.($section.get_Key()) = $section.get_Value()
+                $DataFile.($section.Key) = $section.Value
             }
         }
     }
@@ -67,7 +67,7 @@ function Private:Import-ADTModuleDataFile
     {
         if ($Script:ADT.ModuleDefaults.$section.Contains($UICulture.Name))
         {
-            $Script:ADT.ModuleDefaults.$section.($UICulture.Name).get_Ast().get_EndBlock().get_Statements().get_PipelineElements().get_Expression().SafeGetValue()
+            $Script:ADT.ModuleDefaults.$section.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
             $UICulture = $initialUICulture
             break
         }

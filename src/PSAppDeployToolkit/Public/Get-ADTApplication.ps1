@@ -128,12 +128,12 @@ function Get-ADTApplication
     begin
     {
         # Announce start.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState()
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $updatesSkippedCounter = 0
         $uninstallKeyPaths = $(
             'Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
             'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
-            if ([System.Environment]::get_Is64BitProcess())
+            if ([System.Environment]::Is64BitProcess)
             {
                 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
             }
@@ -199,7 +199,7 @@ function Get-ADTApplication
                     }
 
                     # Bypass any updates or hotfixes.
-                    if (!$IncludeUpdatesAndHotfixes -and $updatesAndHotFixesRegex.Matches($appDisplayName).get_Count())
+                    if (!$IncludeUpdatesAndHotfixes -and $updatesAndHotFixesRegex.Matches($appDisplayName).Count)
                     {
                         $updatesSkippedCounter++
                         continue
@@ -212,11 +212,11 @@ function Get-ADTApplication
                     }
 
                     # Grab all available uninstall string.
-                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', [System.Management.Automation.Language.NullString]::get_Value())))
+                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value)))
                     {
                         $uninstallString = $null
                     }
-                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', [System.Management.Automation.Language.NullString]::get_Value())))
+                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value)))
                     {
                         $quietUninstallString = $null
                     }
@@ -236,9 +236,9 @@ function Get-ADTApplication
                     }
 
                     # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
-                    if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::get_InvariantCulture(), [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
+                    if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
                     {
-                        $installDate = [PSADT.Utilities.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).get_Date()
+                        $installDate = [PSADT.Utilities.RegistryUtilities]::GetRegistryKeyLastWriteTime($item.PSPath).Date
                     }
 
                     # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
@@ -272,7 +272,7 @@ function Get-ADTApplication
                     # Determine if this is a 64-bit app. This can be null for per-user app installs as we just can't tell.
                     $is64bitApplication = if (!$item.PSPath.StartsWith('Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER'))
                     {
-                        [System.Environment]::get_Is64BitProcess() -and ($item.PSPath -notmatch 'Wow6432Node')
+                        [System.Environment]::Is64BitProcess -and ($item.PSPath -notmatch 'Wow6432Node')
                     }
 
                     # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
@@ -299,7 +299,7 @@ function Get-ADTApplication
                     # Build out an object and return it to the pipeline if there's no filterscript or the filterscript returns something.
                     if (!$FilterScript -or (ForEach-Object -InputObject $app -Process $FilterScript -ErrorAction Ignore))
                     {
-                        Write-ADTLogEntry -Message "Found installed application [$($app.get_DisplayName())$(if ($app.get_DisplayVersion() -and !$app.get_DisplayName().Contains($app.get_DisplayVersion())) {" $($app.get_DisplayVersion())"})]."
+                        Write-ADTLogEntry -Message "Found installed application [$($app.DisplayName)$(if ($app.DisplayVersion -and !$app.DisplayName.Contains($app.DisplayVersion)) {" $($app.DisplayVersion)"})]."
                         $app
                     }
                 }
@@ -310,7 +310,7 @@ function Get-ADTApplication
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.get_SessionState() -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.get_Exception().get_Message())." -ErrorAction SilentlyContinue
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
             }
         }
 
