@@ -46,12 +46,15 @@ function Private:Import-ADTConfig
 
             # Get the asset's full path based on the supplied BaseDirectory.
             # Fall back to the module's path if the asset is unable to be found.
-            $assetPath = foreach ($directory in $(if ($BaseDirectory) { $BaseDirectory[($BaseDirectory.get_Length() - 1)..(0)] }; "$Script:PSScriptRoot\Config"))
+            $assetPath = if ($BaseDirectory)
             {
-                if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.get_Key()))" -ErrorAction Ignore))
+                foreach ($directory in $BaseDirectory[($BaseDirectory.get_Length() - 1)..(0)])
                 {
-                    $assetPath.get_FullName()
-                    break
+                    if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.get_Key()))" -ErrorAction Ignore))
+                    {
+                        $assetPath.get_FullName()
+                        break
+                    }
                 }
             }
 
