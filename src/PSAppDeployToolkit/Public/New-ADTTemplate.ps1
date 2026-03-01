@@ -158,7 +158,7 @@ function New-ADTTemplate
                 $null = New-Item -Name 'Add Supporting Files Here.txt' -Path "$templatePath\SupportFiles" -ItemType File -Force
 
                 # Copy in the frontend files.
-                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
+                Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\opt\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
 
                 # Export default module assets to disk.
                 $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
@@ -214,12 +214,12 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', [System.Management.Automation.Language.NullString]::get_Value()).Replace('2000-12-31', [System.DateTime]::get_Now().ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
+                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::get_Value()).Replace('2000-12-31', [System.DateTime]::get_Now().ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
                 }
                 else
                 {
                     # Copy over Deploy-Application.exe from the v4 template.
-                    Copy-Item -LiteralPath $Script:PSScriptRoot\Frontend\v4\Invoke-AppDeployToolkit.exe -Destination "$templatePath\Deploy-Application.exe"
+                    Copy-Item -LiteralPath $Script:PSScriptRoot\opt\Frontend\v4\Invoke-AppDeployToolkit.exe -Destination "$templatePath\Deploy-Application.exe"
                 }
 
                 # Display the newly created folder in Windows Explorer.

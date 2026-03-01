@@ -3,7 +3,7 @@
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'DeployMode', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
         $DeployMode = 'NonInteractive'
-        $null = . "$PSScriptRoot\..\src\Frontend\v3\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
+        $null = . "$PSScriptRoot\..\..\PSAppDeployToolkit\opt\Frontend\v3\AppDeployToolkit\AppDeployToolkitMain.ps1" *> $null
         #Mock Write-Host {}
         #$DebugPreference = 'Continue'
     }

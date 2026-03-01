@@ -91,10 +91,10 @@ try
                         SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'PSADT.Invoke.slnx')
                         BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT.Invoke\PSADT.Invoke\bin\Release\net472')
                         OutputPath = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v4')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\opt\Frontend\v4')
                             ))
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\Frontend\v4\Invoke-AppDeployToolkit.exe')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\opt\Frontend\v4\Invoke-AppDeployToolkit.exe')
                             ))
                     }).AsReadOnly()
                 ))
@@ -102,7 +102,7 @@ try
                     Repository = [System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName
                     SourceRoot = [System.IO.Directory]::GetParent($PSScriptRoot).FullName
                     ModuleSource = $PSScriptRoot -replace '\.Build$'
-                    AdmxTemplate = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'ADMX', 'PSAppDeployToolkit.admx')
+                    AdmxTemplate = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'opt', 'ADMX', 'PSAppDeployToolkit.admx')
                     UnitTests = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Tests', 'Unit')
                     IntegrationTests = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Tests', 'Integration')
                     BuildOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts')

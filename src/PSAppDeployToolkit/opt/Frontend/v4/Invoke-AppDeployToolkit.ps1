@@ -301,10 +301,10 @@ Set-StrictMode -Version 1
 try
 {
     # Import the module locally if available, otherwise try to find it from PSModulePath.
-    if (Test-Path -LiteralPath "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -PathType Leaf)
+    if (Test-Path -LiteralPath "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -PathType Leaf)
     {
-        Get-ChildItem -LiteralPath "$PSScriptRoot\..\..\..\PSAppDeployToolkit" -Recurse -File | Unblock-File -ErrorAction Ignore
-        Import-Module -FullyQualifiedName @{ ModuleName = [System.Management.Automation.WildcardPattern]::Escape("$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"); Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' } -Force
+        Get-ChildItem -LiteralPath "$PSScriptRoot\..\..\..\..\PSAppDeployToolkit" -Recurse -File | Unblock-File -ErrorAction Ignore
+        Import-Module -FullyQualifiedName @{ ModuleName = [System.Management.Automation.WildcardPattern]::Escape("$PSScriptRoot\..\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1"); Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' } -Force
     }
     else
     {
