@@ -760,6 +760,10 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("The 'SessionId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
+            if (!arguments.TryGetValue("UIAccess", out string? uiAccessStr) || string.IsNullOrWhiteSpace(uiAccessStr) || !bool.TryParse(uiAccessStr, out bool uiAccess))
+            {
+                throw new ClientException("The 'SessionId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+            }
 
             // Confirm we've got a ElevatedTokenType and that it's valid.
             if (!arguments.TryGetValue("ElevatedTokenType", out string? elevatedTokenTypeArg) || string.IsNullOrWhiteSpace(elevatedTokenTypeArg))
@@ -783,7 +787,7 @@ namespace PSADT.ClientServer
 
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
-            using (SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionId, elevatedTokenType))
+            using (SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionId, elevatedTokenType, uiAccess))
             using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
             using (SafeProcessHandle hCurrentProcess = NativeMethods.GetCurrentProcess())
             {

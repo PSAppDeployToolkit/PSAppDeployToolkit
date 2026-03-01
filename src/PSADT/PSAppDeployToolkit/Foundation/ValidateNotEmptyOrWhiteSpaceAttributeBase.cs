@@ -22,7 +22,6 @@ namespace PSAppDeployToolkit.Foundation
     /// validation errors.</param>
     public abstract class ValidateNotEmptyOrWhiteSpaceAttributeBase(bool allowNull) : ValidateArgumentsAttribute
     {
-
         /// <summary>
         /// Validates that the argument is not empty or consists only of white-space characters.
         /// For collections, validates that the collection is not empty and that each element passes validation.

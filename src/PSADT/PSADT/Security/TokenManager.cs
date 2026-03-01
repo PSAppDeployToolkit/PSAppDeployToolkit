@@ -39,12 +39,13 @@ namespace PSADT.Security
         /// valid user session.</param>
         /// <param name="elevatedTokenType">The type of elevated token to retrieve. Specify a value from the ElevatedTokenType enumeration. The default
         /// is None.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A SafeFileHandle representing the user's primary access token. The caller is responsible for disposing of
         /// the handle when it is no longer needed.</returns>
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
-        internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
+        internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
         {
             // Confirm that the caller is an administrator.
             if (!AccountUtilities.CallerIsAdmin)
@@ -94,7 +95,7 @@ namespace PSADT.Security
                                         {
                                             using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
                                             using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(EnvironmentInfo.ClientServerClientCompatiblePath);
-                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType}");
+                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
                                             bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                             try
                                             {
@@ -213,7 +214,7 @@ namespace PSADT.Security
                     {
                         try
                         {
-                            return GetLinkedPrimaryToken(hUserToken);
+                            return GetLinkedPrimaryToken(hUserToken, uiAccess);
                         }
                         catch (Exception ex)
                         {
@@ -223,7 +224,7 @@ namespace PSADT.Security
                             }
                         }
                     }
-                    return GetPrimaryToken(hUserToken);
+                    return GetPrimaryToken(hUserToken, uiAccess);
                 }
             }
         }
@@ -270,12 +271,17 @@ namespace PSADT.Security
         /// can be used for impersonation or other security-related operations. Ensure that the caller has appropriate
         /// permissions to access and duplicate the token.</remarks>
         /// <param name="tokenHandle">A handle to the security token. This handle must have the necessary access rights to allow duplication.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
-        internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle)
+        internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
-            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, null, SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
-            if (PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
+            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            if (uiAccess)
             {
+                if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
+                {
+                    throw new UnauthorizedAccessException("The calling account must have SeTcbPrivilege to set UIAccess on the token.");
+                }
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
                 Span<byte> tokenInformation = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(tokenInformation, 1);
                 _ = NativeMethods.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
@@ -308,11 +314,12 @@ namespace PSADT.Security
         /// handle.</remarks>
         /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the linked primary token is to be
         /// retrieved.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the linked primary token.</returns>
-        internal static SafeFileHandle GetLinkedPrimaryToken(SafeHandle tokenHandle)
+        internal static SafeFileHandle GetLinkedPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
             using SafeFileHandle linkedToken = GetLinkedToken(tokenHandle);
-            return GetPrimaryToken(linkedToken);
+            return GetPrimaryToken(linkedToken, uiAccess);
         }
 
         /// <summary>
@@ -322,17 +329,18 @@ namespace PSADT.Security
         /// specified token handle. If the linked token is unavailable, it falls back to retrieving the primary token of
         /// the original token handle.</remarks>
         /// <param name="tokenHandle">A <see cref="SafeHandle"/> representing the token handle for which the primary token is to be retrieved.</param>
+        /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the highest available primary token.</returns>
-        internal static SafeFileHandle GetHighestPrimaryToken(SafeHandle tokenHandle)
+        internal static SafeFileHandle GetHighestPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
             // If the linked token is not available, fall back to the primary token of the original token handle.
             try
             {
-                return GetLinkedPrimaryToken(tokenHandle);
+                return GetLinkedPrimaryToken(tokenHandle, uiAccess);
             }
             catch
             {
-                return GetPrimaryToken(tokenHandle);
+                return GetPrimaryToken(tokenHandle, uiAccess);
                 throw;
             }
         }
