@@ -116,14 +116,6 @@ function Invoke-ADTModuleCompilation
                 }
             }
 
-            # For Invoke-AppDeployToolkit.exe, we need an additional check to make sure the assembly is renamed.
-            Write-ADTBuildLogEntry -Message "Renaming [Invoke-AppDeployToolkit.exe] to [Deploy-Application.exe] for v3 compatibility template."
-            if ([System.IO.File]::Exists("$($Script:ModuleConstants.Paths.ModuleOutput)\Frontend\v3\Invoke-AppDeployToolkit.exe"))
-            {
-                Remove-Item -LiteralPath "$($Script:ModuleConstants.Paths.ModuleOutput)\Frontend\v3\Deploy-Application.exe" -Force -Confirm:$false
-                Rename-Item -LiteralPath "$($Script:ModuleConstants.Paths.ModuleOutput)\Frontend\v3\Invoke-AppDeployToolkit.exe" -NewName Deploy-Application.exe -Force -Confirm:$false
-            }
-
             # Strip PDB files from all non-lib locations (we want them in lib for stack traces, etc).
             Write-ADTBuildLogEntry -Message "Removing PDB files from all non-lib locations."
             Get-ChildItem -LiteralPath $Script:ModuleConstants.Paths.ModuleOutput -Directory | & { process { if (!$_.Name.Equals('lib')) { return $_ } } } | Get-ChildItem -Filter *.pdb -Recurse | Remove-Item -Force

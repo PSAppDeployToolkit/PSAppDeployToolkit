@@ -210,6 +210,11 @@ function New-ADTTemplate
                     }
                     Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\', [System.Management.Automation.Language.NullString]::get_Value()).Replace('2000-12-31', [System.DateTime]::get_Now().ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
                 }
+                else
+                {
+                    # Copy over Deploy-Application.exe from the v4 template.
+                    Copy-Item -LiteralPath $Script:PSScriptRoot\Frontend\v4\Invoke-AppDeployToolkit.exe -Destination "$templatePath\Deploy-Application.exe"
+                }
 
                 # Display the newly created folder in Windows Explorer.
                 if ($Show)

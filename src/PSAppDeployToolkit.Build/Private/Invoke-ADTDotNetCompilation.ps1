@@ -154,14 +154,6 @@ function Invoke-ADTDotNetCompilation
                 Write-ADTBuildLogEntry -Message "Built [$($buildItem.SolutionPath)] solution in [$buildType] mode as required." -ForegroundColor DarkGreen
             }
         }
-
-        # For Invoke-AppDeployToolkit.exe, we need an additional check to make sure the assembly is renamed.
-        if ([System.IO.File]::Exists("$($Script:ModuleConstants.Paths.ModuleSource)\Frontend\v3\Invoke-AppDeployToolkit.exe"))
-        {
-            Remove-Item -LiteralPath "$($Script:ModuleConstants.Paths.ModuleSource)\Frontend\v3\Deploy-Application.exe" -Force -Confirm:$false
-            Remove-Item -LiteralPath "$($Script:ModuleConstants.Paths.ModuleSource)\Frontend\v3\Invoke-AppDeployToolkit.pdb" -Force -Confirm:$false -ErrorAction Ignore
-            Rename-Item -LiteralPath "$($Script:ModuleConstants.Paths.ModuleSource)\Frontend\v3\Invoke-AppDeployToolkit.exe" -NewName Deploy-Application.exe -Force -Confirm:$false
-        }
         Write-ADTBuildLogEntry -Message "Confirmed no other C# source operations required."
         Complete-ADTModuleBuildFunction
     }
