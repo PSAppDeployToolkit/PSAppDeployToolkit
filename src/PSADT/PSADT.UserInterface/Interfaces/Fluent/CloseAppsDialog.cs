@@ -107,7 +107,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
-            // Allow the dialog to be minimised if specified.
+            // Allow the dialog to be minimized if specified.
             if (options.DialogAllowMinimize)
             {
                 SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);

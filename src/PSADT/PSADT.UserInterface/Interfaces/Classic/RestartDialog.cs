@@ -169,7 +169,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="e">An object that contains the event data.</param>
         private protected override void ButtonRight_Click(object sender, EventArgs e)
         {
-            // Minimise the window and restart the persistence timer.
+            // Minimize the window and restart the persistence timer.
             // Note that we deliberately do not call the base handler!
             WindowState = FormWindowState.Minimized;
             ResetPersistTimer();

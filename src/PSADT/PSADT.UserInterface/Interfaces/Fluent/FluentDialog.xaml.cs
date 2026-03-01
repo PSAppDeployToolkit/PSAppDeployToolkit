@@ -1052,12 +1052,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// The specified position of the dialog.
         /// </summary>
-        private readonly DialogPosition _dialogPosition = DialogPosition.BottomRight;
+        private protected readonly DialogPosition _dialogPosition = DialogPosition.BottomRight;
 
         /// <summary>
         /// Whether the dialog is allowed to be moved.
         /// </summary>
-        private readonly bool _dialogAllowMove;
+        private protected readonly bool _dialogAllowMove;
 
         /// <summary>
         /// The countdown duration for the dialog.

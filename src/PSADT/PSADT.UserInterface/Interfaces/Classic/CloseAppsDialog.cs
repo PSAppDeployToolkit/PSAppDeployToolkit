@@ -84,7 +84,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     flowLayoutPanelDialog.Controls.Remove(labelCustomMessage);
                 }
 
-                // Allow the dialog to be minimised if specified.
+                // Allow the dialog to be minimized if specified.
                 if (options.DialogAllowMinimize)
                 {
                     FormBorderStyle = FormBorderStyle.FixedSingle;
