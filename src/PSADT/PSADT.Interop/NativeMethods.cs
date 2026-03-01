@@ -3727,7 +3727,7 @@ namespace PSADT.Interop
         internal static WIN32_ERROR NetGetJoinInformation(string? lpServer, out SafeNetApiBufferFreeHandle lpNameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS BufferType)
         {
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
-            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr().ThrowIfZeroOrInvalid(), lpNameBufferLocal.Length, true);
+            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr().ThrowIfZeroOrInvalid(), lpNameBufferLocal.Length * sizeof(char), true);
             return res;
         }
 
