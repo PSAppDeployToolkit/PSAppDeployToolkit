@@ -5,6 +5,7 @@ using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
 using System.Reflection;
+using System.Security.Principal;
 
 namespace PSAppDeployToolkit.Foundation
 {
@@ -55,6 +56,13 @@ namespace PSAppDeployToolkit.Foundation
             else if (arguments is ScriptBlock script)
             {
                 if (string.IsNullOrWhiteSpace(script.ToString()))
+                {
+                    throw new ValidationMetadataException("The argument is null or white space. Provide an argument that is not null or white space, and then try running the command again.");
+                }
+            }
+            else if (arguments is NTAccount ntAccount)
+            {
+                if (string.IsNullOrWhiteSpace(ntAccount.Value))
                 {
                     throw new ValidationMetadataException("The argument is null or white space. Provide an argument that is not null or white space, and then try running the command again.");
                 }

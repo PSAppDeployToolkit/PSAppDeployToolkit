@@ -11,7 +11,7 @@ function Private:Get-ADTClientServerUser
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Username')]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Username')]
