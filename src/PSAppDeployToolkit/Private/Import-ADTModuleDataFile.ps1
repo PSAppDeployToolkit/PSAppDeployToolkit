@@ -62,11 +62,13 @@ function Private:Import-ADTModuleDataFile
 
     # Import the default data first and foremost.
     $section = [System.IO.Path]::GetFileNameWithoutExtension($FileName)
+    $initialUICulture = $UICulture
     $importedData = while ($true)
     {
         if ($Script:ADT.ModuleDefaults.$section.Contains($UICulture.Name))
         {
             $Script:ADT.ModuleDefaults.$section.($UICulture.Name).get_Ast().get_EndBlock().get_Statements().get_PipelineElements().get_Expression().SafeGetValue()
+            $UICulture = $initialUICulture
             break
         }
         $UICulture = $UICulture.Parent
@@ -81,9 +83,24 @@ function Private:Import-ADTModuleDataFile
     }
 
     # Super-impose registry values if they exist.
-    if (!$IgnorePolicy -and ($policySettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$section\$(if ($PSBoundParameters.ContainsKey('UICulture')) { $PSBoundParameters.UICulture })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable))
+    if (!$IgnorePolicy)
     {
-        Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
+        $initialUICulture = $UICulture
+        while ($true)
+        {
+            if ($policySettings = Get-ChildItem -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\PSAppDeployToolkit\$section$(if (![System.String]::IsNullOrWhiteSpace($UICulture.Name)) { "\$($UICulture.Name)" })" -ErrorAction Ignore | Convert-ADTRegistryKeyToHashtable)
+            {
+                Update-ADTImportedDataValues -DataFile $importedData -NewData $policySettings
+                $UICulture = $initialUICulture
+                break
+            }
+            if ([System.String]::IsNullOrWhiteSpace($UICulture.Name))
+            {
+                $UICulture = $initialUICulture
+                break
+            }
+            $UICulture = $UICulture.Parent
+        }
     }
 
     # Return the built out data to the caller.
