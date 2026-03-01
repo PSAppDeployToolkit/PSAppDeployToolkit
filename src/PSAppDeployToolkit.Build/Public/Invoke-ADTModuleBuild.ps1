@@ -40,6 +40,11 @@ function Invoke-ADTModuleBuild
             Confirm-ADTScriptEncoding
             Confirm-ADTScriptFormatting
             Confirm-ADTScriptIntegrity
+            if (!$imported)
+            {
+                Import-ADTDevelopmentModule
+                $imported = $true
+            }
             Confirm-ADTAdmxTemplateValid
             Confirm-ADTStringTablesValid
         }

@@ -90,12 +90,17 @@ function Confirm-ADTStringTablesValid
     try
     {
         # Verify the formatting of all PowerShell script files within the repository.
-        Write-ADTBuildLogEntry -Message "Confirming string translation files have the same keys as English, this may take awhile."
-        $reference = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleStrings)) -FileName strings.psd1
-        foreach ($stringFile in (Get-ChildItem -LiteralPath $Script:ModuleConstants.Paths.ModuleStrings -Directory | Get-ChildItem -File))
+        Write-ADTBuildLogEntry -Message "Confirming string translations have the same keys as English, this may take awhile."
+        $stringsDict = & (Get-Module -Name $Script:ModuleConstants.ModuleName) { $ADT.ModuleDefaults.Strings }
+        $reference = $stringsDict.''.Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
+        foreach ($stringData in $stringsDict.GetEnumerator())
         {
-            Write-ADTBuildLogEntry -Message "Testing file [$($stringFile.FullName)]..."
-            Confirm-ADTStringTableValid -Reference $reference -Comparison (Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($stringFile.Directory.FullName)) -FileName $stringFile.Name)
+            if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
+            {
+                continue
+            }
+            Write-ADTBuildLogEntry -Message "Testing string translation for [$($stringData.Key)] language..."
+            Confirm-ADTStringTableValid -Reference $reference -Comparison $stringData.Value.Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
         }
         Complete-ADTModuleBuildFunction
     }

@@ -122,7 +122,7 @@ function New-ADTTemplate
             try
             {
                 # If we're running a release module, ensure the psd1 files haven't been tampered with.
-                if (($badFiles = Test-ADTReleaseBuildFileValidity -LiteralPath $Script:PSScriptRoot))
+                if ($Script:Module.Compiled -and $Script:Module.Signed -and ($badFiles = Get-ChildItem -LiteralPath $Script:PSScriptRoot -Filter *.ps*1 -Recurse | Get-AuthenticodeSignature | & { process { if (!$_.get_Status().Equals([System.Management.Automation.SignatureStatus]::Valid)) { return $_ } } }))
                 {
                     $naerParams = @{
                         Exception = [System.Security.Cryptography.CryptographicException]::new("One or more files within this module have invalid digital signatures.")
@@ -157,11 +157,26 @@ function New-ADTTemplate
                 $null = New-Item -Name 'Add Setup Files Here.txt' -Path "$templatePath\Files" -ItemType File -Force
                 $null = New-Item -Name 'Add Supporting Files Here.txt' -Path "$templatePath\SupportFiles" -ItemType File -Force
 
-                # Copy in the frontend files and the config/assets/strings.
+                # Copy in the frontend files and the assets.
                 Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
                 Copy-Item -LiteralPath "$Script:PSScriptRoot\Assets" -Destination $templatePath -Recurse -Force
-                Copy-Item -LiteralPath "$Script:PSScriptRoot\Config" -Destination $templatePath -Recurse -Force
-                Copy-Item -LiteralPath "$Script:PSScriptRoot\Strings" -Destination $templatePath -Recurse -Force
+
+                # Export the string data from the module to disk.
+                $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
+                foreach ($stringData in $ADT.ModuleDefaults.Strings.GetEnumerator())
+                {
+                    if ([System.String]::IsNullOrWhiteSpace($stringData.get_Key()))
+                    {
+                        continue
+                    }
+                    $null = New-Item -Path "$templatePath\Strings\$($stringData.get_Key())" -ItemType Directory -Force
+                    Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.get_Key())\strings.psd1"
+                }
+                Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Strings.'' -LiteralPath "$templatePath\Strings\strings.psd1"
+
+                # Export the string data from the module to disk.
+                $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
+                Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Config.'' -LiteralPath "$templatePath\Config\config.psd1"
 
                 # Remove any digital signatures from the ps*1 files.
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {

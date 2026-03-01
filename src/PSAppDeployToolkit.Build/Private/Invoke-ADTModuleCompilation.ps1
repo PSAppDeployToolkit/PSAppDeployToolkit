@@ -18,7 +18,7 @@ function Invoke-ADTModuleCompilation
             'Public' = "$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleSource))\Public\*.ps1"
             'ImportsLast.ps1' = "$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleSource))\ImportsLast.ps1"
         }
-        $scriptContent = foreach ($file in (Get-ChildItem -Path ([System.String[]]$sourceOnlyData.Values) -Recurse))
+        [System.Collections.Generic.List[System.String]]$scriptContent = foreach ($file in (Get-ChildItem -Path ([System.String[]]$sourceOnlyData.Values) -Recurse))
         {
             # Import the script file as a string for substring replacement.
             Write-ADTBuildLogEntry -Message "Reading file [$($file.FullName)] for merging."
@@ -83,6 +83,16 @@ function Invoke-ADTModuleCompilation
 
             # Write out the processed file back to disk.
             $text; [System.String]::Empty; [System.String]::Empty
+        }
+
+        # Remove any empty lines at the end.
+        while ($true)
+        {
+            if (![System.String]::IsNullOrWhiteSpace($scriptContent[-1]))
+            {
+                break
+            }
+            $scriptContent.RemoveAt($scriptContent.Count - 1)
         }
 
         # Start generating the compiled output on disk.
