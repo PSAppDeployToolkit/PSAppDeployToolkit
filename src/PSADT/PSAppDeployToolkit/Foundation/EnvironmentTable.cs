@@ -173,7 +173,11 @@ namespace PSAppDeployToolkit.Foundation
                     Dictionary<string, object> officeVars = [];
                     foreach (string valueName in officeC2RKey.GetValueNames())
                     {
-                        officeVars.Add(valueName, officeC2RKey.GetValue(valueName)!);
+                        object? value = officeC2RKey.GetValue(valueName);
+                        if ((value is string str && !string.IsNullOrWhiteSpace(str)) || value is not string and not null)
+                        {
+                            officeVars.Add(valueName, value);
+                        }
                     }
                     EnvOfficeVars = new ReadOnlyDictionary<string, object>(officeVars);
                 }
