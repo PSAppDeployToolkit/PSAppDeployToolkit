@@ -47,21 +47,24 @@ namespace PSADT.UserInterface
                 // Get a handle to specified stock icon.
                 _ = NativeMethods.SHGetImageList(iImageList, out IImageList imageList);
                 _ = NativeMethods.SHGetStockIconInfo(siid, SHGSI_FLAGS.SHGSI_SYSICONINDEX, out SHSTOCKICONINFO shii);
-                imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out DestroyIconSafeHandle iconHandle);
-                using (iconHandle)
+                using (shii)
                 {
-                    bool iconHandleAddRef = false;
-                    try
+                    imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out DestroyIconSafeHandle iconHandle);
+                    using (iconHandle)
                     {
-                        iconHandle.ThrowIfNullOrInvalid().DangerousAddRef(ref iconHandleAddRef);
-                        using Icon icon = Icon.FromHandle(iconHandle.DangerousGetHandle());
-                        return icon.ToBitmap();
-                    }
-                    finally
-                    {
-                        if (iconHandleAddRef)
+                        bool iconHandleAddRef = false;
+                        try
                         {
-                            iconHandle.DangerousRelease();
+                            iconHandle.ThrowIfNullOrInvalid().DangerousAddRef(ref iconHandleAddRef);
+                            using Icon icon = Icon.FromHandle(iconHandle.DangerousGetHandle());
+                            return icon.ToBitmap();
+                        }
+                        finally
+                        {
+                            if (iconHandleAddRef)
+                            {
+                                iconHandle.DangerousRelease();
+                            }
                         }
                     }
                 }

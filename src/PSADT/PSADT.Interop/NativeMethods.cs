@@ -2692,12 +2692,13 @@ namespace PSADT.Interop
         /// Shell API.
         /// </summary>
         /// <remarks>This method is a managed wrapper for the native SHGetFileInfo function in
-        /// shell32.dll. The caller is responsible for managing any resources associated with the returned handle, such
-        /// as destroying icon handles if applicable. The method may return different types of handles depending on the
-        /// flags specified in uFlags.</remarks>
+        /// shell32.dll. When <see cref="SHGFI_FLAGS.SHGFI_ICON"/> is specified in <paramref name="uFlags"/>, the
+        /// returned <paramref name="psfi"/> contains an icon handle that must be released. Call
+        /// <see cref="SHFILEINFO.Dispose"/> or use a <c>using</c> statement to release the icon handle.</remarks>
         /// <param name="pszPath">The path to the file or folder for which to retrieve information. Can be null or an empty string if used
         /// with certain flags that do not require a path.</param>
-        /// <param name="psfi">When this method returns, contains a structure that receives the file information retrieved by the function.</param>
+        /// <param name="psfi">When this method returns, contains a structure that receives the file information retrieved by the function.
+        /// If an icon was requested, dispose of this structure when finished to release the icon handle.</param>
         /// <param name="uFlags">A combination of flags that specify which file information to retrieve. These flags determine the attributes
         /// and details returned.</param>
         /// <param name="dwFileAttributes">File attribute flags to use when retrieving information. Used only if the uFlags parameter includes a flag
@@ -2710,19 +2711,36 @@ namespace PSADT.Interop
             [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern nint SHGetFileInfoW(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
             psfi = new(); nint res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
-            return res == default ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve file information.") : res;
+            try
+            {
+                if (res == default)
+                {
+                    throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve file information.");
+                }
+                if ((uFlags & SHGFI_FLAGS.SHGFI_ICON) != 0)
+                {
+                    _ = ((nint)psfi.hIcon).ThrowIfZeroOrInvalid();
+                }
+            }
+            catch
+            {
+                psfi.Dispose();
+                throw;
+            }
+            return res;
         }
 
         /// <summary>
         /// Retrieves information about a specified stock icon, such as its handle, path, or index, based on the
         /// provided flags.
         /// </summary>
-        /// <remarks>The caller should check the returned HRESULT to determine whether the operation
-        /// succeeded. The contents of the returned SHSTOCKICONINFO structure depend on the flags specified in the
-        /// uFlags parameter.</remarks>
+        /// <remarks>When <see cref="SHGSI_FLAGS.SHGSI_ICON"/> is specified in <paramref name="uFlags"/>, the
+        /// returned <paramref name="psii"/> contains an icon handle that must be released. Call
+        /// <see cref="SHSTOCKICONINFO.Dispose"/> or use a <c>using</c> statement to release the icon handle.</remarks>
         /// <param name="siid">The identifier of the stock icon to retrieve information for.</param>
         /// <param name="uFlags">A combination of flags that specify which information about the stock icon to retrieve.</param>
-        /// <param name="psii">When this method returns, contains a structure that receives the requested stock icon information.</param>
+        /// <param name="psii">When this method returns, contains a structure that receives the requested stock icon information.
+        /// If an icon was requested, dispose of this structure when finished to release the icon handle.</param>
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, out SHSTOCKICONINFO psii)
         {
@@ -2730,7 +2748,23 @@ namespace PSADT.Interop
             static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
             psii = new() { cbSize = (uint)Marshal.SizeOf<SHSTOCKICONINFO>() };
             HRESULT res = SHGetStockIconInfo(siid, uFlags, ref psii);
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+            try
+            {
+                if (res != HRESULT.S_OK)
+                {
+                    throw ExceptionUtilities.GetException(res);
+                }
+                if ((uFlags & SHGSI_FLAGS.SHGSI_ICON) != 0)
+                {
+                    _ = ((nint)psii.hIcon).ThrowIfZeroOrInvalid();
+                }
+            }
+            catch
+            {
+                psii.Dispose();
+                throw;
+            }
+            return res;
         }
 
         /// <summary>
