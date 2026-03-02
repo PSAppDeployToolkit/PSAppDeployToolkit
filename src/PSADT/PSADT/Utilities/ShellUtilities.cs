@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
+using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -210,10 +211,11 @@ namespace PSADT.Utilities
         internal static string GetUserProfilesDirectory()
         {
             Guid userProfilesFolderId = PInvoke.FOLDERID_UserProfiles;
-            _ = NativeMethods.SHGetKnownFolderPath(userProfilesFolderId, 0, null, out PWSTR ppszPath);
-            return ppszPath.ToString() is not string ppszPathStr || string.IsNullOrWhiteSpace(ppszPathStr)
-                ? throw new InvalidOperationException("Failed to retrieve user profiles directory path.")
-                : ppszPathStr;
+            _ = NativeMethods.SHGetKnownFolderPath(userProfilesFolderId, 0, null, out SafeCoTaskMemHandle ppszPath);
+            using (ppszPath)
+            {
+                return ppszPath.ToStringUni();
+            }
         }
     }
 }

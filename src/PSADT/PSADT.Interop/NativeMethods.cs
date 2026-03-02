@@ -3775,10 +3775,27 @@ namespace PSADT.Interop
         /// freeing the memory allocated for this path.</param>
         /// <returns>An HRESULT value that indicates the result of the operation. S_OK indicates success; otherwise, an exception
         /// is thrown.</returns>
-        internal static HRESULT SHGetKnownFolderPath(in Guid rfid, KNOWN_FOLDER_FLAG dwFlags, [Optional] SafeHandle? hToken, out PWSTR ppszPath)
+        internal static HRESULT SHGetKnownFolderPath(in Guid rfid, KNOWN_FOLDER_FLAG dwFlags, [Optional] SafeHandle? hToken, out SafeCoTaskMemHandle ppszPath)
         {
-            HRESULT res = PInvoke.SHGetKnownFolderPath(in rfid, dwFlags, hToken, out ppszPath);
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+            HRESULT res = PInvoke.SHGetKnownFolderPath(in rfid, dwFlags, hToken, out PWSTR ppszPathLocal);
+            nint ppszPathLocalHandle;
+            int ppszPathLength;
+            try
+            {
+                if (res != HRESULT.S_OK)
+                {
+                    throw ExceptionUtilities.GetException(res);
+                }
+                ppszPathLocalHandle = ppszPathLocal.ToIntPtr().ThrowIfZeroOrInvalid();
+                ppszPathLength = (ppszPathLocal.Length * sizeof(char)).ThrowIfZeroOrNegative();
+            }
+            catch
+            {
+                Marshal.FreeCoTaskMem(ppszPathLocal.ToIntPtr());
+                throw;
+            }
+            ppszPath = new(ppszPathLocalHandle, ppszPathLength, true);
+            return res;
         }
 
         /// <summary>
