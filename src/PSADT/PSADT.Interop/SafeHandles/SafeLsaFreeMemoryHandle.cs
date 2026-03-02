@@ -12,8 +12,9 @@ namespace PSADT.Interop.SafeHandles
     /// that allocate memory through the LSA and require explicit deallocation.</remarks>
     /// <param name="handle">The handle to the memory allocated by the LSA. This value identifies the memory block to be managed and
     /// released.</param>
+    /// <param name="length">The length, in bytes, of the allocated memory block.</param>
     /// <param name="ownsHandle">true to indicate that this instance is responsible for releasing the handle; otherwise, false.</param>
-    internal sealed class SafeLsaFreeMemoryHandle(nint handle, bool ownsHandle) : SafeMemoryHandle<SafeLsaFreeMemoryHandle>(handle, 0, ownsHandle)
+    internal sealed class SafeLsaFreeMemoryHandle(nint handle, int length, bool ownsHandle) : SafeMemoryHandle<SafeLsaFreeMemoryHandle>(handle, length, ownsHandle)
     {
         /// <summary>
         /// Releases the handle associated with unmanaged LSA memory resources.

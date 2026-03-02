@@ -1132,13 +1132,18 @@ namespace PSADT.Interop
         /// <returns>An <see cref="NTSTATUS"/> value indicating the result of the operation. A value of <see
         /// cref="NTSTATUS.STATUS_SUCCESS"/> indicates success.</returns>
         /// <exception cref="Win32Exception">Thrown if the operation fails, wrapping the corresponding Windows error code.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified <paramref name="InformationClass"/> is not supported.</exception>
         internal static NTSTATUS LsaQueryInformationPolicy(SafeHandle PolicyHandle, POLICY_INFORMATION_CLASS InformationClass, out SafeLsaFreeMemoryHandle Buffer)
         {
+            if (!PolicyInfoClassSizes.TryGetValue(InformationClass, out int bufferLength))
+            {
+                throw new ArgumentOutOfRangeException(nameof(InformationClass), InformationClass, "Unsupported policy information class.");
+            }
             NTSTATUS res;
             unsafe
             {
                 res = PInvoke.LsaQueryInformationPolicy(PolicyHandle.ThrowIfNullOrInvalid(), InformationClass, out void* BufferLocal).ThrowOnFailure();
-                Buffer = new(((nint)BufferLocal).ThrowIfZeroOrInvalid(), true);
+                Buffer = new(((nint)BufferLocal).ThrowIfZeroOrInvalid(), bufferLength, true);
             }
             return res;
         }
@@ -3849,6 +3854,25 @@ namespace PSADT.Interop
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf<OBJECT_TYPES_INFORMATION>() }
+        });
+
+        /// <summary>
+        /// Lookup table for policy information class struct sizes.
+        /// </summary>
+        internal static ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>()
+        {
+            { POLICY_INFORMATION_CLASS.PolicyAuditLogInformation, Marshal.SizeOf<POLICY_AUDIT_LOG_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditEventsInformation, Marshal.SizeOf<POLICY_AUDIT_EVENTS_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyPrimaryDomainInformation, Marshal.SizeOf<POLICY_PRIMARY_DOMAIN_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyPdAccountInformation, Marshal.SizeOf<POLICY_PD_ACCOUNT_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, Marshal.SizeOf<POLICY_ACCOUNT_DOMAIN_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyLsaServerRoleInformation, Marshal.SizeOf<POLICY_LSA_SERVER_ROLE_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyReplicaSourceInformation, Marshal.SizeOf<POLICY_REPLICA_SOURCE_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyDefaultQuotaInformation, Marshal.SizeOf<POLICY_DEFAULT_QUOTA_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyModificationInformation, Marshal.SizeOf<POLICY_MODIFICATION_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditFullSetInformation, Marshal.SizeOf<POLICY_AUDIT_FULL_SET_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditFullQueryInformation, Marshal.SizeOf<POLICY_AUDIT_FULL_QUERY_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyDnsDomainInformation, Marshal.SizeOf<POLICY_DNS_DOMAIN_INFO>() },
         });
 
         /// <summary>
