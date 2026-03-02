@@ -2715,13 +2715,11 @@ namespace PSADT.Interop
         {
             [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern nint SHGetFileInfoW(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            psfi = new(); nint res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags);
+            psfi = new();
+            nint res;
             try
             {
-                if (res == default)
-                {
-                    throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve file information.");
-                }
+                res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags).ThrowIfZeroOrInvalid();
                 if ((uFlags & SHGFI_FLAGS.SHGFI_ICON) != 0)
                 {
                     _ = ((nint)psfi.hIcon).ThrowIfZeroOrInvalid();
