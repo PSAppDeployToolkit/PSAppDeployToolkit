@@ -558,10 +558,6 @@ namespace PSADT.WindowsInstaller
         internal static string? GetSummaryInfoStringProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, null, out uint requiredSize);
-            if (requiredSize == 0)
-            {
-                return null;
-            }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
             ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
@@ -685,10 +681,6 @@ namespace PSADT.WindowsInstaller
         private static string? GetRecordString(MsiCloseHandleSafeHandle hRecord, uint field)
         {
             _ = NativeMethods.MsiRecordGetString(hRecord, field, null, out uint requiredSize);
-            if (requiredSize == 0)
-            {
-                return null;
-            }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
             ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
