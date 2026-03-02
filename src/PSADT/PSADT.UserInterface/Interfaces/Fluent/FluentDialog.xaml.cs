@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -32,7 +31,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    internal abstract partial class FluentDialog : Window, IBaseDialog, INotifyPropertyChanged
+    internal abstract partial class FluentDialog : Window, IBaseDialog
     {
         /// <summary>
         /// Static constructor to set up the theme and resources for the dialog.
@@ -199,18 +198,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             _persistTimer?.Stop();
             _expiryTimer?.Stop();
             Dispatcher.Invoke(Close);
-        }
-
-        /// <summary>
-        /// Raises the PropertyChanged event to notify listeners that a property value has changed.
-        /// </summary>
-        /// <remarks>Call this method within a property setter to inform data binding clients or other
-        /// subscribers that the property's value has changed. This method is essential for implementing the
-        /// INotifyPropertyChanged interface in data-binding scenarios.</remarks>
-        /// <param name="propertyName">The name of the property that changed. If not specified, the name of the calling member is used.</param>
-        private protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new(propertyName));
         }
 
         /// <summary>
@@ -1032,7 +1019,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// The result of the dialog interaction.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1061:Do not hide base class methods", Justification = "The redefinition of this field is by design.")]
-        public new virtual IDialogResult DialogResult { get; private protected set { field = value; OnPropertyChanged(); } }
+        public new virtual IDialogResult DialogResult { get; private protected set; }
 
         /// <summary>
         /// An optional custom message to display.
@@ -1129,11 +1116,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Dialog icon cache for improved performance
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
-
-        /// <summary>
-        /// Event handler for when a window property has changed.
-        /// </summary>
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Dispose managed resources
