@@ -753,8 +753,8 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
                 }
-                ppsidOwner = psidOwner != default ? new(((nint)psidOwner.Value).ThrowIfZeroOrInvalid()) : null;
-                ppsidGroup = pSidGroup != default ? new(((nint)pSidGroup.Value).ThrowIfZeroOrInvalid()) : null;
+                ppsidOwner = psidOwner != default ? new((nint)psidOwner.Value) : null;
+                ppsidGroup = pSidGroup != default ? new((nint)pSidGroup.Value) : null;
                 ppDacl = pDacl is not null ? new(((nint)pDacl).ThrowIfZeroOrInvalid(), false) : null;
                 ppSacl = pSacl is not null ? new(((nint)pSacl).ThrowIfZeroOrInvalid(), false) : null;
                 ppSecurityDescriptor = new(((nint)pSecurityDescriptor).ThrowIfZeroOrInvalid(), true);
@@ -1143,7 +1143,7 @@ namespace PSADT.Interop
             unsafe
             {
                 res = PInvoke.LsaQueryInformationPolicy(PolicyHandle.ThrowIfNullOrInvalid(), InformationClass, out void* BufferLocal).ThrowOnFailure();
-                Buffer = new(((nint)BufferLocal).ThrowIfZeroOrInvalid(), bufferLength, true);
+                Buffer = new((nint)BufferLocal, bufferLength, true);
             }
             return res;
         }
@@ -2427,7 +2427,7 @@ namespace PSADT.Interop
                 StartRoutine.ThrowIfNullOrInvalid().DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.ThrowIfNullOrClosed().DangerousAddRef(ref ProcessHandleAddRef);
                 NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default).ThrowOnFailure();
-                ThreadHandle = new(hThread.ThrowIfZeroOrInvalid(), true);
+                ThreadHandle = new(hThread, true);
                 return res;
             }
             finally
@@ -3309,7 +3309,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                lpEnvironment = new(((nint)lpEnvironmentPtr).ThrowIfZeroOrInvalid(), true);
+                lpEnvironment = new((nint)lpEnvironmentPtr, true);
             }
             return res;
         }
@@ -3389,7 +3389,7 @@ namespace PSADT.Interop
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 pCount = pCount.ThrowIfZero();
-                pSessionInfo = new(((nint)ppSessionInfo).ThrowIfZeroOrInvalid(), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
+                pSessionInfo = new((nint)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             }
             return res;
         }
@@ -3419,7 +3419,7 @@ namespace PSADT.Interop
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             bytesReturned = bytesReturned.ThrowIfZero();
-            pBuffer = new(ppBuffer.ToIntPtr().ThrowIfZeroOrInvalid(), (int)bytesReturned, true);
+            pBuffer = new(ppBuffer.ToIntPtr(), (int)bytesReturned, true);
             return res;
         }
 
@@ -3765,7 +3765,7 @@ namespace PSADT.Interop
         internal static WIN32_ERROR NetGetJoinInformation(string? lpServer, out SafeNetApiBufferFreeHandle lpNameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS BufferType)
         {
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
-            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr().ThrowIfZeroOrInvalid(), lpNameBufferLocal.Length * sizeof(char), true);
+            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr(), lpNameBufferLocal.Length * sizeof(char), true);
             return res;
         }
 
@@ -3817,23 +3817,19 @@ namespace PSADT.Interop
         internal static HRESULT SHGetKnownFolderPath(in Guid rfid, KNOWN_FOLDER_FLAG dwFlags, [Optional] SafeHandle? hToken, out SafeCoTaskMemHandle ppszPath)
         {
             HRESULT res = PInvoke.SHGetKnownFolderPath(in rfid, dwFlags, hToken, out PWSTR ppszPathLocal);
-            nint ppszPathLocalHandle;
-            int ppszPathLength;
             try
             {
                 if (res != HRESULT.S_OK)
                 {
                     throw ExceptionUtilities.GetException(res);
                 }
-                ppszPathLocalHandle = ppszPathLocal.ToIntPtr().ThrowIfZeroOrInvalid();
-                ppszPathLength = (ppszPathLocal.Length * sizeof(char)).ThrowIfZeroOrNegative();
+                ppszPath = new(ppszPathLocal.ToIntPtr(), ppszPathLocal.Length * sizeof(char), true);
             }
             catch
             {
                 Marshal.FreeCoTaskMem(ppszPathLocal.ToIntPtr());
                 throw;
             }
-            ppszPath = new(ppszPathLocalHandle, ppszPathLength, true);
             return res;
         }
 
