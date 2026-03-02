@@ -1,4 +1,5 @@
-﻿using PSADT.Interop.Utilities;
+﻿using System.Runtime.CompilerServices;
+using PSADT.Interop.Utilities;
 using Windows.Win32.Foundation;
 
 namespace PSADT.Interop.Extensions
@@ -19,6 +20,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="win32Error">The WIN32 error code to evaluate. If the value is not equal to WIN32_ERROR.ERROR_SUCCESS, an exception is
         /// thrown.</param>
         /// <returns>The original WIN32 error code if it indicates success; otherwise, an exception is thrown.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR ThrowOnFailure(this WIN32_ERROR win32Error)
         {
             return win32Error != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(win32Error) : win32Error;
