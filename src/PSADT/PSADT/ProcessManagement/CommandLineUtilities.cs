@@ -69,9 +69,9 @@ namespace PSADT.ProcessManagement
             StringBuilder sb = new();
             foreach (string arg in argv)
             {
-                if (string.IsNullOrWhiteSpace(arg))
+                if (string.IsNullOrWhiteSpace(arg) && arg.Length > 0)
                 {
-                    throw new ArgumentNullException(nameof(argv), "The specified enumerable contains null or empty arguments.");
+                    throw new ArgumentNullException(nameof(argv), "The specified enumerable contains whitespace arguments.");
                 }
                 _ = sb.Append(strict ? EscapeArgumentStrict(arg) : EscapeArgumentCompatible(arg)).Append(' ');
             }
