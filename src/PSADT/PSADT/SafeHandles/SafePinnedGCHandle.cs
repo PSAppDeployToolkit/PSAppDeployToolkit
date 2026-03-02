@@ -49,7 +49,18 @@ namespace PSADT.SafeHandles
         /// <returns>Always returns <see langword="true"/>, indicating that the handle was released successfully.</returns>
         protected override bool ReleaseHandle()
         {
-            pinnedHandle.Free();
+            if (default == handle)
+            {
+                return true;
+            }
+            try
+            {
+                pinnedHandle.Free();
+            }
+            finally
+            {
+                handle = default;
+            }
             return true;
         }
 

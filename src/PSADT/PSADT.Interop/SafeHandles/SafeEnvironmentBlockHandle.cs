@@ -44,11 +44,17 @@ namespace PSADT.Interop.SafeHandles
             {
                 res = PInvoke.DestroyEnvironmentBlock((void*)handle);
             }
-            if (!res)
+            try
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
             }
-            handle = default;
+            finally
+            {
+                handle = default;
+            }
             return res;
         }
     }

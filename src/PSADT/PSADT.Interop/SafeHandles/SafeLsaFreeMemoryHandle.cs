@@ -28,11 +28,17 @@ namespace PSADT.Interop.SafeHandles
             {
                 return true;
             }
-            unsafe
+            try
             {
-                _ = PInvoke.LsaFreeMemory((void*)handle).ThrowOnFailure();
+                unsafe
+                {
+                    _ = PInvoke.LsaFreeMemory((void*)handle).ThrowOnFailure();
+                }
             }
-            handle = default;
+            finally
+            {
+                handle = default;
+            }
             return true;
         }
     }

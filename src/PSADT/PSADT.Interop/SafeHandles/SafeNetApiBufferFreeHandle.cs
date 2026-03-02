@@ -27,11 +27,17 @@ namespace PSADT.Interop.SafeHandles
             {
                 return true;
             }
-            unsafe
+            try
             {
-                _ = ((WIN32_ERROR)PInvoke.NetApiBufferFree((void*)handle)).ThrowOnFailure();
+                unsafe
+                {
+                    _ = ((WIN32_ERROR)PInvoke.NetApiBufferFree((void*)handle)).ThrowOnFailure();
+                }
             }
-            handle = default;
+            finally
+            {
+                handle = default;
+            }
             return true;
         }
     }

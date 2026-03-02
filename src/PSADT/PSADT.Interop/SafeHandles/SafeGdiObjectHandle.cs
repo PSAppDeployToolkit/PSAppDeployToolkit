@@ -44,11 +44,17 @@ namespace PSADT.Interop.SafeHandles
             {
                 res = PInvoke.DeleteObject((HGDIOBJ)handle);
             }
-            if (!res)
+            try
             {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to delete GDI object handle.");
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to delete GDI object handle.");
+                }
             }
-            handle = default;
+            finally
+            {
+                handle = default;
+            }
             return res;
         }
     }

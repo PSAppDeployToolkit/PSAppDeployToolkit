@@ -62,11 +62,17 @@ namespace PSADT.Interop.SafeHandles
             {
                 res = PInvoke.VirtualFree((void*)handle, default, VIRTUAL_FREE_TYPE.MEM_RELEASE);
             }
-            if (!res)
+            try
             {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
             }
-            handle = default;
+            finally
+            {
+                handle = default;
+            }
             return res;
         }
     }

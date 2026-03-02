@@ -38,11 +38,17 @@ namespace PSADT.Interop.SafeHandles
             {
                 return true;
             }
-            unsafe
+            try
             {
-                FontFace.ReleaseFontTable((void*)handle);
+                unsafe
+                {
+                    FontFace.ReleaseFontTable((void*)handle);
+                }
             }
-            handle = default;
+            finally
+            {
+                handle = default;
+            }
             return true;
         }
 

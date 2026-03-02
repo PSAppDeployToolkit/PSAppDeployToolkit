@@ -48,8 +48,14 @@ namespace PSADT.SafeHandles
             {
                 return true;
             }
-            Marshal.FreeBSTR(handle);
-            handle = default;
+            try
+            {
+                Marshal.FreeBSTR(handle);
+            }
+            finally
+            {
+                handle = default;
+            }
             return true;
         }
     }

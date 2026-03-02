@@ -121,8 +121,14 @@ namespace PSADT.Interop.SafeHandles
                 return true;
             }
             PInvoke.DeleteProcThreadAttributeList((LPPROC_THREAD_ATTRIBUTE_LIST)handle);
-            Marshal.FreeHGlobal(handle);
-            handle = default;
+            try
+            {
+                Marshal.FreeHGlobal(handle);
+            }
+            finally
+            {
+                handle = default;
+            }
             return true;
         }
     }
