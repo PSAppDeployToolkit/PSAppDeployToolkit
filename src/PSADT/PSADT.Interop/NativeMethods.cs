@@ -1160,7 +1160,7 @@ namespace PSADT.Interop
         /// <param name="dwCommonButtons">A combination of <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> values that specify the common buttons to display in the task dialog.</param>
         /// <param name="pszIcon">The resource identifier or name of the icon to display in the task dialog. This can be <see langword="null"/> if no icon is needed.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the result of the task dialog operation.</returns>
-        internal static MESSAGEBOX_RESULT TaskDialog(HWND? hwndOwner, HINSTANCE hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
+        internal static MESSAGEBOX_RESULT TaskDialog(HWND? hwndOwner, HINSTANCE? hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
         {
             int pnButtonLocal = 0;
             HRESULT res;
@@ -1168,7 +1168,7 @@ namespace PSADT.Interop
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
                 {
-                    res = PInvoke.TaskDialog(hwndOwner ?? default, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
+                    res = PInvoke.TaskDialog(hwndOwner ?? default, hInstance ?? default, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
                 }
             }
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : (MESSAGEBOX_RESULT)pnButtonLocal;
@@ -1347,25 +1347,20 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Creates or associates an I/O completion port with a specified file handle, allowing asynchronous I/O
-        /// operations to be managed and completed efficiently.
+        /// Creates a new I/O completion port for asynchronous I/O operations, allowing multiple threads to process I/O
+        /// requests concurrently.
         /// </summary>
-        /// <remarks>This method is intended for advanced scenarios involving asynchronous I/O on Windows
-        /// platforms. The caller is responsible for managing the lifetime of the returned handle. Improper use may lead
-        /// to resource leaks or undefined behavior.</remarks>
-        /// <param name="FileHandle">The handle to a file, socket, or device to associate with the I/O completion port. If this parameter is set
-        /// to a special value indicating no file association, a new completion port is created.</param>
-        /// <param name="ExistingCompletionPort">An existing I/O completion port to associate with the file handle, or null to create a new completion port.</param>
-        /// <param name="CompletionKey">A value to be returned through the completion port with each I/O completion packet for the specified file
-        /// handle. This value can be used to identify the source of the I/O operation.</param>
-        /// <param name="NumberOfConcurrentThreads">The maximum number of threads that the operating system can allow to concurrently process I/O completion
-        /// packets for the port. Must be greater than zero.</param>
-        /// <returns>A SafeFileHandle representing the I/O completion port. The handle can be used to post and retrieve I/O
-        /// completion packets.</returns>
-        internal static SafeFileHandle CreateIoCompletionPort(HANDLE FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
+        /// <remarks>Use this method to initialize an I/O completion port with a specified concurrency
+        /// level. The number of concurrent threads should be chosen based on the application's workload and concurrency
+        /// requirements.</remarks>
+        /// <param name="NumberOfConcurrentThreads">The maximum number of threads that can simultaneously process I/O completion packets for the port. Must be
+        /// greater than zero to enable parallel processing.</param>
+        /// <returns>A SafeFileHandle that represents the newly created I/O completion port. This handle can be used in
+        /// subsequent asynchronous I/O operations.</returns>
+        internal static SafeFileHandle CreateIoCompletionPort(uint NumberOfConcurrentThreads)
         {
-            using SafeFileHandle safeFileHandle = new(FileHandle, false);
-            return CreateIoCompletionPort(safeFileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
+            using SafeFileHandle safeFileHandle = new(HANDLE.INVALID_HANDLE_VALUE, false);
+            return CreateIoCompletionPort(safeFileHandle, null, default, NumberOfConcurrentThreads);
         }
 
         /// <summary>
@@ -2557,6 +2552,10 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal static BOOL GetModuleInformation(SafeHandle hProcess, in HMODULE hModule, out MODULEINFO lpmodinfo)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hModule.Value, nameof(hModule));
+            }
             bool hProcessAddRef = false;
             BOOL res;
             try
@@ -2608,6 +2607,10 @@ namespace PSADT.Interop
         /// <returns>A <see cref="HRESULT"/> indicating the success or failure of the operation. A successful result indicates that the DPI values were retrieved successfully.</returns>
         internal static HRESULT GetDpiForMonitor(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hmonitor.Value, nameof(hmonitor));
+            }
             HRESULT res = PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY);
             dpiX = dpiX.ThrowIfZero(); dpiY = dpiY.ThrowIfZero();
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
@@ -3422,6 +3425,7 @@ namespace PSADT.Interop
             BOOL res;
             unsafe
             {
+                ArgumentNullException.ThrowIfNull(hServer.Value, nameof(hServer));
                 res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out WTS_SESSION_INFOW* ppSessionInfo, out uint pCount);
                 if (!res)
                 {
@@ -3451,6 +3455,10 @@ namespace PSADT.Interop
         /// was retrieved successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hServer.Value, nameof(hServer));
+            }
             BOOL res;
             res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
             if (!res)

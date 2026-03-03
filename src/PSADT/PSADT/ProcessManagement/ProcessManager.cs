@@ -78,7 +78,7 @@ namespace PSADT.ProcessManagement
                 // Set up the job object and I/O completion port for the process.
                 // No using statements here, they're disposed of in the final task.
 #pragma warning disable CA2000 // Dispose objects before losing scope
-                iocp = NativeMethods.CreateIoCompletionPort(HANDLE.INVALID_HANDLE_VALUE, null, default, 1);
+                iocp = NativeMethods.CreateIoCompletionPort(0);
                 job = NativeMethods.CreateJobObject(null, default);
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 iocp.DangerousAddRef(ref iocpAddRef);
