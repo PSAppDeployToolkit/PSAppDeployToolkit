@@ -87,6 +87,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
         private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
+            if (customMessageText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(customMessageText);
+            }
             ArgumentNullException.ThrowIfNull(strings);
             Strings = strings;
             DeferralsRemaining = deferralsRemaining;
@@ -97,7 +101,7 @@ namespace PSADT.UserInterface.DialogOptions
             ForcedCountdown = forcedCountdown;
             HideCloseButton = hideCloseButton;
             DialogAllowMinimize = dialogAllowMinimize;
-            CustomMessageText = !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
+            CustomMessageText = customMessageText;
         }
 
 

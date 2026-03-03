@@ -1,4 +1,5 @@
-﻿using PSADT.Interop;
+﻿using System;
+using PSADT.Interop;
 
 namespace PSADT.DeviceManagement
 {
@@ -17,8 +18,12 @@ namespace PSADT.DeviceManagement
         /// </summary>
         /// <param name="joinStatus">The status indicating whether the computer is joined to a domain, a workgroup, or is unjoined.</param>
         /// <param name="domainOrWorkgroupName">The name of the domain or workgroup associated with the current join status, or null if not applicable.</param>
-        public DomainStatus(NETSETUP_JOIN_STATUS joinStatus, string? domainOrWorkgroupName)
+        internal DomainStatus(NETSETUP_JOIN_STATUS joinStatus, string? domainOrWorkgroupName)
         {
+            if (domainOrWorkgroupName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(domainOrWorkgroupName);
+            }
             JoinStatus = joinStatus;
             DomainOrWorkgroupName = domainOrWorkgroupName;
         }

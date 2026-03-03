@@ -27,7 +27,7 @@ namespace PSADT.Interop.Exceptions
         /// </summary>
         /// <param name="ntStatus">The NTSTATUS code that caused the exception.</param>
         /// <param name="message">A custom message that describes the error.</param>
-        internal NtStatusException(NTSTATUS ntStatus, string? message = null) : base(message ?? GetMessageForNtStatus(ntStatus))
+        internal NtStatusException(NTSTATUS ntStatus, string? message = null) : base(!string.IsNullOrWhiteSpace(message) ? message : GetMessageForNtStatus(ntStatus))
         {
             HResult = ExceptionUtilities.HRESULT_FROM_NT(ntStatus).Value;
             NtStatus = ntStatus.Value;

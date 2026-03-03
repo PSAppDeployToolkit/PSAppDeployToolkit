@@ -39,6 +39,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="messageAlignment">Unused message alignment, just here to satisfy the public interface contract.</param>
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
+            if (progressMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
+            }
+            if (progressMessageDetail is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
+            }
             Dispatcher.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage));
         }
 

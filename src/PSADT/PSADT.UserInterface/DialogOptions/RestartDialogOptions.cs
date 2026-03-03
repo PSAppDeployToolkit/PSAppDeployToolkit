@@ -75,11 +75,15 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="strings"/> is <see langword="null"/>.</exception>
         private RestartDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, RestartDialogStrings strings, TimeSpan? countdownDuration, TimeSpan? countdownNoMinimizeDuration, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
+            if (customMessageText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(customMessageText);
+            }
             ArgumentNullException.ThrowIfNull(strings);
             Strings = strings;
             CountdownDuration = countdownDuration;
             CountdownNoMinimizeDuration = countdownNoMinimizeDuration;
-            CustomMessageText = !string.IsNullOrWhiteSpace(customMessageText) ? customMessageText : null;
+            CustomMessageText = customMessageText;
         }
 
         /// <summary>

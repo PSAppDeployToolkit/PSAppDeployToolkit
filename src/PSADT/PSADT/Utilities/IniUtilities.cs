@@ -64,6 +64,7 @@ namespace PSADT.Utilities
         /// <returns>OrderedDictionary of key/value pairs in the section</returns>
         public static OrderedDictionary? GetSection(string filepath, string section)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(section);
             ReadOnlyCollection<string> sections = GetSectionNames(filepath);
             if (!sections.Contains(section, StringComparer.OrdinalIgnoreCase))
             {
@@ -116,8 +117,9 @@ namespace PSADT.Utilities
         /// <returns>Array of section names</returns>
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
-            Span<char> buffer = new char[65536];
-            return new(buffer.Slice(0, (int)NativeMethods.GetPrivateProfileSectionNames(buffer, filepath)).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries));
+            Span<char> buffer = new char[65536]; uint len = NativeMethods.GetPrivateProfileSectionNames(buffer, filepath);
+            string[] sections = buffer.Slice(0, (int)len).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries);
+            return sections.Length == 0 ? throw new InvalidDataException("No sections found in the INI file.") : new(sections);
         }
 
         /// <summary>

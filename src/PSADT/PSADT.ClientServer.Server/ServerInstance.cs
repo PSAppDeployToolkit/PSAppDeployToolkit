@@ -438,9 +438,17 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully updated; otherwise, <see langword="false"/>.</returns>
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
+            if (progressMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
+            }
+            if (progressDetailMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessage);
+            }
             return Invoke<UpdateProgressDialogPayload, bool>(PipeCommand.UpdateProgressDialog, new(
-                !string.IsNullOrWhiteSpace(progressMessage) ? progressMessage : null,
-                !string.IsNullOrWhiteSpace(progressDetailMessage) ? progressDetailMessage : null,
+                progressMessage,
+                progressDetailMessage,
                 progressPercentage,
                 messageAlignment));
         }

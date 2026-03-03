@@ -71,6 +71,10 @@ namespace PSADT.Interop
         /// opened successfully; otherwise, an error code is returned.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
+            if (lpSubKey is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpSubKey);
+            }
             ArgumentException.ThrowIfNullOrInvalid(hKey);
             WIN32_ERROR res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult).ThrowOnFailure();
             HandleHelpers.ThrowIfNullOrInvalid(phkResult, "The returned registry key handle from 'RegOpenKeyEx()' is invalid.");
@@ -94,9 +98,7 @@ namespace PSADT.Interop
         /// code.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
-            WIN32_ERROR res = RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult).ThrowOnFailure();
-            HandleHelpers.ThrowIfNullOrInvalid(phkResult, "The returned registry key handle from 'RegOpenKeyEx()' is invalid.");
-            return res;
+            return RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
         }
 
         /// <summary>
@@ -194,6 +196,10 @@ namespace PSADT.Interop
         /// <returns>true if the privilege name was successfully found and the LUID was retrieved; otherwise, false.</returns>
         internal static BOOL LookupPrivilegeValue(string? lpSystemName, SE_PRIVILEGE lpName, out LUID lpLuid)
         {
+            if (lpSystemName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpSystemName);
+            }
             BOOL res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName.ToString(), out lpLuid);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -319,6 +325,10 @@ namespace PSADT.Interop
         /// <returns>true if the privilege name was successfully retrieved; otherwise, false.</returns>
         internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
+            if (lpSystemName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpSystemName);
+            }
             cchName = (uint)lpName.Length;
             BOOL res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref cchName);
             if (!res)
@@ -354,7 +364,11 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
         internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (!string.IsNullOrWhiteSpace(lpCurrentDirectory))
+            if (lpApplicationName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
+            }
+            if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
@@ -407,7 +421,11 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
         internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (!string.IsNullOrWhiteSpace(lpCurrentDirectory))
+            if (lpApplicationName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
+            }
+            if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
@@ -463,11 +481,15 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
         internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
+            if (lpApplicationName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
+            }
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
             }
-            if (!string.IsNullOrWhiteSpace(lpCurrentDirectory))
+            if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
@@ -520,6 +542,14 @@ namespace PSADT.Interop
         /// database.</returns>
         internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpMachineName, string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
         {
+            if (lpMachineName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpMachineName);
+            }
+            if (lpDatabaseName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpDatabaseName);
+            }
             CloseServiceHandleSafeHandle res = PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -536,6 +566,10 @@ namespace PSADT.Interop
         /// it is no longer needed.</returns>
         internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
         {
+            if (lpDatabaseName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpDatabaseName);
+            }
             return OpenSCManager(null, lpDatabaseName, dwDesiredAccess);
         }
 
@@ -1174,7 +1208,11 @@ namespace PSADT.Interop
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         internal static WIN32_ERROR RegRenameKey(SafeHandle hKey, string? lpSubKeyName, string lpNewKeyName)
         {
-            ArgumentException.ThrowIfNullOrInvalid(hKey); ArgumentException.ThrowIfNullOrWhiteSpace(lpSubKeyName);
+            if (lpSubKeyName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpSubKeyName);
+            }
+            ArgumentException.ThrowIfNullOrInvalid(hKey); ArgumentException.ThrowIfNullOrWhiteSpace(lpNewKeyName);
             return PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName).ThrowOnFailure();
         }
 
@@ -1250,6 +1288,18 @@ namespace PSADT.Interop
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the result of the task dialog operation.</returns>
         internal static MESSAGEBOX_RESULT TaskDialog(HWND? hwndOwner, HINSTANCE? hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
         {
+            if (pszWindowTitle is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(pszWindowTitle);
+            }
+            if (pszMainInstruction is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(pszMainInstruction);
+            }
+            if (pszContent is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(pszContent);
+            }
             unsafe
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
@@ -1365,6 +1415,14 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
         internal static uint GetPrivateProfileString(string lpAppName, string? lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
+            if (lpKeyName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpKeyName);
+            }
+            if (lpDefault is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpDefault);
+            }
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
@@ -1393,6 +1451,10 @@ namespace PSADT.Interop
         /// written successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WritePrivateProfileSection(string lpAppName, string? lpString, string lpFileName)
         {
+            if (lpString is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpString);
+            }
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             BOOL res = PInvoke.WritePrivateProfileSection(lpAppName, lpString, lpFileName.ThrowIfFileDirectoryDoesNotExist());
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -1413,6 +1475,14 @@ namespace PSADT.Interop
         /// <returns>true if the operation succeeds; otherwise, false.</returns>
         internal static BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
+            if (lpKeyName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpKeyName);
+            }
+            if (lpString is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpString);
+            }
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             BOOL res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName.ThrowIfFileDirectoryDoesNotExist());
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -1477,6 +1547,10 @@ namespace PSADT.Interop
         /// <returns>A SafeFileHandle representing the newly created job object. If the creation fails, an exception is thrown.</returns>
         internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
         {
+            if (lpName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpName);
+            }
             SafeFileHandle res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -1587,6 +1661,14 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if lpEnvironment is null or has been closed.</exception>
         internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            if (lpApplicationName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
+            }
+            if (lpCurrentDirectory is not null)
+            {
+                lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
+            }
             bool lpEnvironmentAddRef = false;
             try
             {
@@ -1639,9 +1721,17 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not empty and does not contain a null terminator.</exception>
         internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
+            if (lpApplicationName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
+            }
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
+            }
+            if (lpCurrentDirectory is not null)
+            {
+                lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
             bool lpEnvironmentAddRef = false;
             try
@@ -2174,6 +2264,10 @@ namespace PSADT.Interop
         /// defined, modified, or deleted successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS dwFlags, string lpDeviceName, string? lpTargetPath)
         {
+            if (lpTargetPath is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpTargetPath);
+            }
             ArgumentException.ThrowIfNullOrWhiteSpace(lpDeviceName);
             BOOL res = PInvoke.DefineDosDevice(dwFlags, lpDeviceName, lpTargetPath);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3107,6 +3201,10 @@ namespace PSADT.Interop
         /// langword="false"/>, the enumeration stops and the return value is zero.</returns>
         internal static BOOL EnumWindows(WNDENUMPROC lpEnumFunc, string? lParam)
         {
+            if (lParam is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lParam);
+            }
             unsafe
             {
                 fixed (char* lParamPtr = lParam)
@@ -3295,6 +3393,14 @@ namespace PSADT.Interop
         /// depends on the message sent.</returns>
         internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam = null, string? lParam = null)
         {
+            if (wParam is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(wParam);
+            }
+            if (lParam is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lParam);
+            }
             unsafe
             {
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
@@ -3366,6 +3472,14 @@ namespace PSADT.Interop
         /// <returns>A value of type LRESULT that contains the result of processing the message by the target window.</returns>
         internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
         {
+            if (wParam is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(wParam);
+            }
+            if (lParam is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lParam);
+            }
             unsafe
             {
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
@@ -3415,6 +3529,14 @@ namespace PSADT.Interop
         /// <returns>A handle to the window that matches the specified criteria.</returns>
         internal static HWND FindWindow(string? lpClassName, string? lpWindowName)
         {
+            if (lpClassName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpClassName);
+            }
+            if (lpWindowName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpWindowName);
+            }
             HWND res = PInvoke.FindWindow(lpClassName, lpWindowName);
             return res.IsNull ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -3807,6 +3929,10 @@ namespace PSADT.Interop
         /// <returns>A WIN32_ERROR code indicating the result of the operation. Throws an exception if the operation fails.</returns>
         internal static WIN32_ERROR MsiRecordSetString(SafeHandle hRecord, uint iField, string? szValue)
         {
+            if (szValue is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(szValue);
+            }
             ArgumentException.ThrowIfNullOrInvalid(hRecord);
             return ((WIN32_ERROR)PInvoke.MsiRecordSetString(hRecord, iField, szValue)).ThrowOnFailure();
         }
@@ -4011,6 +4137,10 @@ namespace PSADT.Interop
         /// <returns>A WIN32_ERROR value that indicates the result of the operation. Returns NERR_Success if successful.</returns>
         internal static WIN32_ERROR NetGetJoinInformation(string? lpServer, out SafeNetApiBufferFreeHandle lpNameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS BufferType)
         {
+            if (lpServer is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(lpServer);
+            }
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
             HandleHelpers.ThrowIfNullOrInvalid(lpNameBufferLocal.ToIntPtr(), "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
             lpNameBuffer = new(lpNameBufferLocal.ToIntPtr(), lpNameBufferLocal.Length * sizeof(char), true);

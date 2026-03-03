@@ -77,6 +77,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // Set the custom message text if we have one.
                 if (options.CustomMessageText is not null)
                 {
+                    ArgumentException.ThrowIfNullOrWhiteSpace(options.CustomMessageText);
                     labelCustomMessage.Text = StripFormattingTags(options.CustomMessageText);
                 }
                 else

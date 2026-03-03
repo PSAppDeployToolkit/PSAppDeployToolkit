@@ -56,18 +56,34 @@ namespace PSADT.Types
             ArgumentException.ThrowIfNullOrWhiteSpace(psParentPath);
             ArgumentException.ThrowIfNullOrWhiteSpace(psChildName);
             ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+            if (displayVersion is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(displayVersion);
+            }
+            if (uninstallString is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(uninstallString);
+            }
+            if (quietUninstallString is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(quietUninstallString);
+            }
+            if (publisher is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(publisher);
+            }
             PSPath = psPath;
             PSParentPath = psParentPath;
             PSChildName = psChildName;
             ProductCode = productCode;
             DisplayName = displayName;
-            DisplayVersion = !string.IsNullOrWhiteSpace(displayVersion) ? displayVersion : null;
-            UninstallString = !string.IsNullOrWhiteSpace(uninstallString) ? uninstallString : null;
-            QuietUninstallString = !string.IsNullOrWhiteSpace(quietUninstallString) ? quietUninstallString : null;
+            DisplayVersion = displayVersion;
+            UninstallString = uninstallString;
+            QuietUninstallString = quietUninstallString;
             InstallSource = installSource;
             InstallLocation = installLocation;
             InstallDate = installDate;
-            Publisher = !string.IsNullOrWhiteSpace(publisher) ? publisher : null;
+            Publisher = publisher;
             HelpLink = helpLink;
             EstimatedSize = estimatedSize;
             SystemComponent = systemComponent;

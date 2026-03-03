@@ -63,6 +63,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// created.</param>
         private protected FluentDialog(BaseDialogOptions options, IDialogResult dialogResult, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
+            // Confirm nullable input is valid before proceeding.
+            if (customMessageText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(customMessageText);
+            }
+
             // Initialize the window
             InitializeComponent();
 

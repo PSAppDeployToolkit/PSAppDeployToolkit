@@ -73,6 +73,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
+            if (progressMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
+            }
+            if (progressMessageDetail is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
+            }
             Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
         }
 

@@ -103,7 +103,16 @@ namespace PSADT.ProcessManagement
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
 
             // Get the main module base address and read the version resource from memory.
-            FileName = !string.IsNullOrWhiteSpace(filePath) ? filePath! : process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable()); ReadOnlySpan<byte> versionResource;
+            if (filePath is null)
+            {
+                FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
+            }
+            else
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+                FileName = filePath;
+            }
+            ReadOnlySpan<byte> versionResource;
             using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
             {
                 try

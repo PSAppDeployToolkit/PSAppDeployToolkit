@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using PSADT.UserInterface;
 
 namespace PSADT.ClientServer.Payloads
@@ -46,6 +47,14 @@ namespace PSADT.ClientServer.Payloads
         /// <param name="alignment">The message alignment.</param>
         internal UpdateProgressDialogPayload(string? message = null, string? detailMessage = null, double? percentage = null, DialogMessageAlignment? alignment = null)
         {
+            if (message is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(message);
+            }
+            if (detailMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(detailMessage);
+            }
             Message = message;
             DetailMessage = detailMessage;
             Percentage = percentage;

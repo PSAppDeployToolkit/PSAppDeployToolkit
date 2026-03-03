@@ -220,6 +220,14 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
+            if (progressMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
+            }
+            if (progressDetailMessage is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessage);
+            }
             _ = InvokeDialogAction<object>(() =>
             {
                 progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment);

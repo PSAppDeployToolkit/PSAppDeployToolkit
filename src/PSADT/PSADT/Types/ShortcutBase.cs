@@ -17,12 +17,17 @@ namespace PSADT.Types
         /// <param name="iconLocation">The location of the icon used for the shortcut.</param>
         private protected ShortcutBase(string path, string targetPath, string? iconLocation, string? iconIndex)
         {
-            if (!string.IsNullOrWhiteSpace(iconIndex))
+            if (iconLocation is not null)
             {
+                ArgumentException.ThrowIfNullOrWhiteSpace(iconLocation);
+            }
+            if (iconIndex is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(iconIndex);
                 IconIndex = int.Parse(iconIndex, CultureInfo.InvariantCulture);
             }
-            ArgumentException.ThrowIfNullOrWhiteSpace(Path);
-            ArgumentException.ThrowIfNullOrWhiteSpace(TargetPath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetPath);
             Path = path;
             TargetPath = targetPath;
             IconLocation = iconLocation;

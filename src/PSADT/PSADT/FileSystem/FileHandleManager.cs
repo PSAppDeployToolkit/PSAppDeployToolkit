@@ -221,6 +221,10 @@ namespace PSADT.FileSystem
 
             // Allocate an appropriately sized buffer and query the system for extended handle information. We increase
             // the size slightly to account for new handles being created between the size check and the actual query.
+            if (path is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            }
             int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
             int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
             byte[] handleBuffer = new byte[GetExtendedHandleBufferSize(handleInfoExSize + handleEntryExSize) * 5 / 4];

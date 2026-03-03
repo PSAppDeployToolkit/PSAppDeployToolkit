@@ -83,18 +83,30 @@ namespace PSADT.UserInterface.DialogOptions
         private protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
             // At least one button must be defined.
-            ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
-            if (string.IsNullOrWhiteSpace(buttonLeftText) && string.IsNullOrWhiteSpace(buttonMiddleText) && string.IsNullOrWhiteSpace(buttonRightText))
+            if (buttonLeftText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(buttonLeftText);
+            }
+            if (buttonMiddleText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(buttonMiddleText);
+            }
+            if (buttonRightText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(buttonRightText);
+            }
+            if (buttonLeftText is null && buttonMiddleText is null && buttonRightText is null)
             {
                 throw new InvalidOperationException("At least one button must be defined.");
             }
 
             // Assign remaining properties.
+            ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
             MessageText = messageText;
             MessageAlignment = messageAlignment;
-            ButtonLeftText = !string.IsNullOrWhiteSpace(buttonLeftText) ? buttonLeftText : null;
-            ButtonMiddleText = !string.IsNullOrWhiteSpace(buttonMiddleText) ? buttonMiddleText : null;
-            ButtonRightText = !string.IsNullOrWhiteSpace(buttonRightText) ? buttonRightText : null;
+            ButtonLeftText = buttonLeftText;
+            ButtonMiddleText = buttonMiddleText;
+            ButtonRightText = buttonRightText;
             Icon = icon;
             MinimizeWindows = minimizeWindows;
         }

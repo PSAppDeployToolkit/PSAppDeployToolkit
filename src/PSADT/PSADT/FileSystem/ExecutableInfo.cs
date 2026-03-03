@@ -43,6 +43,7 @@ namespace PSADT.FileSystem
             }
 
             // Read the DOS header and check for the PE signature.
+            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
             using FileStream fs = new(filePath, FileMode.Open, FileAccess.Read);
             using BinaryReader reader = new(fs);
             ref readonly IMAGE_DOS_HEADER dosHeader = ref ReadStruct<IMAGE_DOS_HEADER>(reader); _ = fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);

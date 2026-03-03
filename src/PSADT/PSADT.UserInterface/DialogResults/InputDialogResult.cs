@@ -19,9 +19,9 @@ namespace PSADT.UserInterface.DialogResults
         /// <exception cref="ArgumentException">Thrown if the text parameter is provided and is empty or consists only of whitespace.</exception>
         internal InputDialogResult(string result, string? text = null) : base(result)
         {
-            if (text is not null && string.IsNullOrWhiteSpace(text))
+            if (text is not null)
             {
-                throw new ArgumentException("Text cannot be empty or whitespace.", nameof(text));
+                ArgumentException.ThrowIfNullOrWhiteSpace(text);
             }
             Text = text;
         }

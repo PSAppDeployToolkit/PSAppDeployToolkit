@@ -64,12 +64,24 @@ namespace PSADT.TerminalServices
             ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount.Value, nameof(ntAccount));
             ArgumentException.ThrowIfNullOrWhiteSpace(userName);
             ArgumentException.ThrowIfNullOrWhiteSpace(domainName);
+            if (sessionName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(sessionName);
+            }
+            if (clientName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(clientName);
+            }
+            if (clientDirectory is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(clientDirectory);
+            }
             NTAccount = ntAccount;
             SID = sid;
             UserName = userName;
             DomainName = domainName;
             SessionId = sessionId;
-            SessionName = !string.IsNullOrWhiteSpace(sessionName) ? sessionName : null;
+            SessionName = sessionName;
             ConnectState = connectState;
             IsCurrentSession = isCurrentSession;
             IsConsoleSession = isConsoleSession;

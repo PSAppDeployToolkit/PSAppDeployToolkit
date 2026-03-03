@@ -179,14 +179,16 @@ namespace PSADT.WindowsInstaller
             ArgumentOutOfRangeException.ThrowIfZero(transformProperties.Count);
             msiPath = Path.GetFullPath(msiPath).ThrowIfFileDoesNotExist();
             newTransformPath = Path.GetFullPath(newTransformPath).ThrowIfPathIsNotRooted();
-            if (!string.IsNullOrWhiteSpace(applyTransformPath))
+            if (applyTransformPath is not null)
             {
+                ArgumentException.ThrowIfNullOrWhiteSpace(applyTransformPath);
                 applyTransformPath = Path.GetFullPath(applyTransformPath).ThrowIfFileDoesNotExist();
             }
 
             // Set up the temp MSI path.
-            bool deleteTempMsi; if (!string.IsNullOrWhiteSpace(tempMsiPath))
+            bool deleteTempMsi; if (tempMsiPath is not null)
             {
+                ArgumentException.ThrowIfNullOrWhiteSpace(tempMsiPath);
                 if (File.Exists(tempMsiPath = Path.GetFullPath(tempMsiPath)))
                 {
                     throw new InvalidOperationException("The specified temp MSI path already exists. Please provide a non-existing path or allow the method to create a temp file automatically.");

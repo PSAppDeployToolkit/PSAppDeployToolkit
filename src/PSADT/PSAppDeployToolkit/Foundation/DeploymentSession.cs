@@ -1145,6 +1145,22 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="hostLogStreamType">What stream to write the message to.</param>
         public IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null, HostLogStreamType? hostLogStreamType = null)
         {
+            if (source is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(source);
+            }
+            if (scriptSection is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(scriptSection);
+            }
+            if (logFileDirectory is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(logFileDirectory);
+            }
+            if (logFileName is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(logFileName);
+            }
             IReadOnlyList<LogEntry> logEntries = LogUtilities.WriteLogEntry(message, hostLogStreamType ?? GetHostLogStreamTypeMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
             LogBuffer.AddRange(logEntries);
             return logEntries;

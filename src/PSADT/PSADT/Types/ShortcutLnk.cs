@@ -27,6 +27,22 @@ namespace PSADT.Types
             {
                 throw new ArgumentOutOfRangeException(nameof(windowStyle), windowStyle, $"Invalid window style: {windowStyle}. Must be one of: Normal, Minimized, Maximized.");
             }
+            if (arguments is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(arguments);
+            }
+            if (description is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(description);
+            }
+            if (workingDirectory is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+            }
+            if (hotkey is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(hotkey);
+            }
             WindowStyle = windowStyle;
             Arguments = arguments;
             Description = description;

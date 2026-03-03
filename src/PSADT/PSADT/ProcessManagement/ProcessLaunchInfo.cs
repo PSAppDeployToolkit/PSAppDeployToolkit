@@ -98,12 +98,14 @@ namespace PSADT.ProcessManagement
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
 
             // Validate all nullable parameters.
-            if (!string.IsNullOrWhiteSpace(workingDirectory))
+            if (workingDirectory is not null)
             {
-                WorkingDirectory = workingDirectory!.Trim();
+                ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                WorkingDirectory = workingDirectory.Trim();
             }
-            if (!string.IsNullOrWhiteSpace(verb))
+            if (verb is not null)
             {
+                ArgumentException.ThrowIfNullOrWhiteSpace(verb);
                 Verb = verb;
             }
             if (streamEncoding is not null)

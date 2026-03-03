@@ -29,6 +29,10 @@ namespace PSAppDeployToolkit.Logging
             // spaces. As such, replace all spaces and empty lines with a punctuation space.
             // C# identifies this character as whitespace but OneTrace does not so it works.
             // The empty line feed at the end is required by OneTrace to format correctly.
+            if (scriptSection is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(scriptSection);
+            }
             ArgumentException.ThrowIfNullOrWhiteSpace(message);
             ArgumentException.ThrowIfNullOrWhiteSpace(source);
             ArgumentException.ThrowIfNullOrWhiteSpace(callerFileName);
@@ -37,7 +41,7 @@ namespace PSAppDeployToolkit.Logging
             Message = message.Replace("\0", null).TrimEnd();
             Severity = severity;
             Source = source;
-            ScriptSection = !string.IsNullOrWhiteSpace(scriptSection) ? scriptSection : null;
+            ScriptSection = scriptSection;
             DebugMessage = debugMessage;
             CallerFileName = callerFileName;
             CallerSource = callerSource;

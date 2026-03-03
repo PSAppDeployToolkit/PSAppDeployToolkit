@@ -67,6 +67,11 @@ namespace PSADT.Utilities
         /// <param name="value">The value to assign to the environment variable. If null, the environment variable is deleted.</param>
         public static void SetEnvironmentVariable(string variable, string? value)
         {
+            if (value is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
             Environment.SetEnvironmentVariable(variable, value);
         }
 
@@ -82,6 +87,11 @@ namespace PSADT.Utilities
         /// <param name="target">One of the enumeration values that specifies the location where the environment variable is stored.</param>
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target)
         {
+            if (value is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
             Environment.SetEnvironmentVariable(variable, value, target);
         }
 
@@ -122,6 +132,10 @@ namespace PSADT.Utilities
             }
 
             // Validate all inputs.
+            if (value is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+            }
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 1024);
             if (variable[0] == '\0')
@@ -228,6 +242,7 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to remove. Cannot be null.</param>
         public static void RemoveEnvironmentVariable(string variable)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
             Environment.SetEnvironmentVariable(variable, null);
         }
 
@@ -241,6 +256,7 @@ namespace PSADT.Utilities
         /// user, or machine.</param>
         public static void RemoveEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
             Environment.SetEnvironmentVariable(variable, null, target);
         }
     }

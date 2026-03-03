@@ -35,6 +35,7 @@ namespace PSADT.FileSystem
         /// <returns><see langword="true"/> if the specified file path is valid; otherwise, <see langword="false"/>.</returns>
         public static bool IsValidFilePath(string path)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
             return IsValidFilePath(path.AsSpan(), 0);
         }
 

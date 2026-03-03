@@ -93,17 +93,19 @@ namespace PSADT.UserInterface.DialogOptions
             }
 
             // AppTaskbarIconImage is optional, so only validate it if it has a value.
-            if (!string.IsNullOrWhiteSpace(appIconDarkImage))
+            if (appIconDarkImage is not null)
             {
-                if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage!)?.Length > 0) && !File.Exists(appIconDarkImage))
+                ArgumentException.ThrowIfNullOrWhiteSpace(appIconDarkImage);
+                if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
                 {
                     throw new FileNotFoundException($"The specified AppIconDarkImage [{appIconDarkImage}] cannot be found", appIconDarkImage);
                 }
                 AppIconDarkImage = appIconDarkImage;
             }
-            if (!string.IsNullOrWhiteSpace(appTaskbarIconImage))
+            if (appTaskbarIconImage is not null)
             {
-                if (!(MiscUtilities.GetBase64StringBytes(appTaskbarIconImage!)?.Length > 0) && !File.Exists(appTaskbarIconImage))
+                ArgumentException.ThrowIfNullOrWhiteSpace(appTaskbarIconImage);
+                if (!(MiscUtilities.GetBase64StringBytes(appTaskbarIconImage)?.Length > 0) && !File.Exists(appTaskbarIconImage))
                 {
                     throw new FileNotFoundException($"The specified AppTaskbarIconImage [{appTaskbarIconImage}] cannot be found", appTaskbarIconImage);
                 }

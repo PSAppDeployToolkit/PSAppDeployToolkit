@@ -212,17 +212,17 @@ function Get-ADTApplication
                     }
 
                     # Grab all available uninstall string.
-                    if (($uninstallString = $item.GetValue('UninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value)))
+                    if (!($uninstallString = $item.GetValue('UninstallString', $null)) -or ($uninstallString -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value))))
                     {
-                        $uninstallString = $null
+                        $uninstallString = [System.Management.Automation.Language.NullString]::Value
                     }
-                    if (($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value)))
+                    if (!($quietUninstallString = $item.GetValue('QuietUninstallString', $null)) -or ($quietUninstallString -and [System.String]::IsNullOrWhiteSpace($quietUninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value))))
                     {
-                        $quietUninstallString = $null
+                        $quietUninstallString = [System.Management.Automation.Language.NullString]::Value
                     }
 
                     # Apply application type filter if specified.
-                    $windowsInstaller = $item.GetValue('WindowsInstaller', $false) -or ($uninstallString -match 'msiexec') -or ($quietUninstallString -match 'msiexec')
+                    $windowsInstaller = $item.GetValue('WindowsInstaller', $false) -or ($uninstallString.ToString() -match 'msiexec') -or ($quietUninstallString.ToString() -match 'msiexec')
                     if ((($ApplicationType -eq 'MSI') -and !$windowsInstaller) -or (($ApplicationType -eq 'EXE') -and $windowsInstaller))
                     {
                         continue
