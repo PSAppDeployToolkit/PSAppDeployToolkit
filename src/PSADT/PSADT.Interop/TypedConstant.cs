@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Windows.Win32.Foundation;
 
@@ -38,8 +37,8 @@ namespace PSADT.Interop
         /// The name is automatically captured from the calling member.
         /// </summary>
         /// <param name="value">The numeric value to be associated with this instance.</param>
-        /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
-        private protected TypedConstant(nint value, [CallerMemberName] string name = null!)
+        /// <param name="name">The name of the constant.</param>
+        private protected TypedConstant(nint value, string name)
         {
             _name = name;
             _value = value;
@@ -50,8 +49,8 @@ namespace PSADT.Interop
         /// The name is automatically captured from the calling member.
         /// </summary>
         /// <param name="value">The PCWSTR value to be associated with this instance.</param>
-        /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
-        private protected TypedConstant(PCWSTR value, [CallerMemberName] string name = null!)
+        /// <param name="name">The name of the constant.</param>
+        private protected TypedConstant(PCWSTR value, string name)
         {
             _name = name;
             unsafe
