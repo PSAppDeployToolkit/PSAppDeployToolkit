@@ -88,15 +88,15 @@ function Set-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TargetPath,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Arguments,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$IconLocation,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -104,11 +104,11 @@ function Set-ADTShortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Description,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized', 'DontChange')]

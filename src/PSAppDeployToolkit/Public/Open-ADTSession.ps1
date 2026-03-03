@@ -192,27 +192,27 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppVendor = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppVendor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppVersion = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppVersion,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppArch = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppArch,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppLang = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppLang,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppRevision = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppRevision,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -224,19 +224,19 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$AppScriptAuthor = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AppScriptAuthor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$InstallName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$InstallName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$InstallTitle = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$InstallTitle,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DeployAppScriptFriendlyName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DeployAppScriptFriendlyName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
@@ -287,7 +287,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$DirFiles = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DirFiles,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -301,15 +301,15 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$DirSupportFiles = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DirSupportFiles,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DefaultMsiFile = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DefaultMsiFile,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DefaultMstFile = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DefaultMstFile,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -354,7 +354,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
-        [System.String]$LogName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogName,
 
         [Parameter(Mandatory = $false, DontShow = $true)]
         [ValidateScript({

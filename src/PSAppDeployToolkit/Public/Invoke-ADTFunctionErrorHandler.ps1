@@ -90,7 +90,7 @@ function Invoke-ADTFunctionErrorHandler
         [Parameter(Mandatory = $false, ParameterSetName = 'AdditionalResolveErrorProperties')]
         [Parameter(Mandatory = $false, ParameterSetName = 'DisableErrorResolving')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogMessage = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogMessage,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ResolveErrorProperties')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]

@@ -82,7 +82,7 @@ function New-ADTZipFile
         [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
         [ValidateSet('Fastest', 'NoCompression', 'Optimal')]
-        [System.String]$CompressionLevel = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$CompressionLevel,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]

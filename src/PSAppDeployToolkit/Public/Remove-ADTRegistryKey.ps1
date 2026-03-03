@@ -97,7 +97,7 @@ function Remove-ADTRegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,

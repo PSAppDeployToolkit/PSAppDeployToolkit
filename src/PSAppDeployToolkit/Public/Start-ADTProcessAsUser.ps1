@@ -177,7 +177,7 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $true)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -188,7 +188,7 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,

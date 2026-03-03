@@ -175,11 +175,11 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

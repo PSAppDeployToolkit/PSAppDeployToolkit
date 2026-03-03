@@ -147,15 +147,15 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonRightText,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonLeftText,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonMiddleText,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

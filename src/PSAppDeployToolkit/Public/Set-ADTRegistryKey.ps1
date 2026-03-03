@@ -100,7 +100,7 @@ function Set-ADTRegistryKey
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
         [System.Object]$Value,

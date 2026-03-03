@@ -88,11 +88,11 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Source = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Source,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ScriptSection,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -101,11 +101,11 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileDirectory,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]

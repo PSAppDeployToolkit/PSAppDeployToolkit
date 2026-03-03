@@ -92,19 +92,19 @@ function New-ADTErrorRecord
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TargetName,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetType = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TargetType,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Activity = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Activity,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Reason = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Reason,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]

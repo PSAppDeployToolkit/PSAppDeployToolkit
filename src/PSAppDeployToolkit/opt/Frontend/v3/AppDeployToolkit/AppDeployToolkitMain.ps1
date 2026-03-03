@@ -64,23 +64,23 @@ function Write-Log
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Source = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Source,
 
         [Parameter(Mandatory = $false, Position = 3)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ScriptSection = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ScriptSection,
 
         [Parameter(Mandatory = $false, Position = 4)]
         [ValidateSet('CMTrace', 'Legacy')]
-        [System.String]$LogType = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogType,
 
         [Parameter(Mandatory = $false, Position = 5)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileDirectory,
 
         [Parameter(Mandatory = $false, Position = 6)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false, Position = 7)]
         [ValidateNotNullOrEmpty()]
@@ -291,7 +291,7 @@ function Get-FreeDiskSpace
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Drive = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Drive,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -396,7 +396,7 @@ function Get-InstalledApplication
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ProductCode = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ProductCode,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Exact,
@@ -478,12 +478,12 @@ function Remove-MSIApplications
         [Parameter(Mandatory = $false)]
         [Alias('Arguments', 'Parameters')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('AddParameters')]
-        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -498,11 +498,11 @@ function Remove-MSIApplications
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
         [Alias('LogName')]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -944,7 +944,7 @@ function Copy-FileToUserProfiles
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $false, Position = 2)]
-        [System.String]$Destination = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
@@ -958,7 +958,7 @@ function Copy-FileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$RobocopyAdditionalParams,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -1066,7 +1066,7 @@ function Show-InstallationPrompt
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Title = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Title,
 
         [Parameter(Mandatory = $true)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -1074,23 +1074,23 @@ function Show-InstallationPrompt
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Left', 'Center', 'Right')]
-        [System.String]$MessageAlignment = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$MessageAlignment,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonRightText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonRightText,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonLeftText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonLeftText,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ButtonMiddleText = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ButtonMiddleText,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Application', 'Asterisk', 'Error', 'Exclamation', 'Hand', 'Information', 'None', 'Question', 'Shield', 'Warning', 'WinLogo')]
-        [System.String]$Icon = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Icon,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -1161,11 +1161,11 @@ function Show-InstallationProgress
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$StatusMessage,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Default', 'TopLeft', 'Top', 'TopRight', 'TopCenter', 'BottomLeft', 'Bottom', 'BottomRight')]
-        [System.String]$WindowLocation = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WindowLocation,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1221,23 +1221,23 @@ function Show-DialogBox
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Title = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Title,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('OK', 'OKCancel', 'AbortRetryIgnore', 'YesNoCancel', 'YesNo', 'RetryCancel', 'CancelTryAgainContinue')]
-        [System.String]$Buttons = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Buttons,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('First', 'Second', 'Third')]
-        [System.String]$DefaultButton = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DefaultButton,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Exclamation', 'Information', 'None', 'Stop', 'Question')]
-        [System.String]$Icon = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Icon,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Timeout = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Timeout,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1278,7 +1278,7 @@ function Show-InstallationWelcome
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$CloseApps = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$CloseApps,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Silent,
@@ -1316,7 +1316,7 @@ function Show-InstallationWelcome
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DeferDeadline = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DeferDeadline,
 
         [Parameter(ParameterSetName = 'CheckDiskSpaceParameterSet', Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CheckDiskSpace,
@@ -1515,7 +1515,7 @@ function Show-BalloonTip
 
         [Parameter(Mandatory = $false, Position = 1)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$BalloonTipTitle = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$BalloonTipTitle,
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]
@@ -1905,7 +1905,7 @@ function Get-UniversalDate
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$DateTime = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$DateTime,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -1952,7 +1952,7 @@ function Test-ServiceExists
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ComputerName,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
@@ -2243,7 +2243,7 @@ function Get-ServiceStartMode
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ComputerName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2302,7 +2302,7 @@ function Set-ServiceStartMode
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StartMode = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$StartMode,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2388,7 +2388,7 @@ function Execute-Process
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
@@ -2458,7 +2458,7 @@ function Execute-MSI
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Install', 'Uninstall', 'Patch', 'Repair', 'ActiveSetup')]
-        [System.String]$Action = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Action,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter either the path to the MSI/MSP file or the ProductCode')]
         [ValidateScript({ ($_ -match (Get-ADTEnvironmentTable).MSIProductCodeRegExPattern) -or ('.msi', '.msp' -contains [System.IO.Path]::GetExtension($_)) })]
@@ -2467,17 +2467,17 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Transform = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Transform,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Arguments', 'Parameters')]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('AddParameters')]
-        [System.String]$AdditionalArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
         [Alias('SecureParameters')]
@@ -2485,20 +2485,20 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Patch = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Patch,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('LogName')]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipMSIAlreadyInstalledCheck,
@@ -2514,7 +2514,7 @@ function Execute-MSI
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IgnoreExitCodes = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Idle', 'Normal', 'High', 'AboveNormal', 'BelowNormal', 'RealTime')]
@@ -2688,7 +2688,7 @@ function Test-RegistryValue
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node
@@ -2752,7 +2752,7 @@ function Convert-RegistryPath
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -2878,7 +2878,7 @@ function Start-ServiceAndDependencies
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ComputerName,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
@@ -2954,7 +2954,7 @@ function Stop-ServiceAndDependencies
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ComputerName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ComputerName,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipServiceExistsTest,
@@ -3029,7 +3029,7 @@ function Set-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -3044,7 +3044,7 @@ function Set-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3096,14 +3096,14 @@ function Remove-RegistryKey
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3230,14 +3230,14 @@ function Get-RegistryKey
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Value')]
-        [System.String]$Name = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Name,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$SID = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$SID,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ReturnEmptyKeyIfExists,
@@ -3322,7 +3322,7 @@ function Get-SchedulerTask
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TaskName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TaskName,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3432,7 +3432,7 @@ function Invoke-RegisterOrUnregisterDLL
         [Parameter(Mandatory = $false)]
         [ValidateSet('Register', 'Unregister')]
         [Alias('DLLAction')]
-        [System.String]$Action = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Action,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -3629,26 +3629,26 @@ function Set-ActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Arguments,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Description,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Key = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Key,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Version = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Version,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Locale,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [System.Management.Automation.SwitchParameter]$DisableActiveSetup,
@@ -3791,11 +3791,11 @@ function New-MsiTransform
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ApplyTransformPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ApplyTransformPath,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$NewTransformPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$NewTransformPath,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -3944,7 +3944,7 @@ function Send-Keys
     (
         [Parameter(Mandatory = $false, Position = 0)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WindowTitle = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WindowTitle,
 
         [Parameter(Mandatory = $false, Position = 1)]
         [ValidateNotNullOrEmpty()]
@@ -3956,7 +3956,7 @@ function Send-Keys
 
         [Parameter(Mandatory = $false, Position = 3)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Keys = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Keys,
 
         [Parameter(Mandatory = $false, Position = 4)]
         [ValidateNotNullOrEmpty()]
@@ -4052,38 +4052,38 @@ function Set-Shortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TargetPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TargetPath,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Arguments,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$IconLocation,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconIndex = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$IconIndex,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Description,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized', 'DontChange')]
-        [System.String]$WindowStyle = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WindowStyle,
 
         [Parameter(Mandatory = $false)]
         [System.Nullable[System.Boolean]]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Hotkey,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4170,11 +4170,11 @@ function New-Shortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Arguments,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$IconLocation = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$IconLocation,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4182,22 +4182,22 @@ function New-Shortcut
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Description = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Description,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Normal', 'Maximized', 'Minimized')]
-        [System.String]$WindowStyle = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WindowStyle,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Hotkey = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Hotkey,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4245,7 +4245,7 @@ function Execute-ProcessAsUser
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$UserName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$UserName,
 
         [Parameter(Mandatory = $true)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -4254,12 +4254,12 @@ function Execute-ProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$TempPath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$TempPath,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [Alias('Parameters')]
-        [System.String]$ArgumentList = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [Alias('SecureParameters')]
@@ -4278,7 +4278,7 @@ function Execute-ProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -4537,7 +4537,7 @@ function Get-MsiTableProperty
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Table = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Table,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]

@@ -90,11 +90,11 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ProgressMessage = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ProgressMessage,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ProgressDetailMessage = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ProgressDetailMessage,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
         [ValidateNotNullOrEmpty()]

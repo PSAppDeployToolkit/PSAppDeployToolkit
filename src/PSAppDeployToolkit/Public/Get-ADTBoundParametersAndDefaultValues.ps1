@@ -68,11 +68,11 @@ function Get-ADTBoundParametersAndDefaultValues
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$ParameterSetName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$ParameterSetName,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$HelpMessage = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$HelpMessage,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]

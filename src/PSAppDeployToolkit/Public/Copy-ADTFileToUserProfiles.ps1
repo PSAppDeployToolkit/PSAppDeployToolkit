@@ -115,7 +115,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Destination = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Profile', 'AppData', 'LocalAppData', 'Desktop', 'Documents', 'StartMenu', 'Temp', 'OneDrive', 'OneDriveCommercial')]
@@ -129,13 +129,13 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
-        [System.String]$FileCopyMode = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$FileCopyMode,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyParams = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$RobocopyParams,
 
         [Parameter(Mandatory = $false)]
-        [System.String]$RobocopyAdditionalParams = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$RobocopyAdditionalParams,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SpecifiedProfiles')]
         [ValidateNotNullOrEmpty()]

@@ -187,7 +187,7 @@ function Start-ADTMsiProcessAsUser
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$FilePath = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$FilePath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ProductCode_NoWait', ValueFromPipeline = $true, HelpMessage = 'Please supply the Product Code to process.')]
@@ -213,7 +213,7 @@ function Start-ADTMsiProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -240,7 +240,7 @@ function Start-ADTMsiProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$LoggingOptions = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -254,7 +254,7 @@ function Start-ADTMsiProcessAsUser
                 }
                 return $true
             })]
-        [System.String]$LogFileName = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Repair', 'Reinstall')]

@@ -115,7 +115,7 @@ function Set-ADTActiveSetup
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Arguments,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -148,7 +148,7 @@ function Set-ADTActiveSetup
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Locale,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
@@ -443,11 +443,11 @@ function Set-ADTActiveSetup
 
                 [Parameter(Mandatory = $false)]
                 [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-                [System.String]$Version = [System.Management.Automation.Language.NullString]::Value,
+                [System.String]$Version,
 
                 [Parameter(Mandatory = $false)]
                 [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-                [System.String]$Locale = [System.Management.Automation.Language.NullString]::Value,
+                [System.String]$Locale,
 
                 [Parameter(Mandatory = $false)]
                 [System.Management.Automation.SwitchParameter]$DisableActiveSetup

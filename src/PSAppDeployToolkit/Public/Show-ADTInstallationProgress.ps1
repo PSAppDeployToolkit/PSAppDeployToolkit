@@ -83,11 +83,11 @@ function Show-ADTInstallationProgress
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StatusMessage = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$StatusMessage,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$StatusMessageDetail = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$StatusMessageDetail,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
