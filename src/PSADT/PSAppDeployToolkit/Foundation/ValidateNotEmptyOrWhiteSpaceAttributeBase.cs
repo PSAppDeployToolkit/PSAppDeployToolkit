@@ -81,14 +81,14 @@ namespace PSAppDeployToolkit.Foundation
             }
             else if (arguments is IDictionary dict)
             {
-                if (!allowEmpty && dict.Count == 0)
+                if (dict.Count == 0)
                 {
                     throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
             }
             else if (IsReadOnlyDictionary(arguments, out int count))
             {
-                if (!allowEmpty && count == 0)
+                if (count == 0)
                 {
                     throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
@@ -119,7 +119,7 @@ namespace PSAppDeployToolkit.Foundation
                         while (enumerator.MoveNext());
                     }
                 }
-                if (!allowEmpty && isEmpty)
+                if (isEmpty)
                 {
                     throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
