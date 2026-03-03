@@ -67,29 +67,29 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<Process>? parentProcesses = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<int>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null, IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null)
         {
             // Ensure list inputs are not empty if they're not null.
-            if (parentProcesses?.Count == 0)
+            if (parentProcesses is not null)
             {
-                throw new ArgumentException("The parent processes list cannot be empty.", nameof(parentProcesses));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcesses.Count);
             }
-            if (parentProcessFilter?.Count == 0)
+            if (parentProcessFilter is not null)
             {
-                throw new ArgumentException("The parent process filter list cannot be empty.", nameof(parentProcessFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessFilter.Count);
             }
-            if (parentProcessIdFilter?.Count == 0)
+            if (parentProcessIdFilter is not null)
             {
-                throw new ArgumentException("The parent process ID filter list cannot be empty.", nameof(parentProcessIdFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessIdFilter.Count);
             }
-            if (parentProcessMainWindowHandleFilter?.Count == 0)
+            if (parentProcessMainWindowHandleFilter is not null)
             {
-                throw new ArgumentException("The parent process main window handle filter list cannot be empty.", nameof(parentProcessMainWindowHandleFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count);
             }
-            if (windowTitleFilter?.Count == 0)
+            if (windowTitleFilter is not null)
             {
-                throw new ArgumentException("The window title filter list cannot be empty.", nameof(windowTitleFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(windowTitleFilter.Count);
             }
-            if (windowHandleFilter?.Count == 0)
+            if (windowHandleFilter is not null)
             {
-                throw new ArgumentException("The window handle filter list cannot be empty.", nameof(windowHandleFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count);
             }
 
             // Get the list of processes based on the provided filters and start finding applicable windows.

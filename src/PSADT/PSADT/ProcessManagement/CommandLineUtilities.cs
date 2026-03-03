@@ -60,10 +60,8 @@ namespace PSADT.ProcessManagement
         public static string ArgumentListToCommandLine(IReadOnlyList<string> argv, bool strict = false)
         {
             // Consider a null or empty argument list as an error.
-            if (!(argv?.Count > 0))
-            {
-                throw new ArgumentNullException(nameof(argv), "The specified enumerable is null or empty.");
-            }
+            ArgumentNullException.ThrowIfNull(argv);
+            ArgumentOutOfRangeException.ThrowIfZero(argv.Count);
 
             // Construct and return the command line string.
             StringBuilder sb = new();
@@ -71,7 +69,7 @@ namespace PSADT.ProcessManagement
             {
                 if (string.IsNullOrWhiteSpace(arg) && arg.Length > 0)
                 {
-                    throw new ArgumentNullException(nameof(argv), "The specified enumerable contains whitespace arguments.");
+                    throw new ArgumentException("The specified enumerable contains whitespace arguments.", nameof(argv));
                 }
                 _ = sb.Append(strict ? EscapeArgumentStrict(arg) : EscapeArgumentCompatible(arg)).Append(' ');
             }

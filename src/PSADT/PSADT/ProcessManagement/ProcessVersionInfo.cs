@@ -40,6 +40,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
         public static ProcessVersionInfo GetVersionInfo(Process process)
         {
+            ArgumentNullException.ThrowIfNull(process);
             return new(process, null, null);
         }
 
@@ -94,12 +95,6 @@ namespace PSADT.ProcessManagement
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
-            // Validate the input process.
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process));
-            }
-
             // Confirm we've got the privilege to read the process memory.
             if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege))
             {

@@ -73,17 +73,9 @@ namespace PSADT.Interop
         /// <exception cref="InvalidOperationException">Thrown when neither operand is MSIDBOPEN_PATCHFILE.</exception>
         public static MSI_PERSISTENCE_MODE operator +(MSI_PERSISTENCE_MODE left, MSI_PERSISTENCE_MODE right)
         {
-            // Validate that neither operand is null.
-            if (left is null)
-            {
-                throw new ArgumentNullException(nameof(left));
-            }
-            if (right is null)
-            {
-                throw new ArgumentNullException(nameof(right));
-            }
-
-            // Determine which operand is MSIDBOPEN_PATCHFILE (the integer offset) and which is the base pointer
+            // Determine which operand is MSIDBOPEN_PATCHFILE (the integer offset) and which is the base pointer.
+            ArgumentNullException.ThrowIfNull(left);
+            ArgumentNullException.ThrowIfNull(right);
             bool leftIsPatchFile = ReferenceEquals(left, MSIDBOPEN_PATCHFILE);
             bool rightIsPatchFile = ReferenceEquals(right, MSIDBOPEN_PATCHFILE);
             if (!leftIsPatchFile && !rightIsPatchFile)

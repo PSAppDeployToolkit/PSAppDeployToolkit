@@ -56,10 +56,7 @@ namespace PSADT.ProcessManagement
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
             // Set up initial variables needed throughout method.
-            if (launchInfo is null)
-            {
-                throw new ArgumentNullException(nameof(launchInfo));
-            }
+            ArgumentNullException.ThrowIfNull(launchInfo);
             Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask, hStdInTask = Task.CompletedTask;
             AnonymousPipeServerStream? hStdOutRead = null;
             AnonymousPipeServerStream? hStdErrRead = null;
@@ -610,7 +607,8 @@ namespace PSADT.ProcessManagement
                     envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
                     envBlockPtr += (entry.Length + 1) * sizeof(char);
                 }
-                return envDict.Count == 0 ? throw new ArgumentException("The environment block is empty.", nameof(environmentBlock)) : new(envDict);
+                ArgumentOutOfRangeException.ThrowIfZero(envDict.Count);
+                return new(envDict);
             }
             finally
             {
@@ -639,14 +637,7 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
-            if (environment is null)
-            {
-                throw new ArgumentNullException(nameof(environment), "The environment block is invalid.");
-            }
-            if (environment.Count == 0)
-            {
-                throw new ArgumentException("The environment block is empty.", nameof(environment));
-            }
+            ArgumentNullException.ThrowIfNull(environment); ArgumentOutOfRangeException.ThrowIfZero(environment.Count);
             return EnvironmentVariableRegex.Replace(input.ThrowIfNullOrWhiteSpace(), m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
 

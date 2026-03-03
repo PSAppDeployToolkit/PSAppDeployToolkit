@@ -23,9 +23,8 @@ namespace PSADT.Utilities
         /// the remaining lines is preserved.</returns>
         public static IReadOnlyList<string> TrimLeadingTrailingLines(IEnumerable<string> value)
         {
-            return value is not null
-                ? new ReadOnlyCollection<string>([.. value.Select(static s => s.TrimEnd()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()])
-                : throw new ArgumentNullException(nameof(value), "The input collection cannot be null.");
+            ArgumentNullException.ThrowIfNull(value);
+            return new ReadOnlyCollection<string>([.. value.Select(static s => s.TrimEnd()).SkipWhile(string.IsNullOrWhiteSpace).Reverse().SkipWhile(string.IsNullOrWhiteSpace).Reverse()]);
         }
 
         /// <summary>
@@ -36,9 +35,8 @@ namespace PSADT.Utilities
         /// whitespace, returns an empty string.</returns>
         public static string TrimLeadingTrailingLines(string value)
         {
-            return value is not null
-                ? string.Join(Environment.NewLine, TrimLeadingTrailingLines(value.Replace("\r", null).Split('\n')))
-                : throw new ArgumentNullException(nameof(value));
+            ArgumentNullException.ThrowIfNull(value);
+            return string.Join(Environment.NewLine, TrimLeadingTrailingLines(value.Replace("\r", null).Split('\n')));
         }
 
         /// <summary>

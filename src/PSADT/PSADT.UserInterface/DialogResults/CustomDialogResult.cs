@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using PSADT.Interop.Extensions;
-using PSADT.UserInterface.Extensions;
 
 namespace PSADT.UserInterface.DialogResults
 {
@@ -84,7 +83,8 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="dialogResult">The CustomDialogResult instance to convert to a string.</param>
         public static implicit operator string(CustomDialogResult dialogResult)
         {
-            return dialogResult.ThrowIfNull().Result;
+            ArgumentNullException.ThrowIfNull(dialogResult);
+            return dialogResult.Result;
         }
     }
 }

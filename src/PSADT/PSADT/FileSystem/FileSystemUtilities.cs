@@ -206,13 +206,8 @@ namespace PSADT.FileSystem
         /// <exception cref="FileNotFoundException">Thrown if the file specified by <paramref name="path"/> does not exist.</exception>
         public static bool TestFileAccess(FileInfo path, FileSystemRights desiredAccess = FileSystemRights.ReadAndExecute)
         {
-            // Validate the input path.
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
             // Validate that the path exists.
+            ArgumentNullException.ThrowIfNull(path);
             if (!path.Exists)
             {
                 throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
@@ -294,10 +289,7 @@ namespace PSADT.FileSystem
         /// given path.</returns>
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
-            if (sid is null)
-            {
-                throw new ArgumentNullException(nameof(sid), "SecurityIdentifier cannot be null.");
-            }
+            ArgumentNullException.ThrowIfNull(sid);
             byte[] sidBytes = new byte[sid.BinaryLength]; sid.GetBinaryForm(sidBytes, 0);
             using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sidBytes);
             return GetEffectiveAccess(path, pSID, desiredAccessMask, NativeMethods.AuthzInitializeContextFromSid);
@@ -463,10 +455,7 @@ namespace PSADT.FileSystem
         private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, AuthzInitializeContext AuthzInitializeContext)
         {
             // Validate that the path exists.
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path), "Path cannot be null.");
-            }
+            ArgumentNullException.ThrowIfNull(path);
             if (!path.Exists)
             {
                 if (path is DirectoryInfo)

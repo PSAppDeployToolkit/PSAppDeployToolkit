@@ -88,7 +88,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
         private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            Strings = strings ?? throw new ArgumentNullException(nameof(strings), "Strings value is null or invalid.");
+            ArgumentNullException.ThrowIfNull(strings);
+            Strings = strings;
             DeferralsRemaining = deferralsRemaining;
             DeferralDeadline = deferralDeadline;
             UnlimitedDeferrals = unlimitedDeferrals;
@@ -202,8 +203,10 @@ namespace PSADT.UserInterface.DialogOptions
             /// langword="null"/>.</exception>
             private CloseAppsDialogStrings(CloseAppsDialogClassicStrings classic, CloseAppsDialogFluentStrings fluent)
             {
-                Classic = classic ?? throw new ArgumentNullException(nameof(classic), "Classic strings cannot be null.");
-                Fluent = fluent ?? throw new ArgumentNullException(nameof(fluent), "Fluent strings cannot be null.");
+                ArgumentNullException.ThrowIfNull(classic);
+                ArgumentNullException.ThrowIfNull(fluent);
+                Classic = classic;
+                Fluent = fluent;
             }
 
             /// <summary>

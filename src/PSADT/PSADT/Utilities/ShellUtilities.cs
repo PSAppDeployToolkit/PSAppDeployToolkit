@@ -144,10 +144,7 @@ namespace PSADT.Utilities
         /// <returns>The Application User Model ID associated with the specified process.</returns>
         public static string GetApplicationUserModelId(Process process)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
-            }
+            ArgumentNullException.ThrowIfNull(process);
             using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             return GetApplicationUserModelId(hProcess);
         }

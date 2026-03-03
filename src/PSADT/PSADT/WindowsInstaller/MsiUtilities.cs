@@ -175,6 +175,8 @@ namespace PSADT.WindowsInstaller
         public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
         {
             // Validate input parameters.
+            ArgumentNullException.ThrowIfNull(transformProperties);
+            ArgumentOutOfRangeException.ThrowIfZero(transformProperties.Count);
             if (!File.Exists(msiPath = Path.GetFullPath(msiPath.ThrowIfNullOrWhiteSpace())))
             {
                 throw new FileNotFoundException("MSI file not found.", msiPath);
@@ -182,14 +184,6 @@ namespace PSADT.WindowsInstaller
             if (!Path.IsPathRooted(newTransformPath = Path.GetFullPath(newTransformPath.ThrowIfNullOrWhiteSpace())))
             {
                 throw new ArgumentException("The new transform path must be an absolute path.", nameof(newTransformPath));
-            }
-            if (transformProperties is null)
-            {
-                throw new ArgumentNullException(nameof(transformProperties));
-            }
-            if (transformProperties.Count == 0)
-            {
-                throw new ArgumentException("TransformProperties cannot be empty. At least one property must be specified to create a transform.", nameof(transformProperties));
             }
             if (!string.IsNullOrWhiteSpace(applyTransformPath) && !File.Exists(applyTransformPath = Path.GetFullPath(applyTransformPath)))
             {
@@ -401,15 +395,12 @@ namespace PSADT.WindowsInstaller
         internal static Guid DecompressPackedGuid(ReadOnlySpan<char> packed32)
         {
             // Validate provided input.
-            if (packed32.Length != 32)
-            {
-                throw new ArgumentException("Expected 32 hex characters.", nameof(packed32));
-            }
+            ArgumentOutOfRangeException.ThrowIfNotEqual(packed32.Length, 32);
             for (int idx = 0; idx < 32; idx++)
             {
                 if (packed32[idx] is not ((>= '0' and <= '9') or (>= 'A' and <= 'F') or (>= 'a' and <= 'f')))
                 {
-                    throw new ArgumentException("Input contained non-hex characters.", nameof(packed32));
+                    throw new ArgumentOutOfRangeException(nameof(packed32), packed32[idx], "Input contained non-hex characters.");
                 }
             }
 
@@ -490,13 +481,10 @@ namespace PSADT.WindowsInstaller
                 // Apply any transformations to the database.
                 if (szTransformFiles is not null)
                 {
+                    ArgumentOutOfRangeException.ThrowIfZero(szTransformFiles.Count);
                     if (isPatchFile)
                     {
                         throw new InvalidOperationException("Cannot apply transforms to patch files.");
-                    }
-                    if (szTransformFiles.Count == 0)
-                    {
-                        throw new ArgumentException("Transform files collection cannot be empty if provided.", nameof(szTransformFiles));
                     }
                     foreach (string szTransformFile in szTransformFiles)
                     {

@@ -43,14 +43,8 @@ namespace PSADT.Utilities
         /// <exception cref="FileNotFoundException">Thrown if any file specified in <paramref name="fontFilePaths"/> does not exist.</exception>
         public static IReadOnlyDictionary<string, int> AddFonts(IReadOnlyList<string> fontFilePaths)
         {
-            if (fontFilePaths is null)
-            {
-                throw new ArgumentNullException(nameof(fontFilePaths));
-            }
-            if (fontFilePaths.Count == 0)
-            {
-                throw new ArgumentException("At least one font file path must be provided.", nameof(fontFilePaths));
-            }
+            ArgumentNullException.ThrowIfNull(fontFilePaths);
+            ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count);
             Dictionary<string, int> fontResults = [];
             foreach (string fontFilePath in fontFilePaths)
             {
@@ -85,14 +79,8 @@ namespace PSADT.Utilities
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="fontFilePaths"/> is <see langword="null"/>.</exception>
         public static void RemoveFonts(IReadOnlyList<string> fontFilePaths)
         {
-            if (fontFilePaths is null)
-            {
-                throw new ArgumentNullException(nameof(fontFilePaths));
-            }
-            if (fontFilePaths.Count == 0)
-            {
-                throw new ArgumentException("At least one font file path must be provided.", nameof(fontFilePaths));
-            }
+            ArgumentNullException.ThrowIfNull(fontFilePaths);
+            ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count);
             foreach (string fontFilePath in fontFilePaths)
             {
                 // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.

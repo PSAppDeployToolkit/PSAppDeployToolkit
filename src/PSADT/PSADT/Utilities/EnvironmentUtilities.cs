@@ -122,25 +122,11 @@ namespace PSADT.Utilities
             }
 
             // Validate all inputs.
-            if (variable is null)
-            {
-                throw new ArgumentNullException(nameof(variable));
-            }
-            if (variable.Length == 0)
-            {
-                throw new ArgumentException("String cannot be of zero length.", nameof(variable));
-            }
-            if (string.IsNullOrWhiteSpace(variable))
-            {
-                throw new ArgumentNullException(nameof(variable), "String cannot contain only whitespace characters.");
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(variable);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 1024);
             if (variable[0] == '\0')
             {
                 throw new FormatException("The first char in the variable is a null character.");
-            }
-            if (variable.Length >= 1024)
-            {
-                throw new ArgumentException("Environment variable name or value is too long.", nameof(variable));
             }
             if (variable.Contains("="))
             {
@@ -161,10 +147,7 @@ namespace PSADT.Utilities
             if (remove)
             {
                 // If the existing value when split results in an empty list, remove it and return.
-                if (value is null)
-                {
-                    throw new ArgumentNullException(nameof(value), "Cannot remove a null environment variable value.");
-                }
+                ArgumentNullException.ThrowIfNull(value);
                 string? existingValue = GetEnvironmentVariable(variable);
                 if (existingValue is null || string.IsNullOrWhiteSpace(existingValue))
                 {
@@ -188,10 +171,7 @@ namespace PSADT.Utilities
             if (append)
             {
                 // Append the new value to the existing one if the existing value does not already contain it.
-                if (value is null)
-                {
-                    throw new ArgumentNullException(nameof(value), "Cannot append to a null environment variable value.");
-                }
+                ArgumentNullException.ThrowIfNull(value);
                 string? existingValue = GetEnvironmentVariable(variable);
                 if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
                 {
@@ -217,10 +197,7 @@ namespace PSADT.Utilities
                     }
                 case EnvironmentVariableTarget.User:
                     {
-                        if (variable.Length >= 255)
-                        {
-                            throw new ArgumentException("Environment variable name or value is too long.", nameof(variable));
-                        }
+                        ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 255);
                         using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("Could not open registry key for user environment variables.");
                         if (value is null)
                         {

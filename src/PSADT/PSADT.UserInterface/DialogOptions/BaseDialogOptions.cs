@@ -72,13 +72,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
         private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
-            // Confirm that the language parameter is not null before attempting to access its properties.
-            if (language is null)
-            {
-                throw new ArgumentNullException(nameof(language), "Language value is null or invalid.");
-            }
-
             // Set initial string properties.
+            ArgumentNullException.ThrowIfNull(language);
             AppTitle = appTitle.ThrowIfNullOrWhiteSpace();
             Subtitle = subtitle.ThrowIfNullOrWhiteSpace();
             AppIconImage = appIconImage.ThrowIfNullOrWhiteSpace();

@@ -32,14 +32,8 @@ namespace PSADT.ClientServer
         {
             // Verify state and parameters.
             ThrowIfDisposed();
-            if (outputStream is null)
-            {
-                throw new ArgumentNullException(nameof(outputStream));
-            }
-            if (inputStream is null)
-            {
-                throw new ArgumentNullException(nameof(inputStream));
-            }
+            ArgumentNullException.ThrowIfNull(outputStream);
+            ArgumentNullException.ThrowIfNull(inputStream);
 
             // Client receives server's public key first.
             byte[] serverPublicKey = ReadLengthPrefixedBytes(inputStream);

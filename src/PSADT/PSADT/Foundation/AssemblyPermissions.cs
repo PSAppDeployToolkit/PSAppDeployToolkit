@@ -36,12 +36,6 @@ namespace PSADT.Foundation
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
         internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
-            // Validate the runAsActiveUser parameter.
-            if (runAsActiveUser is null)
-            {
-                throw new ArgumentNullException(nameof(runAsActiveUser), "RunAsActiveUser cannot be null.");
-            }
-
             // Get the primary token for the user if they have a valid session ID, then proceed to check and remediate file system permissions.
             using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType) : null;
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);

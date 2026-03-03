@@ -32,7 +32,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="moduleHelpMap"/> is null.</exception>
         private HelpConsoleOptions(IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> moduleHelpMap)
         {
-            ModuleHelpMap = moduleHelpMap ?? throw new ArgumentNullException(nameof(moduleHelpMap));
+            ArgumentNullException.ThrowIfNull(moduleHelpMap);
+            ModuleHelpMap = moduleHelpMap;
         }
 
         /// <summary>

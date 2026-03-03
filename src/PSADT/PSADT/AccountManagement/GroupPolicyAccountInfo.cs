@@ -75,8 +75,8 @@ namespace PSADT.AccountManagement
         /// langword="null"/>.</exception>
         private GroupPolicyAccountInfo(NTAccount username, SecurityIdentifier sid)
         {
-            Username = username ?? throw new ArgumentNullException(nameof(username), "Username cannot be null.");
-            SID = sid ?? throw new ArgumentNullException(nameof(sid), "SID cannot be null.");
+            Username = username;
+            SID = sid;
         }
 
         /// <summary>

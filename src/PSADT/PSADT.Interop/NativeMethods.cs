@@ -2329,10 +2329,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if SystemInformation is empty.</exception>
         internal static NTSTATUS NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass, Span<byte> SystemInformation, out uint ReturnLength, bool retrievingLength = false)
         {
-            if (SystemInformation.IsEmpty)
-            {
-                throw new ArgumentNullException(nameof(SystemInformation));
-            }
+            ArgumentOutOfRangeException.ThrowIfZero(SystemInformation.Length);
             ReturnLength = 0;
             NTSTATUS res;
             unsafe
@@ -2366,10 +2363,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if Handle is null or closed, or if ObjectInformation is empty.</exception>
         internal static NTSTATUS NtQueryObject(SafeHandle? Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, Span<byte> ObjectInformation, out uint ReturnLength, bool retrievingLength = false)
         {
-            if (ObjectInformation.IsEmpty)
-            {
-                throw new ArgumentNullException(nameof(ObjectInformation));
-            }
+            ArgumentOutOfRangeException.ThrowIfZero(ObjectInformation.Length);
             bool HandleAddRef = false;
             NTSTATUS res;
             try

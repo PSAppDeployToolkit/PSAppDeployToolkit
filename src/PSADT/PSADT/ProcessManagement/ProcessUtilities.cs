@@ -36,10 +36,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
         public static Process GetParentProcess(Process process)
         {
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
-            }
+            ArgumentNullException.ThrowIfNull(process);
             using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             return GetParentProcess(hProcess);
         }
@@ -113,9 +110,8 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
         public static bool HasProcessExited(Process process)
         {
-            return process is null
-                ? throw new ArgumentNullException(nameof(process), "Process cannot be null.")
-                : HasProcessExited((uint)process.Id);
+            ArgumentNullException.ThrowIfNull(process);
+            return HasProcessExited((uint)process.Id);
         }
 
         /// <summary>
@@ -143,9 +139,8 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
         public static SecurityIdentifier GetProcessSid(Process process)
         {
-            return process is null
-                ? throw new ArgumentNullException(nameof(process), "Process cannot be null.")
-                : GetProcessSid((uint)process.Id);
+            ArgumentNullException.ThrowIfNull(process);
+            return GetProcessSid((uint)process.Id);
         }
 
         /// <summary>
@@ -173,10 +168,7 @@ namespace PSADT.ProcessManagement
         public static string GetProcessCommandLine(Process process)
         {
             // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
-            if (process is null)
-            {
-                throw new ArgumentNullException(nameof(process), "Process cannot be null.");
-            }
+            ArgumentNullException.ThrowIfNull(process);
             using SafeFileHandle hProc = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
             _ = NativeMethods.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
 
@@ -211,7 +203,8 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
         public static string GetProcessImageName(Process process)
         {
-            return process is null ? throw new ArgumentNullException(nameof(process), "Process cannot be null.") : GetProcessImageName((uint)process.Id);
+            ArgumentNullException.ThrowIfNull(process);
+            return GetProcessImageName((uint)process.Id);
         }
 
         /// <summary>
@@ -527,10 +520,6 @@ namespace PSADT.ProcessManagement
         /// <returns>The process ID of the specified service.</returns>
         internal static uint GetServiceProcessId(ServiceController service)
         {
-            if (service is null)
-            {
-                throw new ArgumentNullException(nameof(service), "Service cannot be null.");
-            }
             using CloseServiceHandleSafeHandle scm = NativeMethods.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
             using CloseServiceHandleSafeHandle svc = NativeMethods.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];

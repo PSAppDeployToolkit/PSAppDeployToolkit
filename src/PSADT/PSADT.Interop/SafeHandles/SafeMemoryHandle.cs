@@ -178,14 +178,8 @@ namespace PSADT.Interop.SafeHandles
         /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
-            if (data is null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-            if (data.Length == 0)
-            {
-                throw new ArgumentException("Code length cannot be zero.", nameof(data));
-            }
+            ArgumentNullException.ThrowIfNull(data);
+            ArgumentOutOfRangeException.ThrowIfZero(data.Length);
             if (data.Length + startIndex > Length)
             {
                 throw new InvalidOperationException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].");

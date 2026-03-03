@@ -27,10 +27,7 @@ namespace PSADT.Interop.SafeHandles
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="count"/> is zero.</exception>
         internal static SafeProcThreadAttributeListHandle Alloc(uint count)
         {
-            if (count == 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), count, "Count must be greater than zero.");
-            }
+            ArgumentOutOfRangeException.ThrowIfZero(count);
             nuint lpSize = default; _ = Initialize(default, count, ref lpSize);
             nint handle = Marshal.AllocHGlobal((int)lpSize);
             try

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 
 namespace PSADT.ProcessManagement
@@ -24,9 +23,9 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(launchInfo, commandLine, exitCode, stdOut, stdErr, interleaved)
+        internal ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(launchInfo, commandLine, exitCode, stdOut, stdErr, interleaved)
         {
-            Process = process ?? throw new ArgumentNullException(nameof(process), "Process cannot be null.");
+            Process = process;
         }
 
         /// <summary>
@@ -38,10 +37,11 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
+        internal ProcessResult(ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
         {
-            LaunchInfo = launchInfo ?? throw new ArgumentNullException(nameof(launchInfo), "LaunchInfo cannot be null.");
-            CommandLine = commandLine.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
+            LaunchInfo = launchInfo;
+            CommandLine = commandLine;
         }
 
         /// <summary>

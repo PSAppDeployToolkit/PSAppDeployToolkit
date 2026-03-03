@@ -26,9 +26,10 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static byte[] SerializeToBytes<T>(T obj)
         {
-            if (obj is null || (obj is string str && string.IsNullOrWhiteSpace(str)))
+            ArgumentNullException.ThrowIfNull(obj);
+            if (obj is string str)
             {
-                throw new ArgumentNullException(nameof(obj), "Object to serialize cannot be null.");
+                ArgumentException.ThrowIfNullOrWhiteSpace(str, nameof(obj));
             }
             using MemoryStream ms = new();
             using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(ms))
@@ -130,14 +131,8 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
-            if (bytes is null)
-            {
-                throw new ArgumentNullException(nameof(bytes), "Byte array cannot be null.");
-            }
-            if (bytes.Length == 0)
-            {
-                throw new ArgumentException("Byte array cannot be empty.", nameof(bytes));
-            }
+            ArgumentNullException.ThrowIfNull(bytes);
+            ArgumentOutOfRangeException.ThrowIfZero(bytes.Length);
             if (((uint)offset > (uint)bytes.Length) || (offset == bytes.Length))
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset points past the end of the buffer.");

@@ -8,7 +8,6 @@ using System.Security.Principal;
 using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Security;
 
 namespace PSADT.ProcessManagement
@@ -27,10 +26,8 @@ namespace PSADT.ProcessManagement
         public static IReadOnlyList<RunningProcessInfo> Get(IReadOnlyList<ProcessDefinition> processDefinitions)
         {
             // Set up some caches for performance.
-            if (!(processDefinitions?.Count > 0))
-            {
-                throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null or empty.");
-            }
+            ArgumentNullException.ThrowIfNull(processDefinitions);
+            ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count);
             ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.MakeNtPathLookupTable();
             Dictionary<Process, string[]> processArgvMap = [];
 
@@ -197,14 +194,13 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if process is null, or if description or fileName is null or empty.</exception>
         private RunningProcessInfo(Process process, string description, string fileName, IEnumerable<string> argumentList, SecurityIdentifier? sid)
         {
-            Process = process ?? throw new ArgumentNullException(nameof(process), "Process cannot be null.");
-            Description = description.ThrowIfNullOrWhiteSpace();
-            FileName = fileName.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(description);
+            ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+            Process = process;
+            Description = description;
+            FileName = fileName;
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
-            if (sid is not null)
-            {
-                SID = sid;
-            }
+            SID = sid;
         }
 
         /// <summary>

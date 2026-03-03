@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Management.Automation;
 
 namespace PSAppDeployToolkit.Foundation
@@ -24,7 +25,8 @@ namespace PSAppDeployToolkit.Foundation
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
-            _database = database ?? throw new ArgumentNullException(nameof(database), "Database cannot be null.");
+            ArgumentNullException.ThrowIfNull(database); ArgumentOutOfRangeException.ThrowIfZero(database.Properties.Count());
+            _database = database;
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.ProcessManagement
 {
@@ -24,10 +23,11 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null or if <paramref name="commandLine"/> is empty.</exception>
         internal ProcessHandle(Process process, ProcessLaunchInfo launchInfo, string commandLine, Task<ProcessResult> task)
         {
-            Process = process ?? throw new ArgumentNullException(nameof(process), "Process cannot be null.");
-            LaunchInfo = launchInfo ?? throw new ArgumentNullException(nameof(launchInfo), "LaunchInfo cannot be null.");
-            CommandLine = commandLine.ThrowIfNullOrWhiteSpace();
-            Task = task ?? throw new ArgumentNullException(nameof(task), "Task cannot be null.");
+            ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
+            Process = process;
+            LaunchInfo = launchInfo;
+            CommandLine = commandLine;
+            Task = task;
         }
 
         /// <summary>

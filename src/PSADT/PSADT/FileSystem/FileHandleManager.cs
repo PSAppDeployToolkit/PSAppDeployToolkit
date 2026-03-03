@@ -396,13 +396,8 @@ namespace PSADT.FileSystem
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleEntries"/> is null.</exception>
         public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
-            // Confirm the provided input isn't null.
-            if (handleEntries is null)
-            {
-                throw new ArgumentNullException(nameof(handleEntries));
-            }
-
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
+            ArgumentNullException.ThrowIfNull(handleEntries);
             using SafeProcessHandle currentProcessHandle = NativeMethods.GetCurrentProcess();
             foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {

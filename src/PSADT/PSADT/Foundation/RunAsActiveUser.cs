@@ -72,7 +72,7 @@ namespace PSADT.Foundation
         /// values.</remarks>
         /// <param name="session">The session information containing the NT account, security identifier (SID), and session ID of the active
         /// user.</param>
-        public RunAsActiveUser(SessionInfo session) : this(session?.NTAccount ?? throw new ArgumentNullException(nameof(session)), session.SID, session.SessionId, session.IsLocalAdmin)
+        public RunAsActiveUser(SessionInfo session) : this((session ?? throw new ArgumentNullException(nameof(session))).NTAccount, session.SID, session.SessionId, session.IsLocalAdmin)
         {
         }
 

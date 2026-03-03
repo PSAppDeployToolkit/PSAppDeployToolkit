@@ -133,7 +133,6 @@ namespace PSADT.Utilities
                 _ = NativeMethods.WritePrivateProfileSection(section, null, filepath);
                 return;
             }
-
             StringBuilder entries = new();
             if (content.Count > 0)
             {
@@ -141,18 +140,15 @@ namespace PSADT.Utilities
                 {
                     if (entry.Key is not (string or ValueType))
                     {
-                        throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.", nameof(content));
+                        throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.");
                     }
-
-                    string key = entry.Key?.ToString()?.Trim() ?? string.Empty;
-                    if (string.IsNullOrWhiteSpace(key))
+                    if (entry.Key?.ToString()?.Trim() is not string key || string.IsNullOrWhiteSpace(key))
                     {
-                        throw new ArgumentNullException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]");
+                        throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]");
                     }
-
                     if (entry.Value is not (string or ValueType or null))
                     {
-                        throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
+                        throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.");
                     }
                     _ = entries.Append(key);
                     _ = entries.Append('=');

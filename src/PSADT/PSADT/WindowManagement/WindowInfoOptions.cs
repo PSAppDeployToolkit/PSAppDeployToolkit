@@ -33,25 +33,25 @@ namespace PSADT.WindowManagement
         public WindowInfoOptions(ReadOnlyCollection<string>? windowTitleFilter, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<int>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
-            if (windowTitleFilter?.Count == 0)
+            if (windowTitleFilter is not null)
             {
-                throw new ArgumentException("The window title filter list cannot be empty.", nameof(windowTitleFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(windowTitleFilter.Count);
             }
-            if (windowHandleFilter?.Count == 0)
+            if (windowHandleFilter is not null)
             {
-                throw new ArgumentException("The window handle filter list cannot be empty.", nameof(windowHandleFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count);
             }
-            if (parentProcessFilter?.Count == 0)
+            if (parentProcessFilter is not null)
             {
-                throw new ArgumentException("The parent process filter list cannot be empty.", nameof(parentProcessFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessFilter.Count);
             }
-            if (parentProcessIdFilter?.Count == 0)
+            if (parentProcessIdFilter is not null)
             {
-                throw new ArgumentException("The parent process ID filter list cannot be empty.", nameof(parentProcessIdFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessIdFilter.Count);
             }
-            if (parentProcessMainWindowHandleFilter?.Count == 0)
+            if (parentProcessMainWindowHandleFilter is not null)
             {
-                throw new ArgumentException("The parent process main window handle filter list cannot be empty.", nameof(parentProcessMainWindowHandleFilter));
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count);
             }
 
             // Assign read-only collections or null based on input.

@@ -20,7 +20,8 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if processDefinitions is null or contains no elements.</exception>
         internal RunningProcessService(ReadOnlyCollection<ProcessDefinition> processDefinitions)
         {
-            _processDefinitions = processDefinitions?.Count > 0 ? processDefinitions : throw new ArgumentNullException(nameof(processDefinitions), "Process definitions cannot be null.");
+            ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count);
+            _processDefinitions = processDefinitions;
         }
 
         /// <summary>

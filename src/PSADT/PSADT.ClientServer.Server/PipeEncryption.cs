@@ -43,13 +43,8 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
         internal byte[] ReadEncrypted(Stream stream)
         {
-            // Verify parameters.
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
             // Read and decrypt.
+            ArgumentNullException.ThrowIfNull(stream);
             return Decrypt(ReadLengthPrefixedBytes(stream));
         }
 
@@ -61,17 +56,9 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
         internal void WriteEncrypted(Stream stream, byte[] plaintext)
         {
-            // Verify state and parameters.
-            if (stream is null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-            if (plaintext is null)
-            {
-                throw new ArgumentNullException(nameof(plaintext));
-            }
-
             // Encrypt and write.
+            ArgumentNullException.ThrowIfNull(stream);
+            ArgumentNullException.ThrowIfNull(plaintext);
             WriteLengthPrefixedBytes(stream, Encrypt(plaintext));
         }
 
@@ -145,10 +132,7 @@ namespace PSADT.ClientServer
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
-            if (plaintext is null)
-            {
-                throw new ArgumentNullException(nameof(plaintext));
-            }
+            ArgumentNullException.ThrowIfNull(plaintext);
 
             // Generate a unique nonce for this encryption operation.
             byte[] nonce = new byte[NonceSize];
@@ -186,15 +170,12 @@ namespace PSADT.ClientServer
         {
             // Verify state and parameters.
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
-            if (encryptedData is null)
-            {
-                throw new ArgumentNullException(nameof(encryptedData));
-            }
+            ArgumentNullException.ThrowIfNull(encryptedData);
 
             // Validate minimum input length: Nonce (12) + Tag (16) + at least 1 byte of ciphertext
             if (encryptedData.Length < NonceSize + TagSize + 1)
             {
-                throw new CryptographicException("Encrypted data is too short.");
+                throw new ArgumentOutOfRangeException(nameof(encryptedData), encryptedData.Length, "Encrypted data is too short.");
             }
 
             // Extract nonce, ciphertext, and tag
@@ -239,10 +220,7 @@ namespace PSADT.ClientServer
         {
             // Verify parameters and state.
             ThrowIfDisposed();
-            if (remotePublicKey is null)
-            {
-                throw new ArgumentNullException(nameof(remotePublicKey));
-            }
+            ArgumentNullException.ThrowIfNull(remotePublicKey);
             if (_encryptionKey is not null)
             {
                 throw new InvalidOperationException("Key exchange has already been completed.");

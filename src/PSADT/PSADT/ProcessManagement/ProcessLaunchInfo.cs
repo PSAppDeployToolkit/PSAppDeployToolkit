@@ -79,10 +79,7 @@ namespace PSADT.ProcessManagement
             bool noTerminateOnTimeout = false)
         {
             // Handle file paths that may be wrapped in quotes.
-            if (filePath is null)
-            {
-                throw new ArgumentNullException(nameof(filePath), "File path cannot be null.");
-            }
+            ArgumentNullException.ThrowIfNull(filePath);
             FilePath = filePath.StartsWith("\"") && filePath.EndsWith("\"") ? filePath.TrimStart('"').TrimEnd('"') : filePath;
 
             // Validate the file path is rooted.

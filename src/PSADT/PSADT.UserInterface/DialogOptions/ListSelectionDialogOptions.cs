@@ -88,17 +88,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="strings">The localized strings for the dialog. If <see langword="null"/>, the dialog falls back to XAML defaults.</param>
         private ListSelectionDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows, IReadOnlyList<string> listItems, int? selectedIndex, ListSelectionDialogStrings strings) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval, messageText, messageAlignment, buttonLeftText, buttonMiddleText, buttonRightText, icon, minimizeWindows)
         {
-            if (!(listItems?.Count > 0))
-            {
-                throw new ArgumentNullException(nameof(listItems), "ListItems cannot be null for a ListSelectionDialog.");
-            }
+            ArgumentNullException.ThrowIfNull(strings);
+            ArgumentNullException.ThrowIfNull(listItems);
+            ArgumentOutOfRangeException.ThrowIfZero(listItems.Count);
             if (selectedIndex.HasValue && (selectedIndex.Value < 0 || selectedIndex.Value >= listItems.Count))
             {
                 throw new ArgumentOutOfRangeException(nameof(selectedIndex), selectedIndex, "SelectedIndex must be a valid index within ListItems.");
-            }
-            if (strings is null)
-            {
-                throw new ArgumentNullException(nameof(strings), "Strings cannot be null for a ListSelectionDialog.");
             }
             ListItems = new ReadOnlyCollection<string>([.. listItems]);
             SelectedIndex = selectedIndex;

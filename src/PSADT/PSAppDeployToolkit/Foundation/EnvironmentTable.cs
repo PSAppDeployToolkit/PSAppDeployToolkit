@@ -50,21 +50,10 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cmdlet"/> or <paramref name="psVersionTable"/> is null.</exception>
         public EnvironmentTable(PSCmdlet cmdlet, Hashtable psVersionTable, Version psVersion)
         {
-            // Validate all inputs.
-            if (cmdlet is null)
-            {
-                throw new ArgumentNullException(nameof(cmdlet));
-            }
-            if (psVersionTable is null)
-            {
-                throw new ArgumentNullException(nameof(psVersionTable));
-            }
-            if (psVersion is null)
-            {
-                throw new ArgumentNullException(nameof(psVersion));
-            }
-
             // Toolkit info.
+            ArgumentNullException.ThrowIfNull(psVersionTable);
+            ArgumentNullException.ThrowIfNull(psVersion);
+            ArgumentNullException.ThrowIfNull(cmdlet);
             PSModuleInfo moduleInfo = cmdlet.MyInvocation.MyCommand.Module;
             AppDeployToolkitName = moduleInfo.Name;
             AppDeployToolkitPath = moduleInfo.ModuleBase;

@@ -217,9 +217,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator sbyte(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToSByte();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToSByte();
         }
 
         /// <summary>
@@ -229,9 +228,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator byte(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToByte();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToByte();
         }
 
         /// <summary>
@@ -241,9 +239,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator short(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToInt16();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToInt16();
         }
 
         /// <summary>
@@ -253,9 +250,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator ushort(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToUInt16();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToUInt16();
         }
 
         /// <summary>
@@ -265,9 +261,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator int(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToInt32();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToInt32();
         }
 
         /// <summary>
@@ -277,9 +272,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator uint(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToUInt32();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToUInt32();
         }
 
         /// <summary>
@@ -289,9 +283,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator long(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToInt64();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToInt64();
         }
 
         /// <summary>
@@ -301,9 +294,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator ulong(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToUInt64();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToUInt64();
         }
 
         /// <summary>
@@ -313,9 +305,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator nint(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToIntPtr();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToIntPtr();
         }
 
         /// <summary>
@@ -325,9 +316,8 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="typedConstant"/> is null.</exception>
         public static explicit operator string(TypedConstant<TSelf> typedConstant)
         {
-            return typedConstant is null
-                ? throw new ArgumentNullException(nameof(typedConstant))
-                : typedConstant.ToString();
+            ArgumentNullException.ThrowIfNull(typedConstant);
+            return typedConstant.ToString();
         }
     }
 }

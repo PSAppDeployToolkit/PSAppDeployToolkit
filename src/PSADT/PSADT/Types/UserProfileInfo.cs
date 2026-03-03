@@ -40,9 +40,12 @@ namespace PSADT.Types
             DirectoryInfo? oneDriveCommercialPath = null,
             CultureInfo? userLocale = null)
         {
-            NTAccount = ntAccount ?? throw new ArgumentNullException(nameof(ntAccount), "NTAccount cannot be null.");
-            SID = sid ?? throw new ArgumentNullException(nameof(sid), "SID cannot be null.");
-            ProfilePath = profilePath ?? throw new ArgumentNullException(nameof(profilePath), "ProfilePath cannot be null.");
+            ArgumentNullException.ThrowIfNull(profilePath);
+            ArgumentNullException.ThrowIfNull(ntAccount);
+            ArgumentNullException.ThrowIfNull(sid);
+            NTAccount = ntAccount;
+            SID = sid;
+            ProfilePath = profilePath;
             AppDataPath = appDataPath;
             LocalAppDataPath = localAppDataPath;
             DesktopPath = desktopPath;
