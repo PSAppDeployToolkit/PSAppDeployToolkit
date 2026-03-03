@@ -279,12 +279,11 @@ namespace PSADT.Interop
             {
                 fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
                 {
-                    res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength);
+                    if (!(res = PInvoke.AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges, newStatePtr, PreviousState, out ReturnLength)))
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
                 }
-            }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             if (PreviousState.Length != 0)
             {
@@ -361,13 +360,13 @@ namespace PSADT.Interop
             }
             ArgumentException.ThrowIfNullOrInvalid(hToken);
             bool lpEnvironmentAddRef = false;
-            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
                 unsafe
                 {
-                    res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    BOOL res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
             finally
@@ -377,7 +376,6 @@ namespace PSADT.Interop
                     lpEnvironment?.DangerousRelease();
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -415,13 +413,13 @@ namespace PSADT.Interop
             }
             ArgumentException.ThrowIfNullOrInvalid(hToken);
             bool lpEnvironmentAddRef = false;
-            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
                 unsafe
                 {
-                    res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    BOOL res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
             finally
@@ -431,7 +429,6 @@ namespace PSADT.Interop
                     lpEnvironment?.DangerousRelease();
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -479,7 +476,6 @@ namespace PSADT.Interop
             bool lpEnvironmentAddRef = false;
             try
             {
-                BOOL res;
                 unsafe
                 {
                     fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
@@ -490,15 +486,15 @@ namespace PSADT.Interop
                         SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                         hToken.DangerousAddRef(ref hTokenAddRef);
                         lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                        res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                        BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                         if (!res)
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
                         lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                        return res;
                     }
                 }
-                return res;
             }
             finally
             {
@@ -608,15 +604,14 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the ACL was successfully initialized; otherwise, <see langword="false"/>.</returns>
         internal static BOOL InitializeAcl(Span<byte> pAcl, ACE_REVISION dwAclRevision)
         {
-            BOOL res;
             unsafe
             {
                 fixed (byte* pAclPtr = pAcl)
                 {
-                    res = PInvoke.InitializeAcl((ACL*)pAclPtr, (uint)pAcl.Length, dwAclRevision);
+                    BOOL res = PInvoke.InitializeAcl((ACL*)pAclPtr, (uint)pAcl.Length, dwAclRevision);
+                    return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -675,7 +670,7 @@ namespace PSADT.Interop
         /// created successfully; otherwise, returns an error code.</returns>
         internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl)
         {
-            return SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl);
+            return SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl).ThrowOnFailure();
         }
 
         /// <summary>
@@ -1061,11 +1056,10 @@ namespace PSADT.Interop
                 UserSid.DangerousAddRef(ref UserSidAddRef);
                 unsafe
                 {
-                    res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, (void*)DynamicGroupArgs, out phAuthzClientContext);
-                }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    if (!(res = PInvoke.AuthzInitializeContextFromSid((uint)Flags, new(UserSid.DangerousGetHandle()), hAuthzResourceManager, pExpirationTime, Identifier, (void*)DynamicGroupArgs, out phAuthzClientContext)))
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
                 }
             }
             finally
@@ -1105,11 +1099,10 @@ namespace PSADT.Interop
             BOOL res;
             unsafe
             {
-                res = PInvoke.AuthzInitializeContextFromToken((uint)Flags, TokenHandle, hAuthzResourceManager, pExpirationTime, Identifier, (void*)DynamicGroupArgs, out phAuthzClientContext);
-            }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                if (!(res = PInvoke.AuthzInitializeContextFromToken((uint)Flags, TokenHandle, hAuthzResourceManager, pExpirationTime, Identifier, (void*)DynamicGroupArgs, out phAuthzClientContext)))
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
             }
             HandleHelpers.ThrowIfNullOrInvalid(phAuthzClientContext, "Failed to initialize the authorization context from the specified token.");
             return res;
@@ -1154,11 +1147,10 @@ namespace PSADT.Interop
                 pSecurityDescriptor.DangerousAddRef(ref pSecurityDescriptorAddRef);
                 unsafe
                 {
-                    res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults);
-                }
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    if (!(res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults)))
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
                 }
             }
             finally
@@ -1258,16 +1250,15 @@ namespace PSADT.Interop
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the result of the task dialog operation.</returns>
         internal static MESSAGEBOX_RESULT TaskDialog(HWND? hwndOwner, HINSTANCE? hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
         {
-            int pnButtonLocal = 0;
-            HRESULT res;
             unsafe
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
                 {
-                    res = PInvoke.TaskDialog(hwndOwner ?? default, hInstance ?? default, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
+                    int pnButtonLocal = 0;
+                    HRESULT res = PInvoke.TaskDialog(hwndOwner ?? default, hInstance ?? default, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
+                    return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : (MESSAGEBOX_RESULT)pnButtonLocal;
                 }
             }
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : (MESSAGEBOX_RESULT)pnButtonLocal;
         }
 
         /// <summary>
@@ -1507,13 +1498,13 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(hJob);
             bool hJobAddRef = false;
-            BOOL res;
             try
             {
                 hJob.DangerousAddRef(ref hJobAddRef);
                 unsafe
                 {
-                    res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, (void*)lpJobObjectInformation, cbJobObjectInformationLength);
+                    BOOL res = PInvoke.SetInformationJobObject((HANDLE)hJob.DangerousGetHandle(), JobObjectInformationClass, (void*)lpJobObjectInformation, cbJobObjectInformationLength);
+                    return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
             finally
@@ -1523,7 +1514,6 @@ namespace PSADT.Interop
                     hJob.DangerousRelease();
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -1598,13 +1588,13 @@ namespace PSADT.Interop
         internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             bool lpEnvironmentAddRef = false;
-            BOOL res;
             try
             {
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
                 unsafe
                 {
-                    res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    BOOL res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
             finally
@@ -1614,7 +1604,6 @@ namespace PSADT.Interop
                     lpEnvironment?.DangerousRelease();
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -1657,7 +1646,6 @@ namespace PSADT.Interop
             bool lpEnvironmentAddRef = false;
             try
             {
-                BOOL res;
                 unsafe
                 {
                     fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
@@ -1667,15 +1655,15 @@ namespace PSADT.Interop
                         SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
                         SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                         lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                        res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                        BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                         if (!res)
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
                         lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                        return res;
                     }
                 }
-                return res;
             }
             finally
             {
@@ -1736,17 +1724,16 @@ namespace PSADT.Interop
         internal static BOOL GetQueuedCompletionStatus(SafeHandle CompletionPort, out uint lpCompletionCode, out nuint lpCompletionKey, out nuint lpOverlapped, uint dwMilliseconds)
         {
             ArgumentException.ThrowIfNullOrClosed(CompletionPort);
-            BOOL res;
             unsafe
             {
-                res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out NativeOverlapped* pOverlapped, dwMilliseconds);
+                BOOL res = PInvoke.GetQueuedCompletionStatus(CompletionPort, out lpCompletionCode, out lpCompletionKey, out NativeOverlapped* pOverlapped, dwMilliseconds);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 lpOverlapped = (nuint)pOverlapped;
+                return res;
             }
-            return res;
         }
 
         /// <summary>
@@ -2045,11 +2032,10 @@ namespace PSADT.Interop
             BOOL res;
             unsafe
             {
-                res = PInvoke.ReadProcessMemory(hProcess, (void*)lpBaseAddress, lpBuffer, out lpNumberOfBytesRead);
-            }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                if (!(res = PInvoke.ReadProcessMemory(hProcess, (void*)lpBaseAddress, lpBuffer, out lpNumberOfBytesRead)))
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
             }
             HandleHelpers.ThrowIfZero(lpNumberOfBytesRead, "The number of bytes read from 'ReadProcessMemory()' is zero.");
             return res;
@@ -2097,15 +2083,14 @@ namespace PSADT.Interop
         internal static BOOL PostQueuedCompletionStatus(SafeHandle CompletionPort, uint dwNumberOfBytesTransferred, nuint dwCompletionKey, in NativeOverlapped lpOverlapped = default)
         {
             ArgumentException.ThrowIfNullOrInvalid(CompletionPort);
-            BOOL res;
             unsafe
             {
                 fixed (NativeOverlapped* pOverlapped = &lpOverlapped)
                 {
-                    res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, pOverlapped);
+                    BOOL res = PInvoke.PostQueuedCompletionStatus(CompletionPort, dwNumberOfBytesTransferred, dwCompletionKey, pOverlapped);
+                    return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -2258,14 +2243,14 @@ namespace PSADT.Interop
         /// <exception cref="Win32Exception">Thrown if the message formatting operation fails.</exception>
         internal static uint FormatMessage(FORMAT_MESSAGE_OPTIONS dwFlags, [Optional] FreeLibrarySafeHandle? lpSource, uint dwMessageId, Span<char> lpBuffer, uint dwLanguageId = 0, in nint Arguments = default)
         {
-            uint res;
             unsafe
             {
                 bool lpSourceAddRef = false;
                 try
                 {
                     lpSource?.DangerousAddRef(ref lpSourceAddRef);
-                    res = PInvoke.FormatMessage(dwFlags, lpSource is not null ? (void*)lpSource.DangerousGetHandle() : null, dwMessageId, dwLanguageId, lpBuffer, (uint)lpBuffer.Length, (sbyte*)Arguments);
+                    uint res = PInvoke.FormatMessage(dwFlags, lpSource is not null ? (void*)lpSource.DangerousGetHandle() : null, dwMessageId, dwLanguageId, lpBuffer, (uint)lpBuffer.Length, (sbyte*)Arguments);
+                    return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
 
                 }
                 finally
@@ -2276,7 +2261,6 @@ namespace PSADT.Interop
                     }
                 }
             }
-            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -2492,11 +2476,11 @@ namespace PSADT.Interop
                 fixed (byte* SystemInformationLocal = SystemInformation)
                 {
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
+                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length)))
+                    {
+                        throw ExceptionUtilities.GetException(res);
+                    }
                 }
-            }
-            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length)))
-            {
-                throw ExceptionUtilities.GetException(res);
             }
             ThrowIfZero(ReturnLength, "The return length from 'NtQuerySystemInformation()' is zero.");
             return res;
@@ -2531,6 +2515,10 @@ namespace PSADT.Interop
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
                 res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length)))
+                {
+                    throw ExceptionUtilities.GetException(res);
+                }
             }
             finally
             {
@@ -2538,10 +2526,6 @@ namespace PSADT.Interop
                 {
                     Handle?.DangerousRelease();
                 }
-            }
-            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length)))
-            {
-                throw ExceptionUtilities.GetException(res);
             }
             ThrowIfZero(ReturnLength, "The return length from 'NtQueryObject()' is zero.");
             return res;
@@ -2621,11 +2605,13 @@ namespace PSADT.Interop
             static extern NTSTATUS NtTerminateThread(nint ThreadHandle, NTSTATUS ExitStatus);
             ArgumentException.ThrowIfNullOrInvalid(ThreadHandle);
             bool ThreadHandleAddRef = false;
-            NTSTATUS res;
             try
             {
                 ThreadHandle.DangerousAddRef(ref ThreadHandleAddRef);
-                res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
+                NTSTATUS res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
+                return res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus
+                    ? throw ExceptionUtilities.GetException(res)
+                    : res;
             }
             finally
             {
@@ -2634,9 +2620,6 @@ namespace PSADT.Interop
                     ThreadHandle.DangerousRelease();
                 }
             }
-            return res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus
-                ? throw ExceptionUtilities.GetException(res)
-                : res;
         }
 
         /// <summary>
@@ -2670,6 +2653,10 @@ namespace PSADT.Interop
                     fixed (uint* ReturnLengthLocal = &ReturnLength)
                     {
                         res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
+                        if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+                        {
+                            throw ExceptionUtilities.GetException(res);
+                        }
                     }
                 }
             }
@@ -2679,10 +2666,6 @@ namespace PSADT.Interop
                 {
                     ProcessHandle.DangerousRelease();
                 }
-            }
-            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
-            {
-                throw ExceptionUtilities.GetException(res);
             }
             ThrowIfZero(ReturnLength, "The return length from 'NtQueryInformationProcess()' is zero.");
             return res;
@@ -2705,7 +2688,10 @@ namespace PSADT.Interop
             try
             {
                 hProcess.DangerousAddRef(ref hProcessAddRef);
-                res = PInvoke.EnumProcessModules(hProcess, lphModule, out lpcbNeeded);
+                if (!(res = PInvoke.EnumProcessModules(hProcess, lphModule, out lpcbNeeded)))
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
             }
             finally
             {
@@ -2713,10 +2699,6 @@ namespace PSADT.Interop
                 {
                     hProcess.DangerousRelease();
                 }
-            }
-            if (!res)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             ThrowIfZero(lpcbNeeded, "The return length from 'EnumProcessModules()' is zero.");
             return res;
@@ -2739,7 +2721,6 @@ namespace PSADT.Interop
             }
             ArgumentException.ThrowIfNullOrClosed(hProcess);
             bool hProcessAddRef = false;
-            BOOL res;
             try
             {
                 hProcess.DangerousAddRef(ref hProcessAddRef);
@@ -2747,7 +2728,8 @@ namespace PSADT.Interop
                 {
                     fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
                     {
-                        res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Marshal.SizeOf<MODULEINFO>());
+                        BOOL res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Marshal.SizeOf<MODULEINFO>());
+                        return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                     }
                 }
             }
@@ -2758,7 +2740,6 @@ namespace PSADT.Interop
                     hProcess.DangerousRelease();
                 }
             }
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -3065,6 +3046,10 @@ namespace PSADT.Interop
             {
                 hInstance.DangerousAddRef(ref hInstanceAddRef);
                 res = LoadString((HINSTANCE)hInstance.DangerousGetHandle(), uID, out lpBuffer, 0);
+                if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
+                {
+                    throw ExceptionUtilities.GetException(lastWin32Error);
+                }
             }
             finally
             {
@@ -3072,10 +3057,6 @@ namespace PSADT.Interop
                 {
                     hInstance.DangerousRelease();
                 }
-            }
-            if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
-            {
-                throw ExceptionUtilities.GetException(lastWin32Error);
             }
             HandleHelpers.ThrowIfNullOrInvalid(lpBuffer, "The buffer pointer returned from 'LoadString()' is null or invalid.");
             return res;
@@ -3194,12 +3175,11 @@ namespace PSADT.Interop
                 {
                     [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
                     static extern uint GetWindowThreadProcessId(HWND hWnd, uint* lpdwProcessId);
-                    res = GetWindowThreadProcessId(hWnd, p);
+                    if ((res = GetWindowThreadProcessId(hWnd, p)) == 0)
+                    {
+                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                    }
                 }
-            }
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             ThrowIfZero(lpdwProcessId, "The process ID returned from 'GetWindowThreadProcessId()' is zero.");
             return res;
@@ -3551,18 +3531,17 @@ namespace PSADT.Interop
         /// langword="false"/>.</returns>
         internal static BOOL CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, SafeFileHandle hToken, BOOL bInherit)
         {
-            BOOL res;
             unsafe
             {
-                res = PInvoke.CreateEnvironmentBlock(out void* lpEnvironmentPtr, hToken, bInherit);
+                BOOL res = PInvoke.CreateEnvironmentBlock(out void* lpEnvironmentPtr, hToken, bInherit);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 HandleHelpers.ThrowIfNullOrInvalid((nint)lpEnvironmentPtr, "Failed to create environment block handle.");
                 lpEnvironment = new((nint)lpEnvironmentPtr, true);
+                return res;
             }
-            return res;
         }
 
         /// <summary>
@@ -3582,21 +3561,20 @@ namespace PSADT.Interop
         internal static BOOL VerQueryValue(ReadOnlySpan<byte> pBlock, string lpSubBlock, out nint lplpBuffer, out uint puLen)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpSubBlock, nameof(lpSubBlock));
-            BOOL res;
             unsafe
             {
                 fixed (byte* pBlockPtr = pBlock)
                 {
-                    res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out void* lplpBufferLocal, out puLen);
+                    BOOL res = PInvoke.VerQueryValue(pBlockPtr, lpSubBlock, out void* lplpBufferLocal, out puLen);
                     if (!res)
                     {
                         throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, $"Failed to query [{lpSubBlock}] version value.");
                     }
                     HandleHelpers.ThrowIfNullOrInvalid(lplpBuffer = (nint)lplpBufferLocal, $"The version value for [{lpSubBlock}] is null or invalid.");
                     ThrowIfZero(puLen, $"The length of the version value for [{lpSubBlock}] is zero.");
+                    return res;
                 }
             }
-            return res;
         }
 
         /// <summary>
@@ -3690,19 +3668,18 @@ namespace PSADT.Interop
         /// retrieved successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WTSQueryUserToken(uint SessionId, out SafeFileHandle phToken)
         {
-            BOOL res;
             unsafe
             {
                 HANDLE phTokenLocal;
-                res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
+                BOOL res = PInvoke.WTSQueryUserToken(SessionId, &phTokenLocal);
                 if (!res)
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 HandleHelpers.ThrowIfNullOrInvalid((nint)phTokenLocal, "The user token handle returned from 'WTSQueryUserToken()' is null or invalid.");
                 phToken = new((nint)phTokenLocal, true);
+                return res;
             }
-            return res;
         }
 
         /// <summary>
