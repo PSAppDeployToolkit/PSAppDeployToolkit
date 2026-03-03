@@ -203,7 +203,7 @@ function Start-ADTProcess
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Foundation.AllowEmptyButNotNullOrWhiteSpace()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]

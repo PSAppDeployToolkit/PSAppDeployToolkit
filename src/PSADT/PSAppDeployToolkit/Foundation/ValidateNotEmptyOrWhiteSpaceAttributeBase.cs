@@ -10,17 +10,18 @@ using System.Security.Principal;
 namespace PSAppDeployToolkit.Foundation
 {
     /// <summary>
-    /// Provides a base attribute for validating that an argument is not empty or composed solely of white-space
+    /// Provides a base attribute for validating that an argument is not null, empty, or composed solely of white-space
     /// characters. Supports validation for strings, collections, and other types, and can be configured to allow or
-    /// disallow null values.
+    /// disallow null and empty values.
     /// </summary>
     /// <remarks>This attribute is intended for use in scenarios where it is important to ensure that input
-    /// arguments are neither empty nor only white space, such as in command or parameter validation. It supports a
-    /// variety of types, including strings, collections, and PowerShell-specific objects. When applied, it enforces
-    /// that arguments meet the specified non-empty criteria, optionally allowing nulls if configured.</remarks>
+    /// arguments meet specific non-null/non-empty/non-whitespace criteria, such as in command or parameter validation.
+    /// It supports a variety of types, including strings, collections, and PowerShell-specific objects.</remarks>
     /// <param name="allowNull">Indicates whether null values are permitted. If set to <see langword="true"/>, null arguments will not trigger
     /// validation errors.</param>
-    public abstract class ValidateNotEmptyOrWhiteSpaceAttributeBase(bool allowNull) : ValidateArgumentsAttribute
+    /// <param name="allowEmpty">Indicates whether empty values (empty strings, empty collections) are permitted. If set to <see langword="true"/>,
+    /// empty values will not trigger validation errors, but whitespace-only strings will still be rejected.</param>
+    public abstract class ValidateNotEmptyOrWhiteSpaceAttributeBase(bool allowNull, bool allowEmpty = false) : ValidateArgumentsAttribute
     {
         /// <summary>
         /// Validates that the argument is not empty or consists only of white-space characters.
@@ -52,35 +53,42 @@ namespace PSAppDeployToolkit.Foundation
             // Handle varying type checks.
             if (arguments is string str)
             {
-                if (string.IsNullOrWhiteSpace(str))
+                if (allowEmpty ? IsWhiteSpaceOnly(str) : string.IsNullOrWhiteSpace(str))
                 {
-                    throw new ValidationMetadataException("The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
+                    throw new ValidationMetadataException(allowEmpty
+                        ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
+                        : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
                 }
             }
             else if (arguments is ScriptBlock script)
             {
-                if (string.IsNullOrWhiteSpace(script.ToString()))
+                string scriptStr = script.ToString();
+                if (allowEmpty ? IsWhiteSpaceOnly(scriptStr) : string.IsNullOrWhiteSpace(scriptStr))
                 {
-                    throw new ValidationMetadataException("The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
+                    throw new ValidationMetadataException(allowEmpty
+                        ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
+                        : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
                 }
             }
             else if (arguments is NTAccount ntAccount)
             {
-                if (string.IsNullOrWhiteSpace(ntAccount.Value))
+                if (allowEmpty ? IsWhiteSpaceOnly(ntAccount.Value) : string.IsNullOrWhiteSpace(ntAccount.Value))
                 {
-                    throw new ValidationMetadataException("The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
+                    throw new ValidationMetadataException(allowEmpty
+                        ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
+                        : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
                 }
             }
             else if (arguments is IDictionary dict)
             {
-                if (dict.Count == 0)
+                if (!allowEmpty && dict.Count == 0)
                 {
                     throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
             }
             else if (IsReadOnlyDictionary(arguments, out int count))
             {
-                if (count == 0)
+                if (!allowEmpty && count == 0)
                 {
                     throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
@@ -101,15 +109,17 @@ namespace PSAppDeployToolkit.Foundation
                             {
                                 throw new ValidationMetadataException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
                             }
-                            if (element is string elementStr && string.IsNullOrWhiteSpace(elementStr))
+                            if (element is string elementStr && (allowEmpty ? IsWhiteSpaceOnly(elementStr) : string.IsNullOrWhiteSpace(elementStr)))
                             {
-                                throw new ValidationMetadataException("The argument collection contains an element that is empty or white space. Provide a collection that does not contain empty or white space elements, and then try running the command again.");
+                                throw new ValidationMetadataException(allowEmpty
+                                    ? "The argument collection contains an element that is white space. Provide a collection that does not contain white space elements, and then try running the command again."
+                                    : "The argument collection contains an element that is empty or white space. Provide a collection that does not contain empty or white space elements, and then try running the command again.");
                             }
                         }
                         while (enumerator.MoveNext());
                     }
                 }
-                if (isEmpty)
+                if (!allowEmpty && isEmpty)
                 {
                     throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
@@ -124,6 +134,16 @@ namespace PSAppDeployToolkit.Foundation
         private static bool IsNull(object? value)
         {
             return value is null || value is DBNull || value == AutomationNull.Value || value == NullString.Value;
+        }
+
+        /// <summary>
+        /// Determines whether the specified string consists only of white-space characters (but is not empty).
+        /// </summary>
+        /// <param name="value">The string to check.</param>
+        /// <returns><c>true</c> if the string is non-empty and consists only of white-space characters; otherwise, <c>false</c>.</returns>
+        private static bool IsWhiteSpaceOnly(string value)
+        {
+            return value.Length > 0 && string.IsNullOrWhiteSpace(value);
         }
 
         /// <summary>
