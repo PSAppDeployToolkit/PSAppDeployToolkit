@@ -92,22 +92,15 @@ namespace PSADT.ProcessManagement
                 throw new DriveNotFoundException("File path must be fully qualified.");
             }
 
+            // Handle all array parameters.
+            HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit?.Select(static h => (long)h) ?? []]);
+            StandardInput = new ReadOnlyCollection<string>([.. standardInput ?? []]);
+            ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
+
             // Validate all nullable parameters.
-            if (argumentList?.Any() == true)
-            {
-                ArgumentList = new ReadOnlyCollection<string>([.. argumentList]);
-            }
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
                 WorkingDirectory = workingDirectory!.Trim();
-            }
-            if (standardInput?.Any() == true)
-            {
-                StandardInput = new ReadOnlyCollection<string>([.. standardInput]);
-            }
-            if (handlesToInherit?.Any() == true)
-            {
-                HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit.Select(static h => (long)h)]);
             }
             if (!string.IsNullOrWhiteSpace(verb))
             {
@@ -206,7 +199,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string> ArgumentList = new ReadOnlyCollection<string>([]);
+        public readonly IReadOnlyList<string> ArgumentList;
 
         /// <summary>
         /// Gets the working directory of the process.
@@ -263,7 +256,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string> StandardInput = new ReadOnlyCollection<string>([]);
+        public readonly IReadOnlyList<string> StandardInput;
 
         /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.
