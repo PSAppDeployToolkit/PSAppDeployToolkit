@@ -67,11 +67,11 @@ namespace System
             {
                 if (handle is null)
                 {
-                    throw new ArgumentNullException(name, "SafeHandle cannot be null.");
+                    throw new ArgumentNullException(name, "The specified SafeHandle cannot be null.");
                 }
                 if (handle.IsClosed)
                 {
-                    throw new ObjectDisposedException(name, "SafeHandle is already closed.");
+                    throw new ObjectDisposedException(name, "The specified SafeHandle is already closed.");
                 }
             }
 
@@ -90,7 +90,7 @@ namespace System
                 ThrowIfNullOrClosed(handle, name);
                 if (handle.IsInvalid)
                 {
-                    throw new ArgumentException("SafeHandle is invalid.", name);
+                    throw new ArgumentOutOfRangeException(name, "The specified SafeHandle is invalid.");
                 }
             }
         }
