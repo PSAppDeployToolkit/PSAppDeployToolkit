@@ -211,7 +211,7 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$WorkingDirectory = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$WorkingDirectory,
 
         # Identity: RunAsActiveUser (only present in sets where identity is "RunAsActiveUser")
         [Parameter(Mandatory = $true, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
@@ -303,7 +303,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Verb = [System.Management.Automation.Language.NullString]::Value,
+        [System.String]$Verb,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
@@ -740,19 +740,29 @@ function Start-ADTProcess
                 {
                     if ([System.IO.Path]::HasExtension($FilePath) -and [System.IO.Path]::IsPathRooted($FilePath) -and ($FilePath -notmatch 'msiexec'))
                     {
-                        $WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
+                        $PSBoundParameters.WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                     }
                     elseif (![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
                     {
-                        $WorkingDirectory = $adtSession.DirFiles
+                        $PSBoundParameters.WorkingDirectory = $adtSession.DirFiles
                     }
+                }
+
+                # Properly handle nullable strings before instantiating our launch info.
+                if (!$PSBoundParameters.ContainsKey('WorkingDirectory'))
+                {
+                    $PSBoundParameters.Add('WorkingDirectory', [System.Management.Automation.Language.NullString]::Value)
+                }
+                if (!$PSBoundParameters.ContainsKey('Verb'))
+                {
+                    $PSBoundParameters.Add('Verb', [System.Management.Automation.Language.NullString]::Value)
                 }
 
                 # Set up the process start flags.
                 $startInfo = [PSADT.ProcessManagement.ProcessLaunchInfo]::new(
                     $FilePath,
                     $ArgumentList,
-                    $WorkingDirectory,
+                    $PSBoundParameters.WorkingDirectory,
                     $RunAsActiveUser,
                     $UseLinkedAdminToken,
                     $UseHighestAvailableToken,
@@ -763,7 +773,7 @@ function Start-ADTProcess
                     $StandardInput,
                     $null,
                     $UseShellExecute,
-                    $Verb,
+                    $PSBoundParameters.Verb,
                     $CreateNoWindow,
                     $WaitForChildProcesses,
                     $KillChildProcessesWithParent,
