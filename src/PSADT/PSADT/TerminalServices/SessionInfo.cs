@@ -61,6 +61,7 @@ namespace PSADT.TerminalServices
             string? clientDirectory,
             uint? clientBuildNumber)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount.Value, nameof(ntAccount));
             ArgumentException.ThrowIfNullOrWhiteSpace(userName);
             ArgumentException.ThrowIfNullOrWhiteSpace(domainName);
             NTAccount = ntAccount;

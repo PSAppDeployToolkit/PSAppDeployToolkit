@@ -40,6 +40,7 @@ namespace PSADT.Types
             DirectoryInfo? oneDriveCommercialPath = null,
             CultureInfo? userLocale = null)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount?.Value, nameof(ntAccount));
             ArgumentNullException.ThrowIfNull(profilePath);
             ArgumentNullException.ThrowIfNull(ntAccount);
             ArgumentNullException.ThrowIfNull(sid);
