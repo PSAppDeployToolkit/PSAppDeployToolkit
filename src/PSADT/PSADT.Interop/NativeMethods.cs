@@ -1160,7 +1160,7 @@ namespace PSADT.Interop
         /// <param name="dwCommonButtons">A combination of <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> values that specify the common buttons to display in the task dialog.</param>
         /// <param name="pszIcon">The resource identifier or name of the icon to display in the task dialog. This can be <see langword="null"/> if no icon is needed.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the result of the task dialog operation.</returns>
-        internal static MESSAGEBOX_RESULT TaskDialog(HWND hwndOwner, HINSTANCE hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
+        internal static MESSAGEBOX_RESULT TaskDialog(HWND? hwndOwner, HINSTANCE hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
         {
             int pnButtonLocal = 0;
             HRESULT res;
@@ -1168,7 +1168,7 @@ namespace PSADT.Interop
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
                 {
-                    res = PInvoke.TaskDialog(hwndOwner, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
+                    res = PInvoke.TaskDialog(hwndOwner ?? default, hInstance, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
                 }
             }
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : (MESSAGEBOX_RESULT)pnButtonLocal;
@@ -2811,6 +2811,10 @@ namespace PSADT.Interop
         /// <returns>A nonzero value if the window is visible; otherwise, zero.</returns>
         internal static BOOL IsWindowVisible(HWND hWnd)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             return PInvoke.IsWindowVisible(hWnd);
         }
 
@@ -2821,6 +2825,10 @@ namespace PSADT.Interop
         /// <returns>A nonzero value if the window is enabled; otherwise, zero.</returns>
         internal static BOOL IsWindowEnabled(HWND hWnd)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             return PInvoke.IsWindowEnabled(hWnd);
         }
 
@@ -2938,6 +2946,10 @@ namespace PSADT.Interop
         /// 0 if the window has no title or if an error occurs.</returns>
         internal static int GetWindowTextLength(HWND hWnd)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             PInvoke.SetLastError(0); int res = PInvoke.GetWindowTextLength(hWnd);
             return res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
@@ -2955,6 +2967,10 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
         internal static int GetWindowText(HWND hWnd, Span<char> lpString)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             int res = PInvoke.GetWindowText(hWnd, lpString);
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -2973,6 +2989,7 @@ namespace PSADT.Interop
             uint res;
             unsafe
             {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (uint* p = &lpdwProcessId)
                 {
                     [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
@@ -3017,6 +3034,10 @@ namespace PSADT.Interop
         /// to the top; otherwise, <see langword="false"/>.</returns>
         internal static BOOL BringWindowToTop(HWND hWnd)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             BOOL res = PInvoke.BringWindowToTop(hWnd);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -3028,6 +3049,10 @@ namespace PSADT.Interop
         /// <returns>A handle to the window that was previously active.</returns>
         internal static HWND SetActiveWindow(HWND hWnd)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             HWND res = PInvoke.SetActiveWindow(hWnd);
             return res == HWND.Null ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -3041,6 +3066,10 @@ namespace PSADT.Interop
         /// <returns>A handle to the window that previously had the keyboard focus.</returns>
         internal static HWND SetFocus(HWND hWnd)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             HWND res = PInvoke.SetFocus(hWnd);
             return res == HWND.Null ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -3059,6 +3088,10 @@ namespace PSADT.Interop
         /// <returns>A value indicating the result of the message send operation. If the operation fails, an exception is thrown.</returns>
         internal static BOOL SendNotifyMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             BOOL res = PInvoke.SendNotifyMessage(hWnd, (uint)Msg, wParam, lParam);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -3080,6 +3113,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
@@ -3098,6 +3132,10 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentException">Thrown if the system menu handle cannot be retrieved.</exception>
         internal static DestroyMenuSafeHandle GetSystemMenu(HWND hWnd, BOOL bRevert)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             return PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert).ThrowIfNullOrInvalid();
         }
 
@@ -3115,6 +3153,10 @@ namespace PSADT.Interop
         /// <returns>The result of the message processing, as returned by the window procedure.</returns>
         internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
             return ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
@@ -3137,6 +3179,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
@@ -3208,9 +3251,9 @@ namespace PSADT.Interop
         /// <exception cref="Win32Exception">Thrown if the DPI value could not be retrieved for the specified window handle.</exception>
         internal static uint GetDpiForWindow(HWND hwnd)
         {
-            if (hwnd.IsNull)
+            unsafe
             {
-                throw new ArgumentNullException(nameof(hwnd), "Window handle cannot be null.");
+                ArgumentNullException.ThrowIfNull(hwnd.Value, nameof(hwnd));
             }
             uint res = PInvoke.GetDpiForWindow(hwnd);
             return res == 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to get DPI scale for window handle.") : res;
@@ -3244,6 +3287,10 @@ namespace PSADT.Interop
         /// <exception cref="Win32Exception">Thrown if the operation fails to set the specified window as the foreground window.</exception>
         internal static BOOL SetForegroundWindow(HWND hWnd, bool noThrowOnFailure = false)
         {
+            unsafe
+            {
+                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+            }
             BOOL res = PInvoke.SetForegroundWindow(hWnd);
             return !res && !noThrowOnFailure ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to set the window as foreground.") : res;
         }

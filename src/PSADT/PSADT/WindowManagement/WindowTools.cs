@@ -34,10 +34,6 @@ namespace PSADT.WindowManagement
         /// <returns>The window text.</returns>
         internal static string? GetWindowText(HWND hWnd)
         {
-            if (hWnd.IsNull)
-            {
-                throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
-            }
             int textLength = NativeMethods.GetWindowTextLength(hWnd);
             if (textLength > 0)
             {
@@ -57,12 +53,6 @@ namespace PSADT.WindowManagement
         /// <param name="hWnd">A handle to the window.</param>
         internal static void BringWindowToFront(HWND hWnd)
         {
-            // Throw if we have a null or zero handle.
-            if (hWnd.IsNull)
-            {
-                throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
-            }
-
             // Minimise the window first to ensure it comes to the front.
             if (!PInvoke.IsIconic(hWnd))
             {
@@ -99,10 +89,6 @@ namespace PSADT.WindowManagement
         /// <returns>The process ID.</returns>
         internal static uint GetWindowThreadProcessId(HWND hWnd)
         {
-            if (hWnd.IsNull)
-            {
-                throw new ArgumentNullException(nameof(hWnd), "Window handle cannot be zero.");
-            }
             _ = NativeMethods.GetWindowThreadProcessId(hWnd, out uint processId);
             return processId;
         }
