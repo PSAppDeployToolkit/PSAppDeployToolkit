@@ -71,6 +71,10 @@ namespace PSADT.ProcessManagement
                 {
                     throw new ArgumentException("The specified enumerable contains whitespace arguments.", nameof(argv));
                 }
+                if (arg == "\"\"")
+                {
+                    throw new ArgumentException("The specified enumerable contains empty quoted string arguments, which are not allowed. Use null or empty string instead.", nameof(argv));
+                }
                 _ = sb.Append(strict ? EscapeArgumentStrict(arg) : EscapeArgumentCompatible(arg)).Append(' ');
             }
             sb.Length--; return sb.ToString();
