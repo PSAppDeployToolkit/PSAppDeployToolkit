@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using PSADT.AccountManagement;
-using PSADT.Interop.Extensions;
 using PSADT.TerminalServices;
 
 namespace PSADT.Foundation
@@ -57,8 +56,10 @@ namespace PSADT.Foundation
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
-            NTAccountValue = nTAccount?.Value.ThrowIfNullOrWhiteSpace()!;
-            SIDValue = sID?.Value.ThrowIfNullOrWhiteSpace()!;
+            ArgumentNullException.ThrowIfNull(nTAccount); ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount.Value, nameof(nTAccount));
+            ArgumentNullException.ThrowIfNull(sID); ArgumentException.ThrowIfNullOrWhiteSpace(sID.Value, nameof(sID));
+            NTAccountValue = nTAccount.Value;
+            SIDValue = sID.Value;
             SessionId = sessionId;
             IsLocalAdmin = isLocalAdmin;
         }

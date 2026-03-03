@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace PSADT.Interop.Extensions
@@ -13,22 +12,6 @@ namespace PSADT.Interop.Extensions
     internal static class StringExtensions
     {
         /// <summary>
-        /// Throws an exception if the specified string is null, empty, or consists only of white-space characters.
-        /// </summary>
-        /// <remarks>Use this method to enforce that string parameters are not null, empty, or white-space
-        /// in method calls. This is useful for validating input and ensuring that required string values are
-        /// provided.</remarks>
-        /// <param name="value">The string to validate. This value must not be null, empty, or contain only white-space characters.</param>
-        /// <param name="name">The name of the parameter or member invoking this method. Used to identify the argument in the exception
-        /// message.</param>
-        /// <returns>The original string value if it is not null, empty, or white-space.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null, empty, or consists only of white-space characters.</exception>
-        internal static string ThrowIfNullOrWhiteSpace(this string? value, [CallerMemberName] string name = null!)
-        {
-            return string.IsNullOrWhiteSpace(value) ? throw new ArgumentNullException(name) : value!;
-        }
-
-        /// <summary>
         /// Validates that the specified directory path exists and throws an exception if it does not.
         /// </summary>
         /// <remarks>Use this method to ensure a directory exists before performing operations that
@@ -40,7 +23,7 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="DirectoryNotFoundException">Thrown if <paramref name="value"/> does not point to an existing directory.</exception>
         internal static string ThrowIfDirectoryDoesNotExist(this string? value, [CallerMemberName] string name = null!)
         {
-            return !Directory.Exists(value.ThrowIfNullOrWhiteSpace(name))
+            return !Directory.Exists(name)
                 ? throw new DirectoryNotFoundException($"The specified directory '{value}' does not exist.")
                 : value!;
         }
@@ -58,7 +41,7 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="FileNotFoundException">Thrown if the file specified by <paramref name="value"/> does not exist.</exception>
         internal static string ThrowIfFileDoesNotExist(this string? value, [CallerMemberName] string name = null!)
         {
-            return !File.Exists(value.ThrowIfNullOrWhiteSpace(name))
+            return !File.Exists(name)
                 ? throw new FileNotFoundException($"The specified file '{value}' does not exist.", value)
                 : value!;
         }
@@ -75,8 +58,24 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="DirectoryNotFoundException">Thrown when the directory for the specified file path does not exist.</exception>
         internal static string ThrowIfFileDirectoryDoesNotExist(this string? value, [CallerMemberName] string name = null!)
         {
-            return !File.Exists(value.ThrowIfNullOrWhiteSpace(name)) && (Path.GetDirectoryName(value) is not string directory || !Directory.Exists(directory))
+            return !File.Exists(name) && (Path.GetDirectoryName(value) is not string directory || !Directory.Exists(directory))
                 ? throw new DirectoryNotFoundException($"The specified directory for path '{value}' does not exist.")
+                : value!;
+        }
+
+        /// <summary>
+        /// Validates that the specified path is rooted and throws an exception if it is not.
+        /// </summary>
+        /// <remarks>Use this method to ensure that a path is absolute before performing file or directory
+        /// operations. This helps prevent runtime errors caused by invalid or relative paths.</remarks>
+        /// <param name="value">The path to validate. This must be a non-null string representing a file or directory path.</param>
+        /// <param name="name">The name of the calling member. This is automatically supplied by the compiler and used for error reporting.</param>
+        /// <returns>The original path if it is rooted.</returns>
+        /// <exception cref="DriveNotFoundException">Thrown if the specified path is not rooted.</exception>
+        internal static string ThrowIfPathIsNotRooted(this string? value, [CallerMemberName] string name = null!)
+        {
+            return !Path.IsPathRooted(name)
+                ? throw new DriveNotFoundException($"The specified path '{value}' is not rooted.")
                 : value!;
         }
     }

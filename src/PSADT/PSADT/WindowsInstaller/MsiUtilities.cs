@@ -177,17 +177,11 @@ namespace PSADT.WindowsInstaller
             // Validate input parameters.
             ArgumentNullException.ThrowIfNull(transformProperties);
             ArgumentOutOfRangeException.ThrowIfZero(transformProperties.Count);
-            if (!File.Exists(msiPath = Path.GetFullPath(msiPath.ThrowIfNullOrWhiteSpace())))
+            msiPath = Path.GetFullPath(msiPath).ThrowIfFileDoesNotExist();
+            newTransformPath = Path.GetFullPath(newTransformPath).ThrowIfPathIsNotRooted();
+            if (!string.IsNullOrWhiteSpace(applyTransformPath))
             {
-                throw new FileNotFoundException("MSI file not found.", msiPath);
-            }
-            if (!Path.IsPathRooted(newTransformPath = Path.GetFullPath(newTransformPath.ThrowIfNullOrWhiteSpace())))
-            {
-                throw new ArgumentException("The new transform path must be an absolute path.", nameof(newTransformPath));
-            }
-            if (!string.IsNullOrWhiteSpace(applyTransformPath) && !File.Exists(applyTransformPath = Path.GetFullPath(applyTransformPath)))
-            {
-                throw new FileNotFoundException("The transform file specified in ApplyTransformPath was not found.", applyTransformPath);
+                applyTransformPath = Path.GetFullPath(applyTransformPath).ThrowIfFileDoesNotExist();
             }
 
             // Set up the temp MSI path.

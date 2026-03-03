@@ -1,5 +1,5 @@
-﻿using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace PSADT.ClientServer.Payloads
 {
@@ -51,7 +51,8 @@ namespace PSADT.ClientServer.Payloads
         /// <param name="remove">true to indicate that the environment variable should be removed; otherwise, false.</param>
         internal EnvironmentVariablePayload(string name, string? value = null, bool expandable = false, bool append = false, bool remove = false)
         {
-            Name = name.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            Name = name;
             Value = value;
             Expandable = expandable;
             Append = append;

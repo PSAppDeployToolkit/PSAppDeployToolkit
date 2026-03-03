@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using PSADT.FileSystem;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.ProcessManagement
 {
@@ -42,7 +41,8 @@ namespace PSADT.ProcessManagement
         /// </remarks>
         public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool strict = false)
         {
-            return strict ? CommandLineToArgumentListStrict(commandLine.ThrowIfNullOrWhiteSpace().AsSpan()) : CommandLineToArgumentListEnhanced(commandLine.ThrowIfNullOrWhiteSpace().AsSpan());
+            ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
+            return strict ? CommandLineToArgumentListStrict(commandLine.AsSpan()) : CommandLineToArgumentListEnhanced(commandLine.AsSpan());
         }
 
         /// <summary>

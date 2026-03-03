@@ -3,7 +3,6 @@ using System.Collections;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
-using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -53,10 +52,14 @@ namespace PSADT.UserInterface.DialogOptions
         private BalloonTipOptions(string trayTitle, string trayIcon, string balloonTipTitle, string balloonTipText, ToolTipIcon balloonTipIcon, uint balloonTipTime)
         {
             // Set initial string properties.
-            TrayTitle = trayTitle.ThrowIfNullOrWhiteSpace();
-            TrayIcon = trayIcon.ThrowIfNullOrWhiteSpace();
-            BalloonTipTitle = balloonTipTitle.ThrowIfNullOrWhiteSpace();
-            BalloonTipText = balloonTipText.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(trayTitle);
+            ArgumentException.ThrowIfNullOrWhiteSpace(trayIcon);
+            ArgumentException.ThrowIfNullOrWhiteSpace(balloonTipTitle);
+            ArgumentException.ThrowIfNullOrWhiteSpace(balloonTipText);
+            TrayTitle = trayTitle;
+            TrayIcon = trayIcon;
+            BalloonTipTitle = balloonTipTitle;
+            BalloonTipText = balloonTipText;
 
             // Confirm remaining parameters are valid.
             if (!(MiscUtilities.GetBase64StringBytes(TrayIcon)?.Length > 0) && !File.Exists(TrayIcon))

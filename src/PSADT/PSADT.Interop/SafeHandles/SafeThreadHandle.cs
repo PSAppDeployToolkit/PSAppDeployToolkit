@@ -1,5 +1,5 @@
-﻿using Microsoft.Win32.SafeHandles;
-using PSADT.Interop.Extensions;
+﻿using System;
+using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -23,7 +23,8 @@ namespace PSADT.Interop.SafeHandles
         /// otherwise, false.</param>
         internal SafeThreadHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrInvalid());
+            ArgumentOutOfRangeException.ThrowIfZeroOrInvalid(handle);
+            SetHandle(handle);
         }
 
         /// <summary>

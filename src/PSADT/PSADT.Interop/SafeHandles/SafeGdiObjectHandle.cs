@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -23,7 +23,8 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="ownsHandle">true to reliably release the handle during finalization; false to prevent the handle from being released.</param>
         internal SafeGdiObjectHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrInvalid());
+            ArgumentOutOfRangeException.ThrowIfZeroOrInvalid(handle);
+            SetHandle(handle);
         }
 
         /// <summary>

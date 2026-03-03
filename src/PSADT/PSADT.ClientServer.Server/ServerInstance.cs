@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
 using PSADT.Foundation;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.Types;
@@ -78,9 +77,9 @@ namespace PSADT.ClientServer
             bool logServerClientSafePipeHandleAddRef = false;
             try
             {
-                _outputServer.ClientSafePipeHandle.ThrowIfNullOrInvalid().DangerousAddRef(ref outputServerClientSafePipeHandleAddRef);
-                _inputServer.ClientSafePipeHandle.ThrowIfNullOrInvalid().DangerousAddRef(ref inputServerClientSafePipeHandleAddRef);
-                _logServer.ClientSafePipeHandle.ThrowIfNullOrInvalid().DangerousAddRef(ref logServerClientSafePipeHandleAddRef);
+                _outputServer.ClientSafePipeHandle.DangerousAddRef(ref outputServerClientSafePipeHandleAddRef);
+                _inputServer.ClientSafePipeHandle.DangerousAddRef(ref inputServerClientSafePipeHandleAddRef);
+                _logServer.ClientSafePipeHandle.DangerousAddRef(ref logServerClientSafePipeHandleAddRef);
                 string outputServerClientSafePipeHandle = _outputServer.GetClientHandleAsString();
                 string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
                 string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();

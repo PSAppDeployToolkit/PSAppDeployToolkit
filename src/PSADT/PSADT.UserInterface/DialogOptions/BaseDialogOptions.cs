@@ -3,7 +3,6 @@ using System.Collections;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -74,10 +73,14 @@ namespace PSADT.UserInterface.DialogOptions
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
-            AppTitle = appTitle.ThrowIfNullOrWhiteSpace();
-            Subtitle = subtitle.ThrowIfNullOrWhiteSpace();
-            AppIconImage = appIconImage.ThrowIfNullOrWhiteSpace();
-            AppBannerImage = appBannerImage.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(appTitle);
+            ArgumentException.ThrowIfNullOrWhiteSpace(subtitle);
+            ArgumentException.ThrowIfNullOrWhiteSpace(appIconImage);
+            ArgumentException.ThrowIfNullOrWhiteSpace(appBannerImage);
+            AppTitle = appTitle;
+            Subtitle = subtitle;
+            AppIconImage = appIconImage;
+            AppBannerImage = appBannerImage;
 
             // Test that the specified image paths are valid.
             if (!(MiscUtilities.GetBase64StringBytes(AppIconImage)?.Length > 0) && !File.Exists(AppIconImage))

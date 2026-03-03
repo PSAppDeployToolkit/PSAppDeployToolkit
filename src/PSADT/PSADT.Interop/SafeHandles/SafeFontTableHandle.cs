@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Interop.Extensions;
 using Windows.Win32.Graphics.DirectWrite;
 
 namespace PSADT.Interop.SafeHandles
@@ -24,8 +23,9 @@ namespace PSADT.Interop.SafeHandles
         /// <exception cref="ArgumentNullException">Thrown if fontFace is null.</exception>
         internal SafeFontTableHandle(IDWriteFontFace fontFace, nint context, bool ownsHandle) : base(ownsHandle)
         {
+            ArgumentOutOfRangeException.ThrowIfInvalid(context);
             ArgumentNullException.ThrowIfNull(fontFace);
-            SetHandle(context.ThrowIfInvalid());
+            SetHandle(context);
             FontFace = fontFace;
         }
 

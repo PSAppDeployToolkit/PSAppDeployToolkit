@@ -21,6 +21,7 @@ using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
+using PSADT.Interop.Utilities;
 using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.Utilities;
@@ -164,8 +165,8 @@ namespace PSADT.ProcessManagement
 #pragma warning restore CA2000 // Dispose objects before losing scope
                         hStdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
                         hStdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
-                        hStdOutWrite = hStdOutRead.ClientSafePipeHandle.ThrowIfNullOrInvalid();
-                        hStdErrWrite = hStdErrRead.ClientSafePipeHandle.ThrowIfNullOrInvalid();
+                        HandleHelpers.ThrowIfNullOrInvalid(hStdOutWrite = hStdOutRead.ClientSafePipeHandle, "The stdout write handle is invalid.");
+                        HandleHelpers.ThrowIfNullOrInvalid(hStdErrWrite = hStdErrRead.ClientSafePipeHandle, "The stderr write handle is invalid.");
                         hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
                         hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
@@ -179,7 +180,7 @@ namespace PSADT.ProcessManagement
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                            hStdInRead = hStdInWrite.ClientSafePipeHandle.ThrowIfNullOrInvalid();
+                            HandleHelpers.ThrowIfNullOrInvalid(hStdInRead = hStdInWrite.ClientSafePipeHandle, "The stdin read handle is invalid.");
                             hStdInRead.DangerousAddRef(ref hStdInReadAddRef);
                             startupInfo.hStdInput = (HANDLE)hStdInRead.DangerousGetHandle();
                             handlesToInherit.Add(startupInfo.hStdInput);
@@ -588,10 +589,11 @@ namespace PSADT.ProcessManagement
         /// expected "Name=Value" format.</exception>
         private static ReadOnlyDictionary<string, string> EnvironmentBlockToDictionary(SafeEnvironmentBlockHandle environmentBlock)
         {
+            ArgumentException.ThrowIfNullOrInvalid(environmentBlock);
             bool envBlockAddRef = false;
             try
             {
-                environmentBlock.ThrowIfNullOrInvalid().DangerousAddRef(ref envBlockAddRef);
+                environmentBlock.DangerousAddRef(ref envBlockAddRef);
                 nint envBlockPtr = environmentBlock.DangerousGetHandle();
                 Dictionary<string, string> envDict = new(StringComparer.OrdinalIgnoreCase);
                 while (true)
@@ -603,7 +605,10 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Add the valid entry and advance pointer past this string + its null terminator.
-                    int idx = entry.IndexOf("=").ThrowIfNegative();
+                    if (entry.IndexOf("=") is int idx && idx == -1)
+                    {
+                        throw new FormatException($"The environment block entry [{entry}] is not in the expected format of 'Name=Value'.");
+                    }
                     envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
                     envBlockPtr += (entry.Length + 1) * sizeof(char);
                 }
@@ -637,8 +642,8 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
         {
-            ArgumentNullException.ThrowIfNull(environment); ArgumentOutOfRangeException.ThrowIfZero(environment.Count);
-            return EnvironmentVariableRegex.Replace(input.ThrowIfNullOrWhiteSpace(), m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
+            ArgumentException.ThrowIfNullOrWhiteSpace(input); ArgumentNullException.ThrowIfNull(environment); ArgumentOutOfRangeException.ThrowIfZero(environment.Count);
+            return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
         }
 
         /// <summary>

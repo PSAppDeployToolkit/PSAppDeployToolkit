@@ -107,7 +107,8 @@ namespace PSADT.FileSystem
 
             // Note: this is a breadth-first parallel enumeration. It is "fire and forget" in that it does not support cancellation, progress,
             // or partial results. It is optimized for speed and low memory usage on large directory trees with many files and subdirectories.
-            using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath.ThrowIfNullOrWhiteSpace()))).ThrowIfDirectoryDoesNotExist()];
+            ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
+            using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))).ThrowIfDirectoryDoesNotExist()];
             Task[] tasks = new Task[Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32))];
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
             for (int i = 0; i < tasks.Length; i++)
@@ -455,6 +456,7 @@ namespace PSADT.FileSystem
         private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, AuthzInitializeContext AuthzInitializeContext)
         {
             // Validate that the path exists.
+            ArgumentException.ThrowIfNullOrInvalid(token);
             ArgumentNullException.ThrowIfNull(path);
             if (!path.Exists)
             {
@@ -481,7 +483,7 @@ namespace PSADT.FileSystem
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
-                    _ = AuthzInitializeContext(0, token.ThrowIfNullOrInvalid(), hAuthzResourceManager, null, default, default, out AuthzFreeContextSafeHandle phAuthzClientContext);
+                    _ = AuthzInitializeContext(0, token, hAuthzResourceManager, null, default, default, out AuthzFreeContextSafeHandle phAuthzClientContext);
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.

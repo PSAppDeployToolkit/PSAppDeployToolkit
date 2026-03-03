@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using PSADT.Interop.Extensions;
+﻿using System;
+using System.Globalization;
 
 namespace PSADT.Types
 {
@@ -21,8 +21,10 @@ namespace PSADT.Types
             {
                 IconIndex = int.Parse(iconIndex, CultureInfo.InvariantCulture);
             }
-            Path = path.ThrowIfNullOrWhiteSpace();
-            TargetPath = targetPath.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(Path);
+            ArgumentException.ThrowIfNullOrWhiteSpace(TargetPath);
+            Path = path;
+            TargetPath = targetPath;
             IconLocation = iconLocation;
         }
 

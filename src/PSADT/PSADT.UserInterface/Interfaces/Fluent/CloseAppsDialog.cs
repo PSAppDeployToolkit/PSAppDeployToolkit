@@ -11,7 +11,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -21,6 +20,7 @@ using PSADT.UserInterface.Utilities;
 using PSAppDeployToolkit.Logging;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
+using PSADT.Interop.Utilities;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -47,8 +47,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             /// whitespace.</exception>
             public AppToClose(ProcessToClose processToClose)
             {
-                Name = CultureInfo.InvariantCulture.TextInfo.ToLower(Path.GetFileName(processToClose.Path.ThrowIfNullOrWhiteSpace()));
-                Description = processToClose.Description.ThrowIfNullOrWhiteSpace();
+                ArgumentException.ThrowIfNullOrWhiteSpace(processToClose.Path);
+                ArgumentException.ThrowIfNullOrWhiteSpace(processToClose.Description);
+                Name = CultureInfo.InvariantCulture.TextInfo.ToLower(Path.GetFileName(processToClose.Path));
+                Description = processToClose.Description;
                 Icon = GetAppIcon(processToClose.Path);
             }
 
@@ -370,7 +372,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 }
                 using (drawingBitmap)
                 {
-                    using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap().ThrowIfZeroOrInvalid(), true);
+                    using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true);
+                    HandleHelpers.ThrowIfNullOrInvalid(hBitmap, $"Failed to get a valid handle for the application icon at path '{appFilePath}'.");
                     bool hBitmapAddRef = false;
                     try
                     {

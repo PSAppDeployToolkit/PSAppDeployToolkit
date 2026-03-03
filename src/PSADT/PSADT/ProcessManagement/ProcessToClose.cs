@@ -1,5 +1,4 @@
 ﻿using System;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.ProcessManagement
 {
@@ -16,9 +15,12 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if the process name, path, or description in <paramref name="runningProcessInfo"/> is null or empty.</exception>
         internal ProcessToClose(RunningProcessInfo runningProcessInfo)
         {
-            Name = runningProcessInfo.Process.ProcessName.ThrowIfNullOrWhiteSpace();
-            Path = runningProcessInfo.FileName.ThrowIfNullOrWhiteSpace();
-            Description = runningProcessInfo.Description.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.Process.ProcessName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.FileName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.Description);
+            Name = runningProcessInfo.Process.ProcessName;
+            Path = runningProcessInfo.FileName;
+            Description = runningProcessInfo.Description;
         }
 
         /// <summary>

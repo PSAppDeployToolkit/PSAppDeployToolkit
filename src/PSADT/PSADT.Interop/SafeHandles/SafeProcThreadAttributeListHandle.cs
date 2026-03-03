@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -53,7 +52,8 @@ namespace PSADT.Interop.SafeHandles
         /// handle should be released; otherwise, false.</param>
         private SafeProcThreadAttributeListHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrInvalid());
+            ArgumentOutOfRangeException.ThrowIfZeroOrInvalid(handle);
+            SetHandle(handle);
         }
 
         /// <summary>
@@ -86,11 +86,12 @@ namespace PSADT.Interop.SafeHandles
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal BOOL Update(PROC_THREAD_ATTRIBUTE Attribute, ReadOnlySpan<byte> lpValue, Span<byte> lpPreviousValue = default, nuint? lpReturnSize = null)
         {
+            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeProcThreadAttributeListHandle instance is invalid.");
             bool lpAttributeListAddRef = false;
             BOOL res;
             try
             {
-                this.ThrowIfNullOrInvalid().DangerousAddRef(ref lpAttributeListAddRef);
+                DangerousAddRef(ref lpAttributeListAddRef);
                 res = PInvoke.UpdateProcThreadAttribute((LPPROC_THREAD_ATTRIBUTE_LIST)DangerousGetHandle(), 0, (nuint)Attribute, lpValue, lpPreviousValue, lpReturnSize);
             }
             finally

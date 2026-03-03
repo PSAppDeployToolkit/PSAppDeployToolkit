@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Globalization;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -155,13 +154,20 @@ namespace PSADT.UserInterface.DialogOptions
             /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
             private RestartDialogStrings(string title, string message, string messageTime, string messageRestart, string timeRemaining, string buttonRestartNow, string buttonRestartLater)
             {
-                Title = title.ThrowIfNullOrWhiteSpace();
-                Message = message.ThrowIfNullOrWhiteSpace();
-                MessageTime = messageTime.ThrowIfNullOrWhiteSpace();
-                MessageRestart = messageRestart.ThrowIfNullOrWhiteSpace();
-                TimeRemaining = timeRemaining.ThrowIfNullOrWhiteSpace();
-                ButtonRestartNow = buttonRestartNow.ThrowIfNullOrWhiteSpace();
-                ButtonRestartLater = buttonRestartLater.ThrowIfNullOrWhiteSpace();
+                ArgumentException.ThrowIfNullOrWhiteSpace(title);
+                ArgumentException.ThrowIfNullOrWhiteSpace(message);
+                ArgumentException.ThrowIfNullOrWhiteSpace(messageTime);
+                ArgumentException.ThrowIfNullOrWhiteSpace(messageRestart);
+                ArgumentException.ThrowIfNullOrWhiteSpace(timeRemaining);
+                ArgumentException.ThrowIfNullOrWhiteSpace(buttonRestartNow);
+                ArgumentException.ThrowIfNullOrWhiteSpace(buttonRestartLater);
+                Title = title;
+                Message = message;
+                MessageTime = messageTime;
+                MessageRestart = messageRestart;
+                TimeRemaining = timeRemaining;
+                ButtonRestartNow = buttonRestartNow;
+                ButtonRestartLater = buttonRestartLater;
             }
 
             /// <summary>

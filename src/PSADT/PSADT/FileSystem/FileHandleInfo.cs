@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.FileSystem
 {
@@ -22,10 +21,13 @@ namespace PSADT.FileSystem
         /// <exception cref="ArgumentNullException">Thrown if the filePath, ntPath, or handleType parameter is null or empty.</exception>
         internal FileHandleInfo(in SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleInfo, string filePath, string ntPath, string handleType)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ntPath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(handleType);
             ProcessName = Process.GetProcessById((int)handleInfo.UniqueProcessId).ProcessName;
-            FilePath = filePath.ThrowIfNullOrWhiteSpace();
-            NtPath = ntPath.ThrowIfNullOrWhiteSpace();
-            HandleType = handleType.ThrowIfNullOrWhiteSpace();
+            FilePath = filePath;
+            NtPath = ntPath;
+            HandleType = handleType;
             HandleInfo = handleInfo;
         }
 

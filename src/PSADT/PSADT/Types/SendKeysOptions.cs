@@ -1,5 +1,5 @@
-﻿using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace PSADT.Types
 {
@@ -23,8 +23,9 @@ namespace PSADT.Types
         /// <param name="keys">The string representing the keys to be sent. Cannot be null or empty.</param>
         public SendKeysOptions(nint windowHandle, string keys)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(keys);
             WindowHandle = windowHandle;
-            Keys = keys.ThrowIfNullOrWhiteSpace();
+            Keys = keys;
         }
 
         /// <summary>

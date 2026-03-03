@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.ProcessManagement
 {
@@ -17,7 +16,8 @@ namespace PSADT.ProcessManagement
         /// <param name="name">The name of the process.</param>
         public ProcessDefinition(string name)
         {
-            Name = name.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            Name = name;
         }
 
         /// <summary>

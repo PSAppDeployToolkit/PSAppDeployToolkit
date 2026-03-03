@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using PSADT.Interop.Extensions;
 using PSADT.ProcessManagement;
 
 namespace PSADT.Types
@@ -53,11 +52,15 @@ namespace PSADT.Types
             bool windowsInstaller,
             bool? is64BitApplication)
         {
-            PSPath = psPath.ThrowIfNullOrWhiteSpace();
-            PSParentPath = psParentPath.ThrowIfNullOrWhiteSpace();
-            PSChildName = psChildName.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(psPath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(psParentPath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(psChildName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+            PSPath = psPath;
+            PSParentPath = psParentPath;
+            PSChildName = psChildName;
             ProductCode = productCode;
-            DisplayName = displayName.ThrowIfNullOrWhiteSpace();
+            DisplayName = displayName;
             DisplayVersion = !string.IsNullOrWhiteSpace(displayVersion) ? displayVersion : null;
             UninstallString = !string.IsNullOrWhiteSpace(uninstallString) ? uninstallString : null;
             QuietUninstallString = !string.IsNullOrWhiteSpace(quietUninstallString) ? quietUninstallString : null;

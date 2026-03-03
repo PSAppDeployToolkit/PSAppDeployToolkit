@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using PSADT.AccountManagement;
-using PSADT.Interop.Extensions;
 
 namespace PSAppDeployToolkit.Logging
 {
@@ -30,14 +29,18 @@ namespace PSAppDeployToolkit.Logging
             // spaces. As such, replace all spaces and empty lines with a punctuation space.
             // C# identifies this character as whitespace but OneTrace does not so it works.
             // The empty line feed at the end is required by OneTrace to format correctly.
+            ArgumentException.ThrowIfNullOrWhiteSpace(message);
+            ArgumentException.ThrowIfNullOrWhiteSpace(source);
+            ArgumentException.ThrowIfNullOrWhiteSpace(callerFileName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(callerSource);
             Timestamp = timeStamp;
-            Message = message.ThrowIfNullOrWhiteSpace().Replace("\0", null).TrimEnd();
+            Message = message.Replace("\0", null).TrimEnd();
             Severity = severity;
-            Source = source.ThrowIfNullOrWhiteSpace();
+            Source = source;
             ScriptSection = !string.IsNullOrWhiteSpace(scriptSection) ? scriptSection : null;
             DebugMessage = debugMessage;
-            CallerFileName = callerFileName.ThrowIfNullOrWhiteSpace();
-            CallerSource = callerSource.ThrowIfNullOrWhiteSpace();
+            CallerFileName = callerFileName;
+            CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp:O}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {LogUtilities.ReplaceInvalidSurrogates(Message)}";
             CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, LogUtilities.ReplaceInvalidSurrogates(Message).Replace("\r", null).Split('\n').Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : LogUtilities.ReplaceInvalidSurrogates(Message))}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
         }

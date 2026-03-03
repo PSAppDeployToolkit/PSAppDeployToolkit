@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Globalization;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -74,8 +73,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// langword="null"/>.</exception>
         private ProgressDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string progressMessageText, string progressDetailMessageText, double? progressPercentage, DialogMessageAlignment? messageAlignment) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
         {
-            ProgressMessageText = progressMessageText.ThrowIfNullOrWhiteSpace();
-            ProgressDetailMessageText = progressDetailMessageText.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageText);
+            ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessageText);
+            ProgressMessageText = progressMessageText;
+            ProgressDetailMessageText = progressDetailMessageText;
             ProgressPercentage = progressPercentage;
             MessageAlignment = messageAlignment;
         }

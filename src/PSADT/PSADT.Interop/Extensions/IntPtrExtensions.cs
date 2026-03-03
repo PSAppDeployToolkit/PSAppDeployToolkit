@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PSADT.Interop.Utilities;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace PSADT.Interop.Extensions
@@ -27,9 +28,11 @@ namespace PSADT.Interop.Extensions
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified memory address and offset.</returns>
         internal static ref readonly T AsReadOnlyStructure<T>(this nint handle, int offset = 0) where T : unmanaged
         {
+            HandleHelpers.ThrowIfNullOrInvalid(handle, "The called upon IntPtr instance is invalid.");
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
             unsafe
             {
-                return ref Unsafe.AsRef<T>((void*)unchecked(handle.ThrowIfZeroOrInvalid() + offset.ThrowIfNegative()));
+                return ref Unsafe.AsRef<T>((void*)unchecked(handle + offset));
             }
         }
 
@@ -45,9 +48,11 @@ namespace PSADT.Interop.Extensions
         /// <returns>A ReadOnlySpan{T} representing the specified region of memory.</returns>
         internal static ReadOnlySpan<T> AsReadOnlySpan<T>(this nint handle, int length) where T : unmanaged
         {
+            HandleHelpers.ThrowIfNullOrInvalid(handle, "The called upon IntPtr instance is invalid.");
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             unsafe
             {
-                return new ReadOnlySpan<T>((void*)handle.ThrowIfZeroOrInvalid(), length.ThrowIfZeroOrNegative());
+                return new ReadOnlySpan<T>((void*)handle, length);
             }
         }
 
@@ -62,9 +67,11 @@ namespace PSADT.Interop.Extensions
         /// characters.</returns>
         internal static ReadOnlySpan<char> AsReadOnlyCharSpan(this nint handle, int length)
         {
+            HandleHelpers.ThrowIfNullOrInvalid(handle, "The called upon IntPtr instance is invalid.");
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             unsafe
             {
-                return new ReadOnlySpan<char>((char*)handle.ThrowIfZeroOrInvalid(), length.ThrowIfZeroOrNegative()).TrimEndNullAndTrim();
+                return new ReadOnlySpan<char>((char*)handle, length).TrimEndNullAndTrim();
             }
         }
 
@@ -82,43 +89,12 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="InvalidOperationException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
         internal static string ToManagedString(this nint handle, int length)
         {
-            ReadOnlySpan<char> stringSpan = handle.ThrowIfZeroOrInvalid().AsReadOnlyCharSpan(length.ThrowIfZeroOrNegative());
+            HandleHelpers.ThrowIfNullOrInvalid(handle, "The called upon IntPtr instance is invalid.");
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+            ReadOnlySpan<char> stringSpan = handle.AsReadOnlyCharSpan(length);
             return stringSpan.IsWhiteSpace()
                 ? throw new InvalidOperationException("The specified pointer does not contain a valid string.")
                 : stringSpan.ToString();
-        }
-
-        /// <summary>
-        /// Throws an exception if the specified handle is -1, indicating an invalid pointer; otherwise, returns the
-        /// original handle.
-        /// </summary>
-        /// <param name="handle">The handle to validate. Must not be -1.</param>
-        /// <param name="name">The name of the calling member. This value is automatically supplied by the compiler.</param>
-        /// <returns>The original handle if it is not -1.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is -1, indicating an invalid pointer.</exception>
-        internal static nint ThrowIfInvalid(this nint handle, [CallerMemberName] string name = null!)
-        {
-            return handle == -1
-                ? throw new ArgumentNullException(name, "The specified pointer is not valid.")
-                : handle;
-        }
-
-        /// <summary>
-        /// Validates that the specified native integer handle is neither zero nor minus one, throwing an exception if
-        /// the handle is invalid.
-        /// </summary>
-        /// <remarks>Use this method to ensure that a native handle is valid before performing operations
-        /// that require a valid pointer. This is commonly used when working with unmanaged resources or interop
-        /// scenarios to prevent invalid pointer usage.</remarks>
-        /// <param name="handle">The native integer handle to validate. Must not be zero or minus one.</param>
-        /// <param name="name">The name of the parameter or caller to include in the exception message if validation fails.</param>
-        /// <returns>The original handle if it is valid.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is zero or minus one, indicating an invalid or null pointer.</exception>
-        internal static nint ThrowIfZeroOrInvalid(this nint handle, [CallerMemberName] string name = null!)
-        {
-            return handle == IntPtr.Zero || handle == -1
-                ? throw new ArgumentNullException(name, "The specified pointer is not valid.")
-                : handle;
         }
     }
 }

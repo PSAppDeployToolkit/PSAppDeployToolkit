@@ -64,7 +64,8 @@ namespace PSADT.Utilities
         {
             // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.
             // See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-removefontresourcew#parameters for more details.
-            _ = NativeMethods.RemoveFontResource(fontFilePath.ThrowIfNullOrWhiteSpace());
+            ArgumentException.ThrowIfNullOrWhiteSpace(fontFilePath);
+            _ = NativeMethods.RemoveFontResource(fontFilePath);
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
         }
 
@@ -85,7 +86,8 @@ namespace PSADT.Utilities
             {
                 // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.
                 // See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-removefontresourcew#parameters for more details.
-                _ = NativeMethods.RemoveFontResource(fontFilePath.ThrowIfNullOrWhiteSpace());
+                ArgumentException.ThrowIfNullOrWhiteSpace(fontFilePath);
+                _ = NativeMethods.RemoveFontResource(fontFilePath);
             }
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
         }
@@ -107,7 +109,7 @@ namespace PSADT.Utilities
         {
             // Create factory and font file reference.
             _ = NativeMethods.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED, out IDWriteFactory factory);
-            fontPath = Path.GetFullPath(fontPath.ThrowIfNullOrWhiteSpace().Trim().Trim('"'));
+            ArgumentException.ThrowIfNullOrWhiteSpace(fontPath); fontPath = Path.GetFullPath(fontPath.Trim().Trim('"'));
             factory.CreateFontFileReference(fontPath.ThrowIfFileDoesNotExist(), null, out IDWriteFontFile fontFile);
             fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
             if (!supported)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml;
 using PSADT.Interop.Extensions;
 
@@ -31,7 +32,8 @@ namespace PSADT.Utilities
         /// <returns>An XmlDocument representing the parsed XML content.</returns>
         internal static XmlDocument SafeLoadFromText(string input)
         {
-            using StringReader reader = new(input.ThrowIfNullOrWhiteSpace());
+            ArgumentException.ThrowIfNullOrWhiteSpace(input);
+            using StringReader reader = new(input);
             return SafeLoadCommon(reader);
         }
 

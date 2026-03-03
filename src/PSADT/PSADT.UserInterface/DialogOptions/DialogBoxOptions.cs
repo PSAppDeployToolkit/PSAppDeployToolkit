@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -60,8 +59,10 @@ namespace PSADT.UserInterface.DialogOptions
             {
                 throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
             }
-            AppTitle = appTitle.ThrowIfNullOrWhiteSpace();
-            MessageText = messageText.ThrowIfNullOrWhiteSpace();
+            ArgumentException.ThrowIfNullOrWhiteSpace(appTitle);
+            ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
+            AppTitle = appTitle;
+            MessageText = messageText;
             DialogButtons = dialogButtons;
             DialogDefaultButton = dialogDefaultButton;
             DialogIcon = dialogIcon;

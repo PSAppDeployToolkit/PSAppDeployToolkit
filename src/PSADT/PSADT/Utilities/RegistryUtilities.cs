@@ -4,7 +4,6 @@ using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Extensions;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using Windows.Win32.System.Registry;
 
 namespace PSADT.Utilities
@@ -91,7 +90,8 @@ namespace PSADT.Utilities
         private static SafeRegistryHandle OpenRegistryKey(string fullKeyPath, REG_SAM_FLAGS openFlags = REG_SAM_FLAGS.KEY_READ)
         {
             // Split hive and subkey so we know what root hive we're accessing.
-            string[] parts = fullKeyPath.ThrowIfNullOrWhiteSpace().Replace(@"Microsoft.PowerShell.Core\Registry::", null).Split(['\\'], 2);
+            ArgumentException.ThrowIfNullOrWhiteSpace(fullKeyPath);
+            string[] parts = fullKeyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null).Split(['\\'], 2);
             if (parts.Length < 2)
             {
                 throw new FormatException("Invalid registry key format.");

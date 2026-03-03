@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Globalization;
 using System.Runtime.Serialization;
-using PSADT.Interop.Extensions;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -277,18 +276,30 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonContinueTooltip">The tooltip text for the continue button, providing additional context or instructions.</param>
                 private CloseAppsDialogClassicStrings(string welcomeMessage, string closeAppsMessage, string expiryMessage, string deferralsRemaining, string deferralDeadline, string expiryWarning, string countdownDefer, string countdownClose, string buttonClose, string buttonDefer, string buttonContinue, string buttonContinueTooltip)
                 {
-                    WelcomeMessage = welcomeMessage.ThrowIfNullOrWhiteSpace();
-                    CloseAppsMessage = closeAppsMessage.ThrowIfNullOrWhiteSpace();
-                    ExpiryMessage = expiryMessage.ThrowIfNullOrWhiteSpace();
-                    DeferralsRemaining = deferralsRemaining.ThrowIfNullOrWhiteSpace();
-                    DeferralDeadline = deferralDeadline.ThrowIfNullOrWhiteSpace();
-                    ExpiryWarning = expiryWarning.ThrowIfNullOrWhiteSpace();
-                    CountdownDefer = countdownDefer.ThrowIfNullOrWhiteSpace();
-                    CountdownClose = countdownClose.ThrowIfNullOrWhiteSpace();
-                    ButtonClose = buttonClose.ThrowIfNullOrWhiteSpace();
-                    ButtonDefer = buttonDefer.ThrowIfNullOrWhiteSpace();
-                    ButtonContinue = buttonContinue.ThrowIfNullOrWhiteSpace();
-                    ButtonContinueTooltip = buttonContinueTooltip.ThrowIfNullOrWhiteSpace();
+                    ArgumentException.ThrowIfNullOrWhiteSpace(welcomeMessage);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(closeAppsMessage);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(expiryMessage);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(deferralsRemaining);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(deferralDeadline);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(expiryWarning);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(countdownDefer);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(countdownClose);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonClose);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonDefer);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonContinue);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonContinueTooltip);
+                    WelcomeMessage = welcomeMessage;
+                    CloseAppsMessage = closeAppsMessage;
+                    ExpiryMessage = expiryMessage;
+                    DeferralsRemaining = deferralsRemaining;
+                    DeferralDeadline = deferralDeadline;
+                    ExpiryWarning = expiryWarning;
+                    CountdownDefer = countdownDefer;
+                    CountdownClose = countdownClose;
+                    ButtonClose = buttonClose;
+                    ButtonDefer = buttonDefer;
+                    ButtonContinue = buttonContinue;
+                    ButtonContinueTooltip = buttonContinueTooltip;
                 }
 
                 /// <summary>
@@ -421,14 +432,22 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="buttonLeftTextNoProcesses">The text displayed on the left button when no processes are detected.</param>
                 private CloseAppsDialogFluentStrings(string dialogMessage, string dialogMessageNoProcesses, string automaticStartCountdown, string deferralsRemaining, string deferralDeadline, string buttonLeftText, string buttonRightText, string buttonLeftTextNoProcesses)
                 {
-                    DialogMessage = dialogMessage.ThrowIfNullOrWhiteSpace();
-                    DialogMessageNoProcesses = dialogMessageNoProcesses.ThrowIfNullOrWhiteSpace();
-                    AutomaticStartCountdown = automaticStartCountdown.ThrowIfNullOrWhiteSpace();
-                    DeferralsRemaining = deferralsRemaining.ThrowIfNullOrWhiteSpace();
-                    DeferralDeadline = deferralDeadline.ThrowIfNullOrWhiteSpace();
-                    ButtonLeftText = buttonLeftText.ThrowIfNullOrWhiteSpace();
-                    ButtonRightText = buttonRightText.ThrowIfNullOrWhiteSpace();
-                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses.ThrowIfNullOrWhiteSpace();
+                    ArgumentException.ThrowIfNullOrWhiteSpace(dialogMessage);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(dialogMessageNoProcesses);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(automaticStartCountdown);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(deferralsRemaining);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(deferralDeadline);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonLeftText);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonRightText);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(buttonLeftTextNoProcesses);
+                    DialogMessage = dialogMessage;
+                    DialogMessageNoProcesses = dialogMessageNoProcesses;
+                    AutomaticStartCountdown = automaticStartCountdown;
+                    DeferralsRemaining = deferralsRemaining;
+                    DeferralDeadline = deferralDeadline;
+                    ButtonLeftText = buttonLeftText;
+                    ButtonRightText = buttonRightText;
+                    ButtonLeftTextNoProcesses = buttonLeftTextNoProcesses;
                 }
 
                 /// <summary>
