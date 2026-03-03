@@ -216,7 +216,7 @@ namespace PSAppDeployToolkit.Logging
                         char nx = s[i + 1];
                         if (char.IsLowSurrogate(nx))
                         {
-                            if (sb != null)
+                            if (sb is not null)
                             {
                                 _ = sb.Append(ch);
                                 _ = sb.Append(nx);
@@ -227,7 +227,7 @@ namespace PSAppDeployToolkit.Logging
                     }
 
                     // Unmatched high surrogate.
-                    if (sb == null)
+                    if (sb is null)
                     {
                         sb = new(len + 64);
                         if (i > 0)
@@ -242,7 +242,7 @@ namespace PSAppDeployToolkit.Logging
                 // Check if this is a low surrogate.
                 if (char.IsLowSurrogate(ch))
                 {
-                    if (sb == null)
+                    if (sb is null)
                     {
                         sb = new(len + 64);
                         if (i > 0)
@@ -255,14 +255,14 @@ namespace PSAppDeployToolkit.Logging
                 }
 
                 // Regular character, just append it.
-                if (sb != null)
+                if (sb is not null)
                 {
                     _ = sb.Append(ch);
                 }
             }
 
             // If we never created a StringBuilder, the original string is valid and we can return it directly.
-            return sb == null ? s : sb.ToString().TrimEnd();
+            return sb is null ? s : sb.ToString().TrimEnd();
         }
 
         /// <summary>

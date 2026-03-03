@@ -166,7 +166,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns><c>true</c> if the type is a value type that is not <see cref="Nullable{T}"/>; otherwise, <c>false</c>.</returns>
         private static bool IsNonNullableValueType(Type? type)
         {
-            return type != null && type.IsValueType && Nullable.GetUnderlyingType(type) is null;
+            return type is not null && type.IsValueType && Nullable.GetUnderlyingType(type) is null;
         }
 
         /// <summary>
