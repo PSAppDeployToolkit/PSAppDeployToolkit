@@ -3681,7 +3681,7 @@ namespace PSADT.Interop
         /// <exception cref="Win32Exception">Thrown if the version-information value cannot be queried.</exception>
         internal static BOOL VerQueryValue(ReadOnlySpan<byte> pBlock, string lpSubBlock, out nint lplpBuffer, out uint puLen)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(lpSubBlock, nameof(lpSubBlock));
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpSubBlock);
             unsafe
             {
                 fixed (byte* pBlockPtr = pBlock)
@@ -3731,7 +3731,7 @@ namespace PSADT.Interop
         /// langword="false"/>.</returns>
         internal static BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
         {
-            ArgumentOutOfRangeException.ThrowIfInvalid(hServer, nameof(hServer));
+            ArgumentOutOfRangeException.ThrowIfInvalid(hServer);
             unsafe
             {
                 BOOL res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out WTS_SESSION_INFOW* ppSessionInfo, out uint pCount);
@@ -3764,7 +3764,7 @@ namespace PSADT.Interop
         /// was retrieved successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
-            ArgumentOutOfRangeException.ThrowIfInvalid(hServer, nameof(hServer));
+            ArgumentOutOfRangeException.ThrowIfInvalid(hServer);
             BOOL res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
             if (!res)
             {
