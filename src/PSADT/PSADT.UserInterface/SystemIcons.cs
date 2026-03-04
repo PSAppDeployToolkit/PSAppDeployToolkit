@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using PSADT.Interop;
-using PSADT.Interop.Utilities;
 using PSADT.UserInterface.Utilities;
 using Windows.Win32;
 using Windows.Win32.UI.Controls;
@@ -50,7 +50,7 @@ namespace PSADT.UserInterface
                 using (shii)
                 {
                     imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out DestroyIconSafeHandle iconHandle);
-                    HandleHelpers.ThrowIfNullOrInvalid(iconHandle, $"Failed to get a valid handle for the stock icon '{siid}'.");
+                    InvalidOperationException.ThrowIfNullOrInvalid(iconHandle, $"Failed to get a valid handle for the stock icon '{siid}'.");
                     using (iconHandle)
                     {
                         bool iconHandleAddRef = false;

@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.Extensions;
-using PSADT.Interop.Utilities;
 
 namespace PSADT.Interop.SafeHandles
 {
@@ -42,7 +41,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The string value at the specified offset.</returns>
         internal string ToStringUni(int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             return (handle + offset).ToStringUni((Length - offset) / sizeof(char));
         }
@@ -59,7 +58,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
         internal ref readonly T AsReadOnlyStructure<T>(int offset = 0) where T : unmanaged
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             return ref handle.AsReadOnlyStructure<T>(offset);
         }
@@ -75,7 +74,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The 64-bit signed integer value read from the specified memory location.</returns>
         internal long ReadInt64(int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             return Marshal.ReadInt64(handle, offset);
         }
@@ -91,7 +90,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The 32-bit signed integer value read from the specified memory location.</returns>
         internal int ReadInt32(int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             return Marshal.ReadInt32(handle, offset);
         }
@@ -106,7 +105,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The 16-bit signed integer value read from the specified offset.</returns>
         internal short ReadInt16(int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             return Marshal.ReadInt16(handle, offset);
         }
@@ -121,7 +120,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>The byte value read from the specified offset in the memory handle.</returns>
         internal byte ReadByte(int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             return Marshal.ReadByte(handle, offset);
         }
@@ -136,7 +135,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt64(long value, int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             Marshal.WriteInt64(handle, offset, value);
             return (TSelf)this;
@@ -152,7 +151,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt32(int value, int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             Marshal.WriteInt32(handle, offset, value);
             return (TSelf)this;
@@ -168,7 +167,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset within the unmanaged memory block where the value will be written. Defaults to 0.</param>
         internal TSelf WriteInt16(short value, int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             Marshal.WriteInt16(handle, offset, value);
             return (TSelf)this;
@@ -184,7 +183,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="offset">The byte offset from the start of the memory location where the value will be written. Defaults to 0.</param>
         internal TSelf WriteByte(byte value, int offset = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             Marshal.WriteByte(handle, offset, value);
             return (TSelf)this;
@@ -201,7 +200,7 @@ namespace PSADT.Interop.SafeHandles
         /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentNullException.ThrowIfNull(data); ArgumentOutOfRangeException.ThrowIfZero(data.Length);
             ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
             if (data.Length + startIndex > Length)
@@ -227,7 +226,7 @@ namespace PSADT.Interop.SafeHandles
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make a mess.")]
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             int length = (Length - offset) / Marshal.SizeOf<T>();
             if (length < 0)
@@ -246,7 +245,7 @@ namespace PSADT.Interop.SafeHandles
         /// </summary>
         internal void Clear()
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             unsafe
             {
                 new Span<byte>((void*)handle, Length).Clear();

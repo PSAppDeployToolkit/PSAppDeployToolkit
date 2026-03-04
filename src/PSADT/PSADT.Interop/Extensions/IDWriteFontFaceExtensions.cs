@@ -1,5 +1,5 @@
-﻿using PSADT.Interop.SafeHandles;
-using PSADT.Interop.Utilities;
+﻿using System;
+using PSADT.Interop.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.DirectWrite;
@@ -32,7 +32,7 @@ namespace PSADT.Interop.Extensions
             unsafe
             {
                 fontFace.TryGetFontTable(openTypeTableTag, out void* tableDataLocal, out tableSize, out void* tableContextLocal, out exists);
-                HandleHelpers.ThrowIfInvalid((nint)tableContextLocal, "Failed to retrieve font table context.");
+                InvalidOperationException.ThrowIfInvalid((nint)tableContextLocal, "Failed to retrieve font table context.");
                 tableContext = new(fontFace, (nint)tableContextLocal, true);
                 tableData = (nint)tableDataLocal;
             }

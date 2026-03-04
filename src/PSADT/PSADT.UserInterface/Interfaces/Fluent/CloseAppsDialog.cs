@@ -20,7 +20,6 @@ using PSADT.UserInterface.Utilities;
 using PSAppDeployToolkit.Logging;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
-using PSADT.Interop.Utilities;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -373,7 +372,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 using (drawingBitmap)
                 {
                     using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true);
-                    HandleHelpers.ThrowIfNullOrInvalid(hBitmap, $"Failed to get a valid handle for the application icon at path '{appFilePath}'.");
+                    InvalidOperationException.ThrowIfNullOrInvalid(hBitmap, $"Failed to get a valid handle for the application icon at path '{appFilePath}'.");
                     bool hBitmapAddRef = false;
                     try
                     {

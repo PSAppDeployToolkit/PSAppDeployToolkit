@@ -86,7 +86,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         internal BOOL Update(PROC_THREAD_ATTRIBUTE Attribute, ReadOnlySpan<byte> lpValue, Span<byte> lpPreviousValue = default, nuint? lpReturnSize = null)
         {
-            HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeProcThreadAttributeListHandle instance is invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeProcThreadAttributeListHandle instance is invalid.");
             bool lpAttributeListAddRef = false;
             BOOL res;
             try

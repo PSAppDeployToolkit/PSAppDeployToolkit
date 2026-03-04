@@ -21,7 +21,6 @@ using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
-using PSADT.Interop.Utilities;
 using PSADT.SafeHandles;
 using PSADT.Security;
 using PSADT.Utilities;
@@ -165,8 +164,8 @@ namespace PSADT.ProcessManagement
 #pragma warning restore CA2000 // Dispose objects before losing scope
                         hStdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
                         hStdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
-                        HandleHelpers.ThrowIfNullOrInvalid(hStdOutWrite = hStdOutRead.ClientSafePipeHandle, "The stdout write handle is invalid.");
-                        HandleHelpers.ThrowIfNullOrInvalid(hStdErrWrite = hStdErrRead.ClientSafePipeHandle, "The stderr write handle is invalid.");
+                        InvalidOperationException.ThrowIfNullOrInvalid(hStdOutWrite = hStdOutRead.ClientSafePipeHandle, "The stdout write handle is invalid.");
+                        InvalidOperationException.ThrowIfNullOrInvalid(hStdErrWrite = hStdErrRead.ClientSafePipeHandle, "The stderr write handle is invalid.");
                         hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
                         hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
                         startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
@@ -180,7 +179,7 @@ namespace PSADT.ProcessManagement
 #pragma warning disable CA2000 // Dispose objects before losing scope
                             hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                            HandleHelpers.ThrowIfNullOrInvalid(hStdInRead = hStdInWrite.ClientSafePipeHandle, "The stdin read handle is invalid.");
+                            InvalidOperationException.ThrowIfNullOrInvalid(hStdInRead = hStdInWrite.ClientSafePipeHandle, "The stdin read handle is invalid.");
                             hStdInRead.DangerousAddRef(ref hStdInReadAddRef);
                             startupInfo.hStdInput = (HANDLE)hStdInRead.DangerousGetHandle();
                             handlesToInherit.Add(startupInfo.hStdInput);
