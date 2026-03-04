@@ -32,7 +32,7 @@ namespace PSADT.Interop.SafeHandles
                 throw new ArgumentOutOfRangeException(nameof(count), count, "Count must be greater than zero.");
             }
             nuint lpSize = default; _ = Initialize(default, count, ref lpSize);
-            nint handle = Marshal.AllocHGlobal((int)lpSize).ThrowIfZeroOrMinusOne();
+            nint handle = Marshal.AllocHGlobal((int)lpSize).ThrowIfZeroOrInvalid();
             try
             {
                 _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
@@ -56,7 +56,7 @@ namespace PSADT.Interop.SafeHandles
         /// handle should be released; otherwise, false.</param>
         private SafeProcThreadAttributeListHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrMinusOne());
+            SetHandle(handle.ThrowIfZeroOrInvalid());
         }
 
         /// <summary>

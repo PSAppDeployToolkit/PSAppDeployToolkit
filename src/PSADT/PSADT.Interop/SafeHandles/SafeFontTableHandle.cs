@@ -25,7 +25,7 @@ namespace PSADT.Interop.SafeHandles
         internal SafeFontTableHandle(IDWriteFontFace fontFace, IntPtr context, bool ownsHandle) : base(ownsHandle)
         {
             FontFace = fontFace ?? throw new ArgumentNullException(nameof(fontFace));
-            SetHandle(context.ThrowIfMinusOne());
+            SetHandle(context.ThrowIfInvalid());
         }
 
         /// <summary>

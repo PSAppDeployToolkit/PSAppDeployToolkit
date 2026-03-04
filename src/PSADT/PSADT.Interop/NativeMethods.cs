@@ -615,7 +615,7 @@ namespace PSADT.Interop
                     {
                         res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal).ThrowOnFailure();
                     }
-                    NewAcl = new(((nint)NewAclLocal).ThrowIfZeroOrMinusOne(), true);
+                    NewAcl = new(((nint)NewAclLocal).ThrowIfZeroOrInvalid(), true);
                 }
                 return res;
             }
@@ -750,11 +750,11 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE);
                 }
-                ppsidOwner = psidOwner != default ? new(((nint)psidOwner.Value).ThrowIfZeroOrMinusOne()) : null;
-                ppsidGroup = pSidGroup != default ? new(((nint)pSidGroup.Value).ThrowIfZeroOrMinusOne()) : null;
-                ppDacl = pDacl is not null ? new(((nint)pDacl).ThrowIfZeroOrMinusOne(), false) : null;
-                ppSacl = pSacl is not null ? new(((nint)pSacl).ThrowIfZeroOrMinusOne(), false) : null;
-                ppSecurityDescriptor = new(((nint)pSecurityDescriptor).ThrowIfZeroOrMinusOne(), true);
+                ppsidOwner = psidOwner != default ? new(((nint)psidOwner.Value).ThrowIfZeroOrInvalid()) : null;
+                ppsidGroup = pSidGroup != default ? new(((nint)pSidGroup.Value).ThrowIfZeroOrInvalid()) : null;
+                ppDacl = pDacl is not null ? new(((nint)pDacl).ThrowIfZeroOrInvalid(), false) : null;
+                ppSacl = pSacl is not null ? new(((nint)pSacl).ThrowIfZeroOrInvalid(), false) : null;
+                ppSecurityDescriptor = new(((nint)pSecurityDescriptor).ThrowIfZeroOrInvalid(), true);
             }
             return res;
         }
@@ -1139,7 +1139,7 @@ namespace PSADT.Interop
             unsafe
             {
                 res = PInvoke.LsaQueryInformationPolicy(PolicyHandle.ThrowIfNullOrInvalid(), InformationClass, out void* BufferLocal).ThrowOnFailure();
-                Buffer = new(((nint)BufferLocal).ThrowIfZeroOrMinusOne(), true);
+                Buffer = new(((nint)BufferLocal).ThrowIfZeroOrInvalid(), true);
             }
             return res;
         }
@@ -1911,7 +1911,7 @@ namespace PSADT.Interop
             {
                 res = PInvoke.ReadProcessMemory(hProcess.ThrowIfNullOrClosed(), (void*)lpBaseAddress, lpBuffer, out lpNumberOfBytesRead);
             }
-            lpNumberOfBytesRead = lpNumberOfBytesRead.ThrowIfZeroOrMinusOne();
+            lpNumberOfBytesRead = lpNumberOfBytesRead.ThrowIfZeroOrInvalid();
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -2153,7 +2153,7 @@ namespace PSADT.Interop
                 {
                     res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
-                phDatabase = new(((nint)phDatabaseLocal).ThrowIfZeroOrMinusOne(), true);
+                phDatabase = new(((nint)phDatabaseLocal).ThrowIfZeroOrInvalid(), true);
             }
             return res;
         }
@@ -2185,7 +2185,7 @@ namespace PSADT.Interop
             {
                 res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase.ThrowIfNullOrInvalid(), szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
-            phSummaryInfo = new(((nint)phSummaryInfoLocal).ThrowIfZeroOrMinusOne(), true);
+            phSummaryInfo = new(((nint)phSummaryInfoLocal).ThrowIfZeroOrInvalid(), true);
             return res;
         }
 
@@ -2423,7 +2423,7 @@ namespace PSADT.Interop
                 StartRoutine.ThrowIfNullOrInvalid().DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.ThrowIfNullOrClosed().DangerousAddRef(ref ProcessHandleAddRef);
                 NTSTATUS res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default).ThrowOnFailure();
-                ThreadHandle = new(hThread.ThrowIfZeroOrMinusOne(), true);
+                ThreadHandle = new(hThread.ThrowIfZeroOrInvalid(), true);
                 return res;
             }
             finally
@@ -2837,7 +2837,7 @@ namespace PSADT.Interop
                     hInstance.DangerousRelease();
                 }
             }
-            lpBuffer = lpBuffer.ThrowIfZeroOrMinusOne();
+            lpBuffer = lpBuffer.ThrowIfZeroOrInvalid();
             return res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
@@ -3271,7 +3271,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                lpEnvironment = new(((nint)lpEnvironmentPtr).ThrowIfZeroOrMinusOne(), true);
+                lpEnvironment = new(((nint)lpEnvironmentPtr).ThrowIfZeroOrInvalid(), true);
             }
             return res;
         }
@@ -3303,7 +3303,7 @@ namespace PSADT.Interop
                         throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, $"Failed to query [{lpSubBlock}] version value.");
                     }
                     puLen = puLen.ThrowIfZero();
-                    lplpBuffer = ((nint)lplpBufferLocal).ThrowIfZeroOrMinusOne();
+                    lplpBuffer = ((nint)lplpBufferLocal).ThrowIfZeroOrInvalid();
                 }
             }
             return res;
@@ -3351,7 +3351,7 @@ namespace PSADT.Interop
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
                 pCount = pCount.ThrowIfZero();
-                pSessionInfo = new(((nint)ppSessionInfo).ThrowIfZeroOrMinusOne(), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
+                pSessionInfo = new(((nint)ppSessionInfo).ThrowIfZeroOrInvalid(), (int)pCount * sizeof(WTS_SESSION_INFOW), true);
             }
             return res;
         }
@@ -3381,7 +3381,7 @@ namespace PSADT.Interop
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
             bytesReturned = bytesReturned.ThrowIfZero();
-            pBuffer = new(ppBuffer.ToIntPtr().ThrowIfZeroOrMinusOne(), (int)bytesReturned, true);
+            pBuffer = new(ppBuffer.ToIntPtr().ThrowIfZeroOrInvalid(), (int)bytesReturned, true);
             return res;
         }
 
@@ -3407,7 +3407,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                phToken = new(((nint)phTokenLocal).ThrowIfZeroOrMinusOne(), true);
+                phToken = new(((nint)phTokenLocal).ThrowIfZeroOrInvalid(), true);
             }
             return res;
         }
@@ -3447,7 +3447,7 @@ namespace PSADT.Interop
         {
             MSIHANDLE phViewLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiDatabaseOpenView(hDatabase.ThrowIfNullOrInvalid(), szQuery.ThrowIfNullOrWhiteSpace(), ref phViewLocal)).ThrowOnFailure();
-            phView = new(((nint)phViewLocal).ThrowIfZeroOrMinusOne(), true);
+            phView = new(((nint)phViewLocal).ThrowIfZeroOrInvalid(), true);
             return res;
         }
 
@@ -3574,7 +3574,7 @@ namespace PSADT.Interop
         {
             MSIHANDLE phRecordLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiViewFetch(hView.ThrowIfNullOrInvalid(), ref phRecordLocal)).ThrowOnFailure();
-            phRecord = new(((nint)phRecordLocal).ThrowIfZeroOrMinusOne(), true);
+            phRecord = new(((nint)phRecordLocal).ThrowIfZeroOrInvalid(), true);
             return res;
         }
 
@@ -3727,7 +3727,7 @@ namespace PSADT.Interop
         internal static WIN32_ERROR NetGetJoinInformation(string? lpServer, out SafeNetApiBufferFreeHandle lpNameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS BufferType)
         {
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
-            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr().ThrowIfZeroOrMinusOne(), lpNameBufferLocal.Length, true);
+            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr().ThrowIfZeroOrInvalid(), lpNameBufferLocal.Length, true);
             return res;
         }
 

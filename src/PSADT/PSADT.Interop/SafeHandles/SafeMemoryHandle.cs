@@ -29,7 +29,7 @@ namespace PSADT.Interop.SafeHandles
         private protected SafeMemoryHandle(nint handle, int length, bool ownsHandle) : base(ownsHandle)
         {
             Length = length.ThrowIfNegative();
-            SetHandle(handle.ThrowIfZeroOrMinusOne());
+            SetHandle(handle.ThrowIfZeroOrInvalid());
         }
 
         /// <summary>

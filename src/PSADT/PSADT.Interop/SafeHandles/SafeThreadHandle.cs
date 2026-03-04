@@ -23,7 +23,7 @@ namespace PSADT.Interop.SafeHandles
         /// otherwise, false.</param>
         internal SafeThreadHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrMinusOne());
+            SetHandle(handle.ThrowIfZeroOrInvalid());
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace PSADT.SafeHandles
         /// <param name="ownsHandle">A value indicating whether the SafeFreeBSTRHandle instance is responsible for releasing the handle.</param>
         private SafeFreeBSTRHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrMinusOne());
+            SetHandle(handle.ThrowIfZeroOrInvalid());
         }
 
         /// <summary>

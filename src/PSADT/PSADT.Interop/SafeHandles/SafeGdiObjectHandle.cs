@@ -22,7 +22,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="ownsHandle">true to reliably release the handle during finalization; false to prevent the handle from being released.</param>
         internal SafeGdiObjectHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrMinusOne());
+            SetHandle(handle.ThrowIfZeroOrInvalid());
         }
 
         /// <summary>

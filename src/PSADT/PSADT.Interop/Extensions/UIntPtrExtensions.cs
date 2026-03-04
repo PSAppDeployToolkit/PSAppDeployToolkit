@@ -29,7 +29,7 @@ namespace PSADT.Interop.Extensions
         {
             unsafe
             {
-                return ref Unsafe.AsRef<T>((void*)unchecked(handle.ThrowIfZeroOrMinusOne() + offset));
+                return ref Unsafe.AsRef<T>((void*)unchecked(handle.ThrowIfZeroOrInvalid() + offset));
             }
         }
 
@@ -47,7 +47,7 @@ namespace PSADT.Interop.Extensions
         {
             unsafe
             {
-                return new ReadOnlySpan<T>((void*)handle.ThrowIfZeroOrMinusOne(), length.ThrowIfZeroOrNegative());
+                return new ReadOnlySpan<T>((void*)handle.ThrowIfZeroOrInvalid(), length.ThrowIfZeroOrNegative());
             }
         }
 
@@ -64,7 +64,7 @@ namespace PSADT.Interop.Extensions
         {
             unsafe
             {
-                return new ReadOnlySpan<char>((char*)handle.ThrowIfZeroOrMinusOne(), length.ThrowIfZeroOrNegative()).TrimEndNullAndTrim();
+                return new ReadOnlySpan<char>((char*)handle.ThrowIfZeroOrInvalid(), length.ThrowIfZeroOrNegative()).TrimEndNullAndTrim();
             }
         }
 
@@ -82,7 +82,7 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="InvalidOperationException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
         internal static string ToManagedString(this nuint handle, int length)
         {
-            ReadOnlySpan<char> stringSpan = handle.ThrowIfZeroOrMinusOne().AsReadOnlyCharSpan(length.ThrowIfZeroOrNegative());
+            ReadOnlySpan<char> stringSpan = handle.ThrowIfZeroOrInvalid().AsReadOnlyCharSpan(length.ThrowIfZeroOrNegative());
             return stringSpan.IsWhiteSpace()
                 ? throw new InvalidOperationException("The specified pointer does not contain a valid string.")
                 : stringSpan.ToString();
@@ -96,7 +96,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="name">The name of the calling member. This value is automatically supplied by the compiler.</param>
         /// <returns>The original handle if it is not -1.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is -1, indicating an invalid pointer.</exception>
-        internal static nuint ThrowIfMinusOne(this nuint handle, [CallerMemberName] string name = null!)
+        internal static nuint ThrowIfInvalid(this nuint handle, [CallerMemberName] string name = null!)
         {
             return handle == (UIntPtr.Size == 8 ? ulong.MaxValue : uint.MaxValue)
                 ? throw new ArgumentNullException(name, "The specified pointer is not valid.")
@@ -114,7 +114,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="name">The name of the parameter or caller to include in the exception message if validation fails.</param>
         /// <returns>The original handle if it is valid.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is zero or minus one, indicating an invalid or null pointer.</exception>
-        internal static nuint ThrowIfZeroOrMinusOne(this nuint handle, [CallerMemberName] string name = null!)
+        internal static nuint ThrowIfZeroOrInvalid(this nuint handle, [CallerMemberName] string name = null!)
         {
             return handle == UIntPtr.Zero || handle == (UIntPtr.Size == 8 ? ulong.MaxValue : uint.MaxValue)
                 ? throw new ArgumentNullException(name, "The specified pointer is not valid.")

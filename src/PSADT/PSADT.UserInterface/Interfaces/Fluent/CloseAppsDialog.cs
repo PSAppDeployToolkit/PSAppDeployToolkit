@@ -370,7 +370,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 }
                 using (drawingBitmap)
                 {
-                    using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap().ThrowIfZeroOrMinusOne(), true);
+                    using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap().ThrowIfZeroOrInvalid(), true);
                     bool hBitmapAddRef = false;
                     try
                     {

@@ -117,7 +117,7 @@ namespace PSADT.UserInterface.Utilities
 
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
             _ = NativeMethods.SHGetFileInfo(path, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
-            using DestroyIconSafeHandle hIcon = new(((nint)psfi.hIcon).ThrowIfZeroOrMinusOne(), true);
+            using DestroyIconSafeHandle hIcon = new(((nint)psfi.hIcon).ThrowIfZeroOrInvalid(), true);
             bool hIconAddRef = false;
             try
             {

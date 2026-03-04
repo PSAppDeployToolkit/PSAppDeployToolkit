@@ -31,7 +31,7 @@ namespace PSADT.Interop.Extensions
             unsafe
             {
                 fontFace.TryGetFontTable(openTypeTableTag, out void* tableDataLocal, out tableSize, out void* tableContextLocal, out exists);
-                tableContext = new(fontFace, ((nint)tableContextLocal).ThrowIfMinusOne(), true);
+                tableContext = new(fontFace, ((nint)tableContextLocal).ThrowIfInvalid(), true);
                 tableData = (nint)tableDataLocal;
             }
         }

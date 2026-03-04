@@ -23,7 +23,7 @@ namespace PSADT.Interop.SafeHandles
         /// released.</param>
         internal SafeEnvironmentBlockHandle(nint handle, bool ownsHandle) : base(ownsHandle)
         {
-            SetHandle(handle.ThrowIfZeroOrMinusOne());
+            SetHandle(handle.ThrowIfZeroOrInvalid());
         }
 
         /// <summary>
