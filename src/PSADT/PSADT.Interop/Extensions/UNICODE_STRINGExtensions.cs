@@ -17,7 +17,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>A managed string representation of the specified UNICODE_STRING.</returns>
         internal static string ToManagedString(this UNICODE_STRING unicodeString)
         {
-            return unicodeString.Buffer.ToIntPtr().ToManagedString(unicodeString.Length / sizeof(char));
+            return unicodeString.Buffer.ToIntPtr().ToStringUni(unicodeString.Length / sizeof(char));
         }
     }
 }

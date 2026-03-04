@@ -87,7 +87,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>A managed string containing the characters read from the specified memory location. Returns an empty string
         /// if the memory does not contain valid string data.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
-        internal static string ToManagedString(this nuint handle, int length)
+        internal static string ToStringUni(this nuint handle, int length)
         {
             HandleHelpers.ThrowIfNullOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);

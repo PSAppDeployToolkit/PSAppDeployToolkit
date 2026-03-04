@@ -44,7 +44,7 @@ namespace PSADT.Interop.SafeHandles
         {
             HandleHelpers.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            return (handle + offset).ToManagedString((Length - offset) / sizeof(char));
+            return (handle + offset).ToStringUni((Length - offset) / sizeof(char));
         }
 
         /// <summary>
