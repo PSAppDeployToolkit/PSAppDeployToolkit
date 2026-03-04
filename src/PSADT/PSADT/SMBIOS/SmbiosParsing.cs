@@ -91,13 +91,8 @@ namespace PSADT.SMBIOS
         /// <exception cref="InvalidOperationException">Thrown if no SMBIOS structures of the specified <paramref name="targetType"/> are found in the buffer.</exception>
         internal static IReadOnlyList<SmbiosTablePosition> GetStructureOffsets(ReadOnlySpan<byte> buffer, SmbiosType targetType)
         {
-            // Determine the bounds of the SMBIOS table inside RAW_SMBIOS_DATA
-            if (buffer.Length < 8)
-            {
-                throw new ArgumentException($"The specified buffer is too short: {buffer.Length} bytes");
-            }
-
             // Loop through the data and find all instances of the target structure.
+            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
             List<SmbiosTablePosition> offsets = []; int offset = 8;
             while (offset < buffer.Length - 4)
             {
@@ -225,10 +220,7 @@ namespace PSADT.SMBIOS
                 BYTE    SMBIOSTableData[];
             };
             */
-            if (buffer.Length < 8)
-            {
-                throw new ArgumentException($"The specified buffer is too short: {buffer.Length} bytes");
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
             byte major = buffer[1]; byte minor = buffer[2]; byte dmiRevision = buffer[3];
             SmbiosEntryPointType entryPointType = major >= 3 ? SmbiosEntryPointType.Smbios3x : SmbiosEntryPointType.Smbios2x;
             return new SmbiosVersionInfo(major, minor, dmiRevision, entryPointType);

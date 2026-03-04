@@ -42,13 +42,8 @@ namespace PSADT.SMBIOS
         /// </summary>
         private static SystemInformation Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
-            // Qualify the structure length before proceeding.
-            if (structureLength < 8)
-            {
-                throw new ArgumentException($"System Information structure too short: {structureLength} bytes");
-            }
-
             // UUID (SMBIOS 2.1+). 16 bytes at offset 0x08. "Not present" if all 00h or all FFh.
+            ArgumentOutOfRangeException.ThrowIfLessThan(structureLength, 8);
             Guid? uuid = null;
             if (structureLength >= 24)
             {

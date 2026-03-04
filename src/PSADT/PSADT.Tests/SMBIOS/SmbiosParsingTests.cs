@@ -36,7 +36,7 @@ namespace PSADT.Tests.SMBIOS
     public sealed class SmbiosParsingTests
     {
         /// <summary>
-        /// Verifies that the GetStructureOffsets method throws an ArgumentException when the provided buffer is too
+        /// Verifies that the GetStructureOffsets method throws an ArgumentOutOfRangeException when the provided buffer is too
         /// short to contain a valid SMBIOS structure header.
         /// </summary>
         /// <remarks>This test ensures that GetStructureOffsets enforces input validation by rejecting
@@ -44,7 +44,7 @@ namespace PSADT.Tests.SMBIOS
         [Fact]
         public void GetStructureOffsets_ThrowsWhenBufferTooShort()
         {
-            _ = Assert.Throws<ArgumentException>(() => SmbiosParsing.GetStructureOffsets(new byte[7], SmbiosType.EndOfTable));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(() => SmbiosParsing.GetStructureOffsets(new byte[7], SmbiosType.EndOfTable));
         }
 
         /// <summary>
@@ -177,15 +177,15 @@ namespace PSADT.Tests.SMBIOS
         }
 
         /// <summary>
-        /// Verifies that GetSmbiosVersion throws an ArgumentException when provided with a buffer that is too short.
+        /// Verifies that GetSmbiosVersion throws an ArgumentOutOfRangeException when provided with a buffer that is too short.
         /// </summary>
         /// <remarks>This test ensures that the SmbiosParsing.GetSmbiosVersion method enforces its input
-        /// buffer length requirements by throwing an ArgumentException if the buffer does not meet the minimum expected
+        /// buffer length requirements by throwing an ArgumentOutOfRangeException if the buffer does not meet the minimum expected
         /// size.</remarks>
         [Fact]
         public void GetSmbiosVersion_ThrowsWhenBufferTooShort()
         {
-            _ = Assert.Throws<ArgumentException>(() => SmbiosParsing.GetSmbiosVersion(new byte[4]));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(() => SmbiosParsing.GetSmbiosVersion(new byte[4]));
         }
 
         /// <summary>

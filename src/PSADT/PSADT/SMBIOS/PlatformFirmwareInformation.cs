@@ -43,13 +43,8 @@ namespace PSADT.SMBIOS
         /// </summary>
         private static PlatformFirmwareInformation Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
-            // Qualify the structure length before proceeding.
-            if (structureLength < 18)
-            {
-                throw new ArgumentException($"BIOS Information structure too short: {structureLength} bytes");
-            }
-
             // Calculate ROM and extended ROM size (if available and ROM size byte is 0xFF).
+            ArgumentOutOfRangeException.ThrowIfLessThan(structureLength, 18);
             BiosExtendedRomSize? extendedRomSize = null;
             byte romSize = buffer[structureOffset + 9];
             // Per spec: 0xFF is a sentinel indicating extended size. Do not treat as legacy 16MB.
@@ -57,7 +52,7 @@ namespace PSADT.SMBIOS
             if (structureLength >= 26 && romSize == 0xFF)
             {
                 // Bits 15:14 = unit (00b=MB, 01b=GB; others reserved), Bits 13:0 = size.
-                extendedRomSize = new BiosExtendedRomSize(BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(structureOffset + 24, 2)));
+                extendedRomSize = new(BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(structureOffset + 24, 2)));
             }
 
             // Starting address segment (0 means not applicable per spec)

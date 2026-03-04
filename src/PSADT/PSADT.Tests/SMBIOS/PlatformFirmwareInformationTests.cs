@@ -270,7 +270,7 @@ namespace PSADT.Tests.SMBIOS
         }
 
         /// <summary>
-        /// Verifies that the Get method throws an ArgumentException when the SMBIOS structure buffer is too short to
+        /// Verifies that the Get method throws an ArgumentOutOfRangeException when the SMBIOS structure buffer is too short to
         /// contain valid platform firmware information.
         /// </summary>
         /// <remarks>This test ensures that the Get method properly validates the length of the input
@@ -291,8 +291,8 @@ namespace PSADT.Tests.SMBIOS
                     "Vendor",
                     "Version"));
 
-            ArgumentException ex = Assert.Throws<ArgumentException>(() => PlatformFirmwareInformation.Get(buffer));
-            Assert.Contains("too short", ex.Message, StringComparison.OrdinalIgnoreCase);
+            ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => PlatformFirmwareInformation.Get(buffer));
+            Assert.Contains("must be greater than", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

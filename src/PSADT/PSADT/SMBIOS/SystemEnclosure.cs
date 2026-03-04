@@ -43,13 +43,8 @@ namespace PSADT.SMBIOS
         /// </summary>
         private static SystemEnclosure Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
-            // Qualify the structure length before proceeding.
-            if (structureLength < 9)
-            {
-                throw new ArgumentException($"System Enclosure structure too short: {structureLength} bytes");
-            }
-
             // Height (0 => unspecified; 0xFF => unknown per spec)
+            ArgumentOutOfRangeException.ThrowIfLessThan(structureLength, 9);
             byte? height = null;
             if (structureLength >= 18)
             {
