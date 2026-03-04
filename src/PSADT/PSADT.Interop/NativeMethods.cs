@@ -1932,7 +1932,7 @@ namespace PSADT.Interop
         /// a list of all device names. If not null, the string must not be empty.</param>
         /// <param name="lpTargetPath">A buffer that receives the result of the query. The buffer should be large enough to hold the returned path
         /// or list of device names, including the terminating null character(s).</param>
-        /// <returns>The number of characters stored in lpTargetPath, not including the terminating null character(s).</returns>
+        /// <returns>The number of characters stored in lpTargetPath.</returns>
         internal static uint QueryDosDevice(string lpDeviceName, Span<char> lpTargetPath)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpDeviceName);

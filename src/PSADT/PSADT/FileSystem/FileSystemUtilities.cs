@@ -366,16 +366,17 @@ namespace PSADT.FileSystem
             Span<char> targetPath = stackalloc char[1024]; targetPath.Clear();
             foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
             {
+                uint length;
                 try
                 {
-                    _ = NativeMethods.QueryDosDevice(driveLetter, targetPath);
+                    length = NativeMethods.QueryDosDevice(driveLetter, targetPath);
                 }
                 catch
                 {
                     continue;
                     throw;
                 }
-                foreach (string path in targetPath.ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (path.Length > 0 && !lookupTable.ContainsKey(path))
                     {
