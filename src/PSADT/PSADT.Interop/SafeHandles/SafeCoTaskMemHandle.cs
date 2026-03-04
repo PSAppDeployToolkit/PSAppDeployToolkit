@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using PSADT.Interop.Extensions;
+using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
 
 namespace PSADT.Interop.SafeHandles
 {
@@ -36,6 +38,21 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="ownsHandle">A value indicating whether the SafeCoTaskMemHandle instance is responsible for releasing the native memory
         /// when disposed.</param>
         internal SafeCoTaskMemHandle(nint handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the SafeCoTaskMemHandle class using the specified memory handle and ownership
+        /// flag.
+        /// </summary>
+        /// <remarks>This constructor is intended for scenarios where explicit control over memory
+        /// ownership is required. The caller is responsible for ensuring that the handle is valid and that ownership is
+        /// correctly specified to prevent memory leaks or premature release.</remarks>
+        /// <param name="handle">A PWSTR representing the memory block to be managed by the handle. The pointer is converted to an IntPtr for
+        /// internal use.</param>
+        /// <param name="ownsHandle">true to indicate that the SafeCoTaskMemHandle instance should release the memory when disposed; otherwise,
+        /// false.</param>
+        internal SafeCoTaskMemHandle(PWSTR handle, bool ownsHandle) : base(handle.ToIntPtr(), handle.Length * sizeof(char), ownsHandle)
         {
         }
 

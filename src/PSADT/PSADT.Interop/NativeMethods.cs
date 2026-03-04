@@ -4143,7 +4143,7 @@ namespace PSADT.Interop
             }
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
             HandleHelpers.ThrowIfNullOrInvalid(lpNameBufferLocal.ToIntPtr(), "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
-            lpNameBuffer = new(lpNameBufferLocal.ToIntPtr(), lpNameBufferLocal.Length * sizeof(char), true);
+            lpNameBuffer = new(lpNameBufferLocal, true);
             return res;
         }
 
@@ -4204,7 +4204,7 @@ namespace PSADT.Interop
                     throw ExceptionUtilities.GetException(res);
                 }
                 HandleHelpers.ThrowIfNullOrInvalid(ppszPathLocal.ToIntPtr(), "The path returned from 'SHGetKnownFolderPath()' is null or invalid.");
-                ppszPath = new(ppszPathLocal.ToIntPtr(), ppszPathLocal.Length * sizeof(char), true);
+                ppszPath = new(ppszPathLocal, true);
             }
             catch
             {
