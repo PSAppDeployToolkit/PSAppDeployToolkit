@@ -141,7 +141,7 @@ namespace PSADT.SMBIOS
                 powerSupplyState: structureLength >= 11 ? (ChassisState)buffer[structureOffset + 10] : null,
                 thermalState: structureLength >= 12 ? (ChassisState)buffer[structureOffset + 11] : null,
                 securityStatus: structureLength >= 13 ? (ChassisSecurityStatus)buffer[structureOffset + 12] : null,
-                oemDefined: structureLength >= 17 ? BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(structureOffset + 13, 4)) : null,
+                oemDefined: structureLength >= 17 && BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(structureOffset + 13, 4)) is uint oemDefined && oemDefined > 0 ? oemDefined : null,
                 height: height,
                 numberOfPowerCords: numberOfPowerCords,
                 containedElementCount: containedElementCount,
@@ -150,7 +150,7 @@ namespace PSADT.SMBIOS
                 containedElements: containedElements,
                 skuNumber: skuNumber,
                 rackType: rackType,
-                rackHeight: rackHeight);
+                rackHeight: rackHeight > 0 ? rackHeight : null);
         }
 
         /// <summary>
