@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.ClientServer;
@@ -26,6 +28,68 @@ namespace PSADT.UserInterface
     /// </summary>
     internal static class DialogManager
     {
+        /// <summary>
+        /// Initializes the WPF application when the class is first accessed.
+        /// </summary>
+        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "These exceptions will never fire under normal, expected circumstances.")]
+        static DialogManager()
+        {
+            // Register process exit handler to ensure WPF is properly shut down.
+            // This prevents ~2.5 second delays during process termination.
+            AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown);
+
+            // Create and start the WPF application thread.
+            using ManualResetEvent dispatcherRunning = new(false);
+            System.Windows.Application? appLocal = null;
+            Exception? appThreadException = null;
+            Thread appThread = new(() =>
+            {
+                try
+                {
+                    // Create the application and start the message pump (this will process the BeginInvoke below).
+                    // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
+                    (appLocal = new() { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, }).Startup += (_, _) =>
+                    {
+                        System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                        _ = appLocal.Dispatcher.BeginInvoke(dispatcherRunning.Set, DispatcherPriority.Send);
+                    };
+                    _ = appLocal.Run();
+                }
+                catch (Exception exception) when (exception.Message is not null)
+                {
+                    // We capture the error for later rethrowing so that we can ensure the dispatcher is signaled to avoid deadlocks.
+                    appThreadException = exception;
+                    if (!dispatcherRunning.Set())
+                    {
+                        Environment.FailFast($"Failed to initialize WPF application and failed to signal dispatcher.{Environment.NewLine}Exception Info: {exception}", exception);
+                    }
+                }
+            });
+            appThread.SetApartmentState(ApartmentState.STA);
+            appThread.Name = "WPF Dialog STA Thread";
+            appThread.IsBackground = true;
+            appThread.Start();
+
+            // Confirm the validity of the application instance, then set the static reference.
+            if (!dispatcherRunning.WaitOne())
+            {
+                throw new InvalidProgramException("Failed to initialize WPF application: Dispatcher failed to start.");
+            }
+            if (appThreadException is not null)
+            {
+                throw new InvalidProgramException("Failed to initialize WPF application: Dispatcher threw an exception.", appThreadException);
+            }
+            if (appLocal is null)
+            {
+                throw new InvalidProgramException("Failed to initialize WPF application: Application instance is null.");
+            }
+            app = appLocal;
+
+            // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
+            // This can happen in the background at the discretion of the dispatcher and how it wishes to prioritise.
+            _ = app.Dispatcher.BeginInvoke(ShellUtilities.RefreshDesktop);
+        }
+
         /// <summary>
         /// Displays a dialog prompting the user to close specific applications.
         /// </summary>
@@ -360,7 +424,7 @@ namespace PSADT.UserInterface
         /// <param name="Buttons">A combination of flags specifying the buttons to display in the dialog. This must be a valid TASKDIALOG_COMMON_BUTTON_FLAGS value.</param>
         /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
         /// <returns>A MESSAGEBOX_RESULT value indicating the button that the user clicked to close the dialog.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
+        [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
             return InvokeDialogAction(() => NativeMethods.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
@@ -385,60 +449,10 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Initializes the WPF application and invokes the specified action on the UI thread.
+        /// Invokes the specified action on the WPF UI thread.
         /// </summary>
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
-            // Initialize the WPF application if necessary.
-            if (!appInitialized.IsSet)
-            {
-                // Register process exit handler to ensure WPF is properly shut down.
-                // This prevents ~2.5 second delays during process termination.
-                AppDomain.CurrentDomain.ProcessExit += (_, _) =>
-                {
-                    if (appInitialized.IsSet && app is not null)
-                    {
-                        app.Dispatcher.Invoke(() =>
-                        {
-                            app.Shutdown();
-                        });
-                        appThread?.Join();
-                        appThread = null;
-                        app = null;
-                    }
-                };
-
-                // Create and start the WPF application thread.
-                appThread = new(() =>
-                {
-                    app = new()
-                    {
-                        ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown,
-                    };
-                    app.Startup += (_, _) =>
-                    {
-                        // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
-                        // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-                        System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-                        ShellUtilities.RefreshDesktop();
-                        appInitialized.Set();
-                    };
-                    Environment.ExitCode = app.Run();
-                });
-                appThread.SetApartmentState(ApartmentState.STA);
-                appThread.IsBackground = true;
-                appThread.Start();
-                appInitialized.Wait();
-            }
-
-            // If we're here and the app isn't initialised, then it's been shut down.
-            // The application cannot be restarted, so we throw back in this situation.
-            if (app is null)
-            {
-                throw new InvalidProgramException("WPF application is not initialized.");
-            }
-
-            // Invoke the callback on the WPF UI thread.
             return app.Dispatcher.Invoke(callback);
         }
 
@@ -502,16 +516,6 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Application instance for the WPF dialog.
         /// </summary>
-        private static System.Windows.Application? app;
-
-        /// <summary>
-        /// Thread for the WPF dialog.
-        /// </summary>
-        private static Thread? appThread;
-
-        /// <summary>
-        /// Event to signal that the application has been initialized.
-        /// </summary>
-        private static readonly ManualResetEventSlim appInitialized = new(false);
+        private static readonly System.Windows.Application app;
     }
 }
