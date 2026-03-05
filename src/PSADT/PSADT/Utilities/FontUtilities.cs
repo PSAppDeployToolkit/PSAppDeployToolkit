@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -108,38 +109,59 @@ namespace PSADT.Utilities
         public static string GetFontTitle(string fontPath)
         {
             // Create factory and font file reference.
-            _ = NativeMethods.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED, out IDWriteFactory factory);
             ArgumentException.ThrowIfNullOrWhiteSpace(fontPath); fontPath = Path.GetFullPath(fontPath.Trim().Trim('"'));
-            factory.CreateFontFileReference(fontPath.ThrowIfFileDoesNotExist(), null, out IDWriteFontFile fontFile);
-            fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
-            if (!supported)
+            _ = NativeMethods.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED, out IDWriteFactory factory);
+            try
             {
-                throw new ArgumentOutOfRangeException(nameof(fontPath), fontPath, "Font file format is not supported.");
-            }
-            if (faceCount == 0)
-            {
-                throw new InvalidOperationException("Font file contains no faces.");
-            }
-
-            // Iterate faces (handles .ttc/.otc) to find the font title.
-            IDWriteFontFile[] files = [fontFile];
-            for (uint faceIndex = 0; faceIndex < faceCount; faceIndex++)
-            {
-                factory.CreateFontFace(fontFaceType, 1, files, faceIndex, DWRITE_FONT_SIMULATIONS.DWRITE_FONT_SIMULATIONS_NONE, out IDWriteFontFace fontFace);
-                fontFace.TryGetFontTable(TAG_NAME, out SafeFontTableHandle? tableContext);
-                using (tableContext)
+                factory.CreateFontFileReference(fontPath.ThrowIfFileDoesNotExist(), null, out IDWriteFontFile fontFile);
+                try
                 {
-                    if (tableContext is null || tableContext.Length < 6)
+                    fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
+                    if (!supported)
                     {
-                        continue;
+                        throw new ArgumentOutOfRangeException(nameof(fontPath), fontPath, "Font file format is not supported.");
                     }
-                    if (GetBestFontTitleFromNameTable(tableContext.GetFontTableData()) is string fontTitle && !string.IsNullOrWhiteSpace(fontTitle))
+                    if (faceCount == 0)
                     {
-                        return fontTitle;
+                        throw new InvalidOperationException("Font file contains no faces.");
                     }
+
+                    // Iterate faces (handles .ttc/.otc) to find the font title.
+                    IDWriteFontFile[] files = [fontFile];
+                    for (uint faceIndex = 0; faceIndex < faceCount; faceIndex++)
+                    {
+                        factory.CreateFontFace(fontFaceType, 1, files, faceIndex, DWRITE_FONT_SIMULATIONS.DWRITE_FONT_SIMULATIONS_NONE, out IDWriteFontFace fontFace);
+                        try
+                        {
+                            fontFace.TryGetFontTable(TAG_NAME, out SafeFontTableHandle? tableContext);
+                            using (tableContext)
+                            {
+                                if (tableContext is null || tableContext.Length < 6)
+                                {
+                                    continue;
+                                }
+                                if (GetBestFontTitleFromNameTable(tableContext.GetFontTableData()) is string fontTitle && !string.IsNullOrWhiteSpace(fontTitle))
+                                {
+                                    return fontTitle;
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            _ = Marshal.ReleaseComObject(fontFace);
+                        }
+                    }
+                    throw new InvalidOperationException("Unable to determine font title from name table.");
+                }
+                finally
+                {
+                    _ = Marshal.ReleaseComObject(fontFile);
                 }
             }
-            throw new InvalidOperationException("Unable to determine font title from name table.");
+            finally
+            {
+                _ = Marshal.ReleaseComObject(factory);
+            }
         }
 
         /// <summary>
