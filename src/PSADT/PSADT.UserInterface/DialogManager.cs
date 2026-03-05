@@ -36,7 +36,7 @@ namespace PSADT.UserInterface
         {
             // Register process exit handler to ensure WPF is properly shut down.
             // This prevents ~2.5 second delays during process termination.
-            AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown);
+            AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown, DispatcherPriority.Send);
 
             // Create and start the WPF application thread.
             using ManualResetEvent dispatcherRunning = new(false);
@@ -252,12 +252,11 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("A progress dialog is already open. Close it before opening a new one.");
             }
-            _ = InvokeDialogAction<object>(() =>
+            if (progressDialog is not null)
             {
-                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null);
-                progressDialog.Show();
-                return null!;
-            });
+                throw new InvalidOperationException("Progress dialog set as closed even though one is active.");
+            }
+            InvokeDialogAction(() => (progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null)).Show());
             progressInitialized.Set();
         }
 
@@ -284,6 +283,10 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
+            if (progressDialog is null)
+            {
+                throw new InvalidOperationException("Progress dialog set as open even though one is not active.");
+            }
             if (progressMessage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
@@ -292,11 +295,7 @@ namespace PSADT.UserInterface
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessage);
             }
-            _ = InvokeDialogAction<object>(() =>
-            {
-                progressDialog!.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment);
-                return null!;
-            });
+            InvokeDialogAction(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment));
         }
 
         /// <summary>
@@ -308,14 +307,17 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("No progress dialog is currently open.");
             }
-            _ = InvokeDialogAction<object>(() =>
+            if (progressDialog is null)
+            {
+                throw new InvalidOperationException("Progress dialog set as open even though one is not active.");
+            }
+            InvokeDialogAction(() =>
             {
                 using (progressDialog)
                 {
-                    progressDialog!.CloseDialog();
+                    progressDialog.CloseDialog();
                 }
                 progressDialog = null;
-                return null!;
             });
             progressInitialized.Reset();
         }
@@ -335,12 +337,12 @@ namespace PSADT.UserInterface
         /// cref="DialogType.CloseAppsDialog"/>.</exception>
         private static TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
         {
+            if (dialogType == DialogType.CloseAppsDialog)
+            {
+                ArgumentNullException.ThrowIfNull(state);
+            }
             return InvokeDialogAction(() =>
             {
-                if (dialogType == DialogType.CloseAppsDialog)
-                {
-                    ArgumentNullException.ThrowIfNull(state);
-                }
                 using IModalDialog dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;
             });
@@ -451,9 +453,17 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Invokes the specified action on the WPF UI thread.
         /// </summary>
+        private static void InvokeDialogAction(Action callback)
+        {
+            app.Dispatcher.Invoke(callback, DispatcherPriority.Send);
+        }
+
+        /// <summary>
+        /// Invokes the specified function on the WPF UI thread.
+        /// </summary>
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
-            return app.Dispatcher.Invoke(callback);
+            return app.Dispatcher.Invoke(callback, DispatcherPriority.Send);
         }
 
         /// <summary>
