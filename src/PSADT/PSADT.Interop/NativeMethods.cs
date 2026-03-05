@@ -2400,15 +2400,11 @@ namespace PSADT.Interop
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns ERROR_SUCCESS if the operation succeeds.</returns>
         internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle? hDatabase, string? szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
-            if (szDatabasePath is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(szDatabasePath);
-            }
             MSIHANDLE phSummaryInfoLocal = default;
             WIN32_ERROR res;
-            if (hDatabase is null)
+            if (szDatabasePath is not null)
             {
-                using SafeFileHandle nullHandle = new(default, true);
+                ArgumentException.ThrowIfNullOrWhiteSpace(szDatabasePath); using SafeFileHandle nullHandle = new(default, true);
                 res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath.ThrowIfFileDoesNotExist(), uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
             else
