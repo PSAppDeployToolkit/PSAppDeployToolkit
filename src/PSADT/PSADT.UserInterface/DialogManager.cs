@@ -465,6 +465,21 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// The currently open Progress dialog, if any. Null if no dialog is open.
+        /// </summary>
+        private static IProgressDialog? progressDialog;
+
+        /// <summary>
+        /// Event to signal that the progress dialog has been initialized.
+        /// </summary>
+        private static readonly ManualResetEventSlim progressInitialized = new(false);
+
+        /// <summary>
+        /// Application instance for the WPF dialog.
+        /// </summary>
+        private static readonly System.Windows.Application app;
+
+        /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
         private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>()
@@ -488,20 +503,5 @@ namespace PSADT.UserInterface
                 { DialogType.RestartDialog, static (options, state) => new Interfaces.Fluent.RestartDialog((RestartDialogOptions)options) },
             })},
         });
-
-        /// <summary>
-        /// The currently open Progress dialog, if any. Null if no dialog is open.
-        /// </summary>
-        private static IProgressDialog? progressDialog;
-
-        /// <summary>
-        /// Event to signal that the progress dialog has been initialized.
-        /// </summary>
-        private static readonly ManualResetEventSlim progressInitialized = new(false);
-
-        /// <summary>
-        /// Application instance for the WPF dialog.
-        /// </summary>
-        private static readonly System.Windows.Application app;
     }
 }
