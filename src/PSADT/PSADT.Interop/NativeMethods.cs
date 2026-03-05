@@ -3770,7 +3770,7 @@ namespace PSADT.Interop
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
-            InvalidOperationException.ThrowIfNullOrInvalid(ppBuffer.ToIntPtr(), "The session information buffer returned from 'WTSQuerySessionInformation()' is null or invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(ppBuffer, "The session information buffer returned from 'WTSQuerySessionInformation()' is null or invalid.");
             InvalidOperationException.ThrowIfZero(bytesReturned, "The byte count returned from 'WTSQuerySessionInformation()' is zero.");
             pBuffer = new(ppBuffer.ToIntPtr(), (int)bytesReturned, true);
             return res;
@@ -4141,7 +4141,7 @@ namespace PSADT.Interop
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpServer);
             }
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid(lpNameBufferLocal.ToIntPtr(), "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
+            InvalidOperationException.ThrowIfNullOrInvalid(lpNameBufferLocal, "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
             lpNameBuffer = new(lpNameBufferLocal, true);
             return res;
         }
@@ -4202,7 +4202,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetException(res);
                 }
-                InvalidOperationException.ThrowIfNullOrInvalid(ppszPathLocal.ToIntPtr(), "The path returned from 'SHGetKnownFolderPath()' is null or invalid.");
+                InvalidOperationException.ThrowIfNullOrInvalid(ppszPathLocal, "The path returned from 'SHGetKnownFolderPath()' is null or invalid.");
                 ppszPath = new(ppszPathLocal, true);
             }
             catch

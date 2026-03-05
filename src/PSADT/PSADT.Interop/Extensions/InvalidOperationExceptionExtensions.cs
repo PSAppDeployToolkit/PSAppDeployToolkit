@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System
@@ -67,6 +68,24 @@ namespace System
             }
 
             /// <summary>
+            /// Throws an InvalidOperationException if the specified value is zero.
+            /// </summary>
+            /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
+            /// <param name="message">The message that will be included in the exception if the value is zero.</param>
+            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ThrowIfNull(PWSTR value, string message)
+            {
+                unsafe
+                {
+                    if (value.Value is null)
+                    {
+                        throw new InvalidOperationException(message);
+                    }
+                }
+            }
+
+            /// <summary>
             /// Throws an exception if the specified value is invalid.
             /// </summary>
             /// <param name="value">The value to validate. If this value is -1, an exception is thrown.</param>
@@ -94,6 +113,25 @@ namespace System
                 if (value == unchecked((nuint)(-1)))
                 {
                     throw new InvalidOperationException(message);
+                }
+            }
+
+            /// <summary>
+            /// Throws an exception if the specified value represents an invalid state.
+            /// </summary>
+            /// <param name="value">The value to validate. If this value is equal to -1, it is considered invalid and an exception will be
+            /// thrown.</param>
+            /// <param name="message">The error message to include with the exception if the value is invalid.</param>
+            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ThrowIfInvalid(PWSTR value, string message)
+            {
+                unsafe
+                {
+                    if (value.Value == HANDLE.INVALID_HANDLE_VALUE)
+                    {
+                        throw new InvalidOperationException(message);
+                    }
                 }
             }
 
@@ -128,6 +166,26 @@ namespace System
                 if (value == UIntPtr.Zero || value == unchecked((nuint)(-1)))
                 {
                     throw new InvalidOperationException(message);
+                }
+            }
+
+            /// <summary>
+            /// Throws an exception if the specified native pointer value is null or invalid.
+            /// </summary>
+            /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
+            /// that require a non-null reference.</remarks>
+            /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
+            /// <param name="message">The message to include in the exception if the value is invalid.</param>
+            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ThrowIfNullOrInvalid(PWSTR value, string message)
+            {
+                unsafe
+                {
+                    if (value.Value is null || value.Value == HANDLE.INVALID_HANDLE_VALUE)
+                    {
+                        throw new InvalidOperationException(message);
+                    }
                 }
             }
 

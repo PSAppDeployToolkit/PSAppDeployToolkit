@@ -98,7 +98,7 @@ namespace PSADT.Interop
             }
             unsafe
             {
-                return new((char*)baseMode.ToIntPtr() + (int)offsetMode, $"{baseMode}, {offsetMode}");
+                return new((char*)(nint)baseMode + (int)offsetMode, $"{baseMode}, {offsetMode}");
             }
         }
     }
