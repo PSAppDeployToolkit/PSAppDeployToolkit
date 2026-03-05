@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Interop.Extensions;
 using Windows.Win32.Graphics.DirectWrite;
 
 namespace PSADT.Interop.SafeHandles
@@ -19,14 +20,33 @@ namespace PSADT.Interop.SafeHandles
         /// </summary>
         /// <param name="fontFace">The font face associated with the font table handle. Cannot be null.</param>
         /// <param name="context">A pointer to the native font table context to be managed by the handle.</param>
+        /// <param name="data">A pointer to the font table data. This value is stored for informational purposes and is not used for resource management.</param>
+        /// <param name="length">The length of the font table data, in bytes. This value is stored for informational purposes and is not used for resource management.</param>
         /// <param name="ownsHandle">true to indicate that the handle is responsible for releasing the native resource; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if fontFace is null.</exception>
-        internal SafeFontTableHandle(IDWriteFontFace fontFace, nint context, bool ownsHandle) : base(ownsHandle)
+        internal SafeFontTableHandle(IDWriteFontFace fontFace, nint context, nint data, uint length, bool ownsHandle) : base(ownsHandle)
         {
-            ArgumentOutOfRangeException.ThrowIfInvalid(context);
             ArgumentNullException.ThrowIfNull(fontFace);
+            ArgumentOutOfRangeException.ThrowIfInvalid(context);
+            ArgumentOutOfRangeException.ThrowIfZeroOrInvalid(data);
+            ArgumentOutOfRangeException.ThrowIfZero(length);
             SetHandle(context);
             FontFace = fontFace;
+            Length = (int)length;
+            Data = data;
+        }
+
+        /// <summary>
+        /// Gets a read-only span of bytes that represents the current font table data.
+        /// </summary>
+        /// <remarks>This method provides direct access to the underlying font table data without copying
+        /// it, enabling efficient memory usage. The returned span reflects the data as it exists at the time of the
+        /// call.</remarks>
+        /// <returns>A read-only span containing the font table data. The length of the span is determined by the current state
+        /// of the object.</returns>
+        internal ReadOnlySpan<byte> GetFontTableData()
+        {
+            return Data.AsReadOnlySpan<byte>(Length);
         }
 
         /// <summary>
@@ -52,6 +72,16 @@ namespace PSADT.Interop.SafeHandles
             }
             return true;
         }
+
+        /// <summary>
+        /// Gets the length of the data, in bytes.
+        /// </summary>
+        internal readonly int Length;
+
+        /// <summary>
+        /// Gets the raw data value stored in the Data field.
+        /// </summary>
+        private readonly nint Data;
 
         /// <summary>
         /// Represents the underlying DirectWrite font face associated with this instance.

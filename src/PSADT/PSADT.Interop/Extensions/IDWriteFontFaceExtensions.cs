@@ -14,27 +14,36 @@ namespace PSADT.Interop.Extensions
         /// <summary>
         /// Attempts to retrieve a pointer to the specified OpenType font table from the given font face.
         /// </summary>
-        /// <remarks>The returned table data and context are valid only if <paramref name="exists"/> is
-        /// set to <see langword="true"/>. The caller is responsible for releasing the font table using the context
-        /// pointer, according to the requirements of the underlying font API.</remarks>
-        /// <param name="fontFace">The font face from which to retrieve the font table. Cannot be null.</param>
-        /// <param name="openTypeTableTag">The four-character OpenType table tag identifying the font table to retrieve.</param>
-        /// <param name="tableData">When this method returns, contains a pointer to the font table data if the table exists; otherwise, the
-        /// value is undefined.</param>
-        /// <param name="tableSize">When this method returns, contains the size, in bytes, of the font table data if the table exists;
-        /// otherwise, the value is undefined.</param>
-        /// <param name="tableContext">When this method returns, contains a context pointer used for releasing the font table. This value is valid
-        /// only if the table exists.</param>
-        /// <param name="exists">When this method returns, set to <see langword="true"/> if the specified font table exists; otherwise, <see
-        /// langword="false"/>.</param>
-        internal static void TryGetFontTable(this IDWriteFontFace fontFace, uint openTypeTableTag, out nint tableData, out uint tableSize, out SafeFontTableHandle tableContext, out BOOL exists)
+        /// <remarks>If the specified font table does not exist, the method releases any allocated
+        /// resources and sets the output parameter to null. It is important to handle the output parameter correctly to
+        /// avoid resource leaks.</remarks>
+        /// <param name="fontFace">The font face from which to retrieve the font table. This parameter cannot be null.</param>
+        /// <param name="openTypeTableTag">The OpenType table tag that identifies the specific font table to retrieve.</param>
+        /// <param name="tableContext">An output parameter that, if the font table is successfully retrieved, contains a handle to the font table
+        /// context; otherwise, it is set to null.</param>
+        internal static void TryGetFontTable(this IDWriteFontFace fontFace, uint openTypeTableTag, out SafeFontTableHandle? tableContext)
         {
             unsafe
             {
-                fontFace.TryGetFontTable(openTypeTableTag, out void* tableDataLocal, out tableSize, out void* tableContextLocal, out exists);
-                InvalidOperationException.ThrowIfInvalid((nint)tableContextLocal, "Failed to retrieve font table context.");
-                tableContext = new(fontFace, (nint)tableContextLocal, true);
-                tableData = (nint)tableDataLocal;
+                fontFace.TryGetFontTable(openTypeTableTag, out void* tableData, out uint tableSize, out void* tableContextLocal, out BOOL exists);
+                if (!exists)
+                {
+                    fontFace.ReleaseFontTable(tableContextLocal);
+                    tableContext = null;
+                    return;
+                }
+                try
+                {
+                    InvalidOperationException.ThrowIfInvalid((nint)tableContextLocal, "Failed to retrieve font table context.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)tableData, "Failed to retrieve font table data pointer.");
+                    InvalidOperationException.ThrowIfZero(tableSize, "Retrieved font table size is zero, which is invalid.");
+                    tableContext = new(fontFace, (nint)tableContextLocal, (nint)tableData, tableSize, true);
+                }
+                catch
+                {
+                    fontFace.ReleaseFontTable(tableContextLocal);
+                    throw;
+                }
             }
         }
     }

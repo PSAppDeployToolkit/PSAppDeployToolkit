@@ -126,13 +126,16 @@ namespace PSADT.Utilities
             for (uint faceIndex = 0; faceIndex < faceCount; faceIndex++)
             {
                 factory.CreateFontFace(fontFaceType, 1, files, faceIndex, DWRITE_FONT_SIMULATIONS.DWRITE_FONT_SIMULATIONS_NONE, out IDWriteFontFace fontFace);
-                fontFace.TryGetFontTable(TAG_NAME, out nint tableData, out uint tableSize, out SafeFontTableHandle tableContext, out BOOL exists);
+                fontFace.TryGetFontTable(TAG_NAME, out SafeFontTableHandle? tableContext);
                 using (tableContext)
                 {
-                    string? fontTitle = exists && tableData != IntPtr.Zero && tableSize >= 6 ? GetBestFontTitleFromNameTable(tableData.AsReadOnlySpan<byte>((int)tableSize)) : null;
-                    if (!string.IsNullOrWhiteSpace(fontTitle))
+                    if (tableContext is null || tableContext.Length < 6)
                     {
-                        return fontTitle!;
+                        continue;
+                    }
+                    if (GetBestFontTitleFromNameTable(tableContext.GetFontTableData()) is string fontTitle && !string.IsNullOrWhiteSpace(fontTitle))
+                    {
+                        return fontTitle;
                     }
                 }
             }
