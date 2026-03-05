@@ -50,7 +50,7 @@ namespace PSADT.UserInterface
                     (appLocal = new() { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, }).Startup += (_, _) =>
                     {
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-                        _ = appLocal.Dispatcher.BeginInvoke(dispatcherRunning.Set, DispatcherPriority.Send);
+                        _ = appLocal.Dispatcher.InvokeAsync(dispatcherRunning.Set, DispatcherPriority.Send);
                     };
                     _ = appLocal.Run();
                 }
@@ -86,7 +86,7 @@ namespace PSADT.UserInterface
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
             // This can happen in the background at the discretion of the dispatcher and how it wishes to prioritise.
-            _ = app.Dispatcher.BeginInvoke(ShellUtilities.RefreshDesktop);
+            _ = app.Dispatcher.InvokeAsync(ShellUtilities.RefreshDesktop);
         }
 
         /// <summary>
