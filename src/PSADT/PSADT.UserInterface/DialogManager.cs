@@ -17,7 +17,6 @@ using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
 using PSADT.Utilities;
 using PSAppDeployToolkit.Logging;
-using Windows.Win32.Foundation;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -413,7 +412,7 @@ namespace PSADT.UserInterface
         /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, uint Timeout = 0)
         {
-            return InvokeDialogAction(() => NativeMethods.MessageBoxTimeout(default, Prompt, Title, Options, 0, Timeout));
+            return InvokeDialogAction(() => NativeMethods.MessageBoxTimeout(null, Prompt, Title, Options, 0, Timeout));
         }
 
         /// <summary>
@@ -429,7 +428,7 @@ namespace PSADT.UserInterface
         [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
-            return InvokeDialogAction(() => NativeMethods.TaskDialog(HWND.Null, HINSTANCE.Null, Title, Subtitle, Prompt, Buttons, Icon));
+            return InvokeDialogAction(() => NativeMethods.TaskDialog(null, null, Title, Subtitle, Prompt, Buttons, Icon));
         }
 
         /// <summary>
