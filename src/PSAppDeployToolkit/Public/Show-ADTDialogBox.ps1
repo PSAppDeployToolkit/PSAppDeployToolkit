@@ -31,7 +31,7 @@ function Show-ADTDialogBox
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
 
     .PARAMETER ExitOnTimeout
-        Specifies whether to not exit the script if the UI times out.
+        Specifies whether the script should continue running when the UI times out.
 
     .PARAMETER NotTopMost
         Specifies whether the message box shouldn't be a system modal message box that appears in a topmost window.
