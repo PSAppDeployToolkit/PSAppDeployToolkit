@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -464,28 +463,6 @@ namespace PSADT.UserInterface
         {
             return app.Dispatcher.Invoke(callback, DispatcherPriority.Send);
         }
-
-        /// <summary>
-        /// Represents a compiled regular expression used to parse and identify custom text formatting tags such as
-        /// [url], [accent], [bold], and [italic].
-        /// </summary>
-        /// <remarks>This regular expression matches the following custom formatting tags: <list
-        /// type="bullet"> <item> <description><c>[url]</c>: Matches URL links in two formats: <c>[url]URL[/url]</c> for
-        /// simple links, and <c>[url=URL]Description[/url]</c> for descriptive links.</description> </item> <item>
-        /// <description><c>[accent]</c>, <c>[bold]</c>, <c>[italic]</c>: Matches opening and closing tags for accent,
-        /// bold, and italic formatting. These tags can be nested and combined for cumulative formatting effects.</description>
-        /// </item> </list> The regular expression is compiled for improved performance during repeated use and supports
-        /// nested tag combinations.</remarks>
-        internal static readonly Regex TextFormattingRegex = new(
-            @"(?<UrlLinkSimple>\[url\](?<UrlLinkSimpleContent>.+?)\[/url\])" + @"|" +
-            @"(?<UrlLinkDescriptive>\[url=(?<UrlLinkUrl>[^\]]+)\](?<UrlLinkDescription>.+?)\[/url\])" + @"|" +
-            @"(?<OpenAccent>\[accent\])" + @"|" +
-            @"(?<CloseAccent>\[/accent\])" + @"|" +
-            @"(?<OpenBold>\[bold\])" + @"|" +
-            @"(?<CloseBold>\[/bold\])" + @"|" +
-            @"(?<OpenItalic>\[italic\])" + @"|" +
-            @"(?<CloseItalic>\[/italic\])",
-            RegexOptions.Compiled);
 
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
