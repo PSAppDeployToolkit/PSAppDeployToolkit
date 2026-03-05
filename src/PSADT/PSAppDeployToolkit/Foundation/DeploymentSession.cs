@@ -279,6 +279,12 @@ namespace PSAppDeployToolkit.Foundation
                     }
                 }
 
+                // Allow WOW processes if the calling process is our executable and /32 has been explicitly passed.
+                if (CommandLineUtilities.CommandLineToArgumentList(ProcessUtilities.GetProcessCommandLine(ProcessUtilities.GetParentProcess())).Contains("/32"))
+                {
+                    Settings |= DeploymentSettings.AllowWowProcess;
+                }
+
 
                 #endregion
                 #region DetectDefaultWim
