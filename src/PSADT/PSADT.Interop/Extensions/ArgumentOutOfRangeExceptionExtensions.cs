@@ -11,6 +11,10 @@ namespace System
     /// </summary>
     internal static class ArgumentOutOfRangeExceptionExtensions
     {
+        /// <summary>
+        /// Provides extension methods for validating argument values to ensure they are non-zero and not invalid,
+        /// throwing an ArgumentOutOfRangeException when validation fails.
+        /// </summary>
         extension(ArgumentOutOfRangeException)
         {
             /// <summary>

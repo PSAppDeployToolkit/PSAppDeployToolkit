@@ -12,6 +12,10 @@ namespace System
     /// </summary>
     internal static class ArgumentExceptionPolyfills
     {
+        /// <summary>
+        /// Provides extension methods for validating that string arguments are not null, empty, or whitespace,
+        /// throwing an <see cref="ArgumentException"/> if the validation fails.
+        /// </summary>
         extension(ArgumentException)
         {
             /// <summary>

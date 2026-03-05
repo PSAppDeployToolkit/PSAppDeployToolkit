@@ -12,6 +12,16 @@ namespace System
     /// </summary>
     internal static class ArgumentOutOfRangeExceptionPolyfills
     {
+        /// <summary>
+        /// Provides a set of static methods for validating argument values and throwing an ArgumentOutOfRangeException
+        /// when specified conditions are not met. These methods help enforce preconditions on method parameters, such
+        /// as range checks and equality comparisons, to ensure correct usage and improve code reliability.
+        /// </summary>
+        /// <remarks>Use these methods to validate arguments in public APIs and internal methods where
+        /// parameter constraints must be enforced. Each method throws an ArgumentOutOfRangeException with a descriptive
+        /// message if the validation fails, making it easier to diagnose incorrect usage. The generic overloads support
+        /// custom types that implement IComparable&lt;T&gt; or IEquatable&lt;T&gt;, allowing for flexible validation of
+        /// user-defined types as well as built-in types.</remarks>
         extension(ArgumentOutOfRangeException)
         {
             /// <summary>

@@ -11,6 +11,14 @@ namespace System
     /// </summary>
     internal static class InvalidOperationExceptionExtensions
     {
+        /// <summary>
+        /// Provides extension methods for throwing InvalidOperationException when encountering invalid or unexpected
+        /// operation states, such as zero, null, or invalid pointer and handle values.
+        /// </summary>
+        /// <remarks>These methods are intended to simplify validation of values and handles in interop
+        /// scenarios, ensuring that exceptions are thrown when encountering invalid states before performing operations
+        /// that require valid inputs. Use these methods to enforce preconditions and improve error handling
+        /// consistency.</remarks>
         extension(InvalidOperationException)
         {
             /// <summary>
