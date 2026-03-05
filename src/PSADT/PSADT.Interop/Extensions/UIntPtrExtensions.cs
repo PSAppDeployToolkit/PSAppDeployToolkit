@@ -27,7 +27,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified memory address and offset.</returns>
         internal static ref readonly T AsReadOnlyStructure<T>(this nuint handle, uint offset = 0) where T : unmanaged
         {
-            InvalidOperationException.ThrowIfNullOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
+            InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             unsafe
             {
@@ -47,7 +47,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>A ReadOnlySpan{T} representing the specified region of memory.</returns>
         internal static ReadOnlySpan<T> AsReadOnlySpan<T>(this nuint handle, int length) where T : unmanaged
         {
-            InvalidOperationException.ThrowIfNullOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
+            InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             unsafe
             {
@@ -66,7 +66,7 @@ namespace PSADT.Interop.Extensions
         /// characters.</returns>
         internal static ReadOnlySpan<char> AsReadOnlyCharSpan(this nuint handle, int length)
         {
-            InvalidOperationException.ThrowIfNullOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
+            InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             unsafe
             {
@@ -88,7 +88,7 @@ namespace PSADT.Interop.Extensions
         /// <exception cref="InvalidOperationException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
         internal static string ToStringUni(this nuint handle, int length)
         {
-            InvalidOperationException.ThrowIfNullOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
+            InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             ReadOnlySpan<char> stringSpan = handle.AsReadOnlyCharSpan(length);
             return stringSpan.IsWhiteSpace()

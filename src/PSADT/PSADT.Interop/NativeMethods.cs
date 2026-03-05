@@ -677,7 +677,7 @@ namespace PSADT.Interop
                     {
                         res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal).ThrowOnFailure();
                     }
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)NewAclLocal, "Failed to create a new ACL with the specified entries.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)NewAclLocal, "Failed to create a new ACL with the specified entries.");
                     NewAcl = new((nint)NewAclLocal, true);
                 }
             }
@@ -827,11 +827,11 @@ namespace PSADT.Interop
                 {
                     res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor).ThrowOnFailure();
                 }
-                InvalidOperationException.ThrowIfNullOrInvalid((nint)pSecurityDescriptor, "Failed to retrieve a valid security descriptor for the specified object.");
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)pSecurityDescriptor, "Failed to retrieve a valid security descriptor for the specified object.");
                 ppSecurityDescriptor = new((nint)pSecurityDescriptor, true);
                 if (psidOwner != default)
                 {
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)psidOwner.Value, "Failed to retrieve a valid owner SID for the specified object.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)psidOwner.Value, "Failed to retrieve a valid owner SID for the specified object.");
                     ppsidOwner = new((nint)psidOwner.Value);
                 }
                 else
@@ -840,7 +840,7 @@ namespace PSADT.Interop
                 }
                 if (pSidGroup != default)
                 {
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)pSidGroup.Value, "Failed to retrieve a valid group SID for the specified object.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)pSidGroup.Value, "Failed to retrieve a valid group SID for the specified object.");
                     ppsidGroup = new((nint)pSidGroup.Value);
                 }
                 else
@@ -849,7 +849,7 @@ namespace PSADT.Interop
                 }
                 if (pDacl is not null)
                 {
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)pDacl, "Failed to retrieve a valid DACL for the specified object.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)pDacl, "Failed to retrieve a valid DACL for the specified object.");
                     ppDacl = new((nint)pDacl, false);
                 }
                 else
@@ -858,7 +858,7 @@ namespace PSADT.Interop
                 }
                 if (pSacl is not null)
                 {
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)pSacl, "Failed to retrieve a valid SACL for the specified object.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)pSacl, "Failed to retrieve a valid SACL for the specified object.");
                     ppSacl = new((nint)pSacl, false);
                 }
                 else
@@ -1267,7 +1267,7 @@ namespace PSADT.Interop
             unsafe
             {
                 res = PInvoke.LsaQueryInformationPolicy(PolicyHandle, InformationClass, out void* BufferLocal).ThrowOnFailure();
-                InvalidOperationException.ThrowIfNullOrInvalid((nint)BufferLocal, "Failed to query information from the policy object or retrieve a valid buffer.");
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)BufferLocal, "Failed to query information from the policy object or retrieve a valid buffer.");
                 Buffer = new((nint)BufferLocal, bufferLength, true);
             }
             return res;
@@ -2378,7 +2378,7 @@ namespace PSADT.Interop
                 {
                     res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
-                InvalidOperationException.ThrowIfNullOrInvalid((nint)phDatabaseLocal, $"Failed to open database at path '{szDatabasePath}'.");
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)phDatabaseLocal, $"Failed to open database at path '{szDatabasePath}'.");
                 phDatabase = new((nint)phDatabaseLocal, true);
             }
             return res;
@@ -2416,7 +2416,7 @@ namespace PSADT.Interop
                 ArgumentException.ThrowIfNullOrInvalid(hDatabase);
                 res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
             }
-            InvalidOperationException.ThrowIfNullOrInvalid((nint)phSummaryInfoLocal, "Failed to retrieve summary information.");
+            InvalidOperationException.ThrowIfZeroOrInvalid((nint)phSummaryInfoLocal, "Failed to retrieve summary information.");
             phSummaryInfo = new((nint)phSummaryInfoLocal, true);
             return res;
         }
@@ -2664,7 +2664,7 @@ namespace PSADT.Interop
                 StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
                 ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
                 res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default).ThrowOnFailure();
-                InvalidOperationException.ThrowIfNullOrInvalid(hThread, "Failed to create thread.");
+                InvalidOperationException.ThrowIfZeroOrInvalid(hThread, "Failed to create thread.");
                 ThreadHandle = new(hThread, true);
             }
             finally
@@ -2984,10 +2984,10 @@ namespace PSADT.Interop
             nint res;
             try
             {
-                InvalidOperationException.ThrowIfNullOrInvalid(res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags), "Failed to retrieve file information for the specified path.");
+                InvalidOperationException.ThrowIfZeroOrInvalid(res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags), "Failed to retrieve file information for the specified path.");
                 if ((uFlags & SHGFI_FLAGS.SHGFI_ICON) != 0)
                 {
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)psfi.hIcon, "The icon handle returned from 'SHGetFileInfo()' is null or invalid.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)psfi.hIcon, "The icon handle returned from 'SHGetFileInfo()' is null or invalid.");
                 }
             }
             catch
@@ -3024,7 +3024,7 @@ namespace PSADT.Interop
                 }
                 if ((uFlags & SHGSI_FLAGS.SHGSI_ICON) != 0)
                 {
-                    InvalidOperationException.ThrowIfNullOrInvalid((nint)psii.hIcon, "The icon handle returned from 'SHGetStockIconInfo()' is null or invalid.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)psii.hIcon, "The icon handle returned from 'SHGetStockIconInfo()' is null or invalid.");
                 }
             }
             catch
@@ -3151,7 +3151,7 @@ namespace PSADT.Interop
                     hInstance.DangerousRelease();
                 }
             }
-            InvalidOperationException.ThrowIfNullOrInvalid(lpBuffer, "The buffer pointer returned from 'LoadString()' is null or invalid.");
+            InvalidOperationException.ThrowIfZeroOrInvalid(lpBuffer, "The buffer pointer returned from 'LoadString()' is null or invalid.");
             return res;
         }
 
@@ -3659,7 +3659,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                InvalidOperationException.ThrowIfNullOrInvalid((nint)lpEnvironmentPtr, "Failed to create environment block handle.");
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)lpEnvironmentPtr, "Failed to create environment block handle.");
                 lpEnvironment = new((nint)lpEnvironmentPtr, true);
                 return res;
             }
@@ -3691,7 +3691,7 @@ namespace PSADT.Interop
                     {
                         throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, $"Failed to query [{lpSubBlock}] version value.");
                     }
-                    InvalidOperationException.ThrowIfNullOrInvalid(lplpBuffer = (nint)lplpBufferLocal, $"The version value for [{lpSubBlock}] is null or invalid.");
+                    InvalidOperationException.ThrowIfZeroOrInvalid(lplpBuffer = (nint)lplpBufferLocal, $"The version value for [{lpSubBlock}] is null or invalid.");
                     InvalidOperationException.ThrowIfZero(puLen, $"The length of the version value for [{lpSubBlock}] is zero.");
                     return res;
                 }
@@ -3739,7 +3739,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                InvalidOperationException.ThrowIfNullOrInvalid((nint)ppSessionInfo, "The session information buffer returned from 'WTSEnumerateSessions()' is null or invalid.");
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)ppSessionInfo, "The session information buffer returned from 'WTSEnumerateSessions()' is null or invalid.");
                 InvalidOperationException.ThrowIfZero(pCount, "The session count returned from 'WTSEnumerateSessions()' is zero.");
                 pSessionInfo = new((nint)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
                 return res;
@@ -3797,7 +3797,7 @@ namespace PSADT.Interop
                 {
                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
-                InvalidOperationException.ThrowIfNullOrInvalid((nint)phTokenLocal, "The user token handle returned from 'WTSQueryUserToken()' is null or invalid.");
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)phTokenLocal, "The user token handle returned from 'WTSQueryUserToken()' is null or invalid.");
                 phToken = new((nint)phTokenLocal, true);
                 return res;
             }
@@ -3839,7 +3839,7 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(szQuery); ArgumentException.ThrowIfNullOrInvalid(hDatabase); MSIHANDLE phViewLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiDatabaseOpenView(hDatabase, szQuery, ref phViewLocal)).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid((nint)phViewLocal, "Failed to open a view on the database with the provided query.");
+            InvalidOperationException.ThrowIfZeroOrInvalid((nint)phViewLocal, "Failed to open a view on the database with the provided query.");
             phView = new((nint)phViewLocal, true);
             return res;
         }
@@ -3978,7 +3978,7 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(hView); MSIHANDLE phRecordLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiViewFetch(hView, ref phRecordLocal)).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid((nint)phRecordLocal, "Failed to fetch a record from the view.");
+            InvalidOperationException.ThrowIfZeroOrInvalid((nint)phRecordLocal, "Failed to fetch a record from the view.");
             phRecord = new((nint)phRecordLocal, true);
             return res;
         }

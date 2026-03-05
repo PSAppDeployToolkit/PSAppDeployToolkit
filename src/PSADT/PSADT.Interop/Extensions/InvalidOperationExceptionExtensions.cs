@@ -144,7 +144,7 @@ namespace System
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void ThrowIfNullOrInvalid(nint value, string message)
+            public static void ThrowIfZeroOrInvalid(nint value, string message)
             {
                 if (value == IntPtr.Zero || value == -1)
                 {
@@ -161,7 +161,7 @@ namespace System
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void ThrowIfNullOrInvalid(nuint value, string message)
+            public static void ThrowIfZeroOrInvalid(nuint value, string message)
             {
                 if (value == UIntPtr.Zero || value == unchecked((nuint)(-1)))
                 {
