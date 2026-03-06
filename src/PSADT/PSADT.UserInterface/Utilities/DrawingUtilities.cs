@@ -109,12 +109,6 @@ namespace PSADT.UserInterface.Utilities
         /// <exception cref="ArgumentException">Thrown if the provided path does not have a .exe extension.</exception>
         internal static Icon ExtractIconFromExecutable(string path)
         {
-            // Check if the process is null or if the main module's file name is not a string.
-            if (!Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException($"The path [{path}] is invalid.", nameof(path));
-            }
-
             // Get the icon handle using SHGetFileInfo, clone it, then return it.
             _ = NativeMethods.SHGetFileInfo(path, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
             using (psfi)
