@@ -24,5 +24,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
   </ItemGroup>
 </Project>

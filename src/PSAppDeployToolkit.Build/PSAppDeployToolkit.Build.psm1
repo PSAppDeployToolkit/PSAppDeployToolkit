@@ -72,11 +72,12 @@ try
                     ([ordered]@{
                         SourcePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT')
                         SolutionPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).Parent.FullName, 'PSADT.slnx')
-                        BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Client.Launcher\bin\Debug\net472')
+                        BinaryPath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Client.Launcher.Compatible\bin\Debug\net472')
                         OutputPath = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib')
                             ))
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Launcher.Compatible.exe')
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Launcher.exe')
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.Compatible.exe')
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\PSADT.ClientServer.Client.exe')

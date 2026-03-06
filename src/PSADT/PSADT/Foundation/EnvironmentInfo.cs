@@ -48,11 +48,28 @@ namespace PSADT.Foundation
             : ClientServerClientDefaultPath;
 
         /// <summary>
+        /// Gets the default file system path for the Client Server Client Launcher executable.
+        /// </summary>
+        /// <remarks>The path is constructed by combining the assembly directory with the executable name.
+        /// Use this value to locate the launcher for the Client Server Client application when performing operations
+        /// that require its presence.</remarks>
+        internal static readonly string ClientServerClientLauncherDefaultPath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.exe");
+
+        /// <summary>
+        /// Gets the file path for the compatible version of the Client Server Client Launcher executable.
+        /// </summary>
+        /// <remarks>This path is constructed by combining the assembly path with the executable name.
+        /// Ensure that the executable is present at the specified location for proper functionality.</remarks>
+        internal static readonly string ClientServerClientLauncherCompatiblePath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.Compatible.exe");
+
+        /// <summary>
         /// Gets the path to the client server launcher executable, selecting a compatible version if the primary
         /// executable is not Authenticode trusted.
         /// </summary>
         /// <remarks>This path is determined based on the trust status of the primary launcher executable.
         /// If the primary executable is not trusted, the compatible version will be used instead.</remarks>
-        public static readonly string ClientServerClientLauncherPath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.exe");
+        public static readonly string ClientServerClientLauncherPath = !FileSystemUtilities.IsAuthenticodeTrusted(Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.exe"))
+            ? ClientServerClientLauncherCompatiblePath
+            : ClientServerClientLauncherDefaultPath;
     }
 }

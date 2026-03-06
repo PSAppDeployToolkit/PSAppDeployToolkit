@@ -502,7 +502,6 @@ function Private:Invoke-ADTClientServerOperation
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
             MsiExecWaitTime = 1
-            CreateNoWindow = $true
             InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
             PassThru = $true
         }
@@ -550,7 +549,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -ErrorAction SilentlyContinue
+                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]

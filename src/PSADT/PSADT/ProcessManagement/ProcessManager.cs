@@ -195,7 +195,7 @@ namespace PSADT.ProcessManagement
                     if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == EnvironmentInfo.ClientServerClientPath);
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == EnvironmentInfo.ClientServerClientPath || launchInfo.FilePath == EnvironmentInfo.ClientServerClientLauncherPath);
                         _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                         using (lpEnvironment)
                         {
@@ -226,6 +226,11 @@ namespace PSADT.ProcessManagement
                         {
                             // Hack, but CreateProcess() can't start a UIAccess executable.
                             filePath = EnvironmentInfo.ClientServerClientCompatiblePath;
+                        }
+                        if (filePath == EnvironmentInfo.ClientServerClientLauncherDefaultPath)
+                        {
+                            // Hack, but CreateProcess() can't start a UIAccess executable.
+                            filePath = EnvironmentInfo.ClientServerClientLauncherCompatiblePath;
                         }
                         if (handlesToInherit.Count > 0)
                         {
