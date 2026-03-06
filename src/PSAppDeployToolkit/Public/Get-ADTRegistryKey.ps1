@@ -155,8 +155,9 @@ function Get-ADTRegistryKey
                     Write-ADTLogEntry -Message "Getting registry key [$($pathParam.($PSCmdlet.ParameterSetName))] and all property values."
                 }
 
-                # Get all property values for registry key and enumerate.
-                Get-Item @pathParam | & {
+                # Get all property values for registry key and enumerate. Try
+                # this twice to handle potential race conditions during the read.
+                $(try { Get-Item @pathParam } catch { Get-Item @pathParam }) | & {
                     process
                     {
                         # Select requested property.
