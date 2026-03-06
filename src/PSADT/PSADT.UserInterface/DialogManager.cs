@@ -251,16 +251,24 @@ namespace PSADT.UserInterface
         /// <exception cref="InvalidOperationException">Thrown if a progress dialog is already open. Ensure the current progress dialog is closed before attempting to open a new one.</exception>
         internal static void ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
-            if (progressInitialized.IsSet)
-            {
-                throw new InvalidOperationException("A progress dialog is already open. Close it before opening a new one.");
-            }
             if (progressDialog is not null)
             {
                 throw new InvalidOperationException("Progress dialog set as closed even though one is active.");
             }
-            InvokeDialogAction(() => (progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null)).Show());
-            progressInitialized.Set();
+            InvokeDialogAction(() =>
+            {
+                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null);
+                try
+                {
+                    progressDialog.Show();
+                }
+                catch
+                {
+                    progressDialog.Dispose();
+                    progressDialog = null;
+                    throw;
+                }
+            });
         }
 
         /// <summary>
@@ -270,7 +278,7 @@ namespace PSADT.UserInterface
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
         internal static bool ProgressDialogOpen()
         {
-            return progressInitialized.IsSet;
+            return progressDialog is not null;
         }
 
         /// <summary>
@@ -282,10 +290,6 @@ namespace PSADT.UserInterface
         /// <param name="messageAlignment">Optional message alignment. If provided, the message alignment is updated.</param>
         internal static void UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
-            if (!progressInitialized.IsSet)
-            {
-                throw new InvalidOperationException("No progress dialog is currently open.");
-            }
             if (progressDialog is null)
             {
                 throw new InvalidOperationException("Progress dialog set as open even though one is not active.");
@@ -302,27 +306,26 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Closes the currently open dialog, if any. Safe to call even if no dialog is open.
+        /// Closes the currently open dialog, if any.
         /// </summary>
         internal static void CloseProgressDialog()
         {
-            if (!progressInitialized.IsSet)
-            {
-                throw new InvalidOperationException("No progress dialog is currently open.");
-            }
             if (progressDialog is null)
             {
                 throw new InvalidOperationException("Progress dialog set as open even though one is not active.");
             }
             InvokeDialogAction(() =>
             {
-                using (progressDialog)
+                try
                 {
                     progressDialog.CloseDialog();
                 }
-                progressDialog = null;
+                finally
+                {
+                    progressDialog.Dispose();
+                    progressDialog = null;
+                }
             });
-            progressInitialized.Reset();
         }
 
         /// <summary>
@@ -473,11 +476,6 @@ namespace PSADT.UserInterface
         /// The currently open Progress dialog, if any. Null if no dialog is open.
         /// </summary>
         private static IProgressDialog? progressDialog;
-
-        /// <summary>
-        /// Event to signal that the progress dialog has been initialized.
-        /// </summary>
-        private static readonly ManualResetEventSlim progressInitialized = new(false);
 
         /// <summary>
         /// Application instance for the WPF dialog.
