@@ -253,7 +253,7 @@ namespace PSADT.UserInterface
         {
             if (progressDialog is not null)
             {
-                throw new InvalidOperationException("Progress dialog set as closed even though one is active.");
+                throw new InvalidOperationException("Cannot show a progress dialog while one is already open.");
             }
             InvokeDialogAction(() =>
             {
@@ -292,7 +292,7 @@ namespace PSADT.UserInterface
         {
             if (progressDialog is null)
             {
-                throw new InvalidOperationException("Progress dialog set as open even though one is not active.");
+                throw new InvalidOperationException("Cannot update a progress dialog while one is not open.");
             }
             if (progressMessage is not null)
             {
@@ -312,7 +312,7 @@ namespace PSADT.UserInterface
         {
             if (progressDialog is null)
             {
-                throw new InvalidOperationException("Progress dialog set as open even though one is not active.");
+                throw new InvalidOperationException("Cannot close a progress dialog while one is not open.");
             }
             InvokeDialogAction(() =>
             {
