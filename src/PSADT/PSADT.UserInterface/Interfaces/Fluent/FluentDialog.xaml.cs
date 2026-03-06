@@ -21,6 +21,7 @@ using PSADT.DeviceManagement;
 using PSADT.ClientServer;
 using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -712,8 +713,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 if (MiscUtilities.GetBase64StringBytes(dialogIconPath) is byte[] iconBytes)
                 {
                     // Check for ICO magic bytes: 0x00 0x00 0x01 0x00 (reserved, reserved, type=icon, reserved)
-                    using MemoryStream memoryStream = new(iconBytes);
-                    if (iconBytes.Length >= 4 && iconBytes[0] == 0x00 && iconBytes[1] == 0x00 && iconBytes[2] == 0x01 && iconBytes[3] == 0x00)
+                    using MemoryStream memoryStream = new(iconBytes, false);
+                    if (DrawingUtilities.IsByteStreamAnIcon(iconBytes))
                     {
                         BitmapFrame iconFrame = new IconBitmapDecoder(memoryStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
                         if (iconFrame.CanFreeze)

@@ -135,6 +135,19 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
+        /// Determines whether the specified byte array contains an icon file based on its header.
+        /// </summary>
+        /// <remarks>The method checks the first six bytes of the array for the ICONDIR header, which is
+        /// required for recognizing the icon file format.</remarks>
+        /// <param name="data">The byte array to examine. Must have a length of at least 6 bytes to be valid for icon detection.</param>
+        /// <returns>true if the byte array starts with the ICONDIR header indicating it is an icon file; otherwise, false.</returns>
+        internal static bool IsByteStreamAnIcon(byte[] data)
+        {
+            // Check if the byte stream starts with the ICONDIR header (6 bytes: 0, 0, 1, 0, count low byte, count high byte).
+            return data.Length >= 6 && data[0] == 0 && data[1] == 0 && data[2] == 1 && data[3] == 0 && data[4] > 0;
+        }
+
+        /// <summary>
         /// Creates a byte array representing an icon file from the specified bitmap image, supporting multiple sizes.
         /// </summary>
         /// <remarks>This method generates icon frames for standard sizes (16, 20, 24, 32, 48, 64, 128,
