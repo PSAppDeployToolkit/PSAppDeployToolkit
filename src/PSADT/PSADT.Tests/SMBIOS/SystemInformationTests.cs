@@ -110,9 +110,9 @@ namespace PSADT.Tests.SMBIOS
                     formatted,
                     " ",
                     null!,
-                    "",
+                    string.Empty,
                     " \t",
-                    "",
+                    string.Empty,
                     "  "));
 
             SystemInformation info = SystemInformation.Get(buffer);

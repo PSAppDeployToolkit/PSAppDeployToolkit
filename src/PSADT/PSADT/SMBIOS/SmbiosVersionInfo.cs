@@ -97,8 +97,8 @@ namespace PSADT.SMBIOS
         internal string GetFullVersionString()
         {
             string version = GetVersionString();
-            string entryPoint = EntryPointType == SmbiosEntryPointType.Unknown ? "" : $" ({EntryPointType})";
-            string dmi = DmiRevision > 0 ? $", DMI {DmiRevision}" : "";
+            string entryPoint = EntryPointType == SmbiosEntryPointType.Unknown ? string.Empty : $" ({EntryPointType})";
+            string dmi = DmiRevision > 0 ? $", DMI {DmiRevision}" : string.Empty;
             return $"SMBIOS {version}{entryPoint}{dmi}";
         }
 

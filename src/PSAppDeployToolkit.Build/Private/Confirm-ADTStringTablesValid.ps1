@@ -92,7 +92,7 @@ function Confirm-ADTStringTablesValid
         # Verify the formatting of all PowerShell script files within the repository.
         Write-ADTBuildLogEntry -Message "Confirming string translations have the same keys as English, this may take awhile."
         $stringsDict = & (Get-Module -Name $Script:ModuleConstants.ModuleName) { $ADT.ModuleDefaults.Strings }
-        $reference = $stringsDict.''.Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
+        $reference = $stringsDict.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
         foreach ($stringData in $stringsDict.GetEnumerator())
         {
             if ([System.String]::IsNullOrWhiteSpace($stringData.Key))

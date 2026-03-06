@@ -66,11 +66,11 @@ namespace PSADT.ClientServer
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
-                        "",
+                        string.Empty,
                         AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
-                        "",
+                        string.Empty,
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
-                        "",
+                        string.Empty,
                         "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                     ]);
                     _ = DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);

@@ -16,7 +16,7 @@ try
     New-Variable -Name ADT -Option Constant -Value ([pscustomobject]@{
             ModuleDefaults = ([ordered]@{
                     Strings = ([ordered]@{
-                            '' = {
+                            [System.String]::Empty = {
                                 @{
                                     BalloonTip = @{
                                         # Text displayed in the balloon tip for the start of a deployment type.
@@ -4533,7 +4533,7 @@ try
                             }
                         }).AsReadOnly()
                     Config = ([ordered]@{
-                            '' = {
+                            [System.String]::Empty = {
                                 @{
                                     Assets = @{
                                         # Specify filename or Base64 string of the logo.

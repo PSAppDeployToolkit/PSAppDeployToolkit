@@ -59,7 +59,7 @@ namespace PSADT.Tests.SMBIOS
         {
             byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
                 new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.Inactive, 0x1000, [0xAA], "A"),
-                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x2000, [], "Term", "")
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x2000, [], "Term", string.Empty)
             );
             IReadOnlyList<SmbiosTablePosition> positions = SmbiosParsing.GetStructureOffsets(buffer, SmbiosType.EndOfTable);
             _ = Assert.Single(positions);

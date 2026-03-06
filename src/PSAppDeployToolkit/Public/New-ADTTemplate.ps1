@@ -162,10 +162,10 @@ function New-ADTTemplate
 
                 # Export default module assets to disk.
                 $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
-                $assets = $Script:ADT.ModuleDefaults.Config.''.Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
+                $assets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
                 [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $assets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value)))
                 [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.png", [System.Convert]::FromBase64String(($logo = $assets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value)))
-                $config = [System.Management.Automation.ScriptBlock]::Create($ADT.ModuleDefaults.Config.''.ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png'))
+                $config = [System.Management.Automation.ScriptBlock]::Create($ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.png'))
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
@@ -178,7 +178,7 @@ function New-ADTTemplate
                     $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
                     Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
                 }
-                Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Strings.'' -LiteralPath "$templatePath\Strings\strings.psd1"
+                Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force

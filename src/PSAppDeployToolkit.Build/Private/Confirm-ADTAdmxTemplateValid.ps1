@@ -52,7 +52,7 @@ function Confirm-ADTAdmxTemplateValid
     {
         # Import config and XML as required.
         Write-ADTBuildLogEntry -Message "Confirming ADMX template matches the module config."
-        $adtConfig = & (Get-Module -Name $Script:ModuleConstants.ModuleName) { $ADT.ModuleDefaults.Config.''.Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() }
+        $adtConfig = & (Get-Module -Name $Script:ModuleConstants.ModuleName) { $ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() }
         $admxData = [System.Xml.XmlDocument]::new()
         $admxData.Load($Script:ModuleConstants.Paths.AdmxTemplate)
 
