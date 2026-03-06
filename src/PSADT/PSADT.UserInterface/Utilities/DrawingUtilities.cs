@@ -1,8 +1,9 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
 using PSADT.Interop;
 using Windows.Win32.UI.Shell;
 
@@ -17,18 +18,34 @@ namespace PSADT.UserInterface.Utilities
         /// Resize the bitmap to the specified width and height.
         /// </summary>
         /// <param name="img">The image to resize.</param>
-        /// <param name="width">The width to resize to.</param>
-        /// <param name="height">The height to resize to.</param>
+        /// <param name="size">The square size to resize to.</param>
         /// <returns>The resized image.</returns>
-        internal static Bitmap ResizeBitmap(Bitmap img, int width, int height)
+        internal static Bitmap ResizeBitmap(Bitmap img, int size)
         {
+            // Internal worker to letterbox/pillarbox a non-square source image into a square canvas.
+            static Rectangle GetAspectFitRectangle(int sourceWidth, int sourceHeight, int boxWidth, int boxHeight)
+            {
+                double scale = Math.Min((double)boxWidth / sourceWidth, (double)boxHeight / sourceHeight);
+                int drawWidth = Math.Max(1, (int)Math.Round(sourceWidth * scale));
+                int drawHeight = Math.Max(1, (int)Math.Round(sourceHeight * scale));
+                return new(x: (boxWidth - drawWidth) / 2, y: (boxHeight - drawHeight) / 2, drawWidth, drawHeight);
+            }
+
+            // Validate input, and just clone if it's already the right size.
+            ArgumentNullException.ThrowIfNull(img); ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
+            if (img.Width == size && img.Height == size)
+            {
+                return (Bitmap)img.Clone();
+            }
+
             // Create a new bitmap and set the resolution.
-            Bitmap destImage = new(width, height);
+            Bitmap destImage = new(size, size, PixelFormat.Format32bppArgb);
             destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
 
             // Create a new graphic that we can resize.
             using Graphics graphics = Graphics.FromImage(destImage);
-            graphics.CompositingMode = CompositingMode.SourceCopy;
+            graphics.Clear(Color.Transparent);
+            graphics.CompositingMode = CompositingMode.SourceOver;
             graphics.CompositingQuality = CompositingQuality.HighQuality;
             graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
             graphics.SmoothingMode = SmoothingMode.HighQuality;
@@ -37,7 +54,8 @@ namespace PSADT.UserInterface.Utilities
             // Draw the resized graphic and return it.
             using ImageAttributes wrapMode = new();
             wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-            graphics.DrawImage(img, new(0, 0, width, height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
+            Rectangle destRect = GetAspectFitRectangle(img.Width, img.Height, size, size);
+            graphics.DrawImage(img, destRect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
             return destImage;
         }
 
@@ -48,38 +66,9 @@ namespace PSADT.UserInterface.Utilities
         /// <returns>The resized image.</returns>
         internal static Icon ConvertBitmapToIcon(Bitmap img)
         {
-            // Internal implementation of the ConvertBitmapToIcon method.
-            static Icon ConvertBitmapToIconImpl(Bitmap img)
-            {
-                // Place the image into an icon object and return it.
-                using MemoryStream msImg = new();
-                img.Save(msImg, ImageFormat.Png);
-                using MemoryStream msIco = new();
-                using BinaryWriter bw = new(msIco);
-                bw.Write((short)0);           // 0-1 reserved
-                bw.Write((short)1);           // 2-3 image type, 1 = icon, 2 = cursor
-                bw.Write((short)1);           // 4-5 number of images
-                bw.Write((byte)img.Width);    // 6 image width
-                bw.Write((byte)img.Height);   // 7 image height
-                bw.Write((byte)0);            // 8 number of colors
-                bw.Write((byte)0);            // 9 reserved
-                bw.Write((short)0);           // 10-11 color planes
-                bw.Write((short)32);          // 12-13 bits per pixel
-                bw.Write((int)msImg.Length);  // 14-17 size of image data
-                bw.Write(22);                 // 18-21 offset of image data
-                bw.Write(msImg.ToArray());    // write image data
-                bw.Flush();
-                _ = bw.Seek(0, SeekOrigin.Begin);
-                return new(msIco);
-            }
-
-            // Ensure the incoming image is <128px in width/height.
-            if ((img.Width > 128) || (img.Height > 128))
-            {
-                using Bitmap resizedImg = ResizeBitmap(img, 128, 128);
-                return ConvertBitmapToIconImpl(resizedImg);
-            }
-            return ConvertBitmapToIconImpl(img);
+            using MemoryStream ms = new(CreateIconByteStreamFromBitmap(img), writable: false);
+            using Icon icon = new(ms);
+            return (Icon)icon.Clone();
         }
 
         /// <summary>
@@ -87,12 +76,25 @@ namespace PSADT.UserInterface.Utilities
         /// </summary>
         /// <remarks>The method loads the image from the specified file path and converts it to an icon.
         /// Ensure that the file exists and is a valid image format supported by the Image class.</remarks>
-        /// <param name="imagePath">The path to the image file to convert. This parameter cannot be null or empty.</param>
+        /// <param name="filename">The path to the image file to convert. This parameter cannot be null or empty.</param>
         /// <returns>An Icon object that represents the converted bitmap image.</returns>
-        internal static Icon ConvertBitmapToIcon(string imagePath)
+        internal static Icon ConvertBitmapToIcon(string filename)
         {
-            using Bitmap img = (Bitmap)Image.FromFile(imagePath);
+            using Bitmap img = new(filename);
             return ConvertBitmapToIcon(img);
+        }
+
+        /// <summary>
+        /// Saves the specified bitmap image as an icon file at the given destination path.
+        /// </summary>
+        /// <remarks>This method converts the bitmap image to an icon format and writes the resulting byte
+        /// stream to the specified file. Ensure that the destination path has the appropriate file extension for an
+        /// icon (e.g., .ico).</remarks>
+        /// <param name="img">The bitmap image to be converted and saved as an icon file.</param>
+        /// <param name="path">The file path where the icon file will be saved. The path must be valid and writable.</param>
+        internal static void SaveBitmapAsIconFile(Bitmap img, string path)
+        {
+            File.WriteAllBytes(path, CreateIconByteStreamFromBitmap(img));
         }
 
         /// <summary>
@@ -136,6 +138,95 @@ namespace PSADT.UserInterface.Utilities
             // Convert the icon to a bitmap and return it.
             using Icon icon = ExtractIconFromExecutable(path);
             return icon.ToBitmap();
+        }
+
+        /// <summary>
+        /// Creates a byte array representing an icon file from the specified bitmap image, supporting multiple sizes.
+        /// </summary>
+        /// <remarks>This method generates icon frames for standard sizes (16, 20, 24, 32, 48, 64, 128,
+        /// 256) based on the source bitmap's dimensions. It ensures that the output is a valid ICO format, which can be
+        /// used in applications requiring icon resources.</remarks>
+        /// <param name="source">The bitmap image to convert into an icon format. The bitmap must have dimensions of at least 16x16 pixels.</param>
+        /// <returns>A byte array containing the ICO file data generated from the provided bitmap.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the dimensions of the source bitmap are less than 16x16 pixels.</exception>
+        private static byte[] CreateIconByteStreamFromBitmap(Bitmap source)
+        {
+            // Internal worker functions to facilitate the main method logic.
+            static List<int> GetSupportedSizes(Bitmap source)
+            {
+                // Determine which standard icon sizes are supported, up to a maximum of 256.
+                int maxSourceDimension = Math.Min(256, Math.Min(source.Width, source.Height));
+                int[] candidateSizes = [16, 20, 24, 32, 48, 64, 128, 256];
+                List<int> sizes = new(candidateSizes.Length);
+                for (int i = 0; i < candidateSizes.Length; i++)
+                {
+                    if (candidateSizes[i] <= maxSourceDimension)
+                    {
+                        sizes.Add(candidateSizes[i]);
+                    }
+                }
+                return sizes;
+            }
+
+            // Confirm the source is valid.
+            ArgumentNullException.ThrowIfNull(source);
+            if (source.Width < 16 || source.Height < 16)
+            {
+                throw new ArgumentOutOfRangeException(nameof(source), "Source bitmap dimensions must be at least 16x16.");
+            }
+
+            // Render all frames up front so we know sizes and offsets before writing the ICO container.
+            List<int> supportedSizes = GetSupportedSizes(source);
+            (int Size, byte[] PngData)[] frames = new (int, byte[])[supportedSizes.Count];
+            for (int i = 0; i < supportedSizes.Count; i++)
+            {
+                int newSize = supportedSizes[i];
+                using Bitmap resized = ResizeBitmap(source, newSize);
+                using MemoryStream pngStream = new();
+                resized.Save(pngStream, ImageFormat.Png);
+                frames[i] = (newSize, pngStream.ToArray());
+            }
+            const int iconDirSize = 6; const int iconEntrySize = 16;
+            int imageDataOffset = iconDirSize + (frames.Length * iconEntrySize);
+            int totalLength = imageDataOffset;
+            for (int i = 0; i < frames.Length; i++)
+            {
+                totalLength += frames[i].PngData.Length;
+            }
+
+            // Set up the writers and write the ICO file structure.
+            using MemoryStream icoStream = new(totalLength);
+            using BinaryWriter writer = new(icoStream);
+
+            // ICONDIR
+            writer.Write((ushort)0);                 // idReserved
+            writer.Write((ushort)1);                 // idType = 1 (icon)
+            writer.Write((ushort)frames.Length);     // idCount
+
+            // ICONDIRENTRY table
+            int currentOffset = imageDataOffset;
+            for (int i = 0; i < frames.Length; i++)
+            {
+                (int Size, byte[] PngData) frame = frames[i];
+                byte dim = unchecked((byte)frame.Size);
+                writer.Write(dim);                           // bWidth
+                writer.Write(dim);                           // bHeight
+                writer.Write((byte)0);                       // bColorCount
+                writer.Write((byte)0);                       // bReserved
+                writer.Write((ushort)1);                     // wPlanes
+                writer.Write((ushort)32);                    // wBitCount
+                writer.Write(frame.PngData.Length);          // dwBytesInRes
+                writer.Write(currentOffset);                 // dwImageOffset
+                currentOffset += frame.PngData.Length;
+            }
+
+            // Image payloads
+            for (int i = 0; i < frames.Length; i++)
+            {
+                writer.Write(frames[i].PngData);
+            }
+            writer.Flush();
+            return icoStream.ToArray();
         }
     }
 }
