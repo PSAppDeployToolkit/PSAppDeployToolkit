@@ -496,15 +496,30 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
                 {
-                    using MemoryStream ms = new(base64Bytes);
-                    using Bitmap base64Bitmap = (Bitmap)Image.FromStream(ms);
-                    using Icon base64Icon = DrawingUtilities.ConvertBitmapToIcon(base64Bitmap);
-                    icon = (Icon)base64Icon.Clone();
+                    if (DrawingUtilities.IsByteStreamAnIcon(base64Bytes))
+                    {
+                        using MemoryStream ms = new(base64Bytes);
+                        using Icon base64Icon = new(ms);
+                        icon = (Icon)base64Icon.Clone();
+                    }
+                    else
+                    {
+                        using MemoryStream ms = new(base64Bytes);
+                        using Bitmap base64Bitmap = (Bitmap)Image.FromStream(ms);
+                        icon = DrawingUtilities.ConvertBitmapToIcon(base64Bitmap);
+                    }
                 }
                 else
                 {
-                    using Icon source = !Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase) ? DrawingUtilities.ConvertBitmapToIcon(path) : new(path);
-                    icon = (Icon)source.Clone();
+                    if (Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using Icon source = new(path);
+                        icon = (Icon)source.Clone();
+                    }
+                    else
+                    {
+                        icon = DrawingUtilities.ConvertBitmapToIcon(path);
+                    }
                 }
                 iconCache.Add(path, icon);
             }
