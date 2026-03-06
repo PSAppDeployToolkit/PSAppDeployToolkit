@@ -23,6 +23,7 @@ namespace PSADT.UserInterface
         /// based on the current system DPI, and maps them to corresponding <see cref="DialogSystemIcon"/> values. The
         /// resulting lookup table is stored in <see cref="SystemIconLookupTable"/> for use throughout the
         /// application.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception is a guardrail that will never throw.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is very much needed.")]
         static SystemIcons()
         {
@@ -39,7 +40,11 @@ namespace PSADT.UserInterface
 
             // Get the DPI for the current system.
             _ = NativeMethods.GetDpiForDefaultMonitor(MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY);
-            int x = (int)(48.0 * (dpiX / 96.0)); int y = (int)(48.0 * (dpiY / 96.0));
+            int x = (int)((decimal)48 * dpiX / 96); int y = (int)((decimal)48 * dpiY / 96);
+            if (x != y)
+            {
+                throw new InvalidOperationException($"Calculated DPI-based dimensions for stock icons are not square. Calculated dimensions: {x}x{y}.");
+            }
 
             // Internal worker method to retrieve a stock icon as a Bitmap.
             static Bitmap GetSystemStockIconAsBitmap(SHSTOCKICONID siid, SHIL_SIZE iImageList)
@@ -76,7 +81,7 @@ namespace PSADT.UserInterface
             foreach (SHSTOCKICONID iconId in lookupList)
             {
                 using Bitmap icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO);
-                icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x, y));
+                icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x));
             }
 
             // Return a translated dictionary that matches System.Drawing.SystemIcons.
