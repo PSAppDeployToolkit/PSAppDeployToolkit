@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -37,6 +38,17 @@ namespace PSADT.ClientServer
     /// ensures they conform to the expected format before executing the requested operation.</remarks>
     internal static class ClientExecutable
     {
+        /// <summary>
+        /// Initializes the application by setting the unhandled exception handler for the dialog manager.
+        /// </summary>
+        /// <remarks>This method is automatically called when the module is loaded, ensuring that any
+        /// unhandled exceptions are managed appropriately.</remarks>
+        [ModuleInitializer]
+        internal static void Init()
+        {
+            AppDomain.CurrentDomain.SetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler", static (Exception ex) => Console.Error.WriteLine(DataSerialization.SerializeToString(ex)));
+        }
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>

@@ -187,8 +187,12 @@ namespace PSADT.ClientServer
                         {
                             throw new InvalidProgramException("The opened client process did not properly respond to the close command.");
                         }
-                        if ((exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode) != 0)
+                        if (_clientProcess.Task.GetAwaiter().GetResult() is ProcessResult processResult && (exitCode = processResult.ExitCode) != 0)
                         {
+                            if (processResult.StdErr.Count > 0)
+                            {
+                                throw new ServerException("The client process threw an unhandled exception.", DataSerialization.DeserializeFromString<Exception>(processResult.StdErr[0]));
+                            }
                             throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
                         }
                     }
@@ -197,8 +201,12 @@ namespace PSADT.ClientServer
                         _clientProcessCts.Cancel();
                     }
                 }
-                else if ((exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode) != 0)
+                else if (_clientProcess.Task.GetAwaiter().GetResult() is ProcessResult processResult && (exitCode = processResult.ExitCode) != 0)
                 {
+                    if (processResult.StdErr.Count > 0)
+                    {
+                        throw new ServerException("The client process threw an unhandled exception.", DataSerialization.DeserializeFromString<Exception>(processResult.StdErr[0]));
+                    }
                     throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
                 }
             }

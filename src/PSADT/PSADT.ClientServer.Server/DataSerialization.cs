@@ -171,6 +171,7 @@ namespace PSADT.ClientServer
         /// disabled to optimize serialization for stateless data exchange scenarios.</remarks>
         private static readonly DataContractSerializerSettings DataContractSerializerSettings = new()
         {
+            DataContractResolver = new DictionaryDataContractResolver(),
             PreserveObjectReferences = false,
             SerializeReadOnlyTypes = true,
             KnownTypes =
@@ -326,6 +327,7 @@ namespace PSADT.ClientServer
                 typeof(System.Xml.Xsl.XsltException),
 
                 // PSADT custom exceptions
+                typeof(Interop.Exceptions.NtStatusException),
                 typeof(ClientException),
                 typeof(ServerException),
 
@@ -397,5 +399,71 @@ namespace PSADT.ClientServer
                 typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>),
             ]
         };
+
+        /// <summary>
+        /// Custom DataContractResolver that handles serialization of dictionary types that share the same
+        /// data contract name (ArrayOfKeyValueOfanyTypeanyType), specifically <see cref="System.Collections.Hashtable"/> and
+        /// the internal <c>System.Collections.ListDictionaryInternal</c> type used by <see cref="Exception.Data"/>.
+        /// </summary>
+        /// <remarks>
+        /// Both <see cref="System.Collections.Hashtable"/> and <c>ListDictionaryInternal</c> serialize to the same data contract name,
+        /// which prevents them from being in the KnownTypes list simultaneously. This resolver handles them
+        /// dynamically: serialization preserves the original type identity, while deserialization always
+        /// returns <see cref="System.Collections.Hashtable"/> as the more general and publicly accessible type.
+        /// </remarks>
+        private sealed class DictionaryDataContractResolver : DataContractResolver
+        {
+            /// <summary>
+            /// Maps a type to its data contract name during serialization.
+            /// </summary>
+            public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, out XmlDictionaryString? typeNamespace)
+            {
+                // Handle ListDictionaryInternal and Hashtable - they both map to the same contract.
+                if (type == ListDictionaryInternalType || type == typeof(System.Collections.Hashtable))
+                {
+                    XmlDictionary dictionary = new(2);
+                    typeName = dictionary.Add(DictionaryTypeName);
+                    typeNamespace = dictionary.Add(ArraysNamespace);
+                    return true;
+                }
+
+                // For other types, defer to the known type resolver.
+                return knownTypeResolver.TryResolveType(type, declaredType, null!, out typeName, out typeNamespace);
+            }
+
+            /// <summary>
+            /// Maps a data contract name back to a type during deserialization.
+            /// </summary>
+            public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
+            {
+                // When deserializing the dictionary contract, return Hashtable (more general and public).
+                if (typeName == DictionaryTypeName && typeNamespace == ArraysNamespace)
+                {
+                    return typeof(System.Collections.Hashtable);
+                }
+
+                // For other types, defer to the known type resolver.
+                return knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, null!);
+            }
+
+            /// <summary>
+            /// Represents the type object for the internal ListDictionary implementation in the System.Collections
+            /// namespace, if available.
+            /// </summary>
+            /// <remarks>This field is initialized using reflection to avoid a direct dependency on
+            /// the internal ListDictionary type. The value will be null if the type cannot be found in the current
+            /// runtime environment.</remarks>
+            private static readonly Type? ListDictionaryInternalType = Type.GetType("System.Collections.ListDictionaryInternal");
+
+            /// <summary>
+            /// Represents the XML namespace URI used for serializing arrays according to Microsoft's 2003 schema.
+            /// </summary>
+            private const string ArraysNamespace = "http://schemas.microsoft.com/2003/10/Serialization/Arrays";
+
+            /// <summary>
+            /// Represents the type name for a dictionary that maps keys of any type to values of any type.
+            /// </summary>
+            private const string DictionaryTypeName = "ArrayOfKeyValueOfanyTypeanyType";
+        }
     }
 }

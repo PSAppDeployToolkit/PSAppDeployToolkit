@@ -32,6 +32,9 @@ namespace PSADT.UserInterface
         [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "These exceptions will never fire under normal, expected circumstances.")]
         static DialogManager()
         {
+            // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
+            unhandledExceptionHandler = AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") as Action<Exception> ?? throw new InvalidOperationException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
+
             // Register process exit handler to ensure WPF is properly shut down.
             // This prevents ~2.5 second delays during process termination.
             AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown, DispatcherPriority.Send);
@@ -44,10 +47,12 @@ namespace PSADT.UserInterface
             {
                 try
                 {
-                    // Create the application and start the message pump (this will process the BeginInvoke below).
-                    // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
-                    (appLocal = new() { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, }).Startup += (_, _) =>
+                    // Create the application and start the message pump (this will set dispatcherRunning when fully instantiated).
+                    appLocal = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
+                    appLocal.Dispatcher.UnhandledException += static (_, e) => unhandledExceptionHandler(e.Exception);
+                    appLocal.Startup += (_, _) =>
                     {
+                        // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
                         _ = appLocal.Dispatcher.InvokeAsync(dispatcherRunning.Set, DispatcherPriority.Send);
                     };
@@ -478,6 +483,11 @@ namespace PSADT.UserInterface
         /// Application instance for the WPF dialog.
         /// </summary>
         private static readonly System.Windows.Application app;
+
+        /// <summary>
+        /// Gets or sets the action to be invoked when an exception occurs in the dispatcher.
+        /// </summary>
+        private static readonly Action<Exception> unhandledExceptionHandler;
 
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
