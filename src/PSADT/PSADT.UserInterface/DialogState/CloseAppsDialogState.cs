@@ -27,7 +27,7 @@ namespace PSADT.UserInterface.DialogState
             {
                 RunningProcessService = new(closeProcesses);
             }
-            LogAction = (message, severity) => logAction.Invoke(message, severity, "Show-ADTInstallationWelcome");
+            LogAction = (message, severity) => logAction(message, severity, "Show-ADTInstallationWelcome");
         }
 
         /// <summary>
