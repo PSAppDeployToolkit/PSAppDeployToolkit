@@ -496,16 +496,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
                 {
+                    using MemoryStream ms = new(base64Bytes, false);
                     if (DrawingUtilities.IsByteStreamAnIcon(base64Bytes))
                     {
-                        using MemoryStream ms = new(base64Bytes);
                         using Icon base64Icon = new(ms);
                         icon = (Icon)base64Icon.Clone();
                     }
                     else
                     {
-                        using MemoryStream ms = new(base64Bytes);
-                        using Bitmap base64Bitmap = (Bitmap)Image.FromStream(ms);
+                        using Bitmap base64Bitmap = (Bitmap)Image.FromStream(ms, true, true);
                         icon = DrawingUtilities.ConvertBitmapToIcon(base64Bitmap);
                     }
                 }
@@ -543,7 +542,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
                 {
                     using MemoryStream ms = new(base64Bytes);
-                    using Image base64Image = Image.FromStream(ms);
+                    using Image base64Image = Image.FromStream(ms, true, true);
                     image = (Bitmap)base64Image.Clone();
                 }
                 else
