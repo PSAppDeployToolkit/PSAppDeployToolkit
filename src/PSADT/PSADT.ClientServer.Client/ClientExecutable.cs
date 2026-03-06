@@ -61,13 +61,14 @@ namespace PSADT.ClientServer
                 // Determine the mode of operation based on the provided arguments.
                 if (!(argv?.Length > 0))
                 {
-                    string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()!.Title} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
+                    Assembly assemblyInfo = typeof(ClientExecutable).Assembly;
+                    string productVersion = assemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+                    string helpTitle = $"{assemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()!.Title} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
                         string.Empty,
-                        AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
+                        assemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
                         string.Empty,
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                         string.Empty,
@@ -1048,12 +1049,5 @@ namespace PSADT.ClientServer
             }
             return (int?)exitCode ?? exception.HResult;
         }
-
-        /// <summary>
-        /// Holds a reference to the assembly that contains the ClientExecutable type.
-        /// </summary>
-        /// <remarks>This field can be used to access metadata about the current executable's assembly,
-        /// such as its version, name, or custom attributes.</remarks>
-        private static readonly Assembly AssemblyInfo = typeof(ClientExecutable).Assembly;
     }
 }
