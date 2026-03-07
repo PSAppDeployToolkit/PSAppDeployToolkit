@@ -60,9 +60,27 @@ function Private:Import-ADTConfig
     }
 
     # Internal filter to verify signedness of integer values.
+    filter Get-ADTConfigIntegerKeyNames
+    {
+        # Go recursive if we've received a hashtable, otherwise just get the values.
+        foreach ($section in $($_.GetEnumerator()))
+        {
+            # Re-process if this is a hashtable.
+            if ($section.Value -is [System.Collections.Hashtable])
+            {
+                $section.Value | & $MyInvocation.MyCommand; continue
+            }
+
+            # Output the key to the caller.
+            if (($section.Value -is [System.Int32]) -and !('DefaultExitCode', 'DeferExitCode', 'FluentAccentColor').Contains($section.Key))
+            {
+                $section.Key
+            }
+        }
+    }
     filter Confirm-ADTConfigIntegersGreaterThanZero
     {
-        # Go recursive if we've received a hashtable, otherwise just update the values.
+        # Go recursive if we've received a hashtable, otherwise just test the values.
         foreach ($section in $($_.GetEnumerator()))
         {
             # Re-process if this is a hashtable.
@@ -72,7 +90,7 @@ function Private:Import-ADTConfig
             }
 
             # Confirm the value signedness.
-            if (($section.Value -is [System.Int32]) -and !('DefaultExitCode', 'DeferExitCode', 'FluentAccentColor').Contains($section.Key) -and ($section.Value -le 0))
+            if (($section.Value -is [System.Int32]) -and $integerKeys.Contains($section.Key) -and ($section.Value -le 0))
             {
                 $naerParams = @{
                     Exception = [System.ArgumentOutOfRangeException]::new("The value for [$($section.Key)] must be greater than zero.", $null)
@@ -87,6 +105,7 @@ function Private:Import-ADTConfig
     }
 
     # Import the config from disk and verify all integers are valid.
+    $integerKeys = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() | Get-ADTConfigIntegerKeyNames
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
     $config | Confirm-ADTConfigIntegersGreaterThanZero
 
