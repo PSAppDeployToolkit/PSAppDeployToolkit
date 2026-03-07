@@ -75,6 +75,7 @@ function Private:Exit-ADTInvocation
 
     # Forcibly set the LASTEXITCODE so it's available if we're breaking
     # or running Close-ADTSession from a PowerShell runspace, etc.
+    [System.Environment]::ExitCode = $ExitCode
     $Global:LASTEXITCODE = $ExitCode
 
     # If we're not to exit the shell (i.e. we're running from the command line),
