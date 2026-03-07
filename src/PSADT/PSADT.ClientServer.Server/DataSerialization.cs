@@ -53,7 +53,7 @@ namespace PSADT.ClientServer
         /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
         public static T DeserializeFromBytes<T>(byte[] bytes)
         {
-            return (T)DeserializeFromBytes(bytes, 0, typeof(T));
+            return DeserializeFromBytes<T>(bytes, 0);
         }
 
         /// <summary>

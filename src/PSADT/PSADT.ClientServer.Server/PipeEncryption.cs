@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace PSADT.ClientServer
@@ -268,12 +270,11 @@ namespace PSADT.ClientServer
         /// Throws an exception if the current instance has been disposed.
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         private protected void ThrowIfDisposed()
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(typeof(TSelf).Name);
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
 
         /// <summary>
@@ -281,12 +282,11 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if the required encryption key has not been established. This indicates that the key exchange
         /// has not been completed and the shared key has not been derived.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         private void ThrowIfKeyExchangeNotComplete()
         {
-            if (_encryptionKey is null)
-            {
-                throw new InvalidOperationException("Key exchange has not been completed. Call PerformKeyExchange first.");
-            }
+            InvalidOperationException.ThrowIfNull(_encryptionKey, "Key exchange has not been completed. Call PerformKeyExchange first.");
         }
 
         /// <summary>

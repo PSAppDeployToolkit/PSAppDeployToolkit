@@ -91,6 +91,27 @@ namespace System
             }
 
             /// <summary>
+            /// Throws an InvalidOperationException if the specified object is null, using the provided error message.
+            /// </summary>
+            /// <remarks>Use this method to enforce non-null requirements for parameters and provide a
+            /// custom error message when a null value is encountered.</remarks>
+            /// <param name="value">The object to check for null. If this parameter is null, an exception is thrown.</param>
+            /// <param name="message">The error message to include in the exception if the value is null.</param>
+            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
+            public static void ThrowIfNull(object? value, string message)
+            {
+                unsafe
+                {
+                    if (value is null)
+                    {
+                        throw new InvalidOperationException(message);
+                    }
+                }
+            }
+
+            /// <summary>
             /// Throws an exception if the specified value is invalid.
             /// </summary>
             /// <param name="value">The value to validate. If this value is -1, an exception is thrown.</param>

@@ -172,6 +172,7 @@ namespace PSADT.WindowsInstaller
         /// name="transformProperties"/> is empty or contains null or empty keys, or if <paramref name="tempMsiPath"/>
         /// already exists.</exception>
         /// <exception cref="IOException">Thrown if the transform file could not be generated at the specified <paramref name="newTransformPath"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2263:Prefer generic overload when type is known", Justification = "This isn't supported on net472.")]
         public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
         {
             // Validate input parameters.
