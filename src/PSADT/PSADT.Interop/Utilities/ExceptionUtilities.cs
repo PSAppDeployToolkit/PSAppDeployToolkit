@@ -285,7 +285,7 @@ namespace PSADT.Interop.Utilities
             {
                 throw new InvalidOperationException();
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (InvalidOperationException ex)
             {
                 if (ex.StackTrace is string trace)
                 {
