@@ -151,13 +151,7 @@ function Start-ADTMspProcessAsUser
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogFileName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or white space.'))
-                }
-                return $true
-            })]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]

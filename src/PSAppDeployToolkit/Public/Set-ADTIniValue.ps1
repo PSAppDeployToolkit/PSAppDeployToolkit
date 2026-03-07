@@ -67,23 +67,11 @@ function Set-ADTIniValue
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript ({
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Section -ProvidedValue $_ -ExceptionMessage 'The specified section cannot be null, empty, or whitespace.'))
-                }
-                return $true
-            })]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if ([System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Key -ProvidedValue $_ -ExceptionMessage 'The specified key cannot be null, empty, or whitespace.'))
-                }
-                return $true
-            })]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key,
 
         [Parameter(Mandatory = $true)]
