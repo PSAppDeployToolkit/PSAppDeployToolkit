@@ -143,7 +143,6 @@ namespace PSAppDeployToolkit.Logging
                     if (colouredOutput)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
-                        Console.BackgroundColor = sevCols["BackgroundColor"];
                     }
                     if (severity == LogSeverity.Error)
                     {
@@ -296,10 +295,10 @@ namespace PSAppDeployToolkit.Logging
         /// </summary>
         private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Green }, { "BackgroundColor", ConsoleColor.Black } }),
+            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Green } }),
             new(new Dictionary<string, ConsoleColor>() { }),
-            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Yellow }, { "BackgroundColor", ConsoleColor.Black } }),
-            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Red }, { "BackgroundColor", ConsoleColor.Black } }),
+            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Yellow } }),
+            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Red } }),
         ]);
 
         /// <summary>
