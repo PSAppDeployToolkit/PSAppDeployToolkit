@@ -424,15 +424,15 @@ function Show-ADTInstallationPrompt
                 }
                 $dialogOptions = if ($RequestInput)
                 {
-                    [PSADT.UserInterface.DialogOptions.InputDialogOptions]$dialogOptions
+                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.InputDialogOptions]) -Data $dialogOptions
                 }
                 elseif ($ListItems)
                 {
-                    [PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]$dialogOptions
+                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]) -Data $dialogOptions
                 }
                 else
                 {
-                    [PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions
+                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.

@@ -1189,7 +1189,7 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('ContinueOnProcessClosure', $true)
                     }
-                    $dialogOptions = [PSADT.UserInterface.DialogOptions.CloseAppsDialogOptions]::new($DeploymentType, $dialogOptions)
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CloseAppsDialogOptions]) -Data $dialogOptions -DeploymentType $DeploymentType
 
                     # Spin until apps are closed, countdown elapses, or deferrals are exhausted.
                     $sessionClosed = $false

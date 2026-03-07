@@ -45,32 +45,17 @@ function Private:Import-ADTConfig
             }
 
             # Get the asset's full path based on the supplied BaseDirectory.
-            # Fall back to the module's path if the asset is unable to be found.
-            $assetPath = if ($BaseDirectory)
+            if ($BaseDirectory)
             {
                 foreach ($directory in $BaseDirectory[($BaseDirectory.Length - 1)..(0)])
                 {
                     if (($assetPath = Get-Item -LiteralPath "$directory\$($_.($asset.Key))" -ErrorAction Ignore))
                     {
-                        $assetPath.FullName
+                        $_.($asset.Key) = $assetPath.FullName
                         break
                     }
                 }
             }
-
-            # Throw if we found no asset.
-            if (!$assetPath)
-            {
-                $naerParams = @{
-                    Exception = [System.IO.FileNotFoundException]::new("Failed to resolve the asset [$($asset.Key)] to a valid file path.", $_.($asset.Key))
-                    Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                    ErrorId = 'DialogAssetNotFound'
-                    TargetObject = $_.($asset.Key)
-                    RecommendedAction = "Ensure the file exists and try again."
-                }
-                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-            }
-            $_.($asset.Key) = $assetPath
         }
     }
 

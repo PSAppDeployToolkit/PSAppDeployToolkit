@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
+using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -79,37 +81,19 @@ namespace PSADT.UserInterface.DialogOptions
             ArgumentException.ThrowIfNullOrWhiteSpace(appBannerImage);
             AppTitle = appTitle;
             Subtitle = subtitle;
-            AppIconImage = appIconImage;
-            AppBannerImage = appBannerImage;
-
-            // Test that the specified image paths are valid.
-            if (!(MiscUtilities.GetBase64StringBytes(AppIconImage)?.Length > 0) && !File.Exists(AppIconImage))
-            {
-                throw new FileNotFoundException($"The specified AppIconImage [{AppIconImage}] cannot be found", AppIconImage);
-            }
-            if (!(MiscUtilities.GetBase64StringBytes(AppBannerImage)?.Length > 0) && !File.Exists(AppBannerImage))
-            {
-                throw new FileNotFoundException($"The specified AppBannerImage [{AppBannerImage}] cannot be found", AppBannerImage);
-            }
+            AppIconImage = ThrowIfImageIsInvalid(appIconImage, nameof(AppIconImage));
+            AppBannerImage = ThrowIfImageIsInvalid(appBannerImage, nameof(AppBannerImage));
 
             // AppTaskbarIconImage is optional, so only validate it if it has a value.
             if (appIconDarkImage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(appIconDarkImage);
-                if (!(MiscUtilities.GetBase64StringBytes(appIconDarkImage)?.Length > 0) && !File.Exists(appIconDarkImage))
-                {
-                    throw new FileNotFoundException($"The specified AppIconDarkImage [{appIconDarkImage}] cannot be found", appIconDarkImage);
-                }
-                AppIconDarkImage = appIconDarkImage;
+                AppIconDarkImage = ThrowIfImageIsInvalid(appIconDarkImage, nameof(AppIconDarkImage));
             }
             if (appTaskbarIconImage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(appTaskbarIconImage);
-                if (!(MiscUtilities.GetBase64StringBytes(appTaskbarIconImage)?.Length > 0) && !File.Exists(appTaskbarIconImage))
-                {
-                    throw new FileNotFoundException($"The specified AppTaskbarIconImage [{appTaskbarIconImage}] cannot be found", appTaskbarIconImage);
-                }
-                AppTaskbarIconImage = appTaskbarIconImage;
+                AppTaskbarIconImage = ThrowIfImageIsInvalid(appTaskbarIconImage, nameof(AppTaskbarIconImage));
             }
 
             // Set all remaining properties.
@@ -217,5 +201,56 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         private readonly string LanguageName;
+
+        /// <summary>
+        /// Validates the specified image input and returns the image string if it represents a valid image file or
+        /// base64-encoded image.
+        /// </summary>
+        /// <remarks>This method supports validation of both icon and bitmap formats, and accepts either a
+        /// file path or a base64 string. The image is considered valid if it can be loaded as an icon or bitmap without
+        /// error.</remarks>
+        /// <param name="image">The path to the image file or a base64 string representing the image to validate. Must refer to a valid
+        /// image file or a valid base64-encoded image.</param>
+        /// <param name="identifier">The name of the image parameter, used in exception messages to identify the source of errors.</param>
+        /// <returns>The original image string if the image is valid.</returns>
+        /// <exception cref="FileNotFoundException">Thrown if the specified image file does not exist.</exception>
+        /// <exception cref="ArgumentException">Thrown if the specified image is not a valid image format.</exception>
+        internal static string ThrowIfImageIsInvalid(string image, string identifier)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(image);
+            ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+            if (MiscUtilities.GetBase64StringBytes(image) is byte[] bytes)
+            {
+                using MemoryStream ms = new(bytes, false);
+                if (DrawingUtilities.IsByteStreamAnIcon(bytes))
+                {
+                    using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
+                    _ = bmp.Size;
+                    return image;
+                }
+                else
+                {
+                    using Bitmap bmp = (Bitmap)Image.FromStream(ms, true, true);
+                    _ = bmp.Size;
+                    return image;
+                }
+            }
+            if (File.Exists(image))
+            {
+                if (Path.GetExtension(image).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                {
+                    using Icon icon = new(image); using Bitmap bmp = icon.ToBitmap();
+                    _ = bmp.Size;
+                    return image;
+                }
+                else
+                {
+                    using Bitmap bmp = (Bitmap)Image.FromFile(image);
+                    _ = bmp.Size;
+                    return image;
+                }
+            }
+            throw new BadImageFormatException($"The specified [{identifier}] is not a valid image format", identifier);
+        }
     }
 }

@@ -261,7 +261,7 @@ function Show-ADTInstallationProgress
                     {
                         $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                     }
-                    [PSADT.UserInterface.DialogOptions.ProgressDialogOptions]$dialogOptions = $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ProgressDialogOptions]) -Data $dialogOptions
 
                     # Create the new progress dialog.
                     Write-ADTLogEntry -Message "Creating a progress dialog with $([System.String]::Join(', ', ('StatusMessage', 'StatusMessageDetail', 'StatusBarPercentage').ForEach({ if ($PSBoundParameters.ContainsKey($_)) { "[$($_): $($PSBoundParameters.$_)]" } })))."

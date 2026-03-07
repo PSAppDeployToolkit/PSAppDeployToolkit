@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.DialogOptions
             ArgumentException.ThrowIfNullOrWhiteSpace(balloonTipTitle);
             ArgumentException.ThrowIfNullOrWhiteSpace(balloonTipText);
             TrayTitle = trayTitle;
-            TrayIcon = trayIcon;
+            TrayIcon = BaseDialogOptions.ThrowIfImageIsInvalid(trayIcon, nameof(TrayIcon));
             BalloonTipTitle = balloonTipTitle;
             BalloonTipText = balloonTipText;
 

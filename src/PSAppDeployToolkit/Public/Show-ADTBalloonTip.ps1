@@ -181,7 +181,7 @@ function Show-ADTBalloonTip
                 }
 
                 # Establish options class for displaying the balloon tip.
-                [PSADT.UserInterface.DialogOptions.BalloonTipOptions]$options = @{
+                $options = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.BalloonTipOptions]) -Data @{
                     TrayTitle = $adtConfig.Toolkit.CompanyName
                     TrayIcon = $adtConfig.Assets.Logo
                     BalloonTipTitle = $BalloonTipTitle

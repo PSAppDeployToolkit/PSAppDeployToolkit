@@ -160,10 +160,11 @@ function Block-ADTAppExecution
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
+                $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
 
                 # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.
                 $blockExecArgs = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
-                $blockExecArgs.Add('Options', [PSADT.ClientServer.DataSerialization]::SerializeToString([PSADT.UserInterface.DialogOptions.CustomDialogOptions]$dialogOptions))
+                $blockExecArgs.Add('Options', [PSADT.ClientServer.DataSerialization]::SerializeToString($dialogOptions))
                 $blockExecArgs.Add('DialogType', [PSADT.UserInterface.DialogType]::CustomDialog.ToString())
                 $blockExecArgs.Add('DialogStyle', $adtConfig.UI.DialogStyle)
                 $blockExecArgs.Add('BlockExecution', $true)
