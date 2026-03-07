@@ -250,14 +250,6 @@ namespace PSAppDeployToolkit.Foundation
                         }
                     }
                 }
-                if (compatibilityMode == true)
-                {
-                    if (SessionState is null)
-                    {
-                        throw new InvalidOperationException("SessionState is not available to set compatibility mode variables.");
-                    }
-                    Settings |= DeploymentSettings.CompatibilityMode;
-                }
                 if (noExitOnClose == true)
                 {
                     Settings |= DeploymentSettings.NoExitOnClose;
@@ -636,7 +628,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Announce session instantiation mode.
-                if (Settings.HasFlag(DeploymentSettings.CompatibilityMode))
+                if (compatibilityMode == true)
                 {
                     WriteLogEntry($"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
                     WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverity.Warning);
@@ -1002,8 +994,12 @@ namespace PSAppDeployToolkit.Foundation
 
                 // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
-                if (Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null)
+                if (compatibilityMode == true)
                 {
+                    if (SessionState is null)
+                    {
+                        throw new InvalidOperationException("SessionState is not available to set compatibility mode variables.");
+                    }
                     foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
                         SessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
@@ -1012,6 +1008,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         SessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
                     }
+                    Settings |= DeploymentSettings.CompatibilityMode;
                 }
 
 
