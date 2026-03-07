@@ -167,7 +167,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="args">An array of arguments to pass to the script block. This parameter can be null or empty if no arguments are
         /// required.</param>
         /// <returns>A read-only collection of PSObject instances that represent the results of the script execution.</returns>
-        internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[]? args)
+        internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[] args)
         {
             SessionState sessionState = GetSessionState(); return new(sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args));
         }

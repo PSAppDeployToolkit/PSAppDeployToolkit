@@ -85,7 +85,7 @@ namespace PSAppDeployToolkit.Logging
             else
             {
                 // Get the first PowerShell stack frame that contains a valid command.
-                CallStackFrame invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'"), null).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
+                CallStackFrame invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'")).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
             }
@@ -126,9 +126,19 @@ namespace PSAppDeployToolkit.Logging
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding);
-                foreach (string line in logStyle.Value == LogStyle.CMTrace ? logEntries.Select(static e => e.CMTraceLogLine) : logEntries.Select(static e => e.LegacyLogLine))
+                if (logStyle.Value == LogStyle.CMTrace)
                 {
-                    logFileWriter.WriteLine(line);
+                    foreach (LogEntry logEntry in logEntries)
+                    {
+                        logFileWriter.WriteLine(logEntry.CMTraceLogLine);
+                    }
+                }
+                else
+                {
+                    foreach (LogEntry logEntry in logEntries)
+                    {
+                        logFileWriter.WriteLine(logEntry.LegacyLogLine);
+                    }
                 }
             }
 
@@ -146,16 +156,16 @@ namespace PSAppDeployToolkit.Logging
                     }
                     if (severity == LogSeverity.Error)
                     {
-                        foreach (string line in logEntries.Select(static e => e.LegacyLogLine))
+                        foreach (LogEntry logEntry in logEntries)
                         {
-                            Console.Error.WriteLine(line);
+                            Console.Error.WriteLine(logEntry.LegacyLogLine);
                         }
                     }
                     else
                     {
-                        foreach (string line in logEntries.Select(static e => e.LegacyLogLine))
+                        foreach (LogEntry logEntry in logEntries)
                         {
-                            Console.WriteLine(line);
+                            Console.WriteLine(logEntry.LegacyLogLine);
                         }
                     }
                     if (colouredOutput)
@@ -166,12 +176,14 @@ namespace PSAppDeployToolkit.Logging
                 else if (hostLogStreamType != HostLogStreamType.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
-                    _ = ModuleDatabase.InvokeScript(WriteHostDelegate, logEntries.Select(static e => e.LegacyLogLine), LogSeverityColors[(int)severity]);
+                    string[] infoMessages = [.. logEntries.Select(static e => e.LegacyLogLine)];
+                    _ = ModuleDatabase.InvokeScript(WriteHostDelegate, infoMessages, LogSeverityColors[(int)severity]);
                 }
                 else
                 {
                     // Write the host output to PowerShell's VerboseStream.
-                    _ = ModuleDatabase.InvokeScript(WriteVerboseDelegate, logEntries.Select(static e => e.Message));
+                    string[] verboseMessages = [.. logEntries.Select(static e => e.Message)];
+                    _ = ModuleDatabase.InvokeScript(WriteVerboseDelegate, verboseMessages);
                 }
             }
             return logEntries;
