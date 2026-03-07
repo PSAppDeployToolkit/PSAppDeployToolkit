@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -106,10 +107,11 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DoesNotReturn]
         internal static void RestartComputer()
         {
             Environment.Exit(ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))!.Task.GetAwaiter().GetResult().ExitCode);
+            throw new InvalidProgramException("The 'Environment.Exit()' method did not terminate the process as expected.");
         }
 
         /// <summary>
