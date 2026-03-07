@@ -8,6 +8,7 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using PSAppDeployToolkit.Extensions;
@@ -194,6 +195,7 @@ namespace PSAppDeployToolkit.Logging
             // Internal helper methods for appending hex representations of characters and markers.
             static void AppendHex4(StringBuilder sb, char value)
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 static char ToHex(int nibble)
                 {
                     return (char)(nibble < 10 ? ('0' + nibble) : ('A' + (nibble - 10)));
@@ -204,10 +206,12 @@ namespace PSAppDeployToolkit.Logging
                 _ = sb.Append(ToHex((v >> 4) & 0xF));
                 _ = sb.Append(ToHex(v & 0xF));
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void AppendHighMarker(StringBuilder sb, char high)
             {
                 _ = sb.Append("[Invalid UTF-16 High Surrogate \\u"); AppendHex4(sb, high); _ = sb.Append(']');
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static void AppendLowMarker(StringBuilder sb, char low)
             {
                 _ = sb.Append("[Invalid UTF-16 Low Surrogate \\u"); AppendHex4(sb, low); _ = sb.Append(']');

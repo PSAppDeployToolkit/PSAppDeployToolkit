@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls.Primitives;
@@ -130,6 +131,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Determines whether deferrals are currently available.
         /// </summary>
         /// <returns><see langword="true"/> if there are remaining deferrals or a deferral deadline is set; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool DeferralsAvailable()
         {
             return _deferralsRemaining.HasValue || _deferralDeadline.HasValue;

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -313,6 +314,7 @@ namespace PSADT.WindowsInstaller
         /// product's status.</remarks>
         /// <param name="productCode">The unique identifier (GUID) of the product whose installation state is to be queried.</param>
         /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Interop.INSTALLSTATE QueryProductState(Guid productCode)
         {
             return (Interop.INSTALLSTATE)NativeMethods.MsiQueryProductState(productCode);
@@ -328,6 +330,7 @@ namespace PSADT.WindowsInstaller
         /// highest byte, and the build number in the lowest two bytes, as used by Windows Installer (MSI) versioning.</param>
         /// <returns>A <see cref="Version"/> object containing the major, minor, and build numbers extracted from the specified
         /// MSI version integer.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Version ParseVersionDWord(int v)
         {
             return new((v >> 24) & 0xFF, (v >> 16) & 0xFF, v & 0xFFFF);
@@ -344,6 +347,7 @@ namespace PSADT.WindowsInstaller
         public static string CompressGuid(Guid unpacked)
         {
             // Internal helper method to convert nibble to char.
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static char ToHexUpper(int nibble)
             {
                 return (char)(nibble < 10 ? ('0' + nibble) : ('A' + (nibble - 10)));
@@ -371,6 +375,7 @@ namespace PSADT.WindowsInstaller
         /// conventions.</remarks>
         /// <param name="packed32">The packed 32-character string representing a GUID in MSI format. Cannot be null.</param>
         /// <returns>A Guid object that corresponds to the specified packed MSI GUID string.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Guid DecompressPackedGuid(string packed32)
         {
             return DecompressPackedGuid(packed32.AsSpan());
@@ -402,6 +407,7 @@ namespace PSADT.WindowsInstaller
             }
 
             // Internal helper methods extract characters and reverse ordering.
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static int HexNibble(char c)
             {
                 return c is >= '0' and <= '9' ? c - '0' : c is >= 'A' and <= 'F' ? c - 'A' + 10 : c - 'a' + 10;
@@ -505,6 +511,7 @@ namespace PSADT.WindowsInstaller
         /// valid and accessible. May be null.</param>
         /// <returns>A safe handle representing the opened database. The caller is responsible for closing the handle to release
         /// resources.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, IReadOnlyList<string>? szTransformFiles = null)
         {
             return OpenDatabase(szDatabasePath, null, szTransformFiles);

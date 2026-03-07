@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -253,6 +254,7 @@ namespace PSADT.FileSystem
         /// <param name="desiredAccessMask">The access rights to check, specified as a combination of <see cref="FileSystemRights"/> flags.</param>
         /// <returns><see langword="true"/> if the specified SID has the desired access rights to the file or directory;
         /// otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TestEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
             return (GetEffectiveAccess(path, sid, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
@@ -271,6 +273,7 @@ namespace PSADT.FileSystem
         /// cref="FileSystemRights"/> flags.</param>
         /// <returns><see langword="true"/> if the specified token has all the requested access rights to the path; otherwise,
         /// <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TestEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
             return (GetEffectiveAccess(path, token, desiredAccessMask) & desiredAccessMask) == desiredAccessMask;
@@ -312,6 +315,7 @@ namespace PSADT.FileSystem
         /// <returns>The effective access rights, represented as a <see cref="FileSystemRights"/> value, that the specified token
         /// has for the given path.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="token"/> is null or invalid.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask)
         {
             return GetEffectiveAccess(path, token, desiredAccessMask, NativeMethods.AuthzInitializeContextFromToken);

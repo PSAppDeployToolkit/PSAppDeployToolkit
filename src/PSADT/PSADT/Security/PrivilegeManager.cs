@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -111,6 +112,7 @@ namespace PSADT.Security
         /// <param name="privilege">The privilege to check for in the access token. This should be a valid value of the SE_PRIVILEGE
         /// enumeration.</param>
         /// <returns>true if the access token contains the specified privilege; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             return GetPrivileges(token).Contains(privilege);
@@ -123,6 +125,7 @@ namespace PSADT.Security
         /// before performing operations that require elevated permissions.</remarks>
         /// <param name="privilege">The privilege to check for in the current caller's set of privileges.</param>
         /// <returns>true if the current caller has the specified privilege; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool HasPrivilege(SE_PRIVILEGE privilege)
         {
             return AccountUtilities.CallerPrivileges.Contains(privilege);
@@ -138,6 +141,7 @@ namespace PSADT.Security
         /// rights.</param>
         /// <param name="privilege">The privilege to check for its enabled status within the specified access token.</param>
         /// <returns>true if the specified privilege is enabled for the access token; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
             return GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);

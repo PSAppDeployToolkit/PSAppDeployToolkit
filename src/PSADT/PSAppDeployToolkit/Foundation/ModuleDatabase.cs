@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
+using System.Runtime.CompilerServices;
 
 namespace PSAppDeployToolkit.Foundation
 {
@@ -51,6 +52,7 @@ namespace PSAppDeployToolkit.Foundation
         /// method to avoid exceptions.</remarks>
         /// <returns>A PSObject that encapsulates the current state or configuration of the database.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the database has not been initialized.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static PSObject Get()
         {
             return _database ?? throw new InvalidOperationException(pwshErrorMessage);
@@ -62,6 +64,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This method checks the "Initialized" property of the database to determine its state.
         /// Ensure the database object is properly configured before calling this method.</remarks>
         /// <returns><see langword="true"/> if the database is initialized; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInitialized()
         {
             return (bool?)_database?.Properties["Initialized"].Value == true;
@@ -76,6 +79,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="InvalidOperationException">Thrown if the environment settings cannot be retrieved because the database is uninitialized or the required
         /// properties are missing.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EnvironmentTable GetEnvironment()
         {
             return (EnvironmentTable?)_database?.Properties["Environment"].Value ?? throw new InvalidOperationException(initErrorMessage);
@@ -89,6 +93,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>An IDictionary containing the configuration settings. Returns null if the configuration is not available.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the configuration cannot be retrieved due to an initialization error.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDictionary GetConfig()
         {
             return (IDictionary?)_database?.Properties["Config"].Value ?? throw new InvalidOperationException(initErrorMessage);
@@ -104,6 +109,7 @@ namespace PSAppDeployToolkit.Foundation
         /// is not found.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the database is not initialized or the property 'Strings' is not available.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDictionary GetStrings()
         {
             return (IDictionary?)_database?.Properties["Strings"].Value ?? throw new InvalidOperationException(initErrorMessage);
@@ -116,6 +122,7 @@ namespace PSAppDeployToolkit.Foundation
         /// If the database or session data is unavailable, the method will return <see langword="false"/>.</remarks>
         /// <returns><see langword="true"/> if there is at least one active deployment session; otherwise, <see
         /// langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDeploymentSessionActive()
         {
             return ((List<DeploymentSession>?)_database?.Properties["Sessions"].Value)?.Count > 0;
@@ -132,6 +139,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <exception cref="InvalidOperationException">Thrown if no deployment session is available. This typically indicates that the session has not been
         /// initialized; ensure that [Open-ADTSession] is called before invoking this method.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DeploymentSession GetDeploymentSession()
         {
             return !(_database?.Properties["Sessions"].Value is List<DeploymentSession> sessionList && sessionList.Count > 0)
@@ -144,6 +152,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <returns>The current session state.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the session state is not available.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SessionState GetSessionState()
         {
             return (SessionState?)_database?.Properties["SessionState"].Value ?? throw new InvalidOperationException(pwshErrorMessage);

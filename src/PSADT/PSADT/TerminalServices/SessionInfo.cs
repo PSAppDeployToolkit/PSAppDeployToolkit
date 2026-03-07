@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using PSADT.Foundation;
 using PSADT.Interop;
@@ -103,6 +104,7 @@ namespace PSADT.TerminalServices
         /// Converts the current instance to a <see cref="RunAsActiveUser"/> object.
         /// </summary>
         /// <returns>A new <see cref="RunAsActiveUser"/> instance initialized with the current object.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RunAsActiveUser ToRunAsActiveUser()
         {
             return new(this);
@@ -223,6 +225,7 @@ namespace PSADT.TerminalServices
         /// includes NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession,
         /// IsConsoleSession, IsActiveUserSession, IsValidUserSession, IsUserSession, IsRdpSession, IsLocalAdmin,
         /// LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, and ClientBuildNumber.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return $"NTAccount           : {NTAccount}{Environment.NewLine}SID                 : {SID}{Environment.NewLine}UserName            : {UserName}{Environment.NewLine}DomainName          : {DomainName}{Environment.NewLine}SessionId           : {SessionId}{Environment.NewLine}SessionName         : {SessionName}{Environment.NewLine}ConnectState        : {ConnectState}{Environment.NewLine}IsCurrentSession    : {IsCurrentSession}{Environment.NewLine}IsConsoleSession    : {IsConsoleSession}{Environment.NewLine}IsActiveUserSession : {IsActiveUserSession}{Environment.NewLine}IsValidUserSession  : {IsValidUserSession}{Environment.NewLine}IsUserSession       : {IsUserSession}{Environment.NewLine}IsRdpSession        : {IsRdpSession}{Environment.NewLine}IsLocalAdmin        : {IsLocalAdmin}{Environment.NewLine}LogonTime           : {LogonTime}{Environment.NewLine}IdleTime            : {IdleTime}{Environment.NewLine}DisconnectTime      : {DisconnectTime}{Environment.NewLine}ClientName          : {ClientName}{Environment.NewLine}ClientProtocolType  : {ClientProtocolType}{Environment.NewLine}ClientDirectory     : {ClientDirectory}{Environment.NewLine}ClientBuildNumber   : {ClientBuildNumber}";

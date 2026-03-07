@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using PSADT.Utilities;
 
@@ -63,6 +64,7 @@ namespace PSADT.ProcessManagement
         /// This is only here as sometimes we need to falsify a result in the module.
         /// </summary>
         /// <param name="exitCode">The exit code of the process.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ProcessResult(int exitCode)
         {
             ExitCode = exitCode;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using PSADT.AccountManagement;
 
@@ -103,6 +104,7 @@ namespace PSAppDeployToolkit.Logging
         /// Returns a string that represents the current <see cref="LogEntry"/> object.
         /// </summary>
         /// <returns>A formatted string containing the exit code, standard output, and standard error.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return LegacyLogLine;

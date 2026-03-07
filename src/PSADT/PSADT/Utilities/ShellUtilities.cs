@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
@@ -81,6 +82,7 @@ namespace PSADT.Utilities
         /// Minimizes all open windows on the desktop.
         /// </summary>
         /// <remarks>This method sends a command to the system shell to minimize all currently open windows. It is equivalent to the "Show Desktop" functionality in Windows.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void MinimizeAllWindows()
         {
             _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL, default);
@@ -90,6 +92,7 @@ namespace PSADT.Utilities
         /// Restores all minimized windows on the desktop to their previous state.
         /// </summary>
         /// <remarks>This method sends a system command to undo the "Minimize All Windows" action, effectively restoring all previously minimized windows. It has no effect if no windows are currently minimized.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void RestoreAllWindows()
         {
             _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL_UNDO, default);
@@ -192,6 +195,7 @@ namespace PSADT.Utilities
         /// returned handle can be used with other Windows API functions that require a reference to the taskbar
         /// window.</remarks>
         /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static HWND GetTrayWindowHandle()
         {
             return NativeMethods.FindWindow("Shell_TrayWnd", null);

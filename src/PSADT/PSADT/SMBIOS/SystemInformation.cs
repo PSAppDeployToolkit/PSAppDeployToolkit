@@ -20,6 +20,7 @@
 
 using System;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 
 namespace PSADT.SMBIOS
 {
@@ -32,6 +33,7 @@ namespace PSADT.SMBIOS
         /// Reads the SMBIOS System Information (Type 1) structure.
         /// </summary>
         /// <returns>The system information.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SystemInformation Get(ReadOnlySpan<byte> buffer = default)
         {
             return SmbiosParsing.GetStructure(SmbiosType.SystemInformation, Parse, buffer);
@@ -180,6 +182,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Returns a string representation of the system information.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return $"{Manufacturer} {ProductName} ({SerialNumber})";

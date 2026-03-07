@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -113,6 +114,7 @@ namespace PSADT.Utilities
         /// <returns>A <see cref="SafeRegistryHandle"/> representing the handle to the specified
         /// registry hive.</returns>
         /// <exception cref="FormatException">Thrown if <paramref name="hiveName"/> is not one of the supported registry hive names.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static SafeRegistryHandle GetRegistryHiveHandle(string hiveName)
         {
             return hiveName switch

@@ -1,4 +1,6 @@
-﻿namespace PSADT.Types
+﻿using System.Runtime.CompilerServices;
+
+namespace PSADT.Types
 {
     /// <summary>
     /// Represents a URL shortcut.
@@ -13,6 +15,7 @@
         /// <param name="targetPath">The path to the target file or URL that the shortcut points to. Cannot be null or empty.</param>
         /// <param name="iconLocation">The file system path to the icon to be used for the shortcut, or null to use the default icon.</param>
         /// <param name="iconIndex">The index of the icon within the icon file specified by iconLocation, or null to use the default index.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ShortcutUrl(string path, string targetPath, string? iconLocation, string? iconIndex) : base(path, targetPath, iconLocation, iconIndex)
         {
         }

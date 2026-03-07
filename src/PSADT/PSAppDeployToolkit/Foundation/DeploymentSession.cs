@@ -1236,6 +1236,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <returns>A read-only list of <see cref="LogEntry"/> objects representing the current log entries. The list is empty
         /// if no log entries are present.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IReadOnlyList<LogEntry> GetLogBuffer()
         {
             return LogBuffer.AsReadOnly();
@@ -1328,6 +1329,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="discriminator">A string value used to distinguish the log file name. Typically represents a unique identifier or context
         /// for the log file. Cannot be null.</param>
         /// <returns>A string containing the formatted log file name that incorporates the specified discriminator.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string NewLogFileName(string discriminator)
         {
             return string.Format(CultureInfo.InvariantCulture, DefaultLogName, discriminator);
@@ -1359,6 +1361,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Returns whether this session has been closed out.
         /// </summary>
         /// <returns>True if so; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsClosed()
         {
             return Settings.HasFlag(DeploymentSettings.Disposed);
@@ -1368,6 +1371,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanExitOnClose()
         {
             return !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
@@ -1377,6 +1381,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Determines whether the mode is non-interactive.
         /// </summary>
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNonInteractive()
         {
             return Settings.HasFlag(DeploymentSettings.NonInteractive);
@@ -1386,6 +1391,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Determines whether the mode is silent.
         /// </summary>
         /// <returns>True if the mode is silent; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSilent()
         {
             return Settings.HasFlag(DeploymentSettings.Silent);
@@ -1395,6 +1401,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the exit code.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetExitCode()
         {
             return ExitCode;
@@ -1404,6 +1411,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Sets the exit code.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetExitCode(int exitCode)
         {
             ExitCode = exitCode;
@@ -1413,6 +1421,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Add the mounted WIM files.
         /// </summary>
         /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMountedWimFile(FileInfo wimFile)
         {
             MountedWimFiles.Add(wimFile);
@@ -1441,6 +1450,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Writes a log divider.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteLogDivider()
         {
             WriteLogEntry(LogUtilities.LogDivider);
@@ -1467,6 +1477,7 @@ namespace PSAppDeployToolkit.Foundation
         /// otherwise, it returns HostLogStreamType.Host.</remarks>
         /// <param name="writeHost">true to enable writing logs to the host; false to disable host logging; or null to use the default behavior.</param>
         /// <returns>A value of type HostLogStreamType that indicates the log stream type to use: Console, Host, or None.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
             return writeHost != false && LogWriteToHost
@@ -1478,6 +1489,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Tests the deferral history path.
         /// </summary>
         /// <returns>True if the deferral history path exists; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TestDeferHistoryPath()
         {
             return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
@@ -1486,6 +1498,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Creates the deferral history path.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateDeferHistoryPath()
         {
             _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, null, null, true);
@@ -1530,6 +1543,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="flag">The DeploymentSettings flag to check.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         /// <returns>True if the flag is set; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool GetFlagValue(DeploymentSettings flag, [CallerMemberName] string propertyName = null!)
         {
             return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null
@@ -1544,6 +1558,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="backingField">Read-only reference to the backing field.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         /// <returns>The property value from either the backing field or PowerShell session state.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T GetPropertyValue<T>(ref readonly T backingField, [CallerMemberName] string propertyName = null!)
         {
             return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null

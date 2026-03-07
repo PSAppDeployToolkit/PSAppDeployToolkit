@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -238,6 +239,7 @@ namespace PSADT.UserInterface
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">Options that configure the restart dialog, such as title, message, and button labels.</param>
         /// <returns>A string representing the user's response to the dialog. The value depends on the implementation of the dialog and the options provided.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options)
         {
             return ShowModalDialog<string>(DialogType.RestartDialog, dialogStyle, options);
@@ -277,6 +279,7 @@ namespace PSADT.UserInterface
         /// </summary>
         /// <remarks>This method checks the internal state to determine if the progress dialog has been initialized and is currently displayed.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool ProgressDialogOpen()
         {
             return progressDialog is not null;
@@ -398,6 +401,7 @@ namespace PSADT.UserInterface
         /// <remarks>The behavior and appearance of the message box are determined by the properties of the <paramref name="options"/> parameter.</remarks>ews
         /// <param name="options">The options for configuring the message box, such as title, message text, buttons, icon, default button, topmost behavior, and expiry duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
             return ShowDialogBox(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon ?? 0, options.DialogTopMost, options.DialogExpiryDuration);
@@ -415,6 +419,7 @@ namespace PSADT.UserInterface
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button clicked by the user.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DialogBoxResult ShowDialogBox(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
         {
             return DialogBoxResult.FromMessageBoxResult(ShowDialogBox(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : 0), Timeout));
@@ -428,6 +433,7 @@ namespace PSADT.UserInterface
         /// <param name="Options">A MESSAGEBOX_RESULT value that specifies the buttons and icons to display in the message box.</param>
         /// <param name="Timeout">An optional <see cref="TimeSpan"/> value that specifies the duration after which the message box will automatically close. If not specified, the message box will remain open until the user interacts with it.</param>
         /// <returns>A MESSAGEBOX_RESULT value that indicates which button the user clicked in the message box.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, uint Timeout = 0)
         {
             return InvokeDialogAction(() => NativeMethods.MessageBoxTimeout(null, Prompt, Title, Options, 0, Timeout));
@@ -444,6 +450,7 @@ namespace PSADT.UserInterface
         /// <param name="Icon">The icon to display in the dialog box. This must be a valid <see cref="TASKDIALOG_ICON"/> value.</param>
         /// <returns>A MESSAGEBOX_RESULT value indicating the button that the user clicked to close the dialog.</returns>
         [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "This remains here for a potential feature in the future.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
             return InvokeDialogAction(() => NativeMethods.TaskDialog(null, null, Title, Subtitle, Prompt, Buttons, Icon));
@@ -470,6 +477,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Invokes the specified action on the WPF UI thread.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InvokeDialogAction(Action callback)
         {
             app.Dispatcher.Invoke(callback, DispatcherPriority.Send);
@@ -478,6 +486,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Invokes the specified function on the WPF UI thread.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
             return app.Dispatcher.Invoke(callback, DispatcherPriority.Send);

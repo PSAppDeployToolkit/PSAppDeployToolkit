@@ -1,4 +1,5 @@
-﻿using Windows.Win32.Foundation;
+﻿using System.Runtime.CompilerServices;
+using Windows.Win32.Foundation;
 
 namespace PSADT.Interop
 {
@@ -37,7 +38,8 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="value">The handle to be associated with this instance.</param>
         /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
-        private TASKDIALOG_ICON(PCWSTR value, [System.Runtime.CompilerServices.CallerMemberName] string name = null!) : base(value, name)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private TASKDIALOG_ICON(PCWSTR value, [CallerMemberName] string name = null!) : base(value, name)
         {
         }
     }

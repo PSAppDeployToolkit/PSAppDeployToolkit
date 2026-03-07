@@ -21,6 +21,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace PSADT.SMBIOS
 {
@@ -33,6 +34,7 @@ namespace PSADT.SMBIOS
         /// Reads the SMBIOS System Enclosure (Type 3) structure.
         /// </summary>
         /// <returns>The system enclosure information.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SystemEnclosure Get(ReadOnlySpan<byte> buffer = default)
         {
             return SmbiosParsing.GetStructure(SmbiosType.SystemEnclosure, Parse, buffer);
@@ -316,6 +318,7 @@ namespace PSADT.SMBIOS
         /// Determines whether this is a laptop or portable system.
         /// </summary>
         /// <returns>True if this is a portable system; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPortable()
         {
             return TypeAndLock.Type is ChassisType.Laptop or ChassisType.Notebook or ChassisType.Portable or ChassisType.HandHeld or ChassisType.SubNotebook or ChassisType.Tablet or ChassisType.Convertible or ChassisType.Detachable;
@@ -325,6 +328,7 @@ namespace PSADT.SMBIOS
         /// Determines whether this is a server chassis.
         /// </summary>
         /// <returns>True if this is a server chassis; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsServerChassis()
         {
             return TypeAndLock.Type is ChassisType.MainServerChassis or ChassisType.RackMountChassis or ChassisType.BladeEnclosure or ChassisType.Blade;
@@ -334,6 +338,7 @@ namespace PSADT.SMBIOS
         /// Determines whether this is a rack-mount form factor.
         /// </summary>
         /// <returns>True if rack-mount; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsRackMount()
         {
             return TypeAndLock.Type is ChassisType.RackMountChassis or ChassisType.BladeEnclosure;
@@ -343,6 +348,7 @@ namespace PSADT.SMBIOS
         /// Gets the effective rack height in rack units (U). This returns the Height field when specified (non-zero, not 0xFF); otherwise null.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int? GetRackUnits()
         {
             return Height.HasValue ? Height.Value : RackHeight.HasValue ? RackHeight.Value : null;
@@ -351,6 +357,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Returns a string representation of the system enclosure information.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return $"{Manufacturer} {TypeAndLock.Type} ({SerialNumber})";

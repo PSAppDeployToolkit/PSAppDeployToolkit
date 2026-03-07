@@ -1,5 +1,6 @@
-﻿using PSADT.Interop.Extensions;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using PSADT.Interop.Extensions;
 using Windows.Win32.Foundation;
 
 namespace PSADT.Interop.SafeHandles
@@ -21,6 +22,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="byteCount">The number of bytes to allocate. Must be a positive integer.</param>
         /// <returns>A SafeCoTaskMemHandle that represents the allocated memory block. The caller is responsible for releasing
         /// the handle when it is no longer needed.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SafeCoTaskMemHandle Alloc(int byteCount)
         {
             return new(Marshal.AllocCoTaskMem(byteCount), byteCount, ownsHandle: true);

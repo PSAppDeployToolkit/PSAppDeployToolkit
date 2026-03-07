@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -41,6 +42,7 @@ namespace PSADT.Interop.Exceptions
 #if NET8_0_OR_GREATER
         [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected NtStatusException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
             NtStatus = info.GetInt32(nameof(NtStatus));

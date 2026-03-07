@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 
@@ -24,6 +25,7 @@ namespace PSADT.UserInterface.Utilities
         /// <param name="culture">The culture to use in the converter. This parameter is not used.</param>
         /// <returns>Returns <see cref="Visibility.Visible"/> if the input value is an integer greater than zero; otherwise,
         /// returns <see cref="Visibility.Collapsed"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value is int count && count > 0 ? Visibility.Visible : Visibility.Collapsed;

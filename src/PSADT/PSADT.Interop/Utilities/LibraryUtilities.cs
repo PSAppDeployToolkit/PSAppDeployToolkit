@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace PSADT.Interop.Utilities
 {
@@ -15,6 +16,7 @@ namespace PSADT.Interop.Utilities
         /// <param name="value">The integer value to align. Must be non-negative.</param>
         /// <returns>The smallest integer greater than or equal to <paramref name="value"/> that is a multiple of <see
         /// cref="IntPtr.Size"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int AlignUp(int value)
         {
             return (value + IntPtr.Size - 1) & ~(IntPtr.Size - 1);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using PSADT.ProcessManagement;
 
@@ -68,6 +69,7 @@ namespace PSADT.ClientServer
 #if NET8_0_OR_GREATER
         [Obsolete(DiagnosticId = "SYSLIB0051")]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ServerException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
@@ -85,6 +87,7 @@ namespace PSADT.ClientServer
 #if NET8_0_OR_GREATER
         [Obsolete(DiagnosticId = "SYSLIB0051")]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

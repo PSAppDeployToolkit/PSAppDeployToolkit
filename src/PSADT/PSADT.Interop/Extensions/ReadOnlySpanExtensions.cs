@@ -33,6 +33,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="span">The span of characters to trim. May contain leading or trailing white-space and null characters.</param>
         /// <returns>A read-only span of characters with all leading and trailing white-space removed and any trailing null
         /// characters eliminated.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlySpan<char> TrimEndNullAndTrim(this ReadOnlySpan<char> span)
         {
             return span.Trim().TrimEnd('\0').TrimEnd();

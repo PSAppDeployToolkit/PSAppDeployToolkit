@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
@@ -287,6 +288,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method closes the connection and optionally performs additional cleanup
         /// operations depending on the internal implementation. Once closed, the connection cannot be reused and must
         /// be reopened if needed.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Close()
         {
             Close(false);
@@ -301,6 +303,7 @@ namespace PSADT.ClientServer
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be closed. If <paramref
         /// name="closeProcesses"/> is <see langword="null"/>, no specific processes will be targeted.</param>
         /// <returns><see langword="true"/> if the dialog was successfully initialized; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InitCloseAppsDialog(ReadOnlyCollection<ProcessDefinition>? closeProcesses)
         {
             return Invoke<InitCloseAppsDialogPayload, bool>(PipeCommand.InitCloseAppsDialog, new(closeProcesses));
@@ -312,6 +315,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method invokes a prompt to the user and returns their response. Ensure that the
         /// environment allows user interaction before calling this method.</remarks>
         /// <returns><see langword="true"/> if the user agrees to close the applications; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool PromptToCloseApps(TimeSpan promptToCloseTimeout)
         {
             return Invoke<PromptToCloseAppsPayload, bool>(PipeCommand.PromptToCloseApps, new(promptToCloseTimeout));
@@ -327,6 +331,7 @@ namespace PSADT.ClientServer
         /// <param name="options">The options for configuring the dialog, such as the list of applications to close and additional settings.</param>
         /// <returns>A <see cref="CloseAppsDialogResult"/> indicating the user's response to the dialog. The result may include
         /// information about whether the user chose to close the applications or canceled the operation.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CloseAppsDialogResult ShowCloseAppsDialog(DialogStyle dialogStyle, CloseAppsDialogOptions options)
         {
             return ShowModalDialog<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options);
@@ -341,6 +346,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and input settings.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CustomDialogResult ShowCustomDialog(DialogStyle dialogStyle, CustomDialogOptions options)
         {
             return ShowModalDialog<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
@@ -355,6 +361,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the list selection dialog, such as the message, buttons, and list items.</param>
         /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ListSelectionDialogResult ShowListSelectionDialog(DialogStyle dialogStyle, ListSelectionDialogOptions options)
         {
             return ShowModalDialog<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
@@ -369,6 +376,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog's outcome.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public InputDialogResult ShowInputDialog(DialogStyle dialogStyle, InputDialogOptions options)
         {
             return ShowModalDialog<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
@@ -384,6 +392,7 @@ namespace PSADT.ClientServer
         /// <param name="options">The options to configure the restart dialog, such as title, message, and default values.</param>
         /// <returns>A string representing the user's input from the dialog. The value may vary depending on the dialog
         /// configuration and user interaction.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ShowRestartDialog(DialogStyle dialogStyle, RestartDialogOptions options)
         {
             return ShowModalDialog<string>(DialogType.RestartDialog, dialogStyle, options);
@@ -397,6 +406,7 @@ namespace PSADT.ClientServer
         /// indicate the user's action (e.g., OK, Cancel).</remarks>
         /// <param name="options">The options to configure the dialog box, such as title, message, and input fields.</param>
         /// <returns>A <see cref="DialogBoxResult"/> that represents the result of the user's interaction with the dialog box.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
             return ShowModalDialog<DialogBoxResult>(DialogType.DialogBox, 0, options);
@@ -413,6 +423,7 @@ namespace PSADT.ClientServer
         /// null.</param>
         /// <returns><see langword="true"/> if the progress dialog was successfully displayed; otherwise, <see
         /// langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ShowProgressDialog(DialogStyle dialogStyle, ProgressDialogOptions options)
         {
             return Invoke<ShowProgressDialogPayload, bool>(PipeCommand.ShowProgressDialog, new(dialogStyle, options));
@@ -424,6 +435,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method checks the state of the progress dialog and returns a boolean value
         /// indicating whether it is currently displayed to the user.</remarks>
         /// <returns><see langword="true"/> if the progress dialog is open; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ProgressDialogOpen()
         {
             return Invoke<bool>(PipeCommand.ProgressDialogOpen);
@@ -468,6 +480,7 @@ namespace PSADT.ClientServer
         /// whether the operation was successful. Ensure that the progress dialog is open before calling this method to
         /// avoid unnecessary calls.</remarks>
         /// <returns><see langword="true"/> if the progress dialog was successfully closed; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CloseProgressDialog()
         {
             return Invoke<bool>(PipeCommand.CloseProgressDialog);
@@ -483,6 +496,7 @@ namespace PSADT.ClientServer
         /// <param name="options">The configuration options for the balloon tip, including its title, text, icon, and duration. This parameter
         /// cannot be null.</param>
         /// <returns><see langword="true"/> if the balloon tip was successfully displayed; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
             return Invoke<ShowBalloonTipPayload, bool>(PipeCommand.ShowBalloonTip, new(options));
@@ -495,6 +509,7 @@ namespace PSADT.ClientServer
         /// indicates whether the operation was successful. Note that the success of this operation may depend on
         /// system permissions or the current state of the desktop environment.</remarks>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MinimizeAllWindows()
         {
             return Invoke<bool>(PipeCommand.MinimizeAllWindows);
@@ -506,6 +521,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method attempts to restore all windows that were previously minimized or hidden.
         /// The return value indicates whether the operation was successful for all windows.</remarks>
         /// <returns><see langword="true"/> if all windows were successfully restored; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool RestoreAllWindows()
         {
             return Invoke<bool>(PipeCommand.RestoreAllWindows);
@@ -520,6 +536,7 @@ namespace PSADT.ClientServer
         /// <param name="options">The configuration options that specify the keys to send and their associated behavior. This parameter cannot
         /// be null.</param>
         /// <returns><see langword="true"/> if the keystrokes were successfully sent; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool SendKeys(SendKeysOptions options)
         {
             return Invoke<SendKeysPayload, bool>(PipeCommand.SendKeys, new(options));
@@ -536,6 +553,7 @@ namespace PSADT.ClientServer
         /// preferences.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the windows that match the
         /// specified filters. If no filters are provided, all windows are included in the result.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IReadOnlyList<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             return Invoke<GetProcessWindowInfoPayload, ReadOnlyCollection<WindowInfo>>(PipeCommand.GetProcessWindowInfo, new(options));
@@ -548,6 +566,7 @@ namespace PSADT.ClientServer
         /// the desktop and environment variables. The return value indicates whether the operation was
         /// successful.</remarks>
         /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool RefreshDesktopAndEnvironmentVariables()
         {
             return Invoke<bool>(PipeCommand.RefreshDesktopAndEnvironmentVariables);
@@ -560,6 +579,7 @@ namespace PSADT.ClientServer
         /// that the input source contains valid serialized data for <see
         /// cref="QUERY_USER_NOTIFICATION_STATE"/>.</remarks>
         /// <returns>An instance of <see cref="QUERY_USER_NOTIFICATION_STATE"/> representing the user's notification state.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public QUERY_USER_NOTIFICATION_STATE GetUserNotificationState()
         {
             return Invoke<QUERY_USER_NOTIFICATION_STATE>(PipeCommand.GetUserNotificationState);
@@ -571,6 +591,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method sends a command to query the foreground window's process ID and parses
         /// the result. The returned process ID can be used to identify the application currently in focus.</remarks>
         /// <returns>The process ID of the application that owns the foreground window.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint GetForegroundWindowProcessId()
         {
             return Invoke<uint>(PipeCommand.GetForegroundWindowProcessId);
@@ -581,6 +602,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="variable">The name of the environment variable to retrieve. Cannot be null or empty.</param>
         /// <returns>The value of the specified environment variable, or null if the variable is not found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetEnvironmentVariable(string variable)
         {
             return Invoke<EnvironmentVariablePayload, string>(PipeCommand.GetEnvironmentVariable, new(variable));
@@ -603,6 +625,7 @@ namespace PSADT.ClientServer
         /// overwrite the value.</param>
         /// <param name="remove">true to remove the environment variable; otherwise, false to set or append the value.</param>
         /// <returns>true if the operation succeeds; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool SetEnvironmentVariable(string variable, string value, bool expandable, bool append, bool remove)
         {
             return Invoke<EnvironmentVariablePayload, bool>(PipeCommand.SetEnvironmentVariable, new(variable, value, expandable, append, remove));
@@ -613,6 +636,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="variable">The name of the environment variable to remove. Cannot be null or empty.</param>
         /// <returns>true if the environment variable was successfully removed; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool RemoveEnvironmentVariable(string variable)
         {
             return Invoke<EnvironmentVariablePayload, bool>(PipeCommand.RemoveEnvironmentVariable, new(variable));
@@ -625,6 +649,7 @@ namespace PSADT.ClientServer
         /// <param name="force">true to reapply all policy settings, even those that have not changed; false to update only changed
         /// settings.</param>
         /// <returns>A ProcessResult object containing the outcome of the Group Policy update operation.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ProcessResult GroupPolicyUpdate(bool force)
         {
             return Invoke<GroupPolicyUpdatePayload, ProcessResult>(PipeCommand.GroupPolicyUpdate, new(force));
@@ -636,6 +661,7 @@ namespace PSADT.ClientServer
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see
         /// langword="null"/> if no exception occurred or the task has not been initialized.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AggregateException? GetLogWriterException()
         {
             return _logWriterTask?.Exception;
@@ -683,6 +709,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The style of the dialog to display.</param>
         /// <param name="options">The options to configure the dialog.</param>
         /// <returns>The result from the dialog.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private TResult ShowModalDialog<TResult>(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options)
         {
             return Invoke<ShowModalDialogPayload, TResult>(PipeCommand.ShowModalDialog, new(dialogType, dialogStyle, options));

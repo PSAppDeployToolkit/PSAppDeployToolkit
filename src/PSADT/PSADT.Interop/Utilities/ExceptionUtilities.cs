@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop.Exceptions;
 using Windows.Win32;
@@ -55,6 +56,7 @@ namespace PSADT.Interop.Utilities
         /// <returns>A <see cref="WIN32_ERROR"/> representing the last Win32 error code, which can be used to diagnose the cause
         /// of a failure in Win32 API calls.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is our only permitted use case, to wrap the call.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR GetLastWin32Error()
         {
             return unchecked((WIN32_ERROR)Marshal.GetLastWin32Error());
@@ -67,6 +69,7 @@ namespace PSADT.Interop.Utilities
         /// failed Win32 API call into a .NET exception. It retrieves the last error code using the Win32 GetLastError
         /// function and generates an appropriate exception for error handling.</remarks>
         /// <returns>An exception that represents the error associated with the last Win32 error code.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Exception GetExceptionForLastWin32Error()
         {
             return GetException(GetLastWin32Error());
@@ -173,6 +176,7 @@ namespace PSADT.Interop.Utilities
         /// </summary>
         /// <param name="ntStatus">The NTSTATUS value to convert.</param>
         /// <returns>The corresponding HRESULT value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static HRESULT HRESULT_FROM_NT(NTSTATUS ntStatus)
         {
             return new HRESULT(unchecked((int)(unchecked((uint)ntStatus.Value) | (uint)FACILITY_CODE.FACILITY_NT_BIT)));
@@ -185,6 +189,7 @@ namespace PSADT.Interop.Utilities
         /// interoperability with APIs that require HRESULT-based error handling.</remarks>
         /// <param name="win32Error">The Win32 error code to convert. This value should be a valid member of the WIN32_ERROR enumeration.</param>
         /// <returns>An HRESULT value that represents the specified Win32 error code.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static HRESULT HRESULT_FROM_WIN32(WIN32_ERROR win32Error)
         {
             return PInvoke.HRESULT_FROM_WIN32(win32Error);
@@ -197,6 +202,7 @@ namespace PSADT.Interop.Utilities
         /// the facility code. It is useful for determining the source of an error represented by the HRESULT.</remarks>
         /// <param name="hResult">The HRESULT value from which to extract the facility code. This value must be a valid HRESULT.</param>
         /// <returns>The facility code extracted from the HRESULT value, represented as a FACILITY_CODE.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static FACILITY_CODE HRESULT_FACILITY(HRESULT hResult)
         {
             return (FACILITY_CODE)(((uint)hResult >> 16) & 0x1FFFu);
@@ -209,6 +215,7 @@ namespace PSADT.Interop.Utilities
         /// value, which is commonly used in error handling scenarios.</remarks>
         /// <param name="hResult">The HRESULT value from which to extract the code.</param>
         /// <returns>A 32-bit unsigned integer representing the code portion of the HRESULT.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static uint HRESULT_CODE(HRESULT hResult)
         {
             return unchecked((uint)hResult & 0xFFFFu);

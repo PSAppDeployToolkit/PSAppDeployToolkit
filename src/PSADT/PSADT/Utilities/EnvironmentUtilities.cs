@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Win32;
 
 namespace PSADT.Utilities
@@ -25,6 +26,7 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to retrieve. Cannot be null.</param>
         /// <returns>The value of the environment variable specified by <paramref name="variable"/> if found; otherwise, <see
         /// langword="null"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? GetEnvironmentVariable(string variable)
         {
             return Environment.GetEnvironmentVariable(variable);
@@ -41,6 +43,7 @@ namespace PSADT.Utilities
         /// the current process, user, or machine.</param>
         /// <returns>The value of the environment variable specified by <paramref name="variable"/> from the given <paramref
         /// name="target"/>. Returns null if the environment variable is not found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? GetEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
             return Environment.GetEnvironmentVariable(variable, target);
@@ -53,6 +56,7 @@ namespace PSADT.Utilities
         /// The set of variables may differ between operating systems and user contexts.</remarks>
         /// <returns>An <see cref="IDictionary"/> containing the environment variable names and their values. Each entry's key is
         /// the variable name, and the value is the variable's value as a string.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IDictionary GetEnvironmentVariables()
         {
             return Environment.GetEnvironmentVariables();

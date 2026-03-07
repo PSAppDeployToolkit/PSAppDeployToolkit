@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using PSADT.ProcessManagement;
 using Xunit;
 
@@ -125,7 +126,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_BasicCases_ReturnsCorrectCommandLine(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -142,7 +143,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_ArgumentsWithSpaces_ReturnsQuotedCommandLine(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -159,7 +160,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_ArgumentsWithSpecialCharacters_ReturnsEscapedCommandLine(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -176,8 +177,8 @@ namespace PSADT.Tests.ProcessManagement
             List<string> argsList = [.. args];
 
             // Act
-            string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args)!;
-            string listResult = CommandLineUtilities.ArgumentListToCommandLine(argsList)!;
+            string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args);
+            string listResult = CommandLineUtilities.ArgumentListToCommandLine(argsList);
 
             // Assert
             Assert.Equal(arrayResult, listResult);
@@ -194,8 +195,8 @@ namespace PSADT.Tests.ProcessManagement
             List<string> argsList = [.. args];
 
             // Act
-            string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args)!;
-            string listResult = CommandLineUtilities.ArgumentListToCommandLine(argsList)!;
+            string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args);
+            string listResult = CommandLineUtilities.ArgumentListToCommandLine(argsList);
 
             // Assert
             Assert.Equal(arrayResult, listResult);
@@ -212,8 +213,8 @@ namespace PSADT.Tests.ProcessManagement
             List<string> argsList = [.. args];
 
             // Act
-            string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args)!;
-            string listResult = CommandLineUtilities.ArgumentListToCommandLine(argsList)!;
+            string arrayResult = CommandLineUtilities.ArgumentListToCommandLine(args);
+            string listResult = CommandLineUtilities.ArgumentListToCommandLine(argsList);
 
             // Assert
             Assert.Equal(arrayResult, listResult);
@@ -252,8 +253,8 @@ namespace PSADT.Tests.ProcessManagement
         {
             // Act
             IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(originalCommandLine);
-            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
-            IReadOnlyList<string> reparsed = CommandLineUtilities.CommandLineToArgumentList(recreated)!;
+            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed);
+            IReadOnlyList<string> reparsed = CommandLineUtilities.CommandLineToArgumentList(recreated);
 
             // Assert
             Assert.Equal(parsed, reparsed);
@@ -268,22 +269,22 @@ namespace PSADT.Tests.ProcessManagement
             // Test case 1: Complex arguments with various special characters
             string[] originalArgs1 = ["a", "b c", "d\"e", "f\\g", "h\\\"i", "j\\\\k", "l\\\\"];
             string[] expectedArgs1 = [.. originalArgs1.Select(static a => a ?? string.Empty)];
-            string commandLine1 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs1)!;
-            IReadOnlyList<string> parsedArgs1 = CommandLineUtilities.CommandLineToArgumentList(commandLine1)!;
+            string commandLine1 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs1);
+            IReadOnlyList<string> parsedArgs1 = CommandLineUtilities.CommandLineToArgumentList(commandLine1);
             Assert.Equal(expectedArgs1, parsedArgs1);
 
             // Test case 2: Path arguments
             string[] originalArgs2 = ["C:\\Program Files\\My App\\", "data.csv"];
             string[] expectedArgs2 = [.. originalArgs2.Select(static a => a ?? string.Empty)];
-            string commandLine2 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs2)!;
-            IReadOnlyList<string> parsedArgs2 = CommandLineUtilities.CommandLineToArgumentList(commandLine2)!;
+            string commandLine2 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs2);
+            IReadOnlyList<string> parsedArgs2 = CommandLineUtilities.CommandLineToArgumentList(commandLine2);
             Assert.Equal(expectedArgs2, parsedArgs2);
 
             // Test case 5: Multiple simple arguments
             string[] originalArgs5 = ["a", "b c", "d", "e"];
             string[] expectedArgs5 = [.. originalArgs5.Select(static a => a ?? string.Empty)];
-            string commandLine5 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs5)!;
-            IReadOnlyList<string> parsedArgs5 = CommandLineUtilities.CommandLineToArgumentList(commandLine5)!;
+            string commandLine5 = CommandLineUtilities.ArgumentListToCommandLine(originalArgs5);
+            IReadOnlyList<string> parsedArgs5 = CommandLineUtilities.CommandLineToArgumentList(commandLine5);
             Assert.Equal(expectedArgs5, parsedArgs5);
         }
 
@@ -372,11 +373,11 @@ namespace PSADT.Tests.ProcessManagement
             {
                 originalArgs.Add($"argument{i}");
             }
-            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgs)!;
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgs);
 
             // Act
             DateTime start = DateTime.UtcNow;
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine)!;
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
             TimeSpan elapsed = DateTime.UtcNow - start;
 
             // Assert
@@ -484,7 +485,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_TrailingSpecialChars_EscapedCorrectly(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -574,7 +575,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_WindowsPathsAndTrailingBackslashes_EscapedCorrectly(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -585,6 +586,7 @@ namespace PSADT.Tests.ProcessManagement
         /// This ensures that ArgumentListToCommandLine followed by CommandLineToArgumentList
         /// preserves the original arguments exactly.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TheoryData<string[]> SystematicRoundTripTestData()
         {
             return [
@@ -626,7 +628,7 @@ namespace PSADT.Tests.ProcessManagement
         public void SystematicRoundTrip_ArgumentListToCommandLineAndBack_PreservesArguments(string[] originalArgv)
         {
             // Act
-            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgv)!;
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgv);
             IReadOnlyList<string> roundTripArgv = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
@@ -662,7 +664,7 @@ namespace PSADT.Tests.ProcessManagement
         {
             // Act
             IReadOnlyList<string> argv = CommandLineUtilities.CommandLineToArgumentList(commandLine);
-            string newCommandLine = CommandLineUtilities.ArgumentListToCommandLine(argv)!;
+            string newCommandLine = CommandLineUtilities.ArgumentListToCommandLine(argv);
             IReadOnlyList<string> newArgv = CommandLineUtilities.CommandLineToArgumentList(newCommandLine);
 
             // Assert
@@ -762,7 +764,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_ComplexRealWorldScenarios_EscapedCorrectly(string[] argv, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(argv)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(argv);
 
             // Assert
             Assert.Equal(expected, result);
@@ -838,8 +840,8 @@ namespace PSADT.Tests.ProcessManagement
 
             // Act
             DateTime start = DateTime.UtcNow;
-            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args)!;
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine)!;
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine);
             TimeSpan elapsed = DateTime.UtcNow - start;
 
             // Assert
@@ -917,7 +919,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_UncPaths_EscapedCorrectly(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -957,7 +959,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_ComplexUncScenarios_EscapedCorrectly(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -966,6 +968,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests round-trip scenarios for UNC paths to ensure they are preserved accurately.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TheoryData<string[]> UncPathRoundTripTestData()
         {
             return [
@@ -991,7 +994,7 @@ namespace PSADT.Tests.ProcessManagement
         public void UncPaths_RoundTripConversion_PreservesExactArguments(string[] originalArgs)
         {
             // Act
-            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgs)!;
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgs);
             IReadOnlyList<string> roundTripArgs = CommandLineUtilities.CommandLineToArgumentList(commandLine);
 
             // Assert
@@ -1028,7 +1031,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_UncPathsWithComplexBackslashes_EscapedCorrectly(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1048,7 +1051,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_RealWorldUncScenarios_EscapedCorrectly(string[] argv, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(argv)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(argv);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1415,7 +1418,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_NsisStyleKeyValue_PreservesUnquotedFormat(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1435,7 +1438,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_FlagWithAttachedPath_EscapesOnlyPathPortion(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1454,7 +1457,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_FlagWithAlreadyQuotedPath_PreservesQuotes(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1499,7 +1502,7 @@ namespace PSADT.Tests.ProcessManagement
             Assert.Equal("-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"", parsed[0]);
 
             // Act - Convert back to command line
-            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
+            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed);
 
             // Assert - Should be identical to original (quotes already present, preserved as-is)
             Assert.Equal(original, recreated);
@@ -1523,7 +1526,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_RegularFlags_NotTreatedAsFlagWithPath(string[] args, string expected)
         {
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(args)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1540,7 +1543,7 @@ namespace PSADT.Tests.ProcessManagement
             string[] testArgs = [sfxArg];
 
             // Act
-            string result = CommandLineUtilities.ArgumentListToCommandLine(testArgs)!;
+            string result = CommandLineUtilities.ArgumentListToCommandLine(testArgs);
 
             // Assert - The path portion should be quoted, not the entire argument
             Assert.Equal("-sfx_o\"C:\\Program Files\\My App\\\\\"", result);
@@ -1639,7 +1642,7 @@ namespace PSADT.Tests.ProcessManagement
             IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(originalCommandLine);
 
             // Act - Convert back to command line
-            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed)!;
+            string recreated = CommandLineUtilities.ArgumentListToCommandLine(parsed);
 
             // Act - Parse again
             IReadOnlyList<string> reparsed = CommandLineUtilities.CommandLineToArgumentList(recreated);

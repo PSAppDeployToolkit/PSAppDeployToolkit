@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
@@ -95,6 +96,7 @@ namespace PSADT.Interop
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the key is opened successfully; otherwise, returns a nonzero error
         /// code.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
             return RegOpenKeyEx(hKey, lpSubKey, 0, samDesired, out phkResult);
@@ -211,6 +213,7 @@ namespace PSADT.Interop
         /// <param name="lpLuid">When this method returns, contains the LUID that corresponds to the specified privilege name.</param>
         /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the privilege name
         /// was found and the LUID was retrieved successfully; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL LookupPrivilegeValue(SE_PRIVILEGE lpName, out LUID lpLuid)
         {
             return LookupPrivilegeValue(null, lpName, out lpLuid);
@@ -305,6 +308,7 @@ namespace PSADT.Interop
         /// <param name="NewState">A structure that specifies the privileges to enable or disable for the access token.</param>
         /// <returns>A value that indicates whether the function succeeds. Returns <see langword="true"/> if the operation is
         /// successful; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
         {
             return AdjustTokenPrivileges(TokenHandle, false, in NewState, null, out _);
@@ -579,6 +583,7 @@ namespace PSADT.Interop
         /// that can be performed with the returned handle.</param>
         /// <returns>A safe handle to the Service Control Manager. The caller is responsible for closing the handle when it is no
         /// longer needed.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static CloseServiceHandleSafeHandle OpenSCManager(SC_MANAGER_ACCESS dwDesiredAccess)
         {
             return OpenSCManager(null, null, dwDesiredAccess);
@@ -701,6 +706,7 @@ namespace PSADT.Interop
         /// releasing this handle when it is no longer needed.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the ACL was
         /// created successfully; otherwise, returns an error code.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl)
         {
             return SetEntriesInAcl(pListOfExplicitEntries, null, out NewAcl).ThrowOnFailure();
@@ -1989,6 +1995,7 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the system is in Terminal Services application installation mode; otherwise, <see
         /// langword="false"/>.</returns>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool TermsrvAppInstallMode();
 
@@ -2510,6 +2517,7 @@ namespace PSADT.Interop
         /// format.</remarks>
         /// <param name="szProduct">The GUID that uniquely identifies the product to query.</param>
         /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Windows.Win32.System.ApplicationInstallationAndServicing.INSTALLSTATE MsiQueryProductState(Guid szProduct)
         {
             return PInvoke.MsiQueryProductState(szProduct.ToString("B"));
@@ -2945,6 +2953,7 @@ namespace PSADT.Interop
         /// <param name="dwItem2">A pointer to a second item or structure relevant to the event, as defined by the event type and flags. The
         /// interpretation depends on the values of wEventId and uFlags. This parameter is optional and may be
         /// default if not required.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] nint dwItem1, [Optional] nint dwItem2)
         {
             unsafe
@@ -3064,6 +3073,7 @@ namespace PSADT.Interop
         /// graying it. Must be a valid combination of MENU_ITEM_FLAGS values.</param>
         /// <returns>A value indicating the previous state of the menu item. Returns a nonzero value if successful; otherwise,
         /// returns zero.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL EnableMenuItem(SafeHandle hMenu, WM_SYSCOMMAND uIDEnableItem, MENU_ITEM_FLAGS uEnable)
         {
             return PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
@@ -4114,6 +4124,7 @@ namespace PSADT.Interop
         /// <param name="c">The third character of the tag.</param>
         /// <param name="d">The fourth character of the tag, corresponding to the most significant byte.</param>
         /// <returns>A 32-bit unsigned integer representing the OpenType tag composed of the specified characters.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static uint DWRITE_MAKE_OPENTYPE_TAG(char a, char b, char c, char d)
         {
             return (byte)a | ((uint)(byte)b << 8) | ((uint)(byte)c << 16) | ((uint)(byte)d << 24);

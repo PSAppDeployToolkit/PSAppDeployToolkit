@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
@@ -105,6 +106,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void RestartComputer()
         {
             Environment.Exit(ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))!.Task.GetAwaiter().GetResult().ExitCode);
@@ -117,6 +119,7 @@ namespace PSADT.DeviceManagement
         /// system was started.</remarks>
         /// <returns>A <see cref="TimeSpan"/> representing the duration for which the system has been running since the last
         /// restart.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TimeSpan GetSystemUptime()
         {
             return TimeSpan.FromMilliseconds(PInvoke.GetTickCount64());
@@ -126,6 +129,7 @@ namespace PSADT.DeviceManagement
         /// Retrieves the system boot time by calculating the difference between the current time and the system uptime.
         /// </summary>
         /// <returns>A <see cref="DateTime"/> representing the date and time when the system was last booted.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DateTime GetSystemBootTime()
         {
             return DateTime.Now - GetSystemUptime();

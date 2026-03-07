@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using PSADT.Interop;
 using Windows.Win32.System.Power;
 
@@ -18,6 +19,7 @@ namespace PSADT.DeviceManagement
         /// Retrieves the current battery information.
         /// </summary>
         /// <returns>A <see cref="BatteryInfo"/> object containing details about the battery's state.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BatteryInfo Get()
         {
             return new();
@@ -29,6 +31,7 @@ namespace PSADT.DeviceManagement
         /// <remarks>This constructor retrieves initial battery and power-related information from the
         /// system. It uses system utilities to populate properties such as battery life, charge status, and power line
         /// status. This class is designed to provide information about the device's power and battery state.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private BatteryInfo()
         {
             UpdateSystemPowerStatus();
@@ -119,6 +122,7 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Gets a value indicating whether the battery is invalid.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsBatteryInvalid()
         {
             return BatteryChargeStatus is BatteryChargeStatus batteryChargeStatus && (batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown);

@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using PSADT.Interop;
@@ -176,6 +177,7 @@ namespace PSADT.Utilities
         private static string? GetBestFontTitleFromNameTable(ReadOnlySpan<byte> nameTable)
         {
             // Local function to combine family and style.
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static string NormalizeFamilyStyle(string family, string? style)
             {
                 return string.IsNullOrWhiteSpace(style) || style!.Equals("Regular", StringComparison.OrdinalIgnoreCase) ? family : $"{family} {style}";

@@ -1,4 +1,5 @@
-﻿using PSADT.Interop;
+﻿using System.Runtime.CompilerServices;
+using PSADT.Interop;
 
 namespace PSADT.TerminalServices
 {
@@ -18,6 +19,7 @@ namespace PSADT.TerminalServices
         /// system for installing applications for multiple users. This method is typically used to check if special
         /// installation procedures should be followed.</remarks>
         /// <returns>true if the session is in application install mode; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InAppInstallMode()
         {
             return NativeMethods.TermsrvAppInstallMode();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using PSADT.Utilities;
 
@@ -39,6 +40,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <remarks>Compares both the Result and Text properties. String equality is not supported for derived types.</remarks>
         /// <param name="obj">The object to compare with the current instance.</param>
         /// <returns>true if the specified object is an InputDialogResult with equal Result and Text values; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object? obj)
         {
             return obj is InputDialogResult other && Result == other.Result && Text == other.Text;
@@ -48,6 +50,7 @@ namespace PSADT.UserInterface.DialogResults
         /// Returns a hash code for the current instance based on all properties.
         /// </summary>
         /// <returns>A hash code combining Result and Text.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             return CryptographicUtilities.GenerateHashCode(Result, Text);

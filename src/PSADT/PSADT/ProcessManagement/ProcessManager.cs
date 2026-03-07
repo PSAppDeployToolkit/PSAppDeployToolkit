@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
@@ -574,6 +575,7 @@ namespace PSADT.ProcessManagement
         /// Subsequent changes to the environment variables will not be reflected in the returned dictionary.</remarks>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are the names of the environment variables
         /// and the values are their corresponding values as strings.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary()
         {
             return new(EnvironmentUtilities.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));

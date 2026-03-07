@@ -18,6 +18,8 @@
  * along with PSAppDeployToolkit. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Runtime.CompilerServices;
+
 namespace PSADT.SMBIOS
 {
     /// <summary>
@@ -85,6 +87,7 @@ namespace PSADT.SMBIOS
         /// Gets the version as a formatted string.
         /// </summary>
         /// <returns>A string in the format "Major.Minor" (e.g., "2.8", "3.1").</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal string GetVersionString()
         {
             return $"{MajorVersion}.{MinorVersion}";
@@ -182,6 +185,7 @@ namespace PSADT.SMBIOS
         /// Determines whether this is a modern SMBIOS version (3.0+).
         /// </summary>
         /// <returns>True if SMBIOS 3.0 or later; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool IsModernSmbios()
         {
             return MajorVersion >= 3;
@@ -191,6 +195,7 @@ namespace PSADT.SMBIOS
         /// Determines whether this is a legacy SMBIOS version (2.x).
         /// </summary>
         /// <returns>True if SMBIOS 2.x; otherwise false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool IsLegacySmbios()
         {
             return MajorVersion == 2;
@@ -206,6 +211,7 @@ namespace PSADT.SMBIOS
         /// by newer structures in later SMBIOS versions. Obsolete structures may still be
         /// present in older systems but should not be expected in newer implementations.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool IsObsoleteType(SmbiosType structureType)
         {
             return structureType switch
@@ -279,6 +285,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Returns a string representation of the SMBIOS version information.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return GetFullVersionString();

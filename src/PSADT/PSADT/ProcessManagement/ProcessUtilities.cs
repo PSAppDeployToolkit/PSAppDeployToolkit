@@ -122,6 +122,7 @@ namespace PSADT.ProcessManagement
         /// results.</remarks>
         /// <param name="processId">The identifier of the process to check. Must be a valid process ID.</param>
         /// <returns>true if the process has exited; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasProcessExited(int processId)
         {
             return HasProcessExited((uint)processId);
@@ -150,6 +151,7 @@ namespace PSADT.ProcessManagement
         /// and queries the process token to retrieve the user SID.</remarks>
         /// <param name="processId">The identifier of the process for which to retrieve the SID. Must be a valid process ID.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SecurityIdentifier GetProcessSid(int processId)
         {
             return GetProcessSid((uint)processId);
@@ -216,6 +218,7 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The unique identifier of the process whose image file name is to be retrieved. Must refer to a running
         /// process.</param>
         /// <returns>A string containing the full path to the executable file of the specified process.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetProcessImageName(int processId)
         {
             return GetProcessImageName((uint)processId);
@@ -368,6 +371,7 @@ namespace PSADT.ProcessManagement
         /// the method used and system configuration.</returns>
         /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
         /// of each failure encountered during the retrieval attempts.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
             return GetProcessImageName((uint)processId, ntPathLookupTable);
@@ -417,6 +421,7 @@ namespace PSADT.ProcessManagement
         /// rights to query information about the process.</param>
         /// <returns>A string containing the Win32 path of the process's executable image, or null if the path cannot be
         /// determined.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string QueryProcessImageFileNameWin32(SafeHandle hProcess)
         {
             return QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32);
@@ -433,6 +438,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary used to map NT device paths to Win32 file system paths. This table is applied to
         /// translate the native path format returned by the system.</param>
         /// <returns>A string containing the full Win32 path to the executable image of the specified process.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             return TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable);

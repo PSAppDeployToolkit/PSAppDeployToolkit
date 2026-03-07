@@ -1,4 +1,6 @@
-﻿namespace PSADT.Utilities
+﻿using System.Runtime.CompilerServices;
+
+namespace PSADT.Utilities
 {
     /// <summary>
     /// Utility class to convert values to another type by casting (PowerShell can't do this without help).
@@ -13,6 +15,7 @@
         /// <param name="val">The 64-bit signed integer to convert.</param>
         /// <returns>An 8-bit signed integer that represents the converted value. If the input value is outside the range of an
         /// 8-bit signed integer, the result is truncated.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte ToSByte(long val)
         {
             return unchecked((sbyte)val);
@@ -27,6 +30,7 @@
         /// <param name="val">The 64-bit signed integer to convert. Values outside the range of 0 to 255 will be truncated to fit within
         /// the byte range.</param>
         /// <returns>An 8-bit unsigned integer that represents the converted value of the input parameter.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte ToByte(long val)
         {
             return unchecked((byte)val);
@@ -40,6 +44,7 @@
         /// <param name="val">The 64-bit signed integer value to convert.</param>
         /// <returns>A 16-bit signed integer that represents the converted value of <paramref name="val"/>. If the value of
         /// <paramref name="val"/> is outside the range of a 16-bit signed integer, the result is truncated.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ToShort(long val)
         {
             return unchecked((short)val);
@@ -54,6 +59,7 @@
         /// bits are discarded. No exception is thrown if the value is out of range.</remarks>
         /// <param name="val">The 64-bit signed integer value to convert to an unsigned 16-bit integer.</param>
         /// <returns>A 16-bit unsigned integer that represents the lower 16 bits of the specified value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort ToUShort(long val)
         {
             return unchecked((ushort)val);
@@ -66,6 +72,7 @@
         /// conversion wraps around and does not throw an exception.</remarks>
         /// <param name="val">The 64-bit signed integer value to convert to a 32-bit signed integer.</param>
         /// <returns>A 32-bit signed integer that is equivalent to the specified value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ToInt(long val)
         {
             return unchecked((int)val);
@@ -81,6 +88,7 @@
         /// <returns>A 32-bit unsigned integer that represents the converted value of <paramref name="val"/>. If <paramref
         /// name="val"/> is outside the range of a 32-bit unsigned integer, the result wraps around without throwing an
         /// exception.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ToUInt(long val)
         {
             return unchecked((uint)val);
@@ -95,6 +103,7 @@
         /// <param name="val">The signed 64-bit integer value to convert.</param>
         /// <returns>An unsigned 64-bit integer that represents the input value. If the input is negative, the result will be a
         /// large positive number due to binary representation.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong ToULong(long val)
         {
             return unchecked((ulong)val);
@@ -108,6 +117,7 @@
         /// <param name="val">The 64-bit signed integer value to convert. This value must be within the range of a 16-bit signed integer
         /// (-32,768 to 32,767).</param>
         /// <returns>The 16-bit signed integer equivalent of the specified 64-bit signed integer.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short ToInt16(long val)
         {
             return ToShort(val);
@@ -121,6 +131,7 @@
         /// <param name="val">The 64-bit signed integer value to convert. The value must be in the range of a 16-bit unsigned integer (0
         /// to 65,535).</param>
         /// <returns>A 16-bit unsigned integer that is equivalent to the specified value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort ToUInt16(long val)
         {
             return ToUShort(val);
@@ -133,6 +144,7 @@
         /// <see cref="int.MinValue"/> or greater than <see cref="int.MaxValue"/>.</remarks>
         /// <param name="val">The 64-bit signed integer to convert. Must be within the range of a 32-bit signed integer.</param>
         /// <returns>A 32-bit signed integer that is equivalent to the specified 64-bit signed integer.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ToInt32(long val)
         {
             return ToInt(val);
@@ -146,6 +158,7 @@
         /// <param name="val">The 64-bit signed integer to convert. Must be greater than or equal to 0 and less than or equal to
         /// 4,294,967,295.</param>
         /// <returns>A 32-bit unsigned integer that is equivalent to the specified value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ToUInt32(long val)
         {
             return ToUInt(val);
@@ -156,6 +169,7 @@
         /// </summary>
         /// <param name="val">The signed 64-bit integer value to convert.</param>
         /// <returns>An unsigned 64-bit integer that represents the converted value of <paramref name="val"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong ToUInt64(long val)
         {
             return ToULong(val);

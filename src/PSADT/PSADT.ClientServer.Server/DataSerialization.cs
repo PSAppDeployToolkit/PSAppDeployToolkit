@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml;
 
@@ -51,6 +52,7 @@ namespace PSADT.ClientServer
         /// <returns>An instance of type T deserialized from the specified bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DeserializeFromBytes<T>(byte[] bytes)
         {
             return DeserializeFromBytes<T>(bytes, 0);
@@ -62,6 +64,7 @@ namespace PSADT.ClientServer
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object to serialize. Cannot be <see langword="null"/>.</param>
         /// <returns>A Base64-encoded string containing the XML representation of the specified object.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string SerializeToString<T>(T obj)
         {
             return Convert.ToBase64String(SerializeToBytes(obj));
@@ -75,6 +78,7 @@ namespace PSADT.ClientServer
         /// <returns>An object of type <typeparamref name="T"/> deserialized from the provided string.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Xml"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if the deserialization process results in a null object.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DeserializeFromString<T>(string base64Xml)
         {
             return DeserializeFromBytes<T>(Convert.FromBase64String(base64Xml));
@@ -86,6 +90,7 @@ namespace PSADT.ClientServer
         /// <param name="bytes">The byte array containing the serialized data to deserialize. Cannot be null.</param>
         /// <param name="type">The type of the object to deserialize from the byte array. Cannot be null.</param>
         /// <returns>An object instance of the specified type reconstructed from the provided byte array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object DeserializeFromBytes(byte[] bytes, Type type)
         {
             return DeserializeFromBytes(bytes, 0, type);
@@ -99,6 +104,7 @@ namespace PSADT.ClientServer
         /// <returns>An object representing the deserialized data.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="base64Xml"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if the deserialization process results in a null object.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object DeserializeFromString(string base64Xml, Type type)
         {
             return DeserializeFromBytes(Convert.FromBase64String(base64Xml), 0, type);
@@ -113,6 +119,7 @@ namespace PSADT.ClientServer
         /// <returns>An instance of type T deserialized from the specified bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static T DeserializeFromBytes<T>(byte[] bytes, int offset = 0)
         {
             return (T)DeserializeFromBytes(bytes, offset, typeof(T));
@@ -156,6 +163,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="type">The type to create a serializer for.</param>
         /// <returns>A DataContractSerializer configured with all known types.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static DataContractSerializer GetSerializer(Type type)
         {
             return new(type, DataContractSerializerSettings);
@@ -317,7 +325,7 @@ namespace PSADT.ClientServer
                 typeof(System.Threading.Tasks.TaskCanceledException),
                 typeof(System.Threading.Tasks.TaskSchedulerException),
                 typeof(System.Diagnostics.Tracing.EventSourceException),
-                typeof(System.Runtime.CompilerServices.RuntimeWrappedException),
+                typeof(RuntimeWrappedException),
                 typeof(XmlException),
                 typeof(System.Xml.Schema.XmlSchemaException),
                 typeof(System.Xml.Schema.XmlSchemaInferenceException),

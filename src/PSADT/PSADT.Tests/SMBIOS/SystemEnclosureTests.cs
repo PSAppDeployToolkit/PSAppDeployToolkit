@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 using PSADT.SMBIOS;
 using Xunit;
 
@@ -299,6 +300,7 @@ namespace PSADT.Tests.SMBIOS
         /// structure.</param>
         /// <returns>A byte array containing the raw SMBIOS System Enclosure structure with the provided formatted data and
         /// strings.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte[] BuildEnclosure(byte[] formatted, params string[] strings)
         {
             return SmbiosTestDataBuilder.BuildRawSmbios(

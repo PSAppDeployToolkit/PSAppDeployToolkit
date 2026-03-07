@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace PSADT.SMBIOS
 {
@@ -37,6 +38,7 @@ namespace PSADT.SMBIOS
         /// <remarks>This exception is thrown when no SMBIOS structures of the specified type are
         /// found.</remarks>
         /// <param name="type">The SMBIOS type that was not found.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SmbiosTypeNotFoundException(SmbiosType type) : base($"No SMBIOS structures of type [{type}] found.", (Exception?)null)
         {
             Type = type;

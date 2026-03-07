@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
@@ -65,6 +66,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
         /// resolve paths within the process's version information.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version details of the specified process.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             return new(process, null, ntPathLookupTable);
@@ -77,6 +79,7 @@ namespace PSADT.ProcessManagement
         /// <param name="filePath">The file path associated with the process, used to locate version details.</param>
         /// <returns>A <see cref="ProcessVersionInfo"/> object containing the version information of the specified process and
         /// file path.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessVersionInfo GetVersionInfo(Process process, string filePath)
         {
             return new(process, filePath, null);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace PSADT.Utilities
 {
@@ -62,6 +63,7 @@ namespace PSADT.Utilities
         /// <param name="s">The string that contains the pointer or handle to convert.</param>
         /// <returns>An nint value that is equivalent to the pointer or handle specified in s.</returns>
         /// <exception cref="FormatException">Thrown if s is not in a valid format to represent an nint value.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nint ParseIntPtr(string s)
         {
             return !TryParseIntPtr(s, out nint value)

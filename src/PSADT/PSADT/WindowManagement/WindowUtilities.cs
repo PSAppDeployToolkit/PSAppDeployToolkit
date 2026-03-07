@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using PSADT.Interop;
 using Windows.Win32.Foundation;
@@ -24,6 +25,7 @@ namespace PSADT.WindowManagement
         /// parent process filters.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects representing the windows that match the specified
         /// filters. The list will be empty if no windows match the criteria.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
             return GetProcessWindowInfo(null, options.ParentProcessFilter, options.ParentProcessIdFilter, options.ParentProcessMainWindowHandleFilter, options.WindowTitleFilter, options.WindowHandleFilter);
@@ -39,6 +41,7 @@ namespace PSADT.WindowManagement
         /// in the returned collection. Cannot be null.</param>
         /// <returns>A read-only collection of <see cref="WindowInfo"/> objects representing the filtered windows. The collection
         /// will be empty if no matching windows are found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<int> parentProcessIdFilter, IReadOnlyList<nint> windowHandleFilter)
         {
             return GetProcessWindowInfo(null, null, parentProcessIdFilter, null, null, windowHandleFilter);

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Threading;
 using PSADT.DeviceManagement;
@@ -70,6 +71,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// performing any other action.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;

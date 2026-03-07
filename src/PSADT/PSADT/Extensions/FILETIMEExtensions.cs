@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 
 namespace PSADT.Extensions
@@ -16,6 +17,7 @@ namespace PSADT.Extensions
         /// </summary>
         /// <param name="filetime">The FILETIME structure to evaluate for a zero date and time.</param>
         /// <returns>true if the specified FILETIME structure represents a zero date and time; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsZero(this FILETIME filetime)
         {
             return filetime.dwHighDateTime == 0 && filetime.dwLowDateTime == 0;
@@ -29,6 +31,7 @@ namespace PSADT.Extensions
         /// <param name="filetime">The <see cref="FILETIME"/> structure to convert.</param>
         /// <returns>A <see cref="DateTime"/> object that represents the same point in time as the specified <see
         /// cref="FILETIME"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DateTime ToDateTime(this FILETIME filetime)
         {
             return DateTime.FromFileTime(((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using Windows.Win32.Foundation;
 
@@ -63,6 +64,7 @@ namespace PSADT.Interop
         /// Converts this instance to a signed byte value.
         /// </summary>
         /// <returns>The signed byte representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte ToSByte()
         {
             return (sbyte)_value;
@@ -72,6 +74,7 @@ namespace PSADT.Interop
         /// Converts this instance to an unsigned byte value.
         /// </summary>
         /// <returns>The unsigned byte representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ToByte()
         {
             return (byte)_value;
@@ -81,6 +84,7 @@ namespace PSADT.Interop
         /// Converts this instance to a signed 16-bit integer value.
         /// </summary>
         /// <returns>The signed 16-bit integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short ToInt16()
         {
             return (short)_value;
@@ -90,6 +94,7 @@ namespace PSADT.Interop
         /// Converts this instance to an unsigned 16-bit integer value.
         /// </summary>
         /// <returns>The unsigned 16-bit integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ToUInt16()
         {
             return (ushort)_value;
@@ -99,6 +104,7 @@ namespace PSADT.Interop
         /// Converts this instance to a signed 32-bit integer value.
         /// </summary>
         /// <returns>The signed 32-bit integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ToInt32()
         {
             return (int)_value;
@@ -108,6 +114,7 @@ namespace PSADT.Interop
         /// Converts this instance to an unsigned 32-bit integer value.
         /// </summary>
         /// <returns>The unsigned 32-bit integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ToUInt32()
         {
             return (uint)_value;
@@ -117,6 +124,7 @@ namespace PSADT.Interop
         /// Converts this instance to a signed 64-bit integer value.
         /// </summary>
         /// <returns>The signed 64-bit integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long ToInt64()
         {
             return _value;
@@ -126,6 +134,7 @@ namespace PSADT.Interop
         /// Converts this instance to an unsigned 64-bit integer value.
         /// </summary>
         /// <returns>The unsigned 64-bit integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong ToUInt64()
         {
             return (ulong)_value;
@@ -135,6 +144,7 @@ namespace PSADT.Interop
         /// Converts this instance to a native integer value.
         /// </summary>
         /// <returns>The native integer representation of this constant's value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public nint ToIntPtr()
         {
             return _value;
@@ -157,6 +167,7 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="other">The other instance to compare with.</param>
         /// <returns><see langword="true"/> if both instances have the same name and value; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(TSelf? other)
         {
             return other is not null && _name == other._name && _value == other._value;
@@ -171,6 +182,7 @@ namespace PSADT.Interop
         /// </remarks>
         /// <param name="obj">The object to compare with this instance.</param>
         /// <returns><see langword="true"/> if the object is equal to this instance; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object? obj)
         {
             return obj switch
@@ -195,6 +207,7 @@ namespace PSADT.Interop
         /// Returns the name of this constant value.
         /// </summary>
         /// <returns>The name associated with this constant instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return _name;
@@ -204,6 +217,7 @@ namespace PSADT.Interop
         /// Returns the hash code for this instance.
         /// </summary>
         /// <returns>A hash code based on the value of this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             return _value.GetHashCode();

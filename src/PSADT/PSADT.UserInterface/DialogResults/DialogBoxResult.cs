@@ -88,6 +88,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="value">The numeric value to convert.</param>
         /// <returns>The corresponding <see cref="DialogBoxResult"/> static instance.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the value does not correspond to a known result.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DialogBoxResult FromMessageBoxResult(MESSAGEBOX_RESULT value)
         {
             return !MessageBoxResultMap.TryGetValue(value, out DialogBoxResult? result)

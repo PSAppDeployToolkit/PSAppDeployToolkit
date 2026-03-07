@@ -36,6 +36,7 @@ namespace PSADT.UserInterface.DialogResults
         /// </summary>
         /// <param name="value">The numeric value to be associated with this instance.</param>
         /// <param name="name">The name to be associated with this instance for string comparisons. Automatically captured from the caller member name.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private CloseAppsDialogResult(nint value, [CallerMemberName] string name = null!) : base(value, name)
         {
         }

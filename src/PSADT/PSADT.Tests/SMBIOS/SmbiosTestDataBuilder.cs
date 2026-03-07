@@ -21,6 +21,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using PSADT.SMBIOS;
 
@@ -75,6 +76,7 @@ namespace PSADT.Tests.SMBIOS
             return buffer;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static byte[] BuildRawSmbios(params SmbiosStructure[] structures)
         {
             return BuildRawSmbios(3, 0, 0, structures);
