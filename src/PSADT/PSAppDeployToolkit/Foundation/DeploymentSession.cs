@@ -10,7 +10,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
@@ -42,6 +41,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         /// <param name="noExitOnClose">Indicates that the shell shouldn't exit on the last session closure.</param>
         /// <param name="compatibilityMode">Indicates whether compatibility mode is enabled.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "This exception type is fine here.")]
         public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, bool? compatibilityMode = null)
         {
             try
@@ -1014,20 +1014,13 @@ namespace PSAppDeployToolkit.Foundation
 
                 #endregion
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                HandleCtorException(ex, ex.Message, 60008);
-                throw;
-            }
-            catch (NotSupportedException ex)
-            {
-                HandleCtorException(ex, ex.Message, DeferExitCode);
-                throw;
-            }
             catch (Exception ex)
             {
-                HandleCtorException(ex, $"Failure occurred while instantiating new deployment session: {ex}", 60008);
-                throw;
+                WriteLogEntry(ex.Message, LogSeverity.Error);
+                RemoveSubstDrive(); DismountWimFiles();
+                SetExitCode(ex is NotSupportedException ? DeferExitCode : 60008);
+                Environment.ExitCode = Close();
+                throw new ApplicationException("Failure occurred while instantiating new deployment session.", ex);
             }
         }
 
@@ -1422,26 +1415,6 @@ namespace PSAppDeployToolkit.Foundation
         public void AddMountedWimFile(FileInfo wimFile)
         {
             MountedWimFiles.Add(wimFile);
-        }
-
-        /// <summary>
-        /// Handles an exception that occurs during object construction by logging the error, performing cleanup,
-        /// setting the process exit code, and rethrowing the exception.
-        /// </summary>
-        /// <remarks>This method performs necessary cleanup and ensures that the process exit code is set
-        /// before rethrowing the original exception. The method does not return to the caller, as it rethrows the
-        /// exception after cleanup.</remarks>
-        /// <param name="ex">The exception that was thrown during construction. Cannot be null.</param>
-        /// <param name="logMessage">The message to log describing the error condition.</param>
-        /// <param name="exitCode">The exit code to set for the process before termination.</param>
-        private void HandleCtorException(Exception ex, string logMessage, int exitCode)
-        {
-            WriteLogEntry(logMessage, LogSeverity.Error);
-            RemoveSubstDrive();
-            DismountWimFiles();
-            SetExitCode(exitCode);
-            Environment.ExitCode = Close();
-            ExceptionDispatchInfo.Capture(ex).Throw();
         }
 
         /// <summary>

@@ -494,7 +494,14 @@ function Open-ADTSession
             }
             catch
             {
-                Write-Error -Exception $_.Exception.InnerException -Category OpenError -CategoryTargetName $Script:ADT.LastExitCode -CategoryTargetType $Script:ADT.LastExitCode.GetType().Name
+                if ($_.Exception.InnerException -is [System.ApplicationException])
+                {
+                    Write-Error -Exception $_.Exception.InnerException.InnerException -Category OpenError -CategoryTargetName $Script:ADT.LastExitCode -CategoryTargetType $Script:ADT.LastExitCode.GetType().Name
+                }
+                else
+                {
+                    Write-Error -ErrorRecord $_
+                }
             }
         }
         catch
