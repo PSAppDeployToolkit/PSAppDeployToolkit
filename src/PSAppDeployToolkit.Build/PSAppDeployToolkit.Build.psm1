@@ -107,7 +107,7 @@ try
                     UnitTests = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Tests', 'Unit')
                     IntegrationTests = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Tests', 'Integration')
                     BuildOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts')
-                    ModuleOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'Module', 'PSAppDeployToolkit')
+                    ModuleOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'ModuleOnly', 'PSAppDeployToolkit')
                     TestOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'TestOutput')
                     MarkdownOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'platyPS')
                     DocusaurusOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'Docusaurus')

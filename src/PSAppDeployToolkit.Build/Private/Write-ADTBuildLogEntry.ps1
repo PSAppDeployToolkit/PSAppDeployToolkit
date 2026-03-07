@@ -21,7 +21,7 @@ function Write-ADTBuildLogEntry
     # Prepend a timestamp onto the message and write it out.
     $dateTime = if (Test-ADTBuildingWithinPipeline)
     {
-        [System.DateTime]::Now.ToUniversalTime().ToString('O')
+        [System.DateTime]::UtcNow.ToString('O')
     }
     else
     {

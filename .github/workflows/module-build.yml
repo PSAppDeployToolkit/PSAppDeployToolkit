@@ -68,46 +68,54 @@ jobs:
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/4.1.x'
       shell: powershell
       run: |
-        Get-ChildItem -Path "$($PWD)\src\Artifacts\Module\PSAppDeployToolkit" -Include '*.ps*1', 'PSAppDeployToolkit.dll', 'PSADT*.dll', 'PSADT*.exe', 'iNKORE.UI.WPF*.dll', 'Invoke-AppDeployToolkit.exe' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
+        Get-ChildItem -Path "$($PWD)\src\Artifacts\ModuleOnly\PSAppDeployToolkit" -Include '*.ps*1', 'PSAppDeployToolkit.dll', 'PSADT*.dll', 'PSADT*.exe', 'iNKORE.UI.WPF*.dll', 'Invoke-AppDeployToolkit.exe' -Recurse | Select-Object -ExpandProperty FullName | Out-File "FilesToSign.txt"
         & azuresigntool.exe sign -s -kvu https://psadt-kv-prod-codesign.vault.azure.net -kvc PSADT -kvm -tr http://timestamp.digicert.com -td sha256 -ifl FilesToSign.txt
 
     - name: Generate artifact templates
+      id: exports
       shell: powershell
       run: |
-        & (Import-Module -Name .\src\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Export-ADTScriptTemplate' }
-
-    - name: Make artifact name suffix
-      id: ts
-      shell: powershell
-      run: |
-        "suffix=$(if ($env:GITHUB_REF_NAME -match 'merge$') { $env:GITHUB_REF_NAME.Split('/')[-2] } else { $env:GITHUB_REF_NAME.Split('/')[-1] })_$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', [System.Management.Automation.Language.NullString]::Value) -replace '\.\d+')_$($env:GITHUB_SHA.Substring(0, 7))" >> $env:GITHUB_OUTPUT
+        & (Import-Module -Name .\src\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Export-ADTScriptTemplate', 'Compress-ADTBuildAssetContent' }
 
     - name: Upload module
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
-        name: PSAppDeployToolkit_ModuleOnly__${{ steps.ts.outputs.suffix }}
-        path: .\src\Artifacts\Module
+        path: ${{ steps.exports.outputs.ModuleOnly }}
         if-no-files-found: error
-        compression-level: 9
         overwrite: true
+        archive: false
 
     - name: Upload v3 module template
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
-        name: PSAppDeployToolkit_Template_v3__${{ steps.ts.outputs.suffix }}
-        path: .\src\Artifacts\Template_v3
+        path: ${{ steps.exports.outputs.Template_v3 }}
         if-no-files-found: error
-        compression-level: 9
         overwrite: true
+        archive: false
 
     - name: Upload v4 module template
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
-        name: PSAppDeployToolkit_Template_v4__${{ steps.ts.outputs.suffix }}
-        path: .\src\Artifacts\Template_v4
+        path: ${{ steps.exports.outputs.Template_v4 }}
         if-no-files-found: error
-        compression-level: 9
         overwrite: true
+        archive: false
+
+    - name: Upload pester results
+      uses: actions/upload-artifact@v7
+      with:
+        path: .\src\Artifacts\TestOutput\PesterTests.xml
+        if-no-files-found: error
+        overwrite: true
+        archive: false
+
+    - name: Upload code coverage results
+      uses: actions/upload-artifact@v7
+      with:
+        path: .\src\Artifacts\CodeCoverage\CodeCoverage.xml
+        if-no-files-found: error
+        overwrite: true
+        archive: false
 
     - name: Generate docs and update website
       if: github.ref == 'refs/heads/main'
