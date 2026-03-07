@@ -1,5 +1,6 @@
 ﻿#if !NET8_0_OR_GREATER
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -33,6 +34,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is equal to <paramref name="other"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfEqual<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IEquatable<T>?
             {
                 if (EqualityComparer<T>.Default.Equals(value, other))
@@ -50,6 +52,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is not equal to <paramref name="other"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNotEqual<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IEquatable<T>?
             {
                 if (!EqualityComparer<T>.Default.Equals(value, other))
@@ -67,6 +70,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is greater than <paramref name="other"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfGreaterThan<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IComparable<T>
             {
                 if (value.CompareTo(other) > 0)
@@ -84,6 +88,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is greater than or equal to <paramref name="other"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfGreaterThanOrEqual<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IComparable<T>
             {
                 if (value.CompareTo(other) >= 0)
@@ -101,6 +106,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is less than <paramref name="other"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfLessThan<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IComparable<T>
             {
                 if (value.CompareTo(other) < 0)
@@ -118,6 +124,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is less than or equal to <paramref name="other"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfLessThanOrEqual<T>(T value, T other, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IComparable<T>
             {
                 if (value.CompareTo(other) <= 0)
@@ -134,6 +141,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is negative.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNegative<T>(T value, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IComparable<T>
             {
                 if (value.CompareTo(default!) < 0)
@@ -150,6 +158,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is negative or zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNegativeOrZero<T>(T value, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IComparable<T>
             {
                 if (value.CompareTo(default!) <= 0)
@@ -166,6 +175,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZero<T>(T value, [CallerArgumentExpression(nameof(value))] string paramName = null!) where T : IEquatable<T>?
             {
                 if (EqualityComparer<T>.Default.Equals(value, default!))
@@ -181,6 +191,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZero(nint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
             {
                 if (value == 0)
@@ -196,6 +207,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZero(nuint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
             {
                 if (value == 0)

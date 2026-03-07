@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace PSADT.Interop.Extensions
@@ -21,6 +22,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>The original directory path if it exists.</returns>
         /// <exception cref="DirectoryNotFoundException">Thrown if <paramref name="value"/> does not point to an existing directory.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         internal static string ThrowIfDirectoryDoesNotExist(this string value)
         {
             return !Directory.Exists(value)
@@ -39,6 +41,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>The original file path if the file exists.</returns>
         /// <exception cref="FileNotFoundException">Thrown if the file specified by <paramref name="value"/> does not exist.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         internal static string ThrowIfFileDoesNotExist(this string value)
         {
             return !File.Exists(value)
@@ -56,6 +59,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>The original file path if the file exists or its directory exists; otherwise, an exception is thrown.</returns>
         /// <exception cref="DirectoryNotFoundException">Thrown when the directory for the specified file path does not exist.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         internal static string ThrowIfFileDirectoryDoesNotExist(this string value)
         {
             return !File.Exists(value) && (Path.GetDirectoryName(value) is not string directory || !Directory.Exists(directory))
@@ -72,6 +76,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>The original path if it is rooted.</returns>
         /// <exception cref="DriveNotFoundException">Thrown if the specified path is not rooted.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         internal static string ThrowIfPathIsNotRooted(this string value)
         {
             return !Path.IsPathRooted(value)

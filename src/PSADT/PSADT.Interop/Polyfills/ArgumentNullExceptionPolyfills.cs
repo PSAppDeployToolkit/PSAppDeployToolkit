@@ -1,4 +1,5 @@
 ﻿#if !NET6_0_OR_GREATER
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -27,6 +28,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
             /// <exception cref="ArgumentNullException"><paramref name="argument"/> is null.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNull([NotNull] object? argument, [CallerArgumentExpression(nameof(argument))] string paramName = null!)
             {
                 if (argument is null)
@@ -45,6 +47,7 @@ namespace System
             /// <param name="paramName">The name of the parameter being validated. Used in the exception message if the argument is null.</param>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="argument"/> is null.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static unsafe void ThrowIfNull([NotNull] void* argument, [CallerArgumentExpression(nameof(argument))] string paramName = null!)
             {
                 if (argument is null)

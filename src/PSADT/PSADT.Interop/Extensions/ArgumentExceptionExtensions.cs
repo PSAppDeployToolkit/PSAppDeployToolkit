@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
@@ -30,6 +31,7 @@ namespace System
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null.</exception>
             /// <exception cref="ObjectDisposedException">Thrown if <paramref name="handle"/> is closed.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNullOrClosed(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string name = null!)
             {
                 if (handle is null)
@@ -52,6 +54,7 @@ namespace System
             /// <param name="name">The name of the parameter. Used in exception messages to identify the source of the error.</param>
             /// <exception cref="ArgumentException">Thrown if the SafeHandle is invalid, indicating that the handle cannot be used.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNullOrInvalid(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string name = null!)
             {
                 ThrowIfNullOrClosed(handle, name);

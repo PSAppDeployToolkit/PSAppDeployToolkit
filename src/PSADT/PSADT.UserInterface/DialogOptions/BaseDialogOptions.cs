@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -215,6 +216,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <returns>The original image string if the image is valid.</returns>
         /// <exception cref="FileNotFoundException">Thrown if the specified image file does not exist.</exception>
         /// <exception cref="ArgumentException">Thrown if the specified image is not a valid image format.</exception>
+        [StackTraceHidden]
         internal static string ThrowIfImageIsInvalid(string image, string identifier)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(image);

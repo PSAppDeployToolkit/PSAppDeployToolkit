@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using PSADT.Interop.Utilities;
 using Windows.Win32.Foundation;
 
@@ -21,6 +22,7 @@ namespace PSADT.Interop.Extensions
         /// thrown.</param>
         /// <returns>The original WIN32 error code if it indicates success; otherwise, an exception is thrown.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         internal static WIN32_ERROR ThrowOnFailure(this WIN32_ERROR win32Error)
         {
             return win32Error != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(win32Error) : win32Error;

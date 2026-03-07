@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using PSADT.Interop.Utilities;
 using Windows.Win32.Foundation;
 
@@ -20,6 +21,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="status">The NTSTATUS value to evaluate for success or failure.</param>
         /// <returns>The original NTSTATUS value if it indicates success; otherwise, an exception is thrown.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [StackTraceHidden]
         internal static NTSTATUS ThrowOnFailure(this NTSTATUS status)
         {
             return status != NTSTATUS.STATUS_SUCCESS ? throw ExceptionUtilities.GetException(status) : status;

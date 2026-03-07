@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
@@ -29,6 +30,7 @@ namespace System
             /// <param name="message">The message to include in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZero(uint value, string message)
             {
                 if (value == 0)
@@ -44,6 +46,7 @@ namespace System
             /// <param name="message">The message that will be included in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZero(nint value, string message)
             {
                 if (value == IntPtr.Zero)
@@ -59,6 +62,7 @@ namespace System
             /// <param name="message">The message that will be included in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZero(nuint value, string message)
             {
                 if (value == UIntPtr.Zero)
@@ -74,6 +78,7 @@ namespace System
             /// <param name="message">The message that will be included in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNull(PWSTR value, string message)
             {
                 unsafe
@@ -92,6 +97,7 @@ namespace System
             /// <param name="message">The error message to include with the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is -1.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfInvalid(nint value, string message)
             {
                 if (value == -1)
@@ -108,6 +114,7 @@ namespace System
             /// <param name="message">The error message to include with the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfInvalid(nuint value, string message)
             {
                 if (value == unchecked((nuint)(-1)))
@@ -124,6 +131,7 @@ namespace System
             /// <param name="message">The error message to include with the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfInvalid(PWSTR value, string message)
             {
                 unsafe
@@ -144,6 +152,7 @@ namespace System
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZeroOrInvalid(nint value, string message)
             {
                 if (value == IntPtr.Zero || value == -1)
@@ -161,6 +170,7 @@ namespace System
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfZeroOrInvalid(nuint value, string message)
             {
                 if (value == UIntPtr.Zero || value == unchecked((nuint)(-1)))
@@ -178,6 +188,7 @@ namespace System
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNullOrInvalid(PWSTR value, string message)
             {
                 unsafe
@@ -199,6 +210,7 @@ namespace System
             /// <param name="message">The message included in the exception if the handle is null, closed, or invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if the handle is null, closed, or invalid.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNullOrInvalid<T>(T handle, string message) where T : SafeHandle
             {
                 if (handle is null || handle.IsClosed || handle.IsInvalid)

@@ -1,4 +1,5 @@
 ﻿#if !NET7_0_OR_GREATER
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -27,6 +28,7 @@ namespace System
             /// <exception cref="ArgumentNullException"><paramref name="argument"/> is null.</exception>
             /// <exception cref="ArgumentException"><paramref name="argument"/> is empty or consists only of white-space characters.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
             public static void ThrowIfNullOrWhiteSpace([NotNull] string? argument, [CallerArgumentExpression(nameof(argument))] string paramName = null!)
             {
                 if (argument is null)
