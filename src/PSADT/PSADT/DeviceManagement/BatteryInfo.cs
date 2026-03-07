@@ -134,6 +134,7 @@ namespace PSADT.DeviceManagement
         /// <remarks>This method uses the <see cref="NativeMethods.GetSystemPowerStatus"/> function to update
         /// the power status. The retrieved information includes details such as battery charge level, AC power status,
         /// and battery life.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void UpdateSystemPowerStatus()
         {
             _ = NativeMethods.GetSystemPowerStatus(out systemPowerStatus);

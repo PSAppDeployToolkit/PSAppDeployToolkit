@@ -1166,6 +1166,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(IReadOnlyList<string> message)
         {
             _ = WriteLogEntry(message, false, null, null, null, null, null, null, null);
@@ -1175,6 +1176,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message)
         {
             _ = WriteLogEntry([message], false, null, null, null, null, null, null, null);
@@ -1185,6 +1187,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity)
         {
             _ = WriteLogEntry([message], false, severity, null, null, null, null, null, null);
@@ -1195,6 +1198,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="source">The source of the message.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, string source)
         {
             _ = WriteLogEntry([message], false, null, source, null, null, null, null, null);
@@ -1206,6 +1210,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity, string source)
         {
             _ = WriteLogEntry([message], false, severity, source, null, null, null, null, null);
@@ -1216,6 +1221,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, bool writeHost)
         {
             _ = WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));

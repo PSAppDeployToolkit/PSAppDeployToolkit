@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using PSADT.Interop;
 
@@ -51,6 +52,7 @@ namespace PSADT.Utilities
         /// not exist, it will be created.</param>
         /// <param name="key">The name of the key to write within the specified section. If null, the entire section is deleted.</param>
         /// <param name="value">The value to assign to the specified key. If null, the key is removed from the section.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
         {
             _ = NativeMethods.WritePrivateProfileString(section, key, value, filepath);
