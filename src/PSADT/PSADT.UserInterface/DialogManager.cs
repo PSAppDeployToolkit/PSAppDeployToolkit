@@ -37,8 +37,7 @@ namespace PSADT.UserInterface
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
             unhandledExceptionHandler = AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") as Action<Exception> ?? throw new InvalidOperationException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
 
-            // Register process exit handler to ensure WPF is properly shut down.
-            // This prevents ~2.5 second delays during process termination.
+            // Register process exit handler to ensure WPF is properly shut down. This prevents ~2.5 second delays during shutdown.
             AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown, DispatcherPriority.Send);
 
             // Create and start the WPF application thread.
@@ -56,7 +55,7 @@ namespace PSADT.UserInterface
                     {
                         // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-                        _ = appLocal.Dispatcher.InvokeAsync(dispatcherRunning.Set, DispatcherPriority.Send);
+                        _ = appLocal.Dispatcher.BeginInvoke(DispatcherPriority.Normal, dispatcherRunning.Set);
                     };
                     _ = appLocal.Run();
                 }
@@ -91,8 +90,7 @@ namespace PSADT.UserInterface
             app = appLocal;
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-            // This can happen in the background at the discretion of the dispatcher and how it wishes to prioritise.
-            _ = app.Dispatcher.InvokeAsync(ShellUtilities.RefreshDesktop);
+            _ = app.Dispatcher.BeginInvoke(DispatcherPriority.Send, ShellUtilities.RefreshDesktop);
         }
 
         /// <summary>
@@ -480,7 +478,7 @@ namespace PSADT.UserInterface
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InvokeDialogAction(Action callback)
         {
-            app.Dispatcher.Invoke(callback, DispatcherPriority.Send);
+            app.Dispatcher.Invoke(callback, DispatcherPriority.Normal);
         }
 
         /// <summary>
@@ -489,7 +487,7 @@ namespace PSADT.UserInterface
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static TResult InvokeDialogAction<TResult>(Func<TResult> callback)
         {
-            return app.Dispatcher.Invoke(callback, DispatcherPriority.Send);
+            return app.Dispatcher.Invoke(callback, DispatcherPriority.Normal);
         }
 
         /// <summary>
