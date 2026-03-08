@@ -290,7 +290,7 @@ namespace PSADT.Interop.Utilities
                 if (ex.StackTrace is string trace)
                 {
                     string marker = nameof(ExceptionUtilities) + "." + nameof(GetStackTraceAtPrefix);
-                    foreach (string line in trace.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+                    foreach (string line in trace.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries))
                     {
                         string trimmed = line.TrimStart();
                         int idx = trimmed.IndexOf(marker, StringComparison.Ordinal);

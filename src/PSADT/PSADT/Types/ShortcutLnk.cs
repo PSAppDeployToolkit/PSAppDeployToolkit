@@ -62,7 +62,7 @@ namespace PSADT.Types
             {
                 return false;
             }
-            string[] parts = Hotkey!.Split('+');
+            string[] parts = Hotkey!.Split(['+'], StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
                 return false;

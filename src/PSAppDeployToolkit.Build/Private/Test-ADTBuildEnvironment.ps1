@@ -34,7 +34,7 @@ function Test-ADTBuildEnvironment
 
         # Confirm there's no conflicting module within the PSModulePath (i.e. installed from the gallery).
         Write-ADTBuildLogEntry -Message "Verifying $($Script:ModuleConstants.ModuleName) is not present within any PSModulePath directory."
-        if (Get-ChildItem -LiteralPath $env:PSModulePath.Split(';') -Filter $Script:ModuleConstants.ModuleName -ErrorAction Ignore)
+        if (Get-ChildItem -LiteralPath $env:PSModulePath.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim() -Filter $Script:ModuleConstants.ModuleName -ErrorAction Ignore)
         {
             throw "A conflicting $($Script:ModuleConstants.ModuleName) module was found within a PSModulePath directory. Please uninstall any $($Script:ModuleConstants.ModuleName) modules from the PSGallery and try again."
         }

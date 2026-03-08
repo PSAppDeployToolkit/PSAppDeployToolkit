@@ -285,7 +285,7 @@ namespace PSADT.WindowsInstaller
             using MsiCloseHandleSafeHandle hSummaryInfo = GetSummaryInformation(szDatabasePath);
             return GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE) is not string template || string.IsNullOrWhiteSpace(template)
                 ? throw new InvalidOperationException("The patch database did not contain a valid PID_TEMPLATE property with supported product codes.")
-                : (IReadOnlyList<Guid>)new ReadOnlyCollection<Guid>([.. template.Split(';').Select(static g => new Guid(g))]);
+                : (IReadOnlyList<Guid>)new ReadOnlyCollection<Guid>([.. template.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g))]);
         }
 
         /// <summary>

@@ -176,11 +176,12 @@ try
             {
                 if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
                 {
+                    $i = $_.Name.Split(':')[-1]
                     if ($_.Name.Contains(':'))
                     {
-                        $PrivateFuncs.Add($_.Name.Split(':')[-1])
+                        $PrivateFuncs.Add($i)
                     }
-                    $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$($_.Name.Split(':')[-1])")
+                    $FunctionPaths.Add("Microsoft.PowerShell.Core\Function::$i")
                 }
             }
         }

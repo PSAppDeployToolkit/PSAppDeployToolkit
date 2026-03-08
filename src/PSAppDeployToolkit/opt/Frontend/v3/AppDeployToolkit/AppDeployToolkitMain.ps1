@@ -5072,7 +5072,7 @@ function Write-FunctionHeaderOrFooter
         # Get the parameters that the calling function was invoked with.
         if ([System.String]$CmdletBoundParameters = $CmdletBoundParameters | Format-Table -Property @{ Label = 'Parameter'; Expression = { "[-$($_.Key)]" } }, @{ Label = 'Value'; Expression = { $_.Value }; Alignment = 'Left' }, @{ Label = 'Type'; Expression = { $_.Value.GetType().Name }; Alignment = 'Left' } -AutoSize -Wrap | Out-String)
         {
-            Write-ADTLogEntry -Message "Function invoked with bound parameter(s): `r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
+            Write-ADTLogEntry -Message "Function invoked with bound parameter(s):`r`n$CmdletBoundParameters" -Source ${CmdletName} -DebugMessage
         }
         else
         {

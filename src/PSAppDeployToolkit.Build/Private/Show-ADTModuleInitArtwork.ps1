@@ -27,7 +27,7 @@ function Show-ADTModuleInitArtwork
     $null = if ($Script:ModuleConstants.InitializationArtwork.Style.Equals('Raster'))
     {
         # Get each line.
-        $Script:ModuleConstants.InitializationArtwork.Banner.Replace("`r", [System.Management.Automation.Language.NullString]::Value).Split(0x0A).ForEach({
+        $Script:ModuleConstants.InitializationArtwork.Banner.Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None).ForEach({
                 # Print each line's character, then place a line feed before continuing.
                 $_.GetEnumerator().ForEach({
                         # Log the start time, write the character and spin until enough ticks have elapsed. 10000 ticks is 1 millisecond.
@@ -42,7 +42,7 @@ function Show-ADTModuleInitArtwork
     else
     {
         # Get each line and draw one-by-one.
-        $Script:ModuleConstants.InitializationArtwork.Banner.Replace("`r", [System.Management.Automation.Language.NullString]::Value).Split(0x0A).ForEach({
+        $Script:ModuleConstants.InitializationArtwork.Banner.Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None).ForEach({
                 [System.Console]::WriteLine($_)
                 [System.Threading.Thread]::Sleep(125)
             })

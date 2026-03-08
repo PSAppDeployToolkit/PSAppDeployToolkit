@@ -35,7 +35,7 @@ function Private:Import-ADTStringTable
                 {
                     $_.($section.Key) = $substitutions.Replace($section.Value,
                         {
-                            return $args[0].Groups[1].Value.Split('\') | & {
+                            return $args[0].Groups[1].Value.Split('\', [System.StringSplitOptions]::RemoveEmptyEntries) | & {
                                 begin
                                 {
                                     $result = $config

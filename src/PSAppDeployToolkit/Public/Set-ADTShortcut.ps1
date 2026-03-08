@@ -194,7 +194,7 @@ function Set-ADTShortcut
                     }
 
                     # Handle icon, starting with retrieval previous value and split the path from the index.
-                    $TempIconLocation, $TempIconIndex = $shortcut.IconLocation.Split(',').Trim()
+                    $TempIconLocation, $TempIconIndex = $shortcut.IconLocation.Split(',', [System.StringSplitOptions]::RemoveEmptyEntries).Trim()
                     $newIconLocation = if ($IconLocation)
                     {
                         # New icon path was specified. Check whether new icon index was also specified.
