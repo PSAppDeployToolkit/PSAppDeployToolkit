@@ -255,22 +255,6 @@ namespace PSAppDeployToolkit.Foundation
                     Settings |= DeploymentSettings.NoExitOnClose;
                 }
 
-                // Establish script directories.
-                if (ScriptDirectory.Count > 0)
-                {
-                    foreach (string directory in ScriptDirectory)
-                    {
-                        if (string.IsNullOrWhiteSpace(DirFiles) && Directory.Exists(Path.Combine(directory, "Files")))
-                        {
-                            DirFiles = Path.Combine(directory, "Files");
-                        }
-                        if (string.IsNullOrWhiteSpace(DirSupportFiles) && Directory.Exists(Path.Combine(directory, "SupportFiles")))
-                        {
-                            DirSupportFiles = Path.Combine(directory, "SupportFiles");
-                        }
-                    }
-                }
-
 
                 #endregion
                 #region DetectDefaultWim

@@ -425,6 +425,28 @@ function Open-ADTSession
             }
         }
 
+        # Set up DirFiles/DirSupportFiles if one wasn't specified.
+        if (!$PSBoundParameters.ContainsKey('DirFiles'))
+        {
+            foreach ($directory in $PSBoundParameters.ScriptDirectory -replace '$', '\Files')
+            {
+                if ([System.IO.Directory]::Exists($directory))
+                {
+                    $PSBoundParameters.DirFiles = $DirFiles = $directory
+                }
+            }
+        }
+        if (!$PSBoundParameters.ContainsKey('DirSupportFiles'))
+        {
+            foreach ($directory in $PSBoundParameters.ScriptDirectory -replace '$', '\SupportFiles')
+            {
+                if ([System.IO.Directory]::Exists($directory))
+                {
+                    $PSBoundParameters.DirSupportFiles = $DirSupportFiles = $directory
+                }
+            }
+        }
+
         # Forcibly enable AllowWowProcess if it's not specified and the caller is our executable with /32 specified.
         if (!$PSBoundParameters.ContainsKey('AllowWowProcess'))
         {
