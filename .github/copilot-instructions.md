@@ -144,10 +144,17 @@ When working on the PowerShell module in VS Code:
 - **Comment-Based Help**: Required for all public functions with `.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`.
 - **Minimize Unnecessary Changes**: Preserve existing XML documentation comments when refactoring code. Don't strip them unnecessarily, as it makes git diffs noisy and loses valuable documentation. Only modify what's strictly necessary for the structural changes.
 - **Resource Management**: Use nested try/finally blocks for COM cleanup and resource management rather than flat structures with nullable checks, even if it results in deep indentation.
+- **Null Checks**: When checking if a method returns a non-null value and using it, prefer pattern matching with `is` to tightly scope the variable: `if (Method() is Type variable) { ... }` instead of `var variable = Method(); if (variable != null) { ... }`. This scopes the variable to the branch where it's needed and makes the code more robust.
+- **Inline Factory Method Usage**: When a factory method already provides context for what a value represents (e.g., `FromOrdinal()`), inline the expression directly rather than storing it in a temporary variable first. Example: prefer `entries.Add(DelayImportEntry.FromOrdinal((ushort)(thunkData & 0xFFFF)));` over creating a temporary `ushort ordinal = ...` variable.
+- **Ternary Expression Formatting**: Favor the positive/valid scenario first. Example: `size >= HeaderSize ? new Instance(...) : null` instead of `size < HeaderSize ? null : new Instance(...)`. The only exception is when throwing - check for the invalid condition first, then throw.
 - **ThrowIfNullOrWhiteSpace Usage**: When using the `ThrowIfNullOrWhiteSpace` extension method, do not pass explicit `nameof()` arguments — rely on the `[CallerMemberName]` attribute to automatically populate the name parameter.
 - **SafeHandle Validation**: When validating SafeHandle parameters, avoid standalone `ThrowIfNullOrInvalid` or `ThrowIfNullOrClosed` calls that discard return values; inline the call into the subsequent usage (e.g., chain into `DangerousAddRef` or PInvoke argument).
 - **RemoveFontResource Input**: Do not pre-validate `RemoveFontResource` input with file existence checks; it can operate on file names and not necessarily full paths.
 - **Named Pipe Security**: Preserve strict named pipe security and reject solutions that weaken ACLs (e.g., creating pipes without explicit PipeSecurity).
+- **Unsafe Keyword Usage**: Use the `unsafe` keyword only on method declarations/prototypes if the method takes unsafe parameters (e.g., pointers). For methods that only use unsafe code internally, use an `unsafe` block inside the method body instead.
+
+### File Modification Guidelines
+- **One Class Per File**: Each class should have its own dedicated file. Do not put multiple classes/records in a single file.
 
 ### Testing Strategy
 `powershell.exe -ExecutionPolicy Bypass -File build.ps1`

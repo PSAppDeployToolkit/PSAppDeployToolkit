@@ -25,6 +25,28 @@ namespace PSADT.Interop.Extensions
         }
 
         /// <summary>
+        /// Converts a read-only span of characters to a null-terminated Unicode string.
+        /// </summary>
+        /// <remarks>This method is intended for use with spans that are guaranteed to contain a valid
+        /// Unicode string. Ensure that the span is properly null-terminated to avoid exceptions.</remarks>
+        /// <param name="span">The read-only span of characters to convert. The span must represent a valid null-terminated Unicode string.</param>
+        /// <returns>A string representation of the provided span. Returns null if the span does not contain a valid
+        /// null-terminated Unicode string.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the provided span does not contain a valid null-terminated Unicode string.</exception>
+        internal static string ToStringUni(this ReadOnlySpan<char> span)
+        {
+            unsafe
+            {
+                fixed (char* pChars = span)
+                {
+                    return Marshal.PtrToStringUni((nint)pChars) is not string str || string.IsNullOrWhiteSpace(str)
+                        ? throw new InvalidOperationException("The provided span does not contain a valid null-terminated Unicode string.")
+                        : str.Trim();
+                }
+            }
+        }
+
+        /// <summary>
         /// Trims leading and trailing white-space characters from the specified span and removes any trailing null
         /// characters.
         /// </summary>
