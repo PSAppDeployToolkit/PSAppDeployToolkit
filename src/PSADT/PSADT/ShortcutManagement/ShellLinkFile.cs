@@ -44,7 +44,7 @@ namespace PSADT.ShortcutManagement
     /// and <c>IPropertyStore</c> COM interfaces to provide full access to shell link properties,
     /// flags, and extended properties such as AppUserModelID.
     /// </remarks>
-    internal sealed class ShellLinkFile : IDisposable
+    public sealed class ShellLinkFile : IDisposable
     {
         /// <summary>
         /// Creates a new, empty shell link.
@@ -76,11 +76,11 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        /// <remarks>Use <see cref="Load(string, STGM)"/> with <see cref="STGM.STGM_READWRITE"/> if you need to modify the shortcut.</remarks>
+        /// <remarks>Use <see cref="Load(string, Interop.STGM)"/> with <see cref="Interop.STGM.STGM_READWRITE"/> if you need to modify the shortcut.</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ShellLinkFile Load(string filePath)
         {
-            return Load(filePath, STGM.STGM_READ);
+            return Load(filePath, Interop.STGM.STGM_READ);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public static ShellLinkFile Load(string filePath, STGM storageMode)
+        public static ShellLinkFile Load(string filePath, Interop.STGM storageMode)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
             if (!File.Exists(filePath))
@@ -103,7 +103,7 @@ namespace PSADT.ShortcutManagement
             ShellLinkFile shellLink = new();
             try
             {
-                ((IPersistFile)shellLink._shellLink).Load(filePath, storageMode);
+                ((IPersistFile)shellLink._shellLink).Load(filePath, (STGM)storageMode);
                 return shellLink;
             }
             catch
@@ -286,18 +286,18 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The <see cref="SHOW_WINDOW_CMD"/> value indicating how the window should be shown.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public SHOW_WINDOW_CMD WindowStyle
+        public Interop.SHOW_WINDOW_CMD WindowStyle
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 _shellLink.GetShowCmd(out SHOW_WINDOW_CMD showCmd);
-                return showCmd;
+                return (Interop.SHOW_WINDOW_CMD)showCmd;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetShowCmd(value);
+                _shellLink.SetShowCmd((SHOW_WINDOW_CMD)value);
             }
         }
 
@@ -730,10 +730,10 @@ namespace PSADT.ShortcutManagement
         /// <param name="hwnd">A handle to the parent window for any UI that may be displayed.</param>
         /// <param name="flags">Flags that control the resolution process.</param>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public void Resolve(HWND hwnd, uint flags)
+        public void Resolve(nint hwnd, uint flags)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _shellLink.Resolve(hwnd, flags);
+            _shellLink.Resolve((HWND)hwnd, flags);
         }
 
         /// <summary>
