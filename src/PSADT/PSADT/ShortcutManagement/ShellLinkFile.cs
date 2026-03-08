@@ -312,22 +312,40 @@ namespace PSADT.ShortcutManagement
         /// Gets or sets the hotkey for the shortcut.
         /// </summary>
         /// <value>
-        /// The hotkey as a 16-bit value where the low-order byte is the virtual key code
-        /// and the high-order byte contains modifier flags.
+        /// The hotkey combination as a string (e.g., "Ctrl+Shift+Alt+Q").
+        /// Returns <see langword="null"/> if no hotkey is assigned.
         /// </value>
+        /// <exception cref="ArgumentException">Thrown when the hotkey string format is invalid.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public ushort? Hotkey
+        /// <example>
+        /// <code>
+        /// // Set hotkey using WScript.Shell-compatible string format
+        /// shortcut.Hotkey = "ALT+CTRL+F";
+        /// shortcut.Hotkey = "Ctrl+Shift+Q";
+        /// 
+        /// // Read and display hotkey
+        /// Console.WriteLine(shortcut.Hotkey); // Output: "Ctrl+Shift+Q"
+        /// </code>
+        /// </example>
+        public string? Hotkey
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 _shellLink.GetHotkey(out ushort hotkey);
-                return hotkey > 0 ? hotkey : null;
+                return hotkey > 0 ? ShortcutHotkey.FromValue(hotkey).ToString() : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetHotkey(value ?? 0);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    _shellLink.SetHotkey(0);
+                }
+                else
+                {
+                    _shellLink.SetHotkey(ShortcutHotkey.Parse(value!).Value);
+                }
             }
         }
 
