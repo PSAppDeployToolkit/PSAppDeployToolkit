@@ -183,7 +183,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the target file or folder that the shortcut points to.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string TargetPath
+        public string? TargetPath
         {
             get
             {
@@ -204,15 +204,27 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The description text associated with the shortcut.</value>
         /// <remarks>
-        /// Uses <c>IPropertyStore</c> with <c>PKEY_Link_Comment</c> which properly allocates
-        /// the correct buffer size and avoids potential truncation issues with the legacy
-        /// <c>IShellLinkW.GetDescription</c> method.
+        /// First attempts to retrieve the description from <c>IPropertyStore</c> with <c>PKEY_Link_Comment</c>,
+        /// which properly allocates the correct buffer size. Falls back to <c>IShellLinkW.GetDescription</c>
+        /// if the property store value is not set, as some shortcuts only store the description in the
+        /// shell link structure.
         /// </remarks>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public string? Description
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => GetStringProperty(in PInvoke.PKEY_Link_Comment);
+            get
+            {
+                // Try property store first (preferred, no buffer size issues).
+                // Fall back to IShellLinkW.GetDescription if required/necessary.
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (GetStringProperty(in PInvoke.PKEY_Link_Comment) is string propertyValue)
+                {
+                    return propertyValue;
+                }
+                Span<char> buffer = stackalloc char[(int)PInvoke.INFOTIPSIZE]; buffer.Clear();
+                _shellLink.GetDescription(buffer);
+                return buffer.ToStringUni();
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => SetStringProperty(in PInvoke.PKEY_Link_Comment, value);
@@ -223,7 +235,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The working directory path that will be set when the shortcut is activated.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string WorkingDirectory
+        public string? WorkingDirectory
         {
             get
             {
@@ -266,18 +278,18 @@ namespace PSADT.ShortcutManagement
         /// and the high-order byte contains modifier flags.
         /// </value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public ushort Hotkey
+        public ushort? Hotkey
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 _shellLink.GetHotkey(out ushort hotkey);
-                return hotkey;
+                return hotkey > 0 ? hotkey : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetHotkey(value);
+                _shellLink.SetHotkey(value ?? 0);
             }
         }
 
@@ -306,7 +318,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the file containing the icon for the shortcut.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string IconLocation
+        public string? IconLocation
         {
             get
             {

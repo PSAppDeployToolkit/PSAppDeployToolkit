@@ -33,17 +33,15 @@ namespace PSADT.Interop.Extensions
         /// <returns>A string representation of the provided span. Returns null if the span does not contain a valid
         /// null-terminated Unicode string.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the provided span does not contain a valid null-terminated Unicode string.</exception>
-        internal static string ToStringUni(this ReadOnlySpan<char> span)
+        internal static string? ToStringUni(this ReadOnlySpan<char> span)
         {
-            unsafe
+            int nullTerminator = span.IndexOf('\0');
+            if (nullTerminator == -1)
             {
-                fixed (char* pChars = span)
-                {
-                    return Marshal.PtrToStringUni((nint)pChars) is not string str || string.IsNullOrWhiteSpace(str)
-                        ? throw new InvalidOperationException("The provided span does not contain a valid null-terminated Unicode string.")
-                        : str.Trim();
-                }
+                throw new InvalidOperationException("The provided span does not contain a null-terminated Unicode string.");
             }
+            ReadOnlySpan<char> stringSpan = span.Slice(0, nullTerminator).Trim();
+            return !stringSpan.IsWhiteSpace() ? stringSpan.ToString() : null;
         }
 
         /// <summary>
