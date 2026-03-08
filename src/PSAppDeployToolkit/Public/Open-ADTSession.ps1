@@ -425,6 +425,24 @@ function Open-ADTSession
             }
         }
 
+        # Forcibly enable AllowWowProcess if it's not specified and the caller is our executable with /32 specified.
+        if (!$PSBoundParameters.ContainsKey('AllowWowProcess'))
+        {
+            $parentProcess = [PSADT.ProcessManagement.ProcessUtilities]::GetParentProcess()
+            try
+            {
+                if ([PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList([PSADT.ProcessManagement.ProcessUtilities]::GetProcessCommandLine($parentProcess)).Contains("/32"))
+                {
+                    $PSBoundParameters.Add('AllowWowProcess', ($AllowWowProcess = $true))
+                }
+            }
+            finally
+            {
+                $parentProcess.Dispose()
+                $parentProcess = $null
+            }
+        }
+
         # Add any unbound arguments into $PSBoundParameters when using a derived class.
         if ($PSBoundParameters.ContainsKey('UnboundArguments') -and !$SessionClass.Equals([PSAppDeployToolkit.Foundation.DeploymentSession]))
         {
