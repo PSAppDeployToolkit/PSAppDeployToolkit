@@ -46,39 +46,75 @@ namespace PSADT.ShortcutManagement
     internal sealed class ShellLinkFile : IDisposable
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class.
         /// Creates a new, empty shell link.
         /// </summary>
-        public ShellLinkFile()
+        /// <returns>A new <see cref="ShellLinkFile"/> instance.</returns>
+        public static ShellLinkFile New()
         {
-            _shellLink = (IShellLinkW)new ShellLink();
+            return new();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class and loads an existing shortcut file.
+        /// Creates a new shell link with the specified target path.
+        /// </summary>
+        /// <param name="targetPath">The target path for the shortcut.</param>
+        /// <returns>A new <see cref="ShellLinkFile"/> instance with the target path set.</returns>
+        public static ShellLinkFile New(string targetPath)
+        {
+            return new() { TargetPath = targetPath };
+        }
+
+        /// <summary>
+        /// Loads an existing shortcut file in read-only mode.
         /// </summary>
         /// <param name="filePath">The path to the shortcut file to load.</param>
+        /// <returns>A new <see cref="ShellLinkFile"/> instance loaded from the specified file.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
-        public ShellLinkFile(string filePath) : this()
+        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
+        /// <remarks>Use <see cref="Load(string, STGM)"/> with <see cref="STGM.STGM_READWRITE"/> if you need to modify the shortcut.</remarks>
+        public static ShellLinkFile Load(string filePath)
         {
-            Load(filePath);
+            return Load(filePath, STGM.STGM_READ);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class with the specified target path.
+        /// Loads an existing shortcut file with the specified storage mode.
         /// </summary>
-        /// <param name="targetPath">The target path for the shortcut.</param>
-        /// <param name="createNew">Must be <see langword="true"/> to use this constructor. This parameter disambiguates from the file loading constructor.</param>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="createNew"/> is false.</exception>
-        public ShellLinkFile(string targetPath, bool createNew) : this()
+        /// <param name="filePath">The path to the shortcut file to load.</param>
+        /// <param name="storageMode">The storage mode flags.</param>
+        /// <returns>A new <see cref="ShellLinkFile"/> instance loaded from the specified file.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
+        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
+        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
+        public static ShellLinkFile Load(string filePath, STGM storageMode)
         {
-            if (!createNew)
+            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+            if (!File.Exists(filePath))
             {
-                throw new ArgumentException("Use the single-parameter constructor to load an existing file.", nameof(createNew));
+                throw new FileNotFoundException("The specified shortcut file does not exist.", filePath);
             }
-            TargetPath = targetPath;
+            ShellLinkFile shellLink = new();
+            try
+            {
+                ((IPersistFile)shellLink._shellLink).Load(filePath, storageMode);
+                return shellLink;
+            }
+            catch
+            {
+                shellLink.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class.
+        /// </summary>
+        private ShellLinkFile()
+        {
+            _shellLink = (IShellLinkW)new ShellLink();
         }
 
         /// <summary>
@@ -87,35 +123,6 @@ namespace PSADT.ShortcutManagement
         ~ShellLinkFile()
         {
             Dispose(false);
-        }
-
-        /// <summary>
-        /// Loads a shortcut file.
-        /// </summary>
-        /// <param name="filePath">The path to the shortcut file to load.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
-        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
-        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public void Load(string filePath)
-        {
-            Load(filePath, STGM.STGM_READWRITE);
-        }
-
-        /// <summary>
-        /// Loads a shortcut file with the specified storage mode.
-        /// </summary>
-        /// <param name="filePath">The path to the shortcut file to load.</param>
-        /// <param name="storageMode">The storage mode flags.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
-        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
-        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public void Load(string filePath, STGM storageMode)
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-            ((IPersistFile)_shellLink).Load(filePath.ThrowIfFileDoesNotExist(), storageMode);
         }
 
         /// <summary>
