@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Management.Automation.Language;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using PSADT.ProcessManagement;
 using PSADT.Utilities;
@@ -17,6 +19,17 @@ namespace PSADT.UserInterface.TestHarness
     internal static class Program
     {
         /// <summary>
+        /// Initializes the application by setting the unhandled exception handler for the dialog manager.
+        /// </summary>
+        /// <remarks>This method is automatically called when the module is loaded, ensuring that any
+        /// unhandled exceptions are managed appropriately.</remarks>
+        [ModuleInitializer]
+        internal static void Init()
+        {
+            AppDomain.CurrentDomain.SetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler", static (Exception ex) => { throw new InvalidProgramException("An unhandled WPF exception occurred.", ex); });
+        }
+
+        /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
@@ -26,21 +39,71 @@ namespace PSADT.UserInterface.TestHarness
             DialogStyle dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
 
             // Read PSADT's string table into memory.
-            ScriptBlockAst stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Strings\strings.psd1"), out Token[]? tokens, out ParseError[]? errors);
+            ScriptBlockAst stringsAst = Parser.ParseFile(Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\ImportsLast.ps1"), out Token[]? tokens, out ParseError[]? errors);
             if (errors.Length > 0)
             {
                 throw new InvalidDataException($"Error parsing strings.psd1 file.");
             }
 
             // Read out the hashtable
-            Hashtable stringTable = (Hashtable)stringsAst.Find(static x => x is HashtableAst, false).SafeGetValue();
+            Hashtable stringTable = (Hashtable)stringsAst.Find(node =>
+                node is HashtableAst innerHt &&
+                innerHt.Parent is CommandExpressionAst ce1 &&
+                ce1.Parent is PipelineAst p1 &&
+                p1.Parent is NamedBlockAst nb &&
+                nb.Parent is ScriptBlockAst sb &&
+                sb.Parent is ScriptBlockExpressionAst sbe &&
+                sbe.Parent is CommandExpressionAst ce2 &&
+                ce2.Parent is PipelineAst p2 &&
+                p2.Parent is HashtableAst emptyStringHt &&
+                emptyStringHt.KeyValuePairs.Any(kvp =>
+                    kvp.Item1.Extent.Text == "[System.String]::Empty" &&
+                    kvp.Item2 == p2) &&
+                emptyStringHt.Parent is ConvertExpressionAst convert1 &&
+                convert1.Parent is CommandExpressionAst ce3 &&
+                ce3.Parent is PipelineAst p3 &&
+                p3.Parent is ParenExpressionAst paren1 &&
+                paren1.Parent is InvokeMemberExpressionAst invoke1 &&
+                invoke1.Parent is CommandExpressionAst ce4 &&
+                ce4.Parent is PipelineAst p4 &&
+                p4.Parent is HashtableAst stringsParentHt &&
+                stringsParentHt.KeyValuePairs.Any(kvp =>
+                    kvp.Item1.Extent.Text == "Strings" &&
+                    kvp.Item2 == p4),
+                true).SafeGetValue();
+            Hashtable configTable = (Hashtable)stringsAst.Find(node =>
+                node is HashtableAst innerHt &&
+                innerHt.Parent is CommandExpressionAst ce1 &&
+                ce1.Parent is PipelineAst p1 &&
+                p1.Parent is NamedBlockAst nb &&
+                nb.Parent is ScriptBlockAst sb &&
+                sb.Parent is ScriptBlockExpressionAst sbe &&
+                sbe.Parent is CommandExpressionAst ce2 &&
+                ce2.Parent is PipelineAst p2 &&
+                p2.Parent is HashtableAst emptyStringHt &&
+                emptyStringHt.KeyValuePairs.Any(kvp =>
+                    kvp.Item1.Extent.Text == "[System.String]::Empty" &&
+                    kvp.Item2 == p2) &&
+                emptyStringHt.Parent is ConvertExpressionAst convert1 &&
+                convert1.Parent is CommandExpressionAst ce3 &&
+                ce3.Parent is PipelineAst p3 &&
+                p3.Parent is ParenExpressionAst paren1 &&
+                paren1.Parent is InvokeMemberExpressionAst invoke1 &&
+                invoke1.Parent is CommandExpressionAst ce4 &&
+                ce4.Parent is PipelineAst p4 &&
+                p4.Parent is HashtableAst stringsParentHt &&
+                stringsParentHt.KeyValuePairs.Any(kvp =>
+                    kvp.Item1.Extent.Text == "Config" &&
+                    kvp.Item2 == p4),
+                true).SafeGetValue();
+            Hashtable assetsTable = (Hashtable)configTable["Assets"]!;
 
             // Set up parameters for testing
             string appTitle = "Adobe Creative Suite 2.1.45 EN";
             string subtitle = "EQ Bank Global IT Services - App Install";
-            string appIconImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
-            string appIconDarkImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\AppIcon.png");
-            string appBannerImage = Path.GetFullPath($@"{AppDomain.CurrentDomain.BaseDirectory}\..\..\..\..\..\PSAppDeployToolkit\Assets\Banner.Classic.png");
+            string appIconImage = (string?)assetsTable["Logo"]!;
+            string appIconDarkImage = (string?)assetsTable["Logo"]!;
+            string appBannerImage = (string?)assetsTable["Banner"]!;
             // var FluentAccentColor = ValueTypeConverter.ToInt(0xFF01C9D9); // Cyan
             DialogPosition dialogPosition = DialogPosition.BottomRight;
             // DialogPosition dialogPosition = DialogPosition.Center;
