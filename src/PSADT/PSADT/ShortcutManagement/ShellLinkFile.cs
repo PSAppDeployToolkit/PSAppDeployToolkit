@@ -93,33 +93,49 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ShellLinkFile Load(string filePath, Interop.STGM storageMode)
+        {
+            return new(filePath, storageMode);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class for creating a new shortcut.
+        /// </summary>
+        private ShellLinkFile()
+        {
+            _shellLink = (IShellLinkW)new ShellLink();
+            _storageMode = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class by loading an existing shortcut file.
+        /// </summary>
+        /// <param name="filePath">The path to the shortcut file to load.</param>
+        /// <param name="storageMode">The storage mode flags.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
+        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
+        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
+        private ShellLinkFile(string filePath, Interop.STGM storageMode)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
             if (!File.Exists(filePath))
             {
                 throw new FileNotFoundException("The specified shortcut file does not exist.", filePath);
             }
-            ShellLinkFile shellLink = new();
+            IShellLinkW shellLink = (IShellLinkW)new ShellLink();
             try
             {
-                ((IPersistFile)shellLink._shellLink).Load(filePath, (STGM)storageMode);
-                return shellLink;
+                ((IPersistFile)shellLink).Load(filePath, (STGM)storageMode);
+                _shellLink = shellLink;
+                _storageMode = storageMode;
             }
             catch
             {
-                shellLink.Dispose();
+                _ = Marshal.FinalReleaseComObject(shellLink);
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ShellLinkFile"/> class.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ShellLinkFile()
-        {
-            _shellLink = (IShellLinkW)new ShellLink();
         }
 
         /// <summary>
@@ -134,17 +150,20 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Saves the shortcut to the currently loaded file path.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when no file path has been set.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when no file path has been set or the file was opened read-only.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public void Save()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            string? currentFile = FilePath;
-            if (string.IsNullOrWhiteSpace(currentFile))
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("Cannot save a shortcut that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
+            }
+            if (FilePath is not string currentFile)
             {
                 throw new InvalidOperationException("No file path has been set. Use Save(string) to specify a path.");
             }
-            Save(currentFile!);
+            Save(currentFile);
         }
 
         /// <summary>
@@ -153,13 +172,32 @@ namespace PSADT.ShortcutManagement
         /// <param name="filePath">The path where the shortcut file should be saved.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when attempting to overwrite the source file that was opened read-only.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public void Save(string filePath)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+            if (IsReadOnly && string.Equals(Path.GetFullPath(filePath), FilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Cannot overwrite a shortcut file that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
+            }
             ((IPersistFile)_shellLink).Save(filePath, true);
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the current storage mode is read-only, preventing any write operations.
+        /// </summary>
+        /// <remarks>Use this property to determine if modifications to the storage are allowed. When <see
+        /// langword="true"/>, attempts to write or update the storage will not be permitted.</remarks>
+        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) == 0;
+
+        /// <summary>
+        /// Gets a value indicating whether the current object can be saved.
+        /// </summary>
+        /// <remarks>This property returns <see langword="true"/> if the object is not in a read-only
+        /// state. Use this property to determine if changes can be persisted.</remarks>
+        public bool CanSave => !IsReadOnly;
 
         /// <summary>
         /// Gets the path of the currently loaded shortcut file.
@@ -1097,5 +1135,12 @@ namespace PSADT.ShortcutManagement
         /// The underlying IShellLinkW COM object.
         /// </summary>
         private readonly IShellLinkW _shellLink;
+
+        /// <summary>
+        /// Represents the storage mode used by the interop component, as defined by the Interop.STGM enumeration.
+        /// </summary>
+        /// <remarks>The storage mode determines how data is stored and accessed within the interop
+        /// component. This field is initialized during construction and is intended for internal use only.</remarks>
+        private readonly Interop.STGM? _storageMode;
     }
 }
