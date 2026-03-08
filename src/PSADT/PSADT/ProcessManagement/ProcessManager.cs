@@ -440,14 +440,11 @@ namespace PSADT.ProcessManagement
                 }
             }
 
-            // These tasks read all outputs and wait for the process to complete.
-            TaskCompletionSource<ProcessResult> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            _ = Task.Run(async () =>
+            // Return a ProcessHandle object with this process and its running task.
+            return new(process, launchInfo, commandLine, Task.Run<ProcessResult>(async () =>
             {
-                // Set up the cancellation token source and registration if needed.
-                uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
-
                 // Spin until complete or cancelled.
+                uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
                 bool disposeJob = true; int exitCode = TimeoutExitCode;
                 try
                 {
@@ -488,11 +485,7 @@ namespace PSADT.ProcessManagement
                         await Task.WhenAll(hStdOutTask, hStdErrTask, hStdInTask).ConfigureAwait(false);
                         exitCode = process.ExitCode;
                     }
-                    tcs.SetResult(new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved));
-                }
-                catch (Exception ex) when (ex.Message is not null)
-                {
-                    tcs.SetException(ex);
+                    return new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved);
                 }
                 finally
                 {
@@ -521,10 +514,7 @@ namespace PSADT.ProcessManagement
                         job?.Dispose();
                     }
                 }
-            });
-
-            // Return a ProcessHandle object with this process and its running task.
-            return new(process, launchInfo, commandLine, tcs.Task);
+            }));
         }
 
         /// <summary>
