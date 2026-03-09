@@ -226,38 +226,48 @@ namespace PSADT.UserInterface.DialogOptions
                 if (MiscUtilities.GetBase64StringBytes(image) is byte[] bytes)
                 {
                     using MemoryStream ms = new(bytes, false);
-                    if (DrawingUtilities.IsStreamAnIcon(ms))
+                    try
                     {
-                        using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
-                        _ = bmp.Size;
-                        return image;
+                        if (DrawingUtilities.IsStreamAnIcon(ms))
+                        {
+                            using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
+                            _ = bmp.Size;
+                            return image;
+                        }
+                        else
+                        {
+                            using Image bmp = Image.FromStream(ms, true, true);
+                            _ = bmp.Size;
+                            return image;
+                        }
                     }
-                    else
+                    catch (OutOfMemoryException ex)
                     {
-                        using Image bmp = Image.FromStream(ms, true, true);
-                        _ = bmp.Size;
-                        return image;
+                        throw new FileFormatException(new Uri(image), "The specified file is invalid or otherwise corrupted.", ex);
                     }
                 }
                 if (!File.Exists(image))
                 {
                     throw new FileNotFoundException("Unable to find the specified file.", image);
                 }
-                if (new FileInfo(image).Length == 0)
+                try
                 {
-                    throw new FileFormatException(new Uri(image), "The specified file is zero length.");
+                    if (Path.GetExtension(image).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using Icon icon = new(image); using Bitmap bmp = icon.ToBitmap();
+                        _ = bmp.Size;
+                        return image;
+                    }
+                    else
+                    {
+                        using Image bmp = Image.FromFile(image);
+                        _ = bmp.Size;
+                        return image;
+                    }
                 }
-                if (Path.GetExtension(image).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                catch (OutOfMemoryException ex)
                 {
-                    using Icon icon = new(image); using Bitmap bmp = icon.ToBitmap();
-                    _ = bmp.Size;
-                    return image;
-                }
-                else
-                {
-                    using Image bmp = Image.FromFile(image);
-                    _ = bmp.Size;
-                    return image;
+                    throw new FileFormatException(new Uri(image), "The specified file is invalid or otherwise corrupted.", ex);
                 }
             }
             catch (Exception ex)
