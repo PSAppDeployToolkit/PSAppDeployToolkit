@@ -231,8 +231,8 @@ namespace PSADT.UserInterface.Utilities
                 resized.Save(pngStream, ImageFormat.Png);
                 frames[i] = (newSize, pngStream.ToArray());
             }
-            const int iconDirSize = 6; const int iconEntrySize = 16;
-            int imageDataOffset = iconDirSize + (frames.Length * iconEntrySize);
+            int iconDirEntrySize = Marshal.SizeOf<ICONDIRENTRY>();
+            int imageDataOffset = Marshal.SizeOf<ICONDIR>() - iconDirEntrySize + (frames.Length * iconDirEntrySize);
             int totalLength = imageDataOffset;
             for (int i = 0; i < frames.Length; i++)
             {
