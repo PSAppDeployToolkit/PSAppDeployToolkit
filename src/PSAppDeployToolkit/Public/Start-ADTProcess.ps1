@@ -695,7 +695,7 @@ function Start-ADTProcess
                         $ExecutionContext.SessionState.Path.CurrentLocation.Path
                         [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH').Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim()
                     )
-                    if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1))
+                    if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1) -and !$UseShellExecute)
                     {
                         $naerParams = @{
                             Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.", $FilePath)
@@ -706,8 +706,11 @@ function Start-ADTProcess
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
-                    Write-ADTLogEntry -Message "File path [$FilePath] successfully resolved to fully qualified path [$fqPath]."
-                    $FilePath = $fqPath
+                    if ($fqPath)
+                    {
+                        Write-ADTLogEntry -Message "File path [$FilePath] successfully resolved to fully qualified path [$fqPath]."
+                        $FilePath = $fqPath
+                    }
                 }
 
                 # If MSI install, check to see if the MSI installer service is available or if another MSI install is already underway.
