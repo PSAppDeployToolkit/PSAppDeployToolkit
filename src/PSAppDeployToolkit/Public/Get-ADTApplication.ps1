@@ -242,12 +242,16 @@ function Get-ADTApplication
                     }
 
                     # Build hashtable of calculated properties based on their presence in the registry and the value's validity.
-                    $appProperties = @{}; 'DisplayVersion', 'Publisher', 'EstimatedSize' | & {
+                    $appProperties = @{}; 'DisplayVersion', 'Publisher' | & {
                         process
                         {
                             if (![System.String]::IsNullOrWhiteSpace(($value = $item.GetValue($_, $null))))
                             {
                                 $appProperties.Add($_, $value)
+                            }
+                            else
+                            {
+                                $appProperties.Add($_, [System.Management.Automation.Language.NullString]::Value)
                             }
                         }
                     }
@@ -267,6 +271,12 @@ function Get-ADTApplication
                     if ([System.Uri]::TryCreate($item.GetValue('HelpLink', [System.String]::Empty), [System.UriKind]::Absolute, [ref]$defUriValue))
                     {
                         $appProperties.Add('HelpLink', $defUriValue)
+                    }
+
+                    # Process the EstimatedSize if it's an integer.
+                    if (($value = $item.GetValue($_, $null)) -is [System.Int32])
+                    {
+                        $appProperties.Add('EstimatedSize', $value)
                     }
 
                     # Determine if this is a 64-bit app. This can be null for per-user app installs as we just can't tell.
