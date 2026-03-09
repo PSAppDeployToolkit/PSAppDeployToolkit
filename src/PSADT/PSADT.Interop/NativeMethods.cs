@@ -4209,7 +4209,7 @@ namespace PSADT.Interop
                     throw ExceptionUtilities.GetException(res);
                 }
                 InvalidOperationException.ThrowIfZero(RequiredBytes, "The required length returned from 'RtlExpandEnvironmentStrings_U()' is zero, which indicates an unexpected condition.");
-                InvalidOperationException.ThrowIfOddLength(RequiredBytes, "The required length returned from 'RtlExpandEnvironmentStrings_U()' is not a valid character count.");
+                InvalidOperationException.ThrowIfNotEven(RequiredBytes, "The required length returned from 'RtlExpandEnvironmentStrings_U()' is not a valid character count.");
                 InvalidOperationException.ThrowIfGreaterThan(RequiredBytes, ushort.MaxValue, "The required length returned from 'RtlExpandEnvironmentStrings_U()' exceeds the maximum allowed size for a UNICODE_STRING.");
                 return res;
             }

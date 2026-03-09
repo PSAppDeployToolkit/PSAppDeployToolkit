@@ -248,7 +248,7 @@ namespace System
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="length"/> is odd.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
-            public static void ThrowIfOddLength(uint length, string message)
+            public static void ThrowIfNotEven(uint length, string message)
             {
                 if ((length & 1) != 0)
                 {
