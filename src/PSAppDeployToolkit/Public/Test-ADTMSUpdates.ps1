@@ -85,12 +85,12 @@ function Test-ADTMSUpdates
                         }
                         finally
                         {
-                            [System.Runtime.InteropServices.Marshal]::ReleaseComObject($updateSearcher)
+                            [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($updateSearcher)
                         }
                     }
                     finally
                     {
-                        [System.Runtime.InteropServices.Marshal]::ReleaseComObject($updateSession)
+                        [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($updateSession)
                     }
                 }
 

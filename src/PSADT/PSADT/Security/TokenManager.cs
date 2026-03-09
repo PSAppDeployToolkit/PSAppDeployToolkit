@@ -115,7 +115,7 @@ namespace PSADT.Security
                                                     // Wait for the token broker to connect while task is in scope for error reporting.
                                                     // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
                                                     task.Run(null, out IRunningTask runningTask);
-                                                    _ = Marshal.ReleaseComObject(runningTask);
+                                                    _ = Marshal.FinalReleaseComObject(runningTask);
                                                     try
                                                     {
                                                         using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
@@ -129,7 +129,7 @@ namespace PSADT.Security
                                                 finally
                                                 {
                                                     rootFolder.DeleteTask(taskName, 0);
-                                                    _ = Marshal.ReleaseComObject(task);
+                                                    _ = Marshal.FinalReleaseComObject(task);
                                                 }
                                             }
                                             finally
@@ -150,37 +150,37 @@ namespace PSADT.Security
                                         }
                                         finally
                                         {
-                                            _ = Marshal.ReleaseComObject(principal);
+                                            _ = Marshal.FinalReleaseComObject(principal);
                                         }
                                     }
                                     finally
                                     {
-                                        _ = Marshal.ReleaseComObject(execAction);
+                                        _ = Marshal.FinalReleaseComObject(execAction);
                                     }
                                 }
                                 finally
                                 {
-                                    _ = Marshal.ReleaseComObject(action);
+                                    _ = Marshal.FinalReleaseComObject(action);
                                 }
                             }
                             finally
                             {
-                                _ = Marshal.ReleaseComObject(actions);
+                                _ = Marshal.FinalReleaseComObject(actions);
                             }
                         }
                         finally
                         {
-                            _ = Marshal.ReleaseComObject(taskDefinition);
+                            _ = Marshal.FinalReleaseComObject(taskDefinition);
                         }
                     }
                     finally
                     {
-                        _ = Marshal.ReleaseComObject(rootFolder);
+                        _ = Marshal.FinalReleaseComObject(rootFolder);
                     }
                 }
                 finally
                 {
-                    _ = Marshal.ReleaseComObject(servicePtr);
+                    _ = Marshal.FinalReleaseComObject(servicePtr);
                 }
 
                 // Read the token length from the pipe.

@@ -96,7 +96,7 @@ function Set-ADTMsiProperty
                 finally
                 {
                     $null = Invoke-ADTObjectMethod -InputObject $View -MethodName Close
-                    $null = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
+                    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($View)
                 }
 
                 # Set the MSI property.
@@ -117,7 +117,7 @@ function Set-ADTMsiProperty
                 finally
                 {
                     Invoke-ADTObjectMethod -InputObject $View -MethodName Close
-                    [System.Runtime.InteropServices.Marshal]::ReleaseComObject($View)
+                    [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($View)
                 }
             }
             catch

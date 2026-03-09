@@ -66,29 +66,29 @@ namespace PSADT.DeviceManagement
                                 }
                                 finally
                                 {
-                                    _ = Marshal.ReleaseComObject(sessionControl);
+                                    _ = Marshal.FinalReleaseComObject(sessionControl);
                                 }
                             }
                             return false;
                         }
                         finally
                         {
-                            _ = Marshal.ReleaseComObject(sessionEnumerator);
+                            _ = Marshal.FinalReleaseComObject(sessionEnumerator);
                         }
                     }
                     finally
                     {
-                        _ = Marshal.ReleaseComObject(sessionManager);
+                        _ = Marshal.FinalReleaseComObject(sessionManager);
                     }
                 }
                 finally
                 {
-                    _ = Marshal.ReleaseComObject(microphoneDevice);
+                    _ = Marshal.FinalReleaseComObject(microphoneDevice);
                 }
             }
             finally
             {
-                _ = Marshal.ReleaseComObject(deviceEnumerator);
+                _ = Marshal.FinalReleaseComObject(deviceEnumerator);
             }
         }
 

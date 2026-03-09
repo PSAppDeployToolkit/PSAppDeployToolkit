@@ -149,19 +149,19 @@ namespace PSADT.Utilities
                         }
                         finally
                         {
-                            _ = Marshal.ReleaseComObject(fontFace);
+                            _ = Marshal.FinalReleaseComObject(fontFace);
                         }
                     }
                     throw new InvalidOperationException("Unable to determine font title from name table.");
                 }
                 finally
                 {
-                    _ = Marshal.ReleaseComObject(fontFile);
+                    _ = Marshal.FinalReleaseComObject(fontFile);
                 }
             }
             finally
             {
-                _ = Marshal.ReleaseComObject(factory);
+                _ = Marshal.FinalReleaseComObject(factory);
             }
         }
 
