@@ -53,12 +53,12 @@ function Private:New-ADTDialogOptionsObject
             }
             if ($null -ne ($dialogAssetValue = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals($dialogAssetKey) }).Item2.PipelineElements.Expression | Select-Object -ExpandProperty Value -ErrorAction Ignore))
             {
-                Write-ADTLogEntry -Message "$($_.Exception.InnerException.Message.Replace($dialogAssetName, $dialogAssetKey).TrimEnd('.')). Substituting with default asset." -Severity Warning
+                Write-ADTLogEntry -Message "$($_.Exception.InnerException.Message.Replace($dialogAssetName, $dialogAssetKey).TrimEnd('.')): $($_.Exception.InnerException.InnerException.Message.TrimEnd('.')). Substituting with default asset." -Severity Warning
                 $Data.$dialogAssetName = $dialogAssetValue.PSObject.BaseObject
             }
             else
             {
-                Write-ADTLogEntry -Message "$($_.Exception.InnerException.Message.Replace($dialogAssetName, $dialogAssetKey).TrimEnd('.')). Removing non-essential asset." -Severity Warning
+                Write-ADTLogEntry -Message "$($_.Exception.InnerException.Message.Replace($dialogAssetName, $dialogAssetKey).TrimEnd('.')): $($_.Exception.InnerException.InnerException.Message.TrimEnd('.')). Removing non-essential asset." -Severity Warning
                 $Data.Remove($dialogAssetName)
             }
         }

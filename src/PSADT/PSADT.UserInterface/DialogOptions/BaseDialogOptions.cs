@@ -221,24 +221,32 @@ namespace PSADT.UserInterface.DialogOptions
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(image);
             ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
-            if (MiscUtilities.GetBase64StringBytes(image) is byte[] bytes)
+            try
             {
-                using MemoryStream ms = new(bytes, false);
-                if (DrawingUtilities.IsByteStreamAnIcon(bytes))
+                if (MiscUtilities.GetBase64StringBytes(image) is byte[] bytes)
                 {
-                    using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
-                    _ = bmp.Size;
-                    return image;
+                    using MemoryStream ms = new(bytes, false);
+                    if (DrawingUtilities.IsByteStreamAnIcon(bytes))
+                    {
+                        using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
+                        _ = bmp.Size;
+                        return image;
+                    }
+                    else
+                    {
+                        using Image bmp = Image.FromStream(ms, true, true);
+                        _ = bmp.Size;
+                        return image;
+                    }
                 }
-                else
+                if (!File.Exists(image))
                 {
-                    using Bitmap bmp = (Bitmap)Image.FromStream(ms, true, true);
-                    _ = bmp.Size;
-                    return image;
+                    throw new FileNotFoundException("Unable to find the specified file.", image);
                 }
-            }
-            if (File.Exists(image))
-            {
+                if (new FileInfo(image).Length == 0)
+                {
+                    throw new FileFormatException(new Uri(image), "The specified file is zero length.");
+                }
                 if (Path.GetExtension(image).Equals(".ico", StringComparison.OrdinalIgnoreCase))
                 {
                     using Icon icon = new(image); using Bitmap bmp = icon.ToBitmap();
@@ -247,12 +255,15 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 else
                 {
-                    using Bitmap bmp = (Bitmap)Image.FromFile(image);
+                    using Image bmp = Image.FromFile(image);
                     _ = bmp.Size;
                     return image;
                 }
             }
-            throw new BadImageFormatException($"The specified [{identifier}] is not a valid image format", identifier);
+            catch (Exception ex)
+            {
+                throw new BadImageFormatException($"The specified [{identifier}] is not a valid image format", identifier, ex);
+            }
         }
     }
 }
