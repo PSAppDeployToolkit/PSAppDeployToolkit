@@ -90,7 +90,6 @@ namespace PSADT.ProcessManagement
                 ElevatedTokenType = ElevatedTokenType.HighestMandatory;
             }
             InheritEnvironmentVariables = inheritEnvironmentVariables;
-            ExpandEnvironmentVariables = expandEnvironmentVariables;
             UseUnelevatedToken = useUnelevatedToken;
             RunAsActiveUser = runAsActiveUser;
 
@@ -213,7 +212,7 @@ namespace PSADT.ProcessManagement
             NoTerminateOnTimeout = noTerminateOnTimeout;
 
             // Confirm we're not using incompatible options.
-            if (UseShellExecute && RunAsActiveUser is not null)
+            if (UseShellExecute && (RunAsActiveUser is not null || RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser))
             {
                 throw new InvalidOperationException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
             }
