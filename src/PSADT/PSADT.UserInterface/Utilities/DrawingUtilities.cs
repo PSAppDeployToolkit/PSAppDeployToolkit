@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.Utilities
             ArgumentNullException.ThrowIfNull(img); ArgumentOutOfRangeException.ThrowIfLessThan(size, 1);
             if (img.Width == size && img.Height == size)
             {
-                return (Bitmap)img.Clone();
+                return new(img);
             }
 
             // Create a new bitmap and set the resolution.
