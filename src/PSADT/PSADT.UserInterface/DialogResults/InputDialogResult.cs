@@ -18,12 +18,8 @@ namespace PSADT.UserInterface.DialogResults
         /// <param name="text">An optional string containing additional text associated with the result. If provided, it must not be empty
         /// or consist only of whitespace.</param>
         /// <exception cref="ArgumentException">Thrown if the text parameter is provided and is empty or consists only of whitespace.</exception>
-        internal InputDialogResult(string result, string? text = null) : base(result)
+        internal InputDialogResult(string result, string? text) : base(result)
         {
-            if (text is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(text);
-            }
             Text = text;
         }
 
