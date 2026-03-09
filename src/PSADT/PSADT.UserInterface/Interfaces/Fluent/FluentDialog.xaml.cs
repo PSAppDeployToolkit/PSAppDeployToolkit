@@ -725,7 +725,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 {
                     // Check for ICO magic bytes: 0x00 0x00 0x01 0x00 (reserved, reserved, type=icon, reserved)
                     using MemoryStream memoryStream = new(iconBytes, false);
-                    if (DrawingUtilities.IsByteStreamAnIcon(iconBytes))
+                    if (DrawingUtilities.IsStreamAnIcon(memoryStream))
                     {
                         BitmapFrame iconFrame = new IconBitmapDecoder(memoryStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
                         if (iconFrame.CanFreeze)

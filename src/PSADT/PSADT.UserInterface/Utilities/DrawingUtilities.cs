@@ -4,7 +4,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Utilities
@@ -135,16 +137,51 @@ namespace PSADT.UserInterface.Utilities
         }
 
         /// <summary>
-        /// Determines whether the specified byte array contains an icon file based on its header.
+        /// Determines whether the specified stream contains an icon file based on its header.
         /// </summary>
         /// <remarks>The method checks the first six bytes of the array for the ICONDIR header, which is
         /// required for recognizing the icon file format.</remarks>
-        /// <param name="data">The byte array to examine. Must have a length of at least 6 bytes to be valid for icon detection.</param>
-        /// <returns>true if the byte array starts with the ICONDIR header indicating it is an icon file; otherwise, false.</returns>
-        internal static bool IsByteStreamAnIcon(byte[] data)
+        /// <param name="stream">The stream to examine. Must have a length of at least 6 bytes to be valid for icon detection.</param>
+        /// <returns>true if the stream starts with the ICONDIR header indicating it is an icon file; otherwise, false.</returns>
+        internal static bool IsStreamAnIcon(Stream stream)
         {
-            // Check if the byte stream starts with the ICONDIR header (6 bytes: 0, 0, 1, 0, count low byte, count high byte).
-            return data.Length >= 6 && data[0] == 0 && data[1] == 0 && data[2] == 1 && data[3] == 0 && data[4] > 0;
+            // Confirm the stream is valid.
+            ArgumentNullException.ThrowIfNull(stream);
+            if (!stream.CanRead)
+            {
+                throw new ArgumentException("The stream must be readable.", nameof(stream));
+            }
+            if (!stream.CanSeek)
+            {
+                throw new ArgumentException("The stream must be seekable.", nameof(stream));
+            }
+
+            // Confirm the stream has enough data for an ICONDIR header.
+            int iconDirSize = Marshal.SizeOf<ICONDIR>();
+            if (stream.Length < iconDirSize)
+            {
+                return false;
+            }
+
+            // Validate that the byte data at the start of the stream matches the expected ICONDIR header values.
+            long startingPosition = stream.Position; stream.Position = 0;
+            try
+            {
+                // Read the ICONDIR header and confirm it has the expected values.
+                byte[] buffer = new byte[iconDirSize]; int bytesRead = stream.Read(buffer, 0, iconDirSize);
+                if (bytesRead != iconDirSize)
+                {
+                    return false;
+                }
+
+                // Interpret the buffer as an ICONDIR structure and validate its fields.
+                ref readonly ICONDIR iconDir = ref buffer.AsReadOnlyStructure<ICONDIR>();
+                return iconDir.IsValid;
+            }
+            finally
+            {
+                stream.Position = startingPosition;
+            }
         }
 
         /// <summary>

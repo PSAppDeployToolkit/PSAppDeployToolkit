@@ -504,7 +504,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
                 {
                     using MemoryStream ms = new(base64Bytes, false);
-                    if (DrawingUtilities.IsByteStreamAnIcon(base64Bytes))
+                    if (DrawingUtilities.IsStreamAnIcon(ms))
                     {
                         using Icon base64Icon = new(ms);
                         icon = (Icon)base64Icon.Clone();

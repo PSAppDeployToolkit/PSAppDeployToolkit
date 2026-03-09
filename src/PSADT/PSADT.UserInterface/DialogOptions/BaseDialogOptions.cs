@@ -226,7 +226,7 @@ namespace PSADT.UserInterface.DialogOptions
                 if (MiscUtilities.GetBase64StringBytes(image) is byte[] bytes)
                 {
                     using MemoryStream ms = new(bytes, false);
-                    if (DrawingUtilities.IsByteStreamAnIcon(bytes))
+                    if (DrawingUtilities.IsStreamAnIcon(ms))
                     {
                         using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
                         _ = bmp.Size;
