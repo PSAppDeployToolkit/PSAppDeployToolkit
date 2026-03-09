@@ -46,8 +46,8 @@ namespace PSADT.UserInterface
                 throw new InvalidOperationException($"Calculated DPI-based dimensions for stock icons are not square. Calculated dimensions: {x}x{y}.");
             }
 
-            // Internal worker method to retrieve a stock icon as a Bitmap.
-            static Bitmap GetSystemStockIconAsBitmap(SHSTOCKICONID siid, SHIL_SIZE iImageList)
+            // Internal worker method to retrieve a stock icon as a bitmap.
+            static Bitmap GetSystemStockIconBitmap(SHSTOCKICONID siid, SHIL_SIZE iImageList)
             {
                 // Get a handle to specified stock icon.
                 _ = NativeMethods.SHGetImageList(iImageList, out IImageList imageList);
@@ -80,7 +80,7 @@ namespace PSADT.UserInterface
             Dictionary<SHSTOCKICONID, Bitmap> icons = [];
             foreach (SHSTOCKICONID iconId in lookupList)
             {
-                using Bitmap icon = GetSystemStockIconAsBitmap(iconId, SHIL_SIZE.SHIL_JUMBO);
+                using Bitmap icon = GetSystemStockIconBitmap(iconId, SHIL_SIZE.SHIL_JUMBO);
                 icons.Add(iconId, DrawingUtilities.ResizeBitmap(icon, x));
             }
 

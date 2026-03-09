@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -12,19 +13,19 @@ using Windows.Win32.UI.Shell;
 namespace PSADT.UserInterface.Utilities
 {
     /// <summary>
-    /// A collection of utility methods for drawing and image manipulation.
+    /// A collection of utility methods for drawing and bitmap manipulation.
     /// </summary>
     internal static class DrawingUtilities
     {
         /// <summary>
         /// Resize the bitmap to the specified width and height.
         /// </summary>
-        /// <param name="img">The image to resize.</param>
+        /// <param name="img">The bitmap to resize.</param>
         /// <param name="size">The square size to resize to.</param>
-        /// <returns>The resized image.</returns>
+        /// <returns>The resized bitmap.</returns>
         internal static Bitmap ResizeBitmap(Bitmap img, int size)
         {
-            // Internal worker to letterbox/pillarbox a non-square source image into a square canvas.
+            // Internal worker to letterbox/pillarbox a non-square source bitmap into a square canvas.
             static Rectangle GetAspectFitRectangle(int sourceWidth, int sourceHeight, int boxWidth, int boxHeight)
             {
                 double scale = Math.Min((double)boxWidth / sourceWidth, (double)boxHeight / sourceHeight);
@@ -41,11 +42,11 @@ namespace PSADT.UserInterface.Utilities
             }
 
             // Create a new bitmap and set the resolution.
-            Bitmap destImage = new(size, size, PixelFormat.Format32bppArgb);
-            destImage.SetResolution(img.HorizontalResolution, img.VerticalResolution);
+            Bitmap destBitmap = new(size, size, PixelFormat.Format32bppArgb);
+            destBitmap.SetResolution(img.HorizontalResolution, img.VerticalResolution);
 
             // Create a new graphic that we can resize.
-            using Graphics graphics = Graphics.FromImage(destImage);
+            using Graphics graphics = Graphics.FromImage(destBitmap);
             graphics.Clear(Color.Transparent);
             graphics.CompositingMode = CompositingMode.SourceOver;
             graphics.CompositingQuality = CompositingQuality.HighQuality;
@@ -58,31 +59,30 @@ namespace PSADT.UserInterface.Utilities
             wrapMode.SetWrapMode(WrapMode.TileFlipXY);
             Rectangle destRect = GetAspectFitRectangle(img.Width, img.Height, size, size);
             graphics.DrawImage(img, destRect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, wrapMode);
-            return destImage;
+            return destBitmap;
         }
 
         /// <summary>
-        /// Converts an image to an icon, automatically resizing to the maximum icon size if greater than 128px.
+        /// Converts a bitmap to an icon, adding a square entry for each possible size without stretcing the source.
         /// </summary>
-        /// <param name="img">The image to resize.</param>
-        /// <returns>The resized image.</returns>
+        /// <param name="img">The bitmap to resize.</param>
+        /// <returns>The resized bitmap.</returns>
         internal static Icon ConvertBitmapToIcon(Bitmap img)
         {
-            using MemoryStream ms = new(CreateIconByteStreamFromBitmap(img), writable: false);
-            using Icon icon = new(ms);
-            return (Icon)icon.Clone();
+            using MemoryStream ms = new(CreateIconByteArray(img), writable: false);
+            return new(ms);
         }
 
         /// <summary>
         /// Converts a bitmap image from the specified file path to an icon.
         /// </summary>
-        /// <remarks>The method loads the image from the specified file path and converts it to an icon.
-        /// Ensure that the file exists and is a valid image format supported by the Image class.</remarks>
-        /// <param name="filename">The path to the image file to convert. This parameter cannot be null or empty.</param>
-        /// <returns>An Icon object that represents the converted bitmap image.</returns>
+        /// <remarks>The method loads the bitmap from the specified file path and converts it to an icon.
+        /// Ensure that the file exists and is a valid bitmap format supported by the <see cref="Bitmap"/> class.</remarks>
+        /// <param name="filename">The path to the bitmap file to convert. This parameter cannot be null or empty.</param>
+        /// <returns>An Icon object that represents the converted bitmap.</returns>
         internal static Icon ConvertBitmapToIcon(string filename)
         {
-            using Bitmap img = new(filename);
+            using Bitmap img = new(filename, true);
             return ConvertBitmapToIcon(img);
         }
 
@@ -94,9 +94,10 @@ namespace PSADT.UserInterface.Utilities
         /// icon (e.g., .ico).</remarks>
         /// <param name="img">The bitmap image to be converted and saved as an icon file.</param>
         /// <param name="path">The file path where the icon file will be saved. The path must be valid and writable.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void SaveBitmapAsIconFile(Bitmap img, string path)
         {
-            File.WriteAllBytes(path, CreateIconByteStreamFromBitmap(img));
+            File.WriteAllBytes(path, CreateIconByteArray(img));
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace PSADT.UserInterface.Utilities
         /// file does not exist, is not a valid executable, or does not contain an icon, the method may return
         /// null.</remarks>
         /// <param name="path">The path to the executable file from which to extract the bitmap. This parameter cannot be null or empty.</param>
-        /// <returns>A Bitmap object representing the icon extracted from the executable. Returns null if the extraction fails or
+        /// <returns>A <see cref="Bitmap"/> object representing the icon extracted from the executable. Returns null if the extraction fails or
         /// if the executable does not contain an icon.</returns>
         internal static Bitmap ExtractBitmapFromExecutable(string path)
         {
@@ -193,7 +194,7 @@ namespace PSADT.UserInterface.Utilities
         /// <param name="source">The bitmap image to convert into an icon format. The bitmap must have dimensions of at least 16x16 pixels.</param>
         /// <returns>A byte array containing the ICO file data generated from the provided bitmap.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the dimensions of the source bitmap are less than 16x16 pixels.</exception>
-        private static byte[] CreateIconByteStreamFromBitmap(Bitmap source)
+        private static byte[] CreateIconByteArray(Bitmap source)
         {
             // Internal worker functions to facilitate the main method logic.
             static List<int> GetSupportedSizes(Bitmap source)
