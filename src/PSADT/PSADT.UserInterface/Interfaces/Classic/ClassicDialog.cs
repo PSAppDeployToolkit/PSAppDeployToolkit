@@ -501,31 +501,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // Use a cached icon if available, otherwise load and cache it before returning it.
             if (!iconCache.TryGetValue(path, out Icon? icon))
             {
-                if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
+                using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                if (!DrawingUtilities.IsStreamAnIcon(stream))
                 {
-                    using MemoryStream ms = new(base64Bytes, false);
-                    if (DrawingUtilities.IsStreamAnIcon(ms))
-                    {
-                        using Icon base64Icon = new(ms);
-                        icon = (Icon)base64Icon.Clone();
-                    }
-                    else
-                    {
-                        using Bitmap base64Bitmap = (Bitmap)Image.FromStream(ms, true, true);
-                        icon = DrawingUtilities.ConvertBitmapToIcon(base64Bitmap);
-                    }
+                    using Bitmap image = new(stream, true);
+                    icon = DrawingUtilities.ConvertBitmapToIcon(image);
                 }
                 else
                 {
-                    if (Path.GetExtension(path).Equals(".ico", StringComparison.OrdinalIgnoreCase))
-                    {
-                        using Icon source = new(path);
-                        icon = (Icon)source.Clone();
-                    }
-                    else
-                    {
-                        icon = DrawingUtilities.ConvertBitmapToIcon(path);
-                    }
+                    icon = new(stream);
                 }
                 iconCache.Add(path, icon);
             }
@@ -546,18 +530,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // Use a cached image if available, otherwise load and cache it before returning it.
             if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                if (MiscUtilities.GetBase64StringBytes(path) is byte[] base64Bytes)
-                {
-                    using MemoryStream ms = new(base64Bytes);
-                    using Image base64Image = Image.FromStream(ms, true, true);
-                    image = (Bitmap)base64Image.Clone();
-                }
-                else
-                {
-                    using Image source = Image.FromFile(path);
-                    image = (Bitmap)source.Clone();
-                }
-                imageCache.Add(path, image);
+                using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                imageCache.Add(path, image = new(stream, true));
             }
             return image;
         }

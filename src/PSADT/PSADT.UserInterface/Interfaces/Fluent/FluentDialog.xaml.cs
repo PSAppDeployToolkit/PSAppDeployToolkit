@@ -720,63 +720,28 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Try to get from cache first.
             if (!_dialogIconCache.TryGetValue(dialogIconPath, out BitmapSource? bitmapSource))
             {
-                // Nothing cached. Determine whether it's base64 or a file path.
-                if (MiscUtilities.GetBase64StringBytes(dialogIconPath) is byte[] iconBytes)
+                using Stream stream = MiscUtilities.GetBase64StringBytes(dialogIconPath) is not byte[] bytes ? new FileStream(dialogIconPath, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                if (!DrawingUtilities.IsStreamAnIcon(stream))
                 {
-                    // Check for ICO magic bytes: 0x00 0x00 0x01 0x00 (reserved, reserved, type=icon, reserved)
-                    using MemoryStream memoryStream = new(iconBytes, false);
-                    if (DrawingUtilities.IsStreamAnIcon(memoryStream))
+                    BitmapImage bitmapImage = new();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.StreamSource = stream;
+                    bitmapImage.EndInit();
+                    if (bitmapImage.CanFreeze)
                     {
-                        BitmapFrame iconFrame = new IconBitmapDecoder(memoryStream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
-                        if (iconFrame.CanFreeze)
-                        {
-                            iconFrame.Freeze();
-                        }
-                        _dialogIconCache.Add(dialogIconPath, iconFrame);
-                        bitmapSource = iconFrame;
+                        bitmapImage.Freeze();
                     }
-                    else
-                    {
-                        BitmapImage bitmapImage = new();
-                        bitmapImage.BeginInit();
-                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmapImage.StreamSource = memoryStream;
-                        bitmapImage.EndInit();
-                        if (bitmapImage.CanFreeze)
-                        {
-                            bitmapImage.Freeze();
-                        }
-                        _dialogIconCache.Add(dialogIconPath, bitmapImage);
-                        bitmapSource = bitmapImage;
-                    }
+                    _dialogIconCache.Add(dialogIconPath, bitmapSource = bitmapImage);
                 }
                 else
                 {
-                    // If we have an icon, get the highest resolution frame.
-                    if (Path.GetExtension(dialogIconPath).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                    BitmapFrame iconFrame = new IconBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
+                    if (iconFrame.CanFreeze)
                     {
-                        BitmapFrame iconFrame = new IconBitmapDecoder(new Uri(dialogIconPath, UriKind.Absolute), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad).Frames.OrderByDescending(static f => f.PixelWidth * f.PixelHeight).First();
-                        if (iconFrame.CanFreeze)
-                        {
-                            iconFrame.Freeze();
-                        }
-                        _dialogIconCache.Add(dialogIconPath, iconFrame);
-                        bitmapSource = iconFrame;
+                        iconFrame.Freeze();
                     }
-                    else
-                    {
-                        BitmapImage bitmapImage = new();
-                        bitmapImage.BeginInit();
-                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmapImage.UriSource = new(dialogIconPath, UriKind.Absolute);
-                        bitmapImage.EndInit();
-                        if (bitmapImage.CanFreeze)
-                        {
-                            bitmapImage.Freeze();
-                        }
-                        _dialogIconCache.Add(dialogIconPath, bitmapImage);
-                        bitmapSource = bitmapImage;
-                    }
+                    _dialogIconCache.Add(dialogIconPath, bitmapSource = iconFrame);
                 }
             }
             return bitmapSource;
