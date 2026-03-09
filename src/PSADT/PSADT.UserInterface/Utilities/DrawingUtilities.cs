@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
-using Windows.Win32.UI.Shell;
 
 namespace PSADT.UserInterface.Utilities
 {
@@ -98,43 +97,6 @@ namespace PSADT.UserInterface.Utilities
         internal static void SaveBitmapAsIconFile(Bitmap img, string path)
         {
             File.WriteAllBytes(path, CreateIconByteArray(img));
-        }
-
-        /// <summary>
-        /// Extracts the icon associated with the specified executable file.
-        /// </summary>
-        /// <remarks>This method uses the SHGetFileInfo function to retrieve the icon associated with the
-        /// executable file. Ensure that the specified path points to a valid .exe file to avoid exceptions.</remarks>
-        /// <param name="path">The full path to the executable (.exe) file from which to extract the icon. The path must refer to a valid
-        /// file with a .exe extension.</param>
-        /// <returns>An Icon object representing the icon extracted from the specified executable file. Returns null if the icon
-        /// cannot be extracted.</returns>
-        /// <exception cref="ArgumentException">Thrown if the provided path does not have a .exe extension.</exception>
-        internal static Icon ExtractIconFromExecutable(string path)
-        {
-            // Get the icon handle using SHGetFileInfo, clone it, then return it.
-            _ = NativeMethods.SHGetFileInfo(path, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
-            using (psfi)
-            {
-                using Icon icon = Icon.FromHandle(psfi.hIcon);
-                return (Icon)icon.Clone();
-            }
-        }
-
-        /// <summary>
-        /// Extracts a bitmap image from the icon contained within the specified executable file.
-        /// </summary>
-        /// <remarks>This method assumes that the specified executable contains an icon resource. If the
-        /// file does not exist, is not a valid executable, or does not contain an icon, the method may return
-        /// null.</remarks>
-        /// <param name="path">The path to the executable file from which to extract the bitmap. This parameter cannot be null or empty.</param>
-        /// <returns>A <see cref="Bitmap"/> object representing the icon extracted from the executable. Returns null if the extraction fails or
-        /// if the executable does not contain an icon.</returns>
-        internal static Bitmap ExtractBitmapFromExecutable(string path)
-        {
-            // Convert the icon to a bitmap and return it.
-            using Icon icon = ExtractIconFromExecutable(path);
-            return icon.ToBitmap();
         }
 
         /// <summary>

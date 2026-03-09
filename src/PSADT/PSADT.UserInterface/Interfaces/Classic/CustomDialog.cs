@@ -99,7 +99,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
                 else
                 {
-                    pictureIcon.Image = SystemIcons.Get(options.Icon.Value);
+                    using Icon icon = SystemIcons.Get(options.Icon.Value, Interop.SHIL_SIZE.SHIL_EXTRALARGE);
+                    pictureIcon.Image = icon.ToBitmap();
                 }
 
                 // Set up the message.

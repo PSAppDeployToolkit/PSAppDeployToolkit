@@ -12,13 +12,14 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using PSADT.Interop.SafeHandles;
+using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Utilities;
 using PSAppDeployToolkit.Logging;
+using Windows.Win32.UI.Shell;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
@@ -362,34 +363,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (!_appIconCache.TryGetValue(appFilePath, out BitmapSource? bitmapSource))
             {
                 // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
-                Bitmap drawingBitmap;
                 try
                 {
-                    drawingBitmap = DrawingUtilities.ExtractBitmapFromExecutable(appFilePath);
+                    _ = NativeMethods.SHGetFileInfo(appFilePath, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
+                    using (psfi)
+                    {
+                        bitmapSource = Imaging.CreateBitmapSourceFromHIcon(psfi.hIcon, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    }
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    drawingBitmap = SystemIcons.Get(DialogSystemIcon.Application);
+                    using Icon stockIcon = SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
+                    bitmapSource = Imaging.CreateBitmapSourceFromHIcon(stockIcon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                 }
-                using (drawingBitmap)
-                {
-                    using SafeGdiObjectHandle hBitmap = new(drawingBitmap.GetHbitmap(), true);
-                    InvalidOperationException.ThrowIfNullOrInvalid(hBitmap, $"Failed to get a valid handle for the application icon at path '{appFilePath}'.");
-                    bool hBitmapAddRef = false;
-                    try
-                    {
-                        hBitmap.DangerousAddRef(ref hBitmapAddRef);
-                        (bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap.DangerousGetHandle(), default, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions())).Freeze();
-                        _appIconCache.Add(appFilePath, bitmapSource);
-                    }
-                    finally
-                    {
-                        if (hBitmapAddRef)
-                        {
-                            hBitmap.DangerousRelease();
-                        }
-                    }
-                }
+                bitmapSource.Freeze(); _appIconCache.Add(appFilePath, bitmapSource);
             }
             return bitmapSource;
         }
