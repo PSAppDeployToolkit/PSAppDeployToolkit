@@ -70,7 +70,7 @@ namespace PSADT.UserInterface.Utilities
         internal static Icon ConvertBitmapToIcon(Bitmap img)
         {
             using MemoryStream ms = new(CreateIconByteArray(img), writable: false);
-            return new(ms);
+            return new(ms, 256, 256);
         }
 
         /// <summary>

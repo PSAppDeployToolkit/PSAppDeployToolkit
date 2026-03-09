@@ -232,7 +232,7 @@ namespace PSADT.UserInterface.DialogOptions
                     }
                     else
                     {
-                        using Icon icon = new(stream);
+                        using Icon icon = new(stream, 256, 256);
                         _ = icon.Size;
                     }
                 }

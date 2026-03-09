@@ -509,7 +509,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
                 else
                 {
-                    icon = new(stream);
+                    icon = new(stream, 256, 256);
                 }
                 iconCache.Add(path, icon);
             }
