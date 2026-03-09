@@ -44,11 +44,11 @@ namespace PSADT.DeviceManagement
                 // Activate the session manager for the capture device and enumerate through each session.
                 try
                 {
-                    Media_Audio_IMMDevice_Extensions.Activate(microphoneDevice, typeof(IAudioSessionManager2).GUID, CLSCTX.CLSCTX_INPROC_SERVER, null, out object sessionManagerObj);
-                    IAudioSessionManager2 sessionManager = (IAudioSessionManager2)sessionManagerObj;
+                    Guid iid = typeof(IAudioSessionManager2).GUID;
+                    microphoneDevice.Activate(in iid, CLSCTX.CLSCTX_INPROC_SERVER, null, out object sessionManager);
                     try
                     {
-                        IAudioSessionEnumerator sessionEnumerator = sessionManager.GetSessionEnumerator();
+                        IAudioSessionEnumerator sessionEnumerator = ((IAudioSessionManager2)sessionManager).GetSessionEnumerator();
                         try
                         {
                             sessionEnumerator.GetCount(out int sessionCount);
