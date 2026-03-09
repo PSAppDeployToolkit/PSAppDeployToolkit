@@ -2963,47 +2963,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Retrieves information about a file or folder, such as its icon, display name, and type, using the Windows
-        /// Shell API.
-        /// </summary>
-        /// <remarks>This method is a managed wrapper for the native SHGetFileInfo function in
-        /// shell32.dll. When <see cref="SHGFI_FLAGS.SHGFI_ICON"/> is specified in <paramref name="uFlags"/>, the
-        /// returned <paramref name="psfi"/> contains an icon handle that must be released. Call
-        /// <see cref="SHFILEINFO.Dispose"/> or use a <c>using</c> statement to release the icon handle.</remarks>
-        /// <param name="pszPath">The path to the file or folder for which to retrieve information. Can be null or an empty string if used
-        /// with certain flags that do not require a path.</param>
-        /// <param name="psfi">When this method returns, contains a structure that receives the file information retrieved by the function.
-        /// If an icon was requested, dispose of this structure when finished to release the icon handle.</param>
-        /// <param name="uFlags">A combination of flags that specify which file information to retrieve. These flags determine the attributes
-        /// and details returned.</param>
-        /// <param name="dwFileAttributes">File attribute flags to use when retrieving information. Used only if the uFlags parameter includes a flag
-        /// indicating that file attributes are provided. The default is 0.</param>
-        /// <returns>A handle to the system image list or icon, depending on the flags specified. The handle is valid only while
-        /// the image list exists. Returns a non-zero value on success.</returns>
-        /// <exception cref="Win32Exception">Thrown if the file information could not be retrieved.</exception>
-        internal static nint SHGetFileInfo(string pszPath, out SHFILEINFO psfi, SHGFI_FLAGS uFlags, FileAttributes dwFileAttributes = 0)
-        {
-            [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern nint SHGetFileInfoW(string pszPath, FileAttributes dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, SHGFI_FLAGS uFlags);
-            psfi = new();
-            nint res;
-            try
-            {
-                InvalidOperationException.ThrowIfZeroOrInvalid(res = SHGetFileInfoW(pszPath.ThrowIfFileDoesNotExist(), dwFileAttributes, ref psfi, (uint)Marshal.SizeOf(psfi), uFlags), "Failed to retrieve file information for the specified path.");
-                if ((uFlags & SHGFI_FLAGS.SHGFI_ICON) != 0)
-                {
-                    InvalidOperationException.ThrowIfZeroOrInvalid((nint)psfi.hIcon, "The icon handle returned from 'SHGetFileInfo()' is null or invalid.");
-                }
-            }
-            catch
-            {
-                psfi.Dispose();
-                throw;
-            }
-            return res;
-        }
-
-        /// <summary>
         /// Retrieves information about a specified stock icon, such as its handle, path, or index, based on the
         /// provided flags.
         /// </summary>

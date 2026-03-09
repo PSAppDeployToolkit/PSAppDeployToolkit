@@ -19,7 +19,6 @@ using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Utilities;
 using PSAppDeployToolkit.Logging;
-using Windows.Win32.UI.Shell;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
@@ -363,20 +362,21 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (!_appIconCache.TryGetValue(appFilePath, out BitmapSource? bitmapSource))
             {
                 // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
+                Icon? icon;
                 try
                 {
-                    _ = NativeMethods.SHGetFileInfo(appFilePath, out SHFILEINFO psfi, SHGFI_FLAGS.SHGFI_ICON | SHGFI_FLAGS.SHGFI_LARGEICON);
-                    using (psfi)
-                    {
-                        bitmapSource = Imaging.CreateBitmapSourceFromHIcon(psfi.hIcon, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                    }
+                    icon = System.Drawing.Icon.ExtractAssociatedIcon(appFilePath);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    using Icon stockIcon = SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
-                    bitmapSource = Imaging.CreateBitmapSourceFromHIcon(stockIcon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    icon = null;
                 }
-                bitmapSource.Freeze(); _appIconCache.Add(appFilePath, bitmapSource);
+                icon ??= SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
+                using (icon)
+                {
+                    _appIconCache.Add(appFilePath, bitmapSource = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions()));
+                }
+                bitmapSource.Freeze();
             }
             return bitmapSource;
         }
