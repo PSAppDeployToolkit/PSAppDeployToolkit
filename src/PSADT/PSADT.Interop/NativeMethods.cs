@@ -4180,6 +4180,49 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Expands environment variables in the specified source string using the provided environment block and stores
+        /// the expanded result in the destination string.
+        /// </summary>
+        /// <remarks>Throws an exception for certain NTSTATUS error codes, such as when the environment
+        /// block is invalid or the destination buffer is insufficient. The caller is responsible for ensuring the
+        /// destination buffer is large enough to hold the expanded string.</remarks>
+        /// <param name="Environment">A handle to the environment block containing the variables to expand. Cannot be null.</param>
+        /// <param name="SourceString">A UNICODE_STRING structure containing the source string with environment variables to be expanded.</param>
+        /// <param name="DestinationString">A reference to a UNICODE_STRING structure that receives the expanded string. Must be valid and sufficiently
+        /// sized to hold the result.</param>
+        /// <param name="RequiredBytes">When the method returns, contains the required length, in bytes, for the destination string to store
+        /// the expanded result.</param>
+        /// <returns>An NTSTATUS code indicating the outcome of the operation. STATUS_SUCCESS indicates successful expansion;
+        /// other codes indicate errors or special conditions.</returns>
+        internal static NTSTATUS RtlExpandEnvironmentStrings_U(SafeEnvironmentBlockHandle Environment, in UNICODE_STRING SourceString, ref UNICODE_STRING DestinationString, out uint RequiredBytes)
+        {
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern NTSTATUS RtlExpandEnvironmentStrings_U(IntPtr Environment, in UNICODE_STRING SourceString, ref UNICODE_STRING DestinationString, out uint RequiredBytes);
+            ArgumentException.ThrowIfNullOrInvalid(Environment); ArgumentException.ThrowIfNullOrInvalid(SourceString); ArgumentException.ThrowIfInvalid(DestinationString);
+            bool EnvironmentAddRef = false;
+            try
+            {
+                Environment.DangerousAddRef(ref EnvironmentAddRef);
+                NTSTATUS res = RtlExpandEnvironmentStrings_U(Environment.DangerousGetHandle(), in SourceString, ref DestinationString, out RequiredBytes);
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_BUFFER_TOO_SMALL || DestinationString.MaximumLength != 0))
+                {
+                    throw ExceptionUtilities.GetException(res);
+                }
+                InvalidOperationException.ThrowIfZero(RequiredBytes, "The required length returned from 'RtlExpandEnvironmentStrings_U()' is zero, which indicates an unexpected condition.");
+                InvalidOperationException.ThrowIfOddLength(RequiredBytes, "The required length returned from 'RtlExpandEnvironmentStrings_U()' is not a valid character count.");
+                InvalidOperationException.ThrowIfGreaterThan(RequiredBytes, ushort.MaxValue, "The required length returned from 'RtlExpandEnvironmentStrings_U()' exceeds the maximum allowed size for a UNICODE_STRING.");
+                return res;
+            }
+            finally
+            {
+                if (EnvironmentAddRef)
+                {
+                    Environment.DangerousRelease();
+                }
+            }
+        }
+
+        /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
         internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()

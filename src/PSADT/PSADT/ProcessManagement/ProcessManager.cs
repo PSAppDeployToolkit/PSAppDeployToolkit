@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Buffers.Binary;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.ServiceProcess;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -24,7 +19,6 @@ using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
-using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
@@ -134,7 +128,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // We must create a console window for console apps when the window is shown.
-                    if (launchInfo.IsCliApplication)
+                    if (launchInfo.IsCliApplication())
                     {
                         if (launchInfo.CreateNoWindow)
                         {
@@ -192,7 +186,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
-                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan;
+                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan = launchInfo.MakeCommandLine().ToCharArray();
                     if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
@@ -205,8 +199,7 @@ namespace PSADT.ProcessManagement
                                 fixed (char* pDesktop = @"winsta0\default")
                                 {
                                     startupInfo.lpDesktop = new(pDesktop);
-                                    OutLaunchArguments(launchInfo, launchInfo.RunAsActiveUser.NTAccount, launchInfo.ExpandEnvironmentVariables ? EnvironmentBlockToDictionary(lpEnvironment) : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                                    _ = CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
                                     startupInfo.lpDesktop = null;
                                 }
                             }
@@ -216,35 +209,23 @@ namespace PSADT.ProcessManagement
                     {
                         // We're running elevated but have been asked to de-elevate.
                         using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                        _ = CreateProcessUsingToken(hPrimaryToken, filePath, ref commandSpan, handlesToInherit, creationFlags, null, workingDirectory, startupInfo, out pi);
+                        _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory, startupInfo, out pi);
                     }
                     else
                     {
                         // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out _, out string? workingDirectory, out commandSpan);
-                        if (filePath == EnvironmentInfo.ClientServerClientDefaultPath)
-                        {
-                            // Hack, but CreateProcess() can't start a UIAccess executable.
-                            filePath = EnvironmentInfo.ClientServerClientCompatiblePath;
-                        }
-                        if (filePath == EnvironmentInfo.ClientServerClientLauncherDefaultPath)
-                        {
-                            // Hack, but CreateProcess() can't start a UIAccess executable.
-                            filePath = EnvironmentInfo.ClientServerClientLauncherCompatiblePath;
-                        }
                         if (handlesToInherit.Count > 0)
                         {
                             (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit.AsReadOnly(), forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);
                             using (hAttributeList)
                             using (pinnedHandles)
                             {
-                                _ = NativeMethods.CreateProcess(filePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, workingDirectory, startupInfoEx, out pi);
+                                _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory, startupInfoEx, out pi);
                             }
                         }
                         else
                         {
-                            _ = NativeMethods.CreateProcess(filePath, ref commandSpan, null, null, false, creationFlags, null, workingDirectory, startupInfo, out pi);
+                            _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory, startupInfo, out pi);
                         }
                     }
 
@@ -292,15 +273,14 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Build the command line for the process.
-                OutLaunchArguments(launchInfo, AccountUtilities.CallerUsername, launchInfo.ExpandEnvironmentVariables ? GetCallerEnvironmentDictionary() : null, out string filePath, out string? arguments, out string? workingDirectory, out Span<char> commandSpan);
-                commandLine = commandSpan.TrimEndNullAndTrim().ToString();
+                commandLine = launchInfo.MakeCommandLine();
                 process = new()
                 {
                     StartInfo = new()
                     {
-                        FileName = filePath,
-                        Arguments = arguments,
-                        WorkingDirectory = workingDirectory,
+                        FileName = launchInfo.FilePath,
+                        Arguments = launchInfo.Arguments,
+                        WorkingDirectory = launchInfo.WorkingDirectory,
                         UseShellExecute = launchInfo.UseShellExecute,
                         Verb = launchInfo.Verb,
                     }
@@ -316,7 +296,7 @@ namespace PSADT.ProcessManagement
 
                 // Start the process and assign the handle to our job if we have one.
                 // For a pure shell action, we won't ever be able to get one.
-                if (!process.Start())
+                if (!process.Start() && File.Exists(launchInfo.FilePath))
                 {
                     throw new InvalidProgramException("Failed to start the process.");
                 }
@@ -556,129 +536,6 @@ namespace PSADT.ProcessManagement
                     writer.WriteLine(line);
                 }
             }
-        }
-
-        /// <summary>
-        /// Retrieves a read-only dictionary containing the current environment variables.
-        /// </summary>
-        /// <remarks>The method returns a snapshot of the environment variables at the time of the call.
-        /// Subsequent changes to the environment variables will not be reflected in the returned dictionary.</remarks>
-        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> where the keys are the names of the environment variables
-        /// and the values are their corresponding values as strings.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ReadOnlyDictionary<string, string> GetCallerEnvironmentDictionary()
-        {
-            return new(EnvironmentUtilities.GetEnvironmentVariables().Cast<DictionaryEntry>().ToDictionary(static de => de.Key.ToString()!, static de => de.Value!.ToString()!));
-        }
-
-        /// <summary>
-        /// Converts a native environment block into a read-only dictionary of environment variables.
-        /// </summary>
-        /// <remarks>This method processes a native environment block, which is a contiguous block of
-        /// memory containing null-terminated strings in the format "Name=Value". It extracts these strings and converts
-        /// them into a dictionary for easier access in managed code.</remarks>
-        /// <param name="environmentBlock">A handle to the native environment block. The handle must be valid and contain environment variables in the
-        /// format "Name=Value".</param>
-        /// <returns>A read-only dictionary containing the environment variables as key-value pairs. The keys are
-        /// case-insensitive.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="environmentBlock"/> is invalid, empty, or contains entries that are not in the
-        /// expected "Name=Value" format.</exception>
-        private static ReadOnlyDictionary<string, string> EnvironmentBlockToDictionary(SafeEnvironmentBlockHandle environmentBlock)
-        {
-            ArgumentException.ThrowIfNullOrInvalid(environmentBlock);
-            bool envBlockAddRef = false;
-            try
-            {
-                environmentBlock.DangerousAddRef(ref envBlockAddRef);
-                nint envBlockPtr = environmentBlock.DangerousGetHandle();
-                Dictionary<string, string> envDict = new(StringComparer.OrdinalIgnoreCase);
-                while (true)
-                {
-                    // Read up to the first null terminator.
-                    if (Marshal.PtrToStringUni(envBlockPtr) is not string entry || string.IsNullOrWhiteSpace(entry))
-                    {
-                        break;
-                    }
-
-                    // Add the valid entry and advance pointer past this string + its null terminator.
-                    if (entry.IndexOf("=") is int idx && idx == -1)
-                    {
-                        throw new FormatException($"The environment block entry [{entry}] is not in the expected format of 'Name=Value'.");
-                    }
-                    envDict.Add(entry.Substring(0, idx), entry.Substring(idx + 1));
-                    envBlockPtr += (entry.Length + 1) * sizeof(char);
-                }
-                ArgumentOutOfRangeException.ThrowIfZero(envDict.Count);
-                return new(envDict);
-            }
-            finally
-            {
-                if (envBlockAddRef)
-                {
-                    environmentBlock.DangerousRelease();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Expands environment variable placeholders in the specified input string using the provided environment
-        /// block.
-        /// </summary>
-        /// <remarks>This method uses the provided environment block to resolve environment variable
-        /// placeholders. Placeholders are expected to be in the format <c>%VariableName%</c>. If a placeholder does not
-        /// match any environment variable in the block, it remains unchanged in the output.</remarks>
-        /// <param name="ntAccount">The NT account of the user whose environment variables are being expanded. Used for error messages.</param>
-        /// <param name="input">The input string containing environment variable placeholders in the format <c>%VariableName%</c>.</param>
-        /// <param name="environment">A handle to the environment block used for resolving environment variables. The handle must be valid and not
-        /// invalid.</param>
-        /// <returns>A string with all recognized environment variable placeholders replaced by their corresponding values.
-        /// Placeholders that cannot be resolved are left unchanged.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is <see langword="null"/>, empty, or consists only of whitespace. Thrown
-        /// if <paramref name="environment"/> is invalid.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
-        private static string ExpandEnvironmentVariables(NTAccount ntAccount, string input, ReadOnlyDictionary<string, string> environment)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(input); ArgumentNullException.ThrowIfNull(environment); ArgumentOutOfRangeException.ThrowIfZero(environment.Count);
-            return EnvironmentVariableRegex.Replace(input, m => environment.TryGetValue(m.Groups[1].Value, out string? envVar) ? envVar : throw new InvalidOperationException($"The user [{ntAccount}] does not have environment variable [{m.Value}] defined or available."));
-        }
-
-        /// <summary>
-        /// Constructs the command line and working directory for launching a process based on the provided launch
-        /// information.
-        /// </summary>
-        /// <remarks>If <paramref name="launchInfo"/> specifies that environment variables should be
-        /// expanded, the method will replace any environment variable placeholders in the file path, arguments, and
-        /// working directory with their corresponding values from <paramref name="environmentDictionary"/>.</remarks>
-        /// <param name="launchInfo">The information required to launch the process, including file path and arguments.</param>
-        /// <param name="username">The user account under which the process will be launched, used for expanding environment variables.</param>
-        /// <param name="environmentDictionary">A dictionary of environment variables to be used for expanding variables in the command line and working
-        /// directory.</param>
-        /// <param name="filePath">When this method returns, contains the fully qualified file path of the executable to launch.</param>
-        /// <param name="arguments">When this method returns, contains the command line arguments for the process launch, or <see langword="null"/>
-        /// if not specified.</param>
-        /// <param name="workingDirectory">When this method returns, contains the working directory for the process launch, or <see langword="null"/>
-        /// if not specified.</param>
-        /// <param name="commandSpan">When this method returns, contains the complete command line to be used for process creation.</param>
-        private static void OutLaunchArguments(ProcessLaunchInfo launchInfo, NTAccount username, ReadOnlyDictionary<string, string>? environmentDictionary, out string filePath, out string? arguments, out string? workingDirectory, out Span<char> commandSpan)
-        {
-            if (environmentDictionary is not null)
-            {
-                string[] argv = launchInfo.ArgumentList.Count > 0 ? [.. launchInfo.ArgumentList] : [];
-                for (int i = 0; i < argv.Length; i++)
-                {
-                    argv[i] = ExpandEnvironmentVariables(username, argv[i], environmentDictionary);
-                }
-                filePath = ExpandEnvironmentVariables(username, launchInfo.FilePath, environmentDictionary);
-                arguments = argv.Length > 1 ? CommandLineUtilities.ArgumentListToCommandLine(argv) : argv.Length > 0 ? argv[0] : null;
-                workingDirectory = launchInfo.WorkingDirectory is not null ? ExpandEnvironmentVariables(username, launchInfo.WorkingDirectory, environmentDictionary) : null;
-            }
-            else
-            {
-                filePath = launchInfo.FilePath;
-                arguments = launchInfo.ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(launchInfo.ArgumentList) : launchInfo.ArgumentList.Count > 0 ? launchInfo.ArgumentList[0] : null;
-                workingDirectory = launchInfo.WorkingDirectory;
-            }
-            commandSpan = $"\"{filePath}\"{(!string.IsNullOrWhiteSpace(arguments) ? $" {arguments}" : null)}\0".ToCharArray();
         }
 
         /// <summary>
@@ -1018,14 +875,6 @@ namespace PSADT.ProcessManagement
             { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
             { CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled." },
         });
-
-        /// <summary>
-        /// Represents a compiled, culture-invariant regular expression used to match environment variable patterns.
-        /// </summary>
-        /// <remarks>The pattern matches strings enclosed in percent signs, such as "%VARIABLE%". This
-        /// regex is compiled for performance and is culture-invariant to ensure consistent behavior across different
-        /// cultures.</remarks>
-        private static readonly Regex EnvironmentVariableRegex = new(@"%([^%]+)%", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         /// <summary>
         /// Special exit code used to signal when we're terminating a process due to timeout.

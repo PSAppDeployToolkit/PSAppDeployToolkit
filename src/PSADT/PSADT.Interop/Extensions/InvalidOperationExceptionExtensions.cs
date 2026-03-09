@@ -239,6 +239,39 @@ namespace System
                     throw new InvalidOperationException(message);
                 }
             }
+
+            /// <summary>
+            /// Throws an InvalidOperationException if the specified length is odd.
+            /// </summary>
+            /// <param name="length">The length to check. Must be a non-negative integer.</param>
+            /// <param name="message">The message to include in the exception if the length is odd.</param>
+            /// <exception cref="InvalidOperationException">Thrown if <paramref name="length"/> is odd.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
+            public static void ThrowIfOddLength(uint length, string message)
+            {
+                if ((length & 1) != 0)
+                {
+                    throw new InvalidOperationException(message);
+                }
+            }
+
+            /// <summary>
+            /// Throws an InvalidOperationException if the specified value exceeds the maximum allowed value.
+            /// </summary>
+            /// <param name="value">The value to be checked against the maximum limit.</param>
+            /// <param name="maxValue">The maximum allowable value that the specified value must not exceed.</param>
+            /// <param name="message">The message that will be included in the exception if the value exceeds the maximum.</param>
+            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is greater than <paramref name="maxValue"/>.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
+            public static void ThrowIfGreaterThan(uint value, uint maxValue, string message)
+            {
+                if (value > maxValue)
+                {
+                    throw new InvalidOperationException(message);
+                }
+            }
         }
     }
 }

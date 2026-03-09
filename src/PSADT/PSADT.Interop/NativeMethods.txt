@@ -316,6 +316,7 @@ RT_STRING
 RT_VERSION
 RT_VXD
 RtlGetVersion
+RtlInitUnicodeString
 RtlNtStatusToDosError
 S_OK
 SC_CLOSE

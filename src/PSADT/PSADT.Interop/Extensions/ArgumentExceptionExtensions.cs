@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32.Foundation;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace System
@@ -61,6 +62,61 @@ namespace System
                 if (handle.IsInvalid)
                 {
                     throw new ArgumentOutOfRangeException(name, "The specified SafeHandle is invalid.");
+                }
+            }
+
+            /// <summary>
+            /// Validates that the specified UNICODE_STRING is not null and contains a non-empty buffer. Throws an
+            /// exception if the value is invalid.
+            /// </summary>
+            /// <remarks>Use this method to ensure that a UNICODE_STRING parameter is valid before
+            /// further processing. This helps prevent errors caused by null or empty string buffers.</remarks>
+            /// <param name="value">The UNICODE_STRING instance to validate. The buffer must not be null and the length must be greater than
+            /// zero.</param>
+            /// <param name="name">The name of the parameter being validated. Used in exception messages to identify the invalid argument.</param>
+            /// <exception cref="ArgumentNullException">Thrown if the buffer of the specified UNICODE_STRING is null.</exception>
+            /// <exception cref="ArgumentException">Thrown if the length of the specified UNICODE_STRING is zero.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
+            public static void ThrowIfNullOrInvalid(UNICODE_STRING value, [CallerArgumentExpression(nameof(value))] string name = null!)
+            {
+                unsafe
+                {
+                    if (value.Buffer.Value is null)
+                    {
+                        throw new ArgumentNullException(name, "The specified UNICODE_STRING cannot have a null buffer.");
+                    }
+                }
+                if (value.Length == 0)
+                {
+                    throw new ArgumentException("The specified UNICODE_STRING cannot be empty.", name);
+                }
+            }
+
+            /// <summary>
+            /// Validates a specified UNICODE_STRING structure and throws an exception if its buffer and maximum length
+            /// are not consistent with required constraints.
+            /// </summary>
+            /// <remarks>This method enforces structural integrity for UNICODE_STRING instances,
+            /// ensuring that the buffer and maximum length are logically consistent. Use this method to guard against
+            /// invalid states before processing or passing UNICODE_STRING values.</remarks>
+            /// <param name="value">The UNICODE_STRING to validate. If MaximumLength is greater than zero, Buffer must not be null; if
+            /// MaximumLength is zero, Buffer must be null.</param>
+            /// <param name="name">The name of the parameter being validated. Used in exception messages to identify the invalid argument.</param>
+            /// <exception cref="ArgumentNullException">Thrown if value.Buffer is null while value.MaximumLength is greater than zero.</exception>
+            /// <exception cref="ArgumentException">Thrown if value.Buffer is not null while value.MaximumLength is zero.</exception>
+            public static void ThrowIfInvalid(UNICODE_STRING value, [CallerArgumentExpression(nameof(value))] string name = null!)
+            {
+                unsafe
+                {
+                    if (value.Buffer.Value is null && value.MaximumLength > 0)
+                    {
+                        throw new ArgumentNullException(name, "The specified UNICODE_STRING cannot have a null buffer when MaximumLength is greater than zero.");
+                    }
+                    if (value.Buffer.Value is not null && value.MaximumLength == 0)
+                    {
+                        throw new ArgumentException("The specified UNICODE_STRING cannot have a non-null buffer when MaximumLength is zero.", name);
+                    }
                 }
             }
         }

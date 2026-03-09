@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
+using Microsoft.Win32.SafeHandles;
+using PSADT.AccountManagement;
 using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
+using PSADT.Interop.SafeHandles;
 using PSADT.Security;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace PSADT.ProcessManagement
 {
@@ -54,76 +61,120 @@ namespace PSADT.ProcessManagement
         /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
-        public ProcessLaunchInfo(
-            string filePath,
-            IEnumerable<string>? argumentList = null,
-            string? workingDirectory = null,
-            RunAsActiveUser? runAsActiveUser = null,
-            bool useLinkedAdminToken = false,
-            bool useHighestAvailableToken = false,
-            bool inheritEnvironmentVariables = false,
-            bool expandEnvironmentVariables = false,
-            bool denyUserTermination = false,
-            bool useUnelevatedToken = false,
-            IEnumerable<string>? standardInput = null,
-            IEnumerable<nint>? handlesToInherit = null,
-            bool useShellExecute = false,
-            string? verb = null,
-            bool createNoWindow = false,
-            bool waitForChildProcesses = false,
-            bool killChildProcessesWithParent = false,
-            Encoding? streamEncoding = null,
-            System.Diagnostics.ProcessWindowStyle? windowStyle = null,
-            System.Diagnostics.ProcessPriorityClass? priorityClass = null,
-            CancellationToken? cancellationToken = null,
-            bool noTerminateOnTimeout = false)
+        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, bool useUnelevatedToken = false, IEnumerable<string>? standardInput = null, IEnumerable<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
         {
-            // Handle file paths that may be wrapped in quotes.
-            ArgumentNullException.ThrowIfNull(filePath);
-            FilePath = filePath.StartsWith("\"") && filePath.EndsWith("\"") ? filePath.TrimStart('"').TrimEnd('"') : filePath;
-
-            // Validate the file path is rooted.
-            if (!Path.IsPathRooted(FilePath))
-            {
-                if (FilePath.StartsWith("%") && !expandEnvironmentVariables)
-                {
-                    throw new DriveNotFoundException("File paths with an environment variable must have environment variable expansion enabled.");
-                }
-                throw new DriveNotFoundException("File path must be fully qualified.");
-            }
-
-            // Handle all array parameters.
-            HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit?.Select(static h => (long)h) ?? []]);
-            StandardInput = new ReadOnlyCollection<string>([.. standardInput ?? []]);
-            ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
-
-            // Validate all nullable parameters.
+            // Validate all string parameters are properly set up.
+            ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
             if (workingDirectory is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
-                WorkingDirectory = workingDirectory.Trim();
+                WorkingDirectory = workingDirectory;
             }
             if (verb is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(verb);
                 Verb = verb;
             }
-            if (streamEncoding is not null)
+
+            // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
+            ArgumentList = new ReadOnlyCollection<string>([.. argumentList?.Where(static s => !string.IsNullOrWhiteSpace(s)) ?? []]);
+            FilePath = filePath.StartsWith("\"") && filePath.EndsWith("\"") ? filePath.TrimStart('"').TrimEnd('"') : filePath;
+
+            // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
+            if (useHighestAvailableToken)
             {
-                StreamEncodingWebName = streamEncoding.WebName;
+                ElevatedTokenType = ElevatedTokenType.HighestAvailable;
             }
-            if (windowStyle is not null)
+            if (useLinkedAdminToken)
             {
-                WindowStyle = WindowStyleMap[windowStyle.Value];
-                ProcessWindowStyle = windowStyle.Value;
+                ElevatedTokenType = ElevatedTokenType.HighestMandatory;
             }
-            if (priorityClass is not null)
+            InheritEnvironmentVariables = inheritEnvironmentVariables;
+            ExpandEnvironmentVariables = expandEnvironmentVariables;
+            UseUnelevatedToken = useUnelevatedToken;
+            RunAsActiveUser = runAsActiveUser;
+
+            // Expand out environment variables for FilePath/ArgumentList as required.
+            if (ExpandEnvironmentVariables = expandEnvironmentVariables)
             {
-                PriorityClass = priorityClass.Value;
+                if (RunAsActiveUser is not null && RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser)
+                {
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(RunAsActiveUser.SessionId);
+                    _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, InheritEnvironmentVariables);
+                    using (lpEnvironment)
+                    {
+                        string ExpandEnvironmentVariables(string name)
+                        {
+                            unsafe
+                            {
+                                fixed (char* pInputArgument = name)
+                                {
+                                    UNICODE_STRING pInputString = default, pOutputString = default; PInvoke.RtlInitUnicodeString(&pInputString, pInputArgument);
+                                    _ = NativeMethods.RtlExpandEnvironmentStrings_U(lpEnvironment, in pInputString, ref pOutputString, out uint requiredBytes);
+                                    fixed (char* pOutputArgument = new char[requiredBytes / sizeof(char)])
+                                    {
+                                        pOutputString = new() { Buffer = pOutputArgument, Length = 0, MaximumLength = (ushort)requiredBytes };
+                                        _ = NativeMethods.RtlExpandEnvironmentStrings_U(lpEnvironment, in pInputString, ref pOutputString, out _);
+                                        return pOutputString.ToManagedString();
+                                    }
+                                }
+                            }
+                        }
+                        if (WorkingDirectory is not null)
+                        {
+                            WorkingDirectory = ExpandEnvironmentVariables(WorkingDirectory);
+                        }
+                        ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
+                        FilePath = ExpandEnvironmentVariables(FilePath);
+                    }
+                }
+                else
+                {
+                    if (WorkingDirectory is not null)
+                    {
+                        WorkingDirectory = Environment.ExpandEnvironmentVariables(WorkingDirectory);
+                    }
+                    ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(Environment.ExpandEnvironmentVariables)]);
+                    FilePath = Environment.ExpandEnvironmentVariables(FilePath);
+                }
             }
-            if (cancellationToken is not null)
+
+            // Validate the file path is rooted.
+            if (!(UseShellExecute = useShellExecute) && !Path.IsPathRooted(FilePath))
             {
-                CancellationToken = cancellationToken.Value;
+                throw new DriveNotFoundException("File path must be fully qualified.");
+            }
+
+            // Hard-coded adjustment specifically for the UIAccess-enabled client/server executable.
+            if (RunAsActiveUser is null || RunAsActiveUser == AccountUtilities.CallerRunAsActiveUser)
+            {
+                if (FilePath == EnvironmentInfo.ClientServerClientDefaultPath)
+                {
+                    FilePath = EnvironmentInfo.ClientServerClientCompatiblePath;
+                }
+                if (FilePath == EnvironmentInfo.ClientServerClientLauncherDefaultPath)
+                {
+                    FilePath = EnvironmentInfo.ClientServerClientLauncherCompatiblePath;
+                }
+            }
+
+            // Create an arguments string out of our ArgumentList (ShellExecute needs this).
+            Arguments = ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(ArgumentList) : ArgumentList.Count > 0 ? ArgumentList[0] : null;
+
+            // Determine the type of file we're launching.
+            try
+            {
+                ImageSubsystem = ExecutableInfo.Get(FilePath).Subsystem;
+            }
+            catch (Exception ex) when (ex.Message is not null)
+            {
+                string filePathExtension = Path.GetExtension(FilePath);
+                ImageSubsystem = !string.IsNullOrWhiteSpace(filePathExtension)
+                    && (filePathExtension.Equals(".com", StringComparison.OrdinalIgnoreCase)
+                    || filePathExtension.Equals(".bat", StringComparison.OrdinalIgnoreCase)
+                    || filePathExtension.Equals(".cmd", StringComparison.OrdinalIgnoreCase))
+                    ? IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI
+                    : IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
             }
 
             // Handle the CreateNoWindow parameter.
@@ -134,39 +185,29 @@ namespace PSADT.ProcessManagement
                 CreateNoWindow = true;
             }
 
-            // Determine the type of file we're launching.
-            try
+            // Handle remaining nullable parameters.
+            if (windowStyle is not null)
             {
-                // Try to get it directly from the PE header.
-                ImageSubsystem = ExecutableInfo.Get(FilePath).Subsystem;
+                WindowStyle = WindowStyleMap[windowStyle.Value];
+                ProcessWindowStyle = windowStyle.Value;
             }
-            catch (Exception ex) when (ex.Message is not null)
+            if (streamEncoding is not null)
             {
-                // Assume we've got a GUI-based app unless its extension indicates otherwise.
-                string filePathExtension = Path.GetExtension(FilePath);
-                ImageSubsystem = filePathExtension.Equals(".com", StringComparison.OrdinalIgnoreCase) || filePathExtension.Equals(".bat", StringComparison.OrdinalIgnoreCase) || filePathExtension.Equals(".cmd", StringComparison.OrdinalIgnoreCase)
-                    ? IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_CUI
-                    : IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+                StreamEncodingWebName = streamEncoding.WebName;
             }
-
-            // Set up the token type to use. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
-            if (useHighestAvailableToken)
+            if (priorityClass is not null)
             {
-                ElevatedTokenType = ElevatedTokenType.HighestAvailable;
-
+                PriorityClass = priorityClass.Value;
             }
-            if (useLinkedAdminToken)
+            if (cancellationToken is not null)
             {
-                ElevatedTokenType = ElevatedTokenType.HighestMandatory;
+                CancellationToken = cancellationToken.Value;
             }
 
             // Set remaining parameters.
-            RunAsActiveUser = runAsActiveUser;
-            InheritEnvironmentVariables = inheritEnvironmentVariables;
-            ExpandEnvironmentVariables = expandEnvironmentVariables;
             DenyUserTermination = denyUserTermination;
-            UseUnelevatedToken = useUnelevatedToken;
-            UseShellExecute = useShellExecute;
+            StandardInput = new ReadOnlyCollection<string>([.. standardInput ?? []]);
+            HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit?.Select(static h => (long)h) ?? []]);
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
@@ -181,7 +222,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly ReadOnlyDictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<System.Diagnostics.ProcessWindowStyle, SHOW_WINDOW_CMD>()
+        private static readonly ReadOnlyDictionary<ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, SHOW_WINDOW_CMD>()
         {
             { System.Diagnostics.ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
             { System.Diagnostics.ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
@@ -195,6 +236,13 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string FilePath;
+
+        /// <summary>
+        /// Gets the arguments to pass to the process.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
+        [DataMember]
+        public readonly string? Arguments;
 
         /// <summary>
         /// Gets the arguments to pass to the process.
@@ -320,14 +368,14 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly System.Diagnostics.ProcessWindowStyle? ProcessWindowStyle;
+        public readonly ProcessWindowStyle? ProcessWindowStyle;
 
         /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly System.Diagnostics.ProcessPriorityClass? PriorityClass;
+        public readonly ProcessPriorityClass? PriorityClass;
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.
@@ -353,7 +401,24 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets a value indicating whether the application is a command-line interface (CLI) application.
         /// </summary>
-        public bool IsCliApplication => ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+        internal bool IsCliApplication()
+        {
+            return ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+        }
+
+        /// <summary>
+        /// Generates a command line string from the specified file path and argument list, formatted as a
+        /// null-terminated character array.
+        /// </summary>
+        /// <remarks>If the argument list is empty, only the file path is included in the command line.
+        /// The method handles cases where the argument list is empty or null, ensuring the result is always properly
+        /// formatted for process invocation scenarios.</remarks>
+        /// <returns>An array of characters representing the command line, including the file path and any additional arguments.
+        /// The array ends with a null character.</returns>
+        internal string MakeCommandLine()
+        {
+            return $"\"{FilePath}\"{(!string.IsNullOrWhiteSpace(Arguments) ? $" {Arguments}" : null)}\0";
+        }
 
         /// <summary>
         /// Gets an optional collection of handles that the child process should inherit.
