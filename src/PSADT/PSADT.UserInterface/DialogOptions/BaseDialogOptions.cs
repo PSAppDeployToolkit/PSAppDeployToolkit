@@ -219,56 +219,28 @@ namespace PSADT.UserInterface.DialogOptions
         [StackTraceHidden]
         internal static string ThrowIfImageIsInvalid(string image, string identifier)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(image);
-            ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+            ArgumentException.ThrowIfNullOrWhiteSpace(image); ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
             try
             {
-                if (MiscUtilities.GetBase64StringBytes(image) is byte[] bytes)
-                {
-                    using MemoryStream ms = new(bytes, false);
-                    try
-                    {
-                        if (DrawingUtilities.IsStreamAnIcon(ms))
-                        {
-                            using Icon icon = new(ms); using Bitmap bmp = icon.ToBitmap();
-                            _ = bmp.Size;
-                            return image;
-                        }
-                        else
-                        {
-                            using Image bmp = Image.FromStream(ms, true, true);
-                            _ = bmp.Size;
-                            return image;
-                        }
-                    }
-                    catch (OutOfMemoryException ex)
-                    {
-                        throw new FileFormatException(new Uri(image), "The specified file is invalid or otherwise corrupted.", ex);
-                    }
-                }
-                if (!File.Exists(image))
-                {
-                    throw new FileNotFoundException("Unable to find the specified file.", image);
-                }
+                using Stream stream = MiscUtilities.GetBase64StringBytes(image) is not byte[] bytes ? new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
                 try
                 {
-                    if (Path.GetExtension(image).Equals(".ico", StringComparison.OrdinalIgnoreCase))
+                    if (!DrawingUtilities.IsStreamAnIcon(stream))
                     {
-                        using Icon icon = new(image); using Bitmap bmp = icon.ToBitmap();
+                        using Bitmap bmp = new(stream, true);
                         _ = bmp.Size;
-                        return image;
                     }
                     else
                     {
-                        using Image bmp = Image.FromFile(image);
-                        _ = bmp.Size;
-                        return image;
+                        using Icon icon = new(stream);
+                        _ = icon.Size;
                     }
                 }
                 catch (OutOfMemoryException ex)
                 {
                     throw new FileFormatException(new Uri(image), "The specified file is invalid or otherwise corrupted.", ex);
                 }
+                return image;
             }
             catch (Exception ex)
             {
