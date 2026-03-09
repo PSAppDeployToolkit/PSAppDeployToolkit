@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -70,33 +69,6 @@ namespace PSADT.UserInterface.Utilities
         {
             using MemoryStream ms = new(CreateIconByteArray(img), writable: false);
             return new(ms, 256, 256);
-        }
-
-        /// <summary>
-        /// Converts a bitmap image from the specified file path to an icon.
-        /// </summary>
-        /// <remarks>The method loads the bitmap from the specified file path and converts it to an icon.
-        /// Ensure that the file exists and is a valid bitmap format supported by the <see cref="Bitmap"/> class.</remarks>
-        /// <param name="filename">The path to the bitmap file to convert. This parameter cannot be null or empty.</param>
-        /// <returns>An Icon object that represents the converted bitmap.</returns>
-        internal static Icon ConvertBitmapToIcon(string filename)
-        {
-            using Bitmap img = new(filename, true);
-            return ConvertBitmapToIcon(img);
-        }
-
-        /// <summary>
-        /// Saves the specified bitmap image as an icon file at the given destination path.
-        /// </summary>
-        /// <remarks>This method converts the bitmap image to an icon format and writes the resulting byte
-        /// stream to the specified file. Ensure that the destination path has the appropriate file extension for an
-        /// icon (e.g., .ico).</remarks>
-        /// <param name="img">The bitmap image to be converted and saved as an icon file.</param>
-        /// <param name="path">The file path where the icon file will be saved. The path must be valid and writable.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void SaveBitmapAsIconFile(Bitmap img, string path)
-        {
-            File.WriteAllBytes(path, CreateIconByteArray(img));
         }
 
         /// <summary>
