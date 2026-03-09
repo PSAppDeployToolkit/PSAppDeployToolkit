@@ -16,7 +16,6 @@ using PSADT.DeviceManagement;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.Security;
-using PSADT.Types;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogState;

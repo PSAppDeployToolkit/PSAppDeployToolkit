@@ -85,7 +85,7 @@ function Invoke-ADTAllUsersRegistryAction
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.UserProfileInfo[]]$UserProfiles,
+        [PSADT.AccountManagement.UserProfileInfo[]]$UserProfiles,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipUnloadedProfiles

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using PSADT.Types;
+using PSADT.WindowManagement;
 
 namespace PSADT.ClientServer.Payloads
 {

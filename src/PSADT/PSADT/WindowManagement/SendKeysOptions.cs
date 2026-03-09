@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace PSADT.Types
+namespace PSADT.WindowManagement
 {
     /// <summary>
     /// Represents options for sending key sequences to a specific window.

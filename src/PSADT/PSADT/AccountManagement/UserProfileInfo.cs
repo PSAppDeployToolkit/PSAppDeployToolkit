@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Principal;
 
-namespace PSADT.Types
+namespace PSADT.AccountManagement
 {
     /// <summary>
     /// Represents information about a user profile.

@@ -18,7 +18,7 @@ function Uninstall-ADTApplication
         The application will be uninstalled using its QuietUninstallString where possible. If it doesn't exist, is null, is invalid, or `-ForceUninstallString` is specified, the UninstallString will be used.
 
     .PARAMETER InstalledApplication
-        Specifies the [PSADT.Types.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
+        Specifies the [PSADT.AppManagement.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
 
     .PARAMETER Name
         The name of the application to retrieve information for. Performs a contains match on the application display name by default.
@@ -80,7 +80,7 @@ function Uninstall-ADTApplication
         Returns a PSADT.Types.ProcessResult object, providing the ExitCode, StdOut, and StdErr output from the uninstallation.
 
     .INPUTS
-        PSADT.Types.InstalledApplication
+        PSADT.AppManagement.InstalledApplication
 
         This function can receive one or more InstalledApplication objects for uninstallation.
 
@@ -134,7 +134,7 @@ function Uninstall-ADTApplication
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSADT.Types.InstalledApplication[]]$InstalledApplication,
+        [PSADT.AppManagement.InstalledApplication[]]$InstalledApplication,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]

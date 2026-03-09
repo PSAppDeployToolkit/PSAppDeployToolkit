@@ -37,7 +37,7 @@ function Get-ADTApplication
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.InstalledApplication
+        PSADT.AppManagement.InstalledApplication
 
         Returns a custom type with information about an installed application:
         - PSPath
@@ -98,7 +98,7 @@ function Get-ADTApplication
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ProductCode', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ApplicationType', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
-    [OutputType([PSADT.Types.InstalledApplication])]
+    [OutputType([PSADT.AppManagement.InstalledApplication])]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -276,7 +276,7 @@ function Get-ADTApplication
                     }
 
                     # Build out the app object here before we filter as the caller needs to be able to filter on the object's properties.
-                    $app = [PSADT.Types.InstalledApplication]::new(
+                    $app = [PSADT.AppManagement.InstalledApplication]::new(
                         $item.PSPath,
                         $item.PSParentPath,
                         $item.PSChildName,

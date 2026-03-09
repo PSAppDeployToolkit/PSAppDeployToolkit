@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace PSADT.Types
+namespace PSADT.ShortcutManagement
 {
     /// <summary>
     /// Represents a URL shortcut.

@@ -22,7 +22,7 @@ function Get-ADTShortcut
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.ShortcutBase
+        PSADT.ShortcutManagement.ShortcutBase
 
         Returns an object with the following properties:
         - TargetPath
@@ -55,8 +55,8 @@ function Get-ADTShortcut
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.Types.ShortcutUrl])]
-    [OutputType([PSADT.Types.ShortcutLnk])]
+    [OutputType([PSADT.ShortcutManagement.ShortcutUrl])]
+    [OutputType([PSADT.ShortcutManagement.ShortcutLnk])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -116,7 +116,7 @@ function Get-ADTShortcut
                             }
                         }
                     }
-                    return [PSADT.Types.ShortcutUrl]::new(
+                    return [PSADT.ShortcutManagement.ShortcutUrl]::new(
                         $Output.Path,
                         $Output.TargetPath,
                         $Output.IconLocation,
@@ -127,7 +127,7 @@ function Get-ADTShortcut
                 {
                     $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Output.Path)
                     $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',', [System.StringSplitOptions]::RemoveEmptyEntries).Trim()
-                    return [PSADT.Types.ShortcutLnk]::new(
+                    return [PSADT.ShortcutManagement.ShortcutLnk]::new(
                         $Output.Path,
                         $shortcut.TargetPath,
                         $Output.IconLocation,

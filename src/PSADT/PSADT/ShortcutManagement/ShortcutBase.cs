@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace PSADT.Types
+namespace PSADT.ShortcutManagement
 {
     /// <summary>
     /// Represents the base class for shortcuts, containing common properties.

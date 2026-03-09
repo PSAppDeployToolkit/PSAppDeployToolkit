@@ -25,7 +25,7 @@ function Get-ADTPendingReboot
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.RebootInfo
+        PSADT.DeviceManagement.RebootInfo
 
         Returns a custom object with the following properties:
 
@@ -65,7 +65,7 @@ function Get-ADTPendingReboot
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.Types.RebootInfo])]
+    [OutputType([PSADT.DeviceManagement.RebootInfo])]
     param
     (
     )
@@ -124,7 +124,7 @@ function Get-ADTPendingReboot
                 $IsIntuneClientRebootPending = Test-Path -LiteralPath 'Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\RebootSettings\RebootFlag'
 
                 # Create a custom object containing pending reboot information for the system.
-                $PendingRebootInfo = [PSADT.Types.RebootInfo]::new(
+                $PendingRebootInfo = [PSADT.DeviceManagement.RebootInfo]::new(
                     $HostName,
                     [PSADT.DeviceManagement.DeviceUtilities]::GetSystemBootTime(),
                     $IsCBServicingRebootPending -or $IsWindowsUpdateRebootPending -or $IsFileRenameRebootPending -or $IsSCCMClientRebootPending,

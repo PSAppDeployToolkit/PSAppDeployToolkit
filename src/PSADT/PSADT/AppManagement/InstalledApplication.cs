@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using PSADT.ProcessManagement;
 
-namespace PSADT.Types
+namespace PSADT.AppManagement
 {
     /// <summary>
     /// Represents an installed application and its related information.

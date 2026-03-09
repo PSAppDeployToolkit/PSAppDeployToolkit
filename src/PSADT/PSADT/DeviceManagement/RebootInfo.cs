@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
-namespace PSADT.Types
+namespace PSADT.DeviceManagement
 {
     /// <summary>
     /// Represents information about reboot and pending operations on the system.

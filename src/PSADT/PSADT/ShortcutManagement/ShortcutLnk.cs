@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace PSADT.Types
+namespace PSADT.ShortcutManagement
 {
     /// <summary>
     /// Represents an LNK (Windows Shortcut) file.
