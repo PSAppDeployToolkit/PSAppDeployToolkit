@@ -86,6 +86,17 @@ function Set-ADTIniValue
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        $exists = try
+        {
+            ($FilePath = Resolve-ADTFileSystemPath -LiteralPath $FilePath -File)
+        }
+        catch
+        {
+            if (!$Force)
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+        }
     }
 
     process
@@ -95,19 +106,8 @@ function Set-ADTIniValue
             try
             {
                 # Create the INI file if it does not exist.
-                if (!(Test-Path -LiteralPath $FilePath -PathType Leaf))
+                if (!$exists)
                 {
-                    if (!$Force)
-                    {
-                        $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.", $FilePath)
-                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                            ErrorId = 'FilePathNotFound'
-                            TargetObject = $FilePath
-                            RecommendedAction = "Please confirm the path of the specified file and try again, or add -Force to create a new file."
-                        }
-                        throw (New-ADTErrorRecord @naerParams)
-                    }
                     Write-ADTLogEntry -Message "Creating INI file: $FilePath."
                     if ($PSCmdlet.ShouldProcess($FilePath, 'Create INI file'))
                     {
