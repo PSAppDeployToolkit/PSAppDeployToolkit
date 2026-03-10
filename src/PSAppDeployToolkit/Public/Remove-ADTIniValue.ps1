@@ -83,6 +83,14 @@ function Remove-ADTIniValue
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $FilePath = Resolve-ADTFileSystemPath -LiteralPath $FilePath -File
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process
