@@ -2547,7 +2547,7 @@ function Execute-MSI
     }
     if ($PSBoundParameters.ContainsKey('Transform'))
     {
-        $PSBoundParameters.Transforms = $Transform.Split(';')
+        $PSBoundParameters.Transforms = $Transform.Split([System.IO.Path]::PathSeparator)
         $null = $PSBoundParameters.Remove('Transform')
     }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))

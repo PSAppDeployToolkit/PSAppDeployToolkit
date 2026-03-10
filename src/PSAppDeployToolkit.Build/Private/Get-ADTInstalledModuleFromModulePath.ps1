@@ -77,7 +77,7 @@ function Get-ADTInstalledModuleFromModulePath
 
     # Get each individual ModulePath values. We reverse the array so we can return objects
     # in order of SystemDirectory/ProgramFiles/UserDirectory like PowerShellGet does.
-    $modulePaths = [System.Environment]::GetEnvironmentVariable('PSModulePath').Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim() | & {
+    $modulePaths = [System.Environment]::GetEnvironmentVariable('PSModulePath').Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim() | & {
         begin
         {
             # Open collector to reverse at the end.

@@ -773,14 +773,14 @@ function Start-ADTMsiProcess
                 # Add MST.
                 if ($Transforms)
                 {
-                    $msiArgs.Add("TRANSFORMS=`"$([System.String]::Join(';', $Transforms))`"")
+                    $msiArgs.Add("TRANSFORMS=`"$([System.String]::Join([System.IO.Path]::PathSeparator, $Transforms))`"")
                     $msiArgs.Add("TRANSFORMSSECURE=1")
                 }
 
                 # Add MSP.
                 if ($Patches)
                 {
-                    $msiArgs.Add("PATCH=`"$([System.String]::Join(';', $Patches))`"")
+                    $msiArgs.Add("PATCH=`"$([System.String]::Join([System.IO.Path]::PathSeparator, $Patches))`"")
                 }
 
                 # Replace default parameters if specified.

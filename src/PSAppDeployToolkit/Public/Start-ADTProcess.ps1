@@ -693,7 +693,7 @@ function Start-ADTProcess
                             $adtSession.DirSupportFiles
                         }
                         $ExecutionContext.SessionState.Path.CurrentLocation.Path
-                        [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH').Split(';', [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim()
+                        [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH').Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim()
                     )
                     if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1) -and !$UseShellExecute)
                     {

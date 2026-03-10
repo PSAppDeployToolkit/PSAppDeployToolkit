@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Win32;
@@ -171,7 +172,7 @@ namespace PSADT.Utilities
                 {
                     return;
                 }
-                string[] existingParts = [.. existingValue.Split([';'], StringSplitOptions.RemoveEmptyEntries).Where(static p => !string.IsNullOrWhiteSpace(p)).Select(static p => p.Trim())];
+                string[] existingParts = [.. existingValue.Split([Path.PathSeparator], StringSplitOptions.RemoveEmptyEntries).Where(static p => !string.IsNullOrWhiteSpace(p)).Select(static p => p.Trim())];
                 if (existingParts.Length == 0)
                 {
                     RemoveEnvironmentVariable(variable, target);
@@ -184,7 +185,7 @@ namespace PSADT.Utilities
                 {
                     return;
                 }
-                value = string.Join(";", updatedParts);
+                value = string.Join(Path.PathSeparator.ToString(), updatedParts);
             }
             if (append)
             {
@@ -193,7 +194,7 @@ namespace PSADT.Utilities
                 string? existingValue = GetEnvironmentVariable(variable);
                 if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
                 {
-                    value = existingValue + ";" + value;
+                    value = existingValue + Path.PathSeparator + value;
                 }
             }
 
