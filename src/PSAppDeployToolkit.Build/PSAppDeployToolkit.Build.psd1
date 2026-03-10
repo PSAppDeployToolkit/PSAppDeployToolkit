@@ -101,7 +101,7 @@
             ProjectUri = 'https://psappdeploytoolkit.com'
 
             # A URL to an icon representing this module.
-            IconUri = 'https://raw.githubusercontent.com/PSAppDeployToolkit/PSAppDeployToolkit/refs/heads/main/src/PSAppDeployToolkit/Assets/AppIcon.png'
+            IconUri = 'https://raw.githubusercontent.com/PSAppDeployToolkit/PSAppDeployToolkit/refs/heads/main/src/PSADT.Invoke/PSADT.Invoke/Properties/appIcon.ico'
 
             # ReleaseNotes of this module
             ReleaseNotes = 'https://github.com/psappdeploytoolkit/psappdeploytoolkit/releases/latest'
