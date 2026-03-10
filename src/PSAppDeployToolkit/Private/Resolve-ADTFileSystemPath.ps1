@@ -242,7 +242,10 @@ function Private:Resolve-ADTFileSystemPath
                 $naerParams = @{
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'LiteralPathNotFound'
-                    TargetObject = $LiteralPath
+                    TargetObject = [pscustomobject]@{
+                        LiteralPath = $LiteralPath
+                        ResolvedPath = $resolvedPath
+                    }
                     RecommendedAction = "Please review the provided input and try again."
                 }
                 switch ($PSCmdlet.ParameterSetName)

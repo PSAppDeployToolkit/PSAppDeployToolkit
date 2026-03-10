@@ -101,10 +101,16 @@ function Set-ADTIniSection
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $exists = try
         {
-            ($FilePath = Resolve-ADTFileSystemPath -LiteralPath $FilePath -File)
+            $FilePath = Resolve-ADTFileSystemPath -LiteralPath $FilePath -File
+            $true
         }
         catch
         {
+            if ($_.Exception -is [System.IO.FileNotFoundException])
+            {
+                $FilePath = $_.TargetObject.ResolvedPath
+                $false
+            }
             if (!$Force)
             {
                 $PSCmdlet.ThrowTerminatingError($_)
