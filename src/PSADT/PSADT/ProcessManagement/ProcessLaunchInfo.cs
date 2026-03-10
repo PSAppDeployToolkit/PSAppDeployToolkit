@@ -139,7 +139,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Validate the file path is rooted.
-            if (!(UseShellExecute = useShellExecute) && !Path.IsPathRooted(FilePath))
+            if (!(UseShellExecute = useShellExecute) && !Path.IsPathFullyQualified(FilePath))
             {
                 throw new DriveNotFoundException("File path must be fully qualified.");
             }

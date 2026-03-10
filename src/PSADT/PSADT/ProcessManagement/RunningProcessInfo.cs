@@ -99,7 +99,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            string[] processNames = [.. processDefinitions.Select(static p => (Path.IsPathRooted(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant())];
+            string[] processNames = [.. processDefinitions.Select(static p => (Path.IsPathFullyQualified(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant())];
             Process[] allProcesses = [.. Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()))];
             List<RunningProcessInfo> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
@@ -108,7 +108,7 @@ namespace PSADT.ProcessManagement
                 foreach (Process process in allProcesses)
                 {
                     // Skip this process if it doesn't match the name.
-                    if (!Path.IsPathRooted(processDefinition.Name) && !process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                    if (!Path.IsPathFullyQualified(processDefinition.Name) && !process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -141,7 +141,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Continue if this isn't our process or it's ended since we cached it.
-                    if (Path.IsPathRooted(processDefinition.Name) && !argv[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                    if (Path.IsPathFullyQualified(processDefinition.Name) && !argv[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

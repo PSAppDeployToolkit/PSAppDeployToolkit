@@ -41,7 +41,7 @@ namespace PSADT.Foundation
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
             foreach (FileInfo path in _assemblies.Concat(extraPaths ?? []))
             {
-                if (!Path.IsPathRooted(path.FullName))
+                if (!Path.IsPathFullyQualified(path.FullName))
                 {
                     throw new DriveNotFoundException($"The path [{path.FullName}] is not rooted. All paths must be absolute.");
                 }

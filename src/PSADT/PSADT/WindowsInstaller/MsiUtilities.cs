@@ -180,7 +180,7 @@ namespace PSADT.WindowsInstaller
             ArgumentNullException.ThrowIfNull(transformProperties);
             ArgumentOutOfRangeException.ThrowIfZero(transformProperties.Count);
             msiPath = Path.GetFullPath(msiPath).ThrowIfFileDoesNotExist();
-            newTransformPath = Path.GetFullPath(newTransformPath).ThrowIfPathIsNotRooted();
+            newTransformPath = Path.GetFullPath(newTransformPath).ThrowIfPathIsNotFullyQualified();
             if (applyTransformPath is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(applyTransformPath);

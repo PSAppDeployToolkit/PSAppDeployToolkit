@@ -39,7 +39,7 @@ function Private:Import-ADTConfig
             }
 
             # Skip if the path is fully qualified.
-            if ([System.IO.Path]::IsPathRooted($asset.Value))
+            if ([PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($asset.Value))
             {
                 continue
             }

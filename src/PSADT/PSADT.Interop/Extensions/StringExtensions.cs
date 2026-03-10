@@ -68,19 +68,19 @@ namespace PSADT.Interop.Extensions
         }
 
         /// <summary>
-        /// Validates that the specified path is rooted and throws an exception if it is not.
+        /// Validates that the specified path is fully qualified and throws an exception if it is not.
         /// </summary>
         /// <remarks>Use this method to ensure that a path is absolute before performing file or directory
         /// operations. This helps prevent runtime errors caused by invalid or relative paths.</remarks>
         /// <param name="value">The path to validate. This must be a non-null string representing a file or directory path.</param>
-        /// <returns>The original path if it is rooted.</returns>
-        /// <exception cref="DriveNotFoundException">Thrown if the specified path is not rooted.</exception>
+        /// <returns>The original path if it is fully qualified.</returns>
+        /// <exception cref="DriveNotFoundException">Thrown if the specified path is not fully qualified.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [StackTraceHidden]
-        internal static string ThrowIfPathIsNotRooted(this string value)
+        internal static string ThrowIfPathIsNotFullyQualified(this string value)
         {
-            return !Path.IsPathRooted(value)
-                ? throw new DriveNotFoundException($"The specified path '{value}' is not rooted.")
+            return !Path.IsPathFullyQualified(value)
+                ? throw new DriveNotFoundException($"The specified path '{value}' is not fully qualified.")
                 : value;
         }
     }

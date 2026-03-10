@@ -211,7 +211,7 @@ function Block-ADTAppExecution
                     {
                         continue
                     }
-                    if ([System.IO.Path]::IsPathRooted($process))
+                    if ([PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($process))
                     {
                         $basePath = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$($process -replace '^.+\\')"
                         [Microsoft.Win32.Registry]::SetValue("$basePath\MyFilter", 'Debugger', $blockExecDbgPath, [Microsoft.Win32.RegistryValueKind]::String)

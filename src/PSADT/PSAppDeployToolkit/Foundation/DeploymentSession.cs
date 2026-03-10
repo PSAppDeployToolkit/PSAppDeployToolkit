@@ -315,7 +315,7 @@ namespace PSAppDeployToolkit.Foundation
                             }
                         }
                     }
-                    else if (!Path.IsPathRooted(DefaultMsiFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                    else if (!Path.IsPathFullyQualified(DefaultMsiFile!) && !string.IsNullOrWhiteSpace(DirFiles))
                     {
                         DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
                     }
@@ -335,7 +335,7 @@ namespace PSAppDeployToolkit.Foundation
                                 DefaultMstFile = mstFile;
                             }
                         }
-                        else if (!Path.IsPathRooted(DefaultMstFile) && !string.IsNullOrWhiteSpace(DirFiles))
+                        else if (!Path.IsPathFullyQualified(DefaultMstFile!) && !string.IsNullOrWhiteSpace(DirFiles))
                         {
                             DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
                         }
@@ -352,9 +352,9 @@ namespace PSAppDeployToolkit.Foundation
                                 DefaultMspFiles = new ReadOnlyCollection<string>([.. Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))]);
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(DirFiles) && DefaultMspFiles.Any(static f => !Path.IsPathRooted(f)))
+                        else if (!string.IsNullOrWhiteSpace(DirFiles) && DefaultMspFiles.Any(static f => !Path.IsPathFullyQualified(f)))
                         {
-                            DefaultMspFiles = new ReadOnlyCollection<string>([.. DefaultMspFiles.Select(f => !Path.IsPathRooted(f) ? Path.Combine(DirFiles!, f) : f)]);
+                            DefaultMspFiles = new ReadOnlyCollection<string>([.. DefaultMspFiles.Select(f => !Path.IsPathFullyQualified(f) ? Path.Combine(DirFiles!, f) : f)]);
                         }
                         if (DefaultMspFiles.Count > 0)
                         {

@@ -644,7 +644,7 @@ function Start-ADTMsiProcess
                 $logPath = if ($logFile)
                 {
                     # Don't bother with a directory if the log file is fully qualified.
-                    if (![System.IO.Path]::IsPathRooted($logFile))
+                    if (![PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($logFile))
                     {
                         # A defined MSI log path is considered an override.
                         $logPathProperty = ('LogPath', 'LogPathNoAdminRights')[$PSBoundParameters.ContainsKey('RunAsActiveUser')]

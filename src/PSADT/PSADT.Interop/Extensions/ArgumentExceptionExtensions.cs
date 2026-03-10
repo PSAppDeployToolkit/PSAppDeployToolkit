@@ -23,6 +23,22 @@ namespace System
         extension(ArgumentException)
         {
             /// <summary>
+            /// Throws an exception if the provided span is empty or consists solely of whitespace characters.
+            /// </summary>
+            /// <param name="argument">The span of characters to validate. Must not be empty or contain only whitespace.</param>
+            /// <param name="paramName">The name of the parameter being validated. Used in the exception message if validation fails.</param>
+            /// <exception cref="ArgumentException">Thrown if <paramref name="argument"/> is empty or contains only whitespace characters.</exception>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [StackTraceHidden]
+            public static void ThrowIfEmptyOrWhiteSpace(ReadOnlySpan<char> argument, [CallerArgumentExpression(nameof(argument))] string paramName = null!)
+            {
+                if (argument.IsEmpty || argument.IsWhiteSpace())
+                {
+                    throw new ArgumentException("The value cannot be an empty string or composed entirely of whitespace.", paramName);
+                }
+            }
+
+            /// <summary>
             /// Validates that the specified SafeHandle is not null and is not closed.
             /// </summary>
             /// <remarks>Use this method to ensure that a SafeHandle is in a valid state before performing

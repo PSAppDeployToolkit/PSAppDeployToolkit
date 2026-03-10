@@ -677,7 +677,7 @@ function Start-ADTProcess
             try
             {
                 # Validate and find the fully qualified path for the $FilePath variable.
-                if ((!$FilePath.Contains('%') -or !$ExpandEnvironmentVariables) -and [System.IO.Path]::HasExtension($FilePath) -and ![System.IO.Path]::IsPathRooted($FilePath))
+                if ((!$FilePath.Contains('%') -or !$ExpandEnvironmentVariables) -and [System.IO.Path]::HasExtension($FilePath) -and ![PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($FilePath))
                 {
                     $searchPaths = $(
                         if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
@@ -741,7 +741,7 @@ function Start-ADTProcess
                 # We don't do this when a session isn't running so `Start-ADTProcess` works the way one should expect (i.e. like `Start-Process`).
                 if ($adtSession -and !$PSBoundParameters.ContainsKey('WorkingDirectory'))
                 {
-                    if ([System.IO.Path]::HasExtension($FilePath) -and [System.IO.Path]::IsPathRooted($FilePath) -and ($FilePath -notmatch 'msiexec'))
+                    if ([System.IO.Path]::HasExtension($FilePath) -and [PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($FilePath) -and ($FilePath -notmatch 'msiexec'))
                     {
                         $PSBoundParameters.WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
                     }
