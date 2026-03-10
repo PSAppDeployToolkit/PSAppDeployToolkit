@@ -4,7 +4,7 @@
 #
 #-----------------------------------------------------------------------------
 
-function Export-ADTScriptBlockToFile
+function Private:Export-ADTScriptBlockToFile
 {
     [CmdletBinding()]
     param
