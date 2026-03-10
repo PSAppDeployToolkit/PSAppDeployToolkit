@@ -153,10 +153,6 @@ function New-ADTTemplate
                 $null = New-Item -Path "$templatePath\Files" -ItemType Directory -Force
                 $null = New-Item -Path "$templatePath\SupportFiles" -ItemType Directory -Force
 
-                # Add in some empty files to the Files/SupportFiles folders to stop GitHub upload-artifact from dropping the empty folders.
-                $null = New-Item -Name 'Add Setup Files Here.txt' -Path "$templatePath\Files" -ItemType File -Force
-                $null = New-Item -Name 'Add Supporting Files Here.txt' -Path "$templatePath\SupportFiles" -ItemType File -Force
-
                 # Copy in the frontend files.
                 Copy-Item -Path "$([System.Management.Automation.WildcardPattern]::Escape("$Script:PSScriptRoot\opt\Frontend\v$Version"))\*" -Destination $templatePath -Recurse -Force
 
