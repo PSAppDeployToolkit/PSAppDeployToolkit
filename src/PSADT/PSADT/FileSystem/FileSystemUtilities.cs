@@ -358,41 +358,6 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Creates a read-only dictionary that maps NT device paths to their corresponding drive letters.
-        /// </summary>
-        /// <remarks>This method queries the system for logical drives and their corresponding NT device
-        /// paths. It handles exceptions that may occur during the query process, ensuring that only valid paths are
-        /// included in the returned dictionary.</remarks>
-        /// <returns>A read-only dictionary where each key is an NT device path and each value is the associated drive letter.</returns>
-        internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
-        {
-            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
-            Span<char> targetPath = stackalloc char[1024]; targetPath.Clear();
-            foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
-            {
-                uint length;
-                try
-                {
-                    length = NativeMethods.QueryDosDevice(driveLetter, targetPath);
-                }
-                catch
-                {
-                    continue;
-                    throw;
-                }
-                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
-                {
-                    if (path.Length > 0 && !lookupTable.ContainsKey(path))
-                    {
-                        lookupTable.Add(path, driveLetter);
-                    }
-                }
-                targetPath.Clear();
-            }
-            return new(lookupTable);
-        }
-
-        /// <summary>
         /// Determines whether the specified file is trusted based on its Authenticode signature.
         /// </summary>
         /// <remarks>This method performs a verification of the file's Authenticode signature using the
@@ -440,6 +405,41 @@ namespace PSADT.FileSystem
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates a read-only dictionary that maps NT device paths to their corresponding drive letters.
+        /// </summary>
+        /// <remarks>This method queries the system for logical drives and their corresponding NT device
+        /// paths. It handles exceptions that may occur during the query process, ensuring that only valid paths are
+        /// included in the returned dictionary.</remarks>
+        /// <returns>A read-only dictionary where each key is an NT device path and each value is the associated drive letter.</returns>
+        internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
+        {
+            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
+            Span<char> targetPath = stackalloc char[1024]; targetPath.Clear();
+            foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
+            {
+                uint length;
+                try
+                {
+                    length = NativeMethods.QueryDosDevice(driveLetter, targetPath);
+                }
+                catch
+                {
+                    continue;
+                    throw;
+                }
+                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (path.Length > 0 && !lookupTable.ContainsKey(path))
+                    {
+                        lookupTable.Add(path, driveLetter);
+                    }
+                }
+                targetPath.Clear();
+            }
+            return new(lookupTable);
         }
 
         /// <summary>
