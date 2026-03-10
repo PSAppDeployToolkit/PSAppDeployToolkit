@@ -677,34 +677,27 @@ function Start-ADTProcess
             try
             {
                 # Validate and find the fully qualified path for the $FilePath variable.
-                if ((!$FilePath.Contains('%') -or !$ExpandEnvironmentVariables) -and [System.IO.Path]::HasExtension($FilePath) -and ![PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($FilePath))
+                if ((!$FilePath.Contains('%') -or !$ExpandEnvironmentVariables) -and ![PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($FilePath))
                 {
-                    $searchPaths = $(
-                        if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
-                        {
-                            $WorkingDirectory
-                        }
-                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
-                        {
-                            $adtSession.DirFiles
-                        }
-                        if ($adtSession -and ![System.String]::IsNullOrWhiteSpace($adtSession.DirSupportFiles))
-                        {
-                            $adtSession.DirSupportFiles
-                        }
-                        $ExecutionContext.SessionState.Path.CurrentLocation.Path
-                        [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH').Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries).Where({ ![System.String]::IsNullOrWhiteSpace($_) }).Trim()
-                    )
-                    if (!($fqPath = Get-Item -LiteralPath ($searchPaths -replace '$', "\$FilePath") -ErrorAction Ignore | Select-Object -ExpandProperty FullName -First 1) -and !$UseShellExecute)
+                    $rafspParams = @{
+                        LiteralPath = $FilePath
+                        File = $true
+                        DefaultExtension = '.exe'
+                    }
+                    if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
                     {
-                        $naerParams = @{
-                            Exception = [System.IO.FileNotFoundException]::new("The file [$FilePath] is invalid or was unable to be found.", $FilePath)
-                            Category = [System.Management.Automation.ErrorCategory]::ObjectNotFound
-                            ErrorId = 'FilePathNotFound'
-                            TargetObject = $FilePath
-                            RecommendedAction = "Please confirm the path of the specified file and try again."
+                        $rafspParams.Add('ExtraPaths', $WorkingDirectory)
+                    }
+                    $fqPath = try
+                    {
+                        Resolve-ADTFileSystemPath @rafspParams
+                    }
+                    catch
+                    {
+                        if (!$UseShellExecute)
+                        {
+                            throw
                         }
-                        throw (New-ADTErrorRecord @naerParams)
                     }
                     if ($fqPath)
                     {
