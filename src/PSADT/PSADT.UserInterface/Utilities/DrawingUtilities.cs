@@ -13,8 +13,22 @@ namespace PSADT.UserInterface.Utilities
     /// <summary>
     /// A collection of utility methods for drawing and bitmap manipulation.
     /// </summary>
-    internal static class DrawingUtilities
+    public static class DrawingUtilities
     {
+        /// <summary>
+        /// Converts a bitmap file to an icon file and saves the resulting icon in the same directory as the original
+        /// bitmap.
+        /// </summary>
+        /// <remarks>The method creates a new icon file with the same name as the bitmap file, but with an
+        /// '.ico' extension. Ensure that the bitmap file is accessible and in a valid format for conversion.</remarks>
+        /// <param name="inputPath">The path to the bitmap file to convert. The file must exist and be in a supported bitmap format.</param>
+        /// <param name="outputPath">The path where the resulting icon file will be saved. The file will be created or overwritten if it already exists.</param>
+        public static void ConvertBitmapFileToIcon(string inputPath, string outputPath)
+        {
+            using Bitmap bmp = new(inputPath, true);
+            File.WriteAllBytes(outputPath, CreateIconByteArray(bmp));
+        }
+
         /// <summary>
         /// Resize the bitmap to the specified width and height.
         /// </summary>
