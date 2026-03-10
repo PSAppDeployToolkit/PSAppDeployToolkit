@@ -37,48 +37,18 @@ namespace PSADT.FileSystem
         public static bool IsValidFilePath(string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
-            return IsValidFilePath(path.AsSpan(), 0);
+            return IsValidFilePath(path.AsSpan());
         }
 
         /// <summary>
-        /// Determines whether the specified position in the input represents the start of a valid file path.
+        /// Determines whether the specified file path is valid.
         /// </summary>
-        /// <remarks>This method supports detecting various types of file paths, including UNC paths, DOS
-        /// drive paths, and POSIX-style paths. It accounts for escaped arguments in UNC paths and ensures that such
-        /// cases are not misinterpreted as valid paths.</remarks>
-        /// <param name="input">The input span of characters to analyze.</param>
-        /// <param name="position">The zero-based position within <paramref name="input"/> to check for the start of a file path.</param>
-        /// <returns><see langword="true"/> if the specified position marks the beginning of a valid file path; otherwise, <see
-        /// langword="false"/>.</returns>
-        public static bool IsValidFilePath(ReadOnlySpan<char> input, int position)
+        /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
+        /// <returns><see langword="true"/> if the specified file path is valid; otherwise, <see langword="false"/>.</returns>
+        public static bool IsValidFilePath(ReadOnlySpan<char> path)
         {
-            // We're at the start of nothing if we're at the end of the command line.
-            if (position >= input.Length)
-            {
-                return false;
-            }
-
-            // Check for UNC path (starts with \\).
-            if (position + 1 < input.Length && input[position] == '\\' && input[position + 1] == '\\')
-            {
-                // If the characters following the initial \\ are more backslashes followed by a quote,
-                // it's likely an escaped argument, not a UNC path. Let ParseSingleArgument handle it.
-                int p = position + 2;
-                while (p < input.Length && input[p] == '\\')
-                {
-                    p++;
-                }
-                return p >= input.Length || input[p] != '"';
-            }
-
-            // Check for DOS drive path (starts with letter:\ or letter:/).
-            if (position + 2 < input.Length && char.IsLetter(input[position]) && input[position + 1] == ':' && (input[position + 2] == '\\' || input[position + 2] == '/'))
-            {
-                return true;
-            }
-
-            // Check for POSIX path (starts with /letter/ where letter is a drive letter).
-            return position + 2 < input.Length && input[position] == '/' && char.IsLetter(input[position + 1]) && input[position + 2] == '/';
+            ArgumentException.ThrowIfEmptyOrWhiteSpace(path);
+            return IsValidFilePath(path, 0);
         }
 
         /// <summary>
@@ -405,6 +375,47 @@ namespace PSADT.FileSystem
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified position in the input represents the start of a valid file path.
+        /// </summary>
+        /// <remarks>This method supports detecting various types of file paths, including UNC paths, DOS
+        /// drive paths, and POSIX-style paths. It accounts for escaped arguments in UNC paths and ensures that such
+        /// cases are not misinterpreted as valid paths.</remarks>
+        /// <param name="input">The input span of characters to analyze.</param>
+        /// <param name="position">The zero-based position within <paramref name="input"/> to check for the start of a file path.</param>
+        /// <returns><see langword="true"/> if the specified position marks the beginning of a valid file path; otherwise, <see
+        /// langword="false"/>.</returns>
+        internal static bool IsValidFilePath(ReadOnlySpan<char> input, int position)
+        {
+            // We're at the start of nothing if we're at the end of the command line.
+            if (position >= input.Length)
+            {
+                return false;
+            }
+
+            // Check for UNC path (starts with \\).
+            if (position + 1 < input.Length && input[position] == '\\' && input[position + 1] == '\\')
+            {
+                // If the characters following the initial \\ are more backslashes followed by a quote,
+                // it's likely an escaped argument, not a UNC path. Let ParseSingleArgument handle it.
+                int p = position + 2;
+                while (p < input.Length && input[p] == '\\')
+                {
+                    p++;
+                }
+                return p >= input.Length || input[p] != '"';
+            }
+
+            // Check for DOS drive path (starts with letter:\ or letter:/).
+            if (position + 2 < input.Length && char.IsLetter(input[position]) && input[position + 1] == ':' && (input[position + 2] == '\\' || input[position + 2] == '/'))
+            {
+                return true;
+            }
+
+            // Check for POSIX path (starts with /letter/ where letter is a drive letter).
+            return position + 2 < input.Length && input[position] == '/' && char.IsLetter(input[position + 1]) && input[position + 2] == '/';
         }
 
         /// <summary>
