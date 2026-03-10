@@ -171,6 +171,9 @@ function Private:Resolve-ADTFileSystemPath
             # The system's path variable, split and validated for valid entries.
             [PSADT.Utilities.EnvironmentUtilities]::GetEnvironmentVariable('PATH').Split([System.IO.Path]::PathSeparator, [System.StringSplitOptions]::RemoveEmptyEntries)
         )
+
+        # Sanitise the search paths before use.
+        $searchPaths = $searchPaths | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_.Trim() } } } | Select-Object -Unique
     }
 
     process
@@ -226,7 +229,7 @@ function Private:Resolve-ADTFileSystemPath
                 }
 
                 # Process all unique search paths after sanitising the values, returning the first successful match.
-                foreach ($searchPath in $searchPaths | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_.Trim() } } } | Select-Object -Unique)
+                foreach ($searchPath in $searchPaths)
                 {
                     if ($verifiedPath = Resolve-ADTFileSystemPathImpl -FileSystemPath ([System.IO.Path]::Combine($searchPath, $LiteralPath)) @rafspiParams)
                     {
