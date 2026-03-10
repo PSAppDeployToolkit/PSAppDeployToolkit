@@ -1480,6 +1480,7 @@ namespace PSADT.Interop
         /// <returns>true if the operation succeeds; otherwise, false.</returns>
         internal static BOOL WritePrivateProfileString(string lpAppName, string? lpKeyName, string? lpString, string lpFileName)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             if (lpKeyName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpKeyName);
@@ -1488,7 +1489,6 @@ namespace PSADT.Interop
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpString);
             }
-            ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             BOOL res = PInvoke.WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName.ThrowIfFileDirectoryDoesNotExist());
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }

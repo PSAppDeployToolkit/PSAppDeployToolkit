@@ -119,7 +119,7 @@ function Set-ADTIniValue
                 Write-ADTLogEntry -Message "Writing INI value: [FilePath = $FilePath] [Section = $Section] [Key = $Key] [Value = $Value]."
                 if ($PSCmdlet.ShouldProcess("$FilePath\$Section\$Key", "Set INI value to [$Value]"))
                 {
-                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyValue($FilePath, $Section, $Key, $Value)
+                    [PSADT.Utilities.IniUtilities]::WriteSectionKeyUnverifiedValue($FilePath, $Section, $Key, $Value)
                 }
             }
             catch

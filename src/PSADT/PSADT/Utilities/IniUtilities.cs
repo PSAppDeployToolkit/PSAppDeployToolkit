@@ -7,6 +7,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using PSADT.Interop;
+using PSADT.Interop.Extensions;
+using PSADT.Interop.Utilities;
+using Windows.Win32;
 
 namespace PSADT.Utilities
 {
@@ -56,6 +59,26 @@ namespace PSADT.Utilities
         public static void WriteSectionKeyValue(string filepath, string section, string? key, string? value)
         {
             _ = NativeMethods.WritePrivateProfileString(section, key, value, filepath);
+        }
+
+        /// <summary>
+        /// Writes a key-value pair to a specified section in an INI file at the given file path.
+        /// </summary>
+        /// <remarks>This method uses the Windows API to update INI files. Ensure that the application has
+        /// the necessary permissions to modify the file. Deleting a section or key is performed by passing null for the
+        /// corresponding parameter.</remarks>
+        /// <param name="filepath">The path to the INI file to be modified. The file must exist and be writable.</param>
+        /// <param name="section">The name of the section within the INI file where the key-value pair will be written. If the section does
+        /// not exist, it will be created.</param>
+        /// <param name="key">The name of the key to write within the specified section. If null, the entire section is deleted.</param>
+        /// <param name="value">The value to assign to the specified key. If null, the key is removed from the section.</param>
+        public static void WriteSectionKeyUnverifiedValue(string filepath, string section, string? key, string? value)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(section);
+            if (!PInvoke.WritePrivateProfileString(section, key, value, filepath.ThrowIfFileDirectoryDoesNotExist()))
+            {
+                throw ExceptionUtilities.GetExceptionForLastWin32Error();
+            }
         }
 
         /// <summary>

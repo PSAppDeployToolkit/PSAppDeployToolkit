@@ -29,6 +29,18 @@ MyKey=MyValue
             Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NewKey' -Value 'NewValue'
             $IniPath | Should -FileContentMatchMultiline '\[MySection\]\r\nMyKey=MyValue\r\nNewKey=NewValue'
         }
+        It 'Should set a null Value' {
+            Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NullKey' -Value $null
+            $IniPath | Should -FileContentMatchMultiline '\[MySection\]\r\nMyKey=MyValue\r\nNullKey=\r\n'
+        }
+        It 'Should set an empty Value' {
+            Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'EmptyKey' -Value ''
+            $IniPath | Should -FileContentMatchMultiline '\[MySection\]\r\nMyKey=MyValue\r\nEmptyKey=\r\n'
+        }
+        It 'Should set a whitespace Value' {
+            Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'WhitespaceKey' -Value ' '
+            $IniPath | Should -FileContentMatchMultiline '\[MySection\]\r\nMyKey=MyValue\r\nWhitespaceKey=\s\r\n'
+        }
         It 'Should add a new section if it does not exist' {
             Set-ADTIniValue -FilePath $IniPath -Section 'NewSection' -Key 'NewKey' -Value 'NewValue'
             $IniPath | Should -FileContentMatchMultiline '\[NewSection\]\r\nNewKey=NewValue'
@@ -59,6 +71,11 @@ MyKey=MyValue
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null -Value 'Anything' } | Should -Throw
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' -Value 'Anything' } | Should -Throw
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' -Value 'Anything' } | Should -Throw
+        }
+        It 'Should allow null/empty/whitespace as Value' {
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NullKey' -Value $null } | Should -Not -Throw
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'EmptyKey' -Value '' } | Should -Not -Throw
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'WhitespaceKey' -Value ' ' } | Should -Not -Throw
         }
     }
 }
