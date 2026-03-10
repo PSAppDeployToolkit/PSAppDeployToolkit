@@ -18,7 +18,11 @@ function Private:Resolve-ADTFileSystemPath
         [System.Management.Automation.SwitchParameter]$Directory,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Leaf')]
-        [System.Management.Automation.SwitchParameter]$File
+        [System.Management.Automation.SwitchParameter]$File,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Container')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Leaf')]
+        [System.Management.Automation.SwitchParameter]$ResolveOnly
     )
 
     dynamicparam
@@ -199,8 +203,24 @@ function Private:Resolve-ADTFileSystemPath
                     return $verifiedPath
                 }
 
+                # Attempt to resolve the path to a fully qualified one.
+                $resolvedPath = try
+                {
+                    $PSCmdlet.GetUnresolvedProviderPathFromPSPath($LiteralPath)
+                }
+                catch
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
+                }
+
+                # Return early if we were just to resolve it.
+                if ($ResolveOnly)
+                {
+                    return $resolvedPath
+                }
+
                 # Attempt simple resolution before trying something more complex.
-                if ($verifiedPath = Resolve-ADTFileSystemPathImpl -FileSystemPath $(try { $PSCmdlet.GetUnresolvedProviderPathFromPSPath($LiteralPath) } catch { $PSCmdlet.ThrowTerminatingError($_) }) @rafspiParams)
+                if ($verifiedPath = Resolve-ADTFileSystemPathImpl -FileSystemPath $resolvedPath @rafspiParams)
                 {
                     return $verifiedPath
                 }
