@@ -47,6 +47,8 @@ namespace PSADT.ShortcutManagement
         {
             ArgumentNullException.ThrowIfNull(internetShortcut);
             FilePath = internetShortcut.FilePath ?? throw new ArgumentNullException(nameof(internetShortcut), "The provided Internet Shortcut does not have a valid file path.");
+            IconFile = internetShortcut.IconFile;
+            IconIndex = internetShortcut.IconIndex;
             Url = internetShortcut.Url;
         }
 
@@ -54,6 +56,16 @@ namespace PSADT.ShortcutManagement
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
         public string FilePath { get; }
+
+        /// <summary>
+        /// Gets the icon file path for the internet shortcut.
+        /// </summary>
+        public string? IconFile { get; }
+
+        /// <summary>
+        /// Gets the icon index for the internet shortcut.
+        /// </summary>
+        public int? IconIndex { get; }
 
         /// <summary>
         /// Gets the URL of the internet shortcut.

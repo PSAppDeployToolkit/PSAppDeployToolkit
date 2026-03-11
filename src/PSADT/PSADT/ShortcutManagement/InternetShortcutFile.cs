@@ -28,6 +28,8 @@ using PSADT.Interop.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
+using Windows.Win32.System.Com.StructuredStorage;
+using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Shell;
 
 namespace PSADT.ShortcutManagement
@@ -37,8 +39,8 @@ namespace PSADT.ShortcutManagement
     /// This class enables creating, loading, modifying, and saving Internet shortcut (.url) files.
     /// </summary>
     /// <remarks>
-    /// This class wraps the <c>IUniformResourceLocatorW</c> and <c>IPersistFile</c> COM interfaces
-    /// to provide access to URL shortcut properties.
+    /// This class wraps the <c>IUniformResourceLocatorW</c>, <c>IPersistFile</c>, <c>IPropertySetStorage</c>,
+    /// and <c>IPropertyStorage</c> COM interfaces to provide access to URL shortcut properties.
     /// </remarks>
     public sealed class InternetShortcutFile : IDisposable
     {
@@ -220,6 +222,44 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
+        /// Gets or sets the icon file path for the Internet shortcut.
+        /// </summary>
+        public string? IconFile
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_ICONFILE);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_ICONFILE, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the icon index for the Internet shortcut.
+        /// </summary>
+        public int? IconIndex
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return IconFile is not null ? GetInt32Property(PID_IS.PID_IS_ICONINDEX) : null;
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (value is null && IconFile is not null)
+                {
+                    throw new InvalidOperationException("Cannot set IconIndex to null when IconFile is set.");
+                }
+                SetInt32Property(PID_IS.PID_IS_ICONINDEX, value);
+            }
+        }
+
+        /// <summary>
         /// Opens the URL using the default handler.
         /// </summary>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
@@ -264,6 +304,195 @@ namespace PSADT.ShortcutManagement
                     _internetShortcut.InvokeCommand(in commandInfo);
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets a property value from the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <returns>The property value, or <see langword="null"/> if not set.</returns>
+        private string? GetStringProperty(PID_IS propertyId)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.ReadMultiple([propertySpec], propertyValues);
+                    VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
+                    if (vt == VARENUM.VT_EMPTY)
+                    {
+                        return null;
+                    }
+                    if (vt != VARENUM.VT_LPWSTR)
+                    {
+                        throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR.");
+                    }
+                    PWSTR pwszVal = propertyValues[0].Anonymous.Anonymous.Anonymous.pwszVal;
+                    if (pwszVal.IsNull())
+                    {
+                        return null;
+                    }
+                    string pwszValStr = pwszVal.ToString();
+                    return pwszValStr.Length > 0 ? pwszValStr : null;
+                }
+                finally
+                {
+                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
+        /// Sets a property value in the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <param name="value">The property value.</param>
+        private void SetStringProperty(PID_IS propertyId, string? value)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READWRITE);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        unsafe
+                        {
+                            propertyValues[0].Anonymous.Anonymous.Anonymous.pwszVal = new((char*)Marshal.StringToCoTaskMemUni(value));
+                        }
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_LPWSTR;
+                    }
+                    else
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_EMPTY;
+                    }
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.WriteMultiple([propertySpec], propertyValues, 2);
+                    propertyStorage.Commit(0);
+                }
+                finally
+                {
+                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
+        /// Gets a property value from the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <returns>The property value, or 0 if not set.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using a switch expression here causes IDE0072 in this project configuration.")]
+        private int? GetInt32Property(PID_IS propertyId)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.ReadMultiple([propertySpec], propertyValues);
+                    VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
+                    if (vt == VARENUM.VT_EMPTY)
+                    {
+                        return null;
+                    }
+                    if (vt == VARENUM.VT_I4)
+                    {
+                        return propertyValues[0].Anonymous.Anonymous.Anonymous.lVal;
+                    }
+                    if (vt == VARENUM.VT_UI4)
+                    {
+                        return (int)propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal;
+                    }
+                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_I4 or VT_UI4.");
+                }
+                finally
+                {
+                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
+        /// Sets a property value in the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <param name="value">The property value.</param>
+        private void SetInt32Property(PID_IS propertyId, int? value)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READWRITE);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    if (value is not null)
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_I4;
+                        propertyValues[0].Anonymous.Anonymous.Anonymous.lVal = value.Value;
+                    }
+                    else
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_EMPTY;
+                    }
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.WriteMultiple([propertySpec], propertyValues, 2);
+                    propertyStorage.Commit(0);
+                }
+                finally
+                {
+                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
+        /// Opens the Internet Shortcut property storage.
+        /// </summary>
+        /// <param name="mode">The storage mode.</param>
+        /// <returns>The opened property storage.</returns>
+        private IPropertyStorage OpenInternetShortcutPropertyStorage(uint mode)
+        {
+            ((IPropertySetStorage)_internetShortcut).Open(in PInvoke.FMTID_Intshcut, mode, out IPropertyStorage propertyStorage);
+            return propertyStorage;
         }
 
         /// <summary>
@@ -324,5 +553,6 @@ namespace PSADT.ShortcutManagement
         /// indicating they can be saved to any path. For loaded shortcuts, this reflects the access mode used during loading.
         /// </remarks>
         private readonly Interop.STGM? _storageMode;
+
     }
 }

@@ -33,6 +33,7 @@ FACILITY_CODE
 FindFirstFileEx
 FindNextFile
 FindWindow
+FMTID_Intshcut
 FOLDERID_UserProfiles
 FormatMessage
 GENERIC_MAPPING
@@ -127,6 +128,8 @@ InitializeProcThreadAttributeList
 INVALID_FILE_ATTRIBUTES
 INVALID_HANDLE_VALUE
 IPersistFile
+IPropertySetStorage
+IPropertyStorage
 IPropertyStore
 IShellLinkDataList
 IShellLinkW
@@ -227,6 +230,7 @@ PID_CHARCOUNT
 PID_CODEPAGE
 PID_COMMENTS
 PID_CREATE_DTM
+PID_IS
 PID_KEYWORDS
 PID_LASTAUTHOR
 PID_LASTPRINTED
