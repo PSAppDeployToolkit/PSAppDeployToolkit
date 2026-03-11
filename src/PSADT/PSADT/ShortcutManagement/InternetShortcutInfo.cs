@@ -48,6 +48,7 @@ namespace PSADT.ShortcutManagement
         {
             ArgumentNullException.ThrowIfNull(internetShortcut);
             FilePath = internetShortcut.FilePath ?? throw new ArgumentNullException(nameof(internetShortcut), "The provided Internet Shortcut does not have a valid file path.");
+            Url = internetShortcut.Url;
             Name = internetShortcut.Name;
             WorkingDirectory = internetShortcut.WorkingDirectory;
             Hotkey = internetShortcut.Hotkey;
@@ -59,13 +60,17 @@ namespace PSADT.ShortcutManagement
             Description = internetShortcut.Description;
             Comment = internetShortcut.Comment;
             Roamed = internetShortcut.Roamed;
-            Url = internetShortcut.Url;
         }
 
         /// <summary>
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
         public FileInfo FilePath { get; }
+
+        /// <summary>
+        /// Gets the URL of the internet shortcut.
+        /// </summary>
+        public Uri? Url { get; }
 
         /// <summary>
         /// Gets the display name for the internet shortcut.
@@ -121,10 +126,5 @@ namespace PSADT.ShortcutManagement
         /// Gets a value indicating whether the internet shortcut has roamed.
         /// </summary>
         public bool? Roamed { get; }
-
-        /// <summary>
-        /// Gets the URL of the internet shortcut.
-        /// </summary>
-        public Uri? Url { get; }
     }
 }
