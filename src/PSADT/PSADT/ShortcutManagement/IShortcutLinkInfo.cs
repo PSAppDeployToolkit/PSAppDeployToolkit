@@ -18,6 +18,8 @@
  * along with PSAppDeployToolkit. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.IO;
+
 namespace PSADT.ShortcutManagement
 {
     /// <summary>
@@ -28,6 +30,6 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the path of the shortcut file.
         /// </summary>
-        string FilePath { get; }
+        FileInfo FilePath { get; }
     }
 }

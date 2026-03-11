@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.IO;
 using PSADT.Interop;
 
 namespace PSADT.ShortcutManagement
@@ -100,12 +101,12 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
-        public string FilePath { get; }
+        public FileInfo FilePath { get; }
 
         /// <summary>
         /// Gets the target path of the shortcut.
         /// </summary>
-        public string? TargetPath { get; }
+        public FileInfo? TargetPath { get; }
 
         /// <summary>
         /// Gets the description of the shortcut.
@@ -115,7 +116,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the working directory for the shortcut target.
         /// </summary>
-        public string? WorkingDirectory { get; }
+        public DirectoryInfo? WorkingDirectory { get; }
 
         /// <summary>
         /// Gets the command-line arguments for the shortcut target.
@@ -135,7 +136,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the icon location for the shortcut.
         /// </summary>
-        public string? IconLocation { get; }
+        public FileInfo? IconLocation { get; }
 
         /// <summary>
         /// Gets the icon index in the icon location file.

@@ -158,11 +158,11 @@ namespace PSADT.ShortcutManagement
             {
                 throw new InvalidOperationException("Cannot save a shortcut that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
             }
-            if (FilePath is not string currentFile)
+            if (FilePath is not FileInfo currentFile)
             {
                 throw new InvalidOperationException("No file path has been set. Use Save(string) to specify a path.");
             }
-            Save(currentFile);
+            Save(currentFile.FullName);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace PSADT.ShortcutManagement
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-            if (IsReadOnly && string.Equals(Path.GetFullPath(filePath), FilePath, StringComparison.OrdinalIgnoreCase))
+            if (IsReadOnly && string.Equals(Path.GetFullPath(filePath), FilePath?.FullName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("Cannot overwrite a shortcut file that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
             }
@@ -188,7 +188,7 @@ namespace PSADT.ShortcutManagement
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
         /// <value>The full path to the shortcut file, or <see langword="null"/> if no file has been loaded or saved.</value>
-        public string? FilePath
+        public FileInfo? FilePath
         {
             get
             {
@@ -196,7 +196,9 @@ namespace PSADT.ShortcutManagement
                 ((IPersistFile)_internetShortcut).GetCurFile(out SafeCoTaskMemHandle? ppszFileName);
                 using (ppszFileName)
                 {
-                    return ppszFileName?.ToStringUni();
+                    return ppszFileName?.ToStringUni() is string filePath
+                        ? new(filePath)
+                        : null;
                 }
             }
         }
@@ -242,17 +244,19 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the working directory for the Internet shortcut.
         /// </summary>
-        public string? WorkingDirectory
+        public DirectoryInfo? WorkingDirectory
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                return GetStringProperty(PID_IS.PID_IS_WORKINGDIR);
+                return GetStringProperty(PID_IS.PID_IS_WORKINGDIR) is string directoryInfo
+                    ? new(directoryInfo)
+                    : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                SetStringProperty(PID_IS.PID_IS_WORKINGDIR, value);
+                SetStringProperty(PID_IS.PID_IS_WORKINGDIR, value?.FullName);
             }
         }
 

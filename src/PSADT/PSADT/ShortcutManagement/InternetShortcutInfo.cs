@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.IO;
 
 namespace PSADT.ShortcutManagement
 {
@@ -64,7 +65,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
-        public string FilePath { get; }
+        public FileInfo FilePath { get; }
 
         /// <summary>
         /// Gets the display name for the internet shortcut.
@@ -74,7 +75,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the working directory for the internet shortcut.
         /// </summary>
-        public string? WorkingDirectory { get; }
+        public DirectoryInfo? WorkingDirectory { get; }
 
         /// <summary>
         /// Gets the hotkey for the internet shortcut.

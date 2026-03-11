@@ -64,7 +64,7 @@ namespace PSADT.ShortcutManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ShellLinkFile New(string targetPath)
         {
-            return new() { TargetPath = targetPath };
+            return new() { TargetPath = new(targetPath) };
         }
 
         /// <summary>
@@ -159,11 +159,11 @@ namespace PSADT.ShortcutManagement
             {
                 throw new InvalidOperationException("Cannot save a shortcut that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
             }
-            if (FilePath is not string currentFile)
+            if (FilePath is not FileInfo currentFile)
             {
                 throw new InvalidOperationException("No file path has been set. Use Save(string) to specify a path.");
             }
-            Save(currentFile);
+            Save(currentFile.FullName);
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace PSADT.ShortcutManagement
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-            if (IsReadOnly && string.Equals(Path.GetFullPath(filePath), FilePath, StringComparison.OrdinalIgnoreCase))
+            if (IsReadOnly && string.Equals(Path.GetFullPath(filePath), FilePath?.FullName, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("Cannot overwrite a shortcut file that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
             }
@@ -189,7 +189,7 @@ namespace PSADT.ShortcutManagement
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
         /// <value>The full path to the shortcut file, or <see langword="null"/> if no file has been loaded or saved.</value>
-        public string? FilePath
+        public FileInfo? FilePath
         {
             get
             {
@@ -197,7 +197,9 @@ namespace PSADT.ShortcutManagement
                 ((IPersistFile)_shellLink).GetCurFile(out SafeCoTaskMemHandle? ppszFileName);
                 using (ppszFileName)
                 {
-                    return ppszFileName?.ToStringUni();
+                    return ppszFileName?.ToStringUni() is string filePath
+                        ? new(filePath)
+                        : null;
                 }
             }
         }
@@ -207,19 +209,21 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the target file or folder that the shortcut points to.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string? TargetPath
+        public FileInfo? TargetPath
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_UNCPRIORITY);
-                return buffer.ToStringUni();
+                return buffer.ToStringUni() is string targetPath
+                    ? new(targetPath)
+                    : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetPath(value);
+                _shellLink.SetPath(value?.FullName);
             }
         }
 
@@ -259,19 +263,21 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The working directory path that will be set when the shortcut is activated.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string? WorkingDirectory
+        public DirectoryInfo? WorkingDirectory
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetWorkingDirectory(buffer);
-                return buffer.ToStringUni();
+                return buffer.ToStringUni() is string directoryInfo
+                    ? new(directoryInfo)
+                    : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetWorkingDirectory(value);
+                _shellLink.SetWorkingDirectory(value?.FullName);
             }
         }
 
@@ -360,19 +366,21 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the file containing the icon for the shortcut.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string? IconLocation
+        public FileInfo? IconLocation
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetIconLocation(buffer, out _);
-                return buffer.ToStringUni();
+                return buffer.ToStringUni() is string iconLocation
+                    ? new(iconLocation)
+                    : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(value, IconIndex ?? 0);
+                _shellLink.SetIconLocation(value?.FullName, IconIndex ?? 0);
             }
         }
 
@@ -393,7 +401,7 @@ namespace PSADT.ShortcutManagement
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(IconLocation, value ?? 0);
+                _shellLink.SetIconLocation(IconLocation?.FullName, value ?? 0);
             }
         }
 
