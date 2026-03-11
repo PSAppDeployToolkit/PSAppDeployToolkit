@@ -47,40 +47,14 @@ namespace PSADT.ShortcutManagement
     public sealed class ShellLinkFile : IDisposable
     {
         /// <summary>
-        /// Creates a new, empty shell link.
-        /// </summary>
-        /// <returns>A new <see cref="ShellLinkFile"/> instance.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ShellLinkFile New()
-        {
-            return new();
-        }
-
-        /// <summary>
         /// Creates a new shell link with the specified target path.
         /// </summary>
         /// <param name="targetPath">The target path for the shortcut.</param>
         /// <returns>A new <see cref="ShellLinkFile"/> instance with the target path set.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ShellLinkFile New(string targetPath)
+        public static ShellLinkFile Create(string targetPath)
         {
             return new() { TargetPath = new(targetPath) };
-        }
-
-        /// <summary>
-        /// Loads an existing shortcut file in read-only mode.
-        /// </summary>
-        /// <param name="filePath">The path to the shortcut file to load.</param>
-        /// <returns>A new <see cref="ShellLinkFile"/> instance loaded from the specified file.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
-        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
-        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        /// <remarks>Use <see cref="Load(string, Interop.STGM)"/> with <see cref="Interop.STGM.STGM_READWRITE"/> if you need to modify the shortcut.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ShellLinkFile Load(string filePath)
-        {
-            return Load(filePath, Interop.STGM.STGM_READ);
         }
 
         /// <summary>
@@ -94,7 +68,7 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ShellLinkFile Load(string filePath, Interop.STGM storageMode)
+        public static ShellLinkFile Load(string filePath, Interop.STGM storageMode = Interop.STGM.STGM_READ)
         {
             return new(filePath, storageMode);
         }

@@ -46,40 +46,14 @@ namespace PSADT.ShortcutManagement
     public sealed class InternetShortcutFile : IDisposable
     {
         /// <summary>
-        /// Creates a new, empty Internet shortcut.
-        /// </summary>
-        /// <returns>A new <see cref="InternetShortcutFile"/> instance.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternetShortcutFile New()
-        {
-            return new();
-        }
-
-        /// <summary>
         /// Creates a new Internet shortcut with the specified URL.
         /// </summary>
         /// <param name="url">The URL for the shortcut.</param>
         /// <returns>A new <see cref="InternetShortcutFile"/> instance with the URL set.</returns>
-        public static InternetShortcutFile New(Uri url)
+        public static InternetShortcutFile Create(Uri url)
         {
             ArgumentNullException.ThrowIfNull(url);
             return new() { Url = url };
-        }
-
-        /// <summary>
-        /// Loads an existing Internet shortcut file in read-only mode.
-        /// </summary>
-        /// <param name="filePath">The path to the shortcut file to load.</param>
-        /// <returns>A new <see cref="InternetShortcutFile"/> instance loaded from the specified file.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="filePath"/> is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
-        /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
-        /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        /// <remarks>Use <see cref="Load(string, Interop.STGM)"/> with <see cref="Interop.STGM.STGM_READWRITE"/> if you need to modify the shortcut.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternetShortcutFile Load(string filePath)
-        {
-            return Load(filePath, Interop.STGM.STGM_READ);
         }
 
         /// <summary>
@@ -93,7 +67,7 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static InternetShortcutFile Load(string filePath, Interop.STGM storageMode)
+        public static InternetShortcutFile Load(string filePath, Interop.STGM storageMode = Interop.STGM.STGM_READ)
         {
             return new(filePath, storageMode);
         }
@@ -917,10 +891,6 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// The storage mode used when loading the shortcut file.
         /// </summary>
-        /// <remarks>
-        /// This is <see langword="null"/> for newly created shortcuts (via <see cref="New()"/> or <see cref="New(Uri)"/>),
-        /// indicating they can be saved to any path. For loaded shortcuts, this reflects the access mode used during loading.
-        /// </remarks>
         private readonly Interop.STGM? _storageMode;
 
     }
