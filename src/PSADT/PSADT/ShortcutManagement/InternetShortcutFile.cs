@@ -182,18 +182,6 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
-        /// Gets a value indicating whether the current storage mode is read-only, preventing any write operations.
-        /// </summary>
-        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) == 0;
-
-        /// <summary>
-        /// Gets a value indicating whether the current object can be saved.
-        /// </summary>
-        /// <remarks>This property returns <see langword="true"/> if the object is not in a read-only
-        /// state. Use this property to determine if changes can be persisted.</remarks>
-        public bool CanSave => !IsReadOnly;
-
-        /// <summary>
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
         /// <value>The full path to the shortcut file, or <see langword="null"/> if no file has been loaded or saved.</value>
@@ -305,6 +293,18 @@ namespace PSADT.ShortcutManagement
                 _disposed = true;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the current object can be saved.
+        /// </summary>
+        /// <remarks>This property returns <see langword="true"/> if the object is not in a read-only
+        /// state. Use this property to determine if changes can be persisted.</remarks>
+        internal bool CanSave => !IsReadOnly;
+
+        /// <summary>
+        /// Gets a value indicating whether the current storage mode is read-only, preventing any write operations.
+        /// </summary>
+        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) == 0;
 
         /// <summary>
         /// Indicates whether the object has been disposed.
