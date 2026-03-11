@@ -135,16 +135,8 @@ function Write-ADTLogEntry
 
     process
     {
-        # Add all non-null messages to the collector.
-        $Message | & {
-            process
-            {
-                if (![System.String]::IsNullOrWhiteSpace($_))
-                {
-                    $messages.Add($_)
-                }
-            }
-        }
+        # Add messages to the collector.
+        $messages.AddRange($Message)
     }
 
     end
