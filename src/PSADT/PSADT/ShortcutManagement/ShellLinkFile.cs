@@ -338,15 +338,15 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the window show state for the shortcut's target.
         /// </summary>
-        /// <value>The <see cref="Interop.SHOW_WINDOW_CMD"/> value indicating how the window should be shown.</value>
+        /// <value>The <see cref="SHOW_WINDOW_CMD"/> value indicating how the window should be shown.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public Interop.SHOW_WINDOW_CMD WindowStyle
+        public SHOW_WINDOW_CMD WindowStyle
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 _shellLink.GetShowCmd(out Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD showCmd);
-                return (Interop.SHOW_WINDOW_CMD)showCmd;
+                return (SHOW_WINDOW_CMD)showCmd;
             }
             set
             {
@@ -808,17 +808,31 @@ namespace PSADT.ShortcutManagement
                 {
                     return null;
                 }
-                if (vt != VARENUM.VT_LPWSTR)
+                if (vt == VARENUM.VT_BSTR)
                 {
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR.");
+                    nint bstrVal;
+                    unsafe
+                    {
+                        bstrVal = (nint)propVariant.Anonymous.Anonymous.Anonymous.bstrVal.Value;
+                    }
+                    if (bstrVal == 0)
+                    {
+                        return null;
+                    }
+                    string? bstrValStr = Marshal.PtrToStringBSTR(bstrVal);
+                    return !string.IsNullOrWhiteSpace(bstrValStr) ? bstrValStr : null;
                 }
-                PWSTR pwszVal = propVariant.Anonymous.Anonymous.Anonymous.pwszVal;
-                if (pwszVal.IsNull())
+                if (vt == VARENUM.VT_LPWSTR)
                 {
-                    return null;
+                    PWSTR pwszVal = propVariant.Anonymous.Anonymous.Anonymous.pwszVal;
+                    if (pwszVal.IsNull())
+                    {
+                        return null;
+                    }
+                    string pwszValStr = pwszVal.ToString();
+                    return pwszValStr.Length > 0 ? pwszValStr : null;
                 }
-                string pwszValStr = pwszVal.ToString();
-                return pwszValStr.Length > 0 ? pwszValStr : null;
+                throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
             }
             finally
             {
