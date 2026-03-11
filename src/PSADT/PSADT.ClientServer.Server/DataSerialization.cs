@@ -468,7 +468,7 @@ namespace PSADT.ClientServer
             /// </summary>
             /// <remarks>This field can be used to indicate the absence of a custom
             /// DataContractResolver when serializing or deserializing data contracts.</remarks>
-            private static readonly DataContractResolver NullContractResolver = null!;
+            private const DataContractResolver NullContractResolver = null;
 
             /// <summary>
             /// Represents the XML namespace URI used for serializing arrays according to Microsoft's 2003 schema.
