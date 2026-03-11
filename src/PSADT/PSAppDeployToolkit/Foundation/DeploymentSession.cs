@@ -1467,12 +1467,12 @@ namespace PSAppDeployToolkit.Foundation
         /// white-space characters, no action is taken.</remarks>
         private void RemoveSubstDrive()
         {
-            if (string.IsNullOrWhiteSpace(DirFilesSubstDrive))
+            if (DirFilesSubstDrive is null || string.IsNullOrWhiteSpace(DirFilesSubstDrive))
             {
                 return;
             }
             WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive!, null);
+            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive, null);
         }
 
         /// <summary>

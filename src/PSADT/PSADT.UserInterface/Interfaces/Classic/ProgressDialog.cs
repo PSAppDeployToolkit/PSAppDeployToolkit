@@ -98,15 +98,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private void UpdateProgressImpl(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             // Update the progress message.
-            if (!string.IsNullOrWhiteSpace(progressMessage))
+            if (progressMessage is not null && !string.IsNullOrWhiteSpace(progressMessage))
             {
-                labelMessage.Text = StripFormattingTags(progressMessage!);
+                labelMessage.Text = StripFormattingTags(progressMessage);
             }
 
             // Update the detail message.
-            if (!string.IsNullOrWhiteSpace(progressMessageDetail))
+            if (progressMessageDetail is not null && !string.IsNullOrWhiteSpace(progressMessageDetail))
             {
-                labelDetail.Text = StripFormattingTags(progressMessageDetail!);
+                labelDetail.Text = StripFormattingTags(progressMessageDetail);
             }
 
             // Update the message alignment.

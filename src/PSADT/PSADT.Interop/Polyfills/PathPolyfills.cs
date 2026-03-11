@@ -75,6 +75,7 @@ namespace System.IO
         /// for C: (rooted, but relative). "C:\a" is rooted and not relative (the current directory
         /// will not be used to modify the path).
         /// </remarks>
+        [Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Visual Studio 18.4.0 thinks this is unused...")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsPartiallyQualified(ReadOnlySpan<char> path)
         {

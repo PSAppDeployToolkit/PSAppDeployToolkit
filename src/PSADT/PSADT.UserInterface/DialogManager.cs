@@ -512,7 +512,7 @@ namespace PSADT.UserInterface
         {
             { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>()
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, static (options, state) => new Interfaces.Classic.InputDialog((InputDialogOptions)options) },
                 { DialogType.ListSelectionDialog, static (options, state) => new Interfaces.Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
@@ -521,7 +521,7 @@ namespace PSADT.UserInterface
             })},
             { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>()
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)state!) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, static (options, state) => new Interfaces.Fluent.InputDialog((InputDialogOptions)options) },
                 { DialogType.ListSelectionDialog, static (options, state) => new Interfaces.Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },

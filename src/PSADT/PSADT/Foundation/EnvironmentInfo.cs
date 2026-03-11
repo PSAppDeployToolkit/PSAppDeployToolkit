@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using PSADT.FileSystem;
 
 namespace PSADT.Foundation
@@ -18,7 +19,7 @@ namespace PSADT.Foundation
         /// <remarks>This field can be used to locate files or resources relative to the assembly's
         /// location at runtime. The returned path is determined by the assembly's current location, which may vary
         /// depending on how the application is deployed or executed.</remarks>
-        public static readonly string AssemblyPath = Path.GetDirectoryName(typeof(EnvironmentInfo).Assembly.Location)!;
+        public static readonly string AssemblyPath = Path.GetDirectoryName(typeof(EnvironmentInfo).Assembly.Location) ?? throw new InvalidOperationException("Failed to retrieve directory for this assembly.");
 
         /// <summary>
         /// Gets the default file system path to the ClientServer client executable within the application directory

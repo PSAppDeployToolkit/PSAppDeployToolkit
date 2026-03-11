@@ -45,11 +45,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 comboBox.Items.Clear(); comboBox.Items.AddRange([.. options.ModuleHelpMap.Keys]);
                 comboBox.SelectedIndexChanged += (sender, e) =>
                 {
-                    listBox.Items.Clear(); listBox.Items.AddRange([.. options.ModuleHelpMap[(string)comboBox.SelectedItem!].Keys]);
+                    listBox.Items.Clear(); listBox.Items.AddRange([.. options.ModuleHelpMap[(string)(comboBox.SelectedItem ?? throw new InvalidOperationException("The selected combobox item was null."))].Keys]);
                 };
                 listBox.SelectedIndexChanged += (sender, e) =>
                 {
-                    richTextBox.Clear(); richTextBox.Text = options.ModuleHelpMap[(string)comboBox.SelectedItem!][(string)listBox.SelectedItem!];
+                    richTextBox.Clear(); richTextBox.Text = options.ModuleHelpMap[(string)(comboBox.SelectedItem ?? throw new InvalidOperationException("The selected combobox item was null."))][(string)(listBox.SelectedItem ?? throw new InvalidOperationException("The selected listbox item was null."))];
                 };
 
                 // Lastly, set the initial selected index of the ComboBox to the first item, if available.

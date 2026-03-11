@@ -24,6 +24,7 @@ namespace PSADT.AccountManagement
         /// Static constructor for readonly constant values.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is very much needed here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception will never be thrown during operation.")]
         static AccountUtilities()
         {
             // Cache information about the current user.
@@ -32,8 +33,8 @@ namespace PSADT.AccountManagement
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
                 CallerGroups = identity.Groups?.Select(static g => (SecurityIdentifier)g).ToList().AsReadOnly();
                 CallerIsServiceAccount = CallerGroups?.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null)) == true;
+                CallerSid = identity.User ?? throw new InvalidOperationException("Current Windows identity does not have a user SID.");
                 CallerUsername = new(identity.Name);
-                CallerSid = identity.User!;
             }
 
             // Build out process/session id information.

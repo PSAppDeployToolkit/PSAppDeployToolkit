@@ -436,7 +436,7 @@ namespace PSADT.ClientServer
                 }
 
                 // For other types, defer to the known type resolver.
-                return knownTypeResolver.TryResolveType(type, declaredType, null!, out typeName, out typeNamespace);
+                return knownTypeResolver.TryResolveType(type, declaredType, NullContractResolver, out typeName, out typeNamespace);
             }
 
             /// <summary>
@@ -451,7 +451,7 @@ namespace PSADT.ClientServer
                 }
 
                 // For other types, defer to the known type resolver.
-                return knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, null!);
+                return knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, NullContractResolver);
             }
 
             /// <summary>
@@ -462,6 +462,13 @@ namespace PSADT.ClientServer
             /// the internal ListDictionary type. The value will be null if the type cannot be found in the current
             /// runtime environment.</remarks>
             private static readonly Type? ListDictionaryInternalType = Type.GetType("System.Collections.ListDictionaryInternal");
+
+            /// <summary>
+            /// Represents a null instance of the DataContractResolver used as a default value.
+            /// </summary>
+            /// <remarks>This field can be used to indicate the absence of a custom
+            /// DataContractResolver when serializing or deserializing data contracts.</remarks>
+            private static readonly DataContractResolver NullContractResolver = null!;
 
             /// <summary>
             /// Represents the XML namespace URI used for serializing arrays according to Microsoft's 2003 schema.

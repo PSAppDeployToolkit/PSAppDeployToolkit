@@ -157,7 +157,7 @@ namespace PSADT.Utilities
             }
 
             // Treat empty or whitespace-only values as null (deletion).
-            if (string.IsNullOrWhiteSpace(value) || value![0] == '\0')
+            if (value is not null && (string.IsNullOrWhiteSpace(value) || value[0] == '\0'))
             {
                 value = null;
             }

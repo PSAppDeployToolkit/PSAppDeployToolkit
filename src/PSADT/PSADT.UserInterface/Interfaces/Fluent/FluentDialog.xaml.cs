@@ -120,9 +120,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             CountdownStackPanel.Visibility = _countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
 
             // Pre-format the custom message if we have one
-            if (!string.IsNullOrWhiteSpace(_customMessageText))
+            if (_customMessageText is not null && !string.IsNullOrWhiteSpace(_customMessageText))
             {
-                FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText!);
+                FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText);
                 CustomMessageTextBlock.Visibility = Visibility.Visible;
             }
             else

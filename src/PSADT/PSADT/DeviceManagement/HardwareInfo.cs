@@ -22,12 +22,13 @@ namespace PSADT.DeviceManagement
         /// HardwareInfo class are accessed. It ensures that platform firmware, system, baseboard, and enclosure
         /// information are available for use by the class's static properties.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is needed here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception will never be thrown during operation.")]
         static HardwareInfo()
         {
             Span<byte> buffer = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(buffer);
-            PlatformFirmwareInformation = PlatformFirmwareInformation.Get(buffer)!;
-            SystemInformation = SystemInformation.Get(buffer)!;
-            SystemEnclosure = SystemEnclosure.Get(buffer)!;
+            PlatformFirmwareInformation = PlatformFirmwareInformation.Get(buffer) ?? throw new InvalidOperationException("Failed to retrieve platform firmware information.");
+            SystemInformation = SystemInformation.Get(buffer) ?? throw new InvalidOperationException("Failed to retrieve platform firmware information.");
+            SystemEnclosure = SystemEnclosure.Get(buffer) ?? throw new InvalidOperationException("Failed to retrieve platform firmware information.");
         }
 
         /// <summary>

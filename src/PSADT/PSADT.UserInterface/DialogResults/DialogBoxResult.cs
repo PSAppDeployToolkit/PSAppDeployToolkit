@@ -111,6 +111,6 @@ namespace PSADT.UserInterface.DialogResults
         /// <remarks>This dictionary enables consistent translation of user responses from message boxes
         /// to dialog box results within the deployment session. The mapping is intended for internal use and is not
         /// typically accessed directly by consumers of the API.</remarks>
-        private static readonly ReadOnlyDictionary<MESSAGEBOX_RESULT, DialogBoxResult> MessageBoxResultMap = new(typeof(DialogBoxResult).GetFields(BindingFlags.Public | BindingFlags.Static).ToDictionary(static field => (MESSAGEBOX_RESULT)(nint)(DialogBoxResult)field.GetValue(null)!, static field => (DialogBoxResult)field.GetValue(null)!));
+        private static readonly ReadOnlyDictionary<MESSAGEBOX_RESULT, DialogBoxResult> MessageBoxResultMap = new(typeof(DialogBoxResult).GetFields(BindingFlags.Public | BindingFlags.Static).ToDictionary(static field => (MESSAGEBOX_RESULT)(nint)(DialogBoxResult)(field.GetValue(null) ?? throw new InvalidOperationException($"Failed to get value for '{field.Name}' field.")), static field => (DialogBoxResult)(field.GetValue(null) ?? throw new InvalidOperationException($"Failed to get value for '{field.Name}' field."))));
     }
 }

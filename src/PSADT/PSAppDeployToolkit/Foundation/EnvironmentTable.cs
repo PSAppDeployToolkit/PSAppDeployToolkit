@@ -66,7 +66,7 @@ namespace PSAppDeployToolkit.Foundation
             // Environment variables.
             EnvHost = cmdlet.Host;
             EnvHostVersion = EnvHost.Version;
-            EnvSystemDrive = Path.GetPathRoot(EnvSystem32Directory)!.TrimEnd(Path.DirectorySeparatorChar);
+            EnvSystemDrive = (Path.GetPathRoot(EnvSystem32Directory) ?? throw new InvalidOperationException("Failed to retrieve root path for System32 directory.")).TrimEnd(Path.DirectorySeparatorChar);
 
             // Domain membership.
             DomainStatus domainStatus = DeviceUtilities.GetDomainStatus();
@@ -213,11 +213,11 @@ namespace PSAppDeployToolkit.Foundation
             // PowerShell version information.
             using (Process currentProcess = Process.GetCurrentProcess())
             {
-                EnvPSProcessPath = currentProcess.MainModule!.FileName;
+                EnvPSProcessPath = (currentProcess.MainModule ?? throw new InvalidOperationException("Failed to retrieve module information for the current process.")).FileName;
             }
-            if (psVersionTable.ContainsKey("CLRVersion"))
+            if (psVersionTable["CLRVersion"] is Version clrVersion)
             {
-                EnvCLRVersion = (Version)psVersionTable["CLRVersion"]!;
+                EnvCLRVersion = clrVersion;
             }
             EnvPSVersionTable = psVersionTable;
             EnvPSVersion = psVersion;

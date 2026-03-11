@@ -68,8 +68,8 @@ namespace PSAppDeployToolkit.Utilities
                 foreach (KeyValuePair<string, object> entry in dict)
                 {
                     // Skip anything null or excluded.
-                    string key = entry.Key.ToString()!;
-                    string val = string.Empty;
+                    string key = entry.Key.ToString() ?? throw new InvalidOperationException("The provided dictionary contains a null key.");
+                    string? val = null;
                     if (entry.Value is null)
                     {
                         continue;
@@ -82,7 +82,7 @@ namespace PSAppDeployToolkit.Utilities
                     // Handle nested dictionaries.
                     if (entry.Value is IDictionary dictionary)
                     {
-                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value!), exclusions);
+                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key} is null.")), exclusions);
                         continue;
                     }
 
@@ -101,7 +101,7 @@ namespace PSAppDeployToolkit.Utilities
                     }
                     else if (entry.Value is not SwitchParameter)
                     {
-                        val = entry.Value.ToString()!;
+                        val = entry.Value.ToString();
                     }
                     yield return !string.IsNullOrWhiteSpace(val) ? $"-{key}:{val}" : $"-{key}";
                 }

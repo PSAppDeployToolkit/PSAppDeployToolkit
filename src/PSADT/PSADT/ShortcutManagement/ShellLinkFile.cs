@@ -338,13 +338,13 @@ namespace PSADT.ShortcutManagement
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                if (string.IsNullOrWhiteSpace(value))
+                if (value is null || string.IsNullOrWhiteSpace(value))
                 {
                     _shellLink.SetHotkey(0);
                 }
                 else
                 {
-                    _shellLink.SetHotkey(ShortcutHotkey.Parse(value!).Value);
+                    _shellLink.SetHotkey(ShortcutHotkey.Parse(value).Value);
                 }
             }
         }

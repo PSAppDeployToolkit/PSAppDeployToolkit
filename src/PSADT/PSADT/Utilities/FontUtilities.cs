@@ -180,7 +180,7 @@ namespace PSADT.Utilities
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static string NormalizeFamilyStyle(string family, string? style)
             {
-                return string.IsNullOrWhiteSpace(style) || style!.Equals("Regular", StringComparison.OrdinalIgnoreCase) ? family : $"{family} {style}";
+                return string.IsNullOrWhiteSpace(style) || "Regular".Equals(style, StringComparison.OrdinalIgnoreCase) ? family : $"{family} {style}";
             }
 
             // Use the font's full name if available.
@@ -195,15 +195,15 @@ namespace PSADT.Utilities
             // Otherwise, use typographic family/subfamily if available.
             string? tf = GetFontTitleByNameId(nameTable, count, stringOffset, NAME_ID.NAME_ID_TYPOGRAPHIC_FAMILY);
             string? ts = GetFontTitleByNameId(nameTable, count, stringOffset, NAME_ID.NAME_ID_TYPOGRAPHIC_SUBFAMILY);
-            if (!string.IsNullOrWhiteSpace(tf))
+            if (tf is not null && !string.IsNullOrWhiteSpace(tf))
             {
-                return NormalizeFamilyStyle(tf!, ts);
+                return NormalizeFamilyStyle(tf, ts);
             }
 
             // Otherwise, use regular family/subfamily.
             string? fam = GetFontTitleByNameId(nameTable, count, stringOffset, NAME_ID.NAME_ID_FONT_FAMILY);
             string? sub = GetFontTitleByNameId(nameTable, count, stringOffset, NAME_ID.NAME_ID_FONT_SUBFAMILY);
-            return !string.IsNullOrWhiteSpace(fam) ? NormalizeFamilyStyle(fam!, sub) : null;
+            return fam is not null && !string.IsNullOrWhiteSpace(fam) ? NormalizeFamilyStyle(fam, sub) : null;
         }
 
         /// <summary>

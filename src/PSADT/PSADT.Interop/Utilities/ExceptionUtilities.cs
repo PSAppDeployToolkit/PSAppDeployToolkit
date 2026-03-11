@@ -154,7 +154,7 @@ namespace PSADT.Interop.Utilities
             {
                 return GetException((WIN32_ERROR)HRESULT_CODE(hResult));
             }
-            return Marshal.GetExceptionForHR(hResult)!;
+            return Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrive an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");
         }
 
         /// <summary>

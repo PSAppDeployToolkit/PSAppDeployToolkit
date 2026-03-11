@@ -61,13 +61,13 @@ namespace PSADT.ClientServer
                 if (!(argv?.Length > 0))
                 {
                     Assembly assemblyInfo = typeof(ClientExecutable).Assembly;
-                    string productVersion = assemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-                    string helpTitle = $"{assemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()!.Title} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
+                    string productVersion = assemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
+                    string helpTitle = $"{assemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
                         string.Empty,
-                        assemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright,
+                        assemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? throw new ClientException("Failed to retrieve assembly copyright information.", ClientExitCode.Unknown),
                         string.Empty,
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                         string.Empty,

@@ -58,11 +58,11 @@ namespace PSADT.ShortcutManagement
         public bool IsValidHotkey()
         {
             // Validate the hotkey format based on Windows shortcut criteria.
-            if (string.IsNullOrWhiteSpace(Hotkey))
+            if (Hotkey is null || string.IsNullOrWhiteSpace(Hotkey))
             {
                 return false;
             }
-            string[] parts = Hotkey!.Split(['+'], StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = Hotkey.Split(['+'], StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
                 return false;
