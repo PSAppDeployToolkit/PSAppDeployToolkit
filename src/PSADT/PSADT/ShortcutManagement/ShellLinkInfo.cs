@@ -26,7 +26,7 @@ namespace PSADT.ShortcutManagement
     /// <summary>
     /// Represents an immutable snapshot of a <see cref="ShellLinkFile"/>.
     /// </summary>
-    public sealed record ShellLinkInfo
+    public sealed record ShellLinkInfo : IShortcutLinkInfo
     {
         /// <summary>
         /// Retrieves information about a Windows shell link (shortcut) from the specified file.
