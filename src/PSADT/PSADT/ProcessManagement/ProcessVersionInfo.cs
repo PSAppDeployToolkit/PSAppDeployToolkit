@@ -329,7 +329,7 @@ namespace PSADT.ProcessManagement
             for (int i = 0; i < translationLength / langAndCodepageSize; i++)
             {
                 ref readonly LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsReadOnlyStructure<LANGANDCODEPAGE>();
-                translationCombinations.Add(langAndCodePage.ToTranslationTableString());
+                translationCombinations.Add(langAndCodePage.ToString());
             }
 
             // Add some common fallback combinations that are known to work in many cases.

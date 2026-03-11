@@ -34,7 +34,7 @@ namespace PSADT.Interop
         /// <returns>A string containing the hexadecimal representation of the language and code page identifiers, formatted
         /// as "LLLLCCCC", where "LLLL" is the language identifier and "CCCC" is the code page identifier.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal readonly string ToTranslationTableString()
+        public override readonly string ToString()
         {
             return $"{wLanguage:X4}{wCodePage:X4}";
         }
