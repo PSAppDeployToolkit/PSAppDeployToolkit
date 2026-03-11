@@ -22,6 +22,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using PSADT.Interop;
 using PSADT.Interop.ComTypes;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
@@ -125,7 +126,7 @@ namespace PSADT.ShortcutManagement
             IUniformResourceLocatorW internetShortcut = new();
             try
             {
-                ((IPersistFile)internetShortcut).Load(filePath, (STGM)storageMode);
+                ((IPersistFile)internetShortcut).Load(filePath, (Windows.Win32.System.Com.STGM)storageMode);
                 _internetShortcut = internetShortcut;
                 _storageMode = storageMode;
             }
@@ -503,7 +504,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
                 }
             }
             finally
@@ -544,7 +545,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
                 }
             }
             finally
@@ -591,7 +592,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
                 }
             }
             finally
@@ -635,7 +636,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
                 }
             }
             finally
@@ -681,7 +682,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
                 }
             }
             finally
@@ -722,7 +723,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
                 }
             }
             finally

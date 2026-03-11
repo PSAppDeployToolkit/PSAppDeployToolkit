@@ -23,6 +23,7 @@ using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
+using Windows.Win32.System.Com.StructuredStorage;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.LibraryLoader;
@@ -4220,6 +4221,22 @@ namespace PSADT.Interop
                     Environment.DangerousRelease();
                 }
             }
+        }
+
+        /// <summary>
+        /// Clears and releases the contents of a PROPVARIANT structure, resetting it to an empty state.
+        /// </summary>
+        /// <remarks>If the operation fails, an exception is thrown corresponding to the HRESULT error
+        /// code. This method is typically used to release resources held by a PROPVARIANT before disposing or reusing
+        /// the structure.</remarks>
+        /// <param name="pvar">A reference to the PROPVARIANT structure to be cleared. The structure must be initialized before calling
+        /// this method.</param>
+        /// <returns>An HRESULT value indicating the result of the operation. Returns S_OK if the PROPVARIANT was successfully
+        /// cleared.</returns>
+        internal static HRESULT PropVariantClear(ref PROPVARIANT pvar)
+        {
+            HRESULT res = PInvoke.PropVariantClear(ref pvar);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>

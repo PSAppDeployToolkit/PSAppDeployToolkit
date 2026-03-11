@@ -22,6 +22,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32;
@@ -31,7 +32,6 @@ using Windows.Win32.System.Com.StructuredStorage;
 using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.PropertiesSystem;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.ShortcutManagement
 {
@@ -127,7 +127,7 @@ namespace PSADT.ShortcutManagement
             IShellLinkW shellLink = (IShellLinkW)new ShellLink();
             try
             {
-                ((IPersistFile)shellLink).Load(filePath, (STGM)storageMode);
+                ((IPersistFile)shellLink).Load(filePath, (Windows.Win32.System.Com.STGM)storageMode);
                 _shellLink = shellLink;
                 _storageMode = storageMode;
             }
@@ -338,20 +338,20 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the window show state for the shortcut's target.
         /// </summary>
-        /// <value>The <see cref="SHOW_WINDOW_CMD"/> value indicating how the window should be shown.</value>
+        /// <value>The <see cref="Interop.SHOW_WINDOW_CMD"/> value indicating how the window should be shown.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public Interop.SHOW_WINDOW_CMD WindowStyle
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.GetShowCmd(out SHOW_WINDOW_CMD showCmd);
+                _shellLink.GetShowCmd(out Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD showCmd);
                 return (Interop.SHOW_WINDOW_CMD)showCmd;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetShowCmd((SHOW_WINDOW_CMD)value);
+                _shellLink.SetShowCmd((Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD)value);
             }
         }
 
@@ -822,7 +822,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -855,7 +855,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -886,7 +886,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -916,7 +916,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -953,7 +953,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -987,7 +987,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -1018,7 +1018,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
@@ -1048,7 +1048,7 @@ namespace PSADT.ShortcutManagement
             }
             finally
             {
-                _ = PInvoke.PropVariantClear(ref propVariant);
+                _ = NativeMethods.PropVariantClear(ref propVariant);
             }
         }
 
