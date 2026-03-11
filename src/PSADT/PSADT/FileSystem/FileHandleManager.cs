@@ -308,7 +308,7 @@ namespace PSADT.FileSystem
                     }
 
                     // Get the handle's name to check if it's a hard drive path.
-                    string? objectName;
+                    string objectName;
                     using (fileDupHandle)
                     {
                         (SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer) = threadBuffers.Value;
@@ -340,15 +340,11 @@ namespace PSADT.FileSystem
                                 throw ExceptionUtilities.GetException(res);
                             }
                             ref readonly OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsReadOnlyStructure<OBJECT_NAME_INFORMATION>();
-                            try
-                            {
-                                objectName = objectBufferData.Name.ToManagedString();
-                            }
-                            catch
+                            if (objectBufferData.Name.Length == 0)
                             {
                                 return;
-                                throw;
                             }
+                            objectName = objectBufferData.Name.ToManagedString();
                         }
                         finally
                         {
@@ -365,7 +361,7 @@ namespace PSADT.FileSystem
                     }
 
                     // Skip to next iteration if the handle doesn't meet our criteria.
-                    if (!(objectName?.StartsWith(@"\Device\HarddiskVolume", StringComparison.Ordinal) == true))
+                    if (!objectName.StartsWith(@"\Device\HarddiskVolume", StringComparison.Ordinal))
                     {
                         return;
                     }

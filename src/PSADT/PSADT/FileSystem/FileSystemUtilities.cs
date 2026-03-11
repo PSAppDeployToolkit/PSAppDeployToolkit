@@ -113,6 +113,7 @@ namespace PSADT.FileSystem
         public static long GetLogicalSizeBytes(string rootPath)
         {
             // Internal helper method to trim trailing slashes off paths.
+            ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
             static string TrimTrailingSeparators(string path)
             {
                 while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
@@ -124,7 +125,6 @@ namespace PSADT.FileSystem
 
             // Note: this is a breadth-first parallel enumeration. It is "fire and forget" in that it does not support cancellation, progress,
             // or partial results. It is optimized for speed and low memory usage on large directory trees with many files and subdirectories.
-            ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
             using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))).ThrowIfDirectoryDoesNotExist()];
             Task[] tasks = new Task[Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32))];
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
