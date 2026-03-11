@@ -43,6 +43,9 @@ function New-ADTShortcut
     .PARAMETER Hotkey
         Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
+    .PARAMETER Force
+        Forces deletion of a pre-existing shortcut.
+
     .INPUTS
         None
 
@@ -113,146 +116,124 @@ function New-ADTShortcut
         [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Normal', 'Maximized', 'Minimized')]
-        [System.String]$WindowStyle = 'Normal',
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSADT.ShortcutManagement.ShortcutWindowStyle]$WindowStyle = [PSADT.ShortcutManagement.ShortcutWindowStyle]::Normal,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$RunAsAdmin,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Hotkey
+        [System.String]$Hotkey,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force
     )
 
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    }
-
-    process
-    {
-        # Make sure .NET's current directory is synced with PowerShell's.
         try
         {
-            try
+            $LiteralPath = Resolve-ADTFileSystemPath -LiteralPath $LiteralPath -File
+            if (!$Force)
             {
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                $FullPath = [System.IO.Path]::GetFullPath($LiteralPath)
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
+                $naerParams = @{
+                    Exception = [System.IO.IOException]::new("The specified shortcut at [$LiteralPath] already exists.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId = 'ShortcutPathIsPreExisting'
+                    TargetObject = $LiteralPath
+                    RecommendedAction = "Please review the provided input and try again."
+                }
+                throw (New-ADTErrorRecord @naerParams)
             }
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
-            return
+            if ($_.Exception -isnot [System.IO.FileNotFoundException])
+            {
+                $PSCmdlet.ThrowTerminatingError($_)
+            }
+            $LiteralPath = $_.TargetObject.ResolvedPath
         }
+    }
 
+    process
+    {
         try
         {
             try
             {
-                # Make sure directory is present before continuing.
-                if (!($PathDirectory = [System.IO.Path]::GetDirectoryName($FullPath)))
+                # Confirm the supplied input path isn't a directory.
+                if ([System.IO.Directory]::Exists($LiteralPath))
                 {
-                    # The path is root or no filename supplied.
-                    if (![System.IO.Path]::GetFileNameWithoutExtension($FullPath))
+                    # No filename supplied.
+                    $naerParams = @{
+                        Exception = [System.ArgumentException]::new("Specified path [$LiteralPath] is a directory and not a file.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                        ErrorId = 'ShortcutPathInvalid'
+                        TargetObject = $LiteralPath
+                        RecommendedAction = "Please confirm the provided value and try again."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Make sure directory is present before continuing.
+                $pathDirectory = [System.IO.Path]::GetDirectoryName($LiteralPath)
+                $newDir = if (!(Test-Path -LiteralPath $pathDirectory -PathType Container))
+                {
+                    if (!$Force)
                     {
-                        # No filename supplied.
                         $naerParams = @{
-                            Exception = [System.ArgumentException]::new("Specified path [$FullPath] is a directory and not a file.")
+                            Exception = [System.ArgumentException]::new("Specified path directory does not exist and [-Force] not specified.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                            ErrorId = 'ShortcutPathInvalid'
-                            TargetObject = $FullPath
+                            ErrorId = 'ShortcutPathDirectoryDoesNotExist'
+                            TargetObject = $LiteralPath
                             RecommendedAction = "Please confirm the provided value and try again."
                         }
                         throw (New-ADTErrorRecord @naerParams)
                     }
+                    Write-ADTLogEntry -Message "Creating shortcut directory [$pathDirectory]."
+                    New-Item -Path $pathDirectory -ItemType Directory -Force
                 }
-                elseif (!(Test-Path -LiteralPath $PathDirectory -PathType Container))
+                try
                 {
-                    try
+                    # Remove any pre-existing shortcut first.
+                    if (Test-Path -LiteralPath $LiteralPath -PathType Leaf)
                     {
-                        Write-ADTLogEntry -Message "Creating shortcut directory [$PathDirectory]."
-                        $null = New-Item -Path $PathDirectory -ItemType Directory -Force
-                    }
-                    catch
-                    {
-                        Write-ADTLogEntry -Message "Failed to create shortcut directory [$PathDirectory].`n$(Resolve-ADTErrorRecord -ErrorRecord $_)" -Severity Error
-                        throw
-                    }
-                }
-
-                # Remove any pre-existing shortcut first.
-                if (Test-Path -LiteralPath $FullPath -PathType Leaf)
-                {
-                    Write-ADTLogEntry -Message "The shortcut [$FullPath] already exists. Deleting the file..."
-                    Remove-ADTFile -LiteralPath $FullPath
-                }
-
-                # Build out the shortcut.
-                Write-ADTLogEntry -Message "Creating shortcut [$FullPath]."
-                if (!$PSCmdlet.ShouldProcess($FullPath, "Create shortcut to [$TargetPath]"))
-                {
-                    return
-                }
-                if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
-                {
-                    [String[]]$URLFile = '[InternetShortcut]', "URL=$TargetPath"
-                    if ($PSBoundParameters.ContainsKey('IconIndex'))
-                    {
-                        $URLFile += "IconIndex=$IconIndex"
-                    }
-                    if ($IconLocation)
-                    {
-                        $URLFile += "IconFile=$IconLocation"
-                    }
-                    [System.IO.File]::WriteAllLines($FullPath, $URLFile, [System.Text.UTF8Encoding]::new($false, $true))
-                }
-                else
-                {
-                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($FullPath)
-                    $shortcut.TargetPath = $TargetPath
-                    if ($Arguments)
-                    {
-                        $shortcut.Arguments = $Arguments
-                    }
-                    if ($Description)
-                    {
-                        $shortcut.Description = $Description
-                    }
-                    if ($WorkingDirectory)
-                    {
-                        $shortcut.WorkingDirectory = $WorkingDirectory
-                    }
-                    if ($Hotkey)
-                    {
-                        $shortcut.Hotkey = $Hotkey
-                    }
-                    if ($IconLocation)
-                    {
-                        $shortcut.IconLocation = $IconLocation + ",$IconIndex"
-                    }
-                    $shortcut.WindowStyle = switch ($WindowStyle)
-                    {
-                        Normal { 1; break }
-                        Maximized { 3; break }
-                        Minimized { 7; break }
+                        if (!$Force)
+                        {
+                            $naerParams = @{
+                                Exception = [System.ArgumentException]::new("Specified shortcut already exists and [-Force] not specified.")
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                                ErrorId = 'ShortcutAlreadyExists'
+                                TargetObject = $LiteralPath
+                                RecommendedAction = "Please confirm the provided value and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
+                        Write-ADTLogEntry -Message "The shortcut [$LiteralPath] already exists. Deleting the file..."
+                        Remove-Item -LiteralPath $LiteralPath -Force
                     }
 
-                    # Save the changes.
-                    $shortcut.Save()
-
-                    # Set shortcut to run program as administrator.
-                    if ($RunAsAdmin)
+                    # Build out the shortcut.
+                    if (!$PSBoundParameters.ContainsKey('WindowStyle'))
                     {
-                        Write-ADTLogEntry -Message 'Setting shortcut to run program as administrator.'
-                        $fileBytes = [System.IO.FIle]::ReadAllBytes($FullPath)
-                        $fileBytes[21] = $filebytes[21] -bor 32
-                        [System.IO.FIle]::WriteAllBytes($FullPath, $fileBytes)
+                        $PSBoundParameters.Add('WindowStyle', $WindowStyle)
                     }
+                    if (!$PSBoundParameters.ContainsKey('Force') -or !$PSBoundParameters.Force)
+                    {
+                        $PSBoundParameters.Force = $true
+                    }
+                    Set-ADTShortcut @PSBoundParameters
+                }
+                catch
+                {
+                    if ($newDir)
+                    {
+                        Remove-Item -LiteralPath $newDir.FullName -Force -Confirm:$false
+                    }
+                    throw
                 }
             }
             catch
