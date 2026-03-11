@@ -264,15 +264,15 @@ namespace PSADT.ShortcutManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                int? hotkeyValue = GetInt32Property(PID_IS.PID_IS_HOTKEY);
-                return hotkeyValue > 0 ? ShortcutHotkey.FromValue((ushort)hotkeyValue).ToString() : null;
+                ushort? hotkeyValue = GetUInt16Property(PID_IS.PID_IS_HOTKEY);
+                return hotkeyValue > 0 ? ShortcutHotkey.FromValue(hotkeyValue.Value).ToString() : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                SetInt32Property(PID_IS.PID_IS_HOTKEY, value is not null && !string.IsNullOrWhiteSpace(value)
+                SetUInt16Property(PID_IS.PID_IS_HOTKEY, value is not null && !string.IsNullOrWhiteSpace(value)
                     ? ShortcutHotkey.Parse(value).ToUInt16()
-                    : 0);
+                    : (ushort)0);
             }
         }
 
@@ -694,6 +694,66 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
+        /// Gets an unsigned 16-bit property value from the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <returns>The property value, or <see langword="null"/> if not set.</returns>
+        private ushort? GetUInt16Property(PID_IS propertyId)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.ReadMultiple([propertySpec], propertyValues);
+                    VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
+                    if (vt == VARENUM.VT_EMPTY)
+                    {
+                        return null;
+                    }
+                    if (vt == VARENUM.VT_UI2)
+                    {
+                        return propertyValues[0].Anonymous.Anonymous.Anonymous.uiVal;
+                    }
+                    if (vt == VARENUM.VT_I2)
+                    {
+                        short value = propertyValues[0].Anonymous.Anonymous.Anonymous.iVal;
+                        return value >= 0 ? (ushort)value : throw new InvalidOperationException("Property has a negative VT_I2 value, expected an unsigned 16-bit value.");
+                    }
+                    if (vt == VARENUM.VT_I4)
+                    {
+                        int value = propertyValues[0].Anonymous.Anonymous.Anonymous.lVal;
+                        return value is >= ushort.MinValue and <= ushort.MaxValue
+                            ? (ushort)value
+                            : throw new InvalidOperationException($"Property value {value} is outside the UInt16 range.");
+                    }
+                    if (vt == VARENUM.VT_UI4)
+                    {
+                        uint value = propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal;
+                        return value <= ushort.MaxValue
+                            ? (ushort)value
+                            : throw new InvalidOperationException($"Property value {value} is outside the UInt16 range.");
+                    }
+                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI2, VT_I2, VT_I4, or VT_UI4.");
+                }
+                finally
+                {
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
         /// Sets a property value in the Internet Shortcut property set.
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
@@ -710,6 +770,47 @@ namespace PSADT.ShortcutManagement
                     {
                         propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_I4;
                         propertyValues[0].Anonymous.Anonymous.Anonymous.lVal = value.Value;
+                    }
+                    else
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_EMPTY;
+                    }
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.WriteMultiple([propertySpec], propertyValues, 2);
+                    propertyStorage.Commit(0);
+                }
+                finally
+                {
+                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
+        /// Sets an unsigned 16-bit property value in the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <param name="value">The property value.</param>
+        private void SetUInt16Property(PID_IS propertyId, ushort? value)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READWRITE);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    if (value is not null)
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_UI2;
+                        propertyValues[0].Anonymous.Anonymous.Anonymous.uiVal = value.Value;
                     }
                     else
                     {
