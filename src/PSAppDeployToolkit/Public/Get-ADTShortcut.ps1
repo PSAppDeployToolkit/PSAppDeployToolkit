@@ -22,7 +22,7 @@ function Get-ADTShortcut
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.ShortcutManagement.ShortcutBase
+        PSADT.ShortcutManagement.IShortcutLinkInfo
 
         Returns an object with the following properties:
         - TargetPath
@@ -55,15 +55,17 @@ function Get-ADTShortcut
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.ShortcutManagement.ShortcutUrl])]
-    [OutputType([PSADT.ShortcutManagement.ShortcutLnk])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateScript({
-                if (!(Test-Path -LiteralPath $_ -PathType Leaf) -or (![System.IO.Path]::GetExtension($_).ToLowerInvariant().Equals('.lnk') -and ![System.IO.Path]::GetExtension($_).ToLowerInvariant().Equals('.url')))
+                if (![System.IO.Path]::GetExtension($_).ToLowerInvariant().Equals('.lnk') -and ![System.IO.Path]::GetExtension($_).ToLowerInvariant().Equals('.url'))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist or does not have the correct extension.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not have the correct extension.'))
+                }
+                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
@@ -73,78 +75,30 @@ function Get-ADTShortcut
 
     begin
     {
-        # Make this function continue on error.
-        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        try
+        {
+            $LiteralPath = Resolve-ADTFileSystemPath -LiteralPath $LiteralPath -File
+        }
+        catch
+        {
+            $PSCmdlet.ThrowTerminatingError($_)
+        }
     }
 
     process
     {
-        # Make sure .NET's current directory is synced with PowerShell's.
         try
         {
             try
             {
-                [System.IO.Directory]::SetCurrentDirectory((Get-Location -PSProvider FileSystem).ProviderPath)
-                $Output = @{ Path = (Get-Item -LiteralPath $LiteralPath).FullName; TargetPath = $null; IconIndex = $null; IconLocation = $null }
-            }
-            catch
-            {
-                Write-Error -ErrorRecord $_
-            }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Specified path [$LiteralPath] is not valid."
-            return
-        }
-
-        try
-        {
-            try
-            {
-                # Build out remainder of object.
-                if ([System.IO.Path]::GetExtension($Output.Path) -eq '.url')
+                if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
                 {
-                    [System.IO.File]::ReadAllLines($Output.Path) | & {
-                        process
-                        {
-                            switch ($_)
-                            {
-                                { $_.StartsWith('URL=') } { $Output.TargetPath = $_.Replace('URL=', [System.Management.Automation.Language.NullString]::Value); break }
-                                { $_.StartsWith('IconIndex=') } { $Output.IconIndex = $_.Replace('IconIndex=', [System.Management.Automation.Language.NullString]::Value); break }
-                                { $_.StartsWith('IconFile=') } { $Output.IconLocation = $_.Replace('IconFile=', [System.Management.Automation.Language.NullString]::Value); break }
-                            }
-                        }
-                    }
-                    return [PSADT.ShortcutManagement.ShortcutUrl]::new(
-                        $Output.Path,
-                        $Output.TargetPath,
-                        $Output.IconLocation,
-                        $Output.IconIndex
-                    )
+                    return [PSADT.ShortcutManagement.InternetShortcutInfo]::Get($LiteralPath)
                 }
                 else
                 {
-                    $shortcut = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID('WScript.Shell')).CreateShortcut($Output.Path)
-                    $Output.IconLocation, $Output.IconIndex = $shortcut.IconLocation.Split(',', [System.StringSplitOptions]::RemoveEmptyEntries).Trim()
-                    return [PSADT.ShortcutManagement.ShortcutLnk]::new(
-                        $Output.Path,
-                        $shortcut.TargetPath,
-                        $Output.IconLocation,
-                        $Output.IconIndex,
-                        $shortcut.Arguments,
-                        $shortcut.Description,
-                        $shortcut.WorkingDirectory,
-                        $(switch ($shortcut.WindowStyle)
-                            {
-                                1 { 'Normal'; break }
-                                3 { 'Maximized'; break }
-                                7 { 'Minimized'; break }
-                                default { 'Normal'; break }
-                            }),
-                        $shortcut.Hotkey,
-                        !!([System.IO.File]::ReadAllBytes($Output.Path)[21] -band 32)
-                    )
+                    return [PSADT.ShortcutManagement.ShellLinkInfo]::Get($LiteralPath)
                 }
             }
             catch
