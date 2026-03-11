@@ -892,11 +892,19 @@ namespace PSADT.ShortcutManagement
                 {
                     return null;
                 }
-                if (vt != VARENUM.VT_BOOL)
+                if (vt == VARENUM.VT_BOOL)
                 {
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL.");
+                    return propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0;
                 }
-                return propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0;
+                if (vt == VARENUM.VT_I4)
+                {
+                    return propVariant.Anonymous.Anonymous.Anonymous.lVal != 0;
+                }
+                if (vt == VARENUM.VT_UI4)
+                {
+                    return propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0;
+                }
+                throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.");
             }
             finally
             {
@@ -1024,11 +1032,18 @@ namespace PSADT.ShortcutManagement
                 {
                     return null;
                 }
-                if (vt != VARENUM.VT_UI4)
+                if (vt == VARENUM.VT_UI4)
                 {
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI4.");
+                    return propVariant.Anonymous.Anonymous.Anonymous.ulVal;
                 }
-                return propVariant.Anonymous.Anonymous.Anonymous.ulVal;
+                if (vt == VARENUM.VT_I4)
+                {
+                    int value = propVariant.Anonymous.Anonymous.Anonymous.lVal;
+                    return value < 0
+                        ? throw new InvalidOperationException($"Property value {value} is outside the UInt32 range.")
+                        : (uint)value;
+                }
+                throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.");
             }
             finally
             {

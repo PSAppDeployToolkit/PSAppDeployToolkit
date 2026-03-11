@@ -580,9 +580,23 @@ namespace PSADT.ShortcutManagement
                     {
                         return null;
                     }
+                    if (vt == VARENUM.VT_BSTR)
+                    {
+                        nint bstrVal;
+                        unsafe
+                        {
+                            bstrVal = (nint)propertyValues[0].Anonymous.Anonymous.Anonymous.bstrVal.Value;
+                        }
+                        if (bstrVal == 0)
+                        {
+                            return null;
+                        }
+                        string? bstrValStr = Marshal.PtrToStringBSTR(bstrVal);
+                        return !string.IsNullOrWhiteSpace(bstrValStr) ? bstrValStr : null;
+                    }
                     if (vt != VARENUM.VT_LPWSTR)
                     {
-                        throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR.");
+                        throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
                     }
                     PWSTR pwszVal = propertyValues[0].Anonymous.Anonymous.Anonymous.pwszVal;
                     if (pwszVal.IsNull())
