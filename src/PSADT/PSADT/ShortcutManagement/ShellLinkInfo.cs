@@ -140,7 +140,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the icon index in the icon location file.
         /// </summary>
-        public int IconIndex { get; }
+        public int? IconIndex { get; }
 
         /// <summary>
         /// Gets the AppUserModel ID for the shortcut.

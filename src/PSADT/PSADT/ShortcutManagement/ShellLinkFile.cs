@@ -372,7 +372,7 @@ namespace PSADT.ShortcutManagement
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(value, IconIndex);
+                _shellLink.SetIconLocation(value, IconIndex ?? 0);
             }
         }
 
@@ -381,19 +381,19 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The zero-based index of the icon within the file specified by <see cref="IconLocation"/>.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public int IconIndex
+        public int? IconIndex
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetIconLocation(buffer, out int iconIndex);
-                return iconIndex;
+                return buffer.ToStringUni() is not null ? iconIndex : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetIconLocation(IconLocation, value);
+                _shellLink.SetIconLocation(IconLocation, value ?? 0);
             }
         }
 
