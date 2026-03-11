@@ -590,7 +590,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets a value indicating whether the shortcut should run as a different user (Run as Administrator).
         /// </summary>
-        public bool RunAsUser
+        public bool RunAsAdmin
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => GetFlag(SHELL_LINK_DATA_FLAGS.SLDF_RUNAS_USER);

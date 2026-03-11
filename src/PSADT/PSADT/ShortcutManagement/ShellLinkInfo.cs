@@ -20,7 +20,6 @@
 
 using System;
 using System.IO;
-using PSADT.Interop;
 
 namespace PSADT.ShortcutManagement
 {
@@ -82,7 +81,7 @@ namespace PSADT.ShortcutManagement
             HasExpandableStrings = shellLink.HasExpandableStrings;
             RunInSeparate = shellLink.RunInSeparate;
             HasDarwinId = shellLink.HasDarwinId;
-            RunAsUser = shellLink.RunAsUser;
+            RunAsAdmin = shellLink.RunAsAdmin;
             HasExpandedIconSize = shellLink.HasExpandedIconSize;
             NoPidlAlias = shellLink.NoPidlAlias;
             ForceUncName = shellLink.ForceUncName;
@@ -256,7 +255,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets a value indicating whether the shortcut runs as a different user.
         /// </summary>
-        public bool RunAsUser { get; }
+        public bool RunAsAdmin { get; }
 
         /// <summary>
         /// Gets a value indicating whether the shortcut has an expanded icon size.
