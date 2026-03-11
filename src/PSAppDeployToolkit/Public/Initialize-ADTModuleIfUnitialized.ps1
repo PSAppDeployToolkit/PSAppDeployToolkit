@@ -16,6 +16,12 @@ function Initialize-ADTModuleIfUnitialized
     .PARAMETER Cmdlet
         The cmdlet that is being initialized.
 
+    .PARAMETER ScriptDirectory
+        An override directory to use for config and string loading.
+
+    .PARAMETER AdditionalEnvironmentVariables
+        A dictionary of key/value pairs to inject into the generated environment table.
+
     .PARAMETER PassThruActiveSession
         Returns the active DeploymentSession if available.
 
@@ -54,15 +60,35 @@ function Initialize-ADTModuleIfUnitialized
         [System.Management.Automation.PSCmdlet]$Cmdlet,
 
         [Parameter(Mandatory = $false)]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ScriptDirectory -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
+                }
+                if (!(Test-Path -LiteralPath $_ -PathType Container))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ScriptDirectory -ProvidedValue $_ -ExceptionMessage 'The specified directory does not exist.'))
+                }
+                return $_
+            })]
+        [System.String[]]$ScriptDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.IDictionary]$AdditionalEnvironmentVariables,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThruActiveSession
     )
 
     # Initialize the module if there's no session and it hasn't been previously initialized.
     if (!($adtSession = if (Test-ADTSessionActive) { Get-ADTSession }) -and !(Test-ADTModuleInitialized))
     {
+        $null = $PSBoundParameters.Remove('PassThruActiveSession')
+        $null = $PSBoundParameters.Remove('Cmdlet')
         try
         {
-            Initialize-ADTModule
+            Initialize-ADTModule @PSBoundParameters
         }
         catch
         {
