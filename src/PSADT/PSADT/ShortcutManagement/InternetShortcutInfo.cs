@@ -47,8 +47,17 @@ namespace PSADT.ShortcutManagement
         {
             ArgumentNullException.ThrowIfNull(internetShortcut);
             FilePath = internetShortcut.FilePath ?? throw new ArgumentNullException(nameof(internetShortcut), "The provided Internet Shortcut does not have a valid file path.");
+            Name = internetShortcut.Name;
+            WorkingDirectory = internetShortcut.WorkingDirectory;
+            Hotkey = internetShortcut.Hotkey;
+            ShowCommand = internetShortcut.ShowCommand;
             IconFile = internetShortcut.IconFile;
             IconIndex = internetShortcut.IconIndex;
+            WhatsNew = internetShortcut.WhatsNew;
+            Author = internetShortcut.Author;
+            Description = internetShortcut.Description;
+            Comment = internetShortcut.Comment;
+            Roamed = internetShortcut.Roamed;
             Url = internetShortcut.Url;
         }
 
@@ -56,6 +65,26 @@ namespace PSADT.ShortcutManagement
         /// Gets the path of the currently loaded shortcut file.
         /// </summary>
         public string FilePath { get; }
+
+        /// <summary>
+        /// Gets the display name for the internet shortcut.
+        /// </summary>
+        public string? Name { get; }
+
+        /// <summary>
+        /// Gets the working directory for the internet shortcut.
+        /// </summary>
+        public string? WorkingDirectory { get; }
+
+        /// <summary>
+        /// Gets the hotkey for the internet shortcut.
+        /// </summary>
+        public string? Hotkey { get; }
+
+        /// <summary>
+        /// Gets the show command value for the internet shortcut.
+        /// </summary>
+        public int? ShowCommand { get; }
 
         /// <summary>
         /// Gets the icon file path for the internet shortcut.
@@ -66,6 +95,31 @@ namespace PSADT.ShortcutManagement
         /// Gets the icon index for the internet shortcut.
         /// </summary>
         public int? IconIndex { get; }
+
+        /// <summary>
+        /// Gets the What's New text for the internet shortcut.
+        /// </summary>
+        public string? WhatsNew { get; }
+
+        /// <summary>
+        /// Gets the author for the internet shortcut.
+        /// </summary>
+        public string? Author { get; }
+
+        /// <summary>
+        /// Gets the description for the internet shortcut.
+        /// </summary>
+        public string? Description { get; }
+
+        /// <summary>
+        /// Gets the comment for the internet shortcut.
+        /// </summary>
+        public string? Comment { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the internet shortcut has roamed.
+        /// </summary>
+        public bool? Roamed { get; }
 
         /// <summary>
         /// Gets the URL of the internet shortcut.

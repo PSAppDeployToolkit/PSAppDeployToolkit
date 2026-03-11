@@ -222,6 +222,77 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
+        /// Gets or sets the display name for the Internet shortcut.
+        /// </summary>
+        public string? Name
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_NAME);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_NAME, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the working directory for the Internet shortcut.
+        /// </summary>
+        public string? WorkingDirectory
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_WORKINGDIR);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_WORKINGDIR, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the hotkey for the Internet shortcut.
+        /// </summary>
+        public string? Hotkey
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                int? hotkeyValue = GetInt32Property(PID_IS.PID_IS_HOTKEY);
+                return hotkeyValue > 0 ? ShortcutHotkey.FromValue((ushort)hotkeyValue).ToString() : null;
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetInt32Property(PID_IS.PID_IS_HOTKEY, value is not null && !string.IsNullOrWhiteSpace(value)
+                    ? ShortcutHotkey.Parse(value).ToUInt16()
+                    : 0);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the show command value for the Internet shortcut.
+        /// </summary>
+        public int? ShowCommand
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetInt32Property(PID_IS.PID_IS_SHOWCMD);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetInt32Property(PID_IS.PID_IS_SHOWCMD, value);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the icon file path for the Internet shortcut.
         /// </summary>
         public string? IconFile
@@ -256,6 +327,91 @@ namespace PSADT.ShortcutManagement
                     throw new InvalidOperationException("Cannot set IconIndex to null when IconFile is set.");
                 }
                 SetInt32Property(PID_IS.PID_IS_ICONINDEX, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the What's New text for the Internet shortcut.
+        /// </summary>
+        public string? WhatsNew
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_WHATSNEW);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_WHATSNEW, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the author for the Internet shortcut.
+        /// </summary>
+        public string? Author
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_AUTHOR);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_AUTHOR, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the description for the Internet shortcut.
+        /// </summary>
+        public string? Description
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_DESCRIPTION);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_DESCRIPTION, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the comment for the Internet shortcut.
+        /// </summary>
+        public string? Comment
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetStringProperty(PID_IS.PID_IS_COMMENT);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(PID_IS.PID_IS_COMMENT, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Internet shortcut has roamed.
+        /// </summary>
+        public bool? Roamed
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return GetBooleanProperty(PID_IS.PID_IS_ROAMED);
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetBooleanProperty(PID_IS.PID_IS_ROAMED, value);
             }
         }
 
@@ -303,6 +459,97 @@ namespace PSADT.ShortcutManagement
                     };
                     _internetShortcut.InvokeCommand(in commandInfo);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets a boolean property value from the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <returns>The property value, or <see langword="null"/> if not set.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using if statements keeps type handling clearer here.")]
+        private bool? GetBooleanProperty(PID_IS propertyId)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.ReadMultiple([propertySpec], propertyValues);
+                    VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
+                    if (vt == VARENUM.VT_EMPTY)
+                    {
+                        return null;
+                    }
+                    if (vt == VARENUM.VT_BOOL)
+                    {
+                        return propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal != 0;
+                    }
+                    if (vt == VARENUM.VT_I4)
+                    {
+                        return propertyValues[0].Anonymous.Anonymous.Anonymous.lVal != 0;
+                    }
+                    if (vt == VARENUM.VT_UI4)
+                    {
+                        return propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal != 0;
+                    }
+                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.");
+                }
+                finally
+                {
+                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
+            }
+        }
+
+        /// <summary>
+        /// Sets a boolean property value in the Internet Shortcut property set.
+        /// </summary>
+        /// <param name="propertyId">The property ID.</param>
+        /// <param name="value">The property value.</param>
+        private void SetBooleanProperty(PID_IS propertyId, bool? value)
+        {
+            IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READWRITE);
+            try
+            {
+                PROPVARIANT[] propertyValues = [default];
+                try
+                {
+                    if (value.HasValue)
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_BOOL;
+                        propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal = new VARIANT_BOOL((short)(value.Value ? -1 : 0));
+                    }
+                    else
+                    {
+                        propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_EMPTY;
+                    }
+                    PROPSPEC propertySpec = new()
+                    {
+                        ulKind = PROPSPEC_KIND.PRSPEC_PROPID,
+                        Anonymous = new() { propid = (uint)propertyId }
+                    };
+                    propertyStorage.WriteMultiple([propertySpec], propertyValues, 2);
+                    propertyStorage.Commit(0);
+                }
+                finally
+                {
+                    _ = PInvoke.PropVariantClear(ref propertyValues[0]);
+                }
+            }
+            finally
+            {
+                _ = Marshal.FinalReleaseComObject(propertyStorage);
             }
         }
 
