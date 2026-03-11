@@ -85,7 +85,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the show command value for the internet shortcut.
         /// </summary>
-        public int? ShowCommand { get; }
+        public ShortcutWindowStyle? ShowCommand { get; }
 
         /// <summary>
         /// Gets the icon file path for the internet shortcut.

@@ -152,6 +152,7 @@ When working on the PowerShell module in VS Code:
 - **RemoveFontResource Input**: Do not pre-validate `RemoveFontResource` input with file existence checks; it can operate on file names and not necessarily full paths.
 - **Named Pipe Security**: Preserve strict named pipe security and reject solutions that weaken ACLs (e.g., creating pipes without explicit PipeSecurity).
 - **Unsafe Keyword Usage**: Use the `unsafe` keyword only on method declarations/prototypes if the method takes unsafe parameters (e.g., pointers). For methods that only use unsafe code internally, use an `unsafe` block inside the method body instead.
+- **Strong Typing Preference**: Use strong typing and consistency (e.g., enum-backed properties like `SHOW_WINDOW_CMD`) over primitive types when the domain has a well-defined type.
 
 ### File Modification Guidelines
 - **One Class Per File**: Each class should have its own dedicated file. Do not put multiple classes/records in a single file.

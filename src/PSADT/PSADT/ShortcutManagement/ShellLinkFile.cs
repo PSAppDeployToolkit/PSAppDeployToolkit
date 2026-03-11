@@ -318,15 +318,15 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the window show state for the shortcut's target.
         /// </summary>
-        /// <value>The <see cref="SHOW_WINDOW_CMD"/> value indicating how the window should be shown.</value>
+        /// <value>The <see cref="ShortcutWindowStyle"/> value indicating how the window should be shown.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public SHOW_WINDOW_CMD WindowStyle
+        public ShortcutWindowStyle WindowStyle
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 _shellLink.GetShowCmd(out Windows.Win32.UI.WindowsAndMessaging.SHOW_WINDOW_CMD showCmd);
-                return (SHOW_WINDOW_CMD)showCmd;
+                return (ShortcutWindowStyle)showCmd;
             }
             set
             {

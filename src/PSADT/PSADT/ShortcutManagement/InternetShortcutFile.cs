@@ -257,17 +257,17 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the show command value for the Internet shortcut.
         /// </summary>
-        public int? ShowCommand
+        public ShortcutWindowStyle? ShowCommand
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                return GetInt32Property(PID_IS.PID_IS_SHOWCMD);
+                return (ShortcutWindowStyle?)GetInt32Property(PID_IS.PID_IS_SHOWCMD);
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                SetInt32Property(PID_IS.PID_IS_SHOWCMD, value);
+                SetInt32Property(PID_IS.PID_IS_SHOWCMD, (int?)value);
             }
         }
 

@@ -131,7 +131,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the window show state for the shortcut target.
         /// </summary>
-        public SHOW_WINDOW_CMD WindowStyle { get; }
+        public ShortcutWindowStyle WindowStyle { get; }
 
         /// <summary>
         /// Gets the icon location for the shortcut.
