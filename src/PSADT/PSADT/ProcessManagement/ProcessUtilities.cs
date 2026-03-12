@@ -35,11 +35,10 @@ namespace PSADT.ProcessManagement
         /// must ensure that the provided process is valid and accessible.</remarks>
         /// <param name="process">The process for which to retrieve the parent process. Must not be null.</param>
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
-        public static Process? GetParentProcess(Process process)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Process GetParentProcess(Process process)
         {
-            ArgumentNullException.ThrowIfNull(process);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-            return GetParentProcess(hProcess);
+            return Process.GetProcessById(GetParentProcessId(process));
         }
 
         /// <summary>
@@ -48,11 +47,10 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The identifier of the process whose parent process is to be retrieved. Must correspond to a running process.</param>
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process. Returns <c>null</c>
         /// if the parent process cannot be determined.</returns>
-        public static Process? GetParentProcess(int processId)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Process GetParentProcess(int processId)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
-            return GetParentProcess(hProcess);
+            return Process.GetProcessById(GetParentProcessId(processId));
         }
 
         /// <summary>
@@ -61,10 +59,10 @@ namespace PSADT.ProcessManagement
         /// <remarks>The returned <see cref="Process"/> object should be disposed of by the caller when it
         /// is no longer needed.</remarks>
         /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
-        public static Process? GetParentProcess()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Process GetParentProcess()
         {
-            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
-            return GetParentProcess(hProcess);
+            return Process.GetProcessById(GetParentProcessId());
         }
 
         /// <summary>
@@ -79,29 +77,65 @@ namespace PSADT.ProcessManagement
         /// will be empty.</returns>
         public static IReadOnlyList<Process> GetParentProcesses()
         {
-            Process process = Process.GetCurrentProcess();
+            int processId = (int)PInvoke.GetCurrentProcessId();
             List<Process> processes = [];
+            List<int> processesIds = [];
             while (true)
             {
-                try
-                {
-                    if (GetParentProcess(process) is not Process current)
-                    {
-                        break;
-                    }
-                    if (processes.Contains(process = current))
-                    {
-                        break;
-                    }
-                    processes.Add(process);
-                }
-                catch
+                // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
+                if (processesIds.Contains(processId = GetParentProcessId(processId)))
                 {
                     break;
-                    throw;
+                }
+                processesIds.Add(processId);
+
+                // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
+                try
+                {
+                    processes.Add(Process.GetProcessById(processId));
+                }
+                catch (ArgumentException)
+                {
+                    break;
                 }
             }
             return processes.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Retrieves the process ID of the parent process for the specified process.
+        /// </summary>
+        /// <param name="process">The process for which to obtain the parent process ID. Cannot be null.</param>
+        /// <returns>The process ID of the parent process, or 0 if the parent process cannot be determined.</returns>
+        public static int GetParentProcessId(Process process)
+        {
+            ArgumentNullException.ThrowIfNull(process);
+            return GetParentProcessId(process.Id);
+        }
+
+        /// <summary>
+        /// Retrieves the process ID of the parent process for the specified process.
+        /// </summary>
+        /// <param name="processId">The process ID of the target process. Must be a positive integer.</param>
+        /// <returns>The process ID of the parent process, or 0 if the parent process cannot be determined.</returns>
+        public static int GetParentProcessId(int processId)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            return (int)GetParentProcessId(hProcess);
+        }
+
+        /// <summary>
+        /// Retrieves the process identifier (PID) of the parent process for the current process.
+        /// </summary>
+        /// <remarks>This method obtains the parent process ID of the currently executing process. Use
+        /// this to determine which process launched the current process, which can be useful for diagnostics or process
+        /// management scenarios.</remarks>
+        /// <returns>The process identifier of the parent process as an integer.</returns>
+        public static int GetParentProcessId()
+        {
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            return (int)GetParentProcessId(hProcess);
         }
 
         /// <summary>
@@ -243,21 +277,13 @@ namespace PSADT.ProcessManagement
         /// permissions.</remarks>
         /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose parent process is to be retrieved.
         /// The handle must have the necessary access rights to query process information.</param>
-        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
-        internal static Process? GetParentProcess(SafeHandle hProcess)
+        /// <returns>The process Id representing the parent process of the specified process.</returns>
+        internal static uint GetParentProcessId(SafeHandle hProcess)
         {
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
             _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
             ref readonly PROCESS_BASIC_INFORMATION pbi = ref buffer.AsReadOnlyStructure<PROCESS_BASIC_INFORMATION>();
-            try
-            {
-                return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
-            }
-            catch
-            {
-                return null;
-                throw;
-            }
+            return (uint)pbi.InheritedFromUniqueProcessId;
         }
 
         /// <summary>
