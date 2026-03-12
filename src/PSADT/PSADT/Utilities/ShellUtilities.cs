@@ -212,8 +212,7 @@ namespace PSADT.Utilities
         /// <exception cref="InvalidOperationException">Thrown if the user profiles directory path cannot be retrieved.</exception>
         internal static DirectoryInfo GetUserProfilesDirectory()
         {
-            Guid userProfilesFolderId = PInvoke.FOLDERID_UserProfiles;
-            _ = NativeMethods.SHGetKnownFolderPath(userProfilesFolderId, 0, null, out SafeCoTaskMemHandle ppszPath);
+            _ = NativeMethods.SHGetKnownFolderPath(in PInvoke.FOLDERID_UserProfiles, 0, null, out SafeCoTaskMemHandle ppszPath);
             using (ppszPath)
             {
                 return new(ppszPath.ToStringUni());
