@@ -279,7 +279,7 @@ function Set-ADTShortcut
                         }
                         if ($PSBoundParameters.ContainsKey('IconLocation'))
                         {
-                            $shortcut.IconFile = $IconLocation
+                            $shortcut.IconLocation = $IconLocation
                         }
                         if ($PSBoundParameters.ContainsKey('IconIndex'))
                         {
