@@ -205,7 +205,7 @@ namespace PSADT.Interop.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static FACILITY_CODE HRESULT_FACILITY(HRESULT hResult)
         {
-            return unchecked((FACILITY_CODE)(((uint)hResult >> 16) & 0x1FFFu));
+            return unchecked((FACILITY_CODE)(((uint)hResult.Value >> 16) & 0x1FFFu));
         }
 
         /// <summary>
