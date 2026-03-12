@@ -6,6 +6,8 @@ on:
 
 jobs:
   triage:
+    permissions:
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - name: "Remove 'Status: Needs Triage' if issue already has an assignee"
