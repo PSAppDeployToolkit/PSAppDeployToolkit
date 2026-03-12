@@ -225,9 +225,12 @@ namespace PSADT.ShortcutManagement
                 _shellLink.GetDescription(buffer);
                 return buffer.ToStringUni();
             }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => SetStringProperty(in PInvoke.PKEY_Link_Comment, value);
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(in PInvoke.PKEY_Link_Comment, value);
+                _shellLink.SetDescription(value);
+            }
         }
 
         /// <summary>
@@ -263,11 +266,23 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         public string? Arguments
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => GetStringProperty(in PInvoke.PKEY_Link_Arguments);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => SetStringProperty(in PInvoke.PKEY_Link_Arguments, value);
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                if (GetStringProperty(in PInvoke.PKEY_Link_Arguments) is string propertyValue)
+                {
+                    return propertyValue;
+                }
+                Span<char> buffer = stackalloc char[(int)PInvoke.INFOTIPSIZE]; buffer.Clear();
+                _shellLink.GetArguments(buffer);
+                return buffer.ToStringUni();
+            }
+            set
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                SetStringProperty(in PInvoke.PKEY_Link_Arguments, value);
+                _shellLink.SetArguments(value);
+            }
         }
 
         /// <summary>
