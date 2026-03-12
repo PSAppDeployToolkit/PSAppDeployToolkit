@@ -71,7 +71,7 @@ namespace PSADT.AccountManagement
             CallerIsLocalService = CallerSid.IsWellKnown(WellKnownSidType.LocalServiceSid);
             CallerIsNetworkService = CallerSid.IsWellKnown(WellKnownSidType.NetworkServiceSid);
             CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
-            CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
+            CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => !ProcessUtilities.HasProcessExited(p) && p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
 
             // Generate a RunAsActiveUser object for the current user.
             CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
