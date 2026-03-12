@@ -144,7 +144,14 @@ function Write-ADTLogEntry
         # Return early if we have no messages to write out.
         if (!$messages.Count)
         {
-            return
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The function received no messages to log. This should never occur.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'WriteLogEntryNoMessagesReceived'
+                TargetObject = $messages
+                RecommendedAction = "Please review the provided input and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
         # If we don't have an active session, write the message to the verbose stream (4).
