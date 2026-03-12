@@ -35,7 +35,7 @@ jobs:
     # actions/setup-dotnet caching is unwieldy with multiple projects
     # https://github.com/NuGet/Home/issues/12409
     - name: Cache NuGet packages
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ${{ env.NUGET_PACKAGES }}
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
