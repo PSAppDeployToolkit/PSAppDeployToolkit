@@ -50,8 +50,9 @@ namespace PSADT.ProcessManagement
         /// if the parent process cannot be determined.</returns>
         public static Process? GetParentProcess(int processId)
         {
-            using Process process = Process.GetProcessById(processId);
-            return GetParentProcess(process);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            return GetParentProcess(hProcess);
         }
 
         /// <summary>
@@ -116,7 +117,7 @@ namespace PSADT.ProcessManagement
         public static bool HasProcessExited(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);
-            return HasProcessExited((uint)process.Id);
+            return HasProcessExited(process.Id);
         }
 
         /// <summary>
@@ -127,10 +128,19 @@ namespace PSADT.ProcessManagement
         /// results.</remarks>
         /// <param name="processId">The identifier of the process to check. Must be a valid process ID.</param>
         /// <returns>true if the process has exited; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasProcessExited(int processId)
         {
-            return HasProcessExited((uint)processId);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            try
+            {
+                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+                return NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode) && exitCode != NTSTATUS.STATUS_PENDING;
+            }
+            catch
+            {
+                return true;
+                throw;
+            }
         }
 
         /// <summary>
@@ -146,7 +156,7 @@ namespace PSADT.ProcessManagement
         public static SecurityIdentifier GetProcessSid(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);
-            return GetProcessSid((uint)process.Id);
+            return GetProcessSid(process.Id);
         }
 
         /// <summary>
@@ -156,34 +166,29 @@ namespace PSADT.ProcessManagement
         /// and queries the process token to retrieve the user SID.</remarks>
         /// <param name="processId">The identifier of the process for which to retrieve the SID. Must be a valid process ID.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static SecurityIdentifier GetProcessSid(int processId)
         {
-            return GetProcessSid((uint)processId);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
+            using (hToken)
+            {
+                return TokenUtilities.GetTokenSid(hToken);
+            }
         }
 
         /// <summary>
-        /// Retrieves the full command-line string used to start the specified process.
+        /// Retrieves the command-line string used to start the process with the specified process ID.
         /// </summary>
-        /// <remarks>This method requires that the caller has sufficient permissions to query information
-        /// about the target process. If the process has already exited or access is denied, the returned string may be
-        /// empty.</remarks>
-        /// <param name="process">The process for which to obtain the command-line arguments. Must not be null.</param>
-        /// <returns>A string containing the complete command-line used to launch the specified process. Returns an empty string
-        /// if the command-line cannot be retrieved.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
+        /// <remarks>This method may require elevated permissions to access information about certain
+        /// processes. If the process has already exited or access is denied, the result may be null.</remarks>
+        /// <param name="process">The process whose command-line arguments are to be retrieved. Must not be null.</param>
+        /// <returns>A string containing the full command-line used to start the specified process, or null if the command-line
+        /// cannot be determined.</returns>
         public static string GetProcessCommandLine(Process process)
         {
-            // Open the process's handle with the relevant access rights and get the required length we need for the buffer.
             ArgumentNullException.ThrowIfNull(process);
-            using SafeFileHandle hProc = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-            _ = NativeMethods.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
-
-            // Fill the buffer, then retrieve the actual command line string.
-            Span<byte> buffer = stackalloc byte[(int)requiredLength];
-            _ = NativeMethods.NtQueryInformationProcess(hProc, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
-            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString();
+            return GetProcessCommandLine(process.Id);
         }
 
         /// <summary>
@@ -197,8 +202,9 @@ namespace PSADT.ProcessManagement
         /// cannot be determined.</returns>
         public static string GetProcessCommandLine(int processId)
         {
-            using Process process = Process.GetProcessById(processId);
-            return GetProcessCommandLine(process);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            return GetProcessCommandLine(hProcess);
         }
 
         /// <summary>
@@ -223,9 +229,9 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The unique identifier of the process whose image file name is to be retrieved. Must refer to a running
         /// process.</param>
         /// <returns>A string containing the full path to the executable file of the specified process.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FileInfo GetProcessImageName(int processId)
         {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
             return GetProcessImageName((uint)processId);
         }
 
@@ -255,42 +261,24 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Determines whether the process with the specified identifier has exited using minimal privileges.
+        /// Retrieves the full command-line string used to start the specified process.
         /// </summary>
-        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
-        /// and checks the exit code to determine if the process is still running. A process is considered
-        /// to have exited if <c>GetExitCodeProcess</c> returns an exit code other than <c>STATUS_PENDING</c> (259).</remarks>
-        /// <param name="processId">The unique identifier of the process to check.</param>
-        /// <returns><see langword="true"/> if the process has exited or cannot be opened; otherwise, <see langword="false"/>.</returns>
-        internal static bool HasProcessExited(uint processId)
+        /// <remarks>This method requires that the caller has sufficient permissions to query information
+        /// about the target process. If the process has already exited or access is denied, the returned string may be
+        /// empty.</remarks>
+        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose command-line arguments are to be retrieved.</param>
+        /// <returns>A string containing the complete command-line used to launch the specified process. Returns an empty string
+        /// if the command-line cannot be retrieved.</returns>
+        internal static string GetProcessCommandLine(SafeHandle hProcess)
         {
-            try
-            {
-                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
-                return NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode) && exitCode != NTSTATUS.STATUS_PENDING;
-            }
-            catch
-            {
-                return true;
-                throw;
-            }
-        }
+            // Get the required length we need for the buffer.
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
 
-        /// <summary>
-        /// Retrieves the security identifier (SID) of the user associated with the specified process.
-        /// </summary>
-        /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
-        /// and queries the process token with <c>TOKEN_QUERY</c> to retrieve the user SID.</remarks>
-        /// <param name="processId">The unique identifier of the process for which to retrieve the SID.</param>
-        /// <returns>A <see cref="SecurityIdentifier"/> representing the user SID of the process owner.</returns>
-        internal static SecurityIdentifier GetProcessSid(uint processId)
-        {
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
-            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
-            using (hToken)
-            {
-                return TokenUtilities.GetTokenSid(hToken);
-            }
+            // Allocate the buffer, then retrieve the actual command line string.
+            Span<byte> buffer = stackalloc byte[(int)requiredLength];
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
+            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
+            return unicodeString.ToManagedString();
         }
 
         /// <summary>
@@ -384,9 +372,9 @@ namespace PSADT.ProcessManagement
         /// the method used and system configuration.</returns>
         /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
         /// of each failure encountered during the retrieval attempts.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static FileInfo GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
             return GetProcessImageName((uint)processId, ntPathLookupTable);
         }
 
