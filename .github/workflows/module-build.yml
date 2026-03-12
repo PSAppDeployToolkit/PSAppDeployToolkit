@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Check out repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # https://github.com/actions/checkout/releases/tag/v6.0.2
 
     - name: Display the path
       shell: powershell
@@ -35,7 +35,7 @@ jobs:
     # actions/setup-dotnet caching is unwieldy with multiple projects
     # https://github.com/NuGet/Home/issues/12409
     - name: Cache NuGet packages
-      uses: actions/cache@v5
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # https://github.com/actions/cache/releases/tag/v5.0.3
       with:
         path: ${{ env.NUGET_PACKAGES }}
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -43,7 +43,7 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Cache PowerShell modules
-      uses: potatoqualitee/psmodulecache@v6.2.1
+      uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8  # https://github.com/potatoqualitee/psmodulecache/releases/tag/v6.2.1
       with:
         modules-to-cache: PSScriptAnalyzer:1.24.0, Pester:5.7.1, platyPS:0.14.2, Alt3.Docusaurus.Powershell:1.0.37
         shell: powershell
@@ -58,7 +58,7 @@ jobs:
 
     - name: Azure Login
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/4.1.x'
-      uses: azure/login@v2
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # https://github.com/Azure/login/releases/tag/v2.3.0
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -78,7 +78,7 @@ jobs:
         & (Import-Module -Name .\src\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Export-ADTScriptTemplate', 'Compress-ADTBuildAssetContent' }
 
     - name: Upload module
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
       with:
         path: ${{ steps.exports.outputs.ModuleOnly }}
         if-no-files-found: error
@@ -86,7 +86,7 @@ jobs:
         archive: false
 
     - name: Upload v3 module template
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
       with:
         path: ${{ steps.exports.outputs.Template_v3 }}
         if-no-files-found: error
@@ -94,7 +94,7 @@ jobs:
         archive: false
 
     - name: Upload v4 module template
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
       with:
         path: ${{ steps.exports.outputs.Template_v4 }}
         if-no-files-found: error
@@ -102,7 +102,7 @@ jobs:
         archive: false
 
     - name: Upload pester results
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
       with:
         path: .\src\Artifacts\TestOutput\PesterTests.xml
         if-no-files-found: error
@@ -110,7 +110,7 @@ jobs:
         archive: false
 
     - name: Upload code coverage results
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
       with:
         path: .\src\Artifacts\CodeCoverage\CodeCoverage.xml
         if-no-files-found: error
