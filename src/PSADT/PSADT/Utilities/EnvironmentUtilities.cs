@@ -27,10 +27,11 @@ namespace PSADT.Utilities
         /// <param name="variable">The name of the environment variable to retrieve. Cannot be null.</param>
         /// <returns>The value of the environment variable specified by <paramref name="variable"/> if found; otherwise, <see
         /// langword="null"/>.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? GetEnvironmentVariable(string variable)
         {
-            return Environment.GetEnvironmentVariable(variable);
+            return Environment.GetEnvironmentVariable(variable) is string value && !string.IsNullOrWhiteSpace(value) ? value : null;
         }
 
         /// <summary>
@@ -44,10 +45,11 @@ namespace PSADT.Utilities
         /// the current process, user, or machine.</param>
         /// <returns>The value of the environment variable specified by <paramref name="variable"/> from the given <paramref
         /// name="target"/>. Returns null if the environment variable is not found.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string? GetEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
-            return Environment.GetEnvironmentVariable(variable, target);
+            return Environment.GetEnvironmentVariable(variable, target) is string value && !string.IsNullOrWhiteSpace(value) ? value : null;
         }
 
         /// <summary>

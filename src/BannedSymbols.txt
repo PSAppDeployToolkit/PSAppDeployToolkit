@@ -1,3 +1,5 @@
 ﻿M:System.String.IsNullOrEmpty(System.String);Use string.IsNullOrWhiteSpace() instead.
 M:System.Runtime.InteropServices.Marshal.GetLastWin32Error();Use ExceptionUtilities.GetLastWin32Error() instead.
 M:Windows.Win32.Foundation.HRESULT.ThrowOnFailure(System.IntPtr);Use ExceptionUtilities.GetException() instead.
+M:System.Environment.GetEnvironmentVariable(System.String);Use EnvironmentUtilities.GetEnvironmentVariable(System.String) instead.
+M:System.Environment.GetEnvironmentVariable(System.String,System.EnvironmentVariableTarget);Use EnvironmentUtilities.GetEnvironmentVariable(System.String,System.EnvironmentVariableTarget) instead.

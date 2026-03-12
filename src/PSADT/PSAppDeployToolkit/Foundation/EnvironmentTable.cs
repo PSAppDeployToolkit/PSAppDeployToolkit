@@ -90,7 +90,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Determine the logon server.
-                if (Environment.GetEnvironmentVariable("LOGONSERVER") is string logonServer && !string.IsNullOrWhiteSpace(logonServer) && !logonServer.Contains("\\\\MicrosoftAccount"))
+                if (EnvironmentUtilities.GetEnvironmentVariable("LOGONSERVER") is string logonServer && !logonServer.Contains("\\\\MicrosoftAccount"))
                 {
                     try
                     {
@@ -232,8 +232,8 @@ namespace PSAppDeployToolkit.Foundation
                 RunAsActiveUser = RunAsActiveUser.Get(LoggedOnUserSessions);
                 if (RunAsActiveUser is not null)
                 {
-                    RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName ? new(localeName) : null;
-                    RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", null) is string runAsUserProfile ? new(runAsUserProfile) : null;
+                    RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName && !string.IsNullOrWhiteSpace(localeName) ? new(localeName) : null;
+                    RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", null) is string runAsUserProfile && !string.IsNullOrWhiteSpace(runAsUserProfile) ? new(runAsUserProfile) : null;
                     UserProfileName = RunAsUserProfile?.Name;
                 }
             }
@@ -354,7 +354,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides information about the system architecture, which can be useful
         /// for determining compatibility and performance characteristics. It may return null if the architecture is not
         /// specified.</remarks>
-        public string? EnvArchitecture { get; } = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+        public string? EnvArchitecture { get; } = EnvironmentUtilities.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
 
         /// <summary>
         /// Gets the full path to the common desktop folder that is shared by all users on the system.
@@ -403,7 +403,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property may return null if the home drive is not set in the environment. It is
         /// typically used to determine where user-specific files should be stored or accessed.</remarks>
-        public DriveInfo? EnvHomeDrive { get; } = Environment.GetEnvironmentVariable("HOMEDRIVE") is string homeDrive ? new(homeDrive) : null;
+        public DriveInfo? EnvHomeDrive { get; } = EnvironmentUtilities.GetEnvironmentVariable("HOMEDRIVE") is string homeDrive ? new(homeDrive) : null;
 
         /// <summary>
         /// Gets the environment home path, which specifies the directory used for storing environment-specific files.
@@ -589,7 +589,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property determines if a Deployr task sequence is active by checking for the
         /// presence of the "DEPLOYR_PROCESS" environment variable. Use this property to detect whether
         /// deployment-related operations are in progress within the current process context.</remarks>
-        public bool RunningDeployrTaskSequence { get; } = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DEPLOYR_PROCESS"));
+        public bool RunningDeployrTaskSequence { get; } = !string.IsNullOrWhiteSpace(EnvironmentUtilities.GetEnvironmentVariable("DEPLOYR_PROCESS"));
 
         /// <summary>
         /// Gets a value indicating whether the machine is joined to a domain.
@@ -634,7 +634,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the value of the USERDNSDOMAIN environment variable and
         /// converts it to lowercase using the invariant culture. It returns null if the environment variable is not set
         /// or is empty.</remarks>
-        public string? EnvUserDNSDomain { get; } = Environment.GetEnvironmentVariable("USERDNSDOMAIN") is string userDnsDomain && !string.IsNullOrWhiteSpace(userDnsDomain) ? CultureInfo.InvariantCulture.TextInfo.ToLower(userDnsDomain) : null;
+        public string? EnvUserDNSDomain { get; } = EnvironmentUtilities.GetEnvironmentVariable("USERDNSDOMAIN") is string userDnsDomain && !string.IsNullOrWhiteSpace(userDnsDomain) ? CultureInfo.InvariantCulture.TextInfo.ToLower(userDnsDomain) : null;
 
         /// <summary>
         /// Gets the domain name of the user currently logged into the environment, represented in uppercase.
@@ -1149,7 +1149,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the default user profile path from the Windows registry at
         /// HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList. If the registry value is not
         /// found, the property returns null.</remarks>
-        public DirectoryInfo? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", null) is string defaultProfilePath ? new(defaultProfilePath) : null;
+        public DirectoryInfo? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", null) is string defaultProfilePath && !string.IsNullOrWhiteSpace(defaultProfilePath) ? new(defaultProfilePath) : null;
 
         /// <summary>
         /// Gets a read-only collection of characters that are invalid in file names.
@@ -1208,7 +1208,7 @@ namespace PSAppDeployToolkit.Foundation
         /// null.</returns>
         private static DirectoryInfo? GetEnvironmentVariableDirectory(string variableName)
         {
-            string? variableValue = Environment.GetEnvironmentVariable(variableName);
+            string? variableValue = EnvironmentUtilities.GetEnvironmentVariable(variableName);
             return !string.IsNullOrWhiteSpace(variableValue)
                 ? new(variableValue)
                 : null;

@@ -212,6 +212,7 @@ namespace PSADT.Invoke
         /// <exception cref="ArgumentException">Thrown if both "/32" and "/Core" arguments are present in <paramref name="cliArguments"/>, as this
         /// combination is not supported.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the "/Core" argument is specified but PowerShell Core is not found on the system.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "It's OK here as we don't have access to our library.")]
         private static string GetPowerShellPath(List<string> cliArguments)
         {
             // Confirm /32 and /Core both haven't been passed as it's not supported.
