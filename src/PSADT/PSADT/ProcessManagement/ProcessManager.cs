@@ -279,7 +279,6 @@ namespace PSADT.ProcessManagement
                     StartInfo = new()
                     {
                         FileName = launchInfo.FilePath,
-                        WorkingDirectory = launchInfo.WorkingDirectory?.FullName,
                         UseShellExecute = launchInfo.UseShellExecute,
                     }
                 };
