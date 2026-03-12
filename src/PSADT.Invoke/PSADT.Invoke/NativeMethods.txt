@@ -1,7 +1,9 @@
 ﻿AllocConsole
 FreeConsole
 GetConsoleWindow
+GetCurrentProcessId
 NtQueryInformationProcess
+OpenProcess
 PROCESS_BASIC_INFORMATION
 RtlNtStatusToDosError
 STATUS_SUCCESS

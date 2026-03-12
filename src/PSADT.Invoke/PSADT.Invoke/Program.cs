@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+using Windows.Win32;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.Invoke
@@ -333,41 +335,34 @@ namespace PSADT.Invoke
         private static ReadOnlyCollection<Process> GetParentProcesses()
         {
             // Internal method to get the parent process of a given process.
-            static Process? GetParentProcess(Process proc)
+            static int GetParentProcessId(int processId)
             {
-                _ = NativeMethods.NtQueryInformationProcess(proc.SafeHandle, out PROCESS_BASIC_INFORMATION pbi);
-                try
-                {
-                    return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
-                }
-                catch
-                {
-                    return null;
-                    throw;
-                }
+                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+                _ = NativeMethods.NtQueryInformationProcess(hProcess, out PROCESS_BASIC_INFORMATION pbi);
+                return (int)pbi.InheritedFromUniqueProcessId;
             }
 
             // Build a list of parent processes and return it to the caller.
-            Process process = Process.GetCurrentProcess();
+            int processId = (int)PInvoke.GetCurrentProcessId();
             List<Process> processes = [];
+            List<int> processesIds = [];
             while (true)
             {
-                try
-                {
-                    if (GetParentProcess(process) is not Process current)
-                    {
-                        break;
-                    }
-                    if (processes.Contains(process = current))
-                    {
-                        break;
-                    }
-                    processes.Add(process);
-                }
-                catch
+                // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
+                if (processesIds.Contains(processId = GetParentProcessId(processId)))
                 {
                     break;
-                    throw;
+                }
+                processesIds.Add(processId);
+
+                // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
+                try
+                {
+                    processes.Add(Process.GetProcessById(processId));
+                }
+                catch (ArgumentException)
+                {
+                    break;
                 }
             }
             return processes.AsReadOnly();

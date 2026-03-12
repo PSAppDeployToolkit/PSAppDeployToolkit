@@ -22,7 +22,7 @@ namespace PSADT.Invoke
         /// <returns>An NTSTATUS code indicating the result of the operation. A value of 0 indicates success.</returns>
         /// <exception cref="Win32Exception">Thrown if the underlying NtQueryInformationProcess call fails. The exception's error code corresponds to the
         /// converted NTSTATUS value.</exception>
-        internal static int NtQueryInformationProcess(SafeProcessHandle ProcessHandle, out PROCESS_BASIC_INFORMATION ProcessBasicInformation)
+        internal static int NtQueryInformationProcess(SafeHandle ProcessHandle, out PROCESS_BASIC_INFORMATION ProcessBasicInformation)
         {
             uint ReturnLengthLocal = 0; NTSTATUS res;
             bool ProcessHandleAddRef = false;
@@ -45,6 +45,25 @@ namespace PSADT.Invoke
                 }
             }
             return res != NTSTATUS.STATUS_SUCCESS ? throw new Win32Exception((int)Windows.Win32.PInvoke.RtlNtStatusToDosError(res)) : (int)res;
+        }
+
+        /// <summary>
+        /// Opens an existing local process object and returns a handle with the specified access rights.
+        /// </summary>
+        /// <remarks>If the process cannot be opened, an exception is thrown. The returned handle grants
+        /// the access rights specified by <paramref name="dwDesiredAccess"/>. This method is intended for advanced
+        /// scenarios that require direct process handle manipulation.</remarks>
+        /// <param name="dwDesiredAccess">A combination of process access rights indicating the requested access to the process object. This
+        /// determines the permitted operations on the returned handle.</param>
+        /// <param name="bInheritHandle">A value that determines whether the returned handle can be inherited by child processes. Specify <see
+        /// langword="true"/> to allow handle inheritance; otherwise, <see langword="false"/>.</param>
+        /// <param name="dwProcessId">The identifier of the local process to open. This must be the process ID of an existing process.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the opened process handle. The caller is responsible for
+        /// releasing the handle when it is no longer needed.</returns>
+        internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
+        {
+            SafeFileHandle res = Windows.Win32.PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
+            return res.IsInvalid ? throw new Win32Exception() : res;
         }
 
         /// <summary>
@@ -74,7 +93,7 @@ namespace PSADT.Invoke
         internal static HWND GetConsoleWindow()
         {
             HWND res = Windows.Win32.PInvoke.GetConsoleWindow();
-            return res.IsNull ? throw new Win32Exception("Failed to get a handle for the console window.") : res;
+            return res.IsNull ? throw new Win32Exception(6) : res;
         }
 
         /// <summary>
