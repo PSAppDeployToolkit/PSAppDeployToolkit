@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using PSADT.Invoke.Utilities;
+using Windows.Win32.System.Threading;
 
 namespace PSADT.Invoke
 {
@@ -247,7 +248,7 @@ namespace PSADT.Invoke
             // If the PowerShell mode hasn't been explicitly specified, override it if PowerShell Core (7) is a parent process.
             if (pwshExecutablePath == pwshDefaultPath)
             {
-                foreach (Process parentProcess in ProcessUtilities.GetParentProcesses())
+                foreach (Process parentProcess in GetParentProcesses())
                 {
                     if (parentProcess.ProcessName == "pwsh")
                     {
@@ -318,6 +319,58 @@ namespace PSADT.Invoke
 
             // Return the full arguments we give to PowerShell.exe (Note that we use -Command resolve issues with WDAC and Constrained Language Mode).
             return $"{pwshDefaultArgs} -Command \"try {{ & '{adtFrontendPath}'{(cliArguments.Count > 0 ? $" {string.Join(" ", cliArguments)}" : null)} }} catch {{ throw }}; exit $Global:LASTEXITCODE\"";
+        }
+
+        /// <summary>
+        /// Retrieves a read-only collection containing the parent processes of the current process, ordered from
+        /// immediate parent up the process hierarchy.
+        /// </summary>
+        /// <remarks>The returned collection does not include the current process itself. The order of the
+        /// collection starts with the immediate parent and proceeds up the process tree. If a parent process cannot be
+        /// accessed or does not exist, the collection may be truncated.</remarks>
+        /// <returns>A read-only collection of <see cref="Process"/> objects representing the parent processes
+        /// of the current process. The collection is empty if no parent processes can be determined.</returns>
+        private static ReadOnlyCollection<Process> GetParentProcesses()
+        {
+            // Internal method to get the parent process of a given process.
+            static Process? GetParentProcess(Process proc)
+            {
+                _ = NativeMethods.NtQueryInformationProcess(proc.SafeHandle, out PROCESS_BASIC_INFORMATION pbi);
+                try
+                {
+                    return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+                }
+                catch
+                {
+                    return null;
+                    throw;
+                }
+            }
+
+            // Build a list of parent processes and return it to the caller.
+            Process process = Process.GetCurrentProcess();
+            List<Process> processes = [];
+            while (true)
+            {
+                try
+                {
+                    if (GetParentProcess(process) is not Process current)
+                    {
+                        break;
+                    }
+                    if (processes.Contains(process = current))
+                    {
+                        break;
+                    }
+                    processes.Add(process);
+                }
+                catch
+                {
+                    break;
+                    throw;
+                }
+            }
+            return processes.AsReadOnly();
         }
 
         /// <summary>
