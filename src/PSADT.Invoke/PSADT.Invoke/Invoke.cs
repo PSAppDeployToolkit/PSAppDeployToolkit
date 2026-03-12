@@ -4,7 +4,6 @@ using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using PSADT.Invoke.LibraryInterfaces;
 using PSADT.Invoke.Utilities;
 
 namespace PSADT.Invoke
@@ -168,7 +167,7 @@ namespace PSADT.Invoke
             {
                 if (!inDebugMode && Environment.UserInteractive)
                 {
-                    inDebugMode = Kernel32.AllocConsole();
+                    inDebugMode = NativeMethods.AllocConsole();
                 }
                 _ = cliArguments.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
             }
@@ -185,8 +184,8 @@ namespace PSADT.Invoke
             Console.WriteLine("\nPress any key to exit...");
             try
             {
-                _ = Kernel32.GetConsoleWindow(); _ = Console.ReadKey();
-                _ = Kernel32.FreeConsole();
+                _ = NativeMethods.GetConsoleWindow(); _ = Console.ReadKey();
+                _ = NativeMethods.FreeConsole();
             }
             catch
             {

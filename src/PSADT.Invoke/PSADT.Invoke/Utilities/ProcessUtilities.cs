@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using PSADT.Invoke.LibraryInterfaces;
 using Windows.Win32.System.Threading;
 
 namespace PSADT.Invoke.Utilities
@@ -25,7 +24,7 @@ namespace PSADT.Invoke.Utilities
             // Internal method to get the parent process of a given process.
             static Process? GetParentProcess(Process proc)
             {
-                _ = NtDll.NtQueryInformationProcess(proc.SafeHandle, out PROCESS_BASIC_INFORMATION pbi);
+                _ = NativeMethods.NtQueryInformationProcess(proc.SafeHandle, out PROCESS_BASIC_INFORMATION pbi);
                 try
                 {
                     return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
