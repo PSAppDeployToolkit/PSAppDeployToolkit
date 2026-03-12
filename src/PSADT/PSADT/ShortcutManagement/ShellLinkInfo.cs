@@ -105,7 +105,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the target path of the shortcut.
         /// </summary>
-        public FileInfo? TargetPath { get; }
+        public string? TargetPath { get; }
 
         /// <summary>
         /// Gets the description of the shortcut.
@@ -115,7 +115,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the working directory for the shortcut target.
         /// </summary>
-        public DirectoryInfo? WorkingDirectory { get; }
+        public string? WorkingDirectory { get; }
 
         /// <summary>
         /// Gets the command-line arguments for the shortcut target.

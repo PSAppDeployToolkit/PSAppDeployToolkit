@@ -80,7 +80,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the working directory for the internet shortcut.
         /// </summary>
-        public DirectoryInfo? WorkingDirectory { get; }
+        public string? WorkingDirectory { get; }
 
         /// <summary>
         /// Gets the hotkey for the internet shortcut.

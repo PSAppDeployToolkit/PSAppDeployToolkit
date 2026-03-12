@@ -54,7 +54,7 @@ namespace PSADT.ShortcutManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ShellLinkFile Create(string targetPath)
         {
-            return new() { TargetPath = new(targetPath) };
+            return new() { TargetPath = targetPath };
         }
 
         /// <summary>
@@ -183,21 +183,19 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the target file or folder that the shortcut points to.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public FileInfo? TargetPath
+        public string? TargetPath
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_UNCPRIORITY);
-                return buffer.ToStringUni() is string targetPath
-                    ? new(targetPath)
-                    : null;
+                return buffer.ToStringUni();
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetPath(value?.FullName);
+                _shellLink.SetPath(value);
             }
         }
 
@@ -237,21 +235,19 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The working directory path that will be set when the shortcut is activated.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public DirectoryInfo? WorkingDirectory
+        public string? WorkingDirectory
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
                 _shellLink.GetWorkingDirectory(buffer);
-                return buffer.ToStringUni() is string directoryInfo
-                    ? new(directoryInfo)
-                    : null;
+                return buffer.ToStringUni();
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _shellLink.SetWorkingDirectory(value?.FullName);
+                _shellLink.SetWorkingDirectory(value);
             }
         }
 
