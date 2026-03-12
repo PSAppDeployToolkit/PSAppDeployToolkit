@@ -95,7 +95,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the icon file path for the internet shortcut.
         /// </summary>
-        public Uri? IconFile { get; }
+        public string? IconFile { get; }
 
         /// <summary>
         /// Gets the icon index for the internet shortcut.

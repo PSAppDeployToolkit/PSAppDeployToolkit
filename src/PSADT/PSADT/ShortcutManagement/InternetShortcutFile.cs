@@ -272,19 +272,19 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the icon file path for the Internet shortcut.
         /// </summary>
-        public Uri? IconFile
+        public string? IconFile
         {
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
                 return GetStringProperty(PID_IS.PID_IS_ICONFILE) is string iconFile
-                    ? new(iconFile)
+                    ? iconFile
                     : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                SetStringProperty(PID_IS.PID_IS_ICONFILE, value?.AbsolutePath);
+                SetStringProperty(PID_IS.PID_IS_ICONFILE, value);
             }
         }
 
