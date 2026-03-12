@@ -36,14 +36,14 @@ function Start-ADTProcessAsUser
     .PARAMETER UseHighestAvailableToken
         Use a user's linked administrative token if it's available while running the process under their context.
 
+    .PARAMETER DenyUserTermination
+        Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
+
     .PARAMETER InheritEnvironmentVariables
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
-
-    .PARAMETER DenyUserTermination
-        Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
 
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
@@ -197,13 +197,13 @@ function Start-ADTProcessAsUser
         [System.Management.Automation.SwitchParameter]$UseHighestAvailableToken,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$DenyUserTermination,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]

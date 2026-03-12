@@ -36,14 +36,17 @@ function Start-ADTProcess
     .PARAMETER UseHighestAvailableToken
         Use a user's linked administrative token if it's available while running the process under their context.
 
-    .PARAMETER InheritEnvironmentVariables
-        Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
-
     .PARAMETER DenyUserTermination
         Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
 
+    .PARAMETER InheritEnvironmentVariables
+        Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
+
     .PARAMETER UseUnelevatedToken
         If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
+
+    .PARAMETER ExpandEnvironmentVariables
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
     .PARAMETER UseShellExecute
         Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
@@ -56,9 +59,6 @@ function Start-ADTProcess
 
     .PARAMETER Verb
         The verb to use when doing a ShellExecute invocation. Common usages are "runas" to trigger a UAC elevation of the process.
-
-    .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
@@ -257,7 +257,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
-        [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
+        [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
@@ -268,7 +268,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
-        [System.Management.Automation.SwitchParameter]$DenyUserTermination,
+        [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
@@ -280,6 +280,9 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseUnelevatedToken,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         # Identity: UseShellExecute (only present in sets where identity is "UseShellExecute")
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
@@ -304,9 +307,6 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Verb,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]
