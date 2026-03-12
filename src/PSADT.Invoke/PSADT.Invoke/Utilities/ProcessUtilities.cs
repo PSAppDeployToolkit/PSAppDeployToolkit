@@ -23,24 +23,36 @@ namespace PSADT.Invoke.Utilities
         internal static ReadOnlyCollection<Process> GetParentProcesses()
         {
             // Internal method to get the parent process of a given process.
-            static Process GetParentProcess(Process proc)
+            static Process? GetParentProcess(Process proc)
             {
                 _ = NtDll.NtQueryInformationProcess(proc.SafeHandle, out PROCESS_BASIC_INFORMATION pbi);
-                return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+                try
+                {
+                    return Process.GetProcessById((int)pbi.InheritedFromUniqueProcessId);
+                }
+                catch
+                {
+                    return null;
+                    throw;
+                }
             }
 
             // Build a list of parent processes and return it to the caller.
-            Process proc = Process.GetCurrentProcess();
-            List<Process> procs = [];
+            Process process = Process.GetCurrentProcess();
+            List<Process> processes = [];
             while (true)
             {
                 try
                 {
-                    if (procs.Contains(proc = GetParentProcess(proc)))
+                    if (GetParentProcess(process) is not Process current)
                     {
                         break;
                     }
-                    procs.Add(proc);
+                    if (processes.Contains(process = current))
+                    {
+                        break;
+                    }
+                    processes.Add(process);
                 }
                 catch
                 {
@@ -48,7 +60,7 @@ namespace PSADT.Invoke.Utilities
                     throw;
                 }
             }
-            return procs.AsReadOnly();
+            return processes.AsReadOnly();
         }
     }
 }
