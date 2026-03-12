@@ -70,7 +70,7 @@ namespace PSADT.Interop.Extensions
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             unsafe
             {
-                return new ReadOnlySpan<char>((char*)handle, length).TrimEndNullAndTrim();
+                return new ReadOnlySpan<char>((char*)handle, length).TrimRemoveEndNull();
             }
         }
 

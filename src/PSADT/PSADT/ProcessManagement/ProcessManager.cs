@@ -186,7 +186,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Handle user process creation, otherwise just create the process for the running user.
-                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan = launchInfo.MakeCommandLine().ToCharArray();
+                    PROCESS_INFORMATION pi = new(); Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
                     if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
@@ -232,7 +232,7 @@ namespace PSADT.ProcessManagement
                     // Start tracking the process and allow it to resume execution.
                     process = GetProcessFromId((processId = pi.dwProcessId).Value);
                     using SafeThreadHandle hThread = new(pi.hThread, true);
-                    commandLine = commandSpan.TrimEndNullAndTrim().ToString();
+                    commandLine = commandSpan.ToString();
 #pragma warning disable CA2000 // Dispose objects before losing scope
                     hProcess = new(pi.hProcess, true);
 #pragma warning restore CA2000 // Dispose objects before losing scope

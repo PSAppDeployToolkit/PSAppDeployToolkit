@@ -402,25 +402,35 @@ namespace PSADT.ProcessManagement
         public readonly IMAGE_SUBSYSTEM ImageSubsystem;
 
         /// <summary>
+        /// Generates the command-line string representation for the current configuration.
+        /// </summary>
+        /// <remarks>This method uses default options when generating the command-line. To customize the
+        /// output, use the overload that accepts parameters.</remarks>
+        /// <returns>A string containing the command-line arguments constructed from the current settings.</returns>
+        public string MakeCommandLine()
+        {
+            return MakeCommandLine(false);
+        }
+
+        /// <summary>
+        /// Creates a command-line string for the process, optionally appending a null terminator.
+        /// </summary>
+        /// <param name="nullTerminated">Specifies whether the resulting command-line string should be null-terminated. Set to <see langword="true"/>
+        /// to append a null character at the end; otherwise, <see langword="false"/>.</param>
+        /// <returns>A string containing the command-line representation of the process, including the file path and any
+        /// arguments. If <paramref name="nullTerminated"/> is <see langword="true"/>, the string will end with a null
+        /// character.</returns>
+        internal string MakeCommandLine(bool nullTerminated)
+        {
+            return $"\"{FilePath}\"{(!string.IsNullOrWhiteSpace(Arguments) ? $" {Arguments}" : null)}{(nullTerminated ? '\0' : null)}";
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the application is a command-line interface (CLI) application.
         /// </summary>
         internal bool IsCliApplication()
         {
             return ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
-        }
-
-        /// <summary>
-        /// Generates a command line string from the specified file path and argument list, formatted as a
-        /// null-terminated character array.
-        /// </summary>
-        /// <remarks>If the argument list is empty, only the file path is included in the command line.
-        /// The method handles cases where the argument list is empty or null, ensuring the result is always properly
-        /// formatted for process invocation scenarios.</remarks>
-        /// <returns>An array of characters representing the command line, including the file path and any additional arguments.
-        /// The array ends with a null character.</returns>
-        internal string MakeCommandLine()
-        {
-            return $"\"{FilePath}\"{(!string.IsNullOrWhiteSpace(Arguments) ? $" {Arguments}" : null)}\0";
         }
 
         /// <summary>

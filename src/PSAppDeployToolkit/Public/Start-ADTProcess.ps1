@@ -795,7 +795,7 @@ function Start-ADTProcess
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                        Write-ADTLogEntry -Message "Executing [$($startInfo.MakeCommandLine())]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
                     }
                 }
                 else

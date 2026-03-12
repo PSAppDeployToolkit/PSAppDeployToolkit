@@ -54,7 +54,7 @@ namespace PSADT.Interop.Extensions
         /// <returns>A read-only span of characters with all leading and trailing white-space removed and any trailing null
         /// characters eliminated.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ReadOnlySpan<char> TrimEndNullAndTrim(this ReadOnlySpan<char> span)
+        internal static ReadOnlySpan<char> TrimRemoveEndNull(this ReadOnlySpan<char> span)
         {
             return span.Trim().TrimEnd('\0').TrimEnd();
         }
