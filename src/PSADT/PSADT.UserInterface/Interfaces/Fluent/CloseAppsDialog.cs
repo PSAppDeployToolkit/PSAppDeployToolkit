@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -47,11 +46,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             /// whitespace.</exception>
             public AppToClose(ProcessToClose processToClose)
             {
-                ArgumentException.ThrowIfNullOrWhiteSpace(processToClose.Path);
+                ArgumentNullException.ThrowIfNull(processToClose.Path);
                 ArgumentException.ThrowIfNullOrWhiteSpace(processToClose.Description);
-                Name = CultureInfo.InvariantCulture.TextInfo.ToLower(Path.GetFileName(processToClose.Path));
+                Name = CultureInfo.InvariantCulture.TextInfo.ToLower(processToClose.Path.Name);
                 Description = processToClose.Description;
-                Icon = GetAppIcon(processToClose.Path);
+                Icon = GetAppIcon(processToClose.Path.FullName);
             }
 
             /// <summary>

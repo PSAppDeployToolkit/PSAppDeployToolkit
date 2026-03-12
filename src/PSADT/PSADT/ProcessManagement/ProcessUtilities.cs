@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -203,7 +204,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A string containing the full path to the process's executable image. Returns an empty string if the image
         /// name cannot be determined.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is null.</exception>
-        public static string GetProcessImageName(Process process)
+        public static FileInfo GetProcessImageName(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);
             return GetProcessImageName((uint)process.Id);
@@ -219,7 +220,7 @@ namespace PSADT.ProcessManagement
         /// process.</param>
         /// <returns>A string containing the full path to the executable file of the specified process.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetProcessImageName(int processId)
+        public static FileInfo GetProcessImageName(int processId)
         {
             return GetProcessImageName((uint)processId);
         }
@@ -295,7 +296,7 @@ namespace PSADT.ProcessManagement
         /// the method used and system configuration.</returns>
         /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
         /// of each failure encountered during the retrieval attempts.</exception>
-        internal static string GetProcessImageName(uint processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        internal static FileInfo GetProcessImageName(uint processId, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             // Get the process image name via a waterfall approach.
             ntPathLookupTable ??= FileSystemUtilities.MakeNtPathLookupTable();
@@ -372,7 +373,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
         /// of each failure encountered during the retrieval attempts.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
+        internal static FileInfo GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
             return GetProcessImageName((uint)processId, ntPathLookupTable);
         }
@@ -383,14 +384,14 @@ namespace PSADT.ProcessManagement
         /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
         /// <returns>A string containing the full path to the executable file of the process.</returns>
         /// <exception cref="InvalidProgramException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
-        internal static string QueryFullProcessImageName(SafeHandle hProcess)
+        internal static FileInfo QueryFullProcessImageName(SafeHandle hProcess)
         {
             Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
             string result = buffer.Slice(0, (int)requiredLength).ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidProgramException("The QueryFullProcessImageName() call returned a null or empty result.")
-                : result;
+                : new(result);
         }
 
         /// <summary>
@@ -405,13 +406,13 @@ namespace PSADT.ProcessManagement
         /// table to convert the native NT path returned by the system to a standard Win32 path.</param>
         /// <returns>A string containing the full Win32 file system path of the process's executable image.</returns>
         /// <exception cref="InvalidProgramException">Thrown if the underlying system call does not return a valid image file name.</exception>
-        internal static string GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        internal static FileInfo GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             string result = buffer.Slice(0, (int)NativeMethods.GetProcessImageFileName(hProcess, buffer)).ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidProgramException("The GetProcessImageFileName() call returned a null or empty result.")
-                : TranslateNtPathToWin32Path(result, ntPathLookupTable);
+                : new(TranslateNtPathToWin32Path(result, ntPathLookupTable));
         }
 
         /// <summary>
@@ -422,9 +423,9 @@ namespace PSADT.ProcessManagement
         /// <returns>A string containing the Win32 path of the process's executable image, or null if the path cannot be
         /// determined.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string QueryProcessImageFileNameWin32(SafeHandle hProcess)
+        internal static FileInfo QueryProcessImageFileNameWin32(SafeHandle hProcess)
         {
-            return QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32);
+            return new(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32));
         }
 
         /// <summary>
@@ -439,9 +440,9 @@ namespace PSADT.ProcessManagement
         /// translate the native path format returned by the system.</param>
         /// <returns>A string containing the full Win32 path to the executable image of the specified process.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        internal static FileInfo QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            return TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable);
+            return new(TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable));
         }
 
         /// <summary>
@@ -457,7 +458,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The Win32-formatted image file path of the specified process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the method is called from a 32-bit process on a 64-bit operating system, if the image name query
         /// returns a null or empty result, or if the retrieved image name is not a valid NT path.</exception>
-        internal static string QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        internal static FileInfo QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             // Throw if we're a 32-bit process on a 64-bit system as we cannot query the image name in that case.
             if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture)
@@ -493,7 +494,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return the path in the Win32 path format as the NT device path is inappropriate for most uses.
-            return TranslateNtPathToWin32Path(imageName, ntPathLookupTable);
+            return new(TranslateNtPathToWin32Path(imageName, ntPathLookupTable));
         }
 
         /// <summary>

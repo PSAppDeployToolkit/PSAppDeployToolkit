@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using PSADT.ProcessManagement;
 
 namespace PSADT.Extensions
@@ -20,13 +21,13 @@ namespace PSADT.Extensions
         /// table is used.</param>
         /// <returns>A string containing the full file system path of the process's executable. Returns an empty string if the
         /// path cannot be determined.</returns>
-        internal static string GetFilePath(this Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
+        internal static FileInfo GetFilePath(this Process process, ReadOnlyDictionary<string, string>? ntPathLookupTable = null)
         {
             try
             {
                 if (process.MainModule is not null)
                 {
-                    return process.MainModule.FileName;
+                    return new(process.MainModule.FileName);
                 }
             }
             catch

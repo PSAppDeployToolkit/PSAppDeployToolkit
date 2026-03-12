@@ -125,7 +125,7 @@ namespace PSADT.ProcessManagement
         {
             // Update the list of running processes.
             _runningProcesses = RunningProcessInfo.Get(_processDefinitions);
-            _processesToClose = new ReadOnlyCollection<ProcessToClose>([.. _runningProcesses.GroupBy(static p => p.FileName, StringComparer.OrdinalIgnoreCase).Select(static p => new ProcessToClose(p.First()))]);
+            _processesToClose = new ReadOnlyCollection<ProcessToClose>([.. _runningProcesses.GroupBy(static p => p.FileName.FullName, StringComparer.OrdinalIgnoreCase).Select(static p => new ProcessToClose(p.First()))]);
         }
 
         /// <summary>

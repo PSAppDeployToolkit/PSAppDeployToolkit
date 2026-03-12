@@ -19,7 +19,7 @@ namespace PSADT.Foundation
         /// <remarks>This field can be used to locate files or resources relative to the assembly's
         /// location at runtime. The returned path is determined by the assembly's current location, which may vary
         /// depending on how the application is deployed or executed.</remarks>
-        public static readonly string AssemblyPath = Path.GetDirectoryName(typeof(EnvironmentInfo).Assembly.Location) ?? throw new InvalidOperationException("Failed to retrieve directory for this assembly.");
+        public static readonly DirectoryInfo AssemblyPath = new(Path.GetDirectoryName(typeof(EnvironmentInfo).Assembly.Location) ?? throw new InvalidOperationException("Failed to retrieve directory for this assembly."));
 
         /// <summary>
         /// Gets the default file system path to the ClientServer client executable within the application directory
@@ -28,7 +28,7 @@ namespace PSADT.Foundation
         /// <remarks>This path is constructed by combining the assembly's directory path with the
         /// executable name "PSADT.ClientServer.Client.exe". It is intended for use when launching or referencing the
         /// ClientServer client from within the application.</remarks>
-        internal static readonly string ClientServerClientDefaultPath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.exe");
+        internal static readonly FileInfo ClientServerClientDefaultPath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.exe"));
 
         /// <summary>
         /// Gets the file path for the compatible version of the PSADT Client Server executable.
@@ -36,7 +36,7 @@ namespace PSADT.Foundation
         /// <remarks>This path is constructed by combining the base assembly path with the specific
         /// executable name. Ensure that the executable exists at the specified location before attempting to use
         /// it.</remarks>
-        internal static readonly string ClientServerClientCompatiblePath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Compatible.exe");
+        internal static readonly FileInfo ClientServerClientCompatiblePath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.Compatible.exe"));
 
         /// <summary>
         /// Gets the path to the client server executable, selecting a compatible version if the primary executable is
@@ -44,7 +44,7 @@ namespace PSADT.Foundation
         /// </summary>
         /// <remarks>The path is determined based on the trust status of the primary executable. If the
         /// primary executable is not trusted, the compatible version is used instead.</remarks>
-        public static readonly string ClientServerClientPath = !FileSystemUtilities.IsAuthenticodeTrusted(Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.exe"))
+        public static readonly FileInfo ClientServerClientPath = !FileSystemUtilities.IsAuthenticodeTrusted(ClientServerClientDefaultPath.FullName)
             ? ClientServerClientCompatiblePath
             : ClientServerClientDefaultPath;
 
@@ -54,14 +54,14 @@ namespace PSADT.Foundation
         /// <remarks>The path is constructed by combining the assembly directory with the executable name.
         /// Use this value to locate the launcher for the Client Server Client application when performing operations
         /// that require its presence.</remarks>
-        internal static readonly string ClientServerClientLauncherDefaultPath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.exe");
+        internal static readonly FileInfo ClientServerClientLauncherDefaultPath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.Launcher.exe"));
 
         /// <summary>
         /// Gets the file path for the compatible version of the Client Server Client Launcher executable.
         /// </summary>
         /// <remarks>This path is constructed by combining the assembly path with the executable name.
         /// Ensure that the executable is present at the specified location for proper functionality.</remarks>
-        internal static readonly string ClientServerClientLauncherCompatiblePath = Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.Compatible.exe");
+        internal static readonly FileInfo ClientServerClientLauncherCompatiblePath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
 
         /// <summary>
         /// Gets the path to the client server launcher executable, selecting a compatible version if the primary
@@ -69,7 +69,7 @@ namespace PSADT.Foundation
         /// </summary>
         /// <remarks>This path is determined based on the trust status of the primary launcher executable.
         /// If the primary executable is not trusted, the compatible version will be used instead.</remarks>
-        public static readonly string ClientServerClientLauncherPath = !FileSystemUtilities.IsAuthenticodeTrusted(Path.Combine(AssemblyPath, "PSADT.ClientServer.Client.Launcher.exe"))
+        public static readonly FileInfo ClientServerClientLauncherPath = !FileSystemUtilities.IsAuthenticodeTrusted(ClientServerClientLauncherDefaultPath.FullName)
             ? ClientServerClientLauncherCompatiblePath
             : ClientServerClientLauncherDefaultPath;
     }

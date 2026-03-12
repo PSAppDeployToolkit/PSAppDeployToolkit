@@ -19,17 +19,17 @@ namespace PSADT.ProcessManagement
         /// <remarks>This method attempts to duplicate the provided process token with the requested
         /// access rights. If the operation fails due to insufficient permissions or an unauthorized access, the method
         /// returns false instead of throwing an exception.</remarks>
-        /// <param name="token">A handle to the process token to test. The handle must be valid and have appropriate permissions for
+        /// <param name="hToken">A handle to the process token to test. The handle must be valid and have appropriate permissions for
         /// duplication.</param>
         /// <param name="accessRights">The access rights to test for the specified process token.</param>
         /// <returns>true if the process token grants the specified access rights; otherwise, false.</returns>
-        internal static bool TestProcessAccessRights(SafeProcessHandle token, PROCESS_ACCESS_RIGHTS accessRights)
+        internal static bool TestProcessAccessRights(SafeProcessHandle hToken, PROCESS_ACCESS_RIGHTS accessRights)
         {
-            using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
             try
             {
-                BOOL res = NativeMethods.DuplicateHandle(cProcessSafeHandle, token, cProcessSafeHandle, out SafeFileHandle newHandle, accessRights, false, 0);
-                using (newHandle)
+                BOOL res = NativeMethods.DuplicateHandle(hProcess, hToken, hProcess, out SafeFileHandle hDupToken, accessRights, false, 0);
+                using (hDupToken)
                 {
                     return res;
                 }

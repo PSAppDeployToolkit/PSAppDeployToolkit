@@ -27,7 +27,14 @@ namespace PSADT.ProcessManagement
         /// <param name="description">The description of the process.</param>
         public ProcessDefinition(string name, string description) : this(name)
         {
-            Description = !string.IsNullOrWhiteSpace(description) ? description : null;
+            if (description?.Length > 0)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(description);
+            }
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                Description = description;
+            }
         }
 
         /// <summary>

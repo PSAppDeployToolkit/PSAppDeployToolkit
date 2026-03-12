@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -44,7 +45,7 @@ namespace PSAppDeployToolkit.Logging
             Source = source;
             ScriptSection = scriptSection;
             DebugMessage = debugMessage;
-            CallerFileName = callerFileName;
+            CallerFileName = new(callerFileName);
             CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp:O}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {LogUtilities.ReplaceInvalidSurrogates(Message)}";
             CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, LogUtilities.ReplaceInvalidSurrogates(Message).Split(["\r\n", "\n"], StringSplitOptions.None).Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : LogUtilities.ReplaceInvalidSurrogates(Message))}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
@@ -83,7 +84,7 @@ namespace PSAppDeployToolkit.Logging
         /// <summary>
         /// Gets the log entry's caller file name.
         /// </summary>
-        public string CallerFileName { get; }
+        public FileInfo CallerFileName { get; }
 
         /// <summary>
         /// Gets the log entry's caller source.

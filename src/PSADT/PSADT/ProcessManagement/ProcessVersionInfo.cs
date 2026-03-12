@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -113,7 +114,7 @@ namespace PSADT.ProcessManagement
             else
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-                FileName = filePath;
+                FileName = new(filePath);
             }
             ReadOnlySpan<byte> versionResource;
             using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
@@ -483,7 +484,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the file that this object instance describes.
         /// </summary>
-        public string FileName { get; }
+        public FileInfo FileName { get; }
 
         /// <summary>
         /// Gets the file private part number.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
@@ -209,13 +210,13 @@ namespace PSADT.Utilities
         /// <returns>A string that represents the absolute path to the user profiles directory. The returned path is guaranteed
         /// to be non-null and non-empty if the operation succeeds.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the user profiles directory path cannot be retrieved.</exception>
-        internal static string GetUserProfilesDirectory()
+        internal static DirectoryInfo GetUserProfilesDirectory()
         {
             Guid userProfilesFolderId = PInvoke.FOLDERID_UserProfiles;
             _ = NativeMethods.SHGetKnownFolderPath(userProfilesFolderId, 0, null, out SafeCoTaskMemHandle ppszPath);
             using (ppszPath)
             {
-                return ppszPath.ToStringUni();
+                return new(ppszPath.ToStringUni());
             }
         }
     }

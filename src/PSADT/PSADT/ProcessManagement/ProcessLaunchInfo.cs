@@ -65,11 +65,6 @@ namespace PSADT.ProcessManagement
         {
             // Validate all string parameters are properly set up.
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-            if (workingDirectory is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
-                WorkingDirectory = workingDirectory;
-            }
             if (verb is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(verb);
@@ -119,9 +114,10 @@ namespace PSADT.ProcessManagement
                                 }
                             }
                         }
-                        if (WorkingDirectory is not null)
+                        if (workingDirectory is not null)
                         {
-                            WorkingDirectory = ExpandEnvironmentVariables(WorkingDirectory);
+                            ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                            WorkingDirectory = new(ExpandEnvironmentVariables(workingDirectory));
                         }
                         ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(ExpandEnvironmentVariables)]);
                         FilePath = ExpandEnvironmentVariables(FilePath);
@@ -129,9 +125,10 @@ namespace PSADT.ProcessManagement
                 }
                 else
                 {
-                    if (WorkingDirectory is not null)
+                    if (workingDirectory is not null)
                     {
-                        WorkingDirectory = Environment.ExpandEnvironmentVariables(WorkingDirectory);
+                        ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                        WorkingDirectory = new(Environment.ExpandEnvironmentVariables(workingDirectory));
                     }
                     ArgumentList = new ReadOnlyCollection<string>([.. ArgumentList.Select(Environment.ExpandEnvironmentVariables)]);
                     FilePath = Environment.ExpandEnvironmentVariables(FilePath);
@@ -147,18 +144,25 @@ namespace PSADT.ProcessManagement
             // Hard-coded adjustment specifically for the UIAccess-enabled client/server executable.
             if (RunAsActiveUser is null || RunAsActiveUser == AccountUtilities.CallerRunAsActiveUser)
             {
-                if (FilePath == EnvironmentInfo.ClientServerClientDefaultPath)
+                if (FilePath == EnvironmentInfo.ClientServerClientDefaultPath.FullName)
                 {
-                    FilePath = EnvironmentInfo.ClientServerClientCompatiblePath;
+                    FilePath = EnvironmentInfo.ClientServerClientCompatiblePath.FullName;
                 }
-                if (FilePath == EnvironmentInfo.ClientServerClientLauncherDefaultPath)
+                if (FilePath == EnvironmentInfo.ClientServerClientLauncherDefaultPath.FullName)
                 {
-                    FilePath = EnvironmentInfo.ClientServerClientLauncherCompatiblePath;
+                    FilePath = EnvironmentInfo.ClientServerClientLauncherCompatiblePath.FullName;
                 }
             }
 
             // Create an arguments string out of our ArgumentList (ShellExecute needs this).
             Arguments = ArgumentList.Count > 1 ? CommandLineUtilities.ArgumentListToCommandLine(ArgumentList) : ArgumentList.Count > 0 ? ArgumentList[0] : null;
+
+            // Set the WorkingDirectory if specified and not already set by environment variable expansion.
+            if (WorkingDirectory is null && workingDirectory is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+                WorkingDirectory = new(workingDirectory);
+            }
 
             // Determine the type of file we're launching.
             try
@@ -255,7 +259,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly string? WorkingDirectory;
+        public readonly DirectoryInfo? WorkingDirectory;
 
         /// <summary>
         /// Gets the username to use when starting the process.

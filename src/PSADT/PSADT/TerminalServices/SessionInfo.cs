@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using PSADT.Foundation;
@@ -76,6 +77,7 @@ namespace PSADT.TerminalServices
             if (clientDirectory is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(clientDirectory);
+                ClientDirectory = new(clientDirectory);
             }
             NTAccount = ntAccount;
             SID = sid;
@@ -96,7 +98,6 @@ namespace PSADT.TerminalServices
             DisconnectTime = disconnectTime;
             ClientName = clientName;
             ClientProtocolType = clientProtocolType;
-            ClientDirectory = clientDirectory;
             ClientBuildNumber = clientBuildNumber;
         }
 
@@ -208,7 +209,7 @@ namespace PSADT.TerminalServices
         /// <summary>
         /// The directory service providing the session.
         /// </summary>
-        public string? ClientDirectory { get; }
+        public FileInfo? ClientDirectory { get; }
 
         /// <summary>
         /// The Windows NT build number of the client.

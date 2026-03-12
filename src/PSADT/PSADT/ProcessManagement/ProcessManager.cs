@@ -190,7 +190,7 @@ namespace PSADT.ProcessManagement
                     if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
                     {
                         // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == EnvironmentInfo.ClientServerClientPath || launchInfo.FilePath == EnvironmentInfo.ClientServerClientLauncherPath);
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == EnvironmentInfo.ClientServerClientPath.FullName || launchInfo.FilePath == EnvironmentInfo.ClientServerClientLauncherPath.FullName);
                         _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                         using (lpEnvironment)
                         {
@@ -199,7 +199,7 @@ namespace PSADT.ProcessManagement
                                 fixed (char* pDesktop = @"winsta0\default")
                                 {
                                     startupInfo.lpDesktop = new(pDesktop);
-                                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, lpEnvironment, launchInfo.WorkingDirectory, startupInfo, out pi);
+                                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, startupInfo, out pi);
                                     startupInfo.lpDesktop = null;
                                 }
                             }
@@ -209,7 +209,7 @@ namespace PSADT.ProcessManagement
                     {
                         // We're running elevated but have been asked to de-elevate.
                         using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
-                        _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                        _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory?.FullName, startupInfo, out pi);
                     }
                     else
                     {
@@ -220,12 +220,12 @@ namespace PSADT.ProcessManagement
                             using (hAttributeList)
                             using (pinnedHandles)
                             {
-                                _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory, startupInfoEx, out pi);
+                                _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory?.FullName, startupInfoEx, out pi);
                             }
                         }
                         else
                         {
-                            _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory, startupInfo, out pi);
+                            _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory?.FullName, startupInfo, out pi);
                         }
                     }
 
@@ -279,12 +279,22 @@ namespace PSADT.ProcessManagement
                     StartInfo = new()
                     {
                         FileName = launchInfo.FilePath,
-                        Arguments = launchInfo.Arguments,
-                        WorkingDirectory = launchInfo.WorkingDirectory,
+                        WorkingDirectory = launchInfo.WorkingDirectory?.FullName,
                         UseShellExecute = launchInfo.UseShellExecute,
-                        Verb = launchInfo.Verb,
                     }
                 };
+                if (!string.IsNullOrWhiteSpace(launchInfo.Arguments))
+                {
+                    process.StartInfo.Arguments = launchInfo.Arguments;
+                }
+                if (launchInfo.WorkingDirectory is not null)
+                {
+                    process.StartInfo.WorkingDirectory = launchInfo.WorkingDirectory.FullName;
+                }
+                if (!string.IsNullOrWhiteSpace(launchInfo.Verb))
+                {
+                    process.StartInfo.Verb = launchInfo.Verb;
+                }
                 if (launchInfo.ProcessWindowStyle is not null)
                 {
                     process.StartInfo.WindowStyle = launchInfo.ProcessWindowStyle.Value;

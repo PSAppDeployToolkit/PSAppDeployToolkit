@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
+using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.TerminalServices;
@@ -66,7 +67,7 @@ namespace PSAppDeployToolkit.Foundation
             // Environment variables.
             EnvHost = cmdlet.Host;
             EnvHostVersion = EnvHost.Version;
-            EnvSystemDrive = (Path.GetPathRoot(EnvSystem32Directory) ?? throw new InvalidOperationException("Failed to retrieve root path for System32 directory.")).TrimEnd(Path.DirectorySeparatorChar);
+            EnvSystemDrive = new(EnvSystem32Directory.Root.FullName);
 
             // Domain membership.
             DomainStatus domainStatus = DeviceUtilities.GetDomainStatus();
@@ -121,29 +122,29 @@ namespace PSAppDeployToolkit.Foundation
             {
                 if (Is64BitProcess)
                 {
-                    EnvProgramFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                    EnvCommonProgramFiles = Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles);
+                    EnvProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+                    EnvCommonProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles));
                     EnvSysNativeDirectory = EnvSystem32Directory;
-                    EnvSysWow64Directory = Environment.GetFolderPath(Environment.SpecialFolder.SystemX86);
+                    EnvSysWow64Directory = new(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86));
                 }
                 else
                 {
-                    EnvProgramFiles = Environment.GetEnvironmentVariable("ProgramW6432");
-                    EnvCommonProgramFiles = Environment.GetEnvironmentVariable("CommonProgramW6432");
-                    EnvSysNativeDirectory = Path.Combine(EnvWinDir, "sysnative");
+                    EnvProgramFiles = Environment.GetEnvironmentVariable("ProgramW6432") is string programW6432 ? new(programW6432) : null;
+                    EnvCommonProgramFiles = Environment.GetEnvironmentVariable("CommonProgramW6432") is string commonProgramW6432 ? new(commonProgramW6432) : null;
+                    EnvSysNativeDirectory = new(Path.Combine(EnvWinDir.FullName, "sysnative"));
                     EnvSysWow64Directory = EnvSystem32Directory;
                 }
-                EnvProgramFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-                EnvCommonProgramFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFilesX86);
-                EnvSystemProfile = Path.Combine(EnvSysNativeDirectory, "Config", "systemprofile");
-                EnvSystemProfileX86 = Path.Combine(EnvSysWow64Directory, "Config", "systemprofile");
+                EnvProgramFilesX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+                EnvCommonProgramFilesX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFilesX86));
+                EnvSystemProfile = new(Path.Combine(EnvSysNativeDirectory.FullName, "Config", "systemprofile"));
+                EnvSystemProfileX86 = new(Path.Combine(EnvSysWow64Directory.FullName, "Config", "systemprofile"));
             }
             else
             {
-                EnvProgramFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                EnvCommonProgramFiles = Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles);
+                EnvProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+                EnvCommonProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles));
                 EnvSysNativeDirectory = EnvSystem32Directory;
-                EnvSystemProfile = Path.Combine(EnvSysNativeDirectory, "Config", "systemprofile");
+                EnvSystemProfile = new(Path.Combine(EnvSysNativeDirectory.FullName, "Config", "systemprofile"));
             }
 
             // Operating system information.
@@ -213,7 +214,7 @@ namespace PSAppDeployToolkit.Foundation
             // PowerShell version information.
             using (Process currentProcess = Process.GetCurrentProcess())
             {
-                EnvPSProcessPath = (currentProcess.MainModule ?? throw new InvalidOperationException("Failed to retrieve module information for the current process.")).FileName;
+                EnvPSProcessPath = currentProcess.GetFilePath();
             }
             if (psVersionTable["CLRVersion"] is Version clrVersion)
             {
@@ -232,8 +233,8 @@ namespace PSAppDeployToolkit.Foundation
                 if (RunAsActiveUser is not null)
                 {
                     RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName ? new(localeName) : null;
-                    RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", null) as string;
-                    UserProfileName = RunAsUserProfile?.Substring(RunAsUserProfile.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                    RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", null) is string runAsUserProfile ? new(runAsUserProfile) : null;
+                    UserProfileName = RunAsUserProfile?.Name;
                 }
             }
 
@@ -337,7 +338,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the location where applications can store data or
         /// configuration files that are accessible to every user account on the computer. The exact path may vary
         /// depending on the operating system version and configuration.</remarks>
-        public string EnvAllUsersProfile { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        public DirectoryInfo EnvAllUsersProfile { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 
         /// <summary>
         /// Gets the application-specific data directory for the current environment.
@@ -345,7 +346,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the path to a directory intended for storing application data
         /// that is specific to the current environment. Use this path to read or write files that should be isolated
         /// from other environments or users.</remarks>
-        public string EnvAppData { get; } = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        public DirectoryInfo EnvAppData { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
         /// <summary>
         /// Gets the architecture of the environment in which the application is running.
@@ -361,17 +362,17 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property can be used to access or store files that should be available to every
         /// user on the computer. The location is determined by the operating system and may vary between
         /// environments.</remarks>
-        public string EnvCommonDesktop { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+        public DirectoryInfo EnvCommonDesktop { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory));
 
         /// <summary>
         /// Gets the full path to the common documents directory for the current environment.
         /// </summary>
-        public string EnvCommonDocuments { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments);
+        public DirectoryInfo EnvCommonDocuments { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments));
 
         /// <summary>
         /// Gets the full path to the common Start Menu Programs folder shared by all users on the system.
         /// </summary>
-        public string EnvCommonStartMenuPrograms { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
+        public DirectoryInfo EnvCommonStartMenuPrograms { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu));
 
         /// <summary>
         /// Gets the full path to the common Start Menu folder for all users on the system.
@@ -379,7 +380,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the location where shortcuts and items that appear in the
         /// Start Menu for every user are stored. Applications can use this path to access or manage Start Menu entries
         /// that are shared across all user profiles.</remarks>
-        public string EnvCommonStartMenu { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu);
+        public DirectoryInfo EnvCommonStartMenu { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu));
 
         /// <summary>
         /// Gets the common startup environment configuration string used for initializing the application.
@@ -387,7 +388,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the necessary environment settings that are typically required
         /// during the startup phase of the application. It is essential for ensuring that the application is configured
         /// correctly before execution.</remarks>
-        public string EnvCommonStartUp { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup);
+        public DirectoryInfo EnvCommonStartUp { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup));
 
         /// <summary>
         /// Gets the common templates used in the environment.
@@ -395,21 +396,21 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides access to a set of predefined templates that can be utilized
         /// across various components of the application. These templates are designed to standardize and streamline the
         /// development process.</remarks>
-        public string EnvCommonTemplates { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonTemplates);
+        public DirectoryInfo EnvCommonTemplates { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonTemplates));
 
         /// <summary>
         /// Gets the home drive of the current environment, which specifies the default location for user files.
         /// </summary>
         /// <remarks>This property may return null if the home drive is not set in the environment. It is
         /// typically used to determine where user-specific files should be stored or accessed.</remarks>
-        public string? EnvHomeDrive { get; } = Environment.GetEnvironmentVariable("HOMEDRIVE");
+        public DriveInfo? EnvHomeDrive { get; } = Environment.GetEnvironmentVariable("HOMEDRIVE") is string homeDrive ? new(homeDrive) : null;
 
         /// <summary>
         /// Gets the environment home path, which specifies the directory used for storing environment-specific files.
         /// </summary>
         /// <remarks>This property may return null if the environment home path is not set. It is
         /// typically used to locate configuration files or other resources specific to the environment.</remarks>
-        public string? EnvHomePath { get; } = Environment.GetEnvironmentVariable("HOMEPATH");
+        public DirectoryInfo? EnvHomePath { get; } = Environment.GetEnvironmentVariable("HOMEPATH") is string homePath ? new(homePath) : null;
 
         /// <summary>
         /// Gets the path to the home share as specified by the relevant environment variable.
@@ -417,7 +418,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property returns the network path used for accessing shared resources in a
         /// multi-user or networked environment. If the environment variable is not set, the property returns
         /// null.</remarks>
-        public string? EnvHomeShare { get; } = Environment.GetEnvironmentVariable("HOMESHARE");
+        public DirectoryInfo? EnvHomeShare { get; } = Environment.GetEnvironmentVariable("HOMESHARE") is string homeShare ? new(homeShare) : null;
 
         /// <summary>
         /// Gets the path to the local application data folder for the current user.
@@ -425,7 +426,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the directory where application data specific to the user can
         /// be stored. It is typically used for storing user-specific settings and data that should not be shared with
         /// other users on the same machine.</remarks>
-        public string EnvLocalAppData { get; } = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public DirectoryInfo EnvLocalAppData { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
 
         /// <summary>
         /// Gets a read-only list of the logical drive names available on the current system.
@@ -433,7 +434,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>The collection reflects the logical drives that are accessible in the environment at
         /// the time of retrieval. The list may vary depending on the system configuration and available
         /// drives.</remarks>
-        public IReadOnlyList<string> EnvLogicalDrives { get; } = new ReadOnlyCollection<string>(Environment.GetLogicalDrives());
+        public IReadOnlyList<DriveInfo> EnvLogicalDrives { get; } = new ReadOnlyCollection<DriveInfo>(DriveInfo.GetDrives());
 
         /// <summary>
         /// Gets the path to the environment-specific program data directory for the application.
@@ -441,14 +442,14 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides access to a directory path that may vary depending on the
         /// application's deployment environment or configuration. Use this path to store or retrieve data that should
         /// be isolated per environment, such as configuration files or logs.</remarks>
-        public string EnvProgramData { get; } = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        public DirectoryInfo EnvProgramData { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 
         /// <summary>
         /// Gets the value of the public environment variable, if it is set.
         /// </summary>
         /// <remarks>This property returns a string representing the value of the public environment
         /// variable. If the variable is not defined in the environment, the property returns null.</remarks>
-        public string? EnvPublic { get; } = Environment.GetEnvironmentVariable("PUBLIC");
+        public DirectoryInfo? EnvPublic { get; } = Environment.GetEnvironmentVariable("PUBLIC") is string publicPath ? new(publicPath) : null;
 
         /// <summary>
         /// Gets the drive letter of the system drive where the operating system is installed.
@@ -456,7 +457,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for determining file paths or configurations that depend on
         /// the location of the operating system. The value typically represents the root drive, such as "C:" on Windows
         /// systems.</remarks>
-        public string EnvSystemDrive { get; }
+        public DriveInfo EnvSystemDrive { get; }
 
         /// <summary>
         /// Gets the full path to the root directory of the system environment.
@@ -464,26 +465,26 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property can be used to locate system-level files and resources that reside in
         /// the environment's root directory. The returned path is typically platform-dependent and reflects the system
         /// configuration at runtime.</remarks>
-        public string EnvSystemRoot { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        public DirectoryInfo EnvSystemRoot { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
 
         /// <summary>
         /// Gets the current environmental temperature as a string.
         /// </summary>
         /// <remarks>The temperature is represented in degrees Celsius and is updated periodically based
         /// on environmental changes.</remarks>
-        public string EnvTemp { get; } = Path.GetTempPath();
+        public DirectoryInfo EnvTemp { get; } = new(Path.GetTempPath());
 
         /// <summary>
         /// Gets the cookies associated with the current user's environment.
         /// </summary>
         /// <remarks>This property retrieves the cookies that are set for the user's session, which may be
         /// used for tracking or maintaining user-specific settings.</remarks>
-        public string EnvUserCookies { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Cookies);
+        public DirectoryInfo EnvUserCookies { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Cookies));
 
         /// <summary>
         /// Gets the full path to the current user's desktop directory.
         /// </summary>
-        public string EnvUserDesktop { get; } = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        public DirectoryInfo EnvUserDesktop { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
 
         /// <summary>
         /// Gets the user's favorite environment settings.
@@ -491,14 +492,14 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>The format and content of the returned string may vary depending on user preferences
         /// and application configuration. Use this property to retrieve a representation of the user's preferred
         /// environment settings for further processing or display.</remarks>
-        public string EnvUserFavorites { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Favorites);
+        public DirectoryInfo EnvUserFavorites { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Favorites));
 
         /// <summary>
         /// Gets the full path to the current user's Internet cache directory.
         /// </summary>
         /// <remarks>This property provides the location where the user's Internet cache files are stored.
         /// It can be used to access or manage cached web content specific to the user profile.</remarks>
-        public string EnvUserInternetCache { get; } = Environment.GetFolderPath(Environment.SpecialFolder.InternetCache);
+        public DirectoryInfo EnvUserInternetCache { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.InternetCache));
 
         /// <summary>
         /// Gets a string representation of the user's internet browsing history.
@@ -506,12 +507,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>The format and content of the returned string may vary depending on the user's
         /// browsing activity and system configuration. Access to this property may be subject to privacy considerations
         /// and user permissions.</remarks>
-        public string EnvUserInternetHistory { get; } = Environment.GetFolderPath(Environment.SpecialFolder.History);
+        public DirectoryInfo EnvUserInternetHistory { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.History));
 
         /// <summary>
         /// Gets the full path to the current user's My Documents folder.
         /// </summary>
-        public string EnvUserMyDocuments { get; } = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        public DirectoryInfo EnvUserMyDocuments { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 
         /// <summary>
         /// Gets the user name of the current Windows environment.
@@ -521,7 +522,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the full path to the current user's Pictures directory.
         /// </summary>
-        public string EnvUserPictures { get; } = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        public DirectoryInfo EnvUserPictures { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
 
         /// <summary>
         /// Gets the full path to the current user's profile directory as defined by the system environment.
@@ -529,36 +530,36 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the user profile path from the environment variables, which
         /// can be used to access user-specific files and settings. The value is typically determined by the operating
         /// system and may vary between platforms or user accounts.</remarks>
-        public string EnvUserProfile { get; } = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        public DirectoryInfo EnvUserProfile { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 
         /// <summary>
         /// Gets the email address to which user notifications are sent.
         /// </summary>
-        public string EnvUserSendTo { get; } = Environment.GetFolderPath(Environment.SpecialFolder.SendTo);
+        public DirectoryInfo EnvUserSendTo { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.SendTo));
 
         /// <summary>
         /// Gets the full path to the current user's Start Menu directory.
         /// </summary>
         /// <remarks>This property provides the location where the user's Start Menu shortcuts are stored.
         /// It is typically used to access or manage user-specific application shortcuts.</remarks>
-        public string EnvUserStartMenu { get; } = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
+        public DirectoryInfo EnvUserStartMenu { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu));
 
         /// <summary>
         /// Gets the full path to the current user's Start Menu Programs folder.
         /// </summary>
         /// <remarks>This property provides the location where user-specific program shortcuts are stored.
         /// It is typically used to access or manipulate the Start Menu items for the current user.</remarks>
-        public string EnvUserStartMenuPrograms { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+        public DirectoryInfo EnvUserStartMenuPrograms { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
 
         /// <summary>
         /// Gets the user-specific startup environment configuration string.
         /// </summary>
-        public string EnvUserStartUp { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+        public DirectoryInfo EnvUserStartUp { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Startup));
 
         /// <summary>
         /// Gets the environment user templates for the application.
         /// </summary>
-        public string EnvUserTemplates { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Templates);
+        public DirectoryInfo EnvUserTemplates { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Templates));
 
         /// <summary>
         /// Gets the full path to the System32 directory of the current Windows environment.
@@ -566,12 +567,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the location of core system files required by Windows and many
         /// applications. The path may differ depending on the process architecture (32-bit or 64-bit) and the operating
         /// system version.</remarks>
-        public string EnvSystem32Directory { get; } = Environment.SystemDirectory;
+        public DirectoryInfo EnvSystem32Directory { get; } = new(Environment.SystemDirectory);
 
         /// <summary>
         /// Gets the full path to the Windows directory for the current environment.
         /// </summary>
-        public string EnvWinDir { get; } = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        public DirectoryInfo EnvWinDir { get; } = new(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
 
         /// <summary>
         /// Gets a value indicating whether a Microsoft Endpoint Configuration Manager (SCCM) task sequence is currently
@@ -691,7 +692,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property returns the directory path where applications are typically installed.
         /// The exact location may vary depending on the operating system and its configuration.</remarks>
-        public string? EnvProgramFiles { get; }
+        public DirectoryInfo? EnvProgramFiles { get; }
 
         /// <summary>
         /// Gets the full path to the Program Files (x86) directory on the current system.
@@ -699,7 +700,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the location where 32-bit applications are typically installed
         /// on 64-bit Windows operating systems. It can be used to locate or store files specific to 32-bit
         /// applications.</remarks>
-        public string? EnvProgramFilesX86 { get; }
+        public DirectoryInfo? EnvProgramFilesX86 { get; }
 
         /// <summary>
         /// Gets the full path to the directory that contains common program files shared by applications on the system.
@@ -707,7 +708,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is typically used to locate resources or libraries that are shared
         /// among multiple applications. The returned path is specific to the current environment and may vary depending
         /// on the operating system and user context.</remarks>
-        public string? EnvCommonProgramFiles { get; }
+        public DirectoryInfo? EnvCommonProgramFiles { get; }
 
         /// <summary>
         /// Gets the full path to the common program files directory for 32-bit applications on a 64-bit operating
@@ -716,12 +717,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for accessing shared resources or libraries that are
         /// installed in the 32-bit common program files directory. It returns null if the corresponding environment
         /// variable is not set.</remarks>
-        public string? EnvCommonProgramFilesX86 { get; }
+        public DirectoryInfo? EnvCommonProgramFilesX86 { get; }
 
         /// <summary>
         /// Gets the directory path for the native environment system files.
         /// </summary>
-        public string EnvSysNativeDirectory { get; }
+        public DirectoryInfo EnvSysNativeDirectory { get; }
 
         /// <summary>
         /// Gets the full path to the SysWow64 directory, which contains 32-bit system files on a 64-bit Windows
@@ -730,7 +731,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for applications that need to access or interact with 32-bit
         /// system components on a 64-bit platform. The value may be null if the directory cannot be determined on the
         /// current system.</remarks>
-        public string? EnvSysWow64Directory { get; }
+        public DirectoryInfo? EnvSysWow64Directory { get; }
 
         /// <summary>
         /// Gets the name of the current environment system profile.
@@ -738,7 +739,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>The environment system profile provides information about the system configuration or
         /// context in which the application is running. This value may influence application behavior or configuration
         /// settings.</remarks>
-        public string EnvSystemProfile { get; }
+        public DirectoryInfo EnvSystemProfile { get; }
 
         /// <summary>
         /// Gets the path to the system profile directory used by 32-bit applications on a 64-bit operating system.
@@ -746,7 +747,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for accessing configuration or data specific to the 32-bit
         /// environment when running on a 64-bit system. The value may be null if the system profile directory cannot be
         /// determined.</remarks>
-        public string? EnvSystemProfileX86 { get; }
+        public DirectoryInfo? EnvSystemProfileX86 { get; }
 
         /// <summary>
         /// Gets the name of the operating system environment.
@@ -905,7 +906,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property provides the full path to the PowerShell executable being used in the current environment.
         /// It is useful for scenarios where the exact location of the PowerShell process is required.</remarks>
-        public string EnvPSProcessPath { get; }
+        public FileInfo EnvPSProcessPath { get; }
 
         /// <summary>
         /// Gets the version of the PowerShell environment currently in use.
@@ -1124,7 +1125,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property can be used to determine the security context or environment associated
         /// with the application's execution. Ensure that any operations performed under this user profile have the
         /// necessary permissions.</remarks>
-        public string? RunAsUserProfile { get; }
+        public DirectoryInfo? RunAsUserProfile { get; }
 
         /// <summary>
         /// Gets the name of the user profile associated with the current context.
@@ -1140,7 +1141,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the location typically used for storing user-specific data
         /// and settings. The returned value may be null if the user profiles directory cannot be determined on the
         /// current system.</remarks>
-        public string? DirUserProfile { get; } = ShellUtilities.GetUserProfilesDirectory();
+        public DirectoryInfo DirUserProfile { get; } = ShellUtilities.GetUserProfilesDirectory();
 
         /// <summary>
         /// Gets the default user profile path configured on the system.
@@ -1148,7 +1149,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the default user profile path from the Windows registry at
         /// HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList. If the registry value is not
         /// found, the property returns null.</remarks>
-        public string? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", null) as string;
+        public DirectoryInfo? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", null) is string defaultProfilePath ? new(defaultProfilePath) : null;
 
         /// <summary>
         /// Gets a read-only collection of characters that are invalid in file names.

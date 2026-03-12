@@ -77,7 +77,7 @@ namespace PSAppDeployToolkit.Foundation
                 DefaultExitCode = (int)configUI["DefaultExitCode"]!;
                 DeferExitCode = (int)configUI["DeferExitCode"]!;
                 CompressLogs = (bool)configToolkit["CompressLogs"]!;
-                ConfigLogPath = (string)configToolkit["LogPath"]!;
+                ConfigLogPath = new((string)configToolkit["LogPath"]!);
                 LogMaxHistory = (int)configToolkit["LogMaxHistory"]!;
                 LogStyle = (LogStyle)Enum.Parse(typeof(LogStyle), (string)configToolkit["LogStyle"]!);
                 LogWriteToHost = (bool)configToolkit["LogWriteToHost"]!;
@@ -184,27 +184,27 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
-                        ScriptDirectory = new ReadOnlyCollection<string>((string[])paramValue);
+                        ScriptDirectory = new ReadOnlyCollection<DirectoryInfo>([.. ((string[])paramValue).Select(static d => new DirectoryInfo(d))]);
                     }
                     if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        DirFiles = (string)paramValue;
+                        DirFiles = new((string)paramValue);
                     }
                     if (parameters.TryGetValue("DirSupportFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        DirSupportFiles = (string)paramValue;
+                        DirSupportFiles = new((string)paramValue);
                     }
                     if (parameters.TryGetValue("DefaultMsiFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        DefaultMsiFile = (string)paramValue;
+                        DefaultMsiFile = new((string)paramValue);
                     }
                     if (parameters.TryGetValue("DefaultMstFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
-                        DefaultMstFile = (string)paramValue;
+                        DefaultMstFile = new((string)paramValue);
                     }
                     if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
                     {
-                        DefaultMspFiles = new ReadOnlyCollection<string>((string[])paramValue);
+                        DefaultMspFiles = new ReadOnlyCollection<FileInfo>([.. ((string[])paramValue).Select(static f => new FileInfo(f))]);
                     }
                     if (parameters.TryGetValue("DisableDefaultMsiProcessList", out paramValue) && (SwitchParameter)paramValue)
                     {
@@ -264,23 +264,23 @@ namespace PSAppDeployToolkit.Foundation
                 if (string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection))
                 {
                     // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
-                    if ((MountedWimFiles.Count == 0) && !string.IsNullOrWhiteSpace(DirFiles) && (Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is string wimFile))
+                    if (MountedWimFiles.Count == 0 && DirFiles?.GetFiles("*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.Extension.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is FileInfo wimFile)
                     {
                         // Mount the WIM file and reset DirFiles to the mount point.
                         WriteInitialDivider(ref writtenDivider);
                         WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
-                        string mountPath = Path.Combine(DirFiles, Path.GetRandomFileName());
-                        _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
-                        AddMountedWimFile(new(wimFile)); DirFiles = mountPath;
+                        DirectoryInfo mountPath = new(Path.Combine(DirFiles.FullName, Path.GetRandomFileName()));
+                        _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath.FullName);
+                        AddMountedWimFile(wimFile); DirFiles = mountPath;
                         WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
                         // Subst the new DirFiles path to eliminate any potential path length issues.
-                        string[] usedLetters = [.. DriveInfo.GetDrives().Select(static d => d.Name)];
-                        if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is string availLetter)
+                        IReadOnlyList<DriveInfo> usedLetters = adtEnv.EnvLogicalDrives;
+                        if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is DriveInfo availLetter)
                         {
-                            availLetter = availLetter.Trim('\\'); WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
-                            _ = NativeMethods.DefineDosDevice(0, availLetter, DirFiles);
-                            DirFiles = DirFilesSubstDrive = availLetter;
+                            WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
+                            _ = NativeMethods.DefineDosDevice(0, availLetter.Name.Trim('\\'), DirFiles.FullName);
+                            DirFiles = availLetter.RootDirectory; DirFilesSubstDrive = availLetter;
                         }
                         WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
                     }
@@ -295,51 +295,51 @@ namespace PSAppDeployToolkit.Foundation
                 if (string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceMsiDetection))
                 {
                     // Find the first MSI file in the Files folder and use that as our install.
-                    if (string.IsNullOrWhiteSpace(DefaultMsiFile))
+                    if (DefaultMsiFile is null)
                     {
                         // Only proceed if the Files directory is set.
-                        if (!string.IsNullOrWhiteSpace(DirFiles))
+                        if (DirFiles is not null)
                         {
                             // Get the first MSI file in the Files directory.
-                            string[] msiFiles = [.. Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
+                            FileInfo[] msiFiles = [.. DirFiles.GetFiles("*", SearchOption.TopDirectoryOnly).Where(static f => f.Extension.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
                             string formattedOSArch = string.Empty;
 
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
-                            if (msiFiles.FirstOrDefault(f => !f.EndsWith($".{envOSArchitecture}.msi", StringComparison.OrdinalIgnoreCase)) is string msiFile)
+                            if (msiFiles.FirstOrDefault(f => !f.Name.EndsWith($".{envOSArchitecture}.msi", StringComparison.OrdinalIgnoreCase)) is FileInfo msiFile)
                             {
-                                DefaultMsiFile = new FileInfo(msiFile).FullName;
+                                DefaultMsiFile = msiFile;
                             }
                             else if (msiFiles.Length > 0)
                             {
-                                DefaultMsiFile = new FileInfo(msiFiles[0]).FullName;
+                                DefaultMsiFile = msiFiles[0];
                             }
                         }
                     }
-                    else if (!Path.IsPathFullyQualified(DefaultMsiFile!) && !string.IsNullOrWhiteSpace(DirFiles))
+                    else if (!Path.IsPathFullyQualified(DefaultMsiFile.ToString()) && DirFiles is not null)
                     {
-                        DefaultMsiFile = Path.Combine(DirFiles, DefaultMsiFile);
+                        DefaultMsiFile = new(Path.Combine(DirFiles.FullName, DefaultMsiFile.ToString()));
                     }
 
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
-                    if (!string.IsNullOrWhiteSpace(DefaultMsiFile))
+                    if (DefaultMsiFile is not null)
                     {
                         WriteInitialDivider(ref writtenDivider);
                         WriteLogEntry($"Discovered Zero-Config MSI installation file [{DefaultMsiFile}].");
 
                         // Discover if there is a zero-config MST file.
-                        if (string.IsNullOrWhiteSpace(DefaultMstFile))
+                        if (DefaultMstFile is null)
                         {
-                            string mstFile = Path.ChangeExtension(DefaultMsiFile, "mst");
+                            string mstFile = Path.ChangeExtension(DefaultMsiFile.FullName, "mst");
                             if (File.Exists(mstFile))
                             {
-                                DefaultMstFile = mstFile;
+                                DefaultMstFile = new(mstFile);
                             }
                         }
-                        else if (!Path.IsPathFullyQualified(DefaultMstFile!) && !string.IsNullOrWhiteSpace(DirFiles))
+                        else if (!Path.IsPathFullyQualified(DefaultMstFile.ToString()) && DirFiles is not null)
                         {
-                            DefaultMstFile = Path.Combine(DirFiles, DefaultMstFile);
+                            DefaultMstFile = new(Path.Combine(DirFiles.FullName, DefaultMstFile.ToString()));
                         }
-                        if (!string.IsNullOrWhiteSpace(DefaultMstFile))
+                        if (DefaultMstFile is not null)
                         {
                             WriteLogEntry($"Discovered Zero-Config MST installation file [{DefaultMstFile}].");
                         }
@@ -347,14 +347,14 @@ namespace PSAppDeployToolkit.Foundation
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
                         if (DefaultMspFiles.Count == 0)
                         {
-                            if (!string.IsNullOrWhiteSpace(DirFiles))
+                            if (DirFiles is not null)
                             {
-                                DefaultMspFiles = new ReadOnlyCollection<string>([.. Directory.GetFiles(DirFiles, "*", SearchOption.TopDirectoryOnly).Where(static f => f.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))]);
+                                DefaultMspFiles = new ReadOnlyCollection<FileInfo>([.. DirFiles.GetFiles("*", SearchOption.TopDirectoryOnly).Where(static f => f.Extension.EndsWith(".msp", StringComparison.OrdinalIgnoreCase))]);
                             }
                         }
-                        else if (!string.IsNullOrWhiteSpace(DirFiles) && DefaultMspFiles.Any(static f => !Path.IsPathFullyQualified(f)))
+                        else if (DirFiles is not null && DefaultMspFiles.Any(static f => !Path.IsPathFullyQualified(f.ToString())))
                         {
-                            DefaultMspFiles = new ReadOnlyCollection<string>([.. DefaultMspFiles.Select(f => !Path.IsPathFullyQualified(f) ? Path.Combine(DirFiles!, f) : f)]);
+                            DefaultMspFiles = new ReadOnlyCollection<FileInfo>([.. DefaultMspFiles.Select(f => !Path.IsPathFullyQualified(f.ToString()) ? new(Path.Combine(DirFiles!.FullName, f.ToString())) : f)]);
                         }
                         if (DefaultMspFiles.Count > 0)
                         {
@@ -364,7 +364,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ProcessDefinition[] msiExecList = [.. (!string.IsNullOrWhiteSpace(DefaultMstFile) ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3, [DefaultMstFile!]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile!, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
+                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
                             if (msiExecList.Length > 0)
                             {
                                 AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
@@ -373,7 +373,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Update our app variables with new values.
-                        IReadOnlyDictionary<string, string> msiProps = (!string.IsNullOrWhiteSpace(DefaultMstFile) ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2, [DefaultMstFile!]) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile!, "Property", 1, 2))!;
+                        IReadOnlyDictionary<string, string> msiProps = (DefaultMstFile is not null ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2))!;
                         if (string.IsNullOrWhiteSpace(AppVendor))
                         {
                             AppVendor = msiProps["Manufacturer"];
@@ -454,26 +454,26 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    string logTempFolder = Path.Combine(adtEnv.EnvTemp, $"{InstallName}_{DeploymentType}");
-                    if (Directory.Exists(logTempFolder))
+                    DirectoryInfo logTempFolder = new(Path.Combine(adtEnv.EnvTemp.FullName, $"{InstallName}_{DeploymentType}"));
+                    if (logTempFolder.Exists)
                     {
-                        Directory.Delete(logTempFolder, true);
+                        logTempFolder.Delete(true);
                     }
-                    LogPath = Directory.CreateDirectory(logTempFolder).FullName;
+                    LogPath = Directory.CreateDirectory(logTempFolder.FullName);
                 }
                 else
                 {
-                    LogPath = Directory.CreateDirectory((string)configToolkit["LogPath"]!).FullName;
+                    LogPath = !ConfigLogPath.Exists ? Directory.CreateDirectory(ConfigLogPath.FullName) : ConfigLogPath;
                 }
 
                 // Append subfolder path if configured to do so.
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null))).FullName;
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null)));
 
                     // Check how many hierarchy levels to keep based on configuration.
-                    DirectoryInfo[] hierarchyDirectories = [.. new DirectoryInfo(LogPath).Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
+                    DirectoryInfo[] hierarchyDirectories = [.. LogPath.Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath.FullName, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
                     int logMaxHierarchy = (int)configToolkit["LogMaxHierarchy"]!;
                     int hierarchyDirectoriesCount = hierarchyDirectories.Length;
                     if (hierarchyDirectoriesCount > logMaxHierarchy)
@@ -486,20 +486,19 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath, $"{InstallName}_{DeploymentType}")).FullName;
+                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath.FullName, $"{InstallName}_{DeploymentType}"));
                 }
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 DefaultLogName = invalidChars.Replace($"{InstallName}_{{0}}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName);
-                string logFile = Path.Combine(LogPath, LogName);
-                FileInfo logFileInfo = new(logFile);
+                FileInfo logFile = new(Path.Combine(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
-                bool logFileSizeExceeded = logFileInfo.Exists && (logMaxSize > 0) && ((logFileInfo.Length / 1048576.0) > logMaxSize);
+                bool logFileSizeExceeded = logFile.Exists && (logMaxSize > 0) && ((logFile.Length / 1048576.0) > logMaxSize);
 
                 // Check if log file needs to be rotated.
-                if ((logFileInfo.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
+                if ((logFile.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
                 {
                     try
                     {
@@ -508,7 +507,7 @@ namespace PSAppDeployToolkit.Foundation
                         string logFileExtension = Path.GetExtension(LogName);
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
-                        string archiveLogFilePath = Path.Combine(LogPath, archiveLogFileName);
+                        string archiveLogFilePath = Path.Combine(LogPath.FullName, archiveLogFileName);
                         int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
@@ -518,7 +517,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Rename the file.
-                        logFileInfo.MoveTo(archiveLogFilePath);
+                        logFile.MoveTo(archiveLogFilePath);
 
                         // Start new log file and log message about archiving the old log file.
                         if (logFileSizeExceeded)
@@ -527,7 +526,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Get all log files sorted by last write time.
-                        FileInfo[] logFiles = [.. new DirectoryInfo(LogPath).GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
+                        FileInfo[] logFiles = [.. LogPath.GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                         int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.
@@ -548,7 +547,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using StreamWriter logFileWriter = new(Path.Combine(LogPath, LogName), true, LogUtilities.LogEncoding);
+                    using StreamWriter logFileWriter = new(Path.Combine(LogPath.FullName, LogName), true, LogUtilities.LogEncoding);
                     foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
                     {
                         logFileWriter.WriteLine(line);
@@ -1076,7 +1075,7 @@ namespace PSAppDeployToolkit.Foundation
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
                 string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
-                DirectoryInfo destArchiveFilePath = Directory.CreateDirectory(ConfigLogPath);
+                DirectoryInfo destArchiveFilePath = Directory.CreateDirectory(ConfigLogPath.FullName);
                 try
                 {
                     // Get all archive files sorted by last write time.
@@ -1094,8 +1093,8 @@ namespace PSAppDeployToolkit.Foundation
                     }
 
                     // Compression of the log files.
-                    ZipFile.CreateFromDirectory(LogPath, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
-                    Directory.Delete(LogPath, true);
+                    ZipFile.CreateFromDirectory(LogPath.FullName, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
+                    LogPath.Delete(true);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -1135,7 +1134,7 @@ namespace PSAppDeployToolkit.Foundation
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(logFileName);
             }
-            IReadOnlyList<LogEntry> logEntries = LogUtilities.WriteLogEntry(message, hostLogStreamType ?? GetHostLogStreamTypeMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
+            IReadOnlyList<LogEntry> logEntries = LogUtilities.WriteLogEntry(message, hostLogStreamType ?? GetHostLogStreamTypeMode(), debugMessage, severity, source, scriptSection ?? InstallPhase, logFileDirectory ?? (!DisableLogging ? LogPath?.FullName : null), logFileName ?? (!DisableLogging ? LogName : null), logStyle ?? LogStyle);
             LogBuffer.AddRange(logEntries);
             return logEntries;
         }
@@ -1467,12 +1466,12 @@ namespace PSAppDeployToolkit.Foundation
         /// white-space characters, no action is taken.</remarks>
         private void RemoveSubstDrive()
         {
-            if (DirFilesSubstDrive is null || string.IsNullOrWhiteSpace(DirFilesSubstDrive))
+            if (DirFilesSubstDrive is null)
             {
                 return;
             }
             WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive, null);
+            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive.RootDirectory.FullName, null);
         }
 
         /// <summary>
@@ -1544,7 +1543,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly ReadOnlyCollection<string> DriveLetters = new([@"Z:\", @"Y:\", @"X:\", @"W:\", @"V:\", @"U:\", @"T:\", @"S:\", @"R:\", @"Q:\", @"P:\", @"O:\", @"N:\", @"M:\", @"L:\", @"K:\", @"J:\", @"I:\", @"H:\", @"G:\", @"F:\", @"E:\", @"D:\", @"C:\", @"B:\", @"A:\"]);
+        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new(@"Z:"), new(@"Y:"), new(@"X:"), new(@"W:"), new(@"V:"), new(@"U:"), new(@"T:"), new(@"S:"), new(@"R:"), new(@"Q:"), new(@"P:"), new(@"O:"), new(@"N:"), new(@"M:"), new(@"L:"), new(@"K:"), new(@"J:"), new(@"I:"), new(@"H:"), new(@"G:"), new(@"F:"), new(@"E:"), new(@"D:"), new(@"C:"), new(@"B:"), new(@"A:")]);
 
         /// <summary>
         /// The default exit code to exit out with in the event of an error.
@@ -1564,7 +1563,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// The log path as specified in the configuration.
         /// </summary>
-        private readonly string ConfigLogPath;
+        private readonly DirectoryInfo ConfigLogPath;
 
         /// <summary>
         /// Specifies the maximum number of log entries to retain in history.
@@ -1599,7 +1598,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
         /// </summary>
-        private readonly string? DirFilesSubstDrive;
+        private readonly DriveInfo? DirFilesSubstDrive;
 
         /// <summary>
         /// Gets the base registry path used for getting/setting deferral information.
@@ -1779,32 +1778,32 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public IReadOnlyList<string> ScriptDirectory { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; } = new ReadOnlyCollection<string>([]);
+        public IReadOnlyList<DirectoryInfo> ScriptDirectory { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; } = new ReadOnlyCollection<DirectoryInfo>([]);
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
-        public string? DirFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
+        public DirectoryInfo? DirFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
 
         /// <summary>
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
-        public string? DirSupportFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
+        public DirectoryInfo? DirSupportFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
         /// </summary>
-        public string? DefaultMsiFile { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; }
+        public FileInfo? DefaultMsiFile { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MST file path.
         /// </summary>
-        public string? DefaultMstFile { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; }
+        public FileInfo? DefaultMstFile { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; }
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public IReadOnlyList<string> DefaultMspFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; } = new ReadOnlyCollection<string>([]);
+        public IReadOnlyList<FileInfo> DefaultMspFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; } = new ReadOnlyCollection<FileInfo>([]);
 
         /// <summary>
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
@@ -1814,7 +1813,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's log path.
         /// </summary>
-        public string LogPath { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; }
+        public DirectoryInfo LogPath { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] init; }
 
         /// <summary>
         /// Gets the deployment session's log filename.

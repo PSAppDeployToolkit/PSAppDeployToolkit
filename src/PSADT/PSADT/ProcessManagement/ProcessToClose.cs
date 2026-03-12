@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace PSADT.ProcessManagement
 {
@@ -16,8 +17,8 @@ namespace PSADT.ProcessManagement
         internal ProcessToClose(RunningProcessInfo runningProcessInfo)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.Process.ProcessName);
-            ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.FileName);
             ArgumentException.ThrowIfNullOrWhiteSpace(runningProcessInfo.Description);
+            ArgumentNullException.ThrowIfNull(runningProcessInfo.FileName);
             Name = runningProcessInfo.Process.ProcessName;
             Path = runningProcessInfo.FileName;
             Description = runningProcessInfo.Description;
@@ -31,7 +32,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the path of the process.
         /// </summary>
-        public string Path { get; }
+        public FileInfo Path { get; }
 
         /// <summary>
         /// Gets the description of the process.

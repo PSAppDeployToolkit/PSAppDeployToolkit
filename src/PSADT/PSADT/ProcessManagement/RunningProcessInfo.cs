@@ -72,16 +72,16 @@ namespace PSADT.ProcessManagement
                     {
                         if (!argv[0].Contains(process.ProcessName, StringComparison.OrdinalIgnoreCase) && !argv[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                         {
-                            argv = [.. (new[] { process.GetFilePath(ntPathLookupTable) }).Concat(argv)];
+                            argv = [.. (new[] { process.GetFilePath(ntPathLookupTable).FullName }).Concat(argv)];
                         }
                         else
                         {
-                            argv[0] = process.GetFilePath(ntPathLookupTable);
+                            argv[0] = process.GetFilePath(ntPathLookupTable).FullName;
                         }
                     }
                     else
                     {
-                        argv = [process.GetFilePath(ntPathLookupTable)];
+                        argv = [process.GetFilePath(ntPathLookupTable).FullName];
                     }
                 }
                 catch
@@ -198,7 +198,7 @@ namespace PSADT.ProcessManagement
             ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
             Process = process;
             Description = description;
-            FileName = fileName;
+            FileName = new(fileName);
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList.Where(static a => !string.IsNullOrWhiteSpace(a))]);
             SID = sid;
         }
@@ -216,7 +216,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the file path of the running process.
         /// </summary>
-        public string FileName { get; }
+        public FileInfo FileName { get; }
 
         /// <summary>
         /// Gets the arguments passed to the running process.
