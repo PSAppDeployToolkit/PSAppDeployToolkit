@@ -245,7 +245,7 @@ namespace PSADT.ClientServer
                         }
                         try
                         {
-                            exitCode = _clientProcess.Task.GetAwaiter().GetResult().ExitCode;
+                            _ = _clientProcess.Task.GetAwaiter().GetResult();
                         }
                         catch (TaskCanceledException)
                         {

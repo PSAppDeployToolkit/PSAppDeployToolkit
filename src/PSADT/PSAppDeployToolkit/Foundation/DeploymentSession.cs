@@ -296,11 +296,8 @@ namespace PSAppDeployToolkit.Foundation
                         // Only proceed if the Files directory is set.
                         if (DirFiles is not null)
                         {
-                            // Get the first MSI file in the Files directory.
-                            FileInfo[] msiFiles = [.. DirFiles.GetFiles("*", SearchOption.TopDirectoryOnly).Where(static f => f.Extension.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
-                            string formattedOSArch = string.Empty;
-
                             // If we have a specific architecture MSI file, use that. Otherwise, use the first MSI file found.
+                            FileInfo[] msiFiles = [.. DirFiles.GetFiles("*", SearchOption.TopDirectoryOnly).Where(static f => f.Extension.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))];
                             if (msiFiles.FirstOrDefault(f => !f.Name.EndsWith($".{envOSArchitecture}.msi", StringComparison.OrdinalIgnoreCase)) is FileInfo msiFile)
                             {
                                 DefaultMsiFile = msiFile;
