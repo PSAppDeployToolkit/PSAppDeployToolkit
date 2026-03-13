@@ -4091,6 +4091,114 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Aligns a value down to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="length">The value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_DOWN_BY(nuint length, nuint alignment)
+        {
+            return length & ~(alignment - 1);
+        }
+
+        /// <summary>
+        /// Aligns a value up to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="length">The value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_UP_BY(nuint length, nuint alignment)
+        {
+            return ALIGN_DOWN_BY(length + alignment - 1, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a pointer value down to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="address">The pointer value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_DOWN_POINTER_BY(nint address, nuint alignment)
+        {
+            return (nint)ALIGN_DOWN_BY((nuint)address, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a pointer value up to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="address">The pointer value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_UP_POINTER_BY(nint address, nuint alignment)
+        {
+            return (nint)ALIGN_UP_POINTER_BY((nuint)address, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a pointer value up to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="address">The pointer value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_UP_POINTER_BY(nuint address, nuint alignment)
+        {
+            return ALIGN_UP_BY(address, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a value down to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="length">The value to align.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_DOWN<T>(nuint length) where T : unmanaged
+        {
+            return ALIGN_DOWN_BY(length, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
+        /// Aligns a value up to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="length">The value to align.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_UP<T>(nuint length) where T : unmanaged
+        {
+            return ALIGN_UP_BY(length, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
+        /// Aligns a pointer value down to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="address">The pointer value to align.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_DOWN_POINTER<T>(nint address) where T : unmanaged
+        {
+            return ALIGN_DOWN_POINTER_BY(address, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
+        /// Aligns a pointer value up to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="address">The pointer value to align.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_UP_POINTER<T>(nint address) where T : unmanaged
+        {
+            return ALIGN_UP_POINTER_BY(address, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
         /// Retrieves the join status and name of the domain or workgroup for the specified computer.
         /// </summary>
         /// <remarks>The caller must release the buffer referenced by lpNameBuffer to avoid memory leaks.
