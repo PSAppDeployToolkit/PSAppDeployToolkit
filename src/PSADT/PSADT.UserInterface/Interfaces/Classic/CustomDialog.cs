@@ -29,7 +29,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <remarks>This constructor sets the dialog's initial result to "Timeout". Use this overload
         /// when you want to create a dialog with default timeout behavior.</remarks>
         /// <param name="options">The options that configure the behavior and appearance of the dialog. Cannot be null.</param>
-        internal CustomDialog(CustomDialogOptions options) : this(options, new CustomDialogResult("Timeout"))
+        internal CustomDialog(CustomDialogOptions options) : this(options, CustomDialogResult.DefaultResult)
         {
         }
 

@@ -16,7 +16,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <remarks>This constructor sets the default dialog result to "Timeout".</remarks>
         /// <param name="options">The options that configure the behavior and appearance of the dialog.</param>
-        internal CustomDialog(CustomDialogOptions options) : this(options, new CustomDialogResult("Timeout"))
+        internal CustomDialog(CustomDialogOptions options) : this(options, CustomDialogResult.DefaultResult)
         {
         }
 
@@ -64,7 +64,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
-            if (DialogResult is CustomDialogResult result && result.Equals("Timeout"))
+            if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
             {
                 DialogResult = new CustomDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null));
             }
@@ -83,7 +83,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
-            if (DialogResult is CustomDialogResult result && result.Equals("Timeout"))
+            if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
             {
                 DialogResult = new CustomDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null));
             }
@@ -102,7 +102,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
-            if (DialogResult is CustomDialogResult result && result.Equals("Timeout"))
+            if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
             {
                 DialogResult = new CustomDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null));
             }
