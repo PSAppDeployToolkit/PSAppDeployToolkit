@@ -261,29 +261,25 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if (string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection))
+                if ((string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection)) && MountedWimFiles.Count == 0 && DirFiles?.GetFiles("*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.Extension.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is FileInfo wimFile)
                 {
-                    // Only proceed if there isn't already a mounted WIM file and we have a WIM file to use.
-                    if (MountedWimFiles.Count == 0 && DirFiles?.GetFiles("*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.Extension.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is FileInfo wimFile)
-                    {
-                        // Mount the WIM file and reset DirFiles to the mount point.
-                        WriteInitialDivider(ref writtenDivider);
-                        WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
-                        DirectoryInfo mountPath = new(Path.Combine(DirFiles.FullName, Path.GetRandomFileName()));
-                        _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath.FullName);
-                        AddMountedWimFile(wimFile); DirFiles = mountPath;
-                        WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
+                    // Mount the WIM file and reset DirFiles to the mount point.
+                    WriteInitialDivider(ref writtenDivider);
+                    WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
+                    DirectoryInfo mountPath = new(Path.Combine(DirFiles.FullName, Path.GetRandomFileName()));
+                    _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath.FullName);
+                    AddMountedWimFile(wimFile); DirFiles = mountPath;
+                    WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
-                        // Subst the new DirFiles path to eliminate any potential path length issues.
-                        IReadOnlyList<DriveInfo> usedLetters = adtEnv.EnvLogicalDrives;
-                        if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is DriveInfo availLetter)
-                        {
-                            WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
-                            _ = NativeMethods.DefineDosDevice(0, availLetter.Name.Trim('\\'), DirFiles.FullName);
-                            DirFiles = availLetter.RootDirectory; DirFilesSubstDrive = availLetter;
-                        }
-                        WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
+                    // Subst the new DirFiles path to eliminate any potential path length issues.
+                    IReadOnlyList<DriveInfo> usedLetters = adtEnv.EnvLogicalDrives;
+                    if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is DriveInfo availLetter)
+                    {
+                        WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
+                        _ = NativeMethods.DefineDosDevice(0, availLetter.Name.Trim('\\'), DirFiles.FullName);
+                        DirFiles = availLetter.RootDirectory; DirFilesSubstDrive = availLetter;
                     }
+                    WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
                 }
 
 

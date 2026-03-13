@@ -84,14 +84,10 @@ namespace PSADT.Interop.Exceptions
             }
             catch (Win32Exception)
             {
-                // That failed... Try to base the error on a Win32Exception message if possible (i.e. not ERROR_MR_MID_NOT_FOUND).
-                if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error)
+                // Use the Win32Exception message only if it's valid.
+                if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error && ExceptionUtilities.GetMessageForWin32Error(win32Error, true) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
                 {
-                    // Use the Win32Exception message only if it's valid.
-                    if (ExceptionUtilities.GetMessageForWin32Error(win32Error, true) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
-                    {
-                        return $"{message} {messageSuffix}";
-                    }
+                    return $"{message} {messageSuffix}";
                 }
 
                 // Fallback message if any of the above fails.

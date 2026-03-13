@@ -606,13 +606,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
-            if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+            if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) && (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase)))
             {
-                if (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
-                    navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase))
-                {
-                    navigateUrl = "http://" + navigateUrl;
-                }
+                navigateUrl = "http://" + navigateUrl;
             }
 
             // Add the URL as a proper hyperlink

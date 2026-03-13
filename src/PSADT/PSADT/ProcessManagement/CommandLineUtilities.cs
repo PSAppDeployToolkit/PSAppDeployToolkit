@@ -260,15 +260,7 @@ namespace PSADT.ProcessManagement
 
             // If we found a quote before the equals sign and it's preceded by a flag (- or /),
             // this is likely a flag+quoted pattern, not a key=value pattern.
-            if (foundQuoteBeforeEquals && foundKey)
-            {
-                // Check if the pattern starts with a flag prefix
-                if (commandLine[position] is '-' or '/')
-                {
-                    return false;
-                }
-            }
-            return foundKey;
+            return (!foundQuoteBeforeEquals || !foundKey || commandLine[position] is not '-' and not '/') && foundKey;
         }
 
         /// <summary>
