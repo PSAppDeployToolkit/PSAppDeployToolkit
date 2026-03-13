@@ -440,6 +440,7 @@ namespace PSADT.ClientServer
                     finally
                     {
                         closeAppsDialogState?.Dispose();
+                        closeAppsDialogState = null;
                     }
                     return (int)ClientExitCode.Success;
                 }

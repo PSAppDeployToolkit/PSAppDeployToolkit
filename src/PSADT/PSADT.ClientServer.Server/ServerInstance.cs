@@ -68,54 +68,73 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("The server instance already has an associated client process.");
             }
 
-            // Start the server to listen for incoming connections and process data.
-            _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
-            _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-            bool outputServerClientSafePipeHandleAddRef = false;
-            bool inputServerClientSafePipeHandleAddRef = false;
-            bool logServerClientSafePipeHandleAddRef = false;
             try
             {
-                _outputServer.ClientSafePipeHandle.DangerousAddRef(ref outputServerClientSafePipeHandleAddRef);
-                _inputServer.ClientSafePipeHandle.DangerousAddRef(ref inputServerClientSafePipeHandleAddRef);
-                _logServer.ClientSafePipeHandle.DangerousAddRef(ref logServerClientSafePipeHandleAddRef);
-                string outputServerClientSafePipeHandle = _outputServer.GetClientHandleAsString();
-                string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
-                string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
-                _clientProcess = ProcessManager.LaunchAsync(new(
-                    EnvironmentInfo.ClientServerClientPath.FullName,
-                    ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
-                    Environment.SystemDirectory,
-                    RunAsActiveUser,
-                    ElevatedTokenType == ElevatedTokenType.HighestMandatory,
-                    ElevatedTokenType == ElevatedTokenType.HighestAvailable,
-                    denyUserTermination: true,
-                    handlesToInherit: [NumericalUtilities.ParseIntPtr(outputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(inputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(logServerClientSafePipeHandle)],
-                    createNoWindow: true,
-                    waitForChildProcesses: true,
-                    killChildProcessesWithParent: true,
-                    windowStyle: ProcessWindowStyle.Hidden,
-                    cancellationToken: (_clientProcessCts = new()).Token
-                ));
+                // Start the server to listen for incoming connections and process data.
+                _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
+                _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
+                _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
+                bool outputServerClientSafePipeHandleAddRef = false;
+                bool inputServerClientSafePipeHandleAddRef = false;
+                bool logServerClientSafePipeHandleAddRef = false;
+                try
+                {
+                    _outputServer.ClientSafePipeHandle.DangerousAddRef(ref outputServerClientSafePipeHandleAddRef);
+                    _inputServer.ClientSafePipeHandle.DangerousAddRef(ref inputServerClientSafePipeHandleAddRef);
+                    _logServer.ClientSafePipeHandle.DangerousAddRef(ref logServerClientSafePipeHandleAddRef);
+                    string outputServerClientSafePipeHandle = _outputServer.GetClientHandleAsString();
+                    string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
+                    string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
+                    _clientProcess = ProcessManager.LaunchAsync(new(
+                        EnvironmentInfo.ClientServerClientPath.FullName,
+                        ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
+                        Environment.SystemDirectory,
+                        RunAsActiveUser,
+                        ElevatedTokenType == ElevatedTokenType.HighestMandatory,
+                        ElevatedTokenType == ElevatedTokenType.HighestAvailable,
+                        denyUserTermination: true,
+                        handlesToInherit: [NumericalUtilities.ParseIntPtr(outputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(inputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(logServerClientSafePipeHandle)],
+                        createNoWindow: true,
+                        waitForChildProcesses: true,
+                        killChildProcessesWithParent: true,
+                        windowStyle: ProcessWindowStyle.Hidden,
+                        cancellationToken: (_clientProcessCts = new()).Token
+                    ));
+                }
+                finally
+                {
+                    if (outputServerClientSafePipeHandleAddRef)
+                    {
+                        _outputServer.ClientSafePipeHandle.DangerousRelease();
+                    }
+                    _outputServer.DisposeLocalCopyOfClientHandle();
+                    if (inputServerClientSafePipeHandleAddRef)
+                    {
+                        _inputServer.ClientSafePipeHandle.DangerousRelease();
+                    }
+                    _inputServer.DisposeLocalCopyOfClientHandle();
+                    if (logServerClientSafePipeHandleAddRef)
+                    {
+                        _logServer.ClientSafePipeHandle.DangerousRelease();
+                    }
+                    _logServer.DisposeLocalCopyOfClientHandle();
+                }
             }
-            finally
+            catch
             {
-                if (outputServerClientSafePipeHandleAddRef)
-                {
-                    _outputServer.ClientSafePipeHandle.DangerousRelease();
-                }
-                _outputServer.DisposeLocalCopyOfClientHandle();
-                if (inputServerClientSafePipeHandleAddRef)
-                {
-                    _inputServer.ClientSafePipeHandle.DangerousRelease();
-                }
-                _inputServer.DisposeLocalCopyOfClientHandle();
-                if (logServerClientSafePipeHandleAddRef)
-                {
-                    _logServer.ClientSafePipeHandle.DangerousRelease();
-                }
-                _logServer.DisposeLocalCopyOfClientHandle();
+                _clientProcessCts?.Dispose();
+                _clientProcessCts = null;
+                _logEncryption?.Dispose();
+                _logEncryption = null;
+                _ioEncryption?.Dispose();
+                _ioEncryption = null;
+                _logServer?.Dispose();
+                _logServer = null;
+                _inputServer?.Dispose();
+                _inputServer = null;
+                _outputServer?.Dispose();
+                _outputServer = null;
+                throw;
             }
 
             // Confirm the client starts and is ready to receive commands.
@@ -268,12 +287,17 @@ namespace PSADT.ClientServer
 
                     // Dispose encryption objects.
                     _logEncryption?.Dispose();
+                    _logEncryption = null;
                     _ioEncryption?.Dispose();
+                    _ioEncryption = null;
 
                     // Dispose pipe servers.
                     _logServer?.Dispose();
+                    _logServer = null;
                     _inputServer?.Dispose();
+                    _inputServer = null;
                     _outputServer?.Dispose();
+                    _outputServer = null;
 
                     // Unregister the process exit handler.
                     AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
