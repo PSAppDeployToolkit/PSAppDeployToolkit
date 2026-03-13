@@ -130,7 +130,7 @@ namespace PSADT.TerminalServices
             }
 
             // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
-            bool? isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId);
+            bool? isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId, ntAccount);
 
             // If there's an active console session and we've got the privileges, get the idle time via GetLastInputInfo().
             if (isConsoleSession)
@@ -192,8 +192,8 @@ namespace PSADT.TerminalServices
         /// <returns>A <see cref="SecurityIdentifier"/> representing the SID of the specified session and user account</returns>
         private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
         {
-            // Just return the caller's SID if it's the same session.
-            if (sessionid == AccountUtilities.CallerSessionId)
+            // Return this caller's SID if the caller NT account is the same as what's provided.
+            if (username == AccountUtilities.CallerUsername)
             {
                 return AccountUtilities.CallerSid;
             }
@@ -203,6 +203,13 @@ namespace PSADT.TerminalServices
             {
                 using SafeFileHandle hUserToken = TokenManager.GetUserPrimaryToken(sessionid);
                 return TokenUtilities.GetTokenSid(hUserToken);
+            }
+
+            // Return the caller's SID if it's the same session.
+            // This is done second in case of ServiceUI use, etc.
+            if (sessionid == AccountUtilities.CallerSessionId)
+            {
+                return AccountUtilities.CallerSid;
             }
 
             // If any of the above fail, just try to translate the SID using the builtin API.
@@ -218,12 +225,13 @@ namespace PSADT.TerminalServices
         /// token and evaluating their group membership. If the required privileges are not enabled, it falls back to 
         /// checking the user's SID against the well-known local administrators group.</remarks>
         /// <param name="sessionid">The ID of the WTS session for which the user's administrative status is being checked.</param>
+        /// <param name="username">The user account, represented as an <see cref="NTAccount"/>, for which the admin status is being retrieved.</param>
         /// <returns><see langword="true"/> if the user is a member of the local administrators group; otherwise, <see
         /// langword="false"/>.</returns>
-        private static bool? IsWtsSessionUserLocalAdmin(uint sessionid)
+        private static bool? IsWtsSessionUserLocalAdmin(uint sessionid, NTAccount username)
         {
-            // Just return the caller's admin state if it's the same session.
-            if (sessionid == AccountUtilities.CallerSessionId)
+            // Return this caller's admin status if the caller NT account is the same as what's provided.
+            if (username == AccountUtilities.CallerUsername)
             {
                 return AccountUtilities.CallerIsAdmin;
             }
@@ -233,6 +241,13 @@ namespace PSADT.TerminalServices
             {
                 using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionid, ElevatedTokenType.HighestAvailable);
                 return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
+            }
+
+            // Rreturn the caller's admin state if it's the same session.
+            // This is done second in case of ServiceUI use, etc.
+            if (sessionid == AccountUtilities.CallerSessionId)
+            {
+                return AccountUtilities.CallerIsAdmin;
             }
 
             // We don't know, and if we can't get it, it doesn't matter.
