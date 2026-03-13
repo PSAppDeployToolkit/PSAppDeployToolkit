@@ -532,7 +532,7 @@ function Private:Invoke-ADTClientServerOperation
                     Name = [PSADT.ClientServer.ClientServerUtilities]::OperationSuccessRegistryValueName
                     SID = $User.SID
                 }
-                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientLauncherPath) -NoWait
+                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientLauncherPath) -NoWait
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -560,7 +560,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
+                Start-ADTProcess @sapauParams -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]

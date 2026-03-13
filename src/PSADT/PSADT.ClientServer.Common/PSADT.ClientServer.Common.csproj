@@ -17,4 +17,8 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
+  </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.ClientServer;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -144,7 +145,7 @@ namespace PSADT.TerminalServices
                     try
                     {
                         RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
-                        ProcessLaunchInfo args = new(EnvironmentInfo.ClientServerClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
+                        ProcessLaunchInfo args = new(ClientServerUtilities.ClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
                         idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0], CultureInfo.InvariantCulture));
                     }
                     catch (Exception ex) when (ex.Message is not null)

@@ -86,7 +86,7 @@ namespace PSADT.ClientServer
                     string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
                     string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
                     _clientProcess = ProcessManager.LaunchAsync(new(
-                        EnvironmentInfo.ClientServerClientPath.FullName,
+                        ClientServerUtilities.ClientPath.FullName,
                         ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
                         Environment.SystemDirectory,
                         RunAsActiveUser,
