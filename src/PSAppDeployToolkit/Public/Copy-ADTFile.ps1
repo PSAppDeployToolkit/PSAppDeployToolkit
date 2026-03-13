@@ -126,7 +126,7 @@ function Copy-ADTFile
         # If a FileCopyMode hasn't been specified, potentially initialize the module so we can get it from the config.
         if (!$PSBoundParameters.ContainsKey('FileCopyMode'))
         {
-            Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+            Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
             $FileCopyMode = (Get-ADTConfig).Toolkit.FileCopyMode
         }
 
