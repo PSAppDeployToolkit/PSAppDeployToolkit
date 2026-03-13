@@ -40,14 +40,25 @@ function Private:Set-ADTPreferenceVariables
             continue
         }
 
-        # If we've hit a switch, default it to an ActionPreference of Continue.
+        # Convert switch common parameters to their corresponding preference value types.
         if ($param.Value -is [System.Management.Automation.SwitchParameter])
         {
             if (!$param.Value)
             {
                 continue
             }
-            $param.Value = [System.Management.Automation.ActionPreference]::Continue
+            $param.Value = if ($pref.Key.Equals('WhatIf'))
+            {
+                $true
+            }
+            elseif ($pref.Key.Equals('Confirm'))
+            {
+                [System.Management.Automation.ConfirmImpact]::Low
+            }
+            else
+            {
+                [System.Management.Automation.ActionPreference]::Continue
+            }
         }
 
         # When we're within the same module, just go up a scope level to set the value.
