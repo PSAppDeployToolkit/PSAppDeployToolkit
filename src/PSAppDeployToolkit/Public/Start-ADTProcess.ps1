@@ -596,7 +596,7 @@ function Start-ADTProcess
         {
             if (!$adtSession)
             {
-                Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+                Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
             }
             $MsiExecWaitTime = [System.TimeSpan]::FromSeconds((Get-ADTConfig).MSI.MutexWaitTime)
         }

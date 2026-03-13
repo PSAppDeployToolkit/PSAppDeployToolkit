@@ -117,7 +117,7 @@
         'Get-ADTWindowTitle'
         'Initialize-ADTFunction'
         'Initialize-ADTModule'
-        'Initialize-ADTModuleIfUnitialized'
+        'Initialize-ADTModuleIfUninitialized'
         'Install-ADTMSUpdates'
         'Install-ADTSCCMSoftwareUpdates'
         'Invoke-ADTAllUsersRegistryAction'
