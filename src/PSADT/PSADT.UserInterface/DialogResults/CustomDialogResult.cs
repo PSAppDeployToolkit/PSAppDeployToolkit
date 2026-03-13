@@ -19,7 +19,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Represents the default dialog result used when a dialog times out.
         /// </summary>
-        internal static CustomDialogResult DefaultResult = new("Timeout");
+        internal static readonly CustomDialogResult DefaultResult = new("Timeout");
 
         /// <summary>
         /// Initializes a new instance of the CustomDialogResult class with the specified result string.

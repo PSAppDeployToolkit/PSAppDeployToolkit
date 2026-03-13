@@ -851,17 +851,15 @@ namespace PSADT.ShortcutManagement
         /// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                if (disposing)
-                {
-                    if (_internetShortcut != null)
-                    {
-                        _ = Marshal.FinalReleaseComObject(_internetShortcut);
-                    }
-                }
-                _disposed = true;
+                return;
             }
+            if (disposing && _internetShortcut != null)
+            {
+                _ = Marshal.FinalReleaseComObject(_internetShortcut);
+            }
+            _disposed = true;
         }
 
         /// <summary>

@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Text;
 using PSADT.Interop;
 
@@ -139,10 +140,9 @@ namespace PSADT.ShortcutManagement
             ArgumentNullException.ThrowIfNull(hotkeyString);
             string[] parts = hotkeyString.Split(['+'], StringSplitOptions.RemoveEmptyEntries);
             bool control = false, shift = false, alt = false; byte keyCode = 0;
-            foreach (string part in parts)
+            foreach (string part in parts.Select(static part => part.Trim()))
             {
-                string trimmed = part.Trim();
-                string upper = trimmed.ToUpperInvariant();
+                string upper = part.ToUpperInvariant();
                 if (upper is "CTRL" or "CONTROL")
                 {
                     control = true;
@@ -158,7 +158,7 @@ namespace PSADT.ShortcutManagement
                 else
                 {
                     // This should be the key.
-                    keyCode = ParseKeyCode(trimmed);
+                    keyCode = ParseKeyCode(part);
                 }
             }
             return keyCode == 0
@@ -185,12 +185,9 @@ namespace PSADT.ShortcutManagement
             }
 
             // Function keys.
-            if (upper.Length >= 2 && upper.Length <= 3 && upper[0] == 'F')
+            if (upper.Length >= 2 && upper.Length <= 3 && upper[0] == 'F' && int.TryParse(upper.AsSpan(1).ToString(), out int fNum) && fNum >= 1 && fNum <= 24)
             {
-                if (int.TryParse(upper.AsSpan(1).ToString(), out int fNum) && fNum >= 1 && fNum <= 24)
-                {
-                    return (byte)(0x70 + fNum - 1);
-                }
+                return (byte)(0x70 + fNum - 1);
             }
 
             // Special keys.
