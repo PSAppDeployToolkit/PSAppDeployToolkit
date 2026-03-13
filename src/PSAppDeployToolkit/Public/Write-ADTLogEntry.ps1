@@ -84,7 +84,7 @@ function Write-ADTLogEntry
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [PSAppDeployToolkit.Logging.LogSeverity]$Severity,
+        [PSAppDeployToolkit.Logging.LogSeverity]$Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Info,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
@@ -127,9 +127,10 @@ function Write-ADTLogEntry
         $messages = [System.Collections.Generic.List[System.String]]::new()
 
         # Force the HostLogStreamType to none if InformationPreference or WarningPreference is silent.
-        $bypassSession = if ((($Severity -le 1) -and ($InformationPreference -match '^(SilentlyContinue|Ignore)$')) -or (($Severity -eq 2) -and ($WarningPreference -match '^(SilentlyContinue|Ignore)$')))
+        $hostStreamSuppressed = $false; if ((($Severity -le 1) -and ($InformationPreference -match '^(SilentlyContinue|Ignore)$')) -or (($Severity -eq 2) -and ($WarningPreference -match '^(SilentlyContinue|Ignore)$')))
         {
-            !($PSBoundParameters.HostLogStreamType = $HostLogStreamType = [PSAppDeployToolkit.Logging.HostLogStreamType]::None)
+            $PSBoundParameters.HostLogStreamType = $HostLogStreamType = [PSAppDeployToolkit.Logging.HostLogStreamType]::None
+            $hostStreamSuppressed = $true
         }
     }
 
@@ -155,7 +156,7 @@ function Write-ADTLogEntry
         }
 
         # If we don't have an active session, write the message to the verbose stream (4).
-        $logEntries = if (!$bypassSession -and (Test-ADTSessionActive))
+        $logEntries = if (!$hostStreamSuppressed -and (Test-ADTSessionActive))
         {
             (Get-ADTSession).WriteLogEntry(
                 $messages,
@@ -171,6 +172,8 @@ function Write-ADTLogEntry
         }
         elseif (!$DebugMessage)
         {
+            # Lazily initialize the ADT module when the caller has explicitly provided a log file path (directory + name) but no LogStyle and we're uninitialised.
+            # This ensures logging infrastructure is available for direct file logging outside an active ADT session, without unnecessarily reinitializing the module.
             if ($PSBoundParameters.ContainsKey('LogFileDirectory') -and $PSBoundParameters.ContainsKey('LogFileName') -and !$PSBoundParameters.ContainsKey('LogStyle') -and !(Test-ADTModuleInitialized))
             {
                 Initialize-ADTModule
