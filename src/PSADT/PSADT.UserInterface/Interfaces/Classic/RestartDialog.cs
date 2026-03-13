@@ -41,12 +41,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
             flowLayoutPanelBase.SuspendLayout();
             flowLayoutPanelDialog.SuspendLayout();
 
-            // Reset the dialog's title. It must be that of the string table in the options.
-            Text = StripFormattingTags(options.Strings.Title);
-
             // Apply options to the form if we have any (i.e. not in the designer).
             if (options is not null)
             {
+                // Reset the dialog's title. It must be that of the string table in the options.
+                Text = StripFormattingTags(options.Strings.Title);
+
                 // Set up the picturebox.
                 SetPictureBox(pictureBanner, options);
 
