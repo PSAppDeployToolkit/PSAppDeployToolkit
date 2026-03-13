@@ -438,7 +438,7 @@ namespace PSADT.ProcessManagement
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
         [DataMember]
-        private ReadOnlyCollection<long>? HandlesToInheritValues;
+        private readonly ReadOnlyCollection<long>? HandlesToInheritValues;
 
         /// <summary>
         /// Gets the encoding web name string for serialization.

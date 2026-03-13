@@ -4242,7 +4242,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
-        internal static ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()
+        internal static readonly ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()
         {
             { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
             { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Marshal.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
@@ -4251,7 +4251,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
-        internal static ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>()
+        internal static readonly ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>()
         {
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
@@ -4261,7 +4261,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for policy information class struct sizes.
         /// </summary>
-        internal static ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>()
+        internal static readonly ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>()
         {
             { POLICY_INFORMATION_CLASS.PolicyAuditLogInformation, Marshal.SizeOf<POLICY_AUDIT_LOG_INFO>() },
             { POLICY_INFORMATION_CLASS.PolicyAuditEventsInformation, Marshal.SizeOf<POLICY_AUDIT_EVENTS_INFO>() },
