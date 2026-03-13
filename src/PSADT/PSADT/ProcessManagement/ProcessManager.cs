@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.ClientServer;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -99,7 +100,7 @@ namespace PSADT.ProcessManagement
 
                 // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
                 // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-                if (launchInfo.RunAsActiveUser is not null || launchInfo.CreateNoWindow || !launchInfo.UseShellExecute)
+                if (launchInfo.RunAsActiveUser is not null || (launchInfo.CreateNoWindow && launchInfo.IsCliApplication()) || !launchInfo.UseShellExecute)
                 {
                     SafePipeHandle? hStdOutWrite = null;
                     SafePipeHandle? hStdErrWrite = null;
@@ -310,6 +311,7 @@ namespace PSADT.ProcessManagement
                     {
                         throw new InvalidProgramException("Failed to start the process.");
                     }
+                    ClientServerUtilities.SetClientServerOperationSuccess();
                     try
                     {
                         hProcess = process.SafeHandle;
@@ -336,7 +338,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // If we don't have a process (shell action), return early.
-                if (!(hProcess is not null && processId is not null && process is not null))
+                if (!(process is not null && processId is not null && hProcess is not null))
                 {
                     if (iocpAddRef)
                     {

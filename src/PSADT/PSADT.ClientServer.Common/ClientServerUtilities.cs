@@ -31,5 +31,11 @@ namespace PSADT.ClientServer
         /// Specifies the registry value name used to indicate that the operation should not wait for success.
         /// </summary>
         public const string OperationSuccessRegistryValueName = "ClientServerOperationSuccess";
+
+        /// <summary>
+        /// Specifies the exit code used to indicate a successful shell execute process operation in the client-server communication protocol.
+        /// </summary>
+        /// <remarks>The value of this constant is derived from `'ShellExecuteProcess'.GetHashCode()` under Windows PowerShell 5.1.</remarks>
+        public const int ShellExecuteProcessSuccessCode = -1556154312;
     }
 }

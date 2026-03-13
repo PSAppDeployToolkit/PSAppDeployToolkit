@@ -284,7 +284,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
-        # Identity: UseShellExecute (only present in sets where identity is "UseShellExecute")
+        # Identity: UseShellExecute (available in UseShellExecute and RunAsActiveUser sets)
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
@@ -294,6 +294,15 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseShellExecute,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
@@ -305,6 +314,15 @@ function Start-ADTProcess
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'RunAsActiveUser_CreateNoWindow_Timeout')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$Verb,
 
@@ -749,33 +767,51 @@ function Start-ADTProcess
                 }
 
                 # Set up the process start flags.
-                $startInfo = [PSADT.ProcessManagement.ProcessLaunchInfo]::new(
-                    $FilePath,
-                    $ArgumentList,
-                    $PSBoundParameters.WorkingDirectory,
-                    $RunAsActiveUser,
-                    $UseLinkedAdminToken,
-                    $UseHighestAvailableToken,
-                    $InheritEnvironmentVariables,
-                    $ExpandEnvironmentVariables,
-                    $DenyUserTermination,
-                    $UseUnelevatedToken,
-                    $StandardInput,
-                    $null,
-                    $UseShellExecute,
-                    $PSBoundParameters.Verb,
-                    $CreateNoWindow,
-                    $WaitForChildProcesses,
-                    $KillChildProcessesWithParent,
-                    $StreamEncoding,
-                    $WindowStyle,
-                    $PriorityClass,
-                    $cancellationToken,
-                    $NoTerminateOnTimeout
-                )
+                $launchData = if (!($RunAsActiveUser -and $UseShellExecute))
+                {
+                    [PSADT.ProcessManagement.ProcessLaunchInfo]::new(
+                        $FilePath,
+                        $ArgumentList,
+                        $PSBoundParameters.WorkingDirectory,
+                        $RunAsActiveUser,
+                        $UseLinkedAdminToken,
+                        $UseHighestAvailableToken,
+                        $InheritEnvironmentVariables,
+                        $ExpandEnvironmentVariables,
+                        $DenyUserTermination,
+                        $UseUnelevatedToken,
+                        $StandardInput,
+                        $null,
+                        $UseShellExecute,
+                        $PSBoundParameters.Verb,
+                        $CreateNoWindow,
+                        $WaitForChildProcesses,
+                        $KillChildProcessesWithParent,
+                        $StreamEncoding,
+                        $WindowStyle,
+                        $PriorityClass,
+                        $cancellationToken,
+                        $NoTerminateOnTimeout
+                    )
+                }
+                else
+                {
+                    [PSADT.ProcessManagement.UserShellExecuteOptions]::new(
+                        $FilePath,
+                        $ArgumentList,
+                        $PSBoundParameters.WorkingDirectory,
+                        $ExpandEnvironmentVariables,
+                        $PSBoundParameters.Verb,
+                        $CreateNoWindow,
+                        $WaitForChildProcesses,
+                        $KillChildProcessesWithParent,
+                        $WindowStyle,
+                        $PriorityClass
+                    )
+                }
 
                 # Perform all logging.
-                if ($startInfo.UseShellExecute)
+                if ($UseShellExecute)
                 {
                     Write-ADTLogEntry -Message 'UseShellExecute is set to true, StdOut/StdErr streams will not be available.'
                 }
@@ -783,24 +819,24 @@ function Start-ADTProcess
                 {
                     Write-ADTLogEntry -Message 'CreateNoWindow not specified, StdOut/StdErr streams will not be available.'
                 }
-                if (![System.String]::IsNullOrWhiteSpace($startInfo.WorkingDirectory))
+                if (![System.String]::IsNullOrWhiteSpace($launchData.WorkingDirectory))
                 {
-                    Write-ADTLogEntry -Message "Working Directory is [$($startInfo.WorkingDirectory)]."
+                    Write-ADTLogEntry -Message "Working Directory is [$($launchData.WorkingDirectory)]."
                 }
                 if ($ArgumentList)
                 {
                     if ($SecureArgumentList)
                     {
-                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" (Parameters Hidden)]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})$(if ($NoWait) { " without waiting" })..."
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$($startInfo.MakeCommandLine())]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                        Write-ADTLogEntry -Message "Executing [$($launchData.MakeCommandLine())]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})$(if ($NoWait) { " without waiting" })..."
                     }
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})..."
+                    Write-ADTLogEntry -Message "Executing [`"$FilePath`"]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})$(if ($NoWait) { " without waiting" })..."
                 }
 
                 # Start the process.
@@ -808,10 +844,17 @@ function Start-ADTProcess
                 {
                     return
                 }
-                ($execution = [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($startInfo)) | Out-String | Out-Null
+                $execution = if ($launchData -is [PSADT.ProcessManagement.UserShellExecuteOptions])
+                {
+                    Invoke-ADTClientServerOperation -User $RunAsActiveUser -ShellExecuteProcess -Options $launchData -NoWait:$NoWait
+                }
+                else
+                {
+                    [PSADT.ProcessManagement.ProcessManager]::LaunchAsync($launchData)
+                }
 
-                # Handle if the returned value is null.
-                if (!$execution)
+                # Handle if the returned value is null. The `Out-String` setup primes the Process object.
+                if ([System.String]::IsNullOrWhiteSpace(($execution | Out-String)))
                 {
                     # A null result without using ShellExecute is entirely unexpected.
                     if (!$UseShellExecute)
@@ -830,7 +873,7 @@ function Start-ADTProcess
                 }
 
                 # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
-                if ($NoWait)
+                if (($execution -is [PSADT.ProcessManagement.ProcessHandle]) -and $NoWait)
                 {
                     Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
                     if ($PassThru)
@@ -840,31 +883,13 @@ function Start-ADTProcess
                     }
                     return
                 }
-                if ($ArgumentList)
+                $result = if ($execution -is [PSADT.ProcessManagement.ProcessHandle])
                 {
-                    if ($SecureArgumentList)
-                    {
-                        Write-ADTLogEntry -Message "Executed [$(if (($command = [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($execution.CommandLine)[0]).Contains(' ')) { [System.String]::Format('"{0}"', $command) } else { $command }) (Parameters Hidden)], awaiting completion..."
-                    }
-                    else
-                    {
-                        Write-ADTLogEntry -Message "Executed [$($execution.CommandLine)], awaiting completion..."
-                    }
+                    $execution.Task.GetAwaiter().GetResult()
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "Executed [$($execution.CommandLine)], awaiting completion..."
-                }
-                $result = $execution.Task.GetAwaiter().GetResult()
-
-                # Handle scenarios where we don't have a ProcessResult object (ShellExecute action, for instance).
-                if (!$result)
-                {
-                    if ($PassThru)
-                    {
-                        Write-ADTLogEntry -Message 'PassThru parameter specified, however no result was available.'
-                    }
-                    return
+                    $execution
                 }
 
                 # Check whether the process timed out.

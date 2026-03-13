@@ -72,8 +72,8 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentList = new ReadOnlyCollection<string>([.. argumentList?.Where(static s => !string.IsNullOrWhiteSpace(s)) ?? []]);
-            FilePath = filePath.StartsWith("\"") && filePath.EndsWith("\"") ? filePath.TrimStart('"').TrimEnd('"') : filePath;
+            ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
+            FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
             if (useHighestAvailableToken)

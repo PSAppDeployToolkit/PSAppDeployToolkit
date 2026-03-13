@@ -109,5 +109,10 @@
         /// Performs gpupdate.exe for the user.
         /// </summary>
         GroupPolicyUpdate,
+
+        /// <summary>
+        /// Performs a ShellExecuteEx invocation for the user.
+        /// </summary>
+        ShellExecuteProcess,
     }
 }
