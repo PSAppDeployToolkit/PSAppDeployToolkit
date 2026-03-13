@@ -831,7 +831,7 @@ function Start-ADTProcess
                     }
                     else
                     {
-                        Write-ADTLogEntry -Message "Executing [$($launchData.MakeCommandLine())]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})$(if ($NoWait) { " without waiting" })..."
+                        Write-ADTLogEntry -Message "Executing [`"$FilePath`" $(if ($ArgumentList.Length -gt 1) { [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList) } else { $ArgumentList[0] })]$(if ($RunAsActiveUser) {" for user [$($RunAsActiveUser.NTAccount)]"})$(if ($NoWait) { " without waiting" })..."
                     }
                 }
                 else
@@ -875,7 +875,6 @@ function Start-ADTProcess
                 # NoWait specified, return process details. If it isn't specified, start reading standard Output and Error streams.
                 if (($execution -is [PSADT.ProcessManagement.ProcessHandle]) -and $NoWait)
                 {
-                    Write-ADTLogEntry -Message 'NoWait parameter specified. Continuing without waiting for exit code...'
                     if ($PassThru)
                     {
                         Write-ADTLogEntry -Message 'PassThru parameter specified, returning task for external tracking.'
@@ -893,7 +892,7 @@ function Start-ADTProcess
                 }
 
                 # Check whether the process timed out.
-                if (($null -eq $result.ExitCode) -or ($result.ExitCode -eq [PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode))
+                if ($result.ExitCode -eq [PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode)
                 {
                     $naerParams = if ($NoTerminateOnTimeout)
                     {
@@ -917,6 +916,21 @@ function Start-ADTProcess
                 }
 
                 # Check to see whether we should ignore exit codes.
+                if ($ArgumentList)
+                {
+                    if ($SecureArgumentList)
+                    {
+                        Write-ADTLogEntry -Message "Finished execution of [$(if (($command = [PSADT.ProcessManagement.CommandLineUtilities]::CommandLineToArgumentList($execution.CommandLine)[0]).Contains(' ')) { [System.String]::Format('"{0}"', $command) } else { $command }) (Parameters Hidden)]."
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Finished execution of [$($execution.CommandLine)]."
+                    }
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Finished execution of [$($execution.CommandLine)]."
+                }
                 $waleParams = if (($ignoreExitCode = $IgnoreExitCodes -and ($($IgnoreExitCodes).Equals('*') -or ([System.Int32[]]$IgnoreExitCodes).Contains($result.ExitCode))))
                 {
                     @{ Message = "Execution completed and the exit code [$($result.ExitCode)] is being ignored."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Info }
