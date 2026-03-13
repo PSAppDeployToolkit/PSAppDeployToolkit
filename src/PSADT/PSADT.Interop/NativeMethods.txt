@@ -254,6 +254,8 @@ PKEY_AppUserModel_StartPinOption
 PKEY_AppUserModel_ToastActivatorCLSID
 PKEY_Link_Arguments
 PKEY_Link_Comment
+PKEY_Link_TargetParsingPath
+PKEY_Link_TargetUrlPath
 POLICY_ACCOUNT_DOMAIN_INFO
 POLICY_AUDIT_EVENTS_INFO
 POLICY_AUDIT_FULL_QUERY_INFO
