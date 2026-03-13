@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop.Exceptions;
@@ -283,13 +284,12 @@ namespace PSADT.Interop.Utilities
                 if (ex.StackTrace is string trace)
                 {
                     string marker = nameof(ExceptionUtilities) + "." + nameof(GetStackTraceAtPrefix);
-                    foreach (string line in trace.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries))
+                    foreach (string line in trace.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries).Select(static s => s.TrimStart()))
                     {
-                        string trimmed = line.TrimStart();
-                        int idx = trimmed.IndexOf(marker, StringComparison.Ordinal);
+                        int idx = line.IndexOf(marker, StringComparison.Ordinal);
                         if (idx > 0)
                         {
-                            return trimmed.Substring(0, idx);
+                            return line.Substring(0, idx);
                         }
                     }
                 }
