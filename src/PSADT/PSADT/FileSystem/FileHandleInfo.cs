@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using PSADT.Interop;
 
 namespace PSADT.FileSystem
@@ -26,7 +25,7 @@ namespace PSADT.FileSystem
             ArgumentException.ThrowIfNullOrWhiteSpace(ntPath);
             ArgumentException.ThrowIfNullOrWhiteSpace(handleType);
             ProcessName = Process.GetProcessById((int)handleInfo.UniqueProcessId).ProcessName;
-            FilePath = new(filePath);
+            FilePath = filePath;
             NtPath = ntPath;
             HandleType = handleType;
             HandleInfo = handleInfo;
@@ -40,7 +39,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The file path associated with the handle.
         /// </summary>
-        public FileInfo FilePath { get; }
+        public string FilePath { get; }
 
         /// <summary>
         /// The NT path associated with the handle.
