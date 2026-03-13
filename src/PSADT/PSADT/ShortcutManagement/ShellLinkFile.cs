@@ -793,13 +793,12 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Resolves the shortcut, finding the target if it has moved.
         /// </summary>
-        /// <param name="hwnd">A handle to the parent window for any UI that may be displayed.</param>
         /// <param name="flags">Flags that control the resolution process.</param>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public void Resolve(nint hwnd, uint flags)
+        public void Resolve(Interop.SLR_FLAGS flags = Interop.SLR_FLAGS.SLR_NO_UI | Interop.SLR_FLAGS.SLR_NOUPDATE | Interop.SLR_FLAGS.SLR_NOSEARCH | Interop.SLR_FLAGS.SLR_NOTRACK)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _shellLink.Resolve((HWND)hwnd, flags);
+            _shellLink.Resolve(HWND.Null, (uint)flags);
         }
 
         /// <summary>
