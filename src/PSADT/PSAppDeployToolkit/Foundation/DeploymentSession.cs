@@ -647,7 +647,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
-                    WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, adtEnv.LoggedOnUserSessions.Select(static s => s.ToString() + Environment.NewLine)).TrimEnd()}", false);
+                    WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, adtEnv.LoggedOnUserSessions.Select(static s => $"{s}{Environment.NewLine}{Environment.NewLine}")).TrimEnd()}", false);
 
                     // Check if the current process is running in the context of one of the logged on users
                     if (adtEnv.CurrentLoggedOnUserSession is SessionInfo CurrentLoggedOnUserSession)
