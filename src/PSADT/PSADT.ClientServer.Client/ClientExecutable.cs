@@ -419,6 +419,16 @@ namespace PSADT.ClientServer
                                                 break;
                                             }
 
+                                        case PipeCommand.ShellExecuteProcess:
+                                            {
+                                                if (ProcessManager.LaunchAsync(DeserializeBytes<ShellExecuteProcessPayload>(requestBytes, payloadOffset).Options.ToLaunchInfo())?.Task.GetAwaiter().GetResult() is not ProcessResult result)
+                                                {
+                                                    result = new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
+                                                }
+                                                WriteSuccess(result);
+                                                break;
+                                            }
+
                                         default:
                                             {
                                                 throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
@@ -593,6 +603,15 @@ namespace PSADT.ClientServer
                     }
                     ClientServerUtilities.SetClientServerOperationSuccess();
                     Console.WriteLine(SerializeToString(GroupPolicyUpdate(force)));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/ShellExecuteProcess" or "/sep")
+                {
+                    if (ProcessManager.LaunchAsync(DeserializeString<UserShellExecuteOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))).ToLaunchInfo())?.Task.GetAwaiter().GetResult() is not ProcessResult result)
+                    {
+                        result = new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
+                    }
+                    Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
             }
@@ -845,7 +864,9 @@ namespace PSADT.ClientServer
                 standardInput: ["N"],
                 createNoWindow: true
             );
-            return ProcessManager.LaunchAsync(launchInfo)!.Task.GetAwaiter().GetResult();
+            return ProcessManager.LaunchAsync(launchInfo) is not ProcessHandle handle
+                ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
+                : handle.Task.GetAwaiter().GetResult();
         }
 
         /// <summary>

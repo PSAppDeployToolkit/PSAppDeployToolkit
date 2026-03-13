@@ -679,6 +679,18 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Executes a process using the specified shell execution options in the user context.
+        /// </summary>
+        /// <param name="shellExecuteOptions">The options that define how the process should be executed, including file name, arguments, working
+        /// directory, and window display settings.</param>
+        /// <returns>A ProcessResult object containing information about the executed process, or null if the process could not
+        /// be started.</returns>
+        public ProcessResult? ShellExecuteProcess(UserShellExecuteOptions shellExecuteOptions)
+        {
+            return Invoke<ShellExecuteProcessPayload, ProcessResult?>(PipeCommand.ShellExecuteProcess, new(shellExecuteOptions));
+        }
+
+        /// <summary>
         /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see
