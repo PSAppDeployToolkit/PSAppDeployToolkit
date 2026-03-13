@@ -37,7 +37,6 @@ FMTID_Intshcut
 FOLDERID_UserProfiles
 FormatMessage
 GENERIC_MAPPING
-GetApplicationUserModelId
 GetCurrentProcess
 GetCurrentProcessId
 GetCurrentThreadId

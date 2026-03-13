@@ -3,14 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.System.Threading;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 
@@ -19,7 +16,7 @@ namespace PSADT.Utilities
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    public static class ShellUtilities
+    internal static class ShellUtilities
     {
         /// <summary>
         /// Notifies the system that file associations have changed and refreshes the desktop environment.
@@ -129,45 +126,6 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for a specified process.
-        /// </summary>
-        /// <remarks>The Application User Model ID is used to uniquely identify an application in the
-        /// Windows operating system.</remarks>
-        /// <param name="hProcess">A handle to the process for which the Application User Model ID is retrieved. The handle must be valid and
-        /// not closed.</param>
-        /// <returns>The Application User Model ID of the specified process as a string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="hProcess"/> is null.</exception>
-        internal static string GetApplicationUserModelId(SafeHandle hProcess)
-        {
-            Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH];
-            _ = NativeMethods.GetApplicationUserModelId(hProcess, out uint length, appUserModelId);
-            return appUserModelId.Slice(0, (int)length - 1).ToString();
-        }
-
-        /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for the specified process.
-        /// </summary>
-        /// <param name="process">The process for which to obtain the AUMID. Must not be null.</param>
-        /// <returns>The Application User Model ID associated with the specified process.</returns>
-        public static string GetApplicationUserModelId(Process process)
-        {
-            ArgumentNullException.ThrowIfNull(process);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-            return GetApplicationUserModelId(hProcess);
-        }
-
-        /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for a specified process.
-        /// </summary>
-        /// <param name="processId">The ID of the process for which to retrieve the AUMID.</param>
-        /// <returns>The Application User Model ID associated with the specified process.</returns>
-        public static string GetApplicationUserModelId(uint processId)
-        {
-            using Process process = Process.GetProcessById((int)processId);
-            return GetApplicationUserModelId(process);
-        }
-
-        /// <summary>
         /// Retrieves the time elapsed since the last user input event.
         /// </summary>
         /// <remarks>This method uses system-level APIs to determine the time of the last user input, such
@@ -193,19 +151,6 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Retrieves the window handle for the Windows taskbar (system tray).
-        /// </summary>
-        /// <remarks>This method is intended for internal use when interacting with the Windows shell. The
-        /// returned handle can be used with other Windows API functions that require a reference to the taskbar
-        /// window.</remarks>
-        /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static HWND GetTrayWindowHandle()
-        {
-            return NativeMethods.FindWindow("Shell_TrayWnd", null);
-        }
-
-        /// <summary>
         /// Gets the full path to the user profiles directory on the system.
         /// </summary>
         /// <remarks>This method retrieves the path to the user profiles directory using the Windows Shell
@@ -220,6 +165,19 @@ namespace PSADT.Utilities
             {
                 return new(ppszPath.ToStringUni());
             }
+        }
+
+        /// <summary>
+        /// Retrieves the window handle for the Windows taskbar (system tray).
+        /// </summary>
+        /// <remarks>This method is intended for internal use when interacting with the Windows shell. The
+        /// returned handle can be used with other Windows API functions that require a reference to the taskbar
+        /// window.</remarks>
+        /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static HWND GetTrayWindowHandle()
+        {
+            return NativeMethods.FindWindow("Shell_TrayWnd", null);
         }
     }
 }
