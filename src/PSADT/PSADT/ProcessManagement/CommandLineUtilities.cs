@@ -699,21 +699,9 @@ namespace PSADT.ProcessManagement
             int equalsPos = argument.IndexOf("=");
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
-                string value = argument.Substring(equalsPos + 1);
-                if (value.StartsWith("\"") && value.EndsWith("\""))
-                {
-                    // The value is already quoted. We can return the argument as-is,
-                    // as our compatible parser will handle it correctly.
-                    return argument;
-                }
-                else
-                {
-                    // Value is not quoted - preserve as-is to support tools like NSIS
-                    // that require unquoted paths even when they contain spaces.
-                    // The caller has explicitly provided an unquoted key=value argument,
-                    // so we respect that format.
-                    return argument;
-                }
+                // Return the argument irrespective of whether it's quoted or not to support
+                // tools like NSIS that require unquoted paths even when they contain spaces.
+                return argument;
             }
 
             // Check for flag+path pattern (e.g., -sfx_oC:\Path\To\Output).

@@ -89,16 +89,9 @@ namespace PSADT.Interop.Utilities
             Win32Exception win32Exception = new(unchecked((int)win32Error), !string.IsNullOrWhiteSpace(message) ? message : GetMessageForWin32Error(win32Error));
 
             // Try for an ManagedException > Win32Exception based on the WIN32_ERROR code, falling back as appripriate.
-            if (TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is Exception hrException)
-            {
-                // There was a managed exception for the HRESULT corresponding to the WIN32_ERROR code, return that instead of the Win32Exception.
-                return hrException;
-            }
-            else
-            {
-                // Just return the Win32Exception with the message from FormatMessage for the WIN32_ERROR code.
-                return win32Exception;
-            }
+            return TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is not Exception hrException
+                ? win32Exception
+                : hrException;
         }
 
         /// <summary>
