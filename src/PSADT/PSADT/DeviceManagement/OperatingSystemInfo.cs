@@ -66,7 +66,7 @@ namespace PSADT.DeviceManagement
             Architecture = RuntimeInformation.OSArchitecture;
             ProductType = productType;
             Is64BitOperatingSystem = Environment.Is64BitOperatingSystem;
-            IsTerminalServer = ((suiteMask & SUITE_MASK.VER_SUITE_TERMINAL) == SUITE_MASK.VER_SUITE_TERMINAL) && !((suiteMask & SUITE_MASK.VER_SUITE_SINGLEUSERTS) == SUITE_MASK.VER_SUITE_SINGLEUSERTS);
+            IsTerminalServer = (suiteMask & SUITE_MASK.VER_SUITE_TERMINAL) == SUITE_MASK.VER_SUITE_TERMINAL && (suiteMask & SUITE_MASK.VER_SUITE_SINGLEUSERTS) != SUITE_MASK.VER_SUITE_SINGLEUSERTS;
             IsWorkstationEnterpriseMultiSessionOS = IsOperatingSystemEnterpriseMultiSessionOS(edition, editionId, productName);
             IsWorkstation = productType == PRODUCT_TYPE.VER_NT_WORKSTATION;
             IsServer = productType == PRODUCT_TYPE.VER_NT_SERVER;
