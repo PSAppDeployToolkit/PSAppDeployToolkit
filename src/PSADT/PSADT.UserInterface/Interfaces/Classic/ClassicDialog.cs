@@ -407,7 +407,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     break;
 
                 case DialogPosition.Top:
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
                     top = workingArea.Top;
                     break;
 
@@ -417,7 +417,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     break;
 
                 case DialogPosition.TopCenter:
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
                     top = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
                     break;
 
@@ -427,12 +427,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     break;
 
                 case DialogPosition.Bottom:
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
                     top = workingArea.Bottom - Height;
                     break;
 
                 case DialogPosition.BottomCenter:
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
+                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
                     top = workingArea.Top + ((workingArea.Height - Height) * (5.0 / 6.0));
                     break;
 
@@ -447,15 +447,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     Rectangle screenBounds = screen.Bounds;
                     int taskbarOffsetPixels = screenBounds.Height - workingArea.Height - (workingArea.Top - screenBounds.Top);
                     double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2) - (Width / dpiScale * 0.6 * dpiScale);
-                    top = workingArea.Top + ((workingArea.Height - Height) / 2) + (taskbarOffsetPixels / 2.0);
+                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5) - (Width / dpiScale * 0.6 * dpiScale);
+                    top = workingArea.Top + ((workingArea.Height - Height) * 0.5) + (taskbarOffsetPixels * 0.5);
                     break;
 
                 case DialogPosition.Center:
                 case DialogPosition.Default:
                 default:
-                    left = workingArea.Left + ((workingArea.Width - Width) / 2);
-                    top = workingArea.Top + ((workingArea.Height - Height) / 2);
+                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
+                    top = workingArea.Top + ((workingArea.Height - Height) * 0.5);
                     break;
             }
 
