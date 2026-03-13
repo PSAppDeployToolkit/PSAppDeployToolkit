@@ -428,17 +428,13 @@ namespace PSADT.ProcessManagement
             }
 
             // Try to find where the executable path ends by looking for executable extensions.
-            string[] executableExtensions = [".exe", ".msi", ".bat", ".cmd", ".com", ".scr"];
             for (int i = 0; i < tokens.Count; i++)
             {
                 // Check if this part ends with an executable extension.
                 string currentPath = string.Join(" ", tokens.Take(i + 1));
-                foreach (string ext in executableExtensions)
+                if (CommonExecutableExtensions.FirstOrDefault(ext => currentPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) is not null)
                 {
-                    if (currentPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return (currentPath, i + 1);
-                    }
+                    return (currentPath, i + 1);
                 }
             }
 
@@ -840,5 +836,13 @@ namespace PSADT.ProcessManagement
             }
             _ = sb.Append('"'); return sb.ToString();
         }
+
+        /// <summary>
+        /// Gets a read-only collection of common executable file extensions used on Windows platforms.
+        /// </summary>
+        /// <remarks>This collection includes extensions such as ".exe", ".msi", ".bat", ".cmd", ".com",
+        /// and ".scr". It can be used to identify files that are typically considered executable by the operating
+        /// system.</remarks>
+        private static readonly ReadOnlyCollection<string> CommonExecutableExtensions = new([".exe", ".msi", ".bat", ".cmd", ".com", ".scr"]);
     }
 }

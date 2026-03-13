@@ -34,16 +34,9 @@ namespace PSADT.Foundation
 
             // Determine the account that will be used to execute client/server commands in the user's context.
             // Favour the caller's session if it's found and is currently an active user session on the device.
-            foreach (SessionInfo session in sessionInfo)
-            {
-                if (session.SID == AccountUtilities.CallerSid && session.IsActiveUserSession)
-                {
-                    return session.ToRunAsActiveUser();
-                }
-            }
-
-            // The caller SID isn't the active user session, try to find the best available match.
-            return sessionInfo.Where(static s => s.IsActiveUserSession).OrderByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser();
+            return sessionInfo.FirstOrDefault(static s => s.SID == AccountUtilities.CallerSid && s.IsActiveUserSession) is not SessionInfo callerSession
+                ? (sessionInfo.Where(static s => s.IsActiveUserSession).OrderByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser())
+                : callerSession.ToRunAsActiveUser();
         }
 
         /// <summary>

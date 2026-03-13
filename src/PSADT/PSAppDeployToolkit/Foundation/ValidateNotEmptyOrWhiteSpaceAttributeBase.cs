@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
@@ -159,21 +160,16 @@ namespace PSAppDeployToolkit.Foundation
         {
             if (type.IsArray)
             {
-                Type? elementType = type.GetElementType();
-                isElementValueType = IsNonNullableValueType(elementType);
+                isElementValueType = IsNonNullableValueType(type.GetElementType());
                 return true;
             }
             if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
             {
                 // Try to get the element type from generic IEnumerable<T>
-                foreach (Type iface in type.GetInterfaces())
+                if (type.GetInterfaces().FirstOrDefault(static iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>)) is Type iface)
                 {
-                    if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                    {
-                        Type elementType = iface.GetGenericArguments()[0];
-                        isElementValueType = IsNonNullableValueType(elementType);
-                        return true;
-                    }
+                    isElementValueType = IsNonNullableValueType(iface.GetGenericArguments()[0]);
+                    return true;
                 }
                 isElementValueType = false;
                 return true;
@@ -202,14 +198,11 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns><c>true</c> if the object implements <see cref="IReadOnlyDictionary{TKey, TValue}"/>; otherwise, <c>false</c>.</returns>
         private static bool IsReadOnlyDictionary(object value, out int count)
         {
-            foreach (Type iface in value.GetType().GetInterfaces())
+            if (value.GetType().GetInterfaces().FirstOrDefault(static iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)) is Type iface)
             {
-                if (iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
-                {
-                    // Use reflection to get the Count property.
-                    count = iface.GetProperty("Count") is PropertyInfo countProperty && countProperty.GetValue(value) is int countValue ? countValue : 0;
-                    return true;
-                }
+                // Use reflection to get the Count property.
+                count = iface.GetProperty("Count") is PropertyInfo countProperty && countProperty.GetValue(value) is int countValue ? countValue : 0;
+                return true;
             }
             count = 0;
             return false;

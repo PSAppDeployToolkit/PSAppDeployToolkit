@@ -486,12 +486,9 @@ namespace PSADT.FileSystem
                     continue;
                     throw;
                 }
-                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(path => path.Length > 0 && !lookupTable.ContainsKey(path)))
                 {
-                    if (path.Length > 0 && !lookupTable.ContainsKey(path))
-                    {
-                        lookupTable.Add(path, driveLetter);
-                    }
+                    lookupTable.Add(path, driveLetter);
                 }
                 targetPath.Clear();
             }
