@@ -188,13 +188,32 @@ namespace PSADT.ShortcutManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
-                _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_UNCPRIORITY);
-                return buffer.ToStringUni();
+                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH];
+                buffer.Clear(); _shellLink.GetPath(buffer, 0);
+                if (buffer.ToStringUni() is string targetPath && !string.IsNullOrWhiteSpace(targetPath))
+                {
+                    return targetPath;
+                }
+                if (GetStringProperty(in PInvoke.PKEY_Link_TargetUrlPath) is string targetUrlPath && !string.IsNullOrWhiteSpace(targetUrlPath))
+                {
+                    return targetUrlPath;
+                }
+                if (GetStringProperty(in PInvoke.PKEY_Link_TargetParsingPath) is string parsingPath && !string.IsNullOrWhiteSpace(parsingPath))
+                {
+                    return parsingPath;
+                }
+                buffer.Clear(); _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_RAWPATH);
+                return buffer.ToStringUni() is string rawTargetPath && !string.IsNullOrWhiteSpace(rawTargetPath)
+                    ? rawTargetPath
+                    : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
+                if (Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) && !uri.IsFile)
+                {
+                    SetStringProperty(in PInvoke.PKEY_Link_TargetUrlPath, uri.AbsoluteUri);
+                }
                 _shellLink.SetPath(value);
             }
         }
