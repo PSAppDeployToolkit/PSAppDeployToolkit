@@ -70,6 +70,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShellExecuteProcess')]
         [System.Management.Automation.SwitchParameter]$ShellExecuteProcess,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetUserFocusModeState')]
+        [System.Management.Automation.SwitchParameter]$GetUserFocusModeState,
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Foundation.RunAsActiveUser]$User,
@@ -465,6 +468,11 @@ function Private:Invoke-ADTClientServerOperation
                 [PSADT.ProcessManagement.ProcessResult]
                 break
             }
+            GetUserFocusModeState
+            {
+                [System.Int32]
+                break
+            }
             default
             {
                 $naerParams = @{
@@ -643,7 +651,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate|ShellExecuteProcess)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.ClientServer.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
+    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate|ShellExecuteProcess|GetUserFocusModeState)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.ClientServer.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
     {
         return $result
     }

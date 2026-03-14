@@ -114,5 +114,10 @@
         /// Performs a ShellExecuteEx invocation for the user.
         /// </summary>
         ShellExecuteProcess,
+
+        /// <summary>
+        /// Gets the current focus mode state for the user.
+        /// </summary>
+        GetUserFocusModeState,
     }
 }

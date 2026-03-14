@@ -194,6 +194,7 @@
         'Test-ADTRegistryValue'
         'Test-ADTServiceExists'
         'Test-ADTSessionActive'
+        'Test-ADTUserInFocusMode'
         'Test-ADTUserIsBusy'
         'Unblock-ADTAppExecution'
         'Uninstall-ADTApplication'

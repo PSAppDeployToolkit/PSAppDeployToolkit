@@ -429,6 +429,12 @@ namespace PSADT.ClientServer
                                                 break;
                                             }
 
+                                        case PipeCommand.GetUserFocusModeState:
+                                            {
+                                                WriteSuccess(GetUserFocusModeState());
+                                                break;
+                                            }
+
                                         default:
                                             {
                                                 throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
@@ -612,6 +618,11 @@ namespace PSADT.ClientServer
                         result = new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
                     }
                     Console.WriteLine(SerializeToString(result));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetUserFocusModeState" or "/gufms")
+                {
+                    Console.WriteLine(SerializeToString(GetUserFocusModeState()));
                     return (int)ClientExitCode.Success;
                 }
             }
@@ -867,6 +878,18 @@ namespace PSADT.ClientServer
             return ProcessManager.LaunchAsync(launchInfo) is not ProcessHandle handle
                 ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
                 : handle.Task.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Retrieves the current focus mode state for the user.
+        /// </summary>
+        /// <remarks>Focus mode is a Windows feature that helps minimize distractions by suppressing
+        /// notifications and other interruptions. The return value indicates whether focus mode is currently active for
+        /// the user, or if the state could not be determined due to an error or unsupported environment.</remarks>
+        /// <returns>1 if focus mode is active; 0 if focus mode is inactive; -1 if the focus mode state could not be determined.</returns>
+        internal static int GetUserFocusModeState()
+        {
+            return !ShellUtilities.TryGetFocusSessionActive(out bool active) ? -1 : active ? 1 : 0;
         }
 
         /// <summary>
