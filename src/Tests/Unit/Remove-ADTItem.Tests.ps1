@@ -47,6 +47,34 @@ Describe 'Remove-ADTItem' {
 
             $folderPath | Should -Not -Exist
         }
+
+        It 'Should remove nested empty folders bottom-up when Recurse and OnlyIfEmpty are specified' {
+            $folderPath = Join-Path -Path $TestDrive -ChildPath 'only-empty-root'
+            $subFolderPath = Join-Path -Path $folderPath -ChildPath 'a'
+            $leafFolderPath = Join-Path -Path $subFolderPath -ChildPath 'b'
+            New-Item -Path $leafFolderPath -ItemType Directory -Force | Out-Null
+
+            Remove-ADTItem -LiteralPath $folderPath -Recurse -OnlyIfEmpty
+
+            $leafFolderPath | Should -Not -Exist
+            $subFolderPath | Should -Not -Exist
+            $folderPath | Should -Not -Exist
+        }
+
+        It 'Should keep folders that contain files when Recurse and OnlyIfEmpty are specified' {
+            $folderPath = Join-Path -Path $TestDrive -ChildPath 'only-empty-mixed'
+            $subFolderPath = Join-Path -Path $folderPath -ChildPath 'a'
+            $leafFolderPath = Join-Path -Path $subFolderPath -ChildPath 'b'
+            New-Item -Path $leafFolderPath -ItemType Directory -Force | Out-Null
+            Set-Content -Path (Join-Path -Path $leafFolderPath -ChildPath 'keep.txt') -Value 'data' -Encoding Ascii -Force
+
+            Remove-ADTItem -LiteralPath $folderPath -Recurse -OnlyIfEmpty
+
+            $folderPath | Should -Exist
+            $subFolderPath | Should -Exist
+            $leafFolderPath | Should -Exist
+            (Join-Path -Path $leafFolderPath -ChildPath 'keep.txt') | Should -Exist
+        }
     }
 
     Context 'InputObject and validation' {
@@ -61,6 +89,13 @@ Describe 'Remove-ADTItem' {
 
         It 'Should handle non-existent paths gracefully' {
             { Remove-ADTItem -LiteralPath (Join-Path -Path $TestDrive -ChildPath 'does-not-exist') } | Should -Not -Throw
+        }
+
+        It 'Should require Recurse when OnlyIfEmpty is specified' {
+            $folderPath = Join-Path -Path $TestDrive -ChildPath 'binding-validation'
+            New-Item -Path $folderPath -ItemType Directory -Force | Out-Null
+
+            { Remove-ADTItem -LiteralPath $folderPath -OnlyIfEmpty } | Should -Throw
         }
     }
 }
