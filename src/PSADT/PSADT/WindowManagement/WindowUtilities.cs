@@ -28,7 +28,7 @@ namespace PSADT.WindowManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
-            return GetProcessWindowInfo(null, options.ParentProcessFilter, options.ParentProcessIdFilter, options.ParentProcessMainWindowHandleFilter, options.WindowTitleFilter, options.WindowHandleFilter);
+            return GetProcessWindowInfo(null, options.ParentProcessFilter, options.ParentProcessIdFilter, options.ParentProcessMainWindowHandleFilter, options.WindowTitleRegex, options.WindowHandleFilter);
         }
 
         /// <summary>
@@ -61,13 +61,13 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandleFilter">A collection of main window handles to filter parent processes. Only windows belonging to processes whose
         /// main window handle is in this collection are included. If empty, no filtering by main window handle is
         /// applied.</param>
-        /// <param name="windowTitleFilter">An optional array of strings representing window title patterns to filter the results. Only windows with
-        /// titles matching one or more of the specified patterns will be included.</param>
+        /// <param name="windowTitleRegex">An optional regular expression pattern to filter windows by their titles. Only windows with titles that match the
+        /// specified pattern will be included.</param>
         /// <param name="windowHandleFilter">An optional array of window handles (<see cref="nint"/>) to filter the results. Only windows with handles
         /// matching one or more of the specified handles will be included.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the visible windows that match
         /// the specified filters. If no filters are provided, all visible windows are included.</returns>
-        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<Process>? parentProcesses = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<int>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null, IReadOnlyList<string>? windowTitleFilter = null, IReadOnlyList<nint>? windowHandleFilter = null)
+        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<Process>? parentProcesses = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<int>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null, string? windowTitleRegex = null, IReadOnlyList<nint>? windowHandleFilter = null)
         {
             // Ensure list inputs are not empty if they're not null.
             if (parentProcesses is not null)
@@ -86,9 +86,9 @@ namespace PSADT.WindowManagement
             {
                 ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count);
             }
-            if (windowTitleFilter is not null)
+            if (windowTitleRegex is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(windowTitleFilter.Count);
+                ArgumentException.ThrowIfNullOrWhiteSpace(windowTitleRegex);
             }
             if (windowHandleFilter is not null)
             {
@@ -97,7 +97,7 @@ namespace PSADT.WindowManagement
 
             // Get the list of processes based on the provided filters and start finding applicable windows.
             IReadOnlyList<Process> processes = parentProcesses ?? [.. Process.GetProcesses().Where(p => p.MainWindowHandle != default && parentProcessFilter?.Any(f => f.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase)) != false && parentProcessIdFilter?.Contains(p.Id) != false && parentProcessMainWindowHandleFilter?.Contains(p.MainWindowHandle) != false)];
-            List<WindowInfo> windows = []; Regex? windowTitleRegex = windowTitleFilter is not null ? new(string.Join("|", windowTitleFilter.Select(static t => Regex.Escape(t))), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
+            List<WindowInfo> windows = []; Regex? windowTitleRegexObject = windowTitleRegex is not null ? new(windowTitleRegex, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
             foreach (HWND windowHandle in windowHandleFilter is not null ? WindowTools.EnumWindows().Where(w => windowHandleFilter.Contains(w) && NativeMethods.IsWindowVisible(w)) : WindowTools.EnumWindows().Where(static w => NativeMethods.IsWindowVisible(w)))
             {
                 // Return early if we can't find a process for this window.
@@ -114,7 +114,7 @@ namespace PSADT.WindowManagement
                 }
 
                 // Continue if the visible window title doesn't match our filter.
-                if (windowTitleRegex?.IsMatch(windowTitle) == false)
+                if (windowTitleRegexObject?.IsMatch(windowTitle) == false)
                 {
                     continue;
                 }

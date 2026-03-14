@@ -195,7 +195,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Go into client/server mode if a session is active and we're not asked to wait.
-    $result = if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
+    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
         [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType) -or
         ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait) -or
         ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User) -and !$NoWait))
@@ -260,47 +260,47 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ([PSADT.UserInterface.DialogType]::DialogBox.Equals($DialogType))
             {
-                $Script:ADT.ClientServerProcess.ShowDialogBox($Options)
+                $result = $Script:ADT.ClientServerProcess.ShowDialogBox($Options)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
             {
-                $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+                $result = $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
             {
-                $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
+                $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
             {
-                $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
+                $result = $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
             {
-                $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
+                $result = $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
             {
-                $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
+                $result = $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('GetEnvironmentVariable') -or $PSCmdlet.ParameterSetName.Equals('RemoveEnvironmentVariable'))
             {
-                $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Variable)
+                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Variable)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('SetEnvironmentVariable'))
             {
-                $Script:ADT.ClientServerProcess.SetEnvironmentVariable($Variable, $Value, !!$Expandable, !!$Append, !!$Remove)
+                $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariable($Variable, $Value, !!$Expandable, !!$Append, !!$Remove)
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('GroupPolicyUpdate'))
             {
-                $Script:ADT.ClientServerProcess.GroupPolicyUpdate(!!$Force)
+                $result = $Script:ADT.ClientServerProcess.GroupPolicyUpdate(!!$Force)
             }
             elseif ($PSBoundParameters.ContainsKey('Options'))
             {
-                $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
+                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
             }
             else
             {
-                $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
             }
 
             # If the log writer gave up the ghost, throw its exception.
@@ -642,7 +642,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Deserialise the result for returning to the caller.
-        [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0], $type)
+        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0], $type)
     }
 
     # Test that the received result is valid and expected.
