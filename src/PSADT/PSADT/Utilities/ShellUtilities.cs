@@ -19,7 +19,7 @@ namespace PSADT.Utilities
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    public static class ShellUtilities
+    internal static class ShellUtilities
     {
         /// <summary>
         /// Attempts to determine whether a Windows Focus Session is currently active.
@@ -32,7 +32,7 @@ namespace PSADT.Utilities
         /// langword="false"/>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if the Focus Session state was successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
-        public static bool TryGetFocusSessionActive(out bool isActive)
+        internal static bool TryGetFocusSessionActive(out bool isActive)
         {
             if (!ApiInformation.IsTypePresent("Windows.UI.Shell.FocusSessionManager") || !FocusSessionManager.IsSupported)
             {
@@ -52,14 +52,14 @@ namespace PSADT.Utilities
         /// <param name="mode">When this method returns, contains the current toast notification mode if the operation succeeds; otherwise,
         /// contains an undefined value.</param>
         /// <returns>true if the notification mode was successfully retrieved; otherwise, false.</returns>
-        public static bool TryGetNotificationMode(out ToastNotificationMode mode)
+        internal static bool TryGetNotificationMode(out Interop.ToastNotificationMode mode)
         {
             if (!ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationManagerForUser") || !ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationMode") || !ApiInformation.IsMethodPresent("Windows.UI.Notifications.ToastNotificationManager", "GetDefault") || !ApiInformation.IsPropertyPresent("Windows.UI.Notifications.ToastNotificationManagerForUser", "NotificationMode"))
             {
-                mode = (ToastNotificationMode)(-1);
+                mode = (Interop.ToastNotificationMode)(-1);
                 return false;
             }
-            mode = ToastNotificationManager.GetDefault().NotificationMode;
+            mode = (Interop.ToastNotificationMode)ToastNotificationManager.GetDefault().NotificationMode;
             return true;
         }
 

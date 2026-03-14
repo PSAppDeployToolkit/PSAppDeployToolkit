@@ -114,6 +114,7 @@
         'Get-ADTStringTable'
         'Get-ADTUserNotificationState'
         'Get-ADTUserProfiles'
+        'Get-ADTUserToastNotificationMode'
         'Get-ADTWindowTitle'
         'Initialize-ADTFunction'
         'Initialize-ADTModule'

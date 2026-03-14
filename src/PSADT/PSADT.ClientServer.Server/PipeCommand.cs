@@ -119,5 +119,10 @@
         /// Gets the current focus mode state for the user.
         /// </summary>
         GetUserFocusModeState,
+
+        /// <summary>
+        /// Gets the current toast notification mode for the user.
+        /// </summary>
+        GetUserToastNotificationMode,
     }
 }

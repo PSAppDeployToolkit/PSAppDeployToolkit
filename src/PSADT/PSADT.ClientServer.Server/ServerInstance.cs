@@ -704,6 +704,16 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Gets the current toast notification mode for the user session.
+        /// </summary>
+        /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
+        /// mode.</returns>
+        public ToastNotificationMode GetUserToastNotificationMode()
+        {
+            return Invoke<ToastNotificationMode>(PipeCommand.GetUserToastNotificationMode);
+        }
+
+        /// <summary>
         /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see

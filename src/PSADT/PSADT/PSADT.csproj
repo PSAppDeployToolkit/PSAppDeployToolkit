@@ -24,7 +24,6 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.26100.7705" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
 

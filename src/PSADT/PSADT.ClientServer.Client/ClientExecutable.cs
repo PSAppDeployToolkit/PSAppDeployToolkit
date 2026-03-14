@@ -435,6 +435,12 @@ namespace PSADT.ClientServer
                                                 break;
                                             }
 
+                                        case PipeCommand.GetUserToastNotificationMode:
+                                            {
+                                                WriteSuccess(GetUserToastNotificationMode());
+                                                break;
+                                            }
+
                                         default:
                                             {
                                                 throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
@@ -623,6 +629,11 @@ namespace PSADT.ClientServer
                 else if (arg is "/GetUserFocusModeState" or "/gufms")
                 {
                     Console.WriteLine(SerializeToString(GetUserFocusModeState()));
+                    return (int)ClientExitCode.Success;
+                }
+                else if (arg is "/GetUserToastNotificationMode" or "/gutnm")
+                {
+                    Console.WriteLine(SerializeToString(GetUserToastNotificationMode()));
                     return (int)ClientExitCode.Success;
                 }
             }
@@ -890,6 +901,18 @@ namespace PSADT.ClientServer
         internal static int GetUserFocusModeState()
         {
             return !ShellUtilities.TryGetFocusSessionActive(out bool active) ? -1 : active ? 1 : 0;
+        }
+
+        /// <summary>
+        /// Retrieves the current toast notification mode for the user.
+        /// </summary>
+        /// <remarks>The returned value may be -1 if the notification mode is unavailable or cannot be
+        /// retrieved. Callers should check for this value to handle such cases appropriately.</remarks>
+        /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
+        /// mode. Returns a value of -1 if the mode cannot be determined.</returns>
+        internal static ToastNotificationMode GetUserToastNotificationMode()
+        {
+            return !ShellUtilities.TryGetNotificationMode(out ToastNotificationMode mode) ? (ToastNotificationMode)(-1) : mode;
         }
 
         /// <summary>
