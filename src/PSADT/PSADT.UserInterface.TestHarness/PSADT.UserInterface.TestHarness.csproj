@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.18362.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
     <OutputType>WinExe</OutputType>
     <RootNamespace>PSADT.UserInterface.TestHarness</RootNamespace>
     <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
@@ -25,7 +25,7 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.18362.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
     <PackageReference Include="System.Management.Automation" Version="7.6.0-rc.1" PrivateAssets="all" />
   </ItemGroup>
 </Project>
