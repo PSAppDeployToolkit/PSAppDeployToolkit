@@ -150,6 +150,7 @@
         'Remove-ADTHashtableNullOrEmptyValues'
         'Remove-ADTIniSection'
         'Remove-ADTIniValue'
+        'Remove-ADTItem'
         'Remove-ADTInvalidFileNameChars'
         'Remove-ADTModuleCallback'
         'Remove-ADTRegistryKey'
