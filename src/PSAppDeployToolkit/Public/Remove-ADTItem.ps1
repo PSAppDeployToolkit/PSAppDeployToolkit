@@ -31,6 +31,9 @@ function Remove-ADTItem
     .PARAMETER Recurse
         Deletes folders and all child items recursively.
 
+    .PARAMETER OnlyIfEmpty
+        When used with Recurse, performs a bottom-up folder pass and removes only folders that are empty. Files are never removed in this mode.
+
     .INPUTS
         System.IO.FileSystemInfo
 
@@ -56,6 +59,11 @@ function Remove-ADTItem
 
         Removes the folder only when it is empty; otherwise it is skipped because Recurse was not provided.
 
+    .EXAMPLE
+        Remove-ADTItem -LiteralPath 'C:\Temp\FolderToPrune' -Recurse -OnlyIfEmpty
+
+        Removes empty folders from the deepest level up inside the target path.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
@@ -78,39 +86,64 @@ function Remove-ADTItem
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Path')]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'PathOnlyIfEmpty')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'LiteralPathOnlyIfEmpty')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'InputObject', ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'InputObjectOnlyIfEmpty', ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
         [System.IO.FileSystemInfo]$InputObject,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Recurse
+        [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InputObject')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'PathOnlyIfEmpty')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPathOnlyIfEmpty')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InputObjectOnlyIfEmpty')]
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'PathOnlyIfEmpty')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPathOnlyIfEmpty')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObjectOnlyIfEmpty')]
+        [System.Management.Automation.SwitchParameter]$OnlyIfEmpty
     )
 
     begin
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        if ($OnlyIfEmpty -and !$Recurse)
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The [-OnlyIfEmpty] parameter can only be used when [-Recurse] is specified.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'OnlyIfEmptyRequiresRecurse'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please specify the [-Recurse] parameter together with [-OnlyIfEmpty]."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
     }
 
     process
     {
         # Grab and cache all filesystem items.
-        $items = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
+        $inputParameterName = $PSCmdlet.ParameterSetName -replace 'OnlyIfEmpty'
+        $items = if (!$inputParameterName.Equals('InputObject'))
         {
-            foreach ($value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+            foreach ($value in $PSBoundParameters[$inputParameterName])
             {
                 try
                 {
-                    $giParams = @{ $PSCmdlet.ParameterSetName = $value }
+                    $giParams = @{ $inputParameterName = $value }
                     if (!($resolvedItems = Get-Item @giParams -Force))
                     {
                         Write-ADTLogEntry -Message "Unable to resolve the path [$value] because it does not exist." -Severity Warning
@@ -154,6 +187,30 @@ function Remove-ADTItem
                     # Folder deletion mode depends on recursion settings.
                     if ($item -is [System.IO.DirectoryInfo])
                     {
+                        # With recurse+only-if-empty mode, walk deepest-first so parent folders can become empty after child folder deletions.
+                        if ($Recurse -and $OnlyIfEmpty)
+                        {
+                            Write-ADTLogEntry -Message "Deleting empty folders in path [$($item.FullName)] from deepest level first..."
+                            foreach ($directory in $($item; Get-ChildItem -LiteralPath $item.FullName -Directory -Recurse -Force) | Sort-Object -Property @{ Expression = { $_.FullName.Length }; Descending = $true })
+                            {
+                                if (!$directory.Exists)
+                                {
+                                    continue
+                                }
+                                if (Get-ChildItem -LiteralPath $directory.FullName -Force)
+                                {
+                                    Write-ADTLogEntry -Message "Skipping folder [$($directory.FullName)] because it is not empty."
+                                    continue
+                                }
+                                Write-ADTLogEntry -Message "Deleting empty folder [$($directory.FullName)]..."
+                                if ($PSCmdlet.ShouldProcess($directory.FullName, 'Delete empty folder'))
+                                {
+                                    Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $directory.FullName -Force
+                                }
+                            }
+                            continue
+                        }
+
                         # With recursion, no extra checks are necessary, we can just get it done.
                         if ($Recurse)
                         {
