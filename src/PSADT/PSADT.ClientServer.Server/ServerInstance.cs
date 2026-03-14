@@ -691,6 +691,19 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Gets the current focus mode state for the user.
+        /// </summary>
+        /// <remarks>Focus mode may affect how notifications or interruptions are handled for the user.
+        /// Refer to the application's documentation for the mapping of integer values to specific focus mode
+        /// states.</remarks>
+        /// <returns>An integer value representing the user's focus mode state. The meaning of the value depends on the
+        /// application's focus mode enumeration.</returns>
+        public int GetUserFocusModeState()
+        {
+            return Invoke<int>(PipeCommand.GetUserFocusModeState);
+        }
+
+        /// <summary>
         /// Retrieves the exception, if any, that occurred during the execution of the log writer task.
         /// </summary>
         /// <returns>An <see cref="AggregateException"/> containing the exceptions thrown by the log writer task, or <see
