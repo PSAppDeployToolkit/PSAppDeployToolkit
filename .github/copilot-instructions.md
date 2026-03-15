@@ -154,6 +154,7 @@ When working on the PowerShell module in VS Code:
 - **Unsafe Keyword Usage**: Use the `unsafe` keyword only on method declarations/prototypes if the method takes unsafe parameters (e.g., pointers). For methods that only use unsafe code internally, use an `unsafe` block inside the method body instead.
 - **Strong Typing Preference**: Use strong typing and consistency (e.g., enum-backed properties like `SHOW_WINDOW_CMD`) over primitive types when the domain has a well-defined type.
 - **Use `NativeMethods.txt`**: Add missing Win32/CsWin32 symbols (e.g., PROPERTYKEY constants) from `NativeMethods.txt` instead of creating local ad-hoc definitions.
+- **Defensive Handling of PSObject Wrappers**: Ensure values are fully unwrapped before processing to avoid issues with PowerShell PSObject wrappers.
 
 ### File Modification Guidelines
 - **One Class Per File**: Each class should have its own dedicated file. Do not put multiple classes/records in a single file.
