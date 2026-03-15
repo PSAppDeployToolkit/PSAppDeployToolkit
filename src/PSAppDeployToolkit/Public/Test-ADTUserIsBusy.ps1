@@ -46,9 +46,36 @@ function Test-ADTUserIsBusy
     (
     )
 
+    Write-ADTLogEntry -Message "Running tests to determine whether the active user is busy or not..."
     try
     {
-        return ((Test-ADTMicrophoneInUse) -or (Get-ADTPresentationSettingsEnabledUsers) -or (Test-ADTPowerPoint))
+        # Bypass if no one's logged onto the device.
+        if (!(Get-ADTClientServerUser))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return $false
+        }
+        if (Test-ADTMicrophoneInUse)
+        {
+            return $true
+        }
+        if (Test-ADTUserInFocusMode)
+        {
+            return $true
+        }
+        if ((Get-ADTUserToastNotificationMode) -gt 0)
+        {
+            return $true
+        }
+        if ((($gauns = Get-ADTUserNotificationState) -ne [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_ACCEPTS_NOTIFICATIONS) -and ($gauns -ne [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_APP))
+        {
+            return $true
+        }
+        if (Test-ADTPowerPoint)
+        {
+            return $true
+        }
+        return $false
     }
     catch
     {
