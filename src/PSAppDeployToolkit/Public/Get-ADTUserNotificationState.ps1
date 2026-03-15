@@ -61,12 +61,13 @@ function Get-ADTUserNotificationState
         }
 
         # Send the request off to the client/server process.
+        Write-ADTLogEntry -Message "Querying the active user's notification state..."
         try
         {
             try
             {
-                Write-ADTLogEntry -Message "Detected user notification state [$(($UserNotificationState = Invoke-ADTClientServerOperation -GetUserNotificationState -User $runAsActiveUser))]."
-                return [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]$UserNotificationState
+                Write-ADTLogEntry -Message "The user's notification state is [$(($UserNotificationState = Invoke-ADTClientServerOperation -GetUserNotificationState -User $runAsActiveUser))]."
+                return $UserNotificationState
             }
             catch
             {

@@ -61,16 +61,17 @@ function Get-ADTUserToastNotificationMode
         }
 
         # Send the request off to the client/server process.
+        Write-ADTLogEntry -Message "Querying the active user's toast notification mode..."
         try
         {
             try
             {
                 if (($userToastNotificationMode = Invoke-ADTClientServerOperation -GetUserToastNotificationMode -User $runAsActiveUser) -ge 0)
                 {
-                    Write-ADTLogEntry -Message "Detected user in focus mode [$userToastNotificationMode]."
+                    Write-ADTLogEntry -Message "The user's toast notification mode is [$userToastNotificationMode]."
                     return $userToastNotificationMode
                 }
-                Write-ADTLogEntry -Message "Unable to detect user focus mode."
+                Write-ADTLogEntry -Message "Unable to query the user's toast notification mode."
             }
             catch
             {

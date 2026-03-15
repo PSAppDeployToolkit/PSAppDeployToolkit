@@ -26,7 +26,7 @@ function Test-ADTUserInFocusMode
     .EXAMPLE
         Test-ADTUserInFocusMode
 
-        Returns the logged on user's notification state.
+        Returns the logged on user is in focus mode or not, or null if the API is unavailable.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -61,16 +61,24 @@ function Test-ADTUserInFocusMode
         }
 
         # Send the request off to the client/server process.
+        Write-ADTLogEntry -Message "Testing whether the active user is in focus mode..."
         try
         {
             try
             {
                 if (($userInFocusMode = Invoke-ADTClientServerOperation -GetUserFocusModeState -User $runAsActiveUser) -ge 0)
                 {
-                    Write-ADTLogEntry -Message "Detected user in focus mode [$([System.Boolean]$userInFocusMode)]."
+                    if (!$userInFocusMode)
+                    {
+                        Write-ADTLogEntry -Message "The active user is not currently in focus mode."
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "The active user is currently in focus mode."
+                    }
                     return [System.Boolean]$userInFocusMode
                 }
-                Write-ADTLogEntry -Message "Unable to detect user focus mode."
+                Write-ADTLogEntry -Message "Unable to detect user focus mode on this system."
             }
             catch
             {
