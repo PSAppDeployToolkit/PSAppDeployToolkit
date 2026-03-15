@@ -59,12 +59,12 @@ function Get-ADTPEFileArchitecture
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [Alias('PSPath', 'FilePath')]
         [System.String[]]$LiteralPath,
 

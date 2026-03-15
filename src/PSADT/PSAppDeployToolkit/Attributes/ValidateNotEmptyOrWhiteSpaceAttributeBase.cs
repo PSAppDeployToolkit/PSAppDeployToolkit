@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 
-namespace PSAppDeployToolkit.Foundation
+namespace PSAppDeployToolkit.Attributes
 {
     /// <summary>
     /// Provides a base attribute for validating that an argument is not null, empty, or composed solely of white-space

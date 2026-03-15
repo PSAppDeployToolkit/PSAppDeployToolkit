@@ -1,4 +1,4 @@
-﻿namespace PSAppDeployToolkit.Foundation
+﻿namespace PSAppDeployToolkit.Attributes
 {
     /// <summary>
     /// Specifies that a string parameter or property must not be null or consist solely of whitespace characters, but

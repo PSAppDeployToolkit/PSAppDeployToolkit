@@ -83,7 +83,7 @@ function Invoke-ADTCommandWithRetries
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Command,
 
         [Parameter(Mandatory = $false)]
@@ -121,7 +121,7 @@ function Invoke-ADTCommandWithRetries
         [System.TimeSpan]$MaximumElapsedTime,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Collections.Generic.IReadOnlyList[System.Object]]$Parameters
     )
 
@@ -167,8 +167,7 @@ function Invoke-ADTCommandWithRetries
                 }
 
                 # Perform the request, and retry it as per the configured values.
-                $i = 0
-                while ($true)
+                $i = 0; while ($true)
                 {
                     try
                     {

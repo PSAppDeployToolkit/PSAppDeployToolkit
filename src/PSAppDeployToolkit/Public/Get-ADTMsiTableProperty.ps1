@@ -97,7 +97,7 @@ function Get-ADTMsiTableProperty
         [System.String[]]$TransformPath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = 'MSI file: "Property"; MSP file: "MsiPatchMetadata"')]
         [System.String]$Table,
 

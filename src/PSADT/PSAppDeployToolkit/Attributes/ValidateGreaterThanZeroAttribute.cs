@@ -5,7 +5,7 @@ using System.Management.Automation.Language;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace PSAppDeployToolkit.Foundation
+namespace PSAppDeployToolkit.Attributes
 {
     /// <summary>
     /// Specifies that a parameter or property must be greater than zero.

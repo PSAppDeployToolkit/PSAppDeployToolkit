@@ -63,15 +63,15 @@ function Invoke-ADTObjectMethod
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Object]$InputObject,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$MethodName,
 
         [Parameter(Mandatory = $false, Position = 2, ParameterSetName = 'Positional')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Object[]]$ArgumentList,
 
         [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'Named')]

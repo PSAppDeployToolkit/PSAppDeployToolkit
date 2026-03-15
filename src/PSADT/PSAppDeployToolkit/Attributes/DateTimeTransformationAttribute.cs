@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Management.Automation;
 using System.Runtime.CompilerServices;
 
-namespace PSAppDeployToolkit.Foundation
+namespace PSAppDeployToolkit.Attributes
 {
     /// <summary>
     /// Transforms values into a <see cref="DateTime"/>.

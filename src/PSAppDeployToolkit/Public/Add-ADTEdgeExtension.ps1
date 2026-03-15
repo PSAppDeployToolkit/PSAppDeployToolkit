@@ -62,7 +62,7 @@ function Add-ADTEdgeExtension
     param
     (
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ExtensionID,
 
         [Parameter(Mandatory = $true)]
@@ -80,7 +80,7 @@ function Add-ADTEdgeExtension
         [System.String]$InstallationMode,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$MinimumVersionRequired
     )
 

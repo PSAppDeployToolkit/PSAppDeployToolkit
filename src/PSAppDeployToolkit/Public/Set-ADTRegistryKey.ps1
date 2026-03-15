@@ -94,12 +94,12 @@ function Set-ADTRegistryKey
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'New/Set-ItemProperty parameter')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [Alias('Key')]
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name,
 
         [Parameter(Mandatory = $false, HelpMessage = 'New/Set-ItemProperty parameter')]

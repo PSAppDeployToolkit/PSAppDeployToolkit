@@ -71,7 +71,7 @@ function Start-ADTServiceAndDependencies
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [Alias('Service')]
         [System.String]$Name,
 

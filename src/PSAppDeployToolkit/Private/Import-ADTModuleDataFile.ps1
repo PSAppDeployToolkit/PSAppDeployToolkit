@@ -11,11 +11,11 @@ function Private:Import-ADTModuleDataFile
     param
     (
         [Parameter(Mandatory = $true)]
-        [AllowNull()][PSAppDeployToolkit.Foundation.AllowNullButNotEmptyOrWhiteSpace()]
+        [AllowNull()][PSAppDeployToolkit.Attributes.AllowNullButNotEmptyOrWhiteSpace()]
         [System.String[]]$BaseDirectory,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$FileName,
 
         [Parameter(Mandatory = $false)]

@@ -191,27 +191,27 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$DisableLogging,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppVendor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppVersion,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppArch,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppLang,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppRevision,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
@@ -223,19 +223,19 @@ function Open-ADTSession
         [System.DateTime]$AppScriptDate,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppScriptAuthor,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$InstallName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$InstallTitle,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$DeployAppScriptFriendlyName,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
@@ -304,15 +304,15 @@ function Open-ADTSession
         [System.String]$DirSupportFiles,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$DefaultMsiFile,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$DefaultMstFile,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$DefaultMspFiles,
 
         [Parameter(Mandatory = $false)]

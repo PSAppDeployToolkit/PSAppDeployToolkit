@@ -120,7 +120,7 @@ function Mount-ADTWimFile
         [System.Nullable[System.UInt32]]$Index,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Name,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Index')]
