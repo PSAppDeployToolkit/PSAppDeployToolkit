@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 
 namespace PSADT.UserInterface.Interfaces.Classic
 {
@@ -28,7 +29,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the behavior and appearance of the input dialog.</param>
         /// <exception cref="NotImplementedException">Thrown if the dialog is instantiated in runtime license mode, as InputDialog is only implemented for the
         /// Fluent dialog type.</exception>
-        internal InputDialog(InputDialogOptions options) : base(options, null!)
+        internal InputDialog(InputDialogOptions options) : base(options, InputDialogResult.DefaultResult)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
