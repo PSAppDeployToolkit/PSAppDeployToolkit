@@ -299,13 +299,13 @@ function Show-ADTInstallationPrompt
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
-        $DeploymentType = if ($adtSession)
+        [System.String]$deploymentType = if (!$adtSession)
         {
-            $adtSession.DeploymentType
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
         else
         {
-            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
+            $adtSession.DeploymentType
         }
 
         # Set up defaults if not specified.
@@ -315,7 +315,7 @@ function Show-ADTInstallationPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', $adtStrings.InstallationPrompt.Subtitle.($DeploymentType.ToString()))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.InstallationPrompt.Subtitle.$deploymentType)
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
