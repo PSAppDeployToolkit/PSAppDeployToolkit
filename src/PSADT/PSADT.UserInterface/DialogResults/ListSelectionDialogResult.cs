@@ -12,15 +12,23 @@ namespace PSADT.UserInterface.DialogResults
     public sealed class ListSelectionDialogResult : CustomDialogDerivative
     {
         /// <summary>
+        /// Represents the default dialog result used when a dialog times out.
+        /// </summary>
+        public static new readonly ListSelectionDialogResult DefaultResult = new("Timeout", null);
+
+        /// <summary>
         /// Initializes a new instance of the ListSelectionDialogResult class with the specified result and selected
         /// item.
         /// </summary>
         /// <param name="result">The result of the dialog operation, indicating the outcome of the user's selection.</param>
         /// <param name="selectedItem">The item that was selected by the user. This parameter cannot be null or empty.</param>
         /// <exception cref="ArgumentNullException">Thrown if the selectedItem parameter is null or an empty string.</exception>
-        internal ListSelectionDialogResult(string result, string selectedItem) : base(result)
+        internal ListSelectionDialogResult(string result, string? selectedItem) : base(result)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(selectedItem);
+            if (selectedItem is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(selectedItem);
+            }
             SelectedItem = selectedItem;
         }
 
@@ -29,7 +37,7 @@ namespace PSADT.UserInterface.DialogResults
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly string SelectedItem;
+        public readonly string? SelectedItem;
 
         /// <summary>
         /// Determines whether the specified object is equal to the current instance.
