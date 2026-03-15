@@ -422,17 +422,20 @@ function Show-ADTInstallationPrompt
                         $dialogOptions.Add('SelectedIndex', [System.Int32]$DefaultIndex)
                     }
                 }
-                $dialogOptions = if ($RequestInput)
+                if ($RequestInput)
                 {
-                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.InputDialogOptions]) -Data $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.InputDialogOptions]) -Data $dialogOptions
+                    $defaultResult = [PSADT.UserInterface.DialogResults.InputDialogResult]::DefaultResult
                 }
                 elseif ($ListItems)
                 {
-                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]) -Data $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]) -Data $dialogOptions
+                    $defaultResult = [PSADT.UserInterface.DialogResults.ListSelectionDialogResult]::DefaultResult
                 }
                 else
                 {
-                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
+                    $defaultResult = [PSADT.UserInterface.DialogResults.CustomDialogResult]::DefaultResult
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
@@ -472,7 +475,7 @@ function Show-ADTInstallationPrompt
                 until (!$result.Equals('TerminatedTryAgain'))
 
                 # Process results.
-                if ($result -eq 'Timeout')
+                if ($result -eq $defaultResult)
                 {
                     Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
                     if (!$NoExitOnTimeout)

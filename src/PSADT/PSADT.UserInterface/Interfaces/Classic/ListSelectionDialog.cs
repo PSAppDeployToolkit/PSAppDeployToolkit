@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using PSADT.UserInterface.DialogOptions;
+using PSADT.UserInterface.DialogResults;
 
 namespace PSADT.UserInterface.Interfaces.Classic
 {
@@ -28,7 +29,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the behavior and appearance of the dialog.</param>
         /// <exception cref="NotImplementedException">Thrown if the dialog is instantiated in runtime license mode, as ListSelectionDialog is only implemented for
         /// the Fluent dialog type.</exception>
-        internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, null!)
+        internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, ListSelectionDialogResult.DefaultResult)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {

@@ -12,6 +12,11 @@ namespace PSADT.UserInterface.DialogResults
     public sealed class InputDialogResult : CustomDialogDerivative
     {
         /// <summary>
+        /// Represents the default dialog result used when a dialog times out.
+        /// </summary>
+        public static new readonly InputDialogResult DefaultResult = new("Timeout", null);
+
+        /// <summary>
         /// Initializes a new instance of the InputDialogResult class with the specified result and optional text.
         /// </summary>
         /// <param name="result">The result of the input dialog. Cannot be null or empty.</param>
