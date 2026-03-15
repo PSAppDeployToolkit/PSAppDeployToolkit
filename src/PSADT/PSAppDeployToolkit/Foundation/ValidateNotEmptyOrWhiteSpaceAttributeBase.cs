@@ -37,9 +37,9 @@ namespace PSAppDeployToolkit.Foundation
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
             // Unwrap PSObject to get the underlying value.
-            if (arguments is PSObject pso)
+            while (arguments is PSObject psObject)
             {
-                arguments = pso.BaseObject;
+                arguments = psObject.BaseObject;
             }
 
             // Handle null based on configuration.
