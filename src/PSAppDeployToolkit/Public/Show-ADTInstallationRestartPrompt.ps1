@@ -199,13 +199,13 @@ function Show-ADTInstallationRestartPrompt
         $adtConfig = Get-ADTConfig
 
         # Set up DeploymentType.
-        [System.String]$deploymentType = if ($adtSession)
+        [System.String]$deploymentType = if (!$adtSession)
         {
-            $adtSession.DeploymentType
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
         else
         {
-            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
+            $adtSession.DeploymentType
         }
 
         # Set up remainder if not specified.

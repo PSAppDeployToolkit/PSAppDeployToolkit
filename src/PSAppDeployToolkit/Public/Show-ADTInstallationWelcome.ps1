@@ -851,13 +851,13 @@ function Show-ADTInstallationWelcome
         }
 
         # Set up DeploymentType if not specified.
-        $DeploymentType = if ($adtSession)
+        $DeploymentType = if (!$adtSession)
         {
-            $adtSession.DeploymentType
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
         else
         {
-            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
+            $adtSession.DeploymentType
         }
 
         # Set up remainder if not specified.
