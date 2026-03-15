@@ -8,7 +8,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using PSAppDeployToolkit.Extensions;
@@ -187,109 +186,6 @@ namespace PSAppDeployToolkit.Logging
                 }
             }
             return logEntries;
-        }
-
-        /// <summary>
-        /// Replaces any invalid UTF-16 surrogate code units in the specified string with descriptive marker text.
-        /// </summary>
-        /// <remarks>This method scans the input string for unmatched high or low surrogate code units and
-        /// replaces each with a marker in the format "[Invalid UTF-16 High Surrogate \uXXXX]" or "[Invalid UTF-16 Low
-        /// Surrogate \uXXXX]", where XXXX is the hexadecimal value of the invalid character. Valid surrogate pairs and
-        /// non-surrogate characters are preserved.</remarks>
-        /// <param name="s">The string to process for invalid surrogate pairs. Cannot be null, empty, or consist only of white-space
-        /// characters.</param>
-        /// <returns>A string in which any unmatched high or low surrogate characters are replaced with marker text indicating
-        /// the invalid surrogate. If the input string contains only valid surrogate pairs, the original string is
-        /// returned.</returns>
-        internal static string ReplaceInvalidSurrogates(string s)
-        {
-            // Internal helper methods for appending hex representations of characters and markers.
-            static void AppendHex4(StringBuilder sb, char value)
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                static char ToHex(int nibble)
-                {
-                    return (char)(nibble < 10 ? ('0' + nibble) : ('A' + (nibble - 10)));
-                }
-                int v = value;
-                _ = sb.Append(ToHex((v >> 12) & 0xF));
-                _ = sb.Append(ToHex((v >> 8) & 0xF));
-                _ = sb.Append(ToHex((v >> 4) & 0xF));
-                _ = sb.Append(ToHex(v & 0xF));
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static void AppendHighMarker(StringBuilder sb, char high)
-            {
-                _ = sb.Append("[Invalid UTF-16 High Surrogate \\u"); AppendHex4(sb, high); _ = sb.Append(']');
-            }
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static void AppendLowMarker(StringBuilder sb, char low)
-            {
-                _ = sb.Append("[Invalid UTF-16 Low Surrogate \\u"); AppendHex4(sb, low); _ = sb.Append(']');
-            }
-
-            // Process the string, replacing invalid surrogate pairs with markers.
-            ArgumentException.ThrowIfNullOrWhiteSpace(s);
-            StringBuilder? sb = null; int len = s.Length;
-            for (int i = 0; i < len; i++)
-            {
-                // Check if this is a high surrogate.
-                char ch = s[i];
-                if (char.IsHighSurrogate(ch))
-                {
-                    // If it's followed by a low surrogate, it's valid, so just append both.
-                    if (i + 1 < len)
-                    {
-                        char nx = s[i + 1];
-                        if (char.IsLowSurrogate(nx))
-                        {
-                            if (sb is not null)
-                            {
-                                _ = sb.Append(ch);
-                                _ = sb.Append(nx);
-                            }
-                            i++; // consumed the low surrogate
-                            continue;
-                        }
-                    }
-
-                    // Unmatched high surrogate.
-                    if (sb is null)
-                    {
-                        sb = new(len + 64);
-                        if (i > 0)
-                        {
-                            _ = sb.Append(s, 0, i);
-                        }
-                    }
-                    AppendHighMarker(sb, ch);
-                    continue;
-                }
-
-                // Check if this is a low surrogate.
-                if (char.IsLowSurrogate(ch))
-                {
-                    if (sb is null)
-                    {
-                        sb = new(len + 64);
-                        if (i > 0)
-                        {
-                            _ = sb.Append(s, 0, i);
-                        }
-                    }
-                    AppendLowMarker(sb, ch);
-                    continue;
-                }
-
-                // Regular character, just append it.
-                if (sb is not null)
-                {
-                    _ = sb.Append(ch);
-                }
-            }
-
-            // If we never created a StringBuilder, the original string is valid and we can return it directly.
-            return sb is null ? s : sb.ToString().TrimEnd();
         }
 
         /// <summary>
