@@ -246,7 +246,16 @@ function Remove-ADTItem
                         }
                         continue
                     }
-                    Write-ADTLogEntry -Message "Skipping path [$($item.FullName)] because it is not a filesystem file or folder." -Severity Warning
+
+                    # We should never get here.
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("Attempted to process an item of type [$($item.GetType().FullName)], which is not supported.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'NonFileSystemInfoObjectError'
+                        TargetObject = $item
+                        RecommendedAction = "Please report to the PSAppDeployToolkit team for further review."
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
                 }
                 catch
                 {
