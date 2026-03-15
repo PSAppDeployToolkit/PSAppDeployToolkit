@@ -43,7 +43,7 @@ function Remove-ADTFont
     param
     (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Name
     )
 

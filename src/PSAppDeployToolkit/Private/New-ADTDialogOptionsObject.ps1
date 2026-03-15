@@ -14,7 +14,7 @@ function Private:New-ADTDialogOptionsObject
         [System.Type]$Type,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Collections.Hashtable]$Data,
 
         [Parameter(Mandatory = $false)]

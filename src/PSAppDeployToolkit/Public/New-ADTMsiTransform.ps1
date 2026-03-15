@@ -85,7 +85,7 @@ function New-ADTMsiTransform
         [System.String]$ApplyTransformPath,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = 'If `-ApplyTransformPath` was specified: `<ApplyTransformPath>.new.mst`; If only `-MsiPath` was specified: `<MsiPath>.mst`')]
         [System.String]$NewTransformPath,
 

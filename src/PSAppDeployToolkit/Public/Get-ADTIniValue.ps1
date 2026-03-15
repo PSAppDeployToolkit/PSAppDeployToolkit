@@ -66,11 +66,11 @@ function Get-ADTIniValue
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Section,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Key
     )
 

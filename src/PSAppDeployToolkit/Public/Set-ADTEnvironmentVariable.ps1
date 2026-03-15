@@ -69,11 +69,11 @@ function Set-ADTEnvironmentVariable
     param
     (
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Variable,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Value,
 
         [Parameter(Mandatory = $false)]

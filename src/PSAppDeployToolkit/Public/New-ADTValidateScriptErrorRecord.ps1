@@ -60,7 +60,7 @@ function New-ADTValidateScriptErrorRecord
     param
     (
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ParameterName,
 
         [Parameter(Mandatory = $true)]
@@ -68,7 +68,7 @@ function New-ADTValidateScriptErrorRecord
         [System.Object]$ProvidedValue,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ExceptionMessage,
 
         [Parameter(Mandatory = $false)]

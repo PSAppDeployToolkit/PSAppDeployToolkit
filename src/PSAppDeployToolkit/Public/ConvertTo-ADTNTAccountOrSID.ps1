@@ -85,7 +85,7 @@ function ConvertTo-ADTNTAccountOrSID
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Security.Principal.NTAccount]$AccountName,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SIDToNTAccount', ValueFromPipelineByPropertyName = $true)]
@@ -152,7 +152,7 @@ function ConvertTo-ADTNTAccountOrSID
             param
             (
                 [Parameter(Mandatory = $true)]
-                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
                 [System.Security.Principal.NTAccount]$TargetNtAccount
             )
 

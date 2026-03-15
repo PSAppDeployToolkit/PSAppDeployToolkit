@@ -67,7 +67,7 @@ function Show-ADTBalloonTip
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$BalloonTipText,
 
         [Parameter(Mandatory = $false)]
@@ -107,7 +107,7 @@ function Show-ADTBalloonTip
         $paramDictionary.Add('BalloonTipTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'BalloonTipTitle', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the balloon tip.' }
-                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpaceAttribute]::new()
+                    [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
 

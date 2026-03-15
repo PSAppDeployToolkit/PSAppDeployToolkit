@@ -83,7 +83,7 @@ function New-ADTErrorRecord
         [System.Management.Automation.ErrorCategory]$Category,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ErrorId = 'NotSpecified',
 
         [Parameter(Mandatory = $false)]
@@ -91,23 +91,23 @@ function New-ADTErrorRecord
         [System.Object]$TargetObject,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$TargetName,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$TargetType,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Activity,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Reason,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$RecommendedAction
     )
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Management.Automation;
 
-namespace PSAppDeployToolkit.Foundation
+namespace PSAppDeployToolkit.Attributes
 {
     /// <summary>
     /// Transforms numerical values into a <see cref="TimeSpan"/> by treating the value as seconds.

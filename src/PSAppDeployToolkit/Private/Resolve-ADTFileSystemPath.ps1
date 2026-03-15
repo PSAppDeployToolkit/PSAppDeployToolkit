@@ -11,7 +11,7 @@ function Private:Resolve-ADTFileSystemPath
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Container')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Leaf')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Container')]
@@ -40,7 +40,7 @@ function Private:Resolve-ADTFileSystemPath
         $paramDictionary.Add('ExtraPaths', [System.Management.Automation.RuntimeDefinedParameter]::new(
                 'ExtraPaths', [System.String[]], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false }
-                    [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpaceAttribute]::new()
+                    [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpaceAttribute]::new()
                 )
             ))
         $paramDictionary.Add('DefaultExtension', [System.Management.Automation.RuntimeDefinedParameter]::new(
@@ -73,7 +73,7 @@ function Private:Resolve-ADTFileSystemPath
             param
             (
                 [Parameter(Mandatory = $true)]
-                [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
                 [System.String]$FileSystemPath,
 
                 [Parameter(Mandatory = $true)]

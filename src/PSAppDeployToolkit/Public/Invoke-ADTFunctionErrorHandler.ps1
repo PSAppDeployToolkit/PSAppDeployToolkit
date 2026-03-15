@@ -89,16 +89,16 @@ function Invoke-ADTFunctionErrorHandler
         [Parameter(Mandatory = $false, ParameterSetName = 'ResolveErrorProperties')]
         [Parameter(Mandatory = $false, ParameterSetName = 'AdditionalResolveErrorProperties')]
         [Parameter(Mandatory = $false, ParameterSetName = 'DisableErrorResolving')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$LogMessage,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ResolveErrorProperties')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
         [System.String[]]$ResolveErrorProperties,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'AdditionalResolveErrorProperties')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$AdditionalResolveErrorProperties,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'DisableErrorResolving')]

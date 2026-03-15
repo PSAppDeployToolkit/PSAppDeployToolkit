@@ -113,7 +113,7 @@ function Start-ADTMspProcessAsUser
     param
     (
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = '$RunAsActiveUser.UserName')]
         [System.Security.Principal.NTAccount]$Username,
 
@@ -128,7 +128,7 @@ function Start-ADTMspProcessAsUser
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
@@ -147,11 +147,11 @@ function Start-ADTMspProcessAsUser
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$LogFileName,
 
         [Parameter(Mandatory = $false)]
@@ -164,7 +164,7 @@ function Start-ADTMspProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]

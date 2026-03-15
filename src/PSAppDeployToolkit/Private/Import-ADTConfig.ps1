@@ -10,7 +10,7 @@ function Private:Import-ADTConfig
     param
     (
         [Parameter(Mandatory = $true)]
-        [AllowNull()][PSAppDeployToolkit.Foundation.AllowNullButNotEmptyOrWhiteSpace()]
+        [AllowNull()][PSAppDeployToolkit.Attributes.AllowNullButNotEmptyOrWhiteSpace()]
         [System.String[]]$BaseDirectory
     )
 

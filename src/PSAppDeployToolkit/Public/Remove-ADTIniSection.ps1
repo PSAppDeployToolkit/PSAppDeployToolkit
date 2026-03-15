@@ -64,7 +64,7 @@ function Remove-ADTIniSection
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Section
     )
 

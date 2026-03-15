@@ -98,11 +98,11 @@ function Private:Invoke-ADTClientServerOperation
         [PSADT.UserInterface.DialogStyle]$DialogStyle,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ProgressMessage,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$ProgressDetailMessage,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'UpdateProgressDialog')]
@@ -116,11 +116,11 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Variable,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Value,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
@@ -141,7 +141,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShellExecuteProcess')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Options,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]

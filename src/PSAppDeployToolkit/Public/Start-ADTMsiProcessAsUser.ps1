@@ -170,7 +170,7 @@ function Start-ADTMsiProcessAsUser
     param
     (
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = '$RunAsActiveUser.UserName')]
         [System.Security.Principal.NTAccount]$Username,
 
@@ -200,27 +200,27 @@ function Start-ADTMsiProcessAsUser
         [PSADT.AppManagement.InstalledApplication]$InstalledApplication,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSDefaultValue(Help = 'Install (Normal): (Get-ADTConfig).MSI.InstallParams; Install (Silent): (Get-ADTConfig).MSI.SilentParams; Uninstall (Normal): (Get-ADTConfig).MSI.UninstallParams; Uninstall (Silent): (Get-ADTConfig).MSI.SilentParams')]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SecureArgumentList,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Transforms,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Patches,
 
         [Parameter(Mandatory = $false)]
@@ -239,7 +239,7 @@ function Start-ADTMsiProcessAsUser
         [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
         [Parameter(Mandatory = $false)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$LoggingOptions,
 
         [Parameter(Mandatory = $false)]
@@ -285,7 +285,7 @@ function Start-ADTMsiProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'ProductCode')]
         [Parameter(Mandatory = $false, ParameterSetName = 'InstalledApplication')]
         [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$IgnoreExitCodes,
 
         [Parameter(Mandatory = $false)]

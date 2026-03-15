@@ -57,7 +57,7 @@ function Remove-ADTEnvironmentVariable
     param
     (
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Variable,
 
         [Parameter(Mandatory = $false)]
