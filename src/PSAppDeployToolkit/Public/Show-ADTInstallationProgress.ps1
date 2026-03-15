@@ -112,7 +112,7 @@ function Show-ADTInstallationProgress
     dynamicparam
     {
         # Initialize the module first if needed.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession
+        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
@@ -156,13 +156,13 @@ function Show-ADTInstallationProgress
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
-        [System.String]$deploymentType = if ($adtSession)
+        [System.String]$deploymentType = if (!$adtSession)
         {
-            $adtSession.DeploymentType
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
         else
         {
-            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
+            $adtSession.DeploymentType
         }
 
         # Set up defaults if not specified.

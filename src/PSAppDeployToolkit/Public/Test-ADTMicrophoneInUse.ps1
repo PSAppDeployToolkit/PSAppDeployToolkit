@@ -53,18 +53,18 @@ function Test-ADTMicrophoneInUse
 
     process
     {
-        Write-ADTLogEntry -Message "Checking whether the device's microphone is in use..."
+        Write-ADTLogEntry -Message "Testing whether the device's microphone is in use..."
         try
         {
             try
             {
-                if (($microphoneInUse = [PSADT.DeviceManagement.DeviceUtilities]::IsMicrophoneInUse()))
+                if (!($microphoneInUse = [PSADT.DeviceManagement.DeviceUtilities]::IsMicrophoneInUse()))
                 {
-                    Write-ADTLogEntry -Message "The device's microphone is currently in use."
+                    Write-ADTLogEntry -Message "The device's microphone is currently not in use."
                 }
                 else
                 {
-                    Write-ADTLogEntry -Message "The device's microphone is currently not in use."
+                    Write-ADTLogEntry -Message "The device's microphone is currently in use."
                 }
                 return $microphoneInUse
             }

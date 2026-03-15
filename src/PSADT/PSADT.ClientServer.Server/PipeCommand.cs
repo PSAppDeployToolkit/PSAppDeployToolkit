@@ -109,5 +109,20 @@
         /// Performs gpupdate.exe for the user.
         /// </summary>
         GroupPolicyUpdate,
+
+        /// <summary>
+        /// Performs a ShellExecuteEx invocation for the user.
+        /// </summary>
+        ShellExecuteProcess,
+
+        /// <summary>
+        /// Gets the current focus mode state for the user.
+        /// </summary>
+        GetUserFocusModeState,
+
+        /// <summary>
+        /// Gets the current toast notification mode for the user.
+        /// </summary>
+        GetUserToastNotificationMode,
     }
 }

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.18362.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
     <AssemblyName>PSADT.ClientServer.Common</AssemblyName>
@@ -10,10 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PSADT" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
   </ItemGroup>
 </Project>

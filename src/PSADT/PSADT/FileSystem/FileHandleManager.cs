@@ -187,13 +187,13 @@ namespace PSADT.FileSystem
             // Read the number of types from the buffer and store the built-out dictionary.
             ref readonly OBJECT_TYPES_INFORMATION typesInfo = ref typesBufferPtr.AsReadOnlyStructure<OBJECT_TYPES_INFORMATION>();
             uint typesCount = typesInfo.NumberOfTypes; Dictionary<ushort, string> typeTable = new((int)typesCount);
-            int ptrOffset = LibraryUtilities.AlignUp(objectTypesSize);
+            int ptrOffset = (int)NativeMethods.ALIGN_UP_POINTER<nint>(objectTypesSize);
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
                 ref readonly OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsReadOnlyStructure<OBJECT_TYPE_INFORMATION>();
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString());
-                ptrOffset += objectTypeSize + LibraryUtilities.AlignUp(typeInfo.TypeName.MaximumLength);
+                ptrOffset += objectTypeSize + (int)NativeMethods.ALIGN_UP_POINTER<nint>(typeInfo.TypeName.MaximumLength);
             }
             ObjectTypeLookupTable = new(typeTable);
         }

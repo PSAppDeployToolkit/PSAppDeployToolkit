@@ -1,10 +1,10 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Initialize-ADTModuleIfUnitialized
+# MARK: Initialize-ADTModuleIfUninitialized
 #
 #-----------------------------------------------------------------------------
 
-function Initialize-ADTModuleIfUnitialized
+function Initialize-ADTModuleIfUninitialized
 {
     <#
     .SYNOPSIS
@@ -36,7 +36,7 @@ function Initialize-ADTModuleIfUnitialized
         Returns the most recent session object from the ADT module data.
 
     .EXAMPLE
-        Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet
+        Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
 
         Initializes the ADT module with the default settings and configurations if it is uninitialized.
 
@@ -49,7 +49,7 @@ function Initialize-ADTModuleIfUnitialized
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTModuleIfUnitialized
+        https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTModuleIfUninitialized
     #>
 
     [CmdletBinding()]

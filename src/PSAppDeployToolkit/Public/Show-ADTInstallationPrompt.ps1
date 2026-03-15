@@ -199,7 +199,7 @@ function Show-ADTInstallationPrompt
     dynamicparam
     {
         # Initialize variables.
-        $adtSession = Initialize-ADTModuleIfUnitialized -Cmdlet $PSCmdlet -PassThruActiveSession
+        $adtSession = Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet -PassThruActiveSession
         $adtConfig = Get-ADTConfig
 
         # Define parameter dictionary for returning at the end.
@@ -299,13 +299,13 @@ function Show-ADTInstallationPrompt
         $adtStrings = Get-ADTStringTable -SessionState $SessionState
 
         # Set up DeploymentType.
-        $DeploymentType = if ($adtSession)
+        [System.String]$deploymentType = if (!$adtSession)
         {
-            $adtSession.DeploymentType
+            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
         }
         else
         {
-            [PSAppDeployToolkit.Foundation.DeploymentType]::Install
+            $adtSession.DeploymentType
         }
 
         # Set up defaults if not specified.
@@ -315,7 +315,7 @@ function Show-ADTInstallationPrompt
         }
         if (!$PSBoundParameters.ContainsKey('Subtitle'))
         {
-            $PSBoundParameters.Add('Subtitle', $adtStrings.InstallationPrompt.Subtitle.($DeploymentType.ToString()))
+            $PSBoundParameters.Add('Subtitle', $adtStrings.InstallationPrompt.Subtitle.$deploymentType)
         }
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
@@ -422,17 +422,20 @@ function Show-ADTInstallationPrompt
                         $dialogOptions.Add('SelectedIndex', [System.Int32]$DefaultIndex)
                     }
                 }
-                $dialogOptions = if ($RequestInput)
+                if ($RequestInput)
                 {
-                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.InputDialogOptions]) -Data $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.InputDialogOptions]) -Data $dialogOptions
+                    $defaultResult = [PSADT.UserInterface.DialogResults.InputDialogResult]::DefaultResult
                 }
                 elseif ($ListItems)
                 {
-                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]) -Data $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ListSelectionDialogOptions]) -Data $dialogOptions
+                    $defaultResult = [PSADT.UserInterface.DialogResults.ListSelectionDialogResult]::DefaultResult
                 }
                 else
                 {
-                    New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
+                    $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
+                    $defaultResult = [PSADT.UserInterface.DialogResults.CustomDialogResult]::DefaultResult
                 }
 
                 # If the NoWait parameter is specified, launch a new PowerShell session to show the prompt asynchronously.
@@ -472,7 +475,7 @@ function Show-ADTInstallationPrompt
                 until (!$result.Equals('TerminatedTryAgain'))
 
                 # Process results.
-                if ($result -eq 'Timeout')
+                if ($result -eq $defaultResult)
                 {
                     Write-ADTLogEntry -Message 'Installation action not taken within a reasonable amount of time.'
                     if (!$NoExitOnTimeout)

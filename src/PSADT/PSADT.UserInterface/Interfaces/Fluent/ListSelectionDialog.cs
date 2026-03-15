@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Initializes the UI elements and behavior for the List Selection dialog type.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options)
+        internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, ListSelectionDialogResult.DefaultResult)
         {
             // Enable the ListSelectionStackPanel within the dialog
             ListSelectionStackPanel.Visibility = Visibility.Visible;
@@ -51,9 +51,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Set heading text from localized strings if available.
             ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
-
-            // Set the dialog result to a default value.
-            DialogResult = new ListSelectionDialogResult("Timeout", "\0");
         }
 
         /// <summary>

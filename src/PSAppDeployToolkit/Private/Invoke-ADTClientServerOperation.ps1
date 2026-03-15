@@ -67,6 +67,15 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
         [System.Management.Automation.SwitchParameter]$GroupPolicyUpdate,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShellExecuteProcess')]
+        [System.Management.Automation.SwitchParameter]$ShellExecuteProcess,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetUserFocusModeState')]
+        [System.Management.Automation.SwitchParameter]$GetUserFocusModeState,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'GetUserToastNotificationMode')]
+        [System.Management.Automation.SwitchParameter]$GetUserToastNotificationMode,
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Foundation.RunAsActiveUser]$User,
@@ -130,6 +139,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $true, ParameterSetName = 'GetProcessWindowInfo')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'ShellExecuteProcess')]
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Options,
@@ -137,6 +147,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $false, ParameterSetName = 'GroupPolicyUpdate')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ShellExecuteProcess')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
@@ -190,6 +201,7 @@ function Private:Invoke-ADTClientServerOperation
         ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User) -and !$NoWait))
     {
         # Instantiate a new ClientServerProcess object if one's not already present.
+        $clientServerClientProcessResult = $null
         if (!$Script:ADT.ClientServerProcess)
         {
             # No point proceeding further for this operation.
@@ -212,7 +224,7 @@ function Private:Invoke-ADTClientServerOperation
             catch
             {
                 # Construct an ErrorRecord using an exception from the client/server process if possible.
-                if ($result = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
+                if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
                 {
                     $naerParams = @{
                         Exception = if ($result.StdErr.Count)
@@ -306,7 +318,7 @@ function Private:Invoke-ADTClientServerOperation
         catch
         {
             # Construct an ErrorRecord using an exception from the client/server process if possible.
-            if ($result = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
+            if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
             {
                 $naerParams = @{
                     Exception = if ($result.StdErr.Count)
@@ -330,7 +342,7 @@ function Private:Invoke-ADTClientServerOperation
         }
         finally
         {
-            if (($result -is [PSADT.ProcessManagement.ProcessResult]) -and ($result.LaunchInfo.FilePath -eq [PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath))
+            if ($null -ne $clientServerClientProcessResult)
             {
                 Close-ADTClientServerProcess
             }
@@ -454,6 +466,21 @@ function Private:Invoke-ADTClientServerOperation
                 [PSADT.ProcessManagement.ProcessResult]
                 break
             }
+            ShellExecuteProcess
+            {
+                [PSADT.ProcessManagement.ProcessResult]
+                break
+            }
+            GetUserFocusModeState
+            {
+                [System.Int32]
+                break
+            }
+            GetUserToastNotificationMode
+            {
+                [PSADT.Interop.ToastNotificationMode]
+                break
+            }
             default
             {
                 $naerParams = @{
@@ -521,7 +548,7 @@ function Private:Invoke-ADTClientServerOperation
                     Name = [PSADT.ClientServer.ClientServerUtilities]::OperationSuccessRegistryValueName
                     SID = $User.SID
                 }
-                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientLauncherPath) -NoWait
+                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientLauncherPath) -NoWait
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -549,7 +576,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.EnvironmentInfo]::ClientServerClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
+                Start-ADTProcess @sapauParams -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]
@@ -632,7 +659,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType))
+    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.ClientServer.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
     {
         return $result
     }

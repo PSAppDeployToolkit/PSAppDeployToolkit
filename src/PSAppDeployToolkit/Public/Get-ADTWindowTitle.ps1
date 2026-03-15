@@ -24,7 +24,7 @@ function Get-ADTWindowTitle
         Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER WindowTitle
-        One or more titles of the application window to search for using regex matching.
+        The title of the application window to search for using regex matching.
 
     .PARAMETER WindowHandle
         One or more window handles of the application window to search for.
@@ -88,7 +88,7 @@ function Get-ADTWindowTitle
     (
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
-        [System.String[]]$WindowTitle,
+        [System.String]$WindowTitle,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
@@ -120,6 +120,10 @@ function Get-ADTWindowTitle
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        if (!$PSBoundParameters.ContainsKey('WindowTitle'))
+        {
+            $PSBoundParameters.Add('WindowTitle', [System.Management.Automation.Language.NullString]::Value)
+        }
     }
 
     process
@@ -146,7 +150,7 @@ function Get-ADTWindowTitle
         {
             try
             {
-                return Invoke-ADTClientServerOperation -GetProcessWindowInfo -User $runAsActiveUser -Options ([PSADT.WindowManagement.WindowInfoOptions]::new($WindowTitle, $WindowHandle, $ParentProcess, $ParentProcessId, $ParentProcessMainWindowHandle))
+                return Invoke-ADTClientServerOperation -GetProcessWindowInfo -User $runAsActiveUser -Options ([PSADT.WindowManagement.WindowInfoOptions]::new($PSBoundParameters.WindowTitle, $WindowHandle, $ParentProcess, $ParentProcessId, $ParentProcessMainWindowHandle))
             }
             catch
             {

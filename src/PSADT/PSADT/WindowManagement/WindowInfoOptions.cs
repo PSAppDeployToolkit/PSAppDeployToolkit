@@ -19,8 +19,7 @@ namespace PSADT.WindowManagement
         /// Initializes a new instance of the <see cref="WindowInfoOptions"/> class with optional filters for window
         /// titles, handles, and parent processes.
         /// </summary>
-        /// <param name="windowTitleFilter">An optional array of strings specifying window titles to filter. If <see langword="null"/>, no filtering is
-        /// applied based on window titles.</param>
+        /// <param name="windowTitleRegex">An optional regular expression string to filter window titles. If <see langword="null"/>, no filtering is applied based on window titles.</param>
         /// <param name="windowHandleFilter">An optional array of native window handles (<see cref="nint"/>) to filter. If <see langword="null"/>, no
         /// filtering is applied based on window handles.</param>
         /// <param name="parentProcessFilter">An optional array of strings specifying parent process names to filter. If <see langword="null"/>, no
@@ -30,12 +29,12 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandleFilter">A list of main window handles for parent processes to include in the filter. Only windows whose parent
         /// process main window handle matches any of these values will be considered. Can be null to disable this
         /// filtering.</param>
-        public WindowInfoOptions(ReadOnlyCollection<string>? windowTitleFilter, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<int>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
+        public WindowInfoOptions(string? windowTitleRegex, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<int>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
-            if (windowTitleFilter is not null)
+            if (windowTitleRegex is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(windowTitleFilter.Count);
+                ArgumentException.ThrowIfNullOrWhiteSpace(windowTitleRegex);
             }
             if (windowHandleFilter is not null)
             {
@@ -55,7 +54,7 @@ namespace PSADT.WindowManagement
             }
 
             // Assign read-only collections or null based on input.
-            WindowTitleFilter = windowTitleFilter;
+            WindowTitleRegex = windowTitleRegex;
             WindowHandleFilterValues = windowHandleFilter?.Count > 0 ? new([.. windowHandleFilter.Select(static h => (long)h)]) : null;
             ParentProcessFilter = parentProcessFilter;
             ParentProcessIdFilter = parentProcessIdFilter;
@@ -67,7 +66,7 @@ namespace PSADT.WindowManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly IReadOnlyList<string>? WindowTitleFilter;
+        public readonly string? WindowTitleRegex;
 
         /// <summary>
         /// Represents a filter for window handles used to determine which windows are included in certain operations.

@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Initializes the UI elements and behavior for the Input dialog type.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
-        internal InputDialog(InputDialogOptions options) : base(options)
+        internal InputDialog(InputDialogOptions options) : base(options, InputDialogResult.DefaultResult)
         {
             // Enable input box within the dialog
             InputBoxStackPanel.Visibility = Visibility.Visible;
@@ -43,9 +43,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     InputBoxText.SelectAll();
                 });
             }
-
-            // Set the dialog result to a default value.
-            DialogResult = new InputDialogResult("Timeout", null);
         }
 
         /// <summary>

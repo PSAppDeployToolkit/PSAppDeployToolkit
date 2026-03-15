@@ -45,6 +45,18 @@ function Start-ADTProcessAsUser
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
 
+    .PARAMETER UseShellExecute
+        Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
+
+        The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents. It lets you open a file or a url and the Shell will figure out the program to open it with.
+
+        The WorkingDirectory property behaves differently depending on the value of the UseShellExecute property. When UseShellExecute is true, the WorkingDirectory property specifies the location of the executable. When UseShellExecute is false, the WorkingDirectory property is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
+
+        If you set UseShellExecute to $true, there will be no available output from the process.
+
+    .PARAMETER Verb
+        The verb to use when doing a ShellExecute invocation. Common usages are "runas" to trigger a UAC elevation of the process.
+
     .PARAMETER WindowStyle
         Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
 
@@ -190,25 +202,77 @@ function Start-ADTProcessAsUser
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [System.String]$WorkingDirectory,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseLinkedAdminToken,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$UseHighestAvailableToken,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$DenyUserTermination,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
         [System.Management.Automation.SwitchParameter]$InheritEnvironmentVariables,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExpandEnvironmentVariables,
 
+        # Identity: UseShellExecute (only present in sets where identity is "UseShellExecute")
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
+        [System.Management.Automation.SwitchParameter]$UseShellExecute,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
+        [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
+        [System.String]$Verb,
+
         # Window Option: WindowStyle (only in sets where window is "WindowStyle")
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
         [ValidateNotNullOrEmpty()]
         [System.Diagnostics.ProcessWindowStyle]$WindowStyle,
 
@@ -216,6 +280,8 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Wait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateNoWindow_Wait')]
@@ -286,6 +352,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$SuccessExitCodes,
 
@@ -295,6 +364,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
         [ValidateNotNullOrEmpty()]
         [System.Int32[]]$RebootExitCodes,
 
@@ -304,6 +376,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
         [System.Obsolete("Please use '-ErrorAction SilentlyContinue' instead as this will be removed in PSAppDeployToolkit 4.3.0.")]
         [PSAppDeployToolkit.Foundation.ValidateNotNullOrWhiteSpace()]
         [SupportsWildcards()]
@@ -319,6 +394,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Wait')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_WindowStyle_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateNoWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_CreateWindow_Wait')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'UseShellExecute_WindowStyle_Wait')]
         [System.Management.Automation.SwitchParameter]$ExitOnProcessFailure,
 
         [Parameter(Mandatory = $false)]
@@ -328,6 +406,9 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_NoWait')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_NoWait')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_NoWait')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]

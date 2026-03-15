@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.18362.0</TargetFrameworks>
+    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
@@ -27,11 +27,12 @@
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.18362.0'">
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.4" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PSADT.ClientServer.Common\PSADT.ClientServer.Common.csproj" />
     <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
   </ItemGroup>
 </Project>

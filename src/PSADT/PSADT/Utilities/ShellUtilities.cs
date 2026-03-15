@@ -3,14 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
+using Windows.Foundation.Metadata;
+using Windows.UI.Notifications;
+using Windows.UI.Shell;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.System.Threading;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 
@@ -19,8 +19,50 @@ namespace PSADT.Utilities
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    public static class ShellUtilities
+    internal static class ShellUtilities
     {
+        /// <summary>
+        /// Attempts to determine whether a Windows Focus Session is currently active.
+        /// </summary>
+        /// <remarks>This method checks for the presence and support of the Windows Focus Session API
+        /// before attempting to retrieve the session state. If the API is unavailable or unsupported, <paramref
+        /// name="isActive"/> is set to <see langword="false"/> and the method returns <see
+        /// langword="false"/>.</remarks>
+        /// <param name="isActive">When this method returns, contains <see langword="true"/> if a Focus Session is active; otherwise, <see
+        /// langword="false"/>. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if the Focus Session state was successfully retrieved; otherwise, <see
+        /// langword="false"/>.</returns>
+        internal static bool TryGetFocusSessionActive(out bool isActive)
+        {
+            if (!ApiInformation.IsTypePresent("Windows.UI.Shell.FocusSessionManager") || !FocusSessionManager.IsSupported)
+            {
+                isActive = false;
+                return false;
+            }
+            isActive = FocusSessionManager.GetDefault().IsFocusActive;
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve the current toast notification mode for the user.
+        /// </summary>
+        /// <remarks>This method checks for the presence of required Windows Runtime APIs before
+        /// attempting to retrieve the notification mode. If the necessary APIs are not available, the method returns
+        /// false and the value of the mode parameter is undefined.</remarks>
+        /// <param name="mode">When this method returns, contains the current toast notification mode if the operation succeeds; otherwise,
+        /// contains an undefined value.</param>
+        /// <returns>true if the notification mode was successfully retrieved; otherwise, false.</returns>
+        internal static bool TryGetNotificationMode(out Interop.ToastNotificationMode mode)
+        {
+            if (!ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationManagerForUser") || !ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationMode") || !ApiInformation.IsMethodPresent("Windows.UI.Notifications.ToastNotificationManager", "GetDefault") || !ApiInformation.IsPropertyPresent("Windows.UI.Notifications.ToastNotificationManagerForUser", "NotificationMode"))
+            {
+                mode = (Interop.ToastNotificationMode)(-1);
+                return false;
+            }
+            mode = (Interop.ToastNotificationMode)ToastNotificationManager.GetDefault().NotificationMode;
+            return true;
+        }
+
         /// <summary>
         /// Notifies the system that file associations have changed and refreshes the desktop environment.
         /// </summary>
@@ -129,45 +171,6 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for a specified process.
-        /// </summary>
-        /// <remarks>The Application User Model ID is used to uniquely identify an application in the
-        /// Windows operating system.</remarks>
-        /// <param name="hProcess">A handle to the process for which the Application User Model ID is retrieved. The handle must be valid and
-        /// not closed.</param>
-        /// <returns>The Application User Model ID of the specified process as a string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="hProcess"/> is null.</exception>
-        internal static string GetApplicationUserModelId(SafeHandle hProcess)
-        {
-            Span<char> appUserModelId = stackalloc char[(int)APPX_IDENTITY.APPLICATION_USER_MODEL_ID_MAX_LENGTH];
-            _ = NativeMethods.GetApplicationUserModelId(hProcess, out uint length, appUserModelId);
-            return appUserModelId.Slice(0, (int)length - 1).ToString();
-        }
-
-        /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for the specified process.
-        /// </summary>
-        /// <param name="process">The process for which to obtain the AUMID. Must not be null.</param>
-        /// <returns>The Application User Model ID associated with the specified process.</returns>
-        public static string GetApplicationUserModelId(Process process)
-        {
-            ArgumentNullException.ThrowIfNull(process);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)process.Id);
-            return GetApplicationUserModelId(hProcess);
-        }
-
-        /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for a specified process.
-        /// </summary>
-        /// <param name="processId">The ID of the process for which to retrieve the AUMID.</param>
-        /// <returns>The Application User Model ID associated with the specified process.</returns>
-        public static string GetApplicationUserModelId(uint processId)
-        {
-            using Process process = Process.GetProcessById((int)processId);
-            return GetApplicationUserModelId(process);
-        }
-
-        /// <summary>
         /// Retrieves the time elapsed since the last user input event.
         /// </summary>
         /// <remarks>This method uses system-level APIs to determine the time of the last user input, such
@@ -193,19 +196,6 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Retrieves the window handle for the Windows taskbar (system tray).
-        /// </summary>
-        /// <remarks>This method is intended for internal use when interacting with the Windows shell. The
-        /// returned handle can be used with other Windows API functions that require a reference to the taskbar
-        /// window.</remarks>
-        /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static HWND GetTrayWindowHandle()
-        {
-            return NativeMethods.FindWindow("Shell_TrayWnd", null);
-        }
-
-        /// <summary>
         /// Gets the full path to the user profiles directory on the system.
         /// </summary>
         /// <remarks>This method retrieves the path to the user profiles directory using the Windows Shell
@@ -220,6 +210,19 @@ namespace PSADT.Utilities
             {
                 return new(ppszPath.ToStringUni());
             }
+        }
+
+        /// <summary>
+        /// Retrieves the window handle for the Windows taskbar (system tray).
+        /// </summary>
+        /// <remarks>This method is intended for internal use when interacting with the Windows shell. The
+        /// returned handle can be used with other Windows API functions that require a reference to the taskbar
+        /// window.</remarks>
+        /// <returns>A handle to the taskbar window, or <see cref="HWND.Null"/> if the taskbar is not found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static HWND GetTrayWindowHandle()
+        {
+            return NativeMethods.FindWindow("Shell_TrayWnd", null);
         }
     }
 }

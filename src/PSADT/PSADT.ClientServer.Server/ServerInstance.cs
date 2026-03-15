@@ -86,7 +86,7 @@ namespace PSADT.ClientServer
                     string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
                     string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
                     _clientProcess = ProcessManager.LaunchAsync(new(
-                        EnvironmentInfo.ClientServerClientPath.FullName,
+                        ClientServerUtilities.ClientPath.FullName,
                         ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
                         Environment.SystemDirectory,
                         RunAsActiveUser,
@@ -676,6 +676,41 @@ namespace PSADT.ClientServer
         public ProcessResult GroupPolicyUpdate(bool force)
         {
             return Invoke<GroupPolicyUpdatePayload, ProcessResult>(PipeCommand.GroupPolicyUpdate, new(force));
+        }
+
+        /// <summary>
+        /// Executes a process using the specified shell execution options in the user context.
+        /// </summary>
+        /// <param name="shellExecuteOptions">The options that define how the process should be executed, including file name, arguments, working
+        /// directory, and window display settings.</param>
+        /// <returns>A ProcessResult object containing information about the executed process, or null if the process could not
+        /// be started.</returns>
+        public ProcessResult? ShellExecuteProcess(UserShellExecuteOptions shellExecuteOptions)
+        {
+            return Invoke<ShellExecuteProcessPayload, ProcessResult?>(PipeCommand.ShellExecuteProcess, new(shellExecuteOptions));
+        }
+
+        /// <summary>
+        /// Gets the current focus mode state for the user.
+        /// </summary>
+        /// <remarks>Focus mode may affect how notifications or interruptions are handled for the user.
+        /// Refer to the application's documentation for the mapping of integer values to specific focus mode
+        /// states.</remarks>
+        /// <returns>An integer value representing the user's focus mode state. The meaning of the value depends on the
+        /// application's focus mode enumeration.</returns>
+        public int GetUserFocusModeState()
+        {
+            return Invoke<int>(PipeCommand.GetUserFocusModeState);
+        }
+
+        /// <summary>
+        /// Gets the current toast notification mode for the user session.
+        /// </summary>
+        /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
+        /// mode.</returns>
+        public ToastNotificationMode GetUserToastNotificationMode()
+        {
+            return Invoke<ToastNotificationMode>(PipeCommand.GetUserToastNotificationMode);
         }
 
         /// <summary>

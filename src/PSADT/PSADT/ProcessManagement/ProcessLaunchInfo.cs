@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.ClientServer;
 using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.Interop;
@@ -72,8 +73,8 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentList = new ReadOnlyCollection<string>([.. argumentList?.Where(static s => !string.IsNullOrWhiteSpace(s)) ?? []]);
-            FilePath = filePath.StartsWith("\"") && filePath.EndsWith("\"") ? filePath.TrimStart('"').TrimEnd('"') : filePath;
+            ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
+            FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
             if (useHighestAvailableToken)
@@ -144,13 +145,13 @@ namespace PSADT.ProcessManagement
             // Hard-coded adjustment specifically for the UIAccess-enabled client/server executable.
             if (RunAsActiveUser is null || RunAsActiveUser == AccountUtilities.CallerRunAsActiveUser)
             {
-                if (FilePath == EnvironmentInfo.ClientServerClientDefaultPath.FullName)
+                if (FilePath == ClientServerUtilities.ClientDefaultPath.FullName)
                 {
-                    FilePath = EnvironmentInfo.ClientServerClientCompatiblePath.FullName;
+                    FilePath = ClientServerUtilities.ClientCompatiblePath.FullName;
                 }
-                if (FilePath == EnvironmentInfo.ClientServerClientLauncherDefaultPath.FullName)
+                if (FilePath == ClientServerUtilities.ClientLauncherDefaultPath.FullName)
                 {
-                    FilePath = EnvironmentInfo.ClientServerClientLauncherCompatiblePath.FullName;
+                    FilePath = ClientServerUtilities.ClientLauncherCompatiblePath.FullName;
                 }
             }
 

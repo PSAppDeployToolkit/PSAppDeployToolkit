@@ -86,6 +86,7 @@ function Remove-ADTFolder
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use [Remove-ADTItem] instead." -Severity Warning
     }
 
     process
@@ -93,7 +94,7 @@ function Remove-ADTFolder
         # Grab and cache all directories.
         $directories = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            foreach ($value in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
+            foreach ($value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
             {
                 $giParams = @{ $PSCmdlet.ParameterSetName = $value }
                 try

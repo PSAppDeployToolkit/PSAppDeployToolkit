@@ -2091,26 +2091,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Retrieves the Application User Model ID (AUMID) for a specified process.
-        /// </summary>
-        /// <remarks>This method wraps a PInvoke call to retrieve the AUMID, and throws an exception if
-        /// the operation is unsuccessful.</remarks>
-        /// <param name="hProcess">A handle to the process for which the AUMID is being retrieved. This handle must have the necessary access
-        /// rights.</param>
-        /// <param name="applicationUserModelIdLength">On output, receives the length of the AUMID, including the null terminator.</param>
-        /// <param name="applicationUserModelId">A buffer that receives the AUMID as a null-terminated string.</param>
-        /// <returns>A <see cref="WIN32_ERROR"/> code indicating the result of the operation. Returns <see
-        /// cref="WIN32_ERROR.NO_ERROR"/> if successful.</returns>
-        internal static WIN32_ERROR GetApplicationUserModelId(SafeHandle hProcess, out uint applicationUserModelIdLength, Span<char> applicationUserModelId)
-        {
-            ArgumentException.ThrowIfNullOrClosed(hProcess);
-            applicationUserModelIdLength = (uint)applicationUserModelId.Length;
-            WIN32_ERROR res = PInvoke.GetApplicationUserModelId(hProcess, ref applicationUserModelIdLength, applicationUserModelId).ThrowOnFailure();
-            InvalidOperationException.ThrowIfZero(applicationUserModelIdLength, "The return length from 'GetApplicationUserModelId()' is zero.");
-            return res;
-        }
-
-        /// <summary>
         /// Reads data from an area of memory in a specified process. The process is identified by a handle.
         /// </summary>
         /// <remarks>This method wraps the PInvoke call to ReadProcessMemory and throws an exception if
@@ -4088,6 +4068,114 @@ namespace PSADT.Interop
         internal static uint DWRITE_MAKE_OPENTYPE_TAG(char a, char b, char c, char d)
         {
             return (byte)a | ((uint)(byte)b << 8) | ((uint)(byte)c << 16) | ((uint)(byte)d << 24);
+        }
+
+        /// <summary>
+        /// Aligns a value down to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="length">The value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_DOWN_BY(nuint length, nuint alignment)
+        {
+            return length & ~(alignment - 1);
+        }
+
+        /// <summary>
+        /// Aligns a value up to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="length">The value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_UP_BY(nuint length, nuint alignment)
+        {
+            return ALIGN_DOWN_BY(length + alignment - 1, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a pointer value down to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="address">The pointer value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_DOWN_POINTER_BY(nint address, nuint alignment)
+        {
+            return (nint)ALIGN_DOWN_BY((nuint)address, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a pointer value up to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="address">The pointer value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_UP_POINTER_BY(nint address, nuint alignment)
+        {
+            return (nint)ALIGN_UP_POINTER_BY((nuint)address, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a pointer value up to the nearest boundary specified by alignment.
+        /// </summary>
+        /// <param name="address">The pointer value to align.</param>
+        /// <param name="alignment">The alignment boundary.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_UP_POINTER_BY(nuint address, nuint alignment)
+        {
+            return ALIGN_UP_BY(address, alignment);
+        }
+
+        /// <summary>
+        /// Aligns a value down to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="length">The value to align.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_DOWN<T>(nuint length) where T : unmanaged
+        {
+            return ALIGN_DOWN_BY(length, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
+        /// Aligns a value up to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="length">The value to align.</param>
+        /// <returns>The aligned value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nuint ALIGN_UP<T>(nuint length) where T : unmanaged
+        {
+            return ALIGN_UP_BY(length, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
+        /// Aligns a pointer value down to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="address">The pointer value to align.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_DOWN_POINTER<T>(nint address) where T : unmanaged
+        {
+            return ALIGN_DOWN_POINTER_BY(address, (nuint)Unsafe.SizeOf<T>());
+        }
+
+        /// <summary>
+        /// Aligns a pointer value up to the nearest boundary defined by the size of <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type whose size determines alignment.</typeparam>
+        /// <param name="address">The pointer value to align.</param>
+        /// <returns>The aligned pointer value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static nint ALIGN_UP_POINTER<T>(nint address) where T : unmanaged
+        {
+            return ALIGN_UP_POINTER_BY(address, (nuint)Unsafe.SizeOf<T>());
         }
 
         /// <summary>

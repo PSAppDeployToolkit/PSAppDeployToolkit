@@ -188,13 +188,32 @@ namespace PSADT.ShortcutManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH]; buffer.Clear();
-                _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_UNCPRIORITY);
-                return buffer.ToStringUni();
+                Span<char> buffer = stackalloc char[(int)PInvoke.MAX_PATH];
+                buffer.Clear(); _shellLink.GetPath(buffer, 0);
+                if (buffer.ToStringUni() is string targetPath && !string.IsNullOrWhiteSpace(targetPath))
+                {
+                    return targetPath;
+                }
+                if (GetStringProperty(in PInvoke.PKEY_Link_TargetUrlPath) is string targetUrlPath && !string.IsNullOrWhiteSpace(targetUrlPath))
+                {
+                    return targetUrlPath;
+                }
+                if (GetStringProperty(in PInvoke.PKEY_Link_TargetParsingPath) is string parsingPath && !string.IsNullOrWhiteSpace(parsingPath))
+                {
+                    return parsingPath;
+                }
+                buffer.Clear(); _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_RAWPATH);
+                return buffer.ToStringUni() is string rawTargetPath && !string.IsNullOrWhiteSpace(rawTargetPath)
+                    ? rawTargetPath
+                    : null;
             }
             set
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
+                if (Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) && !uri.IsFile)
+                {
+                    SetStringProperty(in PInvoke.PKEY_Link_TargetUrlPath, uri.AbsoluteUri);
+                }
                 _shellLink.SetPath(value);
             }
         }
@@ -774,13 +793,12 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Resolves the shortcut, finding the target if it has moved.
         /// </summary>
-        /// <param name="hwnd">A handle to the parent window for any UI that may be displayed.</param>
         /// <param name="flags">Flags that control the resolution process.</param>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public void Resolve(nint hwnd, uint flags)
+        public void Resolve(Interop.SLR_FLAGS flags = Interop.SLR_FLAGS.SLR_NO_UI | Interop.SLR_FLAGS.SLR_NOUPDATE | Interop.SLR_FLAGS.SLR_NOSEARCH | Interop.SLR_FLAGS.SLR_NOTRACK)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _shellLink.Resolve((HWND)hwnd, flags);
+            _shellLink.Resolve(HWND.Null, (uint)flags);
         }
 
         /// <summary>
@@ -1139,17 +1157,15 @@ namespace PSADT.ShortcutManagement
         /// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                if (disposing)
-                {
-                    if (_shellLink != null)
-                    {
-                        _ = Marshal.FinalReleaseComObject(_shellLink);
-                    }
-                }
-                _disposed = true;
+                return;
             }
+            if (disposing && _shellLink != null)
+            {
+                _ = Marshal.FinalReleaseComObject(_shellLink);
+            }
+            _disposed = true;
         }
 
         /// <summary>
