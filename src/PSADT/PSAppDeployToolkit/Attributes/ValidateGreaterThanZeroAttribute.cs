@@ -34,15 +34,15 @@ namespace PSAppDeployToolkit.Attributes
             }
             if (IsNull(arguments))
             {
-                throw new ValidationMetadataException("The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
+                throw new ArgumentNullException(null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
             }
             if (!TryIsGreaterThanZero(arguments, out bool isGreaterThanZero))
             {
-                throw new ValidationMetadataException($"The argument type '{arguments.GetType().FullName}' does not support greater-than-zero validation.");
+                throw new ArgumentException($"The argument type '{arguments.GetType().FullName}' does not support greater-than-zero validation.");
             }
             if (!isGreaterThanZero)
             {
-                throw new ValidationMetadataException("The argument is less than or equal to zero. Provide an argument that is greater than zero, and then try running the command again.");
+                throw new ArgumentOutOfRangeException(null, arguments, "The argument is less than or equal to zero. Provide an argument that is greater than zero, and then try running the command again.");
             }
         }
 

@@ -21,17 +21,13 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentTransformationMetadataException">Thrown when the input cannot be transformed into a <see cref="TimeSpan"/>.</exception>
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {
-            if (inputData is null)
-            {
-                throw new ArgumentTransformationMetadataException("Cannot transform null to TimeSpan.");
-            }
             while (inputData is PSObject psObject)
             {
                 inputData = psObject.BaseObject;
             }
             if (inputData is null)
             {
-                throw new ArgumentTransformationMetadataException("Cannot transform null to TimeSpan.");
+                throw new ArgumentNullException(null, "Cannot transform null to TimeSpan.");
             }
             if (inputData is TimeSpan timeSpan)
             {
@@ -53,7 +49,7 @@ namespace PSAppDeployToolkit.Attributes
                 }
             }
             return !TryGetNumericalSeconds(inputData, out double seconds)
-                ? throw new ArgumentTransformationMetadataException($"Cannot transform value of type '{inputData.GetType().FullName}' to TimeSpan.")
+                ? throw new ArgumentException($"Cannot transform value of type '{inputData.GetType().FullName}' to TimeSpan.")
                 : TimeSpanFromSeconds(seconds);
         }
 
@@ -133,7 +129,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             catch (Exception ex) when (ex is ArgumentException or OverflowException)
             {
-                throw new ArgumentTransformationMetadataException($"The value '{seconds}' cannot be represented as a TimeSpan in seconds.", ex);
+                throw new ArgumentOutOfRangeException($"The value '{seconds}' cannot be represented as a TimeSpan in seconds.", ex);
             }
         }
     }
