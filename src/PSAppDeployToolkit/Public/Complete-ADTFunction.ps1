@@ -51,6 +51,9 @@ function Complete-ADTFunction
         [System.Management.Automation.PSCmdlet]$Cmdlet
     )
 
+    # Ensure this function always stops, no matter what.
+    $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+
     # Write debug log messages and restore original global verbosity if a value was archived off.
     if ($InformationPreference -notmatch '^(SilentlyContinue|Ignore)$')
     {
