@@ -23,7 +23,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
-using PSADT.Interop.ComTypes;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32;
@@ -77,7 +76,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         private InternetShortcutFile()
         {
-            _internetShortcut = new IUniformResourceLocatorW();
+            _ = NativeMethods.CoCreateInstance(in PInvoke.CLSID_InternetShortcut, null, CLSCTX.CLSCTX_INPROC_SERVER, out _internetShortcut);
             _storageMode = null;
         }
 
@@ -97,7 +96,7 @@ namespace PSADT.ShortcutManagement
             {
                 throw new FileNotFoundException("The specified shortcut file does not exist.", filePath);
             }
-            IUniformResourceLocatorW internetShortcut = new();
+            _ = NativeMethods.CoCreateInstance(in PInvoke.CLSID_InternetShortcut, null, CLSCTX.CLSCTX_INPROC_SERVER, out IUniformResourceLocatorW internetShortcut);
             try
             {
                 ((IPersistFile)internetShortcut).Load(filePath, (Windows.Win32.System.Com.STGM)storageMode);
@@ -187,8 +186,11 @@ namespace PSADT.ShortcutManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _internetShortcut.GetURL(out string? url);
-                return url is not null ? new(url) : null;
+                _internetShortcut.GetURL(out SafeCoTaskMemHandle? url);
+                using (url)
+                {
+                    return url is not null ? new(url.ToStringUni()) : null;
+                }
             }
             set
             {
@@ -436,7 +438,7 @@ namespace PSADT.ShortcutManagement
                         hwndParent = (HWND)hwndParent,
                         pcszVerb = pVerb
                     };
-                    _internetShortcut.InvokeCommand(in commandInfo);
+                    _internetShortcut.InvokeCommand(ref commandInfo);
                 }
             }
         }
