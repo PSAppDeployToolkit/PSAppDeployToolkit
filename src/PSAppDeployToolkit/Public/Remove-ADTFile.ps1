@@ -13,6 +13,8 @@ function Remove-ADTFile
     .DESCRIPTION
         This function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the Recurse parameter is specified.
 
+        This function delegates deletion to Remove-ADTItem.
+
     .PARAMETER Path
         Specifies the file on the filesystem to be removed. The value of Path will accept wildcards. Will accept an array of values.
 
@@ -45,6 +47,8 @@ function Remove-ADTFile
     .NOTES
         An active ADT session is NOT required to use this function.
 
+        Remove-ADTItem is the unified filesystem removal function. Prefer Remove-ADTItem for new script development.
+
         This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
 
         This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
@@ -60,7 +64,7 @@ function Remove-ADTFile
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -81,84 +85,26 @@ function Remove-ADTFile
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+        Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use [Remove-ADTItem] instead." -Severity Warning
     }
 
     process
     {
-        foreach ($Value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+        $riParams = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters[$PSCmdlet.ParameterSetName]; Recurse = $Recurse }
+        try
         {
-            # Resolve the specified path, if the path does not exist, display a warning instead of an error.
             try
             {
-                try
-                {
-                    $giParams = @{ $PSCmdlet.ParameterSetName = $Value }
-                    if (!($Items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
-                    {
-                        Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
-                        continue
-                    }
-                }
-                catch [System.Management.Automation.ItemNotFoundException]
-                {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
-                    continue
-                }
-                catch [System.Management.Automation.DriveNotFoundException]
-                {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because the drive does not exist." -Severity Warning
-                    continue
-                }
-                catch
-                {
-                    Write-Error -ErrorRecord $_
-                }
+                Remove-ADTItem @riParams
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Value]."
-                continue
+                Write-Error -ErrorRecord $_
             }
-
-            # Delete specified path if it was successfully resolved.
-            try
-            {
-                foreach ($Item in $Items)
-                {
-                    try
-                    {
-                        if (Test-Path -LiteralPath $Item -PathType Container)
-                        {
-                            if (!$Recurse)
-                            {
-                                Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
-                                continue
-                            }
-                            Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
-                            if ($PSCmdlet.ShouldProcess($Item, 'Delete folder recursively'))
-                            {
-                                $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
-                            }
-                        }
-                        else
-                        {
-                            Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
-                            if ($PSCmdlet.ShouldProcess($Item, 'Delete file'))
-                            {
-                                $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        Write-Error -ErrorRecord $_
-                    }
-                }
-            }
-            catch
-            {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete items in path [$Item]."
-            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Silent
         }
     }
 
