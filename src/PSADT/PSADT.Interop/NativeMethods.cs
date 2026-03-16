@@ -23,6 +23,7 @@ using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
+using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.StructuredStorage;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.JobObjects;
@@ -4324,6 +4325,26 @@ namespace PSADT.Interop
         internal static HRESULT PropVariantClear(ref PROPVARIANT pvar)
         {
             HRESULT res = PInvoke.PropVariantClear(ref pvar);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+        }
+
+        /// <summary>
+        /// Creates a single uninitialized object of the class associated with a specified CLSID and retrieves a pointer
+        /// to the requested interface.
+        /// </summary>
+        /// <remarks>If the operation fails, an exception corresponding to the HRESULT is thrown. This
+        /// method is a strongly-typed wrapper for the native CoCreateInstance function.</remarks>
+        /// <typeparam name="T">The type of the interface to retrieve. Must be a class type.</typeparam>
+        /// <param name="rclsid">The CLSID of the object to be created.</param>
+        /// <param name="pUnkOuter">If the object is being created as part of an aggregate, a pointer to the controlling IUnknown interface of
+        /// the aggregate; otherwise, null.</param>
+        /// <param name="dwClsContext">The context in which the code that manages the newly created object will run.</param>
+        /// <param name="ppv">When this method returns, contains the interface pointer requested in type parameter T if the call is
+        /// successful; otherwise, null. This parameter is passed uninitialized.</param>
+        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
+        internal static HRESULT CoCreateInstance<T>(in Guid rclsid, object? pUnkOuter, CLSCTX dwClsContext, out T ppv) where T : class
+        {
+            HRESULT res = PInvoke.CoCreateInstance(in rclsid, pUnkOuter, dwClsContext, out ppv);
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
