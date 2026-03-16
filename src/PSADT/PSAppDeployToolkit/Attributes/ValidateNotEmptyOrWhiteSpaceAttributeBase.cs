@@ -49,7 +49,7 @@ namespace PSAppDeployToolkit.Attributes
                 {
                     return;
                 }
-                throw new ValidationMetadataException("The argument is null. Provide a valid value for the argument, and then try running the command again.");
+                throw new ArgumentNullException(null, "The argument is null. Provide a valid value for the argument, and then try running the command again.");
             }
 
             // Handle varying type checks.
@@ -57,7 +57,7 @@ namespace PSAppDeployToolkit.Attributes
             {
                 if (allowEmpty ? IsWhiteSpaceOnly(str) : string.IsNullOrWhiteSpace(str))
                 {
-                    throw new ValidationMetadataException(allowEmpty
+                    throw new ArgumentException(allowEmpty
                         ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
                         : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
                 }
@@ -67,7 +67,7 @@ namespace PSAppDeployToolkit.Attributes
                 string scriptStr = script.ToString();
                 if (allowEmpty ? IsWhiteSpaceOnly(scriptStr) : string.IsNullOrWhiteSpace(scriptStr))
                 {
-                    throw new ValidationMetadataException(allowEmpty
+                    throw new ArgumentException(allowEmpty
                         ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
                         : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
                 }
@@ -76,7 +76,7 @@ namespace PSAppDeployToolkit.Attributes
             {
                 if (allowEmpty ? IsWhiteSpaceOnly(ntAccount.Value) : string.IsNullOrWhiteSpace(ntAccount.Value))
                 {
-                    throw new ValidationMetadataException(allowEmpty
+                    throw new ArgumentException(allowEmpty
                         ? "The argument is white space. Provide an argument that is not white space, and then try running the command again."
                         : "The argument is empty or white space. Provide an argument that is not empty or white space, and then try running the command again.");
                 }
@@ -85,14 +85,14 @@ namespace PSAppDeployToolkit.Attributes
             {
                 if (dict.Count == 0)
                 {
-                    throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
+                    throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
             }
             else if (IsReadOnlyDictionary(arguments, out int count))
             {
                 if (count == 0)
                 {
-                    throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
+                    throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
             }
             else if (IsCollection(arguments.GetType(), out bool isElementValueType))
@@ -109,11 +109,11 @@ namespace PSAppDeployToolkit.Attributes
                             object element = enumerator.Current;
                             if (IsNull(element))
                             {
-                                throw new ValidationMetadataException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
+                                throw new ArgumentException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
                             }
                             if (element is string elementStr && (allowEmpty ? IsWhiteSpaceOnly(elementStr) : string.IsNullOrWhiteSpace(elementStr)))
                             {
-                                throw new ValidationMetadataException(allowEmpty
+                                throw new ArgumentException(allowEmpty
                                     ? "The argument collection contains an element that is white space. Provide a collection that does not contain white space elements, and then try running the command again."
                                     : "The argument collection contains an element that is empty or white space. Provide a collection that does not contain empty or white space elements, and then try running the command again.");
                             }
@@ -123,7 +123,7 @@ namespace PSAppDeployToolkit.Attributes
                 }
                 if (isEmpty)
                 {
-                    throw new ValidationMetadataException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
+                    throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
             }
         }

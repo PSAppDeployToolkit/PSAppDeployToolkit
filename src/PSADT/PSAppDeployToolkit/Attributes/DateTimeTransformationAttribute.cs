@@ -23,17 +23,13 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentTransformationMetadataException">Thrown when the input cannot be transformed into a <see cref="DateTime"/>.</exception>
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {
-            if (inputData is null)
-            {
-                throw new ArgumentTransformationMetadataException("Cannot transform null to DateTime.");
-            }
             while (inputData is PSObject psObject)
             {
                 inputData = psObject.BaseObject;
             }
             if (inputData is null)
             {
-                throw new ArgumentTransformationMetadataException("Cannot transform null to DateTime.");
+                throw new ArgumentNullException(null, "Cannot transform null to DateTime.");
             }
             if (inputData is DateTime dateTime)
             {
@@ -55,7 +51,7 @@ namespace PSAppDeployToolkit.Attributes
                 }
             }
             return !TryGetNumericalDays(inputData, out double days)
-                ? throw new ArgumentTransformationMetadataException($"Cannot transform value of type '{inputData.GetType().FullName}' to DateTime.")
+                ? throw new ArgumentException($"Cannot transform value of type '{inputData.GetType().FullName}' to DateTime.")
                 : DateTimeFromDays(days);
         }
 
@@ -146,7 +142,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             catch (Exception ex) when (ex is ArgumentException or OverflowException)
             {
-                throw new ArgumentTransformationMetadataException($"The value '{days}' cannot be represented as a DateTime in days.", ex);
+                throw new ArgumentOutOfRangeException($"The value '{days}' cannot be represented as a DateTime in days.", ex);
             }
         }
     }
