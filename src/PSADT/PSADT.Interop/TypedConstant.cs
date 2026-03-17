@@ -158,7 +158,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                return (PCWSTR)(void*)_value;
+                return (PCWSTR)(char*)_value;
             }
         }
 
