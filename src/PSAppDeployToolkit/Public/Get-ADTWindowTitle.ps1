@@ -36,7 +36,7 @@ function Get-ADTWindowTitle
         One or more process ids of the application window to search for.
 
     .PARAMETER ParentProcessMainWindowHandle
-        One more process main window handles of the application window to search for.
+        One or more process main window handles of the application window to search for.
 
     .INPUTS
         None
