@@ -38,7 +38,7 @@ function Confirm-ADTBuildModulesPresent
             if (!($nugetProvider = Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction Ignore) -or ($nugetProvider.Version -lt [System.Version]::new(2, 8, 5, 201)))
             {
                 Write-ADTBuildLogEntry -Message "Installing/updating NuGet package provider, please wait..."
-                $null = Install-PackageProvider -Name NuGet -Scope $Scope -Force
+                $null = Install-PackageProvider -Name NuGet -Scope CurrentUser -Force
             }
 
             # Commence installing modules one by one. We need to do this individually as we can't specify names and differing minimum versions.
