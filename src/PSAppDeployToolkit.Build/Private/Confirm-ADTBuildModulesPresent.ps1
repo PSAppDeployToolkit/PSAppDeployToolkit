@@ -12,24 +12,29 @@ function Confirm-ADTBuildModulesPresent
     {
         # Get all installed modules and see if anything's missing.
         Write-ADTBuildLogEntry -Message "Confirming required PowerShell modules are installed."
-        $installedModules = Get-ADTInstalledModuleFromModulePath; $missingModules = foreach ($requiredModule in $Script:ModuleConstants.RequiredModules)
-        {
-            # Return this ModuleSpecification if the module is missing.
-            if (!($installedModule = $installedModules | & { process { if ($_.Name -eq $requiredModule.Name) { return $_ } } } | Select-Object -First 1))
+        $missingModules = $Script:ModuleConstants.RequiredModules | & {
+            begin
             {
-                $requiredModule
-                continue
+                # Pre-cache all installed modules.
+                $installedModules = Get-ADTInstalledModuleFromModulePath
             }
-
-            # Return this ModuleSpecification if the version is less than we need.
-            if ($installedModule.Version -lt $requiredModule.Version)
+            process
             {
-                $requiredModule
-                continue
+                # Return this ModuleSpecification if the module is missing.
+                if (!($installedModule = $installedModules | Where-Object -Property Name -EQ -Value $_.Name | Select-Object -First 1))
+                {
+                    return $_
+                }
+
+                # Return this ModuleSpecification if the version is less than we need.
+                if ($installedModule.Version -lt $_.Version)
+                {
+                    return $_
+                }
             }
         }
 
-        # Return early if the required modules are available.
+        # Install any missing modules.
         if ($missingModules)
         {
             # We've got missing modules... Start by confirming NuGet is available so we can get them installed.
