@@ -78,7 +78,7 @@ function Test-ADTPowerPoint
 
                 # Check if "POWERPNT" process has a window with a title that begins with "PowerPoint Slide Show" or "PowerPoint-" for non-English language systems.
                 # There is a possiblity of a false positive if the PowerPoint filename starts with "PowerPoint Slide Show".
-                if (Get-ADTWindowTitle -ParentProcess POWERPNT -WindowTitle '(^PowerPoint(-| Slide Show)|  -  )' -InformationAction SilentlyContinue)
+                if (Get-ADTWindowTitle -ParentProcess POWERPNT -WindowTitle '^PowerPoint(-| Slide Show)' -InformationAction SilentlyContinue)
                 {
                     Write-ADTLogEntry -Message "Detected a PowerPoint process with a window title indicating a slide show is active."
                     return $true
