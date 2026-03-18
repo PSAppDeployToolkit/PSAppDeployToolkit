@@ -14,10 +14,10 @@ Describe 'Test-ADTRegistryValue' {
 
     Context 'Functionality' {
         It 'Should return $true' {
-            Test-ADTRegistryValue -Key $TestRegistry -Name 'Test' | Should -Be $true
+            Test-ADTRegistryValue -Key $TestRegistry -Name 'Test' | Should -BeTrue
         }
         It 'Should return $false' {
-            Test-ADTRegistryValue -Key $TestRegistry -Name 'DoesNotExist' | Should -Be $false
+            Test-ADTRegistryValue -Key $TestRegistry -Name 'DoesNotExist' | Should -BeFalse
         }
     }
 
