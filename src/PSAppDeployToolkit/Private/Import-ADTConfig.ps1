@@ -103,11 +103,30 @@ function Private:Import-ADTConfig
             }
         }
     }
+    filter Update-ADTConfigTempVariables
+    {
+        # Go recursive if we've received a hashtable, otherwise just test the values.
+        foreach ($section in $($_.GetEnumerator()))
+        {
+            # Re-process if this is a hashtable.
+            if ($section.Value -is [System.Collections.Hashtable])
+            {
+                $section.Value | & $MyInvocation.MyCommand; continue
+            }
+
+            # Replace any temp environment variable with .NET's provided value.
+            if (($section.Value -is [System.String]) -and ($section.Value -match '\$env:?Temp'))
+            {
+                $section.Value = $section.Value -replace '\$env:?Temp', '$([System.IO.Path]::GetTempPath().TrimEnd("\"))'
+            }
+        }
+    }
 
     # Import the config from disk and verify all integers are valid.
     $integerKeys = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue() | Get-ADTConfigIntegerKeyNames
     $config = Import-ADTModuleDataFile @PSBoundParameters -FileName config.psd1
     $config | Confirm-ADTConfigIntegersGreaterThanZero
+    $config | Update-ADTConfigTempVariables
 
     # Confirm the specified dialog type is valid.
     if (($config.UI.DialogStyle -ne 'Classic') -and (Test-ADTNonNativeCaller))
