@@ -4574,7 +4574,7 @@ try
 
                                     Toolkit = @{
                                         # Specify the path for the cache folder.
-                                        CachePath = '$envProgramData\SoftwareCache'
+                                        CachePath = '$env:ProgramData\SoftwareCache'
 
                                         # The name to show by default for dialog subtitles, balloon notifications, etc.
                                         CompanyName = 'PSAppDeployToolkit'
@@ -4601,10 +4601,10 @@ try
                                         LogMaxSize = 10
 
                                         # Log path used for Toolkit logging.
-                                        LogPath = '$envWinDir\Logs\Software'
+                                        LogPath = '$env:SystemRoot\Logs\Software'
 
                                         # Same as LogPath but used when RequireAdmin is False.
-                                        LogPathNoAdminRights = '$envProgramData\Logs\Software'
+                                        LogPathNoAdminRights = '$env:ProgramData\Logs\Software'
 
                                         # Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precident over "LogToSubfolder" if both are set.
                                         LogToHierarchy = $false
@@ -4629,10 +4629,10 @@ try
                                         RegPathNoAdminRights = 'HKCU:\SOFTWARE'
 
                                         # Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\Temp.
-                                        TempPath = '$envTemp'
+                                        TempPath = '$env:Temp'
 
                                         # Same as TempPath but used when RequireAdmin is False.
-                                        TempPathNoAdminRights = '$envTemp'
+                                        TempPathNoAdminRights = '$env:Temp'
                                     }
 
                                     UI = @{
