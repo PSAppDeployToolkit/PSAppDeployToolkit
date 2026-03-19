@@ -19,14 +19,14 @@ function Test-ADTUserInFocusMode
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Boolean
+        [System.Nullable[System.Boolean]]
 
-        Returns true/false depending on whether the user is in focus mode or not.
+        Returns true/false if the user is in focus mode or not, or $null if there is no active user or the API is unavailable.
 
     .EXAMPLE
         Test-ADTUserInFocusMode
 
-        Returns the logged on user is in focus mode or not, or null if the API is unavailable.
+        Returns whether the logged on user is in focus mode or not, or null if the API is unavailable.
 
     .NOTES
         An active ADT session is NOT required to use this function.

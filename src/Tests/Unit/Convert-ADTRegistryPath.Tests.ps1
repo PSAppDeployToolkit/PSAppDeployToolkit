@@ -32,7 +32,7 @@ Describe 'Convert-ADTRegistryPath' {
             { Convert-ADTRegistryPath -Key '' } | Should -Throw
             { Convert-ADTRegistryPath -Key ' ' } | Should -Throw
         }
-        It 'Should verify that SID is not null or empty' {
+        It 'Should verify that SID is not null, empty or whitespace' {
             { Convert-ADTRegistryPath -Key 'Anything' -SID $null } | Should -Throw
             { Convert-ADTRegistryPath -Key 'Anything' -SID '' } | Should -Throw
             { Convert-ADTRegistryPath -Key 'Anything' -SID ' ' } | Should -Throw

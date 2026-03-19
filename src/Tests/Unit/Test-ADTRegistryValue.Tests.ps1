@@ -32,7 +32,7 @@ Describe 'Test-ADTRegistryValue' {
             { Test-ADTRegistryValue -Key 'Anything' -Name '' } | Should -Throw
             { Test-ADTRegistryValue -Key 'Anything' -Name ' ' } | Should -Throw
         }
-        It 'Should verify that SID is not null or empty' {
+        It 'Should verify that SID is not null, empty or whitespace' {
             { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID $null } | Should -Throw
             { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID '' } | Should -Throw
             { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID ' ' } | Should -Throw
