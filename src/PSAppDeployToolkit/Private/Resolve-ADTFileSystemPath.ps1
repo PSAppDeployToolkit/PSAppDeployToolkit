@@ -154,17 +154,17 @@ function Private:Resolve-ADTFileSystemPath
             # Session paths come next.
             if ($adtSession = if (Test-ADTSessionActive) { Get-ADTSession })
             {
-                if (![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
+                if ($adtSession.DirFiles)
                 {
-                    $adtSession.DirFiles
+                    $adtSession.DirFiles.FullName
                 }
-                if (![System.String]::IsNullOrWhiteSpace($adtSession.DirSupportFiles))
+                if ($adtSession.DirSupportFiles)
                 {
-                    $adtSession.DirSupportFiles
+                    $adtSession.DirSupportFiles.FullName
                 }
                 if ($adtSession.ScriptDirectory.Count -gt 0)
                 {
-                    $adtSession.ScriptDirectory
+                    $adtSession.ScriptDirectory.FullName
                 }
             }
 
