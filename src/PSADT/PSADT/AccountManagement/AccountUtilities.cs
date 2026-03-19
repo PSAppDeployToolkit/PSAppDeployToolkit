@@ -31,8 +31,8 @@ namespace PSADT.AccountManagement
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-                CallerGroups = identity.Groups?.Select(static g => (SecurityIdentifier)g).ToList().AsReadOnly();
-                CallerIsServiceAccount = CallerGroups?.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null)) == true;
+                CallerGroups = new ReadOnlyCollection<SecurityIdentifier>(identity.Groups?.Select(static g => (SecurityIdentifier)g) is IEnumerable<SecurityIdentifier> callerGroups ? [.. callerGroups] : []);
+                CallerIsServiceAccount = CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null));
                 CallerSid = identity.User ?? throw new InvalidOperationException("Current Windows identity does not have a user SID.");
                 CallerUsername = new(identity.Name);
             }
@@ -106,7 +106,7 @@ namespace PSADT.AccountManagement
         /// <remarks>This property is read-only and can be used to determine the group memberships of the
         /// caller for authorization or auditing purposes. The value may be null if group information is unavailable for
         /// the caller.</remarks>
-        public static readonly IReadOnlyList<SecurityIdentifier>? CallerGroups;
+        public static readonly IReadOnlyList<SecurityIdentifier> CallerGroups;
 
         /// <summary>
         /// Gets a value indicating whether the current caller is a service account.

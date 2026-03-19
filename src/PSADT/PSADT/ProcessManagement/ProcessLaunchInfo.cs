@@ -317,7 +317,7 @@ namespace PSADT.ProcessManagement
         /// When specified, a STARTUPINFOEX structure with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used.
         /// </summary>
         [IgnoreDataMember]
-        public IReadOnlyList<nint> HandlesToInherit => HandlesToInheritValues?.Select(static h => (nint)h).ToList().AsReadOnly() ?? new ReadOnlyCollection<nint>([]);
+        public IReadOnlyList<nint> HandlesToInherit => new ReadOnlyCollection<nint>(HandlesToInheritValues?.Select(static h => (nint)h) is IEnumerable<nint> handlesToInheritValues ? [.. handlesToInheritValues] : []);
 
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.

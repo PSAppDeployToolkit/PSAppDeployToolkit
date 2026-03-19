@@ -74,7 +74,7 @@ namespace PSADT.WindowManagement
         /// <remarks>This array contains the native integer (nint) values of window handles to be
         /// filtered. If the array is <see langword="null"/>, no filtering is applied.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<nint>? WindowHandleFilter => WindowHandleFilterValues?.Select(static v => (nint)v).ToList().AsReadOnly();
+        public IReadOnlyList<nint>? WindowHandleFilter => WindowHandleFilterValues?.Select(static v => (nint)v) is IEnumerable<nint> windowHandleFilterValues ? new ReadOnlyCollection<nint>([.. windowHandleFilterValues]) : null;
 
         /// <summary>
         /// Represents a filter for parent process names used to determine specific conditions or behaviors.
@@ -102,7 +102,7 @@ namespace PSADT.WindowManagement
         /// to identify or filter parent processes based on their main window. The list may be empty if no filters are
         /// applied.</remarks>
         [IgnoreDataMember]
-        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter => ParentProcessMainWindowHandleFilterValues?.Select(static v => (nint)v).ToList().AsReadOnly();
+        public IReadOnlyList<nint>? ParentProcessMainWindowHandleFilter => ParentProcessMainWindowHandleFilterValues?.Select(static v => (nint)v) is IEnumerable<nint> parentProcessMainWindowHandleFilterValues ? new ReadOnlyCollection<nint>([.. parentProcessMainWindowHandleFilterValues]) : null;
 
         /// <summary>
         /// Gets the window handle filter values for serialization.
