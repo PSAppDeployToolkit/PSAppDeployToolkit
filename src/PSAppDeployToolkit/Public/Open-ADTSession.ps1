@@ -348,9 +348,9 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if ([System.IO.Path]::GetExtension($_) -ne '.log')
+                if ([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.Match($_).Success)
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage 'The specified name does not have a [.log] extension.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
                 }
                 return $_
             })]
