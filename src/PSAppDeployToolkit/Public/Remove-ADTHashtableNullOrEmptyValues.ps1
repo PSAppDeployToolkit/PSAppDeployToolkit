@@ -16,10 +16,13 @@ function Remove-ADTHashtableNullOrEmptyValues
     .PARAMETER Hashtable
         The hashtable to remove null values from.
 
-    .INPUTS
-        None
+    .PARAMETER Recurse
+        Specifies to recursively remove nested hashtable values that are null, empty, or whitespace.
 
-        You cannot pipe objects to this function.
+    .INPUTS
+        System.Collections.Hashtable
+
+        The hashtable to remove null or empty entries from.
 
     .OUTPUTS
         System.Collections.Hashtable
@@ -47,18 +50,30 @@ function Remove-ADTHashtableNullOrEmptyValues
     [OutputType([System.Collections.Hashtable])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
-        [System.Collections.Hashtable]$Hashtable
+        [System.Collections.Hashtable]$Hashtable,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Recurse
     )
 
-    # Build a new hashtable with only valid values and then return it to the caller.
-    $obj = @{}; foreach ($kvp in $Hashtable.GetEnumerator())
+    process
     {
-        if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $kvp.Value)))
+        # Build a new hashtable with only valid values and then return it to the caller.
+        $obj = $Hashtable.Clone(); foreach ($section in $($obj.GetEnumerator()))
         {
-            $obj.Add($kvp.Key, $kvp.Value)
+            # Recursively remove null/empty/whitespace keys from the bottom up, if the Recurse parameter is provided.
+            if ($section.Value -is [System.Collections.Hashtable] -and $Recurse)
+            {
+                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value
+            }
+
+            if ([System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
+            {
+                $obj.Remove($section.Key)
+            }
         }
+        return $obj
     }
-    return $obj
 }
