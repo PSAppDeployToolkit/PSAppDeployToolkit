@@ -497,7 +497,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         // Get new log file path.
                         string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
-                        string logFileExtension = Path.GetExtension(LogName);
+                        string logFileExtension = LogUtilities.LogFileNameRegex.Match(LogName).Value;
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Combine(LogPath.FullName, archiveLogFileName);
@@ -519,7 +519,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Get all log files sorted by last write time.
-                        FileInfo[] logFiles = [.. LogPath.GetFiles($"{logFileNameOnly}*.log").Where(static f => f.Name.EndsWith(".log", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
+                        FileInfo[] logFiles = [.. LogPath.GetFiles($"{logFileNameOnly}*{logFileExtension}").Where(f => f.Name.EndsWith(logFileExtension, StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                         int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.

@@ -585,9 +585,9 @@ function Start-ADTMsiProcess
                 }
 
                 # Set up the log extension to use. The caller may provide it, but its optional.
-                $logFileExtension = if ($PSBoundParameters.ContainsKey('LogFileName') -and $LogFileName -match '\.(log|txt|out)')
+                $logFileExtension = if ($PSBoundParameters.ContainsKey('LogFileName') -and ($extensionMatch = [PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.Match($LogFileName)).Success)
                 {
-                    $Matches.0
+                    $extensionMatch.Value
                 }
                 else
                 {
