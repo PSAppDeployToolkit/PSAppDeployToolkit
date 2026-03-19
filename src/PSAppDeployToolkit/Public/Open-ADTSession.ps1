@@ -145,7 +145,7 @@ function Open-ADTSession
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        ADTSession
+        PSAppDeployToolkit.Foundation.DeploymentSession
 
         This function returns the session object if -PassThru is specified.
 
