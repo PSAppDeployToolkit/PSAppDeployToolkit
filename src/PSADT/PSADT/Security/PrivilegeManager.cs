@@ -33,7 +33,6 @@ namespace PSADT.Security
         private static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(SafeFileHandle token, TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
             // Internal worker function to retrieve the privilege name from the token attributes.
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this here just makes for messier code.")]
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 _ = NativeMethods.LookupPrivilegeName(null, attr.Luid, buffer, out uint retLength);
@@ -43,11 +42,9 @@ namespace PSADT.Security
                     throw new InvalidProgramException($"Privilege name for LUID: {attr.Luid} is empty.");
                 }
                 string privilegeName = refBuf.ToString();
-                if (!Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege))
-                {
-                    throw new InvalidProgramException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.");
-                }
-                return privilege;
+                return !Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege)
+                    ? throw new InvalidProgramException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.")
+                    : privilege;
             }
 
             // Get the size of the buffer required to hold the token privileges.

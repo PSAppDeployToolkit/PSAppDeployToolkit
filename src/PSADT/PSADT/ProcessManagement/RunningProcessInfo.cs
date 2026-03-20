@@ -149,10 +149,10 @@ namespace PSADT.ProcessManagement
                     string procDescription = processDefinition.Description is not null && !string.IsNullOrWhiteSpace(processDefinition.Description)
                         ? processDefinition.Description
                         : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription)
-                            ? fileInfo.FileDescription
-                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && procInfo.FileDescription is not null && !string.IsNullOrWhiteSpace(procInfo.FileDescription)
-                                ? procInfo.FileDescription
-                                : process.ProcessName;
+                        ? fileInfo.FileDescription
+                        : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && procInfo.FileDescription is not null && !string.IsNullOrWhiteSpace(procInfo.FileDescription)
+                        ? procInfo.FileDescription
+                        : process.ProcessName;
 
                     // Grab the process owner if we can.
                     SecurityIdentifier? sid = null;
