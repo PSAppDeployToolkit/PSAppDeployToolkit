@@ -994,19 +994,14 @@ namespace PSADT.ClientServer
         /// key.</param>
         /// <returns>The value associated with the "Options" key in the dictionary.</returns>
         /// <exception cref="ClientException">Thrown if the "Options" key is missing, null, or contains only whitespace.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static string GetOptionsFromArguments(ReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we have options and they're not null/invalid.
-            if (!arguments.TryGetValue("Options", out string? options))
-            {
-                throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions);
-            }
-            if (string.IsNullOrWhiteSpace(options))
-            {
-                throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions);
-            }
-            return options;
+            return !arguments.TryGetValue("Options", out string? options)
+                ? throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions)
+                : string.IsNullOrWhiteSpace(options)
+                ? throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions)
+                : options;
         }
 
         /// <summary>

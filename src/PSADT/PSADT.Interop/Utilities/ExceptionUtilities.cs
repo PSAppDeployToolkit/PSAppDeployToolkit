@@ -137,18 +137,13 @@ namespace PSADT.Interop.Utilities
         /// <param name="hResult">The HRESULT value that represents the error condition. Must be a negative value to indicate an error.</param>
         /// <returns>An Exception instance that represents the error condition described by the provided HRESULT value.</returns>
         /// <exception cref="InvalidOperationException">Thrown if hResult is non-negative, indicating that no error has occurred.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Converting to a conditional expression here makes for worse code.")]
         internal static Exception GetException(HRESULT hResult)
         {
-            if (hResult >= 0)
-            {
-                throw new InvalidOperationException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].");
-            }
-            if (HRESULT_FACILITY(hResult) == FACILITY_CODE.FACILITY_WIN32)
-            {
-                return GetException((WIN32_ERROR)HRESULT_CODE(hResult));
-            }
-            return Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrive an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");
+            return hResult >= 0
+                ? throw new InvalidOperationException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].")
+                : HRESULT_FACILITY(hResult) == FACILITY_CODE.FACILITY_WIN32
+                ? GetException((WIN32_ERROR)HRESULT_CODE(hResult))
+                : Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrive an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");
         }
 
         /// <summary>

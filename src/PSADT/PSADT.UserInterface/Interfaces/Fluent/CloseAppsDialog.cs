@@ -337,10 +337,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText && !_hideCloseButton))
                         ? CloseAppsDialogResult.Continue
                         : _forcedCountdown && DeferralsAvailable()
-                            ? CloseAppsDialogResult.Defer
-                            : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText
-                                ? CloseAppsDialogResult.Close
-                                : CloseAppsDialogResult.Continue;
+                        ? CloseAppsDialogResult.Defer
+                        : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText
+                        ? CloseAppsDialogResult.Close
+                        : CloseAppsDialogResult.Continue;
                     CloseDialog();
                 });
             }
