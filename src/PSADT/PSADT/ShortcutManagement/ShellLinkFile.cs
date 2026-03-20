@@ -890,7 +890,6 @@ namespace PSADT.ShortcutManagement
         /// <param name="key">The property key.</param>
         /// <returns>The boolean value, or <see langword="false"/> if the property is not set.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the property has an unexpected type.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using a ternary here is just messy.")]
         private bool? GetBoolProperty(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -899,23 +898,15 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                if (vt == VARENUM.VT_EMPTY)
-                {
-                    return null;
-                }
-                if (vt == VARENUM.VT_BOOL)
-                {
-                    return propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0;
-                }
-                if (vt == VARENUM.VT_I4)
-                {
-                    return propVariant.Anonymous.Anonymous.Anonymous.lVal != 0;
-                }
-                if (vt == VARENUM.VT_UI4)
-                {
-                    return propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0;
-                }
-                throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.");
+                return vt == VARENUM.VT_BOOL
+                    ? propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0
+                    : vt == VARENUM.VT_I4
+                    ? propVariant.Anonymous.Anonymous.Anonymous.lVal != 0
+                    : vt == VARENUM.VT_UI4
+                    ? propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0
+                    : vt != VARENUM.VT_EMPTY
+                    ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
+                    : null;
             }
             finally
             {
@@ -1030,7 +1021,6 @@ namespace PSADT.ShortcutManagement
         /// <param name="key">The property key.</param>
         /// <returns>The unsigned integer value, or 0 if the property is not set.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the property has an unexpected type.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using a ternary here is just messy.")]
         private uint? GetUInt32Property(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -1039,22 +1029,13 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                if (vt == VARENUM.VT_EMPTY)
-                {
-                    return null;
-                }
-                if (vt == VARENUM.VT_UI4)
-                {
-                    return propVariant.Anonymous.Anonymous.Anonymous.ulVal;
-                }
-                if (vt == VARENUM.VT_I4)
-                {
-                    int value = propVariant.Anonymous.Anonymous.Anonymous.lVal;
-                    return value < 0
-                        ? throw new InvalidOperationException($"Property value {value} is outside the UInt32 range.")
-                        : (uint)value;
-                }
-                throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.");
+                return vt == VARENUM.VT_I4 && propVariant.Anonymous.Anonymous.Anonymous.lVal < 0
+                    ? (uint)propVariant.Anonymous.Anonymous.Anonymous.lVal
+                    : vt == VARENUM.VT_UI4
+                    ? propVariant.Anonymous.Anonymous.Anonymous.ulVal
+                    : vt != VARENUM.VT_EMPTY
+                    ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.")
+                    : null;
             }
             finally
             {

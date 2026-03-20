@@ -448,7 +448,6 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or <see langword="null"/> if not set.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using if statements keeps type handling clearer here.")]
         private bool? GetBooleanProperty(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
@@ -464,23 +463,15 @@ namespace PSADT.ShortcutManagement
                     };
                     propertyStorage.ReadMultiple([propertySpec], propertyValues);
                     VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
-                    if (vt == VARENUM.VT_EMPTY)
-                    {
-                        return null;
-                    }
-                    if (vt == VARENUM.VT_BOOL)
-                    {
-                        return propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal != 0;
-                    }
-                    if (vt == VARENUM.VT_I4)
-                    {
-                        return propertyValues[0].Anonymous.Anonymous.Anonymous.lVal != 0;
-                    }
-                    if (vt == VARENUM.VT_UI4)
-                    {
-                        return propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal != 0;
-                    }
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.");
+                    return vt == VARENUM.VT_BOOL
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal != 0
+                        : vt == VARENUM.VT_I4
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.lVal != 0
+                        : vt == VARENUM.VT_UI4
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal != 0
+                        : vt != VARENUM.VT_EMPTY
+                        ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
+                        : null;
                 }
                 finally
                 {
@@ -644,7 +635,6 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or 0 if not set.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Using a switch expression here causes IDE0072 in this project configuration.")]
         private int? GetInt32Property(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
@@ -660,19 +650,13 @@ namespace PSADT.ShortcutManagement
                     };
                     propertyStorage.ReadMultiple([propertySpec], propertyValues);
                     VARENUM vt = propertyValues[0].Anonymous.Anonymous.vt;
-                    if (vt == VARENUM.VT_EMPTY)
-                    {
-                        return null;
-                    }
-                    if (vt == VARENUM.VT_I4)
-                    {
-                        return propertyValues[0].Anonymous.Anonymous.Anonymous.lVal;
-                    }
-                    if (vt == VARENUM.VT_UI4)
-                    {
-                        return (int)propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal;
-                    }
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_I4 or VT_UI4.");
+                    return vt == VARENUM.VT_I4
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.lVal
+                        : vt == VARENUM.VT_UI4
+                        ? (int)propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal
+                        : vt != VARENUM.VT_EMPTY
+                        ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_I4 or VT_UI4.")
+                        : null;
                 }
                 finally
                 {

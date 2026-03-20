@@ -823,14 +823,13 @@ namespace PSADT.Interop
         /// responsible for freeing this memory.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "The null checks in this method are required.")]
         internal static WIN32_ERROR GetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(pObjectName);
             WIN32_ERROR res;
             unsafe
             {
-                PSID psidOwner = default, pSidGroup = default; ACL* pDacl = null, pSacl = null; PSECURITY_DESCRIPTOR pSecurityDescriptor = default;
+                PSID psidOwner = default, pSidGroup = default; ACL* pDacl = default, pSacl = default; PSECURITY_DESCRIPTOR pSecurityDescriptor = default;
                 fixed (char* pObjectNameLocal = pObjectName)
                 {
                     res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor).ThrowOnFailure();
@@ -855,7 +854,7 @@ namespace PSADT.Interop
                 {
                     ppsidGroup = null;
                 }
-                if (pDacl is not null)
+                if (pDacl != default)
                 {
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)pDacl, "Failed to retrieve a valid DACL for the specified object.");
                     ppDacl = new((nint)pDacl, false);
@@ -864,7 +863,7 @@ namespace PSADT.Interop
                 {
                     ppDacl = null;
                 }
-                if (pSacl is not null)
+                if (pSacl != default)
                 {
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)pSacl, "Failed to retrieve a valid SACL for the specified object.");
                     ppSacl = new((nint)pSacl, false);
@@ -2013,19 +2012,14 @@ namespace PSADT.Interop
         /// <returns>The size, in bytes, of the firmware table data retrieved.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer provided in <paramref name="pFirmwareTableBuffer"/> is too small to hold the firmware
         /// table data.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static uint GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER FirmwareTableProviderSignature, FIRMWARE_TABLE_ID FirmwareTableID, Span<byte> pFirmwareTableBuffer)
         {
             uint res = PInvoke.GetSystemFirmwareTable(FirmwareTableProviderSignature, (uint)FirmwareTableID, pFirmwareTableBuffer);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetExceptionForLastWin32Error();
-            }
-            if (pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
-            }
-            return res;
+            return res == 0
+                ? throw ExceptionUtilities.GetExceptionForLastWin32Error()
+                : pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
+                : res;
         }
 
         /// <summary>
@@ -2128,19 +2122,12 @@ namespace PSADT.Interop
         /// <param name="szLang">A span of characters that receives the language name. The buffer must be large enough to hold the name.</param>
         /// <returns>The number of characters written to <paramref name="szLang"/>, excluding the null terminator.</returns>
         /// <exception cref="OverflowException">Thrown if the buffer provided by <paramref name="szLang"/> is too small to hold the language name.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static uint VerLanguageName(uint wLang, Span<char> szLang)
         {
             uint res = PInvoke.VerLanguageName(wLang, szLang);
-            if (res == 0)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve language name.");
-            }
-            if (res > szLang.Length)
-            {
-                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
-            }
-            return res;
+            return res == 0
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve language name.")
+                : res > szLang.Length ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER) : res;
         }
 
         /// <summary>

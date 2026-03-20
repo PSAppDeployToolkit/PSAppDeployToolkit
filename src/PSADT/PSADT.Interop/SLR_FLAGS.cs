@@ -11,10 +11,10 @@ namespace PSADT.Interop
     /// be combined to achieve specific resolution behaviors, such as suppressing UI dialogs, disabling link tracking,
     /// or updating link metadata. Some flags are only supported on certain Windows versions; refer to individual flag
     /// documentation for details.</remarks>
-    [Flags]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "This is typed just as it is in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "This is typed just as it is in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "Clearly this is a bitfield... C'mon Intellisense...")]
+    [Flags]
     public enum SLR_FLAGS
     {
         /// <summary>

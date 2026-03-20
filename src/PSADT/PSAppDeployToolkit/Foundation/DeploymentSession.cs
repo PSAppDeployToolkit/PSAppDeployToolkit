@@ -1303,22 +1303,15 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the deployment status.
         /// </summary>
         /// <returns>The deployment status.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public DeploymentStatus GetDeploymentStatus()
         {
-            if ((ExitCode == DefaultExitCode) || (ExitCode == DeferExitCode))
-            {
-                return DeploymentStatus.FastRetry;
-            }
-            if (AppRebootExitCodes.Contains(ExitCode))
-            {
-                return DeploymentStatus.RestartRequired;
-            }
-            if (AppSuccessExitCodes.Contains(ExitCode))
-            {
-                return DeploymentStatus.Complete;
-            }
-            return DeploymentStatus.Error;
+            return (ExitCode == DefaultExitCode) || (ExitCode == DeferExitCode)
+                ? DeploymentStatus.FastRetry
+                : AppRebootExitCodes.Contains(ExitCode)
+                ? DeploymentStatus.RestartRequired
+                : AppSuccessExitCodes.Contains(ExitCode)
+                ? DeploymentStatus.Complete
+                : DeploymentStatus.Error;
         }
 
         /// <summary>
