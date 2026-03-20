@@ -17,6 +17,7 @@
 Detailed coding standards are maintained in dedicated instruction files that Copilot applies automatically based on file type:
 
 - `.github/instructions/powershell.md` — PowerShell conventions (applied to `*.ps1`, `*.psm1`, `*.psd1`)
+- `.github/instructions/pester.md` — Pester test conventions (applied to `*.Tests.ps1`)
 - `.github/instructions/csharp.md` — C# conventions (applied to `*.cs`)
 
 ## Build System & Validation
