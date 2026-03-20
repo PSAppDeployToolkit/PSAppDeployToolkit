@@ -181,9 +181,17 @@ namespace PSADT.ProcessManagement
         private static void WritePipe(AnonymousPipeServerStream stream, IReadOnlyList<string> input, Encoding encoding)
         {
             using StreamWriter writer = new(stream, encoding);
-            foreach (string line in input)
+            try
             {
-                writer.WriteLine(line);
+                foreach (string line in input)
+                {
+                    writer.WriteLine(line);
+                }
+            }
+            catch (IOException)
+            {
+                // The child process didn't read all input before exiting.
+                return;
             }
         }
 
