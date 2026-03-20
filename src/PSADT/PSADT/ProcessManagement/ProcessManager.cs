@@ -150,11 +150,9 @@ namespace PSADT.ProcessManagement
             else
             {
                 // Set up the process object and start it.
-                SafeProcessHandle hProcess; uint processId;
                 Process process = new();
                 try
                 {
-                    // Build the process start info based on the launch info.
                     process.StartInfo = new()
                     {
                         FileName = launchInfo.FilePath,
@@ -180,37 +178,38 @@ namespace PSADT.ProcessManagement
                     {
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                     }
-
-                    // Start the process and try to get its handle and process Id.
-                    // For a pure shell action, we won't ever be able to get them.
                     if (!process.Start() && File.Exists(launchInfo.FilePath))
                     {
                         throw new InvalidProgramException("Failed to start the process.");
                     }
-                    ClientServerUtilities.SetClientServerOperationSuccess();
+                }
+                catch
+                {
+                    process.Dispose();
+                    throw;
+                }
+
+                // Try to get the process's handle and process Id. For a pure
+                // shell action, the calls will throw so just return null here.
+                ClientServerUtilities.SetClientServerOperationSuccess();
+                SafeProcessHandle hProcess; uint processId;
+                try
+                {
+                    hProcess = process.SafeHandle;
                     try
                     {
-                        hProcess = process.SafeHandle;
-                        try
-                        {
-                            processId = (uint)process.Id;
-                        }
-                        catch
-                        {
-                            hProcess.Dispose();
-                            throw;
-                        }
+                        processId = (uint)process.Id;
                     }
                     catch
                     {
-                        process.Dispose();
-                        return null;
+                        hProcess.Dispose();
                         throw;
                     }
                 }
                 catch
                 {
                     process.Dispose();
+                    return null;
                     throw;
                 }
 
