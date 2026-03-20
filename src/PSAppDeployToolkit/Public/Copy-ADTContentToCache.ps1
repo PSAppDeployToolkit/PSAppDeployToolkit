@@ -20,6 +20,13 @@ function Copy-ADTContentToCache
     .PARAMETER LiteralPath
         The path to the software cache folder.
 
+    .PARAMETER Skip
+        Specifies one or more content categories to exclude from the cache copy. Acceptable values are 'Files', 'SupportFiles', and 'Other'.
+
+        - Files: Excludes the Files folder and does not remap the DirFiles session property.
+        - SupportFiles: Excludes the SupportFiles folder and does not remap the DirSupportFiles session property.
+        - Other: Excludes all content other than the Files and SupportFiles folders.
+
     .INPUTS
         None
 
@@ -34,6 +41,16 @@ function Copy-ADTContentToCache
         Copy-ADTContentToCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit"
 
         This example copies the toolkit content to the specified cache folder.
+
+    .EXAMPLE
+        Copy-ADTContentToCache -Skip Files
+
+        This example copies the toolkit content to the default cache folder, excluding the Files folder and leaving DirFiles pointing at the original location.
+
+    .EXAMPLE
+        Copy-ADTContentToCache -Skip Other
+
+        This example copies only the Files and SupportFiles folders to the default cache folder, skipping all other content.
 
     .NOTES
         An active ADT session is required to use this function.
@@ -61,11 +78,20 @@ function Copy-ADTContentToCache
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [Alias('Path', 'PSPath')]
-        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)"
+        [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)",
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Files', 'SupportFiles', 'Other')]
+        [System.String[]]$Skip
     )
 
     begin
     {
+        if ('Files' -in $Skip -and 'SupportFiles' -in $Skip -and 'Other' -in $Skip)
+        {
+            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Skip -ProvidedValue $Skip -ExceptionMessage 'Cannot specify all possible values for -Skip parameter as there would be nothing to copy.'))
+        }
+
         try
         {
             $adtSession = Get-ADTSession
@@ -75,6 +101,7 @@ function Copy-ADTContentToCache
         {
             $PSCmdlet.ThrowTerminatingError($_)
         }
+
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     }
 
@@ -125,12 +152,41 @@ function Copy-ADTContentToCache
                 {
                     Write-ADTLogEntry -Message "Source and destination are the same path [$LiteralPath]. Skipping copy operation."
                 }
-                else
+                elseif (!$PSBoundParameters.ContainsKey('Skip'))
                 {
+                    # Fast path: copy everything in a single operation.
                     Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $LiteralPath -Recurse
                 }
-                $adtSession.DirFiles = Join-Path -Path $LiteralPath -ChildPath Files
-                $adtSession.DirSupportFiles = Join-Path -Path $LiteralPath -ChildPath SupportFiles
+                else
+                {
+                    # Selective copy: enumerate top-level items and copy based on -Skip.
+                    if ('Other' -notin $Skip)
+                    {
+                        Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin @('Files', 'SupportFiles')) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
+                    }
+                    $filesSourcePath = Join-Path -Path $scriptDir -ChildPath Files
+                    if ('Files' -notin $Skip -and (Test-Path -LiteralPath $filesSourcePath -PathType Container))
+                    {
+                        Copy-ADTFile -LiteralPath $filesSourcePath -Destination $LiteralPath -Recurse
+                    }
+                    $supportFilesSourcePath = Join-Path -Path $scriptDir -ChildPath SupportFiles
+                    if ('SupportFiles' -notin $Skip -and (Test-Path -LiteralPath $supportFilesSourcePath -PathType Container))
+                    {
+                        Copy-ADTFile -LiteralPath $supportFilesSourcePath -Destination $LiteralPath -Recurse
+                    }
+                }
+
+                # Remap session properties for categories that were copied.
+                $filesDestPath = Join-Path -Path $LiteralPath -ChildPath Files
+                if ('Files' -notin $Skip -and (Test-Path -LiteralPath $filesDestPath -PathType Container))
+                {
+                    $adtSession.DirFiles = $filesDestPath
+                }
+                $supportFilesDestPath = Join-Path -Path $LiteralPath -ChildPath SupportFiles
+                if ('SupportFiles' -notin $Skip -and (Test-Path -LiteralPath $supportFilesDestPath -PathType Container))
+                {
+                    $adtSession.DirSupportFiles = $supportFilesDestPath
+                }
             }
             catch
             {
