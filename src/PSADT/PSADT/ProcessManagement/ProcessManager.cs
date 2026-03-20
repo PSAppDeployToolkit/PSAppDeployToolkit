@@ -362,7 +362,7 @@ namespace PSADT.ProcessManagement
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus canUseCreateProcessAsUser = CanUseCreateProcessAsUser(isCallerToken);
             bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
-            if (canUseCreateProcessAsUser is CreateProcessUsingTokenStatus.OK || forceBreakaway || handlesToInherit.Count > 0)
+            if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || forceBreakaway || handlesToInherit.Count > 0)
             {
                 // Ensure necessary privileges are enabled.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
@@ -372,7 +372,7 @@ namespace PSADT.ProcessManagement
                 if (handlesToInherit.Count > 0 || forceBreakaway)
                 {
                     // Create the extended startup info with the necessary attributes.
-                    (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
+                    (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
                     using (hAttributeList)
                     using (pinnedHandles)
                     {
@@ -412,16 +412,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Neither CreateProcessAsUser() nor CreateProcessWithToken() can be used.
-            string exceptionMessage = "Unable to create a new process via token.";
-            if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK && !forceBreakaway)
-            {
-                exceptionMessage += $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}";
-            }
-            if (canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK)
-            {
-                exceptionMessage += $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}";
-            }
-            throw new InvalidOperationException(exceptionMessage);
+            throw new InvalidOperationException($"Unable to create a new process via token.{(canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK && !forceBreakaway ? $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}" : null)}{(canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK ? $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}" : null)}");
         }
 
         /// <summary>
@@ -460,14 +451,13 @@ namespace PSADT.ProcessManagement
             try
             {
                 // Add handle list attribute if handles are specified.
-                if (hasHandleInheritance)
+                pinnedHandles = hasHandleInheritance ? SafePinnedGCHandle.Alloc([.. handlesToInherit]) : null;
+                try
                 {
-                    pinnedHandles = SafePinnedGCHandle.Alloc([.. handlesToInherit]);
-                    bool pinnedHandlesAddRef = false;
-                    try
+                    // Add the handle list attribute if handles to inherit were specified.
+                    if (pinnedHandles is not null)
                     {
                         // The handle list needs to be passed as a pointer to an array of handles.
-                        pinnedHandles.DangerousAddRef(ref pinnedHandlesAddRef);
                         nint handlesPtr = pinnedHandles.DangerousGetHandle();
                         int handleListSize = handlesToInherit.Count * IntPtr.Size;
                         unsafe
@@ -475,47 +465,36 @@ namespace PSADT.ProcessManagement
                             _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_HANDLE_LIST, new((void*)handlesPtr, handleListSize));
                         }
                     }
-                    catch
+
+                    // Add extended flags attribute if force breakaway is requested.
+                    if (forceBreakaway)
                     {
-                        pinnedHandles.Dispose();
-                        throw;
-                    }
-                    finally
-                    {
-                        if (pinnedHandlesAddRef)
+                        // When creating a process for another user, if the token's Session Id differs from the caller's and
+                        // the current process is part of a job object, we can only do so if JOB_OBJECT_LIMIT_BREAKAWAY_OK
+                        // was specified by the process that set up the job in the first place. Some vendors like VMware do
+                        // not specify this flag when setting up their job object, therefore we can't run our client/server code.
+                        // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
+                        // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
+                        // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        unsafe
                         {
-                            pinnedHandles.DangerousRelease();
+                            EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
+                            _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&extendedFlag, 1)));
                         }
                     }
-                }
-                else
-                {
-                    pinnedHandles = null;
-                }
 
-                // Add extended flags attribute if force breakaway is requested.
-                if (forceBreakaway)
-                {
-                    // When creating a process for another user, if the token's Session Id differs from the caller's and
-                    // the current process is part of a job object, we can only do so if JOB_OBJECT_LIMIT_BREAKAWAY_OK
-                    // was specified by the process that set up the job in the first place. Some vendors like VMware do
-                    // not specify this flag when setting up their job object, therefore we can't run our client/server code.
-                    // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
-                    // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
-                    // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                    unsafe
-                    {
-                        EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
-                        _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&extendedFlag, 1)));
-                    }
+                    // Create the STARTUPINFOEXW structure.
+                    STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
+                    startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
+                    startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
+                    return (startupInfoEx, hAttributeList);
                 }
-
-                // Create the STARTUPINFOEXW structure.
-                STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
-                startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
-                startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
-                return (startupInfoEx, hAttributeList);
+                catch
+                {
+                    pinnedHandles?.Dispose();
+                    throw;
+                }
             }
             catch
             {
