@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32.Foundation;
@@ -126,13 +127,13 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Synchronously waits for the completion of all standard input, output, and error I/O tasks.
+        /// Asynchronously waits for the completion of all standard input, output, and error I/O tasks.
         /// </summary>
-        /// <remarks>This method blocks until all standard I/O operations have completed. It is
-        /// typically used to coordinate shutdown or cleanup of resources associated with process I/O.</remarks>
-        internal void WaitForStdIoTaskCompletion()
+        /// <param name="cancellationToken">A cancellation token used to cancel waiting for standard I/O completion.</param>
+        /// <returns>A task that completes when all standard I/O tasks have finished or waiting is canceled.</returns>
+        internal async Task WaitForStdIoTaskCompletionAsync(CancellationToken cancellationToken)
         {
-            Task.WaitAll(StdOutReadTask, StdErrReadTask, StdInWriteTask);
+            await Task.WhenAll(StdOutReadTask, StdErrReadTask, StdInWriteTask).WaitAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -287,9 +288,11 @@ namespace PSADT.ProcessManagement
         private readonly ConcurrentQueue<string> InterleavedData = [];
 
         /// <summary>
-        /// Indicates whether the object has been disposed.
+        /// Indicates whether the object has been disposed (0 = not disposed, 1 = disposed).
         /// </summary>
-        private bool Disposed;
+        /// <remarks>This field is used with <see cref="Interlocked.Exchange(ref int, int)"/> to ensure
+        /// thread-safe disposal and prevent multiple calls to the dispose logic.</remarks>
+        private int Disposed;
 
         /// <summary>
         /// Indicates whether inheritable parent-side client pipe handles have been released.
@@ -310,20 +313,26 @@ namespace PSADT.ProcessManagement
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
-            if (!Disposed)
+            if (Interlocked.Exchange(ref Disposed, 1) != 0 || !disposing)
             {
-                if (disposing)
-                {
-                    ReleaseInheritedPipeHandles();
-                    StdOutReadStream?.Dispose();
-                    StdErrReadStream?.Dispose();
-                    StdInWriteStream?.Dispose();
-                    StdOutReadTask.Dispose();
-                    StdErrReadTask.Dispose();
-                    StdInWriteTask.Dispose();
-                }
-                Disposed = true;
+                return;
             }
+            ReleaseInheritedPipeHandles();
+            if (StdOutReadTask.IsCompleted)
+            {
+                StdOutReadTask.Dispose();
+            }
+            if (StdErrReadTask.IsCompleted)
+            {
+                StdErrReadTask.Dispose();
+            }
+            if (StdInWriteTask.IsCompleted)
+            {
+                StdInWriteTask.Dispose();
+            }
+            StdOutReadStream?.Dispose();
+            StdErrReadStream?.Dispose();
+            StdInWriteStream?.Dispose();
         }
 
         /// <summary>

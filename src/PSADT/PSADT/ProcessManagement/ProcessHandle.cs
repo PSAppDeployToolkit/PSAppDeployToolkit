@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace PSADT.ProcessManagement
 {
@@ -20,16 +21,17 @@ namespace PSADT.ProcessManagement
         internal ProcessHandle(ProcessLaunchState launchState)
         {
             ArgumentNullException.ThrowIfNull(launchState);
-            Process = launchState.Process;
-            LaunchInfo = launchState.LaunchInfo;
-            CommandLine = launchState.CommandLine;
-            Task = System.Threading.Tasks.Task.Run(() =>
+            async Task<ProcessResult> GetTaskAsync()
             {
                 using (launchState)
                 {
-                    return launchState.ProcessResult;
+                    return await launchState.GetProcessResultAsync().ConfigureAwait(false);
                 }
-            });
+            }
+            Process = launchState.Process;
+            LaunchInfo = launchState.LaunchInfo;
+            CommandLine = launchState.CommandLine;
+            Task = GetTaskAsync();
         }
 
         /// <summary>
@@ -53,9 +55,9 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Represents an asynchronous operation that returns a <see cref="ProcessResult"/>.
         /// </summary>
-        /// <remarks>This field holds a <see cref="System.Threading.Tasks.Task{TResult}"/> that, when awaited, provides the
+        /// <remarks>This field holds a <see cref="Task{TResult}"/> that, when awaited, provides the
         /// result of a process. The task is read-only and should be awaited to retrieve the <see
         /// cref="ProcessResult"/>.</remarks>
-        public System.Threading.Tasks.Task<ProcessResult> Task { get; }
+        public Task<ProcessResult> Task { get; }
     }
 }
