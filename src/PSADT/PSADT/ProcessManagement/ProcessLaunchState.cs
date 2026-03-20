@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Foundation;
@@ -188,21 +189,18 @@ namespace PSADT.ProcessManagement
         internal readonly string CommandLine;
 
         /// <summary>
-        /// Gets the result of the associated process execution.
+        /// Asynchronously gets the result of the associated process execution.
         /// </summary>
-        internal ProcessResult ProcessResult
+        /// <returns>A task that resolves to the process execution result.</returns>
+        internal Task<ProcessResult> GetProcessResultAsync()
         {
-            get
+            // Internal implementation of the process result retrieval logic.
+            async Task<ProcessResult> GetProcessResultAsyncImpl()
             {
-                // Return the backing field if we've already computed the result.
-                if (field is not null)
-                {
-                    return field;
-                }
-
-                // Spin until complete or cancelled.
+                CancellationToken cancellationToken = LaunchInfo.CancellationToken ?? CancellationToken.None;
                 uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
                 int exitCode = ProcessManager.TimeoutExitCode;
+                bool processFinished = false;
                 if (ProcessAssignedToJobObject)
                 {
                     if (IoCompletionPort is null)
@@ -213,44 +211,75 @@ namespace PSADT.ProcessManagement
                     {
                         throw new InvalidProgramException("The job object is not initialized.");
                     }
-                    using CancellationTokenRegistration? ctr = LaunchInfo.CancellationToken?.Register(() => NativeMethods.PostQueuedCompletionStatus(IoCompletionPort, timeoutExitCode, default));
-                    while (true)
+                    await Task.Run(() =>
                     {
-                        _ = NativeMethods.GetQueuedCompletionStatus(IoCompletionPort, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
-                        if (lpCompletionCode == timeoutExitCode)
+                        using CancellationTokenRegistration? ctr = cancellationToken.CanBeCanceled ? cancellationToken.Register(() => NativeMethods.PostQueuedCompletionStatus(IoCompletionPort, timeoutExitCode, default)) : null;
+                        while (true)
                         {
-                            if (LaunchInfo.NoTerminateOnTimeout)
+                            _ = NativeMethods.GetQueuedCompletionStatus(IoCompletionPort, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
+                            if (lpCompletionCode == timeoutExitCode)
                             {
-                                // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
-                                // Disposing the job would terminate the process we're supposed to let run, so we intentionally
-                                // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
-                                if (LaunchInfo.KillChildProcessesWithParent)
+                                if (LaunchInfo.NoTerminateOnTimeout)
                                 {
-                                    CanDisposeJobObject = false;
+                                    // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
+                                    // Disposing the job would terminate the process we're supposed to let run, so we intentionally
+                                    // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
+                                    if (LaunchInfo.KillChildProcessesWithParent)
+                                    {
+                                        CanDisposeJobObject = false;
+                                    }
+                                    exitCode = ProcessManager.TimeoutExitCode;
+                                    break;
                                 }
-                                exitCode = ProcessManager.TimeoutExitCode;
+                                _ = NativeMethods.TerminateJobObject(JobObject, timeoutExitCode);
+                            }
+                            else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !LaunchInfo.WaitForChildProcesses && (uint)lpOverlapped == ProcessId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                            {
+                                _ = NativeMethods.GetExitCodeProcess(ProcessSafeHandle, out uint lpExitCode);
+                                exitCode = unchecked((int)lpExitCode);
+                                processFinished = true;
                                 break;
                             }
-                            _ = NativeMethods.TerminateJobObject(JobObject, timeoutExitCode);
                         }
-                        else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !LaunchInfo.WaitForChildProcesses && (uint)lpOverlapped == ProcessId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
-                        {
-                            LaunchData?.WaitForStdIoTaskCompletion();
-                            _ = NativeMethods.GetExitCodeProcess(ProcessSafeHandle, out uint lpExitCode);
-                            exitCode = unchecked((int)lpExitCode);
-                            break;
-                        }
-                    }
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
-                    Process.WaitForExit();
-                    LaunchData?.WaitForStdIoTaskCompletion();
-                    exitCode = Process.ExitCode;
+                    try
+                    {
+                        await Process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                        processFinished = true; exitCode = Process.ExitCode;
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.CanBeCanceled && cancellationToken.IsCancellationRequested)
+                    {
+                        if (!LaunchInfo.NoTerminateOnTimeout)
+                        {
+                            try
+                            {
+                                Process.Kill();
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // Already exited.
+                            }
+                            await Process.WaitForExitAsync().ConfigureAwait(false);
+                            processFinished = true;
+                        }
+                        exitCode = ProcessManager.TimeoutExitCode;
+                    }
                 }
-                return field = LaunchData is not null
-                    ? new(Process, LaunchInfo, CommandLine, exitCode, LaunchData.StdOut, LaunchData.StdErr, LaunchData.Interleaved)
-                    : new(Process, LaunchInfo, CommandLine, exitCode, [], [], []);
+                if (processFinished && LaunchData is not null)
+                {
+                    await LaunchData.WaitForStdIoTaskCompletionAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
+                }
+                return new(Process, LaunchInfo, CommandLine, exitCode, LaunchData?.StdOut, LaunchData?.StdErr, LaunchData?.Interleaved);
+            }
+
+            // Ensure the object hasn't been disposed and return the cached task if it exists.
+            lock (ProcessResultSyncRoot)
+            {
+                ObjectDisposedException.ThrowIf(Disposed != 0, this);
+                return ProcessResultTask ??= GetProcessResultAsyncImpl();
             }
         }
 
@@ -280,11 +309,11 @@ namespace PSADT.ProcessManagement
         private readonly SafeFileHandle? JobObject;
 
         /// <summary>
-        /// Indicates whether the object has been disposed.
+        /// Indicates whether the object has been disposed (0 = not disposed, 1 = disposed).
         /// </summary>
-        /// <remarks>This field is typically used to prevent multiple calls to the dispose logic and to
-        /// detect object usage after disposal.</remarks>
-        private bool Disposed;
+        /// <remarks>This field is used with <see cref="Interlocked.Exchange(ref int, int)"/> to ensure
+        /// thread-safe disposal and prevent multiple calls to the dispose logic.</remarks>
+        private int Disposed;
 
         /// <summary>
         /// Indicates whether the job can be disposed.
@@ -294,7 +323,17 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Indicates whether the process is currently assigned to a Windows job object.
         /// </summary>
-        private bool ProcessAssignedToJobObject => LaunchInfo.WaitForChildProcesses || LaunchInfo.KillChildProcessesWithParent || LaunchInfo.CancellationToken.HasValue;
+        private bool ProcessAssignedToJobObject => LaunchInfo.WaitForChildProcesses || LaunchInfo.KillChildProcessesWithParent;
+
+        /// <summary>
+        /// Represents the cached task for obtaining process results.
+        /// </summary>
+        private Task<ProcessResult>? ProcessResultTask;
+
+        /// <summary>
+        /// Synchronizes task initialization for process result retrieval.
+        /// </summary>
+        private readonly Lock ProcessResultSyncRoot = new();
 
         /// <summary>
         /// Releases all resources used by the current instance of the class.
@@ -317,35 +356,34 @@ namespace PSADT.ProcessManagement
         /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         private void Dispose(bool disposing)
         {
-            if (!Disposed)
+            // Return early if already disposed.
+            if (Interlocked.Exchange(ref Disposed, 1) != 0 || !disposing)
             {
-                if (disposing)
-                {
-                    // Dispose of the process's associated resources.
-                    if (LaunchData is not null)
-                    {
-                        ProcessSafeHandle.Dispose();
-                        LaunchData.Dispose();
-                    }
-
-                    // Dispose of the I/O completion port and job object if they were created.
-                    if (JobObject is not null)
-                    {
-                        // Prevent the finalizer from closing the job handle, which would kill the processes
-                        // due to JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE. This intentionally leaks the handle.
-                        if (!CanDisposeJobObject)
-                        {
-                            JobObject.SetHandleAsInvalid();
-                        }
-                        else
-                        {
-                            JobObject.Dispose();
-                        }
-                    }
-                    IoCompletionPort?.Dispose();
-                }
-                Disposed = true;
+                return;
             }
+
+            // Dispose of the process's associated resources.
+            if (LaunchData is not null)
+            {
+                ProcessSafeHandle.Dispose();
+                LaunchData.Dispose();
+            }
+
+            // Dispose of the I/O completion port and job object if they were created.
+            if (JobObject is not null)
+            {
+                // Prevent the finalizer from closing the job handle, which would kill the processes
+                // due to JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE. This intentionally leaks the handle.
+                if (!CanDisposeJobObject)
+                {
+                    JobObject.SetHandleAsInvalid();
+                }
+                else
+                {
+                    JobObject.Dispose();
+                }
+            }
+            IoCompletionPort?.Dispose();
         }
     }
 }
