@@ -30,7 +30,7 @@ function Remove-ADTHashtableNullOrEmptyValues
         Returns a new hashtable with only key/values where the value isn't null.
 
     .EXAMPLE
-        Remove-ADTHashtableNullOrEmptyValues -Hashtable
+        Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ Key1 = 'Value1'; Key2 = $null }
 
         Returns a new hashtable with only key/values where the value isn't null.
 
