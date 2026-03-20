@@ -66,9 +66,8 @@ function Remove-ADTHashtableNullOrEmptyValues
             # Recursively remove null/empty/whitespace keys from the bottom up, if the Recurse parameter is provided.
             if ($section.Value -is [System.Collections.Hashtable] -and $Recurse)
             {
-                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value
+                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value -Recurse:$Recurse
             }
-
             if ([System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
             {
                 $obj.Remove($section.Key)
