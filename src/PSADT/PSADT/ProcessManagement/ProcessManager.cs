@@ -46,15 +46,13 @@ namespace PSADT.ProcessManagement
             {
                 // Handle user process creation, otherwise just create the process for the running user.
                 ProcessLaunchData launchData = new(launchInfo);
-                ProcessLaunchState launchState;
-                SafeProcessHandle hProcess;
-                SafeThreadHandle hThread;
                 try
                 {
                     Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
-                    PROCESS_INFORMATION pi;
+                    SafeProcessHandle hProcess; SafeThreadHandle hThread; uint processId;
                     try
                     {
+                        PROCESS_INFORMATION pi;  // Scope this here to prevent leaking raw process/thread handles outside of the SafeHandle wrappers as we don't want them available for any usage.
                         if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
                         {
                             // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
@@ -97,6 +95,7 @@ namespace PSADT.ProcessManagement
                         }
                         hProcess = new(pi.hProcess, true);
                         hThread = new(pi.hThread, true);
+                        processId = pi.dwProcessId;
                     }
                     finally
                     {
@@ -104,12 +103,13 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Since the process wasn't spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
+                    ProcessLaunchState launchState;
                     try
                     {
-                        Process process = Process.GetProcessById((int)pi.dwProcessId);
+                        Process process = Process.GetProcessById((int)processId);
                         try
                         {
-                            _ = process.Handle; launchState = new(launchInfo, launchData, process, pi.dwProcessId, hProcess, commandSpan.ToString());
+                            _ = process.Handle; launchState = new(launchInfo, launchData, process, processId, hProcess, commandSpan.ToString());
                         }
                         catch
                         {
@@ -124,10 +124,15 @@ namespace PSADT.ProcessManagement
                         throw;
                     }
 
-                    // Resume the main thread of the process if it was created in a suspended state.
+                    // Resume the main thread and return information about the process.
                     try
                     {
-                        _ = NativeMethods.ResumeThread(hThread);
+                        using (hThread)
+                        {
+                            _ = NativeMethods.ResumeThread(hThread);
+                        }
+                        launchData.StartStdInWriteTask();
+                        return new(launchState);
                     }
                     catch
                     {
@@ -135,27 +140,10 @@ namespace PSADT.ProcessManagement
                         launchState.Dispose();
                         throw;
                     }
-                    finally
-                    {
-                        hThread.Dispose();
-                    }
                 }
                 catch
                 {
                     launchData.Dispose();
-                    throw;
-                }
-
-                // Start the task to write to standard input if necessary, then return the process handle for monitoring and management.
-                try
-                {
-                    launchData.StartStdInWriteTask();
-                    return new(launchState);
-                }
-                catch
-                {
-                    launchState.Process.Dispose();
-                    launchState.Dispose();
                     throw;
                 }
             }
