@@ -4,353 +4,84 @@ applyTo: "**/*.cs"
 
 # C# Coding Conventions for PSAppDeployToolkit
 
-## Multi-Targeting
+These conventions define how C# source files should be written in this repository. Keep them focused on PSAppDeployToolkit-specific expectations rather than generic C# style advice.
 
-Most first-party C# projects target both **.NET Framework 4.7.2** and the current modern .NET Windows target. Check the specific `.csproj` before assuming dual-targeting, because some projects are single-targeted.
+## Core Rules
 
-- Use polyfills for APIs unavailable on .NET Framework (e.g., `ArgumentNullException.ThrowIfNull` is polyfilled in `PSADT.Interop/Polyfills/`).
-- Guard framework-specific code with the same conditional compilation symbols already used in the repo, such as `NETFRAMEWORK` and `!NET6_0_OR_GREATER` where appropriate.
-- Test compilation against both targets to avoid runtime failures on either platform.
+### Multi-targeting and build rules
 
-## Build Enforcement
-
-The repository already enforces several C# standards through `Directory.Build.props` and `.editorconfig`:
-
+- Most first-party C# projects target both .NET Framework 4.7.2 and the current modern .NET Windows target. Check the specific `.csproj` before assuming dual-targeting.
 - Nullable reference types are enabled globally.
 - Warnings are treated as errors.
 - XML documentation files are generated.
-- .NET analyzers run at `latest-all` with code style enforced in build.
-- Banned APIs from `src/BannedSymbols.txt` are enforced via BannedApiAnalyzers.
+- Analyzers run at `latest-all` with code style enforced in build.
+- Banned APIs from `src/BannedSymbols.txt` are enforced.
+- Do not relax nullable behaviour, analyzer severity, or banned API enforcement as part of a normal feature change.
+- When using APIs unavailable on .NET Framework, use the repo's existing polyfills or the same conditional compilation symbols already used in the project.
 
-Prefer guidance that aligns with these enforced settings over personal style preferences.
-Do not relax analyzer severity, nullable behaviour, or banned API enforcement as part of a normal feature change.
+### PowerShell interop
 
-## PowerShell Interop
+- C# code that receives values from PowerShell must defensively unwrap `PSObject` wrappers before processing.
+- Apply this especially in transformation attributes, validation attributes, and other PowerShell-facing entry points.
 
-C# types that receive values from PowerShell (transformation attributes, validation attributes) must defensively unwrap `PSObject` wrappers before processing:
+### Code organization
 
-```csharp
-while (inputData is PSObject psObject)
-{
-    inputData = psObject.BaseObject;
-}
-```
+- One primary type per file. File name matches the type name.
+- Follow the namespace style already used in the file or project. Do not perform namespace-style rewrites as style-only churn.
+- Prefer `sealed` by default unless a type is intentionally designed for inheritance.
+- Prefer `internal` by default unless the type is consumed by PowerShell or another assembly.
+- Preserve existing assembly boundaries and `InternalsVisibleTo` usage rather than widening APIs to `public` just to satisfy another project or test.
+- Avoid large style-only refactors.
 
-This pattern is used in transformation and validation attributes (e.g., `DateTimeTransformationAttribute`, `TimeSpanTransformationAttribute`, `ValidateGreaterThanZeroAttribute`) to ensure the underlying .NET value is used rather than the PowerShell wrapper.
+## Native Interop
 
-## Code Organisation
+### CsWin32 rules
 
-- **One primary type per file.** File name matches the type name.
-- **Follow the namespace style already used in the file or project.** Most current repository files use block-scoped namespaces, so do not convert files to file-scoped namespaces as a style-only change.
-- **`sealed`** by default - only omit `sealed` when a type is explicitly designed for inheritance.
-- **`internal`** by default - only use `public` on types consumed by PowerShell or external assemblies.
-- **Static classes** for stateless utility methods (e.g., `MsiUtilities`, `FontUtilities`, `WindowUtilities`).
-- **Extension methods** in dedicated static classes in an `Extensions/` folder.
-- **Avoid large style-only refactors.** Keep edits localized to the file or feature being changed.
+- Prefer the repository's CsWin32-generated interop over ad-hoc `[DllImport]` declarations.
+- Add new Win32 symbols to the appropriate `NativeMethods.txt` file instead of creating local P/Invoke definitions.
+- Wrap raw CsWin32 calls in the repository's managed `NativeMethods` layer with proper validation, error handling, and SafeHandle usage.
+- When the user confirms a symbol exists in their local CsWin32 setup, treat that as the source of truth.
 
-The solution uses `InternalsVisibleTo` extensively across related assemblies. Prefer preserving existing assembly boundaries and internal visibility over widening APIs to `public` just to satisfy another project or test.
+### SafeHandle and unsafe usage
 
-## P/Invoke & Native Interop (CsWin32)
+- Prefer the repository's custom SafeHandle types over raw `IntPtr`.
+- Use the existing `DangerousAddRef` / `DangerousRelease` pattern when required for P/Invoke scenarios.
+- Inline `ThrowIfNullOrInvalid` or `ThrowIfNullOrClosed` into subsequent SafeHandle usage rather than discarding the return value.
+- Use `unsafe` on the method declaration only when the signature itself requires it; otherwise prefer an internal `unsafe` block.
 
-The project makes **heavy use of the CsWin32 source generator** for Win32 API access. Prefer Win32 APIs over managed .NET alternatives where it provides better control or performance (process management, registry, window management, security, services, etc.).
+### Specific interop constraints
 
-### Adding New Win32 Symbols
+- Do not pre-validate `RemoveFontResource` input with file-existence checks.
+- Preserve strict named pipe security. Create named pipes with explicit `PipeSecurity`; do not weaken ACLs.
 
-Declare needed symbols in the project's `NativeMethods.txt` file (one symbol per line). CsWin32 auto-generates the P/Invoke code at compile time.
+## Preferred Modern C# Patterns
 
-```text
-// NativeMethods.txt - just add the symbol name
-CreateProcess
-GetExitCodeProcess
-PROCESS_BASIC_INFORMATION
-HRESULT_FROM_WIN32
-```
-
-`NativeMethods.txt` accepts function names, constants, structs, enums, and interface names.
-
-**Never create ad-hoc `[DllImport]` declarations or local P/Invoke definitions** - always add the symbol to `NativeMethods.txt` and let CsWin32 generate it.
-
-### Wrapper Pattern
-
-Wrap raw CsWin32 calls in a managed `NativeMethods` static class (e.g., `PSADT.Interop.NativeMethods`) with:
-
-- Full XML documentation (`<summary>`, `<remarks>`, `<param>`, `<returns>`, `<exception>`)
-- Proper error handling (e.g., `.ThrowOnFailure()` for `HRESULT`/`WIN32_ERROR` returns)
-- SafeHandle usage for native handles
-- Consistent parameter validation
-
-Generated APIs are accessed via:
-
-- `PInvoke.*` - Win32 functions
-- `Windows.Win32.PInvoke.*` - Win32 namespace-qualified access
-- `Windows.Wdk.PInvoke.*` - Windows Driver Kit functions
-
-### SafeHandle Patterns
-
-Use `DangerousAddRef` / `DangerousRelease` in `try`/`finally` when working with SafeHandles in P/Invoke scenarios:
-
-```csharp
-bool addRef = false;
-try
-{
-    handle.DangerousAddRef(ref addRef);
-    unsafe
-    {
-        // Use handle.DangerousGetHandle() for the P/Invoke call.
-    }
-}
-finally
-{
-    if (addRef)
-    {
-        handle.DangerousRelease();
-    }
-}
-```
-
-When validating SafeHandle parameters, **inline** `ThrowIfNullOrInvalid` or `ThrowIfNullOrClosed` into the subsequent usage - do not use standalone calls that discard the return value.
-
-### `unsafe` Keyword
-
-- Use `unsafe` on method **declarations** only if the method takes unsafe parameters (e.g., pointers).
-- For methods that only use unsafe code **internally**, use an `unsafe` **block** inside the method body instead.
-
-### Font Resource Management
-
-Do not pre-validate `RemoveFontResource` input with file existence checks - the Win32 API accepts font file names that are not necessarily full paths.
-
-### CsWin32 Symbol Availability
-
-When the user confirms a symbol is available or generated in their local CsWin32 setup, trust that as the source of truth rather than insisting it is unavailable.
-
-## Performance
-
-### Aggressive Inlining
-
-Apply `[MethodImpl(MethodImplOptions.AggressiveInlining)]` to small, frequently-called methods - factory methods, simple wrappers, single-expression property accessors:
-
-```csharp
-[MethodImpl(MethodImplOptions.AggressiveInlining)]
-internal static SafeFreeBSTRHandle Alloc(string str)
-{
-    return new(Marshal.StringToBSTR(str), true);
-}
-```
-
-### Discard Pattern
-
-Use `_ =` to explicitly discard unused return values:
-
-```csharp
-_ = NativeMethods.TerminateJobObject(job, exitCode);
-_ = NativeMethods.GetExitCodeProcess(hProcess, out uint lpExitCode);
-```
-
-### Collection Expressions
-
-Use collection expressions `[]` for empty or inline collections:
-
-```csharp
-// Preferred
-List<string> items = [];
-Dictionary<string, object> values = [];
-ReadOnlyCollection<string> names = new([.. source.Select(static s => s.Name)]);
-
-// Avoid
-var items = new List<string>();
-```
-
-### Target-Typed `new()`
-
-Use target-typed `new()` where the type is clear from context:
-
-```csharp
-Dictionary<string, object> values = new();
-return new(process, launchInfo, commandLine);
-```
-
-### Async / Await
-
-- Always append `.ConfigureAwait(false)` on all `await` calls in library code.
-- Use `Task.Run` for CPU-bound work.
+- Use target-typed `new()` when the type is clear from context.
+- Use collection expressions `[]` for empty or inline collections where the existing project style supports them.
+- Use `_ =` to explicitly discard unused return values.
+- Use `.ConfigureAwait(false)` on awaited calls in library code.
 - Support `CancellationToken` in long-running operations.
+- Prefer `ArgumentNullException.ThrowIfNull`, `ArgumentException.ThrowIfNullOrWhiteSpace`, and related guard APIs at method entry.
+- For optional nullable parameters, check `is not null` before validating.
+- Prefer pattern matching with `is` when it improves scoping and clarity.
+- Prefer strong typing such as enums over primitive values when the domain is well-defined.
 
-```csharp
-await Task.WhenAll(hStdOutTask, hStdErrTask).ConfigureAwait(false);
-await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-```
+## Resource Management and Error Handling
 
-## Null Handling & Validation
+- Prefer `using` declarations for disposable resources.
+- Use the repository's nested cleanup and exception-handling patterns for COM, pipe, and native resource management where those patterns already exist.
+- Prefer structured, repository-consistent error handling over ad-hoc exception flow.
+- If you encounter an existing analyzer-workaround pattern in a `catch` block, preserve it unless you are intentionally replacing it with a clearer fix that still satisfies the analyzers.
 
-### Method Entry Validation
+## Documentation and Suppression
 
-Use the `ThrowIf*` guard APIs at method entry:
+- Preserve existing XML documentation when refactoring.
+- Add or update XML documentation on public and internal APIs when the change affects their contract or behaviour.
+- Use `[SuppressMessage(...)]` or narrowly scoped `#pragma warning disable` only when the root cause cannot reasonably be fixed.
+- Keep suppressions tightly scoped and include a meaningful repository-specific justification.
 
-```csharp
-ArgumentNullException.ThrowIfNull(runAsActiveUser);
-ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
-ArgumentOutOfRangeException.ThrowIfZero(count);
-```
+## Repository-Specific Preferences
 
-When using `ThrowIfNullOrWhiteSpace`, omit the explicit parameter name when the expression already produces a useful name. Pass `nameof(...)` when validating a derived expression and you need the original parameter name to remain clear.
-
-### Optional Nullable Parameters
-
-For optional parameters that may be null, check `is not null` first, then validate:
-
-```csharp
-if (displayVersion is not null)
-{
-    ArgumentException.ThrowIfNullOrWhiteSpace(displayVersion);
-}
-```
-
-### Pattern Matching for Null Checks
-
-Prefer pattern matching with `is` to tightly scope the variable to the branch where it is needed:
-
-```csharp
-// Preferred - variable scoped to the if block
-if (GetWindowText(handle) is string windowTitle)
-{
-    // use windowTitle
-}
-
-// Avoid - variable leaks to outer scope
-var windowTitle = GetWindowText(handle);
-if (windowTitle != null) { ... }
-```
-
-- Prefer `is not null` over `!= null`.
-- Do not disable nullable reference types unless there is a narrowly scoped and well-justified reason.
-
-## Error Handling & Resource Management
-
-### Nested try/finally for Resource Cleanup
-
-Use **nested** `try`/`finally` blocks for COM cleanup and resource management rather than flat structures with nullable checks, even if it results in deeper indentation:
-
-```csharp
-try
-{
-    outputPipeClient = new(PipeDirection.Out, outputPipeHandle);
-}
-catch (Exception ex)
-{
-    throw new ClientException("Failed to open pipe.", ClientExitCode.InvalidOutputPipe, ex);
-}
-try
-{
-    inputPipeClient = new(PipeDirection.In, inputPipeHandle);
-}
-catch (Exception ex)
-{
-    throw new ClientException("Failed to open pipe.", ClientExitCode.InvalidInputPipe, ex);
-}
-```
-
-### Using Declarations
-
-Prefer `using` declarations for disposable resources:
-
-```csharp
-using FreeLibrarySafeHandle hInstance = NativeMethods.LoadLibraryEx("msimsg.dll", flags);
-using CancellationTokenRegistration ctr = token.Register(() => Cleanup());
-```
-
-### Custom SafeHandle Types
-
-The project uses custom SafeHandle types (`SafeFreeBSTRHandle`, `SafePinnedGCHandle`, `MsiCloseHandleSafeHandle`, etc.) for native resource lifetime management. Prefer these over raw `IntPtr`.
-
-### Catch Block return/throw Pattern
-
-If you encounter an existing analyzer-workaround pattern in a `catch` block, preserve it unless you are intentionally replacing it with a clearer fix that still satisfies the analyzers:
-
-```csharp
-catch
-{
-    return null;
-    throw;
-}
-```
-
-## Expression & Type Patterns
-
-### Ternary Expressions
-
-Favour the **positive/valid** scenario first:
-
-```csharp
-// Preferred
-size >= HeaderSize ? new Instance(data) : null
-
-// Avoid
-size < HeaderSize ? null : new Instance(data)
-```
-
-**Exception**: when throwing, check for the **invalid** condition first:
-
-```csharp
-res != NTSTATUS.STATUS_SUCCESS
-    ? throw new Win32Exception((int)PInvoke.RtlNtStatusToDosError(res))
-    : (int)res;
-```
-
-### Inline Factory Methods
-
-When a factory method already provides context, inline the expression directly rather than introducing a temporary variable:
-
-```csharp
-// Preferred
-entries.Add(DelayImportEntry.FromOrdinal((ushort)(thunkData & 0xFFFF)));
-
-// Avoid
-ushort ordinal = (ushort)(thunkData & 0xFFFF);
-entries.Add(DelayImportEntry.FromOrdinal(ordinal));
-```
-
-### Type Conventions
-
-| Pattern | Use For | Example |
-| ------- | ------- | ------- |
-| `sealed record` | Immutable data types | `InstalledApplication`, `UserProfileInfo`, `SmbiosTablePosition`, `LogEntry` |
-| `readonly record struct` | Small value types | `BiosExtendedRomSize`, `SystemEnclosureTypeAndLock` |
-| `sealed class` | Most non-data classes | `SafeFreeBSTRHandle`, `DataSerialization` |
-| `static class` | Stateless utilities | `MsiUtilities`, `NativeMethods`, `PowerShellUtilities` |
-| Enums | Strongly-typed domains | `SHOW_WINDOW_CMD`, `LogSeverity`, `DialogPosition` |
-
-- **Strong typing**: prefer enum-backed properties (e.g., `SHOW_WINDOW_CMD`) over primitive types when the domain has a well-defined type.
-- **Static abstract interface members**: use where appropriate (e.g., `ISmbiosStructure` pattern).
-
-## XML Documentation
-
-Required on all `public` and `internal` types and members:
-
-```csharp
-/// <summary>
-/// Retrieves the full file system path of the executable associated with the specified process.
-/// </summary>
-/// <remarks>This method attempts to retrieve the file path using the process's main module.
-/// If that fails, it falls back to an alternative mechanism.</remarks>
-/// <param name="process">The process for which to obtain the executable file path.</param>
-/// <returns>A FileInfo containing the full file system path.</returns>
-/// <exception cref="Win32Exception">Thrown if the process path cannot be determined.</exception>
-```
-
-- **Preserve existing XML documentation** when refactoring. Don't strip comments unnecessarily - it adds noise to diffs and loses valuable documentation.
-- Only modify documentation that is directly affected by the structural change.
-
-## Named Pipe Security
-
-Preserve strict named pipe security and reject solutions that weaken ACLs. Always create pipes with **explicit `PipeSecurity`** - never create pipes without access control.
-
-## Code Suppression
-
-- Use `[SuppressMessage("Category", "RuleId", Justification = "...")]` with a meaningful justification for deliberately suppressed warnings.
-- Use `#pragma warning disable` with specific warning codes when attribute-level suppression is not possible.
-- Prefer fixing the root cause over adding new suppressions. If a suppression is necessary, keep it tightly scoped and explain the repository-specific reason, such as dual-targeting, generated interop parity, or unavoidable framework differences.
-
-```csharp
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated",
-    Justification = "These values are precisely as they're defined in the Win32 API.")]
-```
+- Prefer static utility classes for stateless helpers and dedicated extension classes for extension methods.
+- Prefer helper and wrapper patterns already present in the project over introducing a new style for the same problem.
+- When choosing between managed .NET APIs and Win32 APIs, follow the existing project approach in that area unless there is a clear reason to diverge.
