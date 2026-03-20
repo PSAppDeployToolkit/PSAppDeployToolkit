@@ -43,9 +43,9 @@ function Copy-ADTContentToCache
         This example copies the toolkit content to the specified cache folder.
 
     .EXAMPLE
-        Copy-ADTContentToCache -Skip Files
+        Copy-ADTContentToCache -Skip Files,SupportFiles
 
-        This example copies the toolkit content to the default cache folder, excluding the Files folder and leaving DirFiles pointing at the original location.
+        This example copies the toolkit content to the default cache folder, excluding the Files and SupportFiles folders and leaving DirFiles and DirSupportFiles pointing at the original location.
 
     .EXAMPLE
         Copy-ADTContentToCache -Skip Other
