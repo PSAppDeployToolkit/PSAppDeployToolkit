@@ -68,9 +68,9 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("The server instance already has an associated client process.");
             }
 
+            // Start the server to listen for incoming connections and process data.
             try
             {
-                // Start the server to listen for incoming connections and process data.
                 _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
                 _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
                 _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
@@ -101,6 +101,8 @@ namespace PSADT.ClientServer
                     _inputServer.DisposeLocalCopyOfClientHandle();
                     _logServer.DisposeLocalCopyOfClientHandle();
                 }
+                (_ioEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
+                (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
             }
             catch
             {
@@ -123,8 +125,6 @@ namespace PSADT.ClientServer
             bool? opened = null;
             try
             {
-                (_ioEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
-                (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
                 if (!(opened = Invoke<bool>(PipeCommand.Open)).Value)
                 {
                     throw new InvalidProgramException("The opened client process returned an invalid response.");
