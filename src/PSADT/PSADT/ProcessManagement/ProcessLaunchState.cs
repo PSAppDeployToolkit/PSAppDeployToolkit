@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +30,39 @@ namespace PSADT.ProcessManagement
     internal sealed class ProcessLaunchState : IDisposable
     {
         /// <summary>
+        /// Initializes a new instance of the ProcessLaunchState class with detailed process and stream information,
+        /// including asynchronous tasks and output buffers.
+        /// </summary>
+        /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
+        /// <param name="process">The Process object representing the running process.</param>
+        /// <param name="processId">The unique identifier of the started process.</param>
+        /// <param name="processHandle">A safe handle to the process, used for resource management and native operations.</param>
+        /// <param name="commandLine">The full command line used to launch the process.</param>
+        /// <param name="stdOutHandle">The handle responsible for asynchronously reading the standard output stream of the process.</param>
+        /// <param name="stdErrHandle">The handle responsible for asynchronously reading the standard error stream of the process.</param>
+        /// <param name="interleavedBuffer">A read-only collection containing the combined output from both standard output and standard error streams.</param>
+        /// <param name="stdInHandle">An optional handle for writing to the standard input stream of the process, if input is being provided.</param>
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ProcessReadStream stdOutHandle, ProcessReadStream stdErrHandle, IReadOnlyCollection<string> interleavedBuffer, ProcessWriteStream? stdInHandle = null) : this(launchInfo, process, processId, processHandle, commandLine)
+        {
+            StdOut = stdOutHandle;
+            StdErr = stdErrHandle;
+            StdIn = stdInHandle;
+            InterleavedBuffer = interleavedBuffer;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the ProcessLaunchState class using the specified launch information, process,
+        /// and command line.
+        /// </summary>
+        /// <param name="launchInfo">The launch information that describes how the process was started.</param>
+        /// <param name="process">The Process object representing the running process.</param>
+        /// <param name="commandLine">The full command line used to start the process.</param>
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, string commandLine) : this(launchInfo, process, (uint)process.Id, process.SafeHandle, commandLine)
+        {
+            CanDisposeProcessHandle = false;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the ProcessLaunchState class with the specified process launch information,
         /// process data, and related handles.
         /// </summary>
@@ -36,12 +70,11 @@ namespace PSADT.ProcessManagement
         /// tracking and completion port association as needed. Throws an exception if any required argument is null or
         /// invalid.</remarks>
         /// <param name="launchInfo">The launch information describing how the process was started. Cannot be null.</param>
-        /// <param name="launchData">Optional additional data associated with the process launch, or null if not applicable.</param>
         /// <param name="process">The Process object representing the started process. Cannot be null.</param>
         /// <param name="processId">The unique identifier of the started process.</param>
         /// <param name="processHandle">A safe handle to the started process. Cannot be null.</param>
         /// <param name="commandLine">The full command line used to start the process. Cannot be null or whitespace.</param>
-        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, ProcessLaunchData? launchData, Process process, uint processId, SafeProcessHandle processHandle, string commandLine)
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine)
         {
             // Confirm all inputs are valid.
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
@@ -53,7 +86,6 @@ namespace PSADT.ProcessManagement
             ProcessSafeHandle = processHandle;
             CommandLine = commandLine;
             LaunchInfo = launchInfo;
-            LaunchData = launchData;
             ProcessId = processId;
             Process = process;
 
@@ -268,11 +300,11 @@ namespace PSADT.ProcessManagement
                         exitCode = ProcessManager.TimeoutExitCode;
                     }
                 }
-                if (processFinished && LaunchData is not null)
+                if (processFinished)
                 {
-                    await LaunchData.WaitForStdIoTaskCompletionAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
+                    await WaitForStdIoTaskCompletionAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
                 }
-                return new(Process, LaunchInfo, CommandLine, exitCode, LaunchData?.StdOut, LaunchData?.StdErr, LaunchData?.Interleaved);
+                return new(Process, LaunchInfo, CommandLine, exitCode, StdOut?.Buffer, StdErr?.Buffer, InterleavedBuffer);
             }
 
             // Ensure the object hasn't been disposed and return the cached task if it exists.
@@ -284,9 +316,14 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Gets the data used to launch the associated process.
+        /// Asynchronously waits for the completion of all standard input, output, and error I/O tasks.
         /// </summary>
-        private readonly ProcessLaunchData? LaunchData;
+        /// <param name="cancellationToken">A cancellation token used to cancel waiting for standard I/O completion.</param>
+        /// <returns>A task that completes when all standard I/O tasks have finished or waiting is canceled.</returns>
+        private async Task WaitForStdIoTaskCompletionAsync(CancellationToken cancellationToken)
+        {
+            await Task.WhenAll(StdOut?.Task ?? Task.CompletedTask, StdErr?.Task ?? Task.CompletedTask, StdIn?.Task ?? Task.CompletedTask).WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Represents the safe handle for the associated process.
@@ -309,16 +346,35 @@ namespace PSADT.ProcessManagement
         private readonly SafeFileHandle? JobObject;
 
         /// <summary>
+        /// Gets the handle used to read the standard output stream of the associated process asynchronously.
+        /// </summary>
+        /// <remarks>Use this handle to access the standard output produced by the process. Reading from
+        /// this handle retrieves data written to the process's standard output stream.</remarks>
+        private readonly ProcessReadStream? StdOut;
+
+        /// <summary>
+        /// Gets the handle used to read the standard error stream of the associated process.
+        /// </summary>
+        private readonly ProcessReadStream? StdErr;
+
+        /// <summary>
+        /// Represents the writable standard input stream for the associated process, if available.
+        /// </summary>
+        /// <remarks>This handle is only initialized if a standard input task is provided; otherwise, it
+        /// is null. Use this handle to write input data to the process's standard input stream.</remarks>
+        private readonly ProcessWriteStream? StdIn;
+
+        /// <summary>
+        /// Gets the collection of interleaved buffer strings associated with this instance.
+        /// </summary>
+        private readonly IReadOnlyCollection<string>? InterleavedBuffer;
+
+        /// <summary>
         /// Indicates whether the object has been disposed (0 = not disposed, 1 = disposed).
         /// </summary>
         /// <remarks>This field is used with <see cref="Interlocked.Exchange(ref int, int)"/> to ensure
         /// thread-safe disposal and prevent multiple calls to the dispose logic.</remarks>
         private int Disposed;
-
-        /// <summary>
-        /// Indicates whether the job can be disposed.
-        /// </summary>
-        private bool CanDisposeJobObject = true;
 
         /// <summary>
         /// Indicates whether the process is currently assigned to a Windows job object.
@@ -329,6 +385,16 @@ namespace PSADT.ProcessManagement
         /// Represents the cached task for obtaining process results.
         /// </summary>
         private Task<ProcessResult>? ProcessResultTask;
+
+        /// <summary>
+        /// Indicates whether the job can be disposed.
+        /// </summary>
+        private bool CanDisposeJobObject = true;
+
+        /// <summary>
+        /// Indicates whether the process handle can be disposed.
+        /// </summary>
+        private readonly bool CanDisposeProcessHandle = true;
 
         /// <summary>
         /// Synchronizes task initialization for process result retrieval.
@@ -363,11 +429,13 @@ namespace PSADT.ProcessManagement
             }
 
             // Dispose of the process's associated resources.
-            if (LaunchData is not null)
+            if (CanDisposeProcessHandle)
             {
                 ProcessSafeHandle.Dispose();
-                LaunchData.Dispose();
             }
+            StdOut?.Dispose();
+            StdErr?.Dispose();
+            StdIn?.Dispose();
 
             // Dispose of the I/O completion port and job object if they were created.
             if (JobObject is not null)
