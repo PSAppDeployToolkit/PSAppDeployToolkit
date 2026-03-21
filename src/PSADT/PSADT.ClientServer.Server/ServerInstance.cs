@@ -74,14 +74,8 @@ namespace PSADT.ClientServer
                 _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
                 _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
                 _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-                bool outputServerClientSafePipeHandleAddRef = false;
-                bool inputServerClientSafePipeHandleAddRef = false;
-                bool logServerClientSafePipeHandleAddRef = false;
                 try
                 {
-                    _outputServer.ClientSafePipeHandle.DangerousAddRef(ref outputServerClientSafePipeHandleAddRef);
-                    _inputServer.ClientSafePipeHandle.DangerousAddRef(ref inputServerClientSafePipeHandleAddRef);
-                    _logServer.ClientSafePipeHandle.DangerousAddRef(ref logServerClientSafePipeHandleAddRef);
                     string outputServerClientSafePipeHandle = _outputServer.GetClientHandleAsString();
                     string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
                     string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
@@ -103,20 +97,8 @@ namespace PSADT.ClientServer
                 }
                 finally
                 {
-                    if (outputServerClientSafePipeHandleAddRef)
-                    {
-                        _outputServer.ClientSafePipeHandle.DangerousRelease();
-                    }
                     _outputServer.DisposeLocalCopyOfClientHandle();
-                    if (inputServerClientSafePipeHandleAddRef)
-                    {
-                        _inputServer.ClientSafePipeHandle.DangerousRelease();
-                    }
                     _inputServer.DisposeLocalCopyOfClientHandle();
-                    if (logServerClientSafePipeHandleAddRef)
-                    {
-                        _logServer.ClientSafePipeHandle.DangerousRelease();
-                    }
                     _logServer.DisposeLocalCopyOfClientHandle();
                 }
             }
