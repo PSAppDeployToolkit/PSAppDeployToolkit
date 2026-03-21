@@ -111,7 +111,7 @@ function Set-ADTItemPermission
         [ValidateScript({
                 if (!(Test-Path -LiteralPath $_))
                 {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LiteralPath -ProvidedValue $_ -ExceptionMessage 'The specified path does not exist.'))
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
