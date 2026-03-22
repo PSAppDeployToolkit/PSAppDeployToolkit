@@ -1344,7 +1344,7 @@ namespace PSADT.Interop
         /// no longer needed.</returns>
         internal static FreeLibrarySafeHandle LoadLibraryEx(string lpLibFileName, LOAD_LIBRARY_FLAGS dwFlags = LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32)
         {
-            FreeLibrarySafeHandle res = PInvoke.LoadLibraryEx(lpLibFileName.ThrowIfFileDoesNotExist(), dwFlags);
+            FreeLibrarySafeHandle res = PInvoke.LoadLibraryEx(lpLibFileName, dwFlags);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -1944,22 +1944,6 @@ namespace PSADT.Interop
             ArgumentException.ThrowIfNullOrWhiteSpace(lpDeviceName);
             uint res = PInvoke.QueryDosDevice(lpDeviceName, lpTargetPath);
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
-        }
-
-        /// <summary>
-        /// Retrieves the termination status of the specified thread.
-        /// </summary>
-        /// <remarks>If the thread has not terminated, the exit code returned is STATUS_PENDING. This method
-        /// throws an exception if the underlying system call fails.</remarks>
-        /// <param name="hThread">A handle to the thread whose exit code is to be retrieved. The handle must have the THREAD_QUERY_INFORMATION
-        /// or THREAD_QUERY_LIMITED_INFORMATION access right.</param>
-        /// <param name="lpExitCode">When this method returns, contains the exit code of the specified thread if the function succeeds.</param>
-        /// <returns>true if the exit code was successfully retrieved; otherwise, false.</returns>
-        internal static BOOL GetExitCodeThread(SafeHandle hThread, out uint lpExitCode)
-        {
-            ArgumentException.ThrowIfNullOrInvalid(hThread);
-            BOOL res = PInvoke.GetExitCodeThread(hThread, out lpExitCode);
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -2598,92 +2582,38 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Creates a new thread in the specified process using the native NtCreateThreadEx system call.
+        /// Queries object information on a worker native thread and enforces a timeout.
         /// </summary>
-        /// <remarks>This method is intended for advanced scenarios that require direct interaction with
-        /// the Windows native thread creation API. The caller is responsible for ensuring that all parameters,
-        /// especially handles and memory addresses, are valid and appropriate for the target process. Improper use may
-        /// result in process instability or security risks.</remarks>
-        /// <param name="ThreadHandle">When this method returns, contains a SafeThreadHandle representing the newly created thread. This parameter
-        /// is passed uninitialized.</param>
-        /// <param name="DesiredAccess">The access rights requested for the new thread. Specify a combination of THREAD_ACCESS_RIGHTS flags that
-        /// determine the permitted operations on the thread.</param>
-        /// <param name="ProcessHandle">A SafeProcessHandle representing the process in which to create the thread. The handle must have appropriate
-        /// access rights for thread creation and must not be null or closed.</param>
-        /// <param name="StartRoutine">A SafeVirtualAllocHandle specifying the starting address of the thread routine in the target process. This
-        /// handle must not be null, closed, or invalid.</param>
-        /// <param name="Argument">A pointer to a variable to be passed as a parameter to the thread routine, or default if no parameter is
-        /// required.</param>
-        /// <param name="CreateFlags">Flags that control the creation of the thread. This value can be zero or a combination of thread creation
-        /// flags as defined by the native API.</param>
-        /// <param name="ZeroBits">The number of high-order address bits that must be zero in the stack's base address. Typically set to zero.</param>
-        /// <param name="StackSize">The initial size, in bytes, of the stack for the new thread. If zero, the default stack size for the
-        /// executable is used.</param>
-        /// <param name="MaximumStackSize">The maximum size, in bytes, of the stack for the new thread. If zero, the default maximum is used.</param>
-        /// <returns>An NTSTATUS code indicating the result of the operation. STATUS_SUCCESS indicates success; otherwise, the
-        /// code specifies the error.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null or closed, or if StartRoutine is null, closed, or invalid.</exception>
-        internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, nint? Argument = null, THREAD_CREATE_FLAGS CreateFlags = 0, uint ZeroBits = 0, uint StackSize = 0, uint MaximumStackSize = 0)
+        /// <param name="Handle">A handle to the object to query.</param>
+        /// <param name="ObjectInformationClass">The object information class to query.</param>
+        /// <param name="ObjectInformation">A safe handle to the output buffer that receives the queried object information.</param>
+        /// <param name="TimeoutMilliseconds">The timeout in milliseconds to wait for completion before the worker thread is terminated.</param>
+        /// <param name="ReturnLength">Receives the number of bytes returned by the native query call.</param>
+        /// <returns>The worker-thread exit status. Non-fatal query statuses are returned to the caller; unexpected statuses throw.</returns>
+        internal static NTSTATUS NtQueryObjectWithTimeout(SafeHandle Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, SafePinnedGCHandle ObjectInformation, uint TimeoutMilliseconds, out uint ReturnLength)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern NTSTATUS NtCreateThreadEx(out nint ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, nint ObjectAttributes, nint ProcessHandle, nint StartRoutine, nint Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, nint AttributeList);
-            ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
-            ArgumentException.ThrowIfNullOrInvalid(StartRoutine);
-            bool StartRoutineAddRef = false;
-            bool ProcessHandleAddRef = false;
-            NTSTATUS res;
+            ArgumentException.ThrowIfNullOrInvalid(Handle); ArgumentException.ThrowIfNullOrInvalid(ObjectInformation);
+            bool handleAddRef = false; bool objectInfoAddRef = false;
             try
             {
-                StartRoutine.DangerousAddRef(ref StartRoutineAddRef);
-                ProcessHandle.DangerousAddRef(ref ProcessHandleAddRef);
-                res = NtCreateThreadEx(out nint hThread, DesiredAccess, default, ProcessHandle.DangerousGetHandle(), StartRoutine.DangerousGetHandle(), Argument ?? default, CreateFlags, ZeroBits, StackSize, MaximumStackSize, default).ThrowOnFailure();
-                InvalidOperationException.ThrowIfZeroOrInvalid(hThread, "Failed to create thread.");
-                ThreadHandle = new(hThread, true);
+                Handle.DangerousAddRef(ref handleAddRef); ObjectInformation.DangerousAddRef(ref objectInfoAddRef);
+                NTSTATUS res = NtQueryObjectWithTimeoutImpl(Handle.DangerousGetHandle(), ObjectInformationClass, ObjectInformation.DangerousGetHandle(), (uint)ObjectInformation.Length, out ReturnLength, TimeoutMilliseconds, out NTSTATUS ThreadExitStatus);
+                if (res != NTSTATUS.STATUS_SUCCESS)
+                {
+                    throw ExceptionUtilities.GetException(res);
+                }
+                InvalidOperationException.ThrowIfZero(ReturnLength, "The return length from 'NtQueryObject()' is zero.");
+                return ThreadExitStatus;
             }
             finally
             {
-                if (StartRoutineAddRef)
+                if (objectInfoAddRef)
                 {
-                    StartRoutine.DangerousRelease();
+                    ObjectInformation.DangerousRelease();
                 }
-                if (ProcessHandleAddRef)
+                if (handleAddRef)
                 {
-                    ProcessHandle.DangerousRelease();
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Terminates the specified thread and sets its exit status code.
-        /// </summary>
-        /// <remarks>This method wraps the native NtTerminateThread function from ntdll.dll. Terminating a
-        /// thread can lead to resource leaks or inconsistent program state if not used carefully. Use this method only
-        /// when it is necessary to forcibly terminate a thread.</remarks>
-        /// <param name="ThreadHandle">A handle to the thread to be terminated. The handle must be valid and not closed.</param>
-        /// <param name="ExitStatus">The exit status code to assign to the thread being terminated.</param>
-        /// <returns>An NTSTATUS value indicating the result of the operation. Returns STATUS_SUCCESS if the thread was
-        /// terminated successfully; otherwise, returns an error code.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if ThreadHandle is null or has already been closed.</exception>
-        internal static NTSTATUS NtTerminateThread(SafeThreadHandle ThreadHandle, in NTSTATUS ExitStatus)
-        {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern NTSTATUS NtTerminateThread(nint ThreadHandle, NTSTATUS ExitStatus);
-            ArgumentException.ThrowIfNullOrInvalid(ThreadHandle);
-            bool ThreadHandleAddRef = false;
-            try
-            {
-                ThreadHandle.DangerousAddRef(ref ThreadHandleAddRef);
-                NTSTATUS res = NtTerminateThread(ThreadHandle.DangerousGetHandle(), ExitStatus);
-                return res != NTSTATUS.STATUS_SUCCESS && res != ExitStatus
-                    ? throw ExceptionUtilities.GetException(res)
-                    : res;
-            }
-            finally
-            {
-                if (ThreadHandleAddRef)
-                {
-                    ThreadHandle.DangerousRelease();
+                    Handle.DangerousRelease();
                 }
             }
         }
@@ -4382,5 +4312,21 @@ namespace PSADT.Interop
         /// A window command to restore all minimised windows.
         /// </summary>
         internal const nuint MIN_ALL_UNDO = 416;
+
+        /// <summary>
+        /// The library handle for PSADT.Native.dll loaded with appropriate search flags to ensure it is found in the same directory as the executing assembly.
+        /// </summary>
+        private static readonly FreeLibrarySafeHandle PsadtNativeModule = LoadLibraryEx(Path.Combine(Path.GetDirectoryName(typeof(NativeMethods).Assembly.Location) ?? throw new DirectoryNotFoundException("The assembly's directory could not be found."), RuntimeInformation.ProcessArchitecture.ToString(), "PSADT.Native.dll"), LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32);
+
+        /// <summary>
+        /// Provides a managed delegate for the native NtQueryObjectWithTimeout function, enabling invocation of the function through a strongly-typed delegate.
+        /// </summary>
+        private static readonly NtQueryObjectWithTimeoutNativeDelegate NtQueryObjectWithTimeoutImpl = Marshal.GetDelegateForFunctionPointer<NtQueryObjectWithTimeoutNativeDelegate>(GetProcAddress(PsadtNativeModule, "NtQueryObjectWithTimeout").Value);
+
+        /// <summary>
+        /// Queries object information on a worker native thread and enforces a timeout.
+        /// </summary>
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private delegate NTSTATUS NtQueryObjectWithTimeoutNativeDelegate(nint Handle, OBJECT_INFORMATION_CLASS ObjectInformationClass, nint ObjectInformation, uint ObjectInformationLength, out uint ReturnLength, uint TimeoutMilliseconds, out NTSTATUS ThreadExitStatus);
     }
 }
