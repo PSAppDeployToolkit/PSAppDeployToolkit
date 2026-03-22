@@ -15,7 +15,6 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
-using PSADT.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
