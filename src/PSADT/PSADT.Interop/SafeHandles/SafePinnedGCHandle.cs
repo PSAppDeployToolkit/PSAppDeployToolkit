@@ -1,8 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using PSADT.Interop.SafeHandles;
 
-namespace PSADT.SafeHandles
+namespace PSADT.Interop.SafeHandles
 {
     /// <summary>
     /// Represents a wrapper for a <see cref="GCHandle"/> that pins an object in memory.

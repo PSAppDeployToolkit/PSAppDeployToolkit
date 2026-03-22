@@ -41,4 +41,37 @@
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
+
+  <Target Name="PsadtNativeCompilation" BeforeTargets="DispatchToInnerBuilds" Condition="'$(IsCrossTargetingBuild)' == 'true'">
+    <Exec Command="&quot;$(MSBuildProgramFiles32)\Microsoft Visual Studio\Installer\vswhere.exe&quot; -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe" ConsoleToMSBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="PsadtNativeMsBuildExe" />
+    </Exec>
+    <Error Condition="'$(PsadtNativeMsBuildExe)' == ''" Text="Failed to locate Visual Studio MSBuild.exe required to build PSADT.Native.slnx." />
+    <Exec Command="&quot;$(PsadtNativeMsBuildExe)&quot; &quot;$(MSBuildThisFileDirectory)..\..\..\PSADT.Native.slnx&quot; -target:Build -property:Configuration=$(Configuration);Platform=x86 -nologo -nodeReuse:false -verbosity:quiet" ConsoleToMSBuild="true" />
+    <Exec Command="&quot;$(PsadtNativeMsBuildExe)&quot; &quot;$(MSBuildThisFileDirectory)..\..\..\PSADT.Native.slnx&quot; -target:Build -property:Configuration=$(Configuration);Platform=x64 -nologo -nodeReuse:false -verbosity:quiet" ConsoleToMSBuild="true" />
+    <Exec Command="&quot;$(PsadtNativeMsBuildExe)&quot; &quot;$(MSBuildThisFileDirectory)..\..\..\PSADT.Native.slnx&quot; -target:Build -property:Configuration=$(Configuration);Platform=ARM64 -nologo -nodeReuse:false -verbosity:quiet" ConsoleToMSBuild="true" />
+  </Target>
+
+  <Target Name="PsadtNativeVerification" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="PsadtNativeCompilation" Condition="'$(IsCrossTargetingBuild)' == 'true'">
+    <Error Condition="!Exists('..\..\PSADT.Native\PSADT.Native\bin\Win32\$(Configuration)\PSADT.Native.dll')" Text="Missing required native asset: ..\..\PSADT.Native\PSADT.Native\bin\Win32\$(Configuration)\PSADT.Native.dll" />
+    <Error Condition="!Exists('..\..\PSADT.Native\PSADT.Native\bin\x64\$(Configuration)\PSADT.Native.dll')" Text="Missing required native asset: ..\..\PSADT.Native\PSADT.Native\bin\x64\$(Configuration)\PSADT.Native.dll" />
+    <Error Condition="!Exists('..\..\PSADT.Native\PSADT.Native\bin\ARM64\$(Configuration)\PSADT.Native.dll')" Text="Missing required native asset: ..\..\PSADT.Native\PSADT.Native\bin\ARM64\$(Configuration)\PSADT.Native.dll" />
+  </Target>
+
+  <Target Name="PsadtNativeCopyToOutput" BeforeTargets="GetCopyToOutputDirectoryItems" Condition="'$(IsCrossTargetingBuild)' != 'true'">
+    <ItemGroup>
+      <ContentWithTargetPath Include="..\..\PSADT.Native\PSADT.Native\bin\Win32\$(Configuration)\PSADT.Native.dll">
+        <TargetPath>X86\PSADT.Native.dll</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </ContentWithTargetPath>
+      <ContentWithTargetPath Include="..\..\PSADT.Native\PSADT.Native\bin\x64\$(Configuration)\PSADT.Native.dll">
+        <TargetPath>X64\PSADT.Native.dll</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </ContentWithTargetPath>
+      <ContentWithTargetPath Include="..\..\PSADT.Native\PSADT.Native\bin\ARM64\$(Configuration)\PSADT.Native.dll">
+        <TargetPath>Arm64\PSADT.Native.dll</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </ContentWithTargetPath>
+    </ItemGroup>
+  </Target>
 </Project>
