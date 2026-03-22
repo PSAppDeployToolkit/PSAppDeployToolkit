@@ -223,21 +223,15 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>A read-only span of type T beginning at the specified offset and extending to the end of the memory region.</returns>
         /// <exception cref="ObjectDisposedException">Thrown when the handle has been disposed or is invalid.</exception>
         /// <exception cref="InvalidOperationException">Thrown if offset is not aligned to the size of T.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Implementing this here will just make a mess.")]
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
-            ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            int length = (Length - offset) / Marshal.SizeOf<T>();
-            if (length < 0)
-            {
-                throw new InvalidOperationException("Offset exceeds the length of the memory region.");
-            }
-            if ((Length - offset) % Marshal.SizeOf<T>() != 0)
-            {
-                throw new InvalidOperationException("Offset must be aligned to the size of the type T.");
-            }
-            return (handle + offset).AsReadOnlySpan<T>(length);
+            ArgumentOutOfRangeException.ThrowIfNegative(offset); int length = (Length - offset) / Marshal.SizeOf<T>();
+            return length < 0
+                ? throw new InvalidOperationException("Offset exceeds the length of the memory region.")
+                : (Length - offset) % Marshal.SizeOf<T>() != 0
+                ? throw new InvalidOperationException("Offset must be aligned to the size of the type T.")
+                : (handle + offset).AsReadOnlySpan<T>(length);
         }
 
         /// <summary>

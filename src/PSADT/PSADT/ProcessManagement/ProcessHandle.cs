@@ -13,21 +13,25 @@ namespace PSADT.ProcessManagement
     public sealed record ProcessHandle
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessHandle"/> class with the specified process, module
-        /// information, launch details, command line, and task.
+        /// Initializes a new instance of the <see cref="ProcessHandle"/> class with the specified launch state.
         /// </summary>
-        /// <param name="process">The process associated with this handle. Cannot be null.</param>
-        /// <param name="launchInfo">The launch information for the process. Cannot be null.</param>
-        /// <param name="commandLine">The command line used to start the process. Cannot be null or empty.</param>
-        /// <param name="task">The task representing the asynchronous operation of the process. Cannot be null.</param>
-        /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null or if <paramref name="commandLine"/> is empty.</exception>
-        internal ProcessHandle(Process process, ProcessLaunchInfo launchInfo, string commandLine, Task<ProcessResult> task)
+        /// <param name="launchState">The process launch state containing information about the started process, its launch parameters, and the
+        /// result to be tracked. Cannot be null.</param>
+        /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null</exception>
+        internal ProcessHandle(ProcessLaunchState launchState)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
-            Process = process;
-            LaunchInfo = launchInfo;
-            CommandLine = commandLine;
-            Task = task;
+            ArgumentNullException.ThrowIfNull(launchState);
+            async Task<ProcessResult> GetTaskAsync()
+            {
+                using (launchState)
+                {
+                    return await launchState.GetProcessResultAsync().ConfigureAwait(false);
+                }
+            }
+            Process = launchState.Process;
+            LaunchInfo = launchState.LaunchInfo;
+            CommandLine = launchState.CommandLine;
+            Task = GetTaskAsync();
         }
 
         /// <summary>

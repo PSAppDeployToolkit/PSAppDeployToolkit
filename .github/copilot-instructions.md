@@ -4,13 +4,15 @@
 
 **PSAppDeployToolkit** is an open source PowerShell module/framework for Windows software deployment that features an extensive library of functions for common deployment tasks and a customizable branded User Interface.
 
-- **Languages**: PowerShell (primary), C#, XAML
+- **Languages**: PowerShell (primary), C#, XAML, C++
 - **Dependencies**: A current .NET SDK is required for builds. Visual Studio is useful for C# and XAML work. `build.ps1` bootstraps the required PowerShell module dependencies.
 - **Branches**: `main` is the integration branch for active development. Release branches such as `4.0.x` and `4.1.x` are maintained as needed.
 
 ## General Coding Conventions
 - When editing existing code, prefer repository consistency over introducing style-only rewrites. Follow the surrounding file's patterns unless a broader cleanup is explicitly requested.
 - When working on a feature branch from `main`, public function contracts should remain backward compatible wherever practical. Avoid breaking changes to parameter names, parameter behaviour, and output types unless the work clearly justifies it. On release branches such as `4.1.x`, avoid breaking changes to public contracts entirely.
+- Strictly clean up residual migration artifacts. Do not add extra status-handling logic beyond the requested scope.
+- Changes should be strictly limited to the requested scope. Confirm before making any additional or unasked modifications. Avoid unrequested micro-optimizations or style changes (e.g., preserving pre-sized dictionary capacity).
 
 ## Language-Specific Coding Conventions
 
@@ -19,6 +21,7 @@ Detailed coding standards are maintained in dedicated instruction files that Cop
 - `.github/instructions/powershell.md` — PowerShell conventions (applied to `*.ps1`, `*.psm1`, `*.psd1`)
 - `.github/instructions/pester.md` — Pester test conventions (applied to `*.Tests.ps1`)
 - `.github/instructions/csharp.md` — C# conventions (applied to `*.cs`)
+- `.github/instructions/cpp.md` — C++ conventions (applied to `*.cpp`, `*.h`)
 
 ## Build System & Validation
 
@@ -51,3 +54,17 @@ The main build dependency is a current .NET SDK. Visual Studio is recommended fo
 - `PSADT.Interop` contains Win32 interop and CsWin32-generated symbols.
 - `PSADT` contains core C# utilities.
 - `PSAppDeployToolkit` contains PowerShell-facing C# types.
+- Apply `WIN32_LEAN_AND_MEAN` by default where appropriate to minimize native headers without prompting.
+- Use the existing Lock polyfill instead of object-lock suppression.
+- Prefer LoadLibraryEx over LoadLibrary for native loading.
+- Avoid direct P/Invoke when CsWin32 wrappers exist.
+- Initialize PSADT.Native loading in the NativeMethods static constructor.
+- Do not use `Condition="Exists(...)"` to silently skip required PSADT.Native asset copies; prefer fail-fast behavior that surfaces missing native DLLs as explicit build errors.
+
+## C++ Notes
+
+- C++ projects may utilize C++23 preview features. Use static lambdas for thread delegate declarations where applicable.
+
+## User Instructions
+
+- Changes should be strictly limited to the requested scope. Confirm before making any additional or unasked modifications.

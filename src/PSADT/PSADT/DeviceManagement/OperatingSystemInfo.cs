@@ -22,22 +22,9 @@ namespace PSADT.DeviceManagement
         private OperatingSystemInfo()
         {
             // Helper function to determine if the OS is an Enterprise Multi-Session OS.
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
             static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
             {
-                if (productType != OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER)
-                {
-                    return false;
-                }
-                if (!"EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) && !"ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                if (string.IsNullOrWhiteSpace(productName) || (productName!.IndexOf("Virtual Desktops", StringComparison.OrdinalIgnoreCase) < 0 && productName!.IndexOf("Multi-Session", StringComparison.OrdinalIgnoreCase) < 0))
-                {
-                    return false;
-                }
-                return true;
+                return productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER && ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase)) && !string.IsNullOrWhiteSpace(productName) && (productName.Contains("Virtual Desktops", StringComparison.OrdinalIgnoreCase) || productName.Contains("Multi-Session", StringComparison.OrdinalIgnoreCase));
             }
 
             // Get OS version information.
@@ -47,14 +34,14 @@ namespace PSADT.DeviceManagement
 
             // Read additional OS information from the registry.
             string? editionId = null; string? productName = null; int ubr = 0;
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion")!)
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion") ?? throw new InvalidOperationException("Failed to open CurrentVersion registry key."))
             {
                 if (key.GetValue("UBR") is int ubrValue)
                 {
                     ubr = ubrValue;
                 }
                 DisplayVersion = (string?)key.GetValue("DisplayVersion");
-                productName = $"Microsoft {(string)key.GetValue("ProductName")!}";
+                productName = $"Microsoft {key.GetValue("ProductName")}";
                 editionId = (string?)key.GetValue("EditionID");
             }
 

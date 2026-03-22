@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers.Binary;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
@@ -237,7 +236,6 @@ namespace PSADT.Security
         /// context.</remarks>
         /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the Explorer process, or <see
         /// langword="null"/> if the operation fails.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         internal static SafeFileHandle GetUnelevatedCallerToken()
         {
             if (AccountUtilities.CallerIsLocalSystem)
@@ -252,15 +250,11 @@ namespace PSADT.Security
             _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
             using (hProcessToken)
             {
-                if (TokenUtilities.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid)
-                {
-                    throw new InvalidProgramException("Failed to retrieve an unelevated token for the calling account.");
-                }
-                if (TokenUtilities.IsTokenElevated(hProcessToken))
-                {
-                    throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.");
-                }
-                return GetPrimaryToken(hProcessToken);
+                return TokenUtilities.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid
+                    ? throw new InvalidProgramException("Failed to retrieve an unelevated token for the calling account.")
+                    : TokenUtilities.IsTokenElevated(hProcessToken)
+                    ? throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.")
+                    : GetPrimaryToken(hProcessToken);
             }
         }
 
@@ -283,8 +277,11 @@ namespace PSADT.Security
                     throw new UnauthorizedAccessException("The calling account must have SeTcbPrivilege to set UIAccess on the token.");
                 }
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                Span<byte> tokenInformation = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(tokenInformation, 1);
-                _ = NativeMethods.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
+                unsafe
+                {
+                    int tokenValue = 1; ReadOnlySpan<byte> tokenInformation = MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&tokenValue, 1));
+                    _ = NativeMethods.SetTokenInformation(hPrimaryToken, TOKEN_INFORMATION_CLASS.TokenUIAccess, tokenInformation);
+                }
             }
             return hPrimaryToken;
         }

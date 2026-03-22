@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,21 +8,15 @@ using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.ClientServer;
-using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
-using PSADT.SafeHandles;
 using PSADT.Security;
-using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.Security;
-using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 
@@ -51,238 +44,194 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidProgramException">Thrown if the process fails to start.</exception>
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
-            // Set up initial variables needed throughout method.
-            ArgumentNullException.ThrowIfNull(launchInfo);
-            Task hStdOutTask = Task.CompletedTask, hStdErrTask = Task.CompletedTask, hStdInTask = Task.CompletedTask;
-            AnonymousPipeServerStream? hStdOutRead = null;
-            AnonymousPipeServerStream? hStdErrRead = null;
-            AnonymousPipeServerStream? hStdInWrite = null;
-            List<string> stdout = [], stderr = [];
-            ConcurrentQueue<string> interleaved = [];
-            SafeProcessHandle? hProcess = null;
-            SafeFileHandle? iocp = null;
-            SafeFileHandle? job = null;
-            Process? process = null;
-            bool iocpAddRef = false;
-            string commandLine;
-            uint? processId;
-            try
+            // Prefer the CreateProcess pathway unless we're explicitly asked to use ShellExecuteEx instead.
+            if ((launchInfo ?? throw new ArgumentNullException(nameof(launchInfo))).RunAsActiveUser is not null || (launchInfo.CreateNoWindow && launchInfo.IsCliApplication()) || !launchInfo.UseShellExecute)
             {
-                // Determine whether this process should be assigned to a job or not.
-                bool assignProcessToJob = launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent || launchInfo.CancellationToken.HasValue;
-                if (assignProcessToJob)
+                // Perform initial setup and get started with the process creation.
+                ProcessReadStream? stdOutHandle = null, stdErrHandle = null; ProcessWriteStream? stdInHandle = null;
+                AnonymousPipeServerStream? stdOutStream = null, stdErrStream = null, stdInStream = null;
+                Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
+                SafeProcessHandle hProcess; SafeThreadHandle hThread; uint processId;
+                ConcurrentQueue<string> interleavedData = [];
+                try
                 {
-                    // Set up the job object and I/O completion port for the process.
-                    // No using statements here, they're disposed of in the final task.
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                    iocp = NativeMethods.CreateIoCompletionPort(0);
-                    job = NativeMethods.CreateJobObject(null, default);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                    iocp.DangerousAddRef(ref iocpAddRef);
-                    _ = NativeMethods.SetInformationJobObject(job, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+                    // Set up the startup information for the process.
+                    PROCESS_INFORMATION pi; STARTUPINFOW startupInfo = new()
                     {
-                        CompletionPort = (HANDLE)iocp.DangerousGetHandle(),
-                        CompletionKey = null,
-                    });
-                }
+                        cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                        hStdInput = HANDLE.INVALID_HANDLE_VALUE,
+                        hStdOutput = HANDLE.INVALID_HANDLE_VALUE,
+                        hStdError = HANDLE.INVALID_HANDLE_VALUE,
+                    };
+                    PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
+                        PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                        PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
+                        PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
-                // Set up the required job limit if child processes must be killed with the parent.
-                if (launchInfo.KillChildProcessesWithParent)
-                {
-                    _ = NativeMethods.SetInformationJobObject(job!, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+                    // Set up the window style if the caller's provided a value.
+                    if (launchInfo.WindowStyle is not null)
                     {
-                        BasicLimitInformation = new()
-                        {
-                            LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-                        }
-                    });
-                }
+                        startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                        startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
+                    }
 
-                // We only let console apps run via ShellExecuteEx() when there's a window shown for it.
-                // Invoking processes as user has no ShellExecute capability, so it always comes through here.
-                if (launchInfo.RunAsActiveUser is not null || (launchInfo.CreateNoWindow && launchInfo.IsCliApplication()) || !launchInfo.UseShellExecute)
-                {
-                    SafePipeHandle? hStdOutWrite = null;
-                    SafePipeHandle? hStdErrWrite = null;
-                    SafePipeHandle? hStdInRead = null;
-                    bool hStdOutWriteAddRef = false;
-                    bool hStdErrWriteAddRef = false;
-                    bool hStdInReadAddRef = false;
-                    try
+                    // We must create a console window for console apps when the window is shown.
+                    if (launchInfo.IsCliApplication())
                     {
-                        // Set up the startup information for the process.
-                        STARTUPINFOW startupInfo = new() { cb = (uint)Marshal.SizeOf<STARTUPINFOW>() };
-                        if (launchInfo.WindowStyle is not null)
+                        if (launchInfo.CreateNoWindow)
                         {
-                            startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                            startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
-                        }
-
-                        // The process is created suspended so it can be assigned to the job object.
-                        PROCESS_CREATION_FLAGS creationFlags = PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
-                            PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
-                            PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
-
-                        // Set the process priority class if specified.
-                        if (launchInfo.PriorityClass is not null)
-                        {
-                            creationFlags |= (PROCESS_CREATION_FLAGS)launchInfo.PriorityClass.Value;
-                        }
-
-                        // We must create a console window for console apps when the window is shown.
-                        if (launchInfo.IsCliApplication())
-                        {
-                            if (launchInfo.CreateNoWindow)
-                            {
-                                // If STARTF_USESHOWWINDOW is set, a console app showing UI elements
-                                // won't appear. Because we have CREATE_NO_WINDOW, the console window
-                                // (aka. the window we actually want hidden) will be hidden as expected.
-                                startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
-                                startupInfo.dwFlags &= ~STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
-                            }
-                            else
-                            {
-                                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
-                            }
-                        }
-
-                        // If we're to read the output, we create pipes for stdout and stderr.
-                        // Build a list of handles that need to be inherited by the child process.
-                        List<nint> handlesToInherit = launchInfo.HandlesToInherit.Count > 0
-                            ? [.. launchInfo.HandlesToInherit]
-                            : [];
-
-                        if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
-                        {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                            hStdOutRead = new(PipeDirection.In, HandleInheritability.Inheritable);
-                            hStdErrRead = new(PipeDirection.In, HandleInheritability.Inheritable);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                            hStdOutTask = Task.Run(() => ReadPipe(hStdOutRead, stdout, interleaved, launchInfo.StreamEncoding));
-                            hStdErrTask = Task.Run(() => ReadPipe(hStdErrRead, stderr, interleaved, launchInfo.StreamEncoding));
-                            InvalidOperationException.ThrowIfNullOrInvalid(hStdOutWrite = hStdOutRead.ClientSafePipeHandle, "The stdout write handle is invalid.");
-                            InvalidOperationException.ThrowIfNullOrInvalid(hStdErrWrite = hStdErrRead.ClientSafePipeHandle, "The stderr write handle is invalid.");
-                            hStdOutWrite.DangerousAddRef(ref hStdOutWriteAddRef);
-                            hStdErrWrite.DangerousAddRef(ref hStdErrWriteAddRef);
-                            startupInfo.hStdOutput = (HANDLE)hStdOutWrite.DangerousGetHandle();
-                            startupInfo.hStdError = (HANDLE)hStdErrWrite.DangerousGetHandle();
-                            handlesToInherit.Add(startupInfo.hStdOutput);
-                            handlesToInherit.Add(startupInfo.hStdError);
-
-                            // Create stdin pipe if we have input data to write.
-                            if (launchInfo.StandardInput.Count > 0)
-                            {
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                                hStdInWrite = new(PipeDirection.Out, HandleInheritability.Inheritable);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                                InvalidOperationException.ThrowIfNullOrInvalid(hStdInRead = hStdInWrite.ClientSafePipeHandle, "The stdin read handle is invalid.");
-                                hStdInRead.DangerousAddRef(ref hStdInReadAddRef);
-                                startupInfo.hStdInput = (HANDLE)hStdInRead.DangerousGetHandle();
-                                handlesToInherit.Add(startupInfo.hStdInput);
-                            }
-                            else
-                            {
-                                startupInfo.hStdInput = HANDLE.INVALID_HANDLE_VALUE;
-                            }
-                        }
-
-                        // Handle user process creation, otherwise just create the process for the running user.
-                        PROCESS_INFORMATION pi; Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
-                        if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
-                        {
-                            // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                            using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == ClientServerUtilities.ClientPath.FullName || launchInfo.FilePath == ClientServerUtilities.ClientLauncherPath.FullName);
-                            _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                            using (lpEnvironment)
-                            {
-                                unsafe
-                                {
-                                    fixed (char* pDesktop = @"winsta0\default")
-                                    {
-                                        startupInfo.lpDesktop = new(pDesktop);
-                                        _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit.AsReadOnly(), creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, startupInfo, out pi);
-                                        startupInfo.lpDesktop = null;
-                                    }
-                                }
-                            }
-                        }
-                        else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
-                        {
-                            // We're running elevated but have been asked to de-elevate.
-                            using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
-                            _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory?.FullName, startupInfo, out pi);
+                            // If STARTF_USESHOWWINDOW is set, a console app showing UI elements
+                            // won't appear. Because we have CREATE_NO_WINDOW, the console window
+                            // (aka. the window we actually want hidden) will be hidden as expected.
+                            startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                            startupInfo.dwFlags &= ~STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                         }
                         else
                         {
-                            // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                            if (handlesToInherit.Count > 0)
+                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
+                        }
+                    }
+
+                    // Set up required stdio stuff if we're configured to capture these streams.
+                    List<nint> handlesToInherit = launchInfo.HandlesToInherit.Count > 0 ? [.. launchInfo.HandlesToInherit] : [];
+                    if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                    {
+                        if (launchInfo.StandardInput.Count > 0)
+                        {
+                            (stdInStream, startupInfo.hStdInput, stdInHandle) = CreateWritePipe(launchInfo.StandardInput, launchInfo.StreamEncoding);
+                            handlesToInherit.Add(startupInfo.hStdInput);
+                        }
+                        (stdOutStream, startupInfo.hStdOutput, stdOutHandle) = CreateReadPipe(interleavedData, launchInfo.StreamEncoding);
+                        (stdErrStream, startupInfo.hStdError, stdErrHandle) = CreateReadPipe(interleavedData, launchInfo.StreamEncoding);
+                        handlesToInherit.Add(startupInfo.hStdOutput);
+                        handlesToInherit.Add(startupInfo.hStdError);
+                    }
+
+                    // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
+                    if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
+                    {
+                        // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == ClientServerUtilities.ClientPath.FullName || launchInfo.FilePath == ClientServerUtilities.ClientLauncherPath.FullName);
+                        _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                        using (lpEnvironment)
+                        {
+                            unsafe
                             {
-                                (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit.AsReadOnly(), forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);
-                                using (hAttributeList)
-                                using (pinnedHandles)
+                                fixed (char* pDesktop = @"winsta0\default")
                                 {
-                                    _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory?.FullName, startupInfoEx, out pi);
+                                    startupInfo.lpDesktop = new(pDesktop);
+                                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                                 }
                             }
-                            else
+                        }
+                    }
+                    else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
+                    {
+                        // We're running elevated but have been asked to de-elevate.
+                        using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
+                        _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                    }
+                    else
+                    {
+                        // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
+                        if (handlesToInherit.Count > 0)
+                        {
+                            (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);
+                            using (hAttributeList)
+                            using (pinnedHandles)
                             {
-                                _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory?.FullName, startupInfo, out pi);
+                                _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory?.FullName, in startupInfoEx, out pi);
                             }
                         }
-
-                        // Start tracking the process and allow it to resume execution.
-                        process = GetProcessFromId((processId = pi.dwProcessId).Value);
-                        using SafeThreadHandle hThread = new(pi.hThread, true);
-                        commandLine = commandSpan.ToString();
-#pragma warning disable CA2000 // Dispose objects before losing scope
-                        hProcess = new(pi.hProcess, true);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-                        if (assignProcessToJob)
+                        else
                         {
-                            _ = NativeMethods.AssignProcessToJobObject(job!, hProcess);
-                        }
-                        _ = NativeMethods.ResumeThread(hThread);
-
-                        // Start the stdin write task after the process has been resumed.
-                        if (hStdInWrite is not null && launchInfo.StandardInput.Count > 0)
-                        {
-                            hStdInTask = Task.Run(() => WritePipe(hStdInWrite, launchInfo.StandardInput, launchInfo.StreamEncoding));
+                            _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                         }
                     }
-                    finally
+                    hProcess = new(pi.hProcess, true);
+                    hThread = new(pi.hThread, true);
+                    processId = pi.dwProcessId;
+                }
+                catch
+                {
+                    stdOutHandle?.Dispose();
+                    stdErrHandle?.Dispose();
+                    stdInHandle?.Dispose();
+                    stdOutStream?.Dispose();
+                    stdErrStream?.Dispose();
+                    stdInStream?.Dispose();
+                    throw;
+                }
+                finally
+                {
+                    stdOutStream?.DisposeLocalCopyOfClientHandle();
+                    stdErrStream?.DisposeLocalCopyOfClientHandle();
+                    stdInStream?.DisposeLocalCopyOfClientHandle();
+                }
+
+                // Since the process wasn't spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
+                ProcessLaunchState launchState;
+                try
+                {
+                    Process process = Process.GetProcessById((int)processId);
+                    try
                     {
-                        if (hStdOutWriteAddRef)
-                        {
-                            hStdOutWrite!.DangerousRelease();
-                        }
-                        if (hStdErrWriteAddRef)
-                        {
-                            hStdErrWrite!.DangerousRelease();
-                        }
-                        if (hStdInReadAddRef)
-                        {
-                            hStdInRead!.DangerousRelease();
-                        }
-                        hStdOutWrite?.Dispose(); hStdOutWrite = null;
-                        hStdErrWrite?.Dispose(); hStdErrWrite = null;
-                        hStdInRead?.Dispose(); hStdInRead = null;
-                        hStdOutRead?.DisposeLocalCopyOfClientHandle();
-                        hStdErrRead?.DisposeLocalCopyOfClientHandle();
-                        hStdInWrite?.DisposeLocalCopyOfClientHandle();
+                        _ = process.Handle; launchState = stdOutHandle is not null && stdErrHandle is not null
+                            ? new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
+                            : new(launchInfo, process, processId, hProcess, commandSpan.ToString());
+                    }
+                    catch
+                    {
+                        process.Dispose();
+                        throw;
                     }
                 }
-                else
+                catch
                 {
-                    // Build the command line for the process.
-                    commandLine = launchInfo.MakeCommandLine();
-                    process = new()
+                    stdOutHandle?.Dispose();
+                    stdErrHandle?.Dispose();
+                    stdInHandle?.Dispose();
+                    stdOutStream?.Dispose();
+                    stdErrStream?.Dispose();
+                    stdInStream?.Dispose();
+                    hProcess.Dispose();
+                    hThread.Dispose();
+                    throw;
+                }
+
+                // Resume the main thread and return information about the process.
+                try
+                {
+                    using (hThread)
                     {
-                        StartInfo = new()
-                        {
-                            FileName = launchInfo.FilePath,
-                            UseShellExecute = launchInfo.UseShellExecute,
-                        }
+                        stdOutHandle?.Task.Start(TaskScheduler.Default);
+                        stdErrHandle?.Task.Start(TaskScheduler.Default);
+                        _ = NativeMethods.ResumeThread(hThread);
+                    }
+                    stdInHandle?.Task.Start(TaskScheduler.Default);
+                    return new(launchState);
+                }
+                catch
+                {
+                    stdOutStream?.Dispose();
+                    stdErrStream?.Dispose();
+                    stdInStream?.Dispose();
+                    launchState.Process.Dispose();
+                    launchState.Dispose();
+                    throw;
+                }
+            }
+            else
+            {
+                // Set up the process object and start it.
+                Process process = new();
+                try
+                {
+                    process.StartInfo = new()
+                    {
+                        FileName = launchInfo.FilePath,
+                        UseShellExecute = launchInfo.UseShellExecute,
                     };
                     if (!string.IsNullOrWhiteSpace(launchInfo.Arguments))
                     {
@@ -304,265 +253,116 @@ namespace PSADT.ProcessManagement
                     {
                         process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                     }
-
-                    // Start the process and assign the handle to our job if we have one.
-                    // For a pure shell action, we won't ever be able to get one.
                     if (!process.Start() && File.Exists(launchInfo.FilePath))
                     {
                         throw new InvalidProgramException("Failed to start the process.");
                     }
-                    ClientServerUtilities.SetClientServerOperationSuccess();
-                    try
-                    {
-                        hProcess = process.SafeHandle;
-                        processId = (uint)process.Id;
-                    }
-                    catch (Exception ex) when (ex.Message is not null)
-                    {
-                        hProcess = null;
-                        processId = null;
-                    }
-
-                    // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
-                    if (hProcess is not null)
-                    {
-                        if (assignProcessToJob)
-                        {
-                            _ = NativeMethods.AssignProcessToJobObject(job!, hProcess);
-                        }
-                        if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
-                        {
-                            process.PriorityClass = launchInfo.PriorityClass.Value;
-                        }
-                    }
+                }
+                catch
+                {
+                    process.Dispose();
+                    throw;
                 }
 
-                // If we don't have a process (shell action), return early.
-                if (!(process is not null && processId is not null && hProcess is not null))
+                // Try to get the process's handle and process Id. For a pure
+                // shell action, the calls will throw so just return null here.
+                ClientServerUtilities.SetClientServerOperationSuccess();
+                SafeProcessHandle hProcess;
+                try
                 {
-                    if (iocpAddRef)
-                    {
-                        iocp?.DangerousRelease();
-                    }
-                    hStdOutRead?.Dispose();
-                    hStdErrRead?.Dispose();
-                    hStdInWrite?.Dispose();
-                    hProcess?.Dispose();
-                    process?.Dispose();
-                    iocp?.Dispose();
-                    job?.Dispose();
+                    hProcess = process.SafeHandle;
+                }
+                catch
+                {
+                    process.Dispose();
                     return null;
+                    throw;
                 }
 
-                // Modify the process handle ACLs to deny user closure if requested.
-                if (launchInfo.DenyUserTermination)
+                // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
+                try
                 {
-                    // If the client/server process isn't ours, we'll want to change the owner to ourselves if we can.
-                    RunAsActiveUser runAsActiveUser = launchInfo.RunAsActiveUser ?? AccountUtilities.CallerRunAsActiveUser; bool changeOwner = false;
-                    if (runAsActiveUser.SID != AccountUtilities.CallerSid && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeSecurityPrivilege) && PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
+                    if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
                     {
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
-                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
-                        changeOwner = true;
+                        process.PriorityClass = launchInfo.PriorityClass.Value;
                     }
-
-                    // Create a restricted access control list (ACL) for the client process so the user can't terminate it.
-                    byte[] userSid = new byte[runAsActiveUser.SID.BinaryLength]; runAsActiveUser.SID.GetBinaryForm(userSid, 0);
-                    using SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(userSid);
-                    bool pinnedUserSidAddRef = false;
-                    try
-                    {
-                        // Generate an explicit access control entry (ACE) for the user SID.
-                        pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
-                        TRUSTEE_W aceTrustee = new()
-                        {
-                            TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
-                            ptstrName = new(pinnedUserSid.DangerousGetHandle()),
-                        };
-
-                        // Create a DENY ACE for dangerous permissions that could be used for code injection or process manipulation.
-                        EXPLICIT_ACCESS_W denyAce = new()
-                        {
-                            grfAccessPermissions = (uint)(
-                                PROCESS_ACCESS_RIGHTS.PROCESS_TERMINATE |                    // Prevent termination
-                                PROCESS_ACCESS_RIGHTS.PROCESS_VM_WRITE |                     // Prevent memory writes (code injection)
-                                PROCESS_ACCESS_RIGHTS.PROCESS_VM_OPERATION |                 // Prevent memory operations
-                                PROCESS_ACCESS_RIGHTS.PROCESS_CREATE_THREAD |                // Prevent remote thread creation
-                                PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE |                   // Prevent handle duplication attacks
-                                PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION |              // Prevent process info modification
-                                PROCESS_ACCESS_RIGHTS.PROCESS_SUSPEND_RESUME),               // Prevent suspend/resume manipulation
-                            grfAccessMode = ACCESS_MODE.DENY_ACCESS,
-                            grfInheritance = ACE_FLAGS.NO_INHERITANCE,
-                            Trustee = aceTrustee,
-                        };
-
-                        // Create a GRANT ACE for limited permissions (query and synchronize only).
-                        EXPLICIT_ACCESS_W grantAce = new()
-                        {
-                            grfAccessPermissions = (uint)(
-                                PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION |    // Allow querying limited info
-                                PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),                  // Allow synchronization
-                            grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
-                            grfInheritance = ACE_FLAGS.NO_INHERITANCE,
-                            Trustee = aceTrustee,
-                        };
-
-                        // Apply the ACL and potentially change the owner of the client process. DENY ACEs are processed before GRANT ACEs by Windows.
-                        _ = NativeMethods.SetEntriesInAcl([denyAce, grantAce], out LocalFreeSafeHandle pAcl);
-                        using (pAcl)
-                        {
-                            if (changeOwner)
-                            {
-                                byte[] callerSid = new byte[AccountUtilities.CallerSid.BinaryLength]; AccountUtilities.CallerSid.GetBinaryForm(callerSid, 0);
-                                using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(callerSid);
-                                _ = NativeMethods.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
-                            }
-                            else
-                            {
-                                _ = NativeMethods.SetSecurityInfo(hProcess, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, null, null, pAcl, null);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (pinnedUserSidAddRef)
-                        {
-                            pinnedUserSid.DangerousRelease();
-                        }
-                    }
+                    return new(new(launchInfo, process, launchInfo.MakeCommandLine()));
                 }
-
-                // Return a ProcessHandle object with this process and its running task.
-                return new(process, launchInfo, commandLine, Task.Run<ProcessResult>(async () =>
+                catch
                 {
-                    // Spin until complete or cancelled.
-                    uint timeoutExitCode = unchecked((uint)TimeoutExitCode);
-                    bool disposeJob = true; int exitCode = TimeoutExitCode;
-                    try
-                    {
-                        if (assignProcessToJob)
-                        {
-                            using CancellationTokenRegistration ctr = launchInfo.CancellationToken is not null ? launchInfo.CancellationToken.Value.Register(() => NativeMethods.PostQueuedCompletionStatus(iocp!, timeoutExitCode, default)) : default;
-                            while (true)
-                            {
-                                _ = NativeMethods.GetQueuedCompletionStatus(iocp!, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
-                                if (lpCompletionCode == timeoutExitCode)
-                                {
-                                    if (launchInfo.NoTerminateOnTimeout)
-                                    {
-                                        // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
-                                        // Disposing the job would terminate the process we're supposed to let run, so we intentionally
-                                        // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
-                                        if (launchInfo.KillChildProcessesWithParent)
-                                        {
-                                            disposeJob = false;
-                                        }
-                                        exitCode = TimeoutExitCode;
-                                        break;
-                                    }
-                                    _ = NativeMethods.TerminateJobObject(job!, timeoutExitCode);
-                                }
-                                else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !launchInfo.WaitForChildProcesses && (uint)lpOverlapped == processId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
-                                {
-                                    await Task.WhenAll(hStdOutTask, hStdErrTask, hStdInTask).ConfigureAwait(false);
-                                    _ = NativeMethods.GetExitCodeProcess(hProcess, out uint lpExitCode);
-                                    exitCode = unchecked((int)lpExitCode);
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            process.WaitForExit();
-                            await Task.WhenAll(hStdOutTask, hStdErrTask, hStdInTask).ConfigureAwait(false);
-                            exitCode = process.ExitCode;
-                        }
-                        return new(process, launchInfo, commandLine, exitCode, stdout, stderr, interleaved);
-                    }
-                    finally
-                    {
-                        // Only dispose of the handle when we don't own it.
-                        if (!launchInfo.UseShellExecute)
-                        {
-                            hProcess.Dispose();
-                        }
+                    hProcess.Dispose();
+                    process.Dispose();
+                    throw;
+                }
+            }
+        }
 
-                        // We're no longer monitoring the process's state, so we can release the completion port.
-                        if (iocpAddRef)
+        /// <summary>
+        /// Creates a read pipe server stream and a corresponding task that consumes output from the child process.
+        /// </summary>
+        /// <param name="interleaved">The shared interleaved output buffer.</param>
+        /// <param name="encoding">The text encoding for the stream.</param>
+        /// <returns>The server stream, client handle, and read task.</returns>
+        private static (AnonymousPipeServerStream stream, HANDLE pipe, ProcessReadStream handle) CreateReadPipe(ConcurrentQueue<string> interleaved, Encoding encoding)
+        {
+            AnonymousPipeServerStream stream = new(PipeDirection.In, HandleInheritability.Inheritable);
+            List<string> output = [];
+            try
+            {
+                return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(output, new(() =>
+                {
+                    using (stream)
+                    {
+                        using StreamReader reader = new(stream, encoding);
+                        while (reader.ReadLine()?.TrimEnd() is string line)
                         {
-                            iocp?.DangerousRelease();
-                        }
-                        iocp?.Dispose();
-
-                        // We only dispose of the job if the process has closed or if we're killing all child processes along with the parent.
-                        if (!disposeJob)
-                        {
-                            // Prevent the finalizer from closing the job handle, which would kill the processes
-                            // due to JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE. This intentionally leaks the handle.
-                            job?.SetHandleAsInvalid();
-                        }
-                        else
-                        {
-                            job?.Dispose();
+                            interleaved.Enqueue(line); output.Add(line);
                         }
                     }
-                }));
+                })));
             }
             catch
             {
-                if (iocpAddRef)
-                {
-                    iocp?.DangerousRelease();
-                }
-                hStdOutRead?.Dispose();
-                hStdErrRead?.Dispose();
-                hStdInWrite?.Dispose();
-                hProcess?.Dispose();
-                process?.Dispose();
-                iocp?.Dispose();
-                job?.Dispose();
+                stream.Dispose();
                 throw;
             }
         }
 
         /// <summary>
-        /// Reads lines from the specified anonymous pipe server stream and adds each line to the provided output list
-        /// and interleaved queue.
+        /// Creates a write pipe server stream and a corresponding task that writes stdin data to the child process.
         /// </summary>
-        /// <remarks>This method reads until the end of the stream is reached. The pipe stream is disposed
-        /// when reading is complete. Ensure that the provided stream and collections are valid and accessible before
-        /// calling this method.</remarks>
-        /// <param name="pipeStream">The anonymous pipe server stream from which lines are read. The stream must be open and readable.</param>
-        /// <param name="output">The list that receives each line read from the pipe stream, in the order they are read.</param>
-        /// <param name="interleaved">A thread-safe queue that stores each line read from the pipe stream, allowing concurrent access to the
-        /// lines.</param>
-        /// <param name="encoding">The character encoding used to interpret the bytes from the pipe stream as text.</param>
-        private static void ReadPipe(AnonymousPipeServerStream pipeStream, List<string> output, ConcurrentQueue<string> interleaved, Encoding encoding)
+        /// <param name="input">The input lines to write.</param>
+        /// <param name="encoding">The text encoding for the stream.</param>
+        /// <returns>The server stream, client handle, and write task.</returns>
+        private static (AnonymousPipeServerStream stream, HANDLE pipe, ProcessWriteStream handle) CreateWritePipe(IReadOnlyList<string> input, Encoding encoding)
         {
-            using (pipeStream) using (StreamReader streamReader = new(pipeStream, encoding))
+            AnonymousPipeServerStream stream = new(PipeDirection.Out, HandleInheritability.Inheritable);
+            try
             {
-                while (streamReader.ReadLine()?.TrimEnd() is string line)
+                return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(new(() =>
                 {
-                    interleaved.Enqueue(line);
-                    output.Add(line);
-                }
+                    using (stream)
+                    {
+                        try
+                        {
+                            using StreamWriter writer = new(stream, encoding);
+                            foreach (string line in input)
+                            {
+                                writer.WriteLine(line);
+                            }
+                        }
+                        catch (IOException)
+                        {
+                            // The child process didn't read all input before exiting.
+                            return;
+                        }
+                    }
+                })));
             }
-        }
-
-        /// <summary>
-        /// Writes lines to a pipe and closes it when complete.
-        /// </summary>
-        /// <param name="pipeStream">The anonymous pipe server stream to write to.</param>
-        /// <param name="lines">The lines to write to the pipe.</param>
-        /// <param name="encoding">The encoding to use when converting strings to bytes.</param>
-        private static void WritePipe(AnonymousPipeServerStream pipeStream, IReadOnlyList<string> lines, Encoding encoding)
-        {
-            using (pipeStream) using (StreamWriter writer = new(pipeStream, encoding))
+            catch
             {
-                foreach (string line in lines)
-                {
-                    writer.WriteLine(line);
-                }
+                stream.Dispose();
+                throw;
             }
         }
 
@@ -658,8 +458,7 @@ namespace PSADT.ProcessManagement
             Span<byte> lpJobObjectInformation = stackalloc byte[Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
             _ = NativeMethods.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
             ref readonly JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref lpJobObjectInformation.AsReadOnlyStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
-            JOB_OBJECT_LIMIT jobObjectLimitFlags = jobObjectInfo.BasicLimitInformation.LimitFlags;
-            if (!(jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectLimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
+            if (!(jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
             {
                 return !PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege) ? CreateProcessUsingTokenStatus.SeTcbPrivilege : CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
             }
@@ -690,14 +489,14 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, IReadOnlyList<nint> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus canUseCreateProcessAsUser = CanUseCreateProcessAsUser(isCallerToken);
             bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
-            if (canUseCreateProcessAsUser is CreateProcessUsingTokenStatus.OK || forceBreakaway || handlesToInherit.Count > 0)
+            if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || forceBreakaway || handlesToInherit.Count > 0)
             {
                 // Ensure necessary privileges are enabled.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
@@ -707,11 +506,11 @@ namespace PSADT.ProcessManagement
                 if (handlesToInherit.Count > 0 || forceBreakaway)
                 {
                     // Create the extended startup info with the necessary attributes.
-                    (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
+                    (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
                     using (hAttributeList)
                     using (pinnedHandles)
                     {
-                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, startupInfoEx, out pi);
+                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, in startupInfoEx, out pi);
                     }
                 }
                 else if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK)
@@ -723,7 +522,7 @@ namespace PSADT.ProcessManagement
                     {
                         creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                     }
-                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
                 }
                 else
                 {
@@ -743,20 +542,11 @@ namespace PSADT.ProcessManagement
                     creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
                 }
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
-                return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, startupInfo, out pi);
+                return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
             }
 
             // Neither CreateProcessAsUser() nor CreateProcessWithToken() can be used.
-            string exceptionMessage = "Unable to create a new process via token.";
-            if (canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK && !forceBreakaway)
-            {
-                exceptionMessage += $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}";
-            }
-            if (canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK)
-            {
-                exceptionMessage += $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}";
-            }
-            throw new InvalidOperationException(exceptionMessage);
+            throw new InvalidOperationException($"Unable to create a new process via token.{(canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK && !forceBreakaway ? $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}" : null)}{(canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK ? $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}" : null)}");
         }
 
         /// <summary>
@@ -770,7 +560,7 @@ namespace PSADT.ProcessManagement
         /// <param name="forceBreakaway">If true, adds the EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY attribute.</param>
         /// <param name="pinnedHandles">When this method returns, contains the pinned GC handle for the handles array, or null if no handles were specified.</param>
         /// <returns>A tuple containing the STARTUPINFOEXW structure and the SafeProcThreadAttributeListHandle.</returns>
-        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, IReadOnlyList<nint> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
+        private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, List<nint> handlesToInherit, bool forceBreakaway, out SafePinnedGCHandle? pinnedHandles)
         {
             // Calculate the number of attributes needed.
             bool hasHandleInheritance = handlesToInherit.Count > 0;
@@ -795,14 +585,13 @@ namespace PSADT.ProcessManagement
             try
             {
                 // Add handle list attribute if handles are specified.
-                if (hasHandleInheritance)
+                pinnedHandles = hasHandleInheritance ? SafePinnedGCHandle.Alloc([.. handlesToInherit]) : null;
+                try
                 {
-                    pinnedHandles = SafePinnedGCHandle.Alloc([.. handlesToInherit]);
-                    bool pinnedHandlesAddRef = false;
-                    try
+                    // Add the handle list attribute if handles to inherit were specified.
+                    if (pinnedHandles is not null)
                     {
                         // The handle list needs to be passed as a pointer to an array of handles.
-                        pinnedHandles.DangerousAddRef(ref pinnedHandlesAddRef);
                         nint handlesPtr = pinnedHandles.DangerousGetHandle();
                         int handleListSize = handlesToInherit.Count * IntPtr.Size;
                         unsafe
@@ -810,62 +599,42 @@ namespace PSADT.ProcessManagement
                             _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_HANDLE_LIST, new((void*)handlesPtr, handleListSize));
                         }
                     }
-                    catch
+
+                    // Add extended flags attribute if force breakaway is requested.
+                    if (forceBreakaway)
                     {
-                        pinnedHandles.Dispose();
-                        throw;
-                    }
-                    finally
-                    {
-                        if (pinnedHandlesAddRef)
+                        // When creating a process for another user, if the token's Session Id differs from the caller's and
+                        // the current process is part of a job object, we can only do so if JOB_OBJECT_LIMIT_BREAKAWAY_OK
+                        // was specified by the process that set up the job in the first place. Some vendors like VMware do
+                        // not specify this flag when setting up their job object, therefore we can't run our client/server code.
+                        // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
+                        // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
+                        // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
+                        PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+                        unsafe
                         {
-                            pinnedHandles.DangerousRelease();
+                            EXTENDED_PROCESS_CREATION_FLAG extendedFlag = EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY;
+                            _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, MemoryMarshal.AsBytes(new ReadOnlySpan<int>(&extendedFlag, 1)));
                         }
                     }
-                }
-                else
-                {
-                    pinnedHandles = null;
-                }
 
-                // Add extended flags attribute if force breakaway is requested.
-                if (forceBreakaway)
-                {
-                    // When creating a process for another user, if the token's Session Id differs from the caller's and
-                    // the current process is part of a job object, we can only do so if JOB_OBJECT_LIMIT_BREAKAWAY_OK
-                    // was specified by the process that set up the job in the first place. Some vendors like VMware do
-                    // not specify this flag when setting up their job object, therefore we can't run our client/server code.
-                    // Since Windows 8.1, there is a (highly) undocumented flag to force job breakaway irrespective of the
-                    // flags on the parent job object. We attempt to use this here for circumstances where it's necessary.
-                    // A massive thank you to jborean93 for advising me of this flag's existence so we can make PSADT better.
-                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                    Span<byte> lpValue = stackalloc byte[4]; BinaryPrimitives.WriteInt32LittleEndian(lpValue, (int)EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY);
-                    _ = hAttributeList.Update(PROC_THREAD_ATTRIBUTE.PROC_THREAD_ATTRIBUTE_EXTENDED_FLAGS, lpValue);
+                    // Create the STARTUPINFOEXW structure.
+                    STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
+                    startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
+                    startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
+                    return (startupInfoEx, hAttributeList);
                 }
-
-                // Create the STARTUPINFOEXW structure.
-                STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
-                startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
-                startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
-                return (startupInfoEx, hAttributeList);
+                catch
+                {
+                    pinnedHandles?.Dispose();
+                    throw;
+                }
             }
             catch
             {
                 hAttributeList.Dispose();
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Retrieves a <see cref="Process"/> object that is associated with the specified process identifier.
-        /// </summary>
-        /// <param name="processId">The unique identifier of the process to retrieve.</param>
-        /// <returns>A <see cref="Process"/> object that represents the process with the specified identifier.</returns>
-        private static Process GetProcessFromId(uint processId)
-        {
-            Process process = Process.GetProcessById((int)processId);
-            _ = process; _ = process.Handle;
-            return process;
         }
 
         /// <summary>

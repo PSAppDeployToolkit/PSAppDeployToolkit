@@ -69,40 +69,20 @@ namespace PSADT.TerminalServices
         private static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
         {
             // Internal helper for retrieving session information values.
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
             static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
                 _ = NativeMethods.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);
                 using (pBuffer)
                 {
-                    if (typeof(T) == typeof(string))
-                    {
-                        try
-                        {
-                            return (T)(object)pBuffer.ToStringUni();
-                        }
-                        catch
-                        {
-                            return default;
-                            throw;
-                        }
-                    }
-                    else if (typeof(T) == typeof(ushort))
-                    {
-                        return (T)(object)(ushort)pBuffer.ReadInt16();
-                    }
-                    else if (typeof(T) == typeof(uint))
-                    {
-                        return (T)(object)(uint)pBuffer.ReadInt32();
-                    }
-                    else if (typeof(T) == typeof(WTSINFOEXW))
-                    {
-                        return (T)(object)pBuffer.AsReadOnlyStructure<WTSINFOEXW>();
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"The type {typeof(T).FullName} is not supported by {nameof(GetValue)}.");
-                    }
+                    return typeof(T) == typeof(string)
+                        ? (T?)(object?)pBuffer.AsReadOnlySpan<char>().ToStringUni()
+                        : typeof(T) == typeof(ushort)
+                        ? (T)(object)(ushort)pBuffer.ReadInt16()
+                        : typeof(T) == typeof(uint)
+                        ? (T)(object)(uint)pBuffer.ReadInt32()
+                        : typeof(T) == typeof(WTSINFOEXW)
+                        ? (T)(object)pBuffer.AsReadOnlyStructure<WTSINFOEXW>()
+                        : throw new NotSupportedException($"The type {typeof(T).FullName} is not supported by {nameof(GetValue)}.");
                 }
             }
 

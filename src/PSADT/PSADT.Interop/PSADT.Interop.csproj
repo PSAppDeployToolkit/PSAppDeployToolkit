@@ -41,4 +41,71 @@
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PsadtNativeLock>$(MSBuildProjectDirectory)\obj\.psadt-native-$(Configuration).lock</PsadtNativeLock>
+    <PsadtNativeDone>$(MSBuildProjectDirectory)\obj\.psadt-native-$(Configuration).done</PsadtNativeDone>
+  </PropertyGroup>
+
+  <!--
+    Compile PSADT.Native unconditionally during the net472 inner build.
+    No file-existence checks — always rebuilds, which is correct for both
+    VS iterative development and CI clean builds.
+
+    Hooks into CoreCompile (primary) and GetCopyToOutputDirectoryItems
+    (fallback). CoreCompile is an internal SDK target like
+    GetCopyToOutputDirectoryItems, so it should fire even when the .slnx
+    solution metaproject bypasses Build/Rebuild entry points. MSBuild
+    target memoization ensures the target runs exactly once regardless of
+    how many hooks resolve.
+
+    The CoreCompile hook is critical for -m parallel TFM builds: it runs
+    native compilation BEFORE net472's C# compilation starts (~10-20s),
+    giving it a large head start over the parallel net10.0 build. By the
+    time net10.0 finishes its own C# compilation and reaches the copy
+    step, native DLLs have been available for seconds.
+  -->
+  <Target Name="PsadtNativeCompilation" BeforeTargets="CoreCompile;GetCopyToOutputDirectoryItems" Condition="'$(IsCrossTargetingBuild)' != 'true'">
+    <MakeDir Directories="$(MSBuildProjectDirectory)\obj" />
+    <Exec Command="MKDIR &quot;$(PsadtNativeLock)&quot; 2&gt;NUL &amp;&amp; EXIT /B 0 || EXIT /B 1" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="PsadtNativeLockAcquired" />
+    </Exec>
+    <Exec Condition="'$(PsadtNativeLockAcquired)' == '0'" Command="&quot;$(MSBuildProgramFiles32)\Microsoft Visual Studio\Installer\vswhere.exe&quot; -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe" ConsoleToMSBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="PsadtNativeMsBuildExe" />
+    </Exec>
+    <Error Condition="'$(PsadtNativeLockAcquired)' == '0' and '$(PsadtNativeMsBuildExe)' == ''" Text="Failed to locate Visual Studio MSBuild.exe required to build PSADT.Native.slnx." />
+    <Exec Condition="'$(PsadtNativeLockAcquired)' == '0'" Command="&quot;$(PsadtNativeMsBuildExe)&quot; &quot;$(MSBuildThisFileDirectory)..\..\..\PSADT.Native.slnx&quot; -target:Build -property:Configuration=$(Configuration);Platform=x86 -nologo -nodeReuse:false -m -verbosity:quiet" ConsoleToMSBuild="true" />
+    <Exec Condition="'$(PsadtNativeLockAcquired)' == '0'" Command="&quot;$(PsadtNativeMsBuildExe)&quot; &quot;$(MSBuildThisFileDirectory)..\..\..\PSADT.Native.slnx&quot; -target:Build -property:Configuration=$(Configuration);Platform=x64 -nologo -nodeReuse:false -m -verbosity:quiet" ConsoleToMSBuild="true" />
+    <Exec Condition="'$(PsadtNativeLockAcquired)' == '0'" Command="&quot;$(PsadtNativeMsBuildExe)&quot; &quot;$(MSBuildThisFileDirectory)..\..\..\PSADT.Native.slnx&quot; -target:Build -property:Configuration=$(Configuration);Platform=ARM64 -nologo -nodeReuse:false -m -verbosity:quiet" ConsoleToMSBuild="true" />
+    <Touch Condition="'$(PsadtNativeLockAcquired)' == '0'" Files="$(PsadtNativeDone)" AlwaysCreate="true" />
+    <Exec Condition="'$(PsadtNativeLockAcquired)' != '0'" Command="FOR /L %%i IN (1,1,120) DO IF NOT EXIST $(PsadtNativeDone) PING.EXE -n 2 127.0.0.1" IgnoreExitCode="true" Timeout="120000" StandardOutputImportance="Low" />
+  </Target>
+
+  <!--
+    Fail-fast verification for every inner build. DependsOnTargets ensures
+    PsadtNativeCompilation runs first for net472; for net10.0 the
+    compilation condition is false so only verification executes.
+  -->
+  <Target Name="PsadtNativeVerification" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="PsadtNativeCompilation" Condition="'$(IsCrossTargetingBuild)' != 'true'">
+    <Error Condition="!Exists('..\PSADT.Native\bin\Win32\$(Configuration)\PSADT.Native.dll')" Text="Missing required native asset: ..\PSADT.Native\bin\Win32\$(Configuration)\PSADT.Native.dll" />
+    <Error Condition="!Exists('..\PSADT.Native\bin\x64\$(Configuration)\PSADT.Native.dll')" Text="Missing required native asset: ..\PSADT.Native\bin\x64\$(Configuration)\PSADT.Native.dll" />
+    <Error Condition="!Exists('..\PSADT.Native\bin\ARM64\$(Configuration)\PSADT.Native.dll')" Text="Missing required native asset: ..\PSADT.Native\bin\ARM64\$(Configuration)\PSADT.Native.dll" />
+  </Target>
+
+  <Target Name="PsadtNativeCopyToOutput" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="PsadtNativeVerification" Condition="'$(IsCrossTargetingBuild)' != 'true'">
+    <ItemGroup>
+      <ContentWithTargetPath Include="..\PSADT.Native\bin\Win32\$(Configuration)\PSADT.Native.dll">
+        <TargetPath>X86\PSADT.Native.dll</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </ContentWithTargetPath>
+      <ContentWithTargetPath Include="..\PSADT.Native\bin\x64\$(Configuration)\PSADT.Native.dll">
+        <TargetPath>X64\PSADT.Native.dll</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </ContentWithTargetPath>
+      <ContentWithTargetPath Include="..\PSADT.Native\bin\ARM64\$(Configuration)\PSADT.Native.dll">
+        <TargetPath>Arm64\PSADT.Native.dll</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </ContentWithTargetPath>
+    </ItemGroup>
+  </Target>
 </Project>

@@ -15,7 +15,6 @@ namespace PSADT.Interop
     /// the hIcon field contains a handle that must be destroyed when no longer needed. Call <see cref="Dispose"/>
     /// to release the icon handle.</remarks>
     [SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Interop struct requires explicit field layout.")]
-    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Matching native API naming convention.")]
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal struct SHSTOCKICONINFO : IDisposable
     {
@@ -33,6 +32,7 @@ namespace PSADT.Interop
         /// Gets the handle to the icon. Must be destroyed with DestroyIcon when no longer needed.
         /// Call <see cref="Dispose"/> to release the icon handle.
         /// </summary>
+        [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Matching native API naming convention.")]
         internal readonly HICON hIcon => _hIcon;
 
         /// <summary>

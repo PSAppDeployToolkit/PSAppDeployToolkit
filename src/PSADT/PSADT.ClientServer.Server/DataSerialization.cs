@@ -24,7 +24,6 @@ namespace PSADT.ClientServer
         /// <returns>A byte array containing the binary XML representation of the object.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="obj"/> is null.</exception>
         /// <exception cref="SerializationException">Thrown if serialization fails.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         public static byte[] SerializeToBytes<T>(T obj)
         {
             ArgumentNullException.ThrowIfNull(obj);
@@ -37,11 +36,9 @@ namespace PSADT.ClientServer
             {
                 GetSerializer(typeof(T)).WriteObject(writer, obj);
             }
-            if (ms.ToArray() is not { Length: > 0 } result)
-            {
-                throw new SerializationException("Serialization returned an empty result.");
-            }
-            return result;
+            return ms.ToArray() is not { Length: > 0 } result
+                ? throw new SerializationException("Serialization returned an empty result.")
+                : result;
         }
 
         /// <summary>
@@ -135,7 +132,6 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than 0.</exception>
         /// <exception cref="ArgumentNullException">Thrown if bytes is null or if the length of bytes is less than or equal to offset.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization returns a null result.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "Enforcing this rule just makes a mess.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
             ArgumentNullException.ThrowIfNull(bytes);
@@ -147,15 +143,11 @@ namespace PSADT.ClientServer
             bool deserializingException = typeof(Exception).IsAssignableFrom(type);
             using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
             using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
-            if (GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result)
-            {
-                throw new SerializationException("Deserialization returned a null result.");
-            }
-            if (deserializingException && result is not Exception)
-            {
-                throw new SerializationException($"Deserialization expected an Exception type but got {result.GetType().FullName}.");
-            }
-            return result;
+            return GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result
+                ? throw new SerializationException("Deserialization returned a null result.")
+                : deserializingException && result is not Exception
+                ? throw new SerializationException($"Deserialization expected an Exception type but got {result.GetType().FullName}.")
+                : result;
         }
 
         /// <summary>

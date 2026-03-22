@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="src/PSADT/PSADT.Native/PSADT.Native.vcxproj" Id="d7cbbf4b-5c65-4e37-a2a0-5c7ea433d8b3" />
+</Solution>

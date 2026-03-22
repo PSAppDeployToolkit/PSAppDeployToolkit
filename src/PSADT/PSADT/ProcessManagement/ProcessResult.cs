@@ -24,7 +24,7 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        internal ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(launchInfo, commandLine, exitCode, stdOut, stdErr, interleaved)
+        internal ProcessResult(Process process, ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string>? stdOut, IReadOnlyCollection<string>? stdErr, IReadOnlyCollection<string>? interleaved) : this(launchInfo, commandLine, exitCode, stdOut, stdErr, interleaved)
         {
             Process = process;
         }
@@ -38,7 +38,7 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        internal ProcessResult(ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode, stdOut, stdErr, interleaved)
+        internal ProcessResult(ProcessLaunchInfo launchInfo, string commandLine, int exitCode, IReadOnlyCollection<string>? stdOut, IReadOnlyCollection<string>? stdErr, IReadOnlyCollection<string>? interleaved) : this(exitCode, stdOut, stdErr, interleaved)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
             LaunchInfo = launchInfo;
@@ -52,11 +52,20 @@ namespace PSADT.ProcessManagement
         /// <param name="stdOut">The standard output of the process.</param>
         /// <param name="stdErr">The standard error output of the process.</param>
         /// <param name="interleaved">The interleaved output of the process.</param>
-        public ProcessResult(int exitCode, IReadOnlyCollection<string> stdOut, IReadOnlyCollection<string> stdErr, IReadOnlyCollection<string> interleaved) : this(exitCode)
+        public ProcessResult(int exitCode, IReadOnlyCollection<string>? stdOut, IReadOnlyCollection<string>? stdErr, IReadOnlyCollection<string>? interleaved) : this(exitCode)
         {
-            StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
-            StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
-            Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
+            if (stdOut?.Count > 0)
+            {
+                StdOut = MiscUtilities.TrimLeadingTrailingLines(stdOut);
+            }
+            if (stdErr?.Count > 0)
+            {
+                StdErr = MiscUtilities.TrimLeadingTrailingLines(stdErr);
+            }
+            if (interleaved?.Count > 0)
+            {
+                Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
+            }
         }
 
         /// <summary>

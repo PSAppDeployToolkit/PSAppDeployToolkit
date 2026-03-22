@@ -30,7 +30,7 @@ function Remove-ADTHashtableNullOrEmptyValues
         Returns a new hashtable with only key/values where the value isn't null.
 
     .EXAMPLE
-        Remove-ADTHashtableNullOrEmptyValues -Hashtable
+        Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ Key1 = 'Value1'; Key2 = $null }
 
         Returns a new hashtable with only key/values where the value isn't null.
 
@@ -61,17 +61,16 @@ function Remove-ADTHashtableNullOrEmptyValues
     process
     {
         # Build a new hashtable with only valid values and then return it to the caller.
-        $obj = $Hashtable.Clone(); foreach ($section in $($obj.GetEnumerator()))
+        $obj = @{}; foreach ($section in $Hashtable.GetEnumerator())
         {
             # Recursively remove null/empty/whitespace keys from the bottom up, if the Recurse parameter is provided.
             if ($section.Value -is [System.Collections.Hashtable] -and $Recurse)
             {
-                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value
+                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value -Recurse:$Recurse
             }
-
-            if ([System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
+            if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
             {
-                $obj.Remove($section.Key)
+                $obj.Add($section.Key, $section.Value)
             }
         }
         return $obj

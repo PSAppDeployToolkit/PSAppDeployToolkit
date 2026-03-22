@@ -239,7 +239,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Miscellaneous environment information.
-            InvalidFileNameCharsRegexPattern = new Regex($"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()))}]", RegexOptions.Compiled);
+            InvalidFileNameCharsRegexPattern = new($"[{Regex.Escape(new(Path.GetInvalidFileNameChars()))}]", RegexOptions.Compiled);
         }
 
         /// <summary>
