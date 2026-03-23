@@ -74,17 +74,27 @@ MyKey2=MyValue2
 
     Context 'Input Validation' {
         It 'Should verify that FilePath is not null, empty or whitespace' {
-            { Set-ADTIniSection -FilePath $null -Section 'Anything' -Content @{} } | Should -Throw
-            { Set-ADTIniSection -FilePath '' -Section 'Anything' -Content @{} } | Should -Throw
-            { Set-ADTIniSection -FilePath ' ' -Section 'Anything' -Content @{} } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Set-ADTIniSection'
+            }
+            { Set-ADTIniSection -FilePath $null -Section 'Anything' -Content @{} } | Should @shouldParams
+            { Set-ADTIniSection -FilePath '' -Section 'Anything' -Content @{} } | Should @shouldParams
+            { Set-ADTIniSection -FilePath ' ' -Section 'Anything' -Content @{} } | Should @shouldParams
         }
         It 'Should verify that FilePath exists if Force is not specified' {
-            { Set-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Content @{} } | Should -Throw
+            { Set-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Content @{} } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Set-ADTIniSection'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
-            { Set-ADTIniSection -FilePath $IniPath -Section $null -Content @{} } | Should -Throw
-            { Set-ADTIniSection -FilePath $IniPath -Section '' -Content @{} } | Should -Throw
-            { Set-ADTIniSection -FilePath $IniPath -Section ' ' -Content @{} } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Set-ADTIniSection'
+            }
+            { Set-ADTIniSection -FilePath $IniPath -Section $null -Content @{} } | Should @shouldParams
+            { Set-ADTIniSection -FilePath $IniPath -Section '' -Content @{} } | Should @shouldParams
+            { Set-ADTIniSection -FilePath $IniPath -Section ' ' -Content @{} } | Should @shouldParams
         }
         It 'Should accept hashtable input' {
             $IniSection = @{
@@ -107,7 +117,7 @@ MyKey2=MyValue2
             { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content @{} } | Should -Not -Throw
         }
         It 'Should throw if Content is not IDictionary' {
-            { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content @('Dude', "Where's", 'My', 'Dictionary') } | Should -Throw
+            { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content @('Dude', "Where's", 'My', 'Dictionary') } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentTransformationError,Set-ADTIniSection'
         }
         It 'Should accept null Content' {
             { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content $null } | Should -Not -Throw
@@ -116,7 +126,7 @@ MyKey2=MyValue2
             $IniContent = @{
                 'ArrayKey' = @(1..10)
             }
-            { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content $IniContent } | Should -Throw
+            { Set-ADTIniSection -FilePath $IniPath -Section 'MySection' -Content $IniContent } | Should -Throw -ExceptionType ([System.Management.Automation.MethodInvocationException]) -ErrorId 'ArgumentException,Set-ADTIniSection'
         }
     }
 }

@@ -34,17 +34,27 @@ MyKey2=MyValue2
 
     Context 'Input Validation' {
         It 'Should verify that FilePath is not null, empty or whitespace' {
-            { Get-ADTIniSection -FilePath $null -Section 'Anything' } | Should -Throw
-            { Get-ADTIniSection -FilePath '' -Section 'Anything' } | Should -Throw
-            { Get-ADTIniSection -FilePath ' ' -Section 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTIniSection'
+            }
+            { Get-ADTIniSection -FilePath $null -Section 'Anything' } | Should @shouldParams
+            { Get-ADTIniSection -FilePath '' -Section 'Anything' } | Should @shouldParams
+            { Get-ADTIniSection -FilePath ' ' -Section 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists' {
-            { Get-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw
+            { Get-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage "The specified file does not exist.*" -ErrorId 'InvalidFilePathParameterValue,Get-ADTIniSection'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
-            { Get-ADTIniSection -FilePath $IniPath -Section $null } | Should -Throw
-            { Get-ADTIniSection -FilePath $IniPath -Section '' } | Should -Throw
-            { Get-ADTIniSection -FilePath $IniPath -Section ' ' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTIniSection'
+            }
+            { Get-ADTIniSection -FilePath $IniPath -Section $null } | Should @shouldParams
+            { Get-ADTIniSection -FilePath $IniPath -Section '' } | Should @shouldParams
+            { Get-ADTIniSection -FilePath $IniPath -Section ' ' } | Should @shouldParams
         }
     }
 }

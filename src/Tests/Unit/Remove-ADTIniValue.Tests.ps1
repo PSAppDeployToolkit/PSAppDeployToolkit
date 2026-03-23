@@ -26,23 +26,38 @@ MyOtherKey=MyOtherValue
 
     Context 'Input Validation' {
         It 'Should verify that FilePath is not null, empty or whitespace' {
-            { Remove-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' } | Should -Throw
-            { Remove-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' } | Should -Throw
-            { Remove-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Remove-ADTIniValue'
+            }
+            { Remove-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' } | Should @shouldParams
+            { Remove-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' } | Should @shouldParams
+            { Remove-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists' {
-            { Remove-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' } | Should -Throw
+            { Remove-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage 'The specified file does not exist.*' -ErrorId 'InvalidFilePathParameterValue,Remove-ADTIniValue'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
-            { Remove-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' } | Should -Throw
-            { Remove-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' } | Should -Throw
-            { Remove-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Remove-ADTIniValue'
+            }
+            { Remove-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' } | Should @shouldParams
+            { Remove-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' } | Should @shouldParams
+            { Remove-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' } | Should @shouldParams
 
         }
         It 'Should verify that Key is not null, empty or whitespace' {
-            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null } | Should -Throw
-            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' } | Should -Throw
-            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Remove-ADTIniValue'
+            }
+            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null } | Should @shouldParams
+            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' } | Should @shouldParams
+            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' } | Should @shouldParams
         }
     }
 }

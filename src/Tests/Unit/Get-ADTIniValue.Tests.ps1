@@ -38,22 +38,37 @@ MyWhitespaceKey=
 
     Context 'Input Validation' {
         It 'Should verify that FilePath is not null, empty or whitespace' {
-            { Get-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' } | Should -Throw
-            { Get-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' } | Should -Throw
-            { Get-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTIniValue'
+            }
+            { Get-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' } | Should @shouldParams
+            { Get-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' } | Should @shouldParams
+            { Get-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists' {
-            { Get-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' } | Should -Throw
+            { Get-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage "The specified file does not exist.*" -ErrorId 'InvalidFilePathParameterValue,Get-ADTIniValue'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
-            { Get-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' } | Should -Throw
-            { Get-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' } | Should -Throw
-            { Get-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTIniValue'
+            }
+            { Get-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' } | Should @ShouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' } | Should @ShouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' } | Should @ShouldParams
         }
         It 'Should verify that Key is not null, empty or whitespace' {
-            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null } | Should -Throw
-            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' } | Should -Throw
-            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTIniValue'
+            }
+            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null } | Should @shouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' } | Should @shouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' } | Should @shouldParams
         }
     }
 }

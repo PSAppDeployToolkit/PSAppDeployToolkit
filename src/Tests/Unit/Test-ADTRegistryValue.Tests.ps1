@@ -23,19 +23,33 @@ Describe 'Test-ADTRegistryValue' {
 
     Context 'Input Validation' {
         It 'Should verify that Key is not null, empty or whitespace' {
-            { Test-ADTRegistryValue -Key $null -Name 'Anything' } | Should -Throw
-            { Test-ADTRegistryValue -Key '' -Name 'Anything' } | Should -Throw
-            { Test-ADTRegistryValue -Key ' ' -Name 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Test-ADTRegistryValue'
+            }
+            { Test-ADTRegistryValue -Key $null -Name 'Anything' } | Should @shouldParams
+            { Test-ADTRegistryValue -Key '' -Name 'Anything' } | Should @shouldParams
+            { Test-ADTRegistryValue -Key ' ' -Name 'Anything' } | Should @shouldParams
         }
         It 'Should verify that Name is not null, empty or whitespace' {
-            { Test-ADTRegistryValue -Key 'Anything' -Name $null } | Should -Throw
-            { Test-ADTRegistryValue -Key 'Anything' -Name '' } | Should -Throw
-            { Test-ADTRegistryValue -Key 'Anything' -Name ' ' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Test-ADTRegistryValue'
+            }
+            { Test-ADTRegistryValue -Key 'Anything' -Name $null } | Should @shouldParams
+            { Test-ADTRegistryValue -Key 'Anything' -Name '' } | Should @shouldParams
+            { Test-ADTRegistryValue -Key 'Anything' -Name ' ' } | Should @shouldParams
         }
         It 'Should verify that SID is not null, empty or whitespace' {
-            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID $null } | Should -Throw
-            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID '' } | Should -Throw
-            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID ' ' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+            }
+            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTRegistryValue'
+            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Test-ADTRegistryValue'
+            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID ' ' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Test-ADTRegistryValue'
         }
     }
 }
