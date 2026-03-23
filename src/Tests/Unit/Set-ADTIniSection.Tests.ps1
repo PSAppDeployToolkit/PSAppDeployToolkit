@@ -81,7 +81,7 @@ MyKey2=MyValue2
             }
             { Set-ADTIniSection -FilePath $null -Section 'Anything' -Content @{} } | Should @shouldParams
             { Set-ADTIniSection -FilePath '' -Section 'Anything' -Content @{} } | Should @shouldParams
-            { Set-ADTIniSection -FilePath ' ' -Section 'Anything' -Content @{} } | Should @shouldParams
+            { Set-ADTIniSection -FilePath " `f`n`r`t`v" -Section 'Anything' -Content @{} } | Should @shouldParams
         }
         It 'Should verify that FilePath exists if Force is not specified' {
             { Set-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Content @{} } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Set-ADTIniSection'
@@ -94,7 +94,7 @@ MyKey2=MyValue2
             }
             { Set-ADTIniSection -FilePath $IniPath -Section $null -Content @{} } | Should @shouldParams
             { Set-ADTIniSection -FilePath $IniPath -Section '' -Content @{} } | Should @shouldParams
-            { Set-ADTIniSection -FilePath $IniPath -Section ' ' -Content @{} } | Should @shouldParams
+            { Set-ADTIniSection -FilePath $IniPath -Section " `f`n`r`t`v" -Content @{} } | Should @shouldParams
         }
         It 'Should accept hashtable input' {
             $IniSection = @{

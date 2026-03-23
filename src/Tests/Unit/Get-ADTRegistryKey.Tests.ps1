@@ -98,7 +98,7 @@ Describe 'Get-ADTRegistryKey' {
             }
             { Get-ADTRegistryKey -Path $null } | Should @shouldParams
             { Get-ADTRegistryKey -Path '' } | Should @shouldParams
-            { Get-ADTRegistryKey -Path ' ' } | Should @shouldParams
+            { Get-ADTRegistryKey -Path " `f`n`r`t`v" } | Should @shouldParams
         }
         It 'Should verify that LiteralPath is not null, empty or whitespace' {
             $shouldParams = @{
@@ -108,7 +108,7 @@ Describe 'Get-ADTRegistryKey' {
             }
             { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name $null } | Should @shouldParams
             { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name '' } | Should @shouldParams
-            { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name ' ' } | Should @shouldParams
+            { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name " `f`n`r`t`v" } | Should @shouldParams
         }
         It 'Should verify that Name is not null, empty or whitespace' {
             $shouldParams = @{
@@ -118,7 +118,7 @@ Describe 'Get-ADTRegistryKey' {
             }
             { Get-ADTRegistryKey -Path $TestRegistry -Name $null } | Should @shouldParams
             { Get-ADTRegistryKey -Path $TestRegistry -Name '' } | Should @shouldParams
-            { Get-ADTRegistryKey -Path $TestRegistry -Name ' ' } | Should @shouldParams
+            { Get-ADTRegistryKey -Path $TestRegistry -Name " `f`n`r`t`v" } | Should @shouldParams
         }
         It 'Should verify that SID is not null, empty or whitespace' {
             $shouldParams = @{
@@ -127,7 +127,7 @@ Describe 'Get-ADTRegistryKey' {
             }
             { Get-ADTRegistryKey -LiteralPath $TestRegistry -SID $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTRegistryKey'
             { Get-ADTRegistryKey -LiteralPath $TestRegistry -SID '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Get-ADTRegistryKey'
-            { Get-ADTRegistryKey -LiteralPath $TestRegistry -SID ' ' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Get-ADTRegistryKey'
+            { Get-ADTRegistryKey -LiteralPath $TestRegistry -SID " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Get-ADTRegistryKey'
         }
     }
 }

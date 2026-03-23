@@ -55,11 +55,11 @@ Describe 'Get-ADTServiceStartMode' {
             }
             if ($automaticService)
             {
-				Get-ADTServiceStartMode -Service $automaticService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
+                Get-ADTServiceStartMode -Service $automaticService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
             }
             if ($delayedAutomaticService)
             {
-				Get-ADTServiceStartMode -Service $delayedAutomaticService | Should -Be 'Automatic (Delayed Start)'
+                Get-ADTServiceStartMode -Service $delayedAutomaticService | Should -Be 'Automatic (Delayed Start)'
             }
             if ($manualService)
             {
@@ -80,7 +80,7 @@ Describe 'Get-ADTServiceStartMode' {
             }
             { Get-ADTServiceStartMode -Service $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
             { Get-ADTServiceStartMode -Service '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Get-ADTServiceStartMode'
-            { Get-ADTServiceStartMode -Service ' ' } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -Service " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
         }
     }
 }

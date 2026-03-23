@@ -58,7 +58,7 @@ Describe 'Test-ADTServiceExists' {
             }
             { Test-ADTServiceExists -Name $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
             { Test-ADTServiceExists -Name '' } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
-            { Test-ADTServiceExists -Name ' ' } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
+            { Test-ADTServiceExists -Name " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
         }
     }
 }

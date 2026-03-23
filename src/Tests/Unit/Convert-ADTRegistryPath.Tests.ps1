@@ -35,7 +35,7 @@ Describe 'Convert-ADTRegistryPath' {
             }
             { Convert-ADTRegistryPath -Key $null } | Should @shouldParams
             { Convert-ADTRegistryPath -Key '' } | Should @shouldParams
-            { Convert-ADTRegistryPath -Key ' ' } | Should @shouldParams
+            { Convert-ADTRegistryPath -Key " `f`n`r`t`v" } | Should @shouldParams
         }
         It 'Should verify that SID is not null, empty or whitespace' {
             $shouldParams = @{
@@ -44,7 +44,7 @@ Describe 'Convert-ADTRegistryPath' {
             }
             { Convert-ADTRegistryPath -Key 'Anything' -SID $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Convert-ADTRegistryPath'
             { Convert-ADTRegistryPath -Key 'Anything' -SID '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Convert-ADTRegistryPath'
-            { Convert-ADTRegistryPath -Key 'Anything' -SID ' ' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Convert-ADTRegistryPath'
+            { Convert-ADTRegistryPath -Key 'Anything' -SID " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Convert-ADTRegistryPath'
         }
         It 'Should verify that the registry hive is HKEY_CURRENT_USER when the -SID parameter is provided' {
             $shouldParams = @{
