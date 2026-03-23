@@ -194,7 +194,7 @@ namespace PSADT.WindowsInstaller
                 {
                     throw new InvalidOperationException("The specified temp MSI path already exists. Please provide a non-existing path or allow the method to create a temp file automatically.");
                 }
-                _ = Directory.CreateDirectory(Path.GetDirectoryName(tempMsiPath)!);
+                _ = Directory.CreateDirectory(Path.GetDirectoryName(tempMsiPath) ?? throw new InvalidOperationException("Failed to get directory name for temp MSI path."));
                 deleteTempMsi = false;
             }
             else
@@ -211,7 +211,7 @@ namespace PSADT.WindowsInstaller
                 using MsiCloseHandleSafeHandle hDatabaseOrig = OpenDatabase(msiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
 
                 // Open temp in transact mode so we can modify + commit.
-                using (MsiCloseHandleSafeHandle hDatabaseTemp = !string.IsNullOrWhiteSpace(applyTransformPath) ? OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT, [applyTransformPath!]) : OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
+                using (MsiCloseHandleSafeHandle hDatabaseTemp = applyTransformPath is not null && !string.IsNullOrWhiteSpace(applyTransformPath) ? OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT, [applyTransformPath]) : OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
                 {
                     // One view, executed once, then assign repeatedly. No string interpolation of keys/values; we use records.
                     _ = NativeMethods.MsiDatabaseOpenView(hDatabaseTemp, "SELECT `Property`,`Value` FROM `Property`", out MsiCloseHandleSafeHandle hView);
@@ -245,7 +245,7 @@ namespace PSADT.WindowsInstaller
                 // Remove existing MST if present.
                 if (!File.Exists(newTransformPath))
                 {
-                    _ = Directory.CreateDirectory(Path.GetDirectoryName(newTransformPath)!);
+                    _ = Directory.CreateDirectory(Path.GetDirectoryName(newTransformPath) ?? throw new InvalidOperationException("Failed to get directory name for new transform path."));
                 }
                 else
                 {
