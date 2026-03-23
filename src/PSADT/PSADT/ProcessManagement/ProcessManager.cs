@@ -494,9 +494,10 @@ namespace PSADT.ProcessManagement
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
-            CreateProcessUsingTokenStatus canUseCreateProcessAsUser = CanUseCreateProcessAsUser(isCallerToken);
-            bool forceBreakaway = canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
-            if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK || forceBreakaway || handlesToInherit.Count > 0)
+            CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken);
+            bool forceBreakaway = createProcessAsUserAbility == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
+            bool canCreateProcessAsUser = createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK;
+            if (canCreateProcessAsUser || forceBreakaway || handlesToInherit.Count > 0)
             {
                 // Ensure necessary privileges are enabled.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
@@ -513,7 +514,7 @@ namespace PSADT.ProcessManagement
                         return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, in startupInfoEx, out pi);
                     }
                 }
-                else if (canUseCreateProcessAsUser == CreateProcessUsingTokenStatus.OK)
+                else if (canCreateProcessAsUser)
                 {
                     // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
                     // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
@@ -526,13 +527,14 @@ namespace PSADT.ProcessManagement
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}");
+                    throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}");
                 }
             }
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
-            CreateProcessUsingTokenStatus canUseCreateProcessWithToken = CanUseCreateProcessWithToken(isCallerToken);
-            if (canUseCreateProcessWithToken == CreateProcessUsingTokenStatus.OK && handlesToInherit.Count == 0)
+            CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken);
+            bool canCreateProcessWithToken = createProcessWithTokenAbility == CreateProcessUsingTokenStatus.OK;
+            if (canCreateProcessWithToken && handlesToInherit.Count == 0)
             {
                 // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
                 // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
@@ -546,7 +548,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Neither CreateProcessAsUser() nor CreateProcessWithToken() can be used.
-            throw new InvalidOperationException($"Unable to create a new process via token.{(canUseCreateProcessAsUser != CreateProcessUsingTokenStatus.OK && !forceBreakaway ? $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessAsUser]}" : null)}{(canUseCreateProcessWithToken != CreateProcessUsingTokenStatus.OK ? $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[canUseCreateProcessWithToken]}" : null)}");
+            throw new InvalidOperationException($"Unable to create a new process via token.{(!canCreateProcessAsUser && !forceBreakaway ? $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}" : null)}{(!canCreateProcessWithToken ? $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}" : null)}");
         }
 
         /// <summary>
