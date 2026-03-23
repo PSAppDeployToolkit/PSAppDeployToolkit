@@ -97,7 +97,7 @@ namespace PSADT.UserInterface.DialogOptions
             }
             if (buttonLeftText is null && buttonMiddleText is null && buttonRightText is null)
             {
-                throw new InvalidOperationException("At least one button must be defined.");
+                throw new NotSupportedException("At least one button must be defined.");
             }
 
             // Assign remaining properties.

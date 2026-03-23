@@ -106,7 +106,7 @@ namespace PSADT.Utilities
         /// determined, returns the file name without its extension.</returns>
         /// <exception cref="ArgumentNullException">Thrown if fontPath is null, empty, or consists only of whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the file specified by fontPath does not exist.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the font file format is not supported or if the font file contains no font faces.</exception>
+        /// <exception cref="FileFormatException">Thrown if the font file format is not supported or if the font file contains no font faces.</exception>
         public static string GetFontTitle(string fontPath)
         {
             // Create factory and font file reference.
@@ -124,7 +124,7 @@ namespace PSADT.Utilities
                     }
                     if (faceCount == 0)
                     {
-                        throw new InvalidOperationException("Font file contains no faces.");
+                        throw new FileFormatException("Font file contains no faces.");
                     }
 
                     // Iterate faces (handles .ttc/.otc) to find the font title.

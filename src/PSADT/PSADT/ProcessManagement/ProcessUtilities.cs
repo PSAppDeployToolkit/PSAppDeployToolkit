@@ -482,14 +482,14 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The identifier of the process whose image file path is to be retrieved.</param>
         /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to Win32 file system paths.</param>
         /// <returns>The Win32-formatted image file path of the specified process.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the method is called from a 32-bit process on a 64-bit operating system, if the image name query
+        /// <exception cref="NotSupportedException">Thrown if the method is called from a 32-bit process on a 64-bit operating system, if the image name query
         /// returns a null or empty result, or if the retrieved image name is not a valid NT path.</exception>
         internal static FileInfo QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             // Throw if we're a 32-bit process on a 64-bit system as we cannot query the image name in that case.
             if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture)
             {
-                throw new InvalidOperationException("A 32-bit process cannot call NtQuerySystemInformation() with the [SystemProcessIdInformation] information class on a 64-bit system.");
+                throw new NotSupportedException("A 32-bit process cannot call NtQuerySystemInformation() with the [SystemProcessIdInformation] information class on a 64-bit system.");
             }
 
             // Set up initial buffer that we need to query the process information. We must clear the buffer ourselves as stackalloc buffers are undefined.
@@ -516,7 +516,7 @@ namespace PSADT.ProcessManagement
             // Throw if the value doesn't start with \Device\ (indicating an NT path).
             if (!imageName.StartsWith(@"\Device\", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"The image name [{imageName}] for process ID [{processId}] is not a valid NT path.");
+                throw new FormatException($"The image name [{imageName}] for process ID [{processId}] is not a valid NT path.");
             }
 
             // Return the path in the Win32 path format as the NT device path is inappropriate for most uses.
@@ -534,12 +534,12 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT device names (e.g., "\Device\HarddiskVolume1") to their corresponding
         /// Win32 drive letters (e.g., "C:").</param>
         /// <returns>A string containing the Win32 path equivalent of the specified NT device path.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the NT device name derived from the specified path does not exist in the lookup table.</exception>
+        /// <exception cref="FormatException">Thrown if the NT device name derived from the specified path does not exist in the lookup table.</exception>
         internal static string TranslateNtPathToWin32Path(string ntPath, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             string ntDeviceName = $@"\{string.Join(@"\", ntPath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
             return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
-                ? throw new InvalidOperationException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from NT path [{ntPath}].")
+                ? throw new FormatException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from NT path [{ntPath}].")
                 : ntPath.Replace(ntDeviceName, driveLetter);
         }
 
@@ -570,7 +570,6 @@ namespace PSADT.ProcessManagement
         /// rights for the requested information.</param>
         /// <param name="processInfoClass">The type of process information to query, specifying how the image file name should be retrieved.</param>
         /// <returns>A string containing the image file name of the specified process.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the query returns a null or empty result for the specified process information class.</exception>
         private static string QueryProcessImageFileNameCommon(SafeHandle hProcess, PROCESSINFOCLASS processInfoClass)
         {
             // Determine required buffer size.

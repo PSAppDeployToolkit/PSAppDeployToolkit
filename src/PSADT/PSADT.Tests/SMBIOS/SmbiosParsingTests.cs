@@ -83,12 +83,12 @@ namespace PSADT.Tests.SMBIOS
         }
 
         /// <summary>
-        /// Verifies that ParseStructure throws an InvalidOperationException when multiple structures of the specified
+        /// Verifies that ParseStructure throws an NotSupportedException when multiple structures of the specified
         /// type are found in the SMBIOS data.
         /// </summary>
         /// <remarks>This test ensures that the ParseStructure method enforces the expectation that only
         /// one structure of a given type should exist in the provided SMBIOS buffer. If more than one matching
-        /// structure is present, the method is expected to throw an InvalidOperationException.</remarks>
+        /// structure is present, the method is expected to throw an NotSupportedException.</remarks>
         [Fact]
         public void ParseStructure_ThrowsWhenMultipleStructuresFound()
         {
@@ -96,7 +96,7 @@ namespace PSADT.Tests.SMBIOS
                 new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x1000, []),
                 new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x1001, [])
             );
-            _ = Assert.Throws<InvalidOperationException>(() => SmbiosParsing.ParseStructure(buffer, SmbiosType.EndOfTable, FakeStructureParser));
+            _ = Assert.Throws<NotSupportedException>(() => SmbiosParsing.ParseStructure(buffer, SmbiosType.EndOfTable, FakeStructureParser));
         }
 
         /// <summary>

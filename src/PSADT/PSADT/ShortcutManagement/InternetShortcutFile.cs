@@ -470,7 +470,7 @@ namespace PSADT.ShortcutManagement
                         : vt == VARENUM.VT_UI4
                         ? propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal != 0
                         : vt != VARENUM.VT_EMPTY
-                        ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
+                        ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
                         : null;
                 }
                 finally
@@ -565,7 +565,7 @@ namespace PSADT.ShortcutManagement
                     }
                     if (vt != VARENUM.VT_LPWSTR)
                     {
-                        throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
+                        throw new FileFormatException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
                     }
                     PWSTR pwszVal = propertyValues[0].Anonymous.Anonymous.Anonymous.pwszVal;
                     if (pwszVal.IsNull())
@@ -655,7 +655,7 @@ namespace PSADT.ShortcutManagement
                         : vt == VARENUM.VT_UI4
                         ? (int)propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal
                         : vt != VARENUM.VT_EMPTY
-                        ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_I4 or VT_UI4.")
+                        ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_I4 or VT_UI4.")
                         : null;
                 }
                 finally
@@ -700,23 +700,23 @@ namespace PSADT.ShortcutManagement
                     if (vt == VARENUM.VT_I2)
                     {
                         short value = propertyValues[0].Anonymous.Anonymous.Anonymous.iVal;
-                        return value >= 0 ? (ushort)value : throw new InvalidOperationException("Property has a negative VT_I2 value, expected an unsigned 16-bit value.");
+                        return value >= 0 ? (ushort)value : throw new FileFormatException("Property has a negative VT_I2 value, expected an unsigned 16-bit value.");
                     }
                     if (vt == VARENUM.VT_I4)
                     {
                         int value = propertyValues[0].Anonymous.Anonymous.Anonymous.lVal;
                         return value is >= ushort.MinValue and <= ushort.MaxValue
                             ? (ushort)value
-                            : throw new InvalidOperationException($"Property value {value} is outside the UInt16 range.");
+                            : throw new FileFormatException($"Property value {value} is outside the UInt16 range.");
                     }
                     if (vt == VARENUM.VT_UI4)
                     {
                         uint value = propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal;
                         return value <= ushort.MaxValue
                             ? (ushort)value
-                            : throw new InvalidOperationException($"Property value {value} is outside the UInt16 range.");
+                            : throw new FileFormatException($"Property value {value} is outside the UInt16 range.");
                     }
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI2, VT_I2, VT_I4, or VT_UI4.");
+                    throw new FileFormatException($"Property has unexpected type {vt}, expected VT_UI2, VT_I2, VT_I4, or VT_UI4.");
                 }
                 finally
                 {

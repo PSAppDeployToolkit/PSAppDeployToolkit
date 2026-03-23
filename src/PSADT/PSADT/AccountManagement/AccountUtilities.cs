@@ -33,7 +33,7 @@ namespace PSADT.AccountManagement
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
                 CallerGroups = new ReadOnlyCollection<SecurityIdentifier>(identity.Groups?.Select(static g => (SecurityIdentifier)g) is IEnumerable<SecurityIdentifier> callerGroups ? [.. callerGroups] : []);
                 CallerIsServiceAccount = CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null));
-                CallerSid = identity.User ?? throw new InvalidOperationException("Current Windows identity does not have a user SID.");
+                CallerSid = identity.User ?? throw new NotSupportedException("Current Windows identity does not have a user SID.");
                 CallerUsername = new(identity.Name);
             }
 

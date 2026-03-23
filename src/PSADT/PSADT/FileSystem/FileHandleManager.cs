@@ -165,7 +165,7 @@ namespace PSADT.FileSystem
                     string objectName;
                     using (fileDupHandle)
                     {
-                        SafePinnedGCHandle objectBuffer = threadBuffers.Value ?? throw new InvalidOperationException("Thread-local object buffer was not initialized.");
+                        SafePinnedGCHandle objectBuffer = threadBuffers.Value ?? throw new InvalidProgramException("Thread-local object buffer was not initialized.");
                         try
                         {
                             // Handle the result of the NtQueryObject call; returning early on certain expected failure codes.

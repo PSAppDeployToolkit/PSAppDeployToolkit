@@ -32,13 +32,13 @@ namespace PSADT.Interop.Extensions
         /// <param name="span">The read-only span of characters to convert. The span must represent a valid null-terminated Unicode string.</param>
         /// <returns>A string representation of the provided span. Returns null if the span does not contain a valid
         /// null-terminated Unicode string.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the provided span does not contain a valid null-terminated Unicode string.</exception>
+        /// <exception cref="FormatException">Thrown if the provided span does not contain a valid null-terminated Unicode string.</exception>
         internal static string? ToStringUni(this ReadOnlySpan<char> span)
         {
             int nullTerminator = span.IndexOf('\0');
             if (nullTerminator == -1)
             {
-                throw new InvalidOperationException("The provided span does not contain a null-terminated Unicode string.");
+                throw new FormatException("The provided span does not contain a null-terminated Unicode string.");
             }
             ReadOnlySpan<char> stringSpan = span.Slice(0, nullTerminator).Trim();
             return !stringSpan.IsWhiteSpace() ? stringSpan.ToString() : null;

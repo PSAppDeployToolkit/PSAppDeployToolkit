@@ -204,7 +204,7 @@ namespace PSADT.ProcessManagement
             ref readonly IMAGE_DOS_HEADER dosHeader = ref dosHeaderBuf.AsReadOnlyStructure<IMAGE_DOS_HEADER>();
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
-                throw new InvalidOperationException("The specified process does not have a valid PE header.");
+                throw new BadImageFormatException("The specified process does not have a valid PE header.");
             }
 
             // Read the signature to confirm we've got a valid NT image.
@@ -214,7 +214,7 @@ namespace PSADT.ProcessManagement
             ref readonly uint peSignature = ref peSignatureBuf.AsReadOnlyStructure<uint>();
             if (peSignature != PInvoke.IMAGE_NT_SIGNATURE)
             {
-                throw new InvalidOperationException("The specified process does not have a valid NT header signature.");
+                throw new BadImageFormatException("The specified process does not have a valid NT header signature.");
             }
 
             // Read the magic from the IMAGE_OPTIONAL_HEADER to know if it's 32/64-bit.
@@ -250,12 +250,12 @@ namespace PSADT.ProcessManagement
             }
             else
             {
-                throw new InvalidOperationException("The specified process does not have a valid optional header magic number.");
+                throw new BadImageFormatException("The specified process does not have a valid optional header magic number.");
             }
 
             // Validate the resource directory size.
             return resourceSize == 0
-                ? throw new InvalidOperationException("The specified process does not have a valid resource directory size.")
+                ? throw new BadImageFormatException("The specified process does not have a valid resource directory size.")
                 : FindVersionResource(processHandle, unchecked(baseAddress + (int)resourceRva), baseAddress);
         }
 

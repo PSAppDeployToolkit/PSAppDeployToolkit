@@ -202,7 +202,6 @@ namespace PSADT.Utilities
         /// API. Callers should handle the potential exception if the directory path cannot be determined.</remarks>
         /// <returns>A string that represents the absolute path to the user profiles directory. The returned path is guaranteed
         /// to be non-null and non-empty if the operation succeeds.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the user profiles directory path cannot be retrieved.</exception>
         internal static DirectoryInfo GetUserProfilesDirectory()
         {
             _ = NativeMethods.SHGetKnownFolderPath(in PInvoke.FOLDERID_UserProfiles, 0, null, out SafeCoTaskMemHandle ppszPath);

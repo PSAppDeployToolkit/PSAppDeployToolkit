@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// </summary>
     /// <remarks>The <see cref="HelpConsole"/> class is intended for use in design-time scenarios and should
     /// not be instantiated directly in runtime mode. Attempting to use the parameterless constructor in runtime mode
-    /// will result in an <see cref="InvalidOperationException"/>.</remarks>
+    /// will result in an <see cref="NotSupportedException"/>.</remarks>
     internal partial class HelpConsole : ClassicBase
     {
         /// <summary>
@@ -20,7 +20,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
-                throw new InvalidOperationException("This constructor cannot be used in runtime mode.");
+                throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
         }
 

@@ -240,7 +240,7 @@ namespace PSADT.Security
         {
             if (AccountUtilities.CallerIsLocalSystem)
             {
-                throw new InvalidOperationException("Cannot retrieve an unelevated token when running as the local system account.");
+                throw new NotSupportedException("Cannot retrieve an unelevated token when running as the local system account.");
             }
             if (!AccountUtilities.CallerIsAdmin)
             {

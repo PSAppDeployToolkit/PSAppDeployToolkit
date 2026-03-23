@@ -92,7 +92,7 @@ namespace PSADT.Interop.Extensions
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             ReadOnlySpan<char> stringSpan = handle.AsReadOnlyCharSpan(length);
             return stringSpan.IsWhiteSpace()
-                ? throw new InvalidOperationException("The specified pointer does not contain a valid string.")
+                ? throw new FormatException("The specified pointer does not contain a valid string.")
                 : stringSpan.ToString();
         }
     }

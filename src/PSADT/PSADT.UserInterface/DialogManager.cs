@@ -35,7 +35,7 @@ namespace PSADT.UserInterface
         static DialogManager()
         {
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
-            unhandledExceptionHandler = AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") as Action<Exception> ?? throw new InvalidOperationException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
+            unhandledExceptionHandler = AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") as Action<Exception> ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
 
             // Register process exit handler to ensure WPF is properly shut down. This prevents ~2.5 second delays during shutdown.
             AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown, DispatcherPriority.Send);
@@ -217,7 +217,7 @@ namespace PSADT.UserInterface
         {
             if (AccountUtilities.CallerUsingServiceUI)
             {
-                throw new InvalidOperationException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.");
+                throw new NotSupportedException("The input dialog is only permitted when ServiceUI is not used to start the toolkit.");
             }
             if (options.MinimizeWindows)
             {

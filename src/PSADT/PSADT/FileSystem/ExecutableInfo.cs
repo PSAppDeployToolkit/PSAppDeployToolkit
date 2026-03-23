@@ -24,7 +24,7 @@ namespace PSADT.FileSystem
         /// <param name="filePath">The path to the executable file to analyze. This parameter must not be null or empty.</param>
         /// <returns>An ExecutableInfo instance containing details about the executable, such as machine type, subsystem,
         /// presence of a CLR header, entry point address, and image base.</returns>
-        /// <exception cref="InvalidDataException">Thrown if the specified file does not have a valid PE header, PE signature, or optional header magic number.</exception>
+        /// <exception cref="BadImageFormatException">Thrown if the specified file does not have a valid PE header, PE signature, or optional header magic number.</exception>
         public static ExecutableInfo Get(string filePath)
         {
             // Internal helper methods to read structures and check for CLR header.
@@ -49,11 +49,11 @@ namespace PSADT.FileSystem
             ref readonly IMAGE_DOS_HEADER dosHeader = ref ReadStruct<IMAGE_DOS_HEADER>(reader); _ = fs.Seek(dosHeader.e_lfanew, SeekOrigin.Begin);
             if (dosHeader.e_magic != PInvoke.IMAGE_DOS_SIGNATURE)
             {
-                throw new InvalidDataException("The specified file does not have a valid PE header.");
+                throw new BadImageFormatException("The specified file does not have a valid PE header.", filePath);
             }
             if (reader.ReadUInt32() != PInvoke.IMAGE_NT_SIGNATURE)
             {
-                throw new InvalidDataException("The specified file does not have a valid PE signature.");
+                throw new BadImageFormatException("The specified file does not have a valid PE signature.", filePath);
             }
 
             // Read the file header and optional header, returning the ExecutableInfo.
@@ -71,7 +71,7 @@ namespace PSADT.FileSystem
             }
             else
             {
-                throw new InvalidDataException("The specified file does not have a valid optional header magic number.");
+                throw new BadImageFormatException("The specified file does not have a valid optional header magic number.", filePath);
             }
         }
 
