@@ -166,26 +166,26 @@ function Copy-ADTContentToCache
                     {
                         Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin $folderNames) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
                     }
-                    $filesSourcePath = Join-Path -Path $scriptDir -ChildPath Files
-                    if ('Files' -notin $Skip -and (Test-Path -LiteralPath $filesSourcePath -PathType Container))
+                    $filesSourcePath = Join-Path -Path $scriptDir -ChildPath 'Files'
+                    if (('Files' -notin $Skip) -and (Test-Path -LiteralPath $filesSourcePath -PathType Container))
                     {
                         Copy-ADTFile -LiteralPath $filesSourcePath -Destination $LiteralPath -Recurse
                     }
                     $supportFilesSourcePath = Join-Path -Path $scriptDir -ChildPath SupportFiles
-                    if ('SupportFiles' -notin $Skip -and (Test-Path -LiteralPath $supportFilesSourcePath -PathType Container))
+                    if (('SupportFiles' -notin $Skip) -and (Test-Path -LiteralPath $supportFilesSourcePath -PathType Container))
                     {
                         Copy-ADTFile -LiteralPath $supportFilesSourcePath -Destination $LiteralPath -Recurse
                     }
                 }
 
                 # Remap session properties for categories that were copied.
-                $filesDestPath = Join-Path -Path $LiteralPath -ChildPath Files
-                if ('Files' -notin $Skip -and (Test-Path -LiteralPath $filesDestPath -PathType Container))
+                $filesDestPath = Join-Path -Path $LiteralPath -ChildPath 'Files'
+                if (('Files' -notin $Skip) -and (Test-Path -LiteralPath $filesDestPath -PathType Container))
                 {
                     $adtSession.DirFiles = $filesDestPath
                 }
                 $supportFilesDestPath = Join-Path -Path $LiteralPath -ChildPath SupportFiles
-                if ('SupportFiles' -notin $Skip -and (Test-Path -LiteralPath $supportFilesDestPath -PathType Container))
+                if (('SupportFiles' -notin $Skip) -and (Test-Path -LiteralPath $supportFilesDestPath -PathType Container))
                 {
                     $adtSession.DirSupportFiles = $supportFilesDestPath
                 }
