@@ -90,12 +90,14 @@ function Test-ADTMutexAvailability
     process
     {
         Write-ADTLogEntry -Message "Checking to see if mutex [$MutexName] is available. Wait up to [$WaitLogMsg] for the mutex to become available."
+        $OpenExistingMutex = $null
+        $IsMutexFree = $null
         try
         {
             # Open the specified named mutex, if it already exists, without acquiring an exclusive lock on it. If the system mutex does not exist, this method throws an exception instead of creating the system object.
             $OpenExistingMutex = [System.Threading.Mutex]::OpenExisting($MutexName)
 
-            # Attempt to acquire an exclusive lock on the mutex. Use a Timespan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
+            # Attempt to acquire an exclusive lock on the mutex. Use a TimeSpan to specify a timeout value after which no further attempt is made to acquire a lock on the mutex.
             $IsMutexFree = $OpenExistingMutex.WaitOne($MutexWaitTime, $false)
         }
         catch [Threading.WaitHandleCannotBeOpenedException]
@@ -142,12 +144,14 @@ function Test-ADTMutexAvailability
             {
                 Write-ADTLogEntry -Message "Mutex [$MutexName] is not available because another thread already has an exclusive lock on it."
             }
-
-            if (($null -ne $OpenExistingMutex) -and $IsMutexFree)
+            if ($null -ne $OpenExistingMutex)
             {
-                # Release exclusive lock on the mutex.
-                $null = $OpenExistingMutex.ReleaseMutex()
+                if ($IsMutexFree -and !$IsUnhandledException)
+                {
+                    $null = $OpenExistingMutex.ReleaseMutex()
+                }
                 $OpenExistingMutex.Close()
+                $OpenExistingMutex.Dispose()
             }
         }
         return $IsMutexFree

@@ -185,7 +185,29 @@ function Remove-ADTRegistryKey
                     $null = if ($Name -eq '(Default)')
                     {
                         # Remove (Default) registry key value with the following workaround because Remove-ItemProperty cannot remove the (Default) registry key value.
-                        (Get-Item @pathParam).OpenSubKey([System.String]::Empty, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree).DeleteValue([System.String]::Empty)
+                        if ($registryKey = Get-Item @pathParam)
+                        {
+                            try
+                            {
+                                if ($subKey = $registryKey.OpenSubKey([System.String]::Empty, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree))
+                                {
+                                    try
+                                    {
+                                        $subKey.DeleteValue([System.String]::Empty)
+                                    }
+                                    finally
+                                    {
+                                        $subKey.Close()
+                                        $subKey.Dispose()
+                                    }
+                                }
+                            }
+                            finally
+                            {
+                                $registryKey.Close()
+                                $registryKey.Dispose()
+                            }
+                        }
                     }
                     else
                     {

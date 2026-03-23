@@ -106,8 +106,16 @@ function Get-ADTPEFileArchitecture
                 {
                     # Read the first 4096 bytes of the file.
                     $stream = [System.IO.FileStream]::new($file.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read)
-                    $null = $stream.Read($data, 0, $data.Count)
-                    $stream.Flush(); $stream.Close()
+                    try
+                    {
+                        $null = $stream.Read($data, 0, $data.Count)
+                        $stream.Flush()
+                    }
+                    finally
+                    {
+                        $stream.Close()
+                        $stream.Dispose()
+                    }
 
                     # Get the file header from the header's address, factoring in any offsets.
                     $peArchValue = [System.BitConverter]::ToUInt16($data, [System.BitConverter]::ToInt32($data, $PE_POINTER_OFFSET) + $MACHINE_OFFSET)

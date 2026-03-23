@@ -179,7 +179,15 @@ function ConvertTo-ADTNTAccountOrSID
         {
             try
             {
-                [System.Security.Principal.SecurityIdentifier]::new([System.DirectoryServices.DirectoryEntry]::new("$LdapUri$([PSADT.DeviceManagement.DeviceUtilities]::GetDomainStatus().DomainOrWorkgroupName.ToLowerInvariant())").ObjectSid[0], 0)
+                $directoryEntry = [System.DirectoryServices.DirectoryEntry]::new("$LdapUri$([PSADT.DeviceManagement.DeviceUtilities]::GetDomainStatus().DomainOrWorkgroupName.ToLowerInvariant())")
+                try
+                {
+                    [System.Security.Principal.SecurityIdentifier]::new([System.Byte[]]$($directoryEntry.objectSid), 0)
+                }
+                finally
+                {
+                    $directoryEntry.Dispose()
+                }
             }
             catch
             {

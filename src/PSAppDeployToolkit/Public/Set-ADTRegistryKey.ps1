@@ -153,11 +153,18 @@ function Set-ADTRegistryKey
                     if ($PSCmdlet.ShouldProcess($LiteralPath, 'Create registry key'))
                     {
                         $provider, $subkey = [System.Text.RegularExpressions.Regex]::Matches($LiteralPath, '^(.+::[a-zA-Z_]+)\\(.+)$').Groups[1..2].Value
-                        $regKey = Get-Item -LiteralPath $provider
-                        $null = $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions)
-                        $regKey.Close()
-                        $regKey.Dispose()
-                        $regKey = $null
+                        if ($regKey = Get-Item -LiteralPath $provider)
+                        {
+                            try
+                            {
+                                $null = $regKey.CreateSubKey($subkey, [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree, $RegistryOptions)
+                            }
+                            finally
+                            {
+                                $regKey.Close()
+                                $regKey.Dispose()
+                            }
+                        }
                     }
                 }
 
