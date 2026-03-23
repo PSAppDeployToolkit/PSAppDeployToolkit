@@ -46,7 +46,7 @@ namespace PSADT.ProcessManagement
         {
             // Only use ShellExecuteEx for non-console apps if we're not capturing stdio.
             ArgumentNullException.ThrowIfNull(launchInfo);
-            return launchInfo.UseShellExecute && (!launchInfo.CreateNoWindow || !launchInfo.IsCliApplication())
+            return launchInfo.UseShellExecute && (!launchInfo.IsCliApplication() || !launchInfo.CreateNoWindow)
                 ? LaunchWithShellExecuteExAsync(launchInfo)
                 : LaunchWithCreateProcessAsync(launchInfo);
         }
@@ -257,7 +257,7 @@ namespace PSADT.ProcessManagement
         private static ProcessHandle? LaunchWithShellExecuteExAsync(ProcessLaunchInfo launchInfo)
         {
             // Throw if RunAsActiveUser is populated as it's not supported.
-            if (launchInfo.RunAsActiveUser is not null || launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser)
+            if (!(launchInfo.RunAsActiveUser is null || launchInfo.RunAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
             {
                 throw new NotSupportedException("Running as a different user is not supported with ShellExecuteEx.");
             }
