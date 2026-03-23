@@ -452,18 +452,18 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         logTempFolder.Delete(true);
                     }
-                    LogPath = Directory.CreateDirectory(logTempFolder.FullName);
+                    LogPath = new(Directory.CreateDirectory(logTempFolder.FullName).FullName);
                 }
                 else
                 {
-                    LogPath = !ConfigLogPath.Exists ? Directory.CreateDirectory(ConfigLogPath.FullName) : ConfigLogPath;
+                    LogPath = !ConfigLogPath.Exists ? new(Directory.CreateDirectory(ConfigLogPath.FullName).FullName) : ConfigLogPath;
                 }
 
                 // Append subfolder path if configured to do so.
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null)));
+                    LogPath = new(Directory.CreateDirectory(Path.Combine(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null))).FullName);
 
                     // Check how many hierarchy levels to keep based on configuration.
                     DirectoryInfo[] hierarchyDirectories = [.. LogPath.Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath.FullName, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
@@ -479,7 +479,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
-                    LogPath = Directory.CreateDirectory(Path.Combine(LogPath.FullName, $"{InstallName}_{DeploymentType}"));
+                    LogPath = new(Directory.CreateDirectory(Path.Combine(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
@@ -1066,7 +1066,7 @@ namespace PSAppDeployToolkit.Foundation
             {
                 // Archive the log files to zip format and then delete the temporary logs folder.
                 string destArchiveFileName = $"{InstallName}_{DeploymentType}_{{0}}.zip";
-                DirectoryInfo destArchiveFilePath = Directory.CreateDirectory(ConfigLogPath.FullName);
+                DirectoryInfo destArchiveFilePath = new(Directory.CreateDirectory(ConfigLogPath.FullName).FullName);
                 try
                 {
                     // Get all archive files sorted by last write time.
