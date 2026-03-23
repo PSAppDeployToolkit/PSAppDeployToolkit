@@ -103,6 +103,8 @@ function Copy-ADTContentToCache
         }
 
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        $folderNames = @('Files', 'SupportFiles')
     }
 
     process
@@ -162,7 +164,7 @@ function Copy-ADTContentToCache
                     # Selective copy: enumerate top-level items and copy based on -Skip.
                     if ('Other' -notin $Skip)
                     {
-                        Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin @('Files', 'SupportFiles')) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
+                        Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin $folderNames) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
                     }
                     $filesSourcePath = Join-Path -Path $scriptDir -ChildPath Files
                     if ('Files' -notin $Skip -and (Test-Path -LiteralPath $filesSourcePath -PathType Container))
