@@ -31,7 +31,7 @@ namespace PSADT.ClientServer
         /// <remarks>This field can be used to locate files or resources relative to the assembly's
         /// location at runtime. The returned path is determined by the assembly's current location, which may vary
         /// depending on how the application is deployed or executed.</remarks>
-        public static readonly DirectoryInfo AssemblyPath = new DirectoryInfo(typeof(ClientServerUtilities).Assembly.Location).Parent ?? throw new InvalidOperationException("Failed to retrieve directory for this assembly.");
+        public static readonly DirectoryInfo AssemblyPath = new DirectoryInfo(typeof(ClientServerUtilities).Assembly.Location).Parent ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly.");
 
         /// <summary>
         /// Gets the default file system path to the ClientServer client executable within the application directory

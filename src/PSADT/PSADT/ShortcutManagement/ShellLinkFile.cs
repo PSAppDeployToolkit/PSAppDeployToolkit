@@ -806,7 +806,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The string value, or an empty string if the property is not set.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the property has an unexpected type.</exception>
+        /// <exception cref="FileFormatException">Thrown when the property has an unexpected type.</exception>
         private string? GetStringProperty(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -843,7 +843,7 @@ namespace PSADT.ShortcutManagement
                     string pwszValStr = pwszVal.ToString();
                     return pwszValStr.Length > 0 ? pwszValStr : null;
                 }
-                throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
+                throw new FileFormatException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
             }
             finally
             {
@@ -889,7 +889,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The boolean value, or <see langword="false"/> if the property is not set.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the property has an unexpected type.</exception>
+        /// <exception cref="FileFormatException">Thrown when the property has an unexpected type.</exception>
         private bool? GetBoolProperty(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -905,7 +905,7 @@ namespace PSADT.ShortcutManagement
                     : vt == VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0
                     : vt != VARENUM.VT_EMPTY
-                    ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
+                    ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
                     : null;
             }
             finally
@@ -949,7 +949,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The GUID value, or <see cref="Guid.Empty"/> if the property is not set.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the property has an unexpected type.</exception>
+        /// <exception cref="FileFormatException">Thrown when the property has an unexpected type.</exception>
         private Guid? GetGuidProperty(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -964,7 +964,7 @@ namespace PSADT.ShortcutManagement
                 }
                 if (vt != VARENUM.VT_CLSID)
                 {
-                    throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_CLSID.");
+                    throw new FileFormatException($"Property has unexpected type {vt}, expected VT_CLSID.");
                 }
                 unsafe
                 {
@@ -1020,7 +1020,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="key">The property key.</param>
         /// <returns>The unsigned integer value, or 0 if the property is not set.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the property has an unexpected type.</exception>
+        /// <exception cref="FileFormatException">Thrown when the property has an unexpected type.</exception>
         private uint? GetUInt32Property(in PROPERTYKEY key)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -1034,7 +1034,7 @@ namespace PSADT.ShortcutManagement
                     : vt == VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal
                     : vt != VARENUM.VT_EMPTY
-                    ? throw new InvalidOperationException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.")
+                    ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.")
                     : null;
             }
             finally

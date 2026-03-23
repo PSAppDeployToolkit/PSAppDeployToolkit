@@ -106,7 +106,7 @@ namespace PSADT.Interop.Exceptions
         /// <remarks>This dictionary is initialized using reflection to retrieve all public static fields
         /// of the NTSTATUS enumeration, allowing for efficient lookup of the string representation of NTSTATUS values.
         /// This can be useful for debugging, logging, or displaying human-readable status codes.</remarks>
-        private static readonly ReadOnlyDictionary<NTSTATUS, string> NtStatusValueNameMap = new(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidOperationException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name));
+        private static readonly ReadOnlyDictionary<NTSTATUS, string> NtStatusValueNameMap = new(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name));
 
         /// <summary>
         /// Defines the options for formatting messages retrieved from the system or a specified module.

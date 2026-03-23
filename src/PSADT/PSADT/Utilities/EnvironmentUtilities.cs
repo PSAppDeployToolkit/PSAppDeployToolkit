@@ -155,7 +155,7 @@ namespace PSADT.Utilities
             }
             if (append && remove)
             {
-                throw new InvalidOperationException("Cannot both append and remove from an environment variable.");
+                throw new NotSupportedException("Cannot both append and remove from an environment variable.");
             }
 
             // Treat empty or whitespace-only values as null (deletion).
@@ -231,7 +231,7 @@ namespace PSADT.Utilities
                         break;
                     }
                 case EnvironmentVariableTarget.Process:
-                    throw new InvalidOperationException("Process target should be handled separately.");
+                    throw new NotSupportedException("Process target should be handled separately.");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(target), target, $"Illegal enum value: {target}.");
             }

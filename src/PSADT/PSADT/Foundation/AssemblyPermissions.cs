@@ -77,7 +77,7 @@ namespace PSADT.Foundation
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(new DirectoryInfo(typeof(ClientServerUtilities).Assembly.Location).Parent?.GetFiles("*", SearchOption.AllDirectories) ?? throw new InvalidOperationException("Failed to retrieve directory for this assembly."));
+        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(new DirectoryInfo(typeof(ClientServerUtilities).Assembly.Location).Parent?.GetFiles("*", SearchOption.AllDirectories) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly."));
 
         /// <summary>
         /// Represents the required file system permissions for the operation.

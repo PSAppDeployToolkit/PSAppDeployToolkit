@@ -32,7 +32,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
-                throw new InvalidOperationException("This constructor cannot be used in runtime mode.");
+                throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
         }
 

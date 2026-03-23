@@ -136,11 +136,11 @@ namespace PSADT.Interop.Utilities
         /// marshaling.</remarks>
         /// <param name="hResult">The HRESULT value that represents the error condition. Must be a negative value to indicate an error.</param>
         /// <returns>An Exception instance that represents the error condition described by the provided HRESULT value.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if hResult is non-negative, indicating that no error has occurred.</exception>
+        /// <exception cref="NotSupportedException">Thrown if hResult is non-negative, indicating that no error has occurred.</exception>
         internal static Exception GetException(HRESULT hResult)
         {
             return hResult >= 0
-                ? throw new InvalidOperationException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].")
+                ? throw new NotSupportedException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].")
                 : HRESULT_FACILITY(hResult) == FACILITY_CODE.FACILITY_WIN32
                 ? GetException((WIN32_ERROR)HRESULT_CODE(hResult))
                 : Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrive an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");

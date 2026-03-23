@@ -88,7 +88,7 @@ namespace PSADT.SMBIOS
         /// <param name="targetType">The specific SMBIOS structure type to locate within the buffer.</param>
         /// <returns>A read-only list of <see cref="SmbiosTablePosition"/> objects, each representing the position and length of
         /// a found structure.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if no SMBIOS structures of the specified <paramref name="targetType"/> are found in the buffer.</exception>
+        /// <exception cref="SmbiosTypeNotFoundException">Thrown if no SMBIOS structures of the specified <paramref name="targetType"/> are found in the buffer.</exception>
         internal static IReadOnlyList<SmbiosTablePosition> GetStructureOffsets(ReadOnlySpan<byte> buffer, SmbiosType targetType)
         {
             // Loop through the data and find all instances of the target structure.
@@ -126,7 +126,7 @@ namespace PSADT.SMBIOS
             // Get all structures that match the target type.
             IReadOnlyList<SmbiosTablePosition> offsets = GetStructureOffsets(buffer, targetType);
             return offsets.Count > 1
-                ? throw new InvalidOperationException($"Multiple SMBIOS structures of type [{targetType}] found.")
+                ? throw new NotSupportedException($"Multiple SMBIOS structures of type [{targetType}] found.")
                 : parser(buffer, offsets[0].Offset, offsets[0].Length);
         }
 

@@ -201,12 +201,10 @@ namespace PSADT.Interop.SafeHandles
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
-            ArgumentNullException.ThrowIfNull(data); ArgumentOutOfRangeException.ThrowIfZero(data.Length);
+            ArgumentNullException.ThrowIfNull(data);
+            ArgumentOutOfRangeException.ThrowIfZero(data.Length);
             ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
-            if (data.Length + startIndex > Length)
-            {
-                throw new InvalidOperationException($"Data length [{data.Length}] exceeds allocated memory length [{Length}].");
-            }
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + startIndex, Length);
             Marshal.Copy(data, startIndex, handle, data.Length - startIndex);
             return (TSelf)this;
         }

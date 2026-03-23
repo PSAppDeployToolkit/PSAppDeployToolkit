@@ -29,7 +29,6 @@ namespace PSADT.WindowsInstaller
         /// </summary>
         /// <param name="exitCode">The MSI exit code.</param>
         /// <returns>The message string associated with the given MSI exit code.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the library cannot be loaded or the message cannot be retrieved.</exception>
         public static string? GetMessageFromMsiExitCode(uint exitCode)
         {
             using FreeLibrarySafeHandle hInstance = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
@@ -283,9 +282,9 @@ namespace PSADT.WindowsInstaller
         {
             // Get the summary information from the patch database, then determine the size of the buffer we need.
             using MsiCloseHandleSafeHandle hSummaryInfo = GetSummaryInformation(szDatabasePath);
-            return GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE) is not string template || string.IsNullOrWhiteSpace(template)
-                ? throw new InvalidOperationException("The patch database did not contain a valid PID_TEMPLATE property with supported product codes.")
-                : (IReadOnlyList<Guid>)new ReadOnlyCollection<Guid>([.. template.Split([Path.PathSeparator], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g))]);
+            return GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TEMPLATE) is string template && !string.IsNullOrWhiteSpace(template)
+                ? new ReadOnlyCollection<Guid>([.. template.Split([Path.PathSeparator], StringSplitOptions.RemoveEmptyEntries).Select(static g => new Guid(g))])
+                : throw new FileFormatException("The patch database did not contain a valid PID_TEMPLATE property with supported product codes.");
         }
 
         /// <summary>
@@ -487,7 +486,7 @@ namespace PSADT.WindowsInstaller
                     ArgumentOutOfRangeException.ThrowIfZero(szTransformFiles.Count);
                     if (isPatchFile)
                     {
-                        throw new InvalidOperationException("Cannot apply transforms to patch files.");
+                        throw new NotSupportedException("Cannot apply transforms to patch files.");
                     }
                     foreach (string szTransformFile in szTransformFiles)
                     {

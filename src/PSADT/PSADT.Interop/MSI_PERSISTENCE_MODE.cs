@@ -70,7 +70,7 @@ namespace PSADT.Interop
         /// <param name="right">The second persistence mode.</param>
         /// <returns>A new <see cref="MSI_PERSISTENCE_MODE"/> representing the combined mode.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="left"/> or <paramref name="right"/> is null.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when neither operand is MSIDBOPEN_PATCHFILE.</exception>
+        /// <exception cref="NotSupportedException">Thrown when neither operand is MSIDBOPEN_PATCHFILE.</exception>
         public static MSI_PERSISTENCE_MODE operator +(MSI_PERSISTENCE_MODE left, MSI_PERSISTENCE_MODE right)
         {
             // Determine which operand is MSIDBOPEN_PATCHFILE (the integer offset) and which is the base pointer.
@@ -80,7 +80,7 @@ namespace PSADT.Interop
             bool rightIsPatchFile = ReferenceEquals(right, MSIDBOPEN_PATCHFILE);
             if (!leftIsPatchFile && !rightIsPatchFile)
             {
-                throw new InvalidOperationException("Pointer + pointer arithmetic is not permitted. One operand must be MSIDBOPEN_PATCHFILE.");
+                throw new NotSupportedException("Pointer + pointer arithmetic is not permitted. One operand must be MSIDBOPEN_PATCHFILE.");
             }
 
             // Use the PATCHFILE value as the offset and the other as the base pointer,
