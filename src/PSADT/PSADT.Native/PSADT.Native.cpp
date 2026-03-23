@@ -4,8 +4,13 @@
 #ifndef WIN32_NO_STATUS
 #define WIN32_NO_STATUS
 #endif
+#ifndef STRICT
+#define STRICT
+#endif
 #include <Windows.h>
+#undef STRICT
 #undef WIN32_NO_STATUS
+#undef WIN32_LEAN_AND_MEAN
 
 #include "PSADT.Native.h"
 
