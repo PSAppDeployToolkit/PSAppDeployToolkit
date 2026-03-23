@@ -863,7 +863,7 @@ function Start-ADTProcess
                             Exception = [System.InvalidProgramException]::new("The launching of the process returned a null result.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'ProcessExecutionNullReturn'
-                            TargetObject = $execution
+                            TargetObject = $(if (!$SecureArgumentList) { $execution })
                             RecommendedAction = "Please report this to the PSAppDeployToolkit development team for further review."
                         }
                         throw (New-ADTErrorRecord @naerParams)
@@ -900,7 +900,7 @@ function Start-ADTProcess
                             Exception = [System.TimeoutException]::new("Timed out waiting for process execution to complete.")
                             Category = [System.Management.Automation.ErrorCategory]::LimitsExceeded
                             ErrorId = 'ProcessExecutionTimedOut'
-                            TargetObject = $result
+                            TargetObject = $(if (!$SecureArgumentList) { $result })
                         }
                     }
                     else
@@ -909,7 +909,7 @@ function Start-ADTProcess
                             Exception = [System.OperationCanceledException]::new("Process terminated because execution took too long to complete.", $cancellationToken)
                             Category = [System.Management.Automation.ErrorCategory]::OperationStopped
                             ErrorId = 'ProcessExecutionCancelled'
-                            TargetObject = $result
+                            TargetObject = $(if (!$SecureArgumentList) { $result })
                         }
                     }
                     throw (New-ADTErrorRecord @naerParams)
@@ -992,7 +992,7 @@ function Start-ADTProcess
                         Exception = [System.Runtime.InteropServices.ExternalException]::new($waleParams.Message, $result.ExitCode)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'ProcessExitCodeError'
-                        TargetObject = $result
+                        TargetObject = $(if (!$SecureArgumentList) { $result })
                         RecommendedAction = "Please review the exit code with the vendor's documentation and try again."
                     }
                     throw (New-ADTErrorRecord @naerParams)
