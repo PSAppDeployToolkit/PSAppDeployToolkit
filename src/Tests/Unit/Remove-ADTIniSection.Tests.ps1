@@ -33,9 +33,9 @@ MyOtherKey=MyOtherValue
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
                 ErrorId = 'ParameterArgumentValidationError,Remove-ADTIniSection'
             }
-            { Remove-ADTIniSection -FilePath $null -Section 'Anything' } | Should @ShouldParams
-            { Remove-ADTIniSection -FilePath '' -Section 'Anything' } | Should @ShouldParams
-            { Remove-ADTIniSection -FilePath " `f`n`r`t`v" -Section 'Anything' } | Should @ShouldParams
+            { Remove-ADTIniSection -FilePath $null -Section 'Anything' } | Should @shouldParams
+            { Remove-ADTIniSection -FilePath '' -Section 'Anything' } | Should @shouldParams
+            { Remove-ADTIniSection -FilePath " `f`n`r`t`v" -Section 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists' {
             { Remove-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage "The specified file does not exist.*" -ErrorId 'InvalidFilePathParameterValue,Remove-ADTIniSection'
