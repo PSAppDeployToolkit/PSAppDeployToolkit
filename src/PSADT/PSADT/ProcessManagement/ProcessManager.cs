@@ -41,259 +41,295 @@ namespace PSADT.ProcessManagement
         /// <returns>A ProcessHandle object that provides access to the launched process and its associated asynchronous task, or
         /// null if the process could not be started.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="launchInfo"/> is null.</exception>
-        /// <exception cref="InvalidProgramException">Thrown if the process fails to start.</exception>
         public static ProcessHandle? LaunchAsync(ProcessLaunchInfo launchInfo)
         {
-            // Prefer the CreateProcess pathway unless we're explicitly asked to use ShellExecuteEx instead.
-            if ((launchInfo ?? throw new ArgumentNullException(nameof(launchInfo))).RunAsActiveUser is not null || (launchInfo.CreateNoWindow && launchInfo.IsCliApplication()) || !launchInfo.UseShellExecute)
+            // Only use ShellExecuteEx for non-console apps if we're not capturing stdio.
+            ArgumentNullException.ThrowIfNull(launchInfo);
+            return launchInfo.UseShellExecute && (!launchInfo.CreateNoWindow || !launchInfo.IsCliApplication())
+                ? LaunchWithShellExecuteExAsync(launchInfo)
+                : LaunchWithCreateProcessAsync(launchInfo);
+        }
+
+        /// <summary>
+        /// Launches a new process asynchronously using the Windows CreateProcess API, applying the specified launch
+        /// options and user context.
+        /// </summary>
+        /// <remarks>This method supports advanced process launch scenarios, such as running under a
+        /// different user token, customizing standard input/output/error streams, and controlling window and console
+        /// behavior. The process is initially created in a suspended state and then resumed after setup. Callers are
+        /// responsible for disposing of the returned ProcessHandle to release system resources.</remarks>
+        /// <param name="launchInfo">An object containing the configuration and parameters for the process to be launched, including file path,
+        /// arguments, user context, environment variables, and standard stream handling.</param>
+        /// <returns>A handle to the launched process, encapsulated in a ProcessHandle object, which provides access to process
+        /// state and standard streams as configured.</returns>
+        private static ProcessHandle LaunchWithCreateProcessAsync(ProcessLaunchInfo launchInfo)
+        {
+            // Perform initial setup and get started with the process creation.
+            ProcessReadStream? stdOutHandle = null, stdErrHandle = null; ProcessWriteStream? stdInHandle = null;
+            AnonymousPipeServerStream? stdOutStream = null, stdErrStream = null, stdInStream = null;
+            Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
+            SafeProcessHandle hProcess; SafeThreadHandle hThread; uint processId;
+            ConcurrentQueue<string> interleavedData = [];
+            try
             {
-                // Perform initial setup and get started with the process creation.
-                ProcessReadStream? stdOutHandle = null, stdErrHandle = null; ProcessWriteStream? stdInHandle = null;
-                AnonymousPipeServerStream? stdOutStream = null, stdErrStream = null, stdInStream = null;
-                Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
-                SafeProcessHandle hProcess; SafeThreadHandle hThread; uint processId;
-                ConcurrentQueue<string> interleavedData = [];
-                try
+                // Set up the startup information for the process.
+                PROCESS_INFORMATION pi; STARTUPINFOW startupInfo = new()
                 {
-                    // Set up the startup information for the process.
-                    PROCESS_INFORMATION pi; STARTUPINFOW startupInfo = new()
-                    {
-                        cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
-                        hStdInput = HANDLE.INVALID_HANDLE_VALUE,
-                        hStdOutput = HANDLE.INVALID_HANDLE_VALUE,
-                        hStdError = HANDLE.INVALID_HANDLE_VALUE,
-                    };
-                    PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
-                        PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
-                        PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
-                        PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
+                    cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                    hStdInput = HANDLE.INVALID_HANDLE_VALUE,
+                    hStdOutput = HANDLE.INVALID_HANDLE_VALUE,
+                    hStdError = HANDLE.INVALID_HANDLE_VALUE,
+                };
+                PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
+                    PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
+                    PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
+                    PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
-                    // Set up the window style if the caller's provided a value.
-                    if (launchInfo.WindowStyle is not null)
-                    {
-                        startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                        startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
-                    }
+                // Set up the window style if the caller's provided a value.
+                if (launchInfo.WindowStyle is not null)
+                {
+                    startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                    startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
+                }
 
-                    // We must create a console window for console apps when the window is shown.
-                    if (launchInfo.IsCliApplication())
+                // We must create a console window for console apps when the window is shown.
+                if (launchInfo.IsCliApplication())
+                {
+                    if (launchInfo.CreateNoWindow)
                     {
-                        if (launchInfo.CreateNoWindow)
-                        {
-                            // If STARTF_USESHOWWINDOW is set, a console app showing UI elements
-                            // won't appear. Because we have CREATE_NO_WINDOW, the console window
-                            // (aka. the window we actually want hidden) will be hidden as expected.
-                            startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
-                            startupInfo.dwFlags &= ~STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
-                        }
-                        else
-                        {
-                            creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
-                        }
-                    }
-
-                    // Set up required stdio stuff if we're configured to capture these streams.
-                    List<nint> handlesToInherit = launchInfo.HandlesToInherit.Count > 0 ? [.. launchInfo.HandlesToInherit] : [];
-                    if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
-                    {
-                        if (launchInfo.StandardInput.Count > 0)
-                        {
-                            (stdInStream, startupInfo.hStdInput, stdInHandle) = CreateWritePipe(launchInfo.StandardInput, launchInfo.StreamEncoding);
-                            handlesToInherit.Add(startupInfo.hStdInput);
-                        }
-                        (stdOutStream, startupInfo.hStdOutput, stdOutHandle) = CreateReadPipe(interleavedData, launchInfo.StreamEncoding);
-                        (stdErrStream, startupInfo.hStdError, stdErrHandle) = CreateReadPipe(interleavedData, launchInfo.StreamEncoding);
-                        handlesToInherit.Add(startupInfo.hStdOutput);
-                        handlesToInherit.Add(startupInfo.hStdError);
-                    }
-
-                    // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
-                    if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
-                    {
-                        // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
-                        using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == ClientServerUtilities.ClientPath.FullName || launchInfo.FilePath == ClientServerUtilities.ClientLauncherPath.FullName);
-                        _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
-                        using (lpEnvironment)
-                        {
-                            unsafe
-                            {
-                                fixed (char* pDesktop = @"winsta0\default")
-                                {
-                                    startupInfo.lpDesktop = new(pDesktop);
-                                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
-                                }
-                            }
-                        }
-                    }
-                    else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
-                    {
-                        // We're running elevated but have been asked to de-elevate.
-                        using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
-                        _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                        // If STARTF_USESHOWWINDOW is set, a console app showing UI elements
+                        // won't appear. Because we have CREATE_NO_WINDOW, the console window
+                        // (aka. the window we actually want hidden) will be hidden as expected.
+                        startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES;
+                        startupInfo.dwFlags &= ~STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
+                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
                     }
                     else
                     {
-                        // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
-                        if (handlesToInherit.Count > 0)
+                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NEW_CONSOLE;
+                    }
+                }
+
+                // Set up required stdio stuff if we're configured to capture these streams.
+                List<nint> handlesToInherit = launchInfo.HandlesToInherit.Count > 0 ? [.. launchInfo.HandlesToInherit] : [];
+                if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
+                {
+                    if (launchInfo.StandardInput.Count > 0)
+                    {
+                        (stdInStream, startupInfo.hStdInput, stdInHandle) = CreateWritePipe(launchInfo.StandardInput, launchInfo.StreamEncoding);
+                        handlesToInherit.Add(startupInfo.hStdInput);
+                    }
+                    (stdOutStream, startupInfo.hStdOutput, stdOutHandle) = CreateReadPipe(interleavedData, launchInfo.StreamEncoding);
+                    (stdErrStream, startupInfo.hStdError, stdErrHandle) = CreateReadPipe(interleavedData, launchInfo.StreamEncoding);
+                    handlesToInherit.Add(startupInfo.hStdOutput);
+                    handlesToInherit.Add(startupInfo.hStdError);
+                }
+
+                // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
+                if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
+                {
+                    // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == ClientServerUtilities.ClientPath.FullName || launchInfo.FilePath == ClientServerUtilities.ClientLauncherPath.FullName);
+                    _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
+                    using (lpEnvironment)
+                    {
+                        unsafe
                         {
-                            (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);
-                            using (hAttributeList)
-                            using (pinnedHandles)
+                            fixed (char* pDesktop = @"winsta0\default")
                             {
-                                _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory?.FullName, in startupInfoEx, out pi);
+                                startupInfo.lpDesktop = new(pDesktop);
+                                _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                             }
                         }
-                        else
+                    }
+                }
+                else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
+                {
+                    // We're running elevated but have been asked to de-elevate.
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
+                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                }
+                else
+                {
+                    // No username was specified and we weren't asked to de-elevate, so we're just creating the process as this current user as-is.
+                    if (handlesToInherit.Count > 0)
+                    {
+                        (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway: false, out SafePinnedGCHandle? pinnedHandles);
+                        using (hAttributeList)
+                        using (pinnedHandles)
                         {
-                            _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                            _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, null, launchInfo.WorkingDirectory?.FullName, in startupInfoEx, out pi);
                         }
                     }
-                    hProcess = new(pi.hProcess, true);
-                    hThread = new(pi.hThread, true);
-                    processId = pi.dwProcessId;
+                    else
+                    {
+                        _ = NativeMethods.CreateProcess(launchInfo.FilePath, ref commandSpan, null, null, false, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                    }
                 }
-                catch
-                {
-                    stdOutHandle?.Dispose();
-                    stdErrHandle?.Dispose();
-                    stdInHandle?.Dispose();
-                    stdOutStream?.Dispose();
-                    stdErrStream?.Dispose();
-                    stdInStream?.Dispose();
-                    throw;
-                }
-                finally
-                {
-                    stdOutStream?.DisposeLocalCopyOfClientHandle();
-                    stdErrStream?.DisposeLocalCopyOfClientHandle();
-                    stdInStream?.DisposeLocalCopyOfClientHandle();
-                }
+                hProcess = new(pi.hProcess, true);
+                hThread = new(pi.hThread, true);
+                processId = pi.dwProcessId;
+            }
+            catch
+            {
+                stdOutHandle?.Dispose();
+                stdErrHandle?.Dispose();
+                stdInHandle?.Dispose();
+                stdOutStream?.Dispose();
+                stdErrStream?.Dispose();
+                stdInStream?.Dispose();
+                throw;
+            }
+            finally
+            {
+                stdOutStream?.DisposeLocalCopyOfClientHandle();
+                stdErrStream?.DisposeLocalCopyOfClientHandle();
+                stdInStream?.DisposeLocalCopyOfClientHandle();
+            }
 
-                // Since the process wasn't spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
-                ProcessLaunchState launchState;
+            // Since the process wasn't spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
+            ProcessLaunchState launchState;
+            try
+            {
+                Process process = Process.GetProcessById((int)processId);
                 try
                 {
-                    Process process = Process.GetProcessById((int)processId);
-                    try
-                    {
-                        _ = process.Handle; launchState = stdOutHandle is not null && stdErrHandle is not null
-                            ? new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
-                            : new(launchInfo, process, processId, hProcess, commandSpan.ToString());
-                    }
-                    catch
-                    {
-                        process.Dispose();
-                        throw;
-                    }
+                    _ = process.Handle; launchState = stdOutHandle is not null && stdErrHandle is not null
+                        ? new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
+                        : new(launchInfo, process, processId, hProcess, commandSpan.ToString());
                 }
                 catch
                 {
-                    stdOutHandle?.Dispose();
-                    stdErrHandle?.Dispose();
-                    stdInHandle?.Dispose();
-                    stdOutStream?.Dispose();
-                    stdErrStream?.Dispose();
-                    stdInStream?.Dispose();
-                    hProcess.Dispose();
-                    hThread.Dispose();
-                    throw;
-                }
-
-                // Resume the main thread and return information about the process.
-                try
-                {
-                    using (hThread)
-                    {
-                        stdOutHandle?.Task.Start(TaskScheduler.Default);
-                        stdErrHandle?.Task.Start(TaskScheduler.Default);
-                        _ = NativeMethods.ResumeThread(hThread);
-                    }
-                    stdInHandle?.Task.Start(TaskScheduler.Default);
-                    return new(launchState);
-                }
-                catch
-                {
-                    stdOutStream?.Dispose();
-                    stdErrStream?.Dispose();
-                    stdInStream?.Dispose();
-                    launchState.Process.Dispose();
-                    launchState.Dispose();
+                    process.Dispose();
                     throw;
                 }
             }
-            else
+            catch
             {
-                // Set up the process object and start it.
-                Process process = new();
-                try
-                {
-                    process.StartInfo = new()
-                    {
-                        FileName = launchInfo.FilePath,
-                        UseShellExecute = launchInfo.UseShellExecute,
-                    };
-                    if (!string.IsNullOrWhiteSpace(launchInfo.Arguments))
-                    {
-                        process.StartInfo.Arguments = launchInfo.Arguments;
-                    }
-                    if (launchInfo.WorkingDirectory is not null)
-                    {
-                        process.StartInfo.WorkingDirectory = launchInfo.WorkingDirectory.FullName;
-                    }
-                    if (!string.IsNullOrWhiteSpace(launchInfo.Verb))
-                    {
-                        process.StartInfo.Verb = launchInfo.Verb;
-                    }
-                    if (launchInfo.ProcessWindowStyle is not null)
-                    {
-                        process.StartInfo.WindowStyle = launchInfo.ProcessWindowStyle.Value;
-                    }
-                    if (launchInfo.CreateNoWindow)
-                    {
-                        process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                    }
-                    if (!process.Start() && File.Exists(launchInfo.FilePath))
-                    {
-                        throw new InvalidProgramException("Failed to start the process.");
-                    }
-                }
-                catch
-                {
-                    process.Dispose();
-                    throw;
-                }
+                stdOutHandle?.Dispose();
+                stdErrHandle?.Dispose();
+                stdInHandle?.Dispose();
+                stdOutStream?.Dispose();
+                stdErrStream?.Dispose();
+                stdInStream?.Dispose();
+                hProcess.Dispose();
+                hThread.Dispose();
+                throw;
+            }
 
-                // Try to get the process's handle and process Id. For a pure
-                // shell action, the calls will throw so just return null here.
-                ClientServerUtilities.SetClientServerOperationSuccess();
-                SafeProcessHandle hProcess;
-                try
+            // Resume the main thread and return information about the process.
+            try
+            {
+                using (hThread)
                 {
-                    hProcess = process.SafeHandle;
+                    stdOutHandle?.Task.Start(TaskScheduler.Default);
+                    stdErrHandle?.Task.Start(TaskScheduler.Default);
+                    _ = NativeMethods.ResumeThread(hThread);
                 }
-                catch
-                {
-                    process.Dispose();
-                    return null;
-                    throw;
-                }
+                stdInHandle?.Task.Start(TaskScheduler.Default);
+                return new(launchState);
+            }
+            catch
+            {
+                stdOutStream?.Dispose();
+                stdErrStream?.Dispose();
+                stdInStream?.Dispose();
+                launchState.Process.Dispose();
+                launchState.Dispose();
+                throw;
+            }
+        }
 
-                // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
-                try
+        /// <summary>
+        /// Starts a new process using ShellExecuteEx with the specified launch parameters and returns a handle to the
+        /// created process, or null if the operation is a pure shell action.
+        /// </summary>
+        /// <remarks>If the process cannot be started or an error occurs during initialization, an
+        /// exception is thrown. The caller is responsible for disposing of the returned ProcessHandle when it is no
+        /// longer needed.</remarks>
+        /// <param name="launchInfo">An object containing the parameters required to launch the process, including file path, arguments, working
+        /// directory, window style, and other process options.</param>
+        /// <returns>A handle to the started process if the process was successfully created; otherwise, null if the operation
+        /// was a pure shell action and no process was started.</returns>
+        /// <exception cref="NotSupportedException">Thrown if the RunAsActiveUser property of launchInfo is set, as running as a different user is not supported
+        /// with ShellExecuteEx.</exception>
+        private static ProcessHandle? LaunchWithShellExecuteExAsync(ProcessLaunchInfo launchInfo)
+        {
+            // Throw if RunAsActiveUser is populated as it's not supported.
+            if (launchInfo.RunAsActiveUser is not null || launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser)
+            {
+                throw new NotSupportedException("Running as a different user is not supported with ShellExecuteEx.");
+            }
+
+            // Set up the process object and start it.
+            Process process = new();
+            try
+            {
+                process.StartInfo = new()
                 {
-                    if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
-                    {
-                        process.PriorityClass = launchInfo.PriorityClass.Value;
-                    }
-                    return new(new(launchInfo, process, launchInfo.MakeCommandLine()));
-                }
-                catch
+                    FileName = launchInfo.FilePath,
+                    UseShellExecute = launchInfo.UseShellExecute,
+                };
+                if (!string.IsNullOrWhiteSpace(launchInfo.Arguments))
                 {
-                    hProcess.Dispose();
-                    process.Dispose();
-                    throw;
+                    process.StartInfo.Arguments = launchInfo.Arguments;
                 }
+                if (launchInfo.WorkingDirectory is not null)
+                {
+                    process.StartInfo.WorkingDirectory = launchInfo.WorkingDirectory.FullName;
+                }
+                if (!string.IsNullOrWhiteSpace(launchInfo.Verb))
+                {
+                    process.StartInfo.Verb = launchInfo.Verb;
+                }
+                if (launchInfo.ProcessWindowStyle is not null)
+                {
+                    process.StartInfo.WindowStyle = launchInfo.ProcessWindowStyle.Value;
+                }
+                if (launchInfo.CreateNoWindow)
+                {
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                }
+                if (!process.Start() && File.Exists(launchInfo.FilePath))
+                {
+                    throw new InvalidProgramException("Failed to start the process.");
+                }
+            }
+            catch
+            {
+                process.Dispose();
+                throw;
+            }
+
+            // Try to get the process's handle and process Id. For a pure
+            // shell action, the calls will throw so just return null here.
+            ClientServerUtilities.SetClientServerOperationSuccess();
+            SafeProcessHandle hProcess;
+            try
+            {
+                hProcess = process.SafeHandle;
+            }
+            catch
+            {
+                process.Dispose();
+                return null;
+                throw;
+            }
+
+            // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
+            try
+            {
+                if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                {
+                    process.PriorityClass = launchInfo.PriorityClass.Value;
+                }
+                return new(new(launchInfo, process, launchInfo.MakeCommandLine()));
+            }
+            catch
+            {
+                hProcess.Dispose();
+                process.Dispose();
+                throw;
             }
         }
 
