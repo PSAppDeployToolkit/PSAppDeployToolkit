@@ -81,12 +81,12 @@ Describe 'Add-ADTEdgeExtension' {
                 { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode $mode } | Should -Not -Throw
             }
 
-            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'invalid' } | Should -Throw
+            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'invalid' } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentValidationError,Add-ADTEdgeExtension'
         }
 
         It 'Should only accept valid URLs for UpdateUrl' {
             { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'https://edge.microsoft.com/blah' -InstallationMode 'force_installed' } | Should -Not -Throw
-            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'invalid' -InstallationMode 'force_installed' } | Should -Throw
+            { Add-ADTEdgeExtension -ExtensionID 'abc123' -UpdateUrl 'invalid' -InstallationMode 'force_installed' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId 'InvalidUpdateUrlParameterValue,Add-ADTEdgeExtension'
         }
     }
 }

@@ -28,17 +28,27 @@ MyOtherKey=MyOtherValue
 
     Context 'Input Validation' {
         It 'Should verify that FilePath is not null, empty or whitespace' {
-            { Remove-ADTIniSection -FilePath $null -Section 'Anything' } | Should -Throw
-            { Remove-ADTIniSection -FilePath '' -Section 'Anything' } | Should -Throw
-            { Remove-ADTIniSection -FilePath ' ' -Section 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Remove-ADTIniSection'
+            }
+            { Remove-ADTIniSection -FilePath $null -Section 'Anything' } | Should @ShouldParams
+            { Remove-ADTIniSection -FilePath '' -Section 'Anything' } | Should @ShouldParams
+            { Remove-ADTIniSection -FilePath ' ' -Section 'Anything' } | Should @ShouldParams
         }
         It 'Should verify that FilePath exists' {
-            { Remove-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw
+            { Remove-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage "The specified file does not exist.*" -ErrorId 'InvalidFilePathParameterValue,Remove-ADTIniSection'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
-            { Remove-ADTIniSection -FilePath $IniPath -Section $null } | Should -Throw
-            { Remove-ADTIniSection -FilePath $IniPath -Section '' } | Should -Throw
-            { Remove-ADTIniSection -FilePath $IniPath -Section ' ' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Remove-ADTIniSection'
+            }
+            { Remove-ADTIniSection -FilePath $IniPath -Section $null } | Should @shouldParams
+            { Remove-ADTIniSection -FilePath $IniPath -Section '' } | Should @shouldParams
+            { Remove-ADTIniSection -FilePath $IniPath -Section ' ' } | Should @shouldParams
         }
     }
 }

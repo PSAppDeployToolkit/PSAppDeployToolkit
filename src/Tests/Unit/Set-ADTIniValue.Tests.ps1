@@ -55,22 +55,37 @@ MyKey=MyValue
 
     Context 'Input Validation' {
         It 'Should verify that FilePath is not null, empty or whitespace' {
-            { Set-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should -Throw
-            { Set-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should -Throw
-            { Set-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Set-ADTIniValue'
+            }
+            { Set-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists if Force is not specified' {
-            { Set-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should -Throw
+            { Set-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Set-ADTIniValue'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
-            { Set-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' -Value 'Anything' } | Should -Throw
-            { Set-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' -Value 'Anything' } | Should -Throw
-            { Set-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' -Value 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Set-ADTIniValue'
+            }
+            { Set-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
         }
         It 'Should verify that Key is not null, empty or whitespace' {
-            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null -Value 'Anything' } | Should -Throw
-            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' -Value 'Anything' } | Should -Throw
-            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' -Value 'Anything' } | Should -Throw
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Set-ADTIniValue'
+            }
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' -Value 'Anything' } | Should @shouldParams
         }
         It 'Should allow null/empty/whitespace as Value' {
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NullKey' -Value $null } | Should -Not -Throw
