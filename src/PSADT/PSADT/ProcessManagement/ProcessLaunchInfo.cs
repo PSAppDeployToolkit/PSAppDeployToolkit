@@ -72,6 +72,12 @@ namespace PSADT.ProcessManagement
                 Verb = verb;
             }
 
+            // Confirm we're not using incompatible options.
+            if (useShellExecute && !(runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
+            {
+                throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+            }
+
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
             ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
@@ -215,12 +221,6 @@ namespace PSADT.ProcessManagement
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
-
-            // Confirm we're not using incompatible options.
-            if (UseShellExecute && !(RunAsActiveUser is null || RunAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
-            {
-                throw new InvalidOperationException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
-            }
         }
 
         /// <summary>
