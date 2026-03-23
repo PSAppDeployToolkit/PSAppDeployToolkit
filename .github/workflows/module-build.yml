@@ -1,4 +1,4 @@
-﻿# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/software-installed-on-github-hosted-runners
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
@@ -24,11 +24,6 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # https://github.com/actions/checkout/releases/tag/v6.0.2
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7  # https://github.com/actions/setup-dotnet/releases/tag/v5.2.0
-      with:
-        global-json-file: ./global.json
-
     - name: Display the path
       shell: powershell
       run: echo ${env:PATH}
@@ -36,14 +31,6 @@ jobs:
     - name: Version Display
       shell: powershell
       run: $PSVersionTable
-
-    - name: Inspect .NET
-      shell: pwsh
-      run: |
-        where.exe dotnet
-        dotnet --version
-        dotnet --info
-        dotnet --list-sdks
 
     # actions/setup-dotnet caching is unwieldy with multiple projects
     # https://github.com/NuGet/Home/issues/12409

@@ -15,6 +15,7 @@ using PSADT.ClientServer;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
+using PSADT.SafeHandles;
 using PSADT.Security;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.JobObjects;
