@@ -30,7 +30,7 @@ Describe 'Test-ADTRegistryValue' {
             }
             { Test-ADTRegistryValue -Key $null -Name 'Anything' } | Should @shouldParams
             { Test-ADTRegistryValue -Key '' -Name 'Anything' } | Should @shouldParams
-            { Test-ADTRegistryValue -Key ' ' -Name 'Anything' } | Should @shouldParams
+            { Test-ADTRegistryValue -Key " `f`n`r`t`v" -Name 'Anything' } | Should @shouldParams
         }
         It 'Should verify that Name is not null, empty or whitespace' {
             $shouldParams = @{
@@ -40,7 +40,7 @@ Describe 'Test-ADTRegistryValue' {
             }
             { Test-ADTRegistryValue -Key 'Anything' -Name $null } | Should @shouldParams
             { Test-ADTRegistryValue -Key 'Anything' -Name '' } | Should @shouldParams
-            { Test-ADTRegistryValue -Key 'Anything' -Name ' ' } | Should @shouldParams
+            { Test-ADTRegistryValue -Key 'Anything' -Name " `f`n`r`t`v" } | Should @shouldParams
         }
         It 'Should verify that SID is not null, empty or whitespace' {
             $shouldParams = @{
@@ -49,7 +49,7 @@ Describe 'Test-ADTRegistryValue' {
             }
             { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTRegistryValue'
             { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Test-ADTRegistryValue'
-            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID ' ' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Test-ADTRegistryValue'
+            { Test-ADTRegistryValue -Key 'Anything' -Name 'Test' -SID " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Test-ADTRegistryValue'
         }
     }
 }

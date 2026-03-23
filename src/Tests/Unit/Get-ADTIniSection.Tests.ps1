@@ -41,7 +41,7 @@ MyKey2=MyValue2
             }
             { Get-ADTIniSection -FilePath $null -Section 'Anything' } | Should @shouldParams
             { Get-ADTIniSection -FilePath '' -Section 'Anything' } | Should @shouldParams
-            { Get-ADTIniSection -FilePath ' ' -Section 'Anything' } | Should @shouldParams
+            { Get-ADTIniSection -FilePath " `f`n`r`t`v" -Section 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists' {
             { Get-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage "The specified file does not exist.*" -ErrorId 'InvalidFilePathParameterValue,Get-ADTIniSection'
@@ -54,7 +54,7 @@ MyKey2=MyValue2
             }
             { Get-ADTIniSection -FilePath $IniPath -Section $null } | Should @shouldParams
             { Get-ADTIniSection -FilePath $IniPath -Section '' } | Should @shouldParams
-            { Get-ADTIniSection -FilePath $IniPath -Section ' ' } | Should @shouldParams
+            { Get-ADTIniSection -FilePath $IniPath -Section " `f`n`r`t`v" } | Should @shouldParams
         }
     }
 }

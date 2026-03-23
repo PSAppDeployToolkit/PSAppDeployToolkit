@@ -62,7 +62,7 @@ MyKey=MyValue
             }
             { Set-ADTIniValue -FilePath $null -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
             { Set-ADTIniValue -FilePath '' -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
-            { Set-ADTIniValue -FilePath ' ' -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath " `f`n`r`t`v" -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists if Force is not specified' {
             { Set-ADTIniValue -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' -Key 'Anything' -Value 'Anything' } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Set-ADTIniValue'
@@ -75,7 +75,7 @@ MyKey=MyValue
             }
             { Set-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' -Value 'Anything' } | Should @shouldParams
             { Set-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
-            { Set-ADTIniValue -FilePath $IniPath -Section ' ' -Key 'Anything' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath $IniPath -Section " `f`n`r`t`v" -Key 'Anything' -Value 'Anything' } | Should @shouldParams
         }
         It 'Should verify that Key is not null, empty or whitespace' {
             $shouldParams = @{
@@ -85,12 +85,12 @@ MyKey=MyValue
             }
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key $null -Value 'Anything' } | Should @shouldParams
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key '' -Value 'Anything' } | Should @shouldParams
-            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key ' ' -Value 'Anything' } | Should @shouldParams
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key " `f`n`r`t`v" -Value 'Anything' } | Should @shouldParams
         }
         It 'Should allow null/empty/whitespace as Value' {
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'NullKey' -Value $null } | Should -Not -Throw
             { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'EmptyKey' -Value '' } | Should -Not -Throw
-            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'WhitespaceKey' -Value ' ' } | Should -Not -Throw
+            { Set-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'WhitespaceKey' -Value " `f`n`r`t`v" } | Should -Not -Throw
         }
     }
 }
