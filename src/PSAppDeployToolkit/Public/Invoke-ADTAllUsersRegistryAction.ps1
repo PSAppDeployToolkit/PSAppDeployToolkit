@@ -174,8 +174,7 @@ function Invoke-ADTAllUsersRegistryAction
             }
             finally
             {
-                [System.GC]::Collect()
-                [System.GC]::WaitForPendingFinalizers()
+                [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()
                 [System.Array]::Reverse($manualRegHives)
                 foreach ($regHive in $manualRegHives)
                 {
