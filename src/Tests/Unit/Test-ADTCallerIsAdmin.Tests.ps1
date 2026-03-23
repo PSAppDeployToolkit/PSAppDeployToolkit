@@ -5,15 +5,21 @@
 Describe 'Test-ADTCallerIsAdmin' {
     Context 'Functionality' {
         It 'Should return $true when the caller is in the Administrator role' {
-            $callerIsAdmin = [System.Security.Principal.WindowsPrincipal]::new([System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
-
-            if ($callerIsAdmin)
+            $callerIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+            try
             {
-                Test-ADTCallerIsAdmin | Should -BeTrue
+                if ([System.Security.Principal.WindowsPrincipal]::new($callerIdentity).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator))
+                {
+                    Test-ADTCallerIsAdmin | Should -BeTrue
+                }
+                else
+                {
+                    Test-ADTCallerIsAdmin | Should -BeFalse
+                }
             }
-            else
+            finally
             {
-                Test-ADTCallerIsAdmin | Should -BeFalse
+                $callerIdentity.Dispose()
             }
         }
     }
