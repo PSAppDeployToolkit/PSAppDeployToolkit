@@ -532,15 +532,16 @@ namespace PSADT.ProcessManagement
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken);
             bool forceBreakaway = createProcessAsUserAbility == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
-            bool canCreateProcessAsUser = createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK;
-            if (canCreateProcessAsUser || forceBreakaway || handlesToInherit.Count > 0)
+            bool canCreateProcessAsUser = createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK || forceBreakaway;
+            bool hasHandlesToInherit = handlesToInherit.Count > 0;
+            if (canCreateProcessAsUser)
             {
                 // Ensure necessary privileges are enabled.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
-                if (handlesToInherit.Count > 0 || forceBreakaway)
+                if (forceBreakaway || hasHandlesToInherit)
                 {
                     // Create the extended startup info with the necessary attributes.
                     (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
@@ -550,41 +551,27 @@ namespace PSADT.ProcessManagement
                         return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, in startupInfoEx, out pi);
                     }
                 }
-                else if (canCreateProcessAsUser)
-                {
-                    // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
-                    // with E_ACCESSDENIED errors from CreateProcessAsUser() as processes in a job all need to be in the same session.
-                    // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-                    if (!isCallerToken)
-                    {
-                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
-                    }
-                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
-                }
                 else
                 {
-                    throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}");
+                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
                 }
+            }
+            else if (hasHandlesToInherit)
+            {
+                throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}");
             }
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
             CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken);
-            bool canCreateProcessWithToken = createProcessWithTokenAbility == CreateProcessUsingTokenStatus.OK;
-            if (canCreateProcessWithToken && handlesToInherit.Count == 0)
+            if (createProcessWithTokenAbility == CreateProcessUsingTokenStatus.OK)
             {
-                // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
-                // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
-                // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-                if (!isCallerToken)
-                {
-                    creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
-                }
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
-                return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
+                return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
             }
-
-            // Neither CreateProcessAsUser() nor CreateProcessWithToken() can be used.
-            throw new InvalidOperationException($"Unable to create a new process via token.{(!canCreateProcessAsUser && !forceBreakaway ? $" CreateProcessAsUser() reason: {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}" : null)}{(!canCreateProcessWithToken ? $" CreateProcessWithToken() reason: {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}" : null)}");
+            else
+            {
+                throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}");
+            }
         }
 
         /// <summary>
