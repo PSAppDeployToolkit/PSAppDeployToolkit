@@ -19,5 +19,6 @@
     "powershell.codeFormatting.preset": "Allman",
     "powershell.codeFormatting.alignPropertyValuePairs": false,
     "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "dotnet.defaultSolution": "PSADT.slnx"
 }
