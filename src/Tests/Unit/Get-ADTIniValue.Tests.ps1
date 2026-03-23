@@ -56,9 +56,9 @@ MyWhitespaceKey=
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
                 ErrorId = 'ParameterArgumentValidationError,Get-ADTIniValue'
             }
-            { Get-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' } | Should @ShouldParams
-            { Get-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' } | Should @ShouldParams
-            { Get-ADTIniValue -FilePath $IniPath -Section " `f`n`r`t`v" -Key 'Anything' } | Should @ShouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section $null -Key 'Anything' } | Should @shouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section '' -Key 'Anything' } | Should @shouldParams
+            { Get-ADTIniValue -FilePath $IniPath -Section " `f`n`r`t`v" -Key 'Anything' } | Should @shouldParams
         }
         It 'Should verify that Key is not null, empty or whitespace' {
             $shouldParams = @{
