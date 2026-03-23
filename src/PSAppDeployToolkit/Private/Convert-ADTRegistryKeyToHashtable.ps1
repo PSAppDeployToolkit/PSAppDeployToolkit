@@ -15,7 +15,20 @@ function Private:Convert-ADTRegistryKeyToHashtable
     process
     {
         # Process potential subkeys first.
-        $subdata = $_ | Get-ChildItem | & $MyInvocation.MyCommand
+        $subdata = $_ | Get-ChildItem | & {
+            end
+            {
+                $registryKeys = $($input)
+                try
+                {
+                    $registryKeys | & $MyInvocation.MyCommand
+                }
+                finally
+                {
+                    $registryKeys.Dispose()
+                }
+            }
+        }
 
         # Open a new subdata hashtable if we had no subkeys.
         if ($null -eq $subdata)

@@ -322,6 +322,10 @@ function Get-ADTApplication
             {
                 Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to process the uninstall data [$item]: $($_.Exception.Message)." -ErrorAction SilentlyContinue
             }
+            finally
+            {
+                $item.Dispose()
+            }
         }
 
         # Write to log the number of entries skipped due to them being considered updates.
