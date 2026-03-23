@@ -21,11 +21,11 @@ function Copy-ADTContentToCache
         The path to the software cache folder.
 
     .PARAMETER Exclude
-        Specifies one or more content categories to exclude from the cache copy. Acceptable values are 'Files', 'SupportFiles', and 'Other'.
+        Specifies one or more content categories to exclude from the cache copy. Acceptable values are 'Files', 'SupportFiles', and 'Toolkit'.
 
         - Files: Excludes the Files folder and does not remap the DirFiles session property.
         - SupportFiles: Excludes the SupportFiles folder and does not remap the DirSupportFiles session property.
-        - Other: Excludes all content other than the Files and SupportFiles folders.
+        - Toolkit: Excludes all content other than the Files and SupportFiles folders.
 
     .INPUTS
         None
@@ -48,7 +48,7 @@ function Copy-ADTContentToCache
         This example copies the toolkit content to the default cache folder, excluding the Files and SupportFiles folders and leaving DirFiles and DirSupportFiles pointing at the original location.
 
     .EXAMPLE
-        Copy-ADTContentToCache -Exclude Other
+        Copy-ADTContentToCache -Exclude Toolkit
 
         This example copies only the Files and SupportFiles folders to the default cache folder, excluding all other content.
 
@@ -81,13 +81,13 @@ function Copy-ADTContentToCache
         [System.String]$LiteralPath = "$((Get-ADTConfig).Toolkit.CachePath)\$((Get-ADTSession).InstallName)",
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Files', 'SupportFiles', 'Other')]
+        [ValidateSet('Files', 'SupportFiles', 'Toolkit')]
         [System.String[]]$Exclude
     )
 
     begin
     {
-        if ('Files' -in $Exclude -and 'SupportFiles' -in $Exclude -and 'Other' -in $Exclude)
+        if ('Files' -in $Exclude -and 'SupportFiles' -in $Exclude -and 'Toolkit' -in $Exclude)
         {
             $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Exclude -ProvidedValue $Exclude -ExceptionMessage 'Cannot specify all possible values for -Exclude parameter as there would be nothing to copy.'))
         }
@@ -162,7 +162,7 @@ function Copy-ADTContentToCache
                 else
                 {
                     # Selective copy: enumerate top-level items and copy based on -Exclude.
-                    if ('Other' -notin $Exclude)
+                    if ('Toolkit' -notin $Exclude)
                     {
                         Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin $folderNames) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
                     }
