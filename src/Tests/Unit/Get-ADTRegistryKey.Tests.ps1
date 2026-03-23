@@ -38,7 +38,7 @@ Describe 'Get-ADTRegistryKey' {
                         return $false
                     }
 
-                    if ($property.Value -ne $Right.$($property.Name))
+                    if ($property.Value -ne $Right.($property.Name))
                     {
                         return $false
                     }
@@ -56,7 +56,7 @@ Describe 'Get-ADTRegistryKey' {
                         return $false
                     }
 
-                    if ($property.Value -ne $Left.$($property.Name))
+                    if ($property.Value -ne $Left.($property.Name))
                     {
                         return $false
                     }
