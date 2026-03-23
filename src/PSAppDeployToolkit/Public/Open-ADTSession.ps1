@@ -348,7 +348,7 @@ function Open-ADTSession
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage 'The specified input is null or empty.'))
                 }
-                if ([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.Match($_).Success)
+                if (![PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex.Match($_).Success)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName LogName -ProvidedValue $_ -ExceptionMessage "The specified value does match [$([PSAppDeployToolkit.Logging.LogUtilities]::LogFileNameRegex)]."))
                 }
