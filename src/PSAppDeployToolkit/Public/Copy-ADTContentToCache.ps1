@@ -108,6 +108,18 @@ function Copy-ADTContentToCache
 
     process
     {
+        # Add a redundant $scriptDir assertion to shut CodeQL up.
+        if (($null -eq $scriptDir) -or !(Test-Path -LiteralPath $scriptDir -PathType Container))
+        {
+            $naerParams = @{
+                Exception = [System.IO.DirectoryNotFoundException]::new("The active deployment session does not have a valid ScriptDirectory established.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'DeploymentSessionScriptDirectoryDoesNotExist'
+                TargetObject = $scriptDir
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
         # Create the cache folder if it does not exist.
         if (!(Test-Path -LiteralPath $LiteralPath -PathType Container))
         {
