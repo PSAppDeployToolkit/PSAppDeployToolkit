@@ -19,6 +19,9 @@ function Remove-ADTHashtableNullOrEmptyValues
     .PARAMETER Recurse
         Specifies to recursively remove nested hashtable values that are null, empty, or whitespace.
 
+    .PARAMETER Depth
+        Specifies how many recursive levels to remove null, empty, or whitespace values. The default value is 5.
+
     .INPUTS
         System.Collections.Hashtable
 
@@ -46,16 +49,19 @@ function Remove-ADTHashtableNullOrEmptyValues
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTHashtableNullOrEmptyValues
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetname = 'Default')]
     [OutputType([System.Collections.Hashtable])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
         [System.Collections.Hashtable]$Hashtable,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Recurse
+        [Parameter(Mandatory = $true, ParameterSetName = 'Recurse')]
+        [System.Management.Automation.SwitchParameter]$Recurse,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Recurse')]
+        [ValidateRange(1, [System.Int32]::MaxValue)]
+        [System.Int32]$Depth = 5
     )
 
     process
@@ -64,9 +70,9 @@ function Remove-ADTHashtableNullOrEmptyValues
         $obj = @{}; foreach ($section in $Hashtable.GetEnumerator())
         {
             # Recursively remove null/empty/whitespace keys from the bottom up, if the Recurse parameter is provided.
-            if ($section.Value -is [System.Collections.Hashtable] -and $Recurse)
+            if (($section.Value -is [System.Collections.Hashtable]) -and $Recurse -and ($Depth -gt 1))
             {
-                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value -Recurse:$Recurse
+                $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value -Recurse -Depth ($Depth - 1)
             }
             if (![System.String]::IsNullOrWhiteSpace((Out-String -InputObject $section.Value)))
             {
