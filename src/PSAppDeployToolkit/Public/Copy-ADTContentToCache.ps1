@@ -88,7 +88,7 @@ function Copy-ADTContentToCache
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if (($null -ne $Exclude) -and ($Exclude.Count -eq $MyInvocation.MyCommand.Parameters.Exclude.Attributes.Where({ $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues.Count))
+        if (($null -ne $Exclude) -and (($Exclude | Select-Object -Unique | Measure-Object).Count -eq $MyInvocation.MyCommand.Parameters.Exclude.Attributes.Where({ $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues.Count))
         {
             $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Exclude -ProvidedValue $Exclude -ExceptionMessage 'Cannot specify all possible values for [-Exclude] parameter as there would be nothing to copy.'))
         }
