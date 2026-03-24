@@ -54,13 +54,14 @@ function Remove-ADTHashtableNullOrEmptyValues
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+        [AllowEmptyCollection()]
         [System.Collections.Hashtable]$Hashtable,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Recurse')]
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Recurse')]
-        [ValidateRange(1, [System.Int32]::MaxValue)]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.Int32]$Depth = 5
     )
 
