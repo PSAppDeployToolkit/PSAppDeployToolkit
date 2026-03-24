@@ -11,9 +11,11 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
             [OutputType([System.Boolean])]
             param (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+                [AllowEmptyCollection()]
                 [System.Collections.Hashtable]$Left,
 
                 [Parameter(Mandatory = $true, Position = 1)]
+                [AllowEmptyCollection()]
                 [System.Collections.Hashtable]$Right
             )
 
