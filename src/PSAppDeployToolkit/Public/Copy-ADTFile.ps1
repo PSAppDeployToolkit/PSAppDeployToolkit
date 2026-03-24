@@ -28,6 +28,9 @@ function Copy-ADTFile
     .PARAMETER Flatten
         Flattens the files into the root destination directory.
 
+    .PARAMETER NoClobber
+        Prevents overwriting existing files at the destination. When specified, files that already exist at the destination path are skipped.
+
     .PARAMETER ContinueFileCopyOnError
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied.
 
@@ -70,6 +73,11 @@ function Copy-ADTFile
 
         Copies all files within the active session's Files folder to 'C:\some\random\file\path', overwriting the destination file if it exists.
 
+    .EXAMPLE
+        Copy-ADTFile -Path "$($adtSession.DirFiles)\*" -Destination C:\some\random\file\path -NoClobber
+
+        Copies files from the active session's Files folder that do not already exist at the destination.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
@@ -105,6 +113,9 @@ function Copy-ADTFile
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Flatten,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoClobber,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ContinueFileCopyOnError,
@@ -176,6 +187,14 @@ function Copy-ADTFile
                         $RobocopyParams = $RobocopyParams -replace '/IM(\s+|$)'
                         $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IM(\s+|$)'
                     }
+
+                    # If NoClobber is specified, strip /IS, /IT, and /IM to prevent copying existing files,
+                    # and add /XC, /XN, /XO to exclude Changed, Newer, and Older files.
+                    if ($NoClobber)
+                    {
+                        $RobocopyParams = ($RobocopyParams -replace '/IS(\s+|$)' -replace '/IT(\s+|$)' -replace '/IM(\s+|$)') + ' /XC /XN /XO'
+                        $RobocopyAdditionalParams = $RobocopyAdditionalParams -replace '/IS(\s+|$)' -replace '/IT(\s+|$)' -replace '/IM(\s+|$)'
+                    }
                 }
             }
             else
@@ -243,6 +262,7 @@ function Copy-ADTFile
                             Destination = $Destination  # Use the original destination path, not $robocopyDestination which could have had a subfolder appended to it.
                             Recurse = $false  # Disable recursion as this will create subfolders in the destination.
                             Flatten = $false  # Disable flattening to prevent infinite loops.
+                            NoClobber = $NoClobber
                             ContinueFileCopyOnError = $ContinueFileCopyOnError
                             FileCopyMode = $FileCopyMode
                             RobocopyParams = $RobocopyParams
@@ -415,10 +435,27 @@ function Copy-ADTFile
                         # Perform copy operation.
                         $null = if ($Flatten)
                         {
-                            Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened."
+                            Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination] root folder, flattened$(if ($NoClobber) { ', with -NoClobber' })."
                             if ($srcPaths = Get-ChildItem @pathSplat -File -Recurse -Force -ErrorAction Ignore)
                             {
-                                if ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
+                                if ($NoClobber)
+                                {
+                                    $srcPaths = @($srcPaths | & {
+                                            process
+                                            {
+                                                $destFilePath = Join-Path -Path $Destination -ChildPath $_.Name
+                                                if (Test-Path -LiteralPath $destFilePath -PathType Leaf)
+                                                {
+                                                    Write-ADTLogEntry -Message "File already exists at destination [$destFilePath]. Skipping due to -NoClobber." -Severity Warning
+                                                }
+                                                else
+                                                {
+                                                    return $_
+                                                }
+                                            }
+                                        })
+                                }
+                                if ($srcPaths.Count -and $PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
                                 {
                                     Copy-Item -LiteralPath $srcPaths.PSPath @ciParams
                                 }
@@ -426,16 +463,64 @@ function Copy-ADTFile
                         }
                         elseif ($Recurse)
                         {
-                            Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]."
-                            if ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
+                            Write-ADTLogEntry -Message "Copying file(s) recursively in path [$srcPath] to destination [$Destination]$(if ($NoClobber) { ' with -NoClobber' })."
+                            if ($NoClobber)
+                            {
+                                $srcRoot = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent)).Path
+                                $destRoot = if (($destItem = Get-Item -LiteralPath $Destination -Force).PSIsContainer) { $destItem.FullName } else { Split-Path -Path $destItem.FullName -Parent }
+
+                                Get-ChildItem @pathSplat -Recurse -Force -ErrorAction Ignore | & {
+                                    process
+                                    {
+                                        $relativePath = $_.FullName.Substring($srcRoot.Length).TrimStart('\')
+                                        $destFilePath = Join-Path -Path $destRoot -ChildPath $relativePath
+                                        if (!$_.PSIsContainer -and (Test-Path -LiteralPath $destFilePath -PathType Leaf))
+                                        {
+                                            Write-ADTLogEntry -Message "File already exists at destination [$destFilePath]. Skipping due to -NoClobber." -Severity Warning
+                                        }
+                                        elseif ($PSCmdlet.ShouldProcess($destFilePath, "Copy from [$($_.FullName)]"))
+                                        {
+                                            $destDir = Split-Path -Path $destFilePath -Parent
+                                            if (!(Test-Path -LiteralPath $destDir -PathType Container))
+                                            {
+                                                $null = New-Item -Path $destDir -ItemType Directory -Force
+                                            }
+                                            $ciParams.Destination = $destFilePath
+                                            Copy-Item -LiteralPath $_.PSPath @ciParams
+                                        }
+                                    }
+                                }
+                            }
+                            elseif ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
                             {
                                 Copy-Item @pathSplat -Recurse @ciParams
                             }
                         }
                         else
                         {
-                            Write-ADTLogEntry -Message "Copying file in path [$srcPath] to destination [$Destination]."
-                            if ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
+                            Write-ADTLogEntry -Message "Copying file(s) in path [$srcPath] to destination [$Destination]$(if ($NoClobber) { ' with -NoClobber' })."
+                            if ($NoClobber)
+                            {
+                                $srcRoot = (Resolve-Path -LiteralPath (Split-Path -Path $srcPath -Parent)).Path
+                                $destRoot = if (($destItem = Get-Item -LiteralPath $Destination -Force).PSIsContainer) { $destItem.FullName } else { Split-Path -Path $destItem.FullName -Parent }
+
+                                Get-Item @pathSplat -Force -ErrorAction Ignore | & {
+                                    process
+                                    {
+                                        $relativePath = $_.FullName.Substring($srcRoot.Length).TrimStart('\')
+                                        $destFilePath = Join-Path -Path $destRoot -ChildPath $relativePath
+                                        if (!$_.PSIsContainer -and (Test-Path -LiteralPath $destFilePath -PathType Leaf))
+                                        {
+                                            Write-ADTLogEntry -Message "File already exists at destination [$destFilePath]. Skipping due to -NoClobber." -Severity Warning
+                                        }
+                                        elseif ($PSCmdlet.ShouldProcess($destFilePath, "Copy from [$($_.FullName)]"))
+                                        {
+                                            Copy-Item -LiteralPath $_.PSPath @ciParams
+                                        }
+                                    }
+                                }
+                            }
+                            elseif ($PSCmdlet.ShouldProcess($Destination, "Copy from [$srcPath]"))
                             {
                                 Copy-Item @pathSplat @ciParams
                             }

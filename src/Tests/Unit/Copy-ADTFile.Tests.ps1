@@ -359,6 +359,60 @@ Describe 'Copy-ADTFile'-ForEach @(
         { Copy-ADTFile -Path "$SourcePath\doesNotExist.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -ErrorAction Stop } | Should -Throw
     }
 
+    Context 'NoClobber tests' {
+        It 'Does not overwrite an existing file with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+
+            Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
+
+            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+        }
+
+        It 'Copies a file when destination does not exist with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
+            Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
+
+            "$DestinationPath\test.txt" | Should -Exist
+        }
+
+        It 'Copies only new files with wildcard and -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+
+            Copy-ADTFile -Path "$SourcePath\test*.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
+
+            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test3.txt" | Should -Exist
+        }
+
+        It 'Copies only new files recursively with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
+            New-Item -Path "$DestinationPath\Source\Subfolder1\test1.txt" -ItemType File -Force | Set-Content -Value 'original content'
+
+            Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber -Recurse
+
+            "$DestinationPath\Source\Subfolder1\test1.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\Source\Subfolder2\test2.txt" | Should -Exist
+        }
+
+        It 'Copies only new files with -Flatten and -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+
+            Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber -Flatten
+
+            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test1.txt" | Should -Exist
+            "$DestinationPath\test2.txt" | Should -Exist
+            "$DestinationPath\test3.txt" | Should -Exist
+        }
+
+        It 'Copies only new files from an array with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+
+            Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder1\test1.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
+
+            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test1.txt" | Should -Exist
+        }
+    }
+
     if ((Get-ItemPropertyValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue) -eq 1)
     {
         It 'Copies files to and from paths longer than 260 characters ($FileCopyMode = $<FileCopyMode>)' {
