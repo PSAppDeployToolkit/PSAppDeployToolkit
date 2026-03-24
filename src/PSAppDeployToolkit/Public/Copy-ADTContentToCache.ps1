@@ -87,9 +87,9 @@ function Copy-ADTContentToCache
 
     begin
     {
-        if ('Files' -in $Exclude -and 'SupportFiles' -in $Exclude -and 'Toolkit' -in $Exclude)
+        if (($null -ne $Exclude) -and ($Exclude.Count -eq $MyInvocation.MyCommand.Parameters.Exclude.Attributes.Where({$_ -is [System.Management.Automation.ValidateSetAttribute]}).ValidValues.Count))
         {
-            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Exclude -ProvidedValue $Exclude -ExceptionMessage 'Cannot specify all possible values for -Exclude parameter as there would be nothing to copy.'))
+            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Exclude -ProvidedValue $Exclude -ExceptionMessage 'Cannot specify all possible values for [-Exclude] parameter as there would be nothing to copy.'))
         }
 
         try
@@ -103,7 +103,6 @@ function Copy-ADTContentToCache
         }
 
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
         $folderNames = @('Files', 'SupportFiles')
     }
 
