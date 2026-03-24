@@ -61,8 +61,7 @@ function Remove-ADTHashtableNullOrEmptyValues
         [System.Management.Automation.SwitchParameter]$Recurse,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Recurse')]
-        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.Int32]$Depth = 5
+        [System.UInt32]$Depth = 5
     )
 
     process
