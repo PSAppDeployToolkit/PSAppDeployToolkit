@@ -89,7 +89,7 @@ namespace PSADT.Interop.Utilities
             // Create the exception given Win32 error code. Trim the trailing period from the message and add it back to ensure consistent formatting.
             Win32Exception win32Exception = new(unchecked((int)win32Error), !string.IsNullOrWhiteSpace(message) ? message : GetMessageForWin32Error(win32Error));
 
-            // Try for an ManagedException > Win32Exception based on the WIN32_ERROR code, falling back as appripriate.
+            // Try for an ManagedException > Win32Exception based on the WIN32_ERROR code, falling back as appropriate.
             return TryGetManagedException(HRESULT_FROM_WIN32(win32Error), win32Exception) is not Exception hrException
                 ? win32Exception
                 : hrException;
