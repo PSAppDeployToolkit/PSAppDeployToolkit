@@ -171,7 +171,7 @@ function Copy-ADTContentToCache
                     {
                         Copy-ADTFile -LiteralPath $filesSourcePath -Destination $LiteralPath -Recurse
                     }
-                    $supportFilesSourcePath = Join-Path -Path $scriptDir -ChildPath SupportFiles
+                    $supportFilesSourcePath = Join-Path -Path $scriptDir -ChildPath 'SupportFiles'
                     if (('SupportFiles' -notin $Exclude) -and (Test-Path -LiteralPath $supportFilesSourcePath -PathType Container))
                     {
                         Copy-ADTFile -LiteralPath $supportFilesSourcePath -Destination $LiteralPath -Recurse
@@ -184,7 +184,7 @@ function Copy-ADTContentToCache
                 {
                     $adtSession.DirFiles = $filesDestPath
                 }
-                $supportFilesDestPath = Join-Path -Path $LiteralPath -ChildPath SupportFiles
+                $supportFilesDestPath = Join-Path -Path $LiteralPath -ChildPath 'SupportFiles'
                 if (('SupportFiles' -notin $Exclude) -and (Test-Path -LiteralPath $supportFilesDestPath -PathType Container))
                 {
                     $adtSession.DirSupportFiles = $supportFilesDestPath
