@@ -1065,13 +1065,14 @@ function Start-ADTProcess
                     {
                         $iafehParams.ErrorAction = $TimeoutAction
                     }
+                    $null = $iafehParams.Remove('ResolveErrorProperties')
                     Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
                     break
                 }
                 default
                 {
                     # This is the handler for any other error/exception that may occur.
-                    Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -DisableErrorResolving:$false -ErrorAction Stop
+                    Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -ErrorAction Stop
                     break
                 }
             }
