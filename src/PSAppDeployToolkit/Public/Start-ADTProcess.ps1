@@ -1026,7 +1026,7 @@ function Start-ADTProcess
             }
             if ($SecureArgumentList)
             {
-                $iafehParams.Add('ResolveErrorProperties', ($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value | & { process { if ($_.Equals('PositionMessage')) { return $_ } } }))
+                $iafehParams.Add('ResolveErrorProperties', ($Script:CommandTable.'Resolve-ADTErrorRecord'.ScriptBlock.Ast.Body.ParamBlock.Parameters.Where({ $_.Name.VariablePath.UserPath.Equals('Property') }).DefaultValue.Pipeline.PipelineElements.Expression.Elements.Value | & { process { if (!$_.Equals('PositionMessage')) { return $_ } } }))
             }
 
             # Switch on the exception type's name.
