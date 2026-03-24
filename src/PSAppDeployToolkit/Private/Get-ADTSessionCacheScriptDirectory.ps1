@@ -7,15 +7,11 @@
 function Private:Get-ADTSessionCacheScriptDirectory
 {
     # Determine whether we've got a valid script directory for caching purposes and throw if we don't.
-    $scriptDir = if (($adtSession = Get-ADTSession).ScriptDirectory -and $adtSession.ScriptDirectory.Count)
+    $scriptDir = if ($adtSession = Get-ADTSession)
     {
-        if ($adtSession.ScriptDirectory.Count -gt 1)
+        if ($adtSession.ScriptDirectory.Count)
         {
-            $adtSession.ScriptDirectory | & { process { if (Test-Path -LiteralPath (Join-Path -Path $_ -ChildPath Files) -PathType Container) { return $_ } } } | Select-Object -First 1
-        }
-        elseif (Test-Path -LiteralPath (Join-Path -Path $($adtSession.ScriptDirectory) -ChildPath Files) -PathType Container)
-        {
-            $($adtSession.ScriptDirectory)
+            $adtSession.ScriptDirectory | & { process { if (Test-Path -LiteralPath (Join-Path -Path $_ -ChildPath Files) -PathType Container) { return $_ } } } | Select-Object -Last 1
         }
         elseif ($adtSession.DirFiles -and (Test-Path -LiteralPath $adtSession.DirFiles -PathType Container))
         {
