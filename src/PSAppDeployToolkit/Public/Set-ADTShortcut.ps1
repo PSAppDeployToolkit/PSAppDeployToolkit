@@ -142,21 +142,27 @@ function Set-ADTShortcut
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        $exists = try
+        $exists = $true
+        try
         {
             $LiteralPath = Resolve-ADTFileSystemPath -LiteralPath $LiteralPath -File
-            $true
         }
         catch
         {
             if ($_.Exception -is [System.IO.FileNotFoundException])
             {
                 $LiteralPath = $_.TargetObject.ResolvedPath
-                $false
+                $exists = $false
+                if (!$Force)
+                {
+                    $PSCmdlet.ThrowTerminatingError($_)
+                    return
+                }
             }
-            if (!$Force)
+            else
             {
                 $PSCmdlet.ThrowTerminatingError($_)
+                return
             }
         }
         if (!$exists -and [System.String]::IsNullOrWhiteSpace($TargetPath))
