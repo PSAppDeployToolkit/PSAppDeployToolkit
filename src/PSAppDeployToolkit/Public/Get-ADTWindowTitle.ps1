@@ -55,17 +55,17 @@ function Get-ADTWindowTitle
         - ParentProcessMainWindowHandle
 
     .EXAMPLE
+        Get-ADTWindowTitle
+
+        Gets details for all windows with a title.
+
+    .EXAMPLE
         Get-ADTWindowTitle -WindowTitle 'Microsoft Word'
 
         Gets details for each window that has the words "Microsoft Word" in the title.
 
     .EXAMPLE
-        Get-ADTWindowTitle -GetAllWindowTitles
-
-        Gets details for all windows with a title.
-
-    .EXAMPLE
-        Get-ADTWindowTitle -GetAllWindowTitles | Where-Object { $_.ParentProcess -eq 'WINWORD' }
+        Get-ADTWindowTitle | Where-Object { $_.ParentProcess -eq 'WINWORD' }
 
         Get details for all windows belonging to Microsoft Word process with name "WINWORD".
 
