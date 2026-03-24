@@ -149,7 +149,7 @@ function Copy-ADTContentToCache
             try
             {
                 # Check if source and destination are the same (already running from cache)
-                if ((Resolve-Path $scriptDir).Path -eq (Resolve-Path $LiteralPath).Path)
+                if ((Resolve-Path -LiteralPath $scriptDir).Path -eq (Resolve-Path -LiteralPath $LiteralPath).Path)
                 {
                     Write-ADTLogEntry -Message "Source and destination are the same path [$LiteralPath]. Skipping copy operation."
                 }
