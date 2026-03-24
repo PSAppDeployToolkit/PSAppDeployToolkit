@@ -31,6 +31,9 @@ function Copy-ADTFileToUserProfiles
     .PARAMETER Flatten
         Flattens the files into the root destination directory.
 
+    .PARAMETER NoClobber
+        Prevents overwriting existing files at the destination. When specified, files that already exist at the destination path are skipped.
+
     .PARAMETER ContinueFileCopyOnError
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied.
 
@@ -128,6 +131,9 @@ function Copy-ADTFileToUserProfiles
         [System.Management.Automation.SwitchParameter]$Flatten,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$NoClobber,
+
+        [Parameter(Mandatory = $false)]
         [ValidateSet('Native', 'Robocopy')]
         [System.String]$FileCopyMode,
 
@@ -171,6 +177,7 @@ function Copy-ADTFileToUserProfiles
         $CopyFileSplat = @{
             Recurse = $Recurse
             Flatten = $Flatten
+            NoClobber = $NoClobber
             ContinueFileCopyOnError = $ContinueFileCopyOnError
         }
         if ($PSBoundParameters.ContainsKey('FileCopyMode'))
