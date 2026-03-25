@@ -14,7 +14,7 @@ function Select-ADTUniqueObject
         This function provides a consistent way to get unique objects from the given input, with consistent StringComparer equality between Windows PowerShell and PowerShell 7.
 
     .PARAMETER InputObject
-        The input to process for uniqueness. Can be pipelined input or an array objects.
+        The input to process for uniqueness. Can be pipelined input or an array of objects.
 
     .PARAMETER CaseSensitivity
         The StringComparison value to use when checking for string equality.
@@ -37,12 +37,12 @@ function Select-ADTUniqueObject
     .EXAMPLE
         'string1', 'string2', 'String2', 'string3' | Select-ADTUniqueObject
 
-        Returns a unique array of integers to the caller, irrespective of case.
+        Returns a unique array of strings to the caller, irrespective of case.
 
     .EXAMPLE
         'string1', 'string2', 'String2', 'string3' | Select-ADTUniqueObject -CaseSensitivity Ordinal
 
-        Returns a unique array of integers to the caller, preserving strings of different casing.
+        Returns a unique array of strings to the caller, preserving strings of different casing.
 
     .NOTES
         An active ADT session is NOT required to use this function.

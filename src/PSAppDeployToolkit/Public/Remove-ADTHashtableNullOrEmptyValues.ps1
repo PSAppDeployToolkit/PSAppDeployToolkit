@@ -11,7 +11,7 @@ function Remove-ADTHashtableNullOrEmptyValues
         Returns a new hashtable that contains entries from the source where the value is not null, empty, or consists only of whitespace.
 
     .DESCRIPTION
-        This function returns a new hashtable that contains entries from the source where the value is not null, empty, or consists only of whitespace.. When the **-Recurse** switch is specified, the function will also traverse any nested hashtables and apply the same filtering to them.
+        This function returns a new hashtable that contains entries from the source where the value is not null, empty, or consists only of whitespace. When the `-Recurse` switch is specified, the function will also traverse any nested hashtables and apply the same filtering to them.
 
     .PARAMETER Hashtable
         The hashtable to remove null values from.
