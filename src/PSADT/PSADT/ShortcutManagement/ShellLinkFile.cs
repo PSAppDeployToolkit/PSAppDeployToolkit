@@ -21,6 +21,7 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -105,9 +106,10 @@ namespace PSADT.ShortcutManagement
                 _shellLink = shellLink;
                 _storageMode = storageMode;
             }
-            catch
+            catch (Exception ex)
             {
                 _ = Marshal.FinalReleaseComObject(shellLink);
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }

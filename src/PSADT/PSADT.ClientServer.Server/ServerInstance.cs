@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
@@ -104,7 +105,7 @@ namespace PSADT.ClientServer
                 (_ioEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
                 (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
             }
-            catch
+            catch (Exception ex)
             {
                 _clientProcessCts?.Dispose();
                 _clientProcessCts = null;
@@ -118,6 +119,7 @@ namespace PSADT.ClientServer
                 _inputServer = null;
                 _outputServer?.Dispose();
                 _outputServer = null;
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
 

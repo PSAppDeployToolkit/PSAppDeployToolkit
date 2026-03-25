@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
@@ -2960,9 +2961,10 @@ namespace PSADT.Interop
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)psii.hIcon, "The icon handle returned from 'SHGetStockIconInfo()' is null or invalid.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 psii.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
             return res;
@@ -4248,9 +4250,10 @@ namespace PSADT.Interop
                 InvalidOperationException.ThrowIfNullOrInvalid(ppszPathLocal, "The path returned from 'SHGetKnownFolderPath()' is null or invalid.");
                 ppszPath = new(ppszPathLocal, true);
             }
-            catch
+            catch (Exception ex)
             {
                 Marshal.FreeCoTaskMem(ppszPathLocal.ToIntPtr());
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
             return res;

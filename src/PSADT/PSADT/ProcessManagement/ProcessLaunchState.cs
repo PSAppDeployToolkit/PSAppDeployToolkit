@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -193,9 +194,10 @@ namespace PSADT.ProcessManagement
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }

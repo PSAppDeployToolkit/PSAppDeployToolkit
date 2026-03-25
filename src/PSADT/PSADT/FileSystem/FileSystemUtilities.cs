@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -176,9 +177,10 @@ namespace PSADT.FileSystem
                                         {
                                             queue.Add(dir + "\\" + name);
                                         }
-                                        catch
+                                        catch (Exception ex)
                                         {
                                             _ = Interlocked.Decrement(ref pendingDirs);
+                                            ExceptionDispatchInfo.Capture(ex).Throw();
                                             throw;
                                         }
                                     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.Utilities;
@@ -34,9 +35,10 @@ namespace PSADT.Interop.SafeHandles
                 _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
                 return new(handle, true);
             }
-            catch
+            catch (Exception ex)
             {
                 Marshal.FreeHGlobal(handle);
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
