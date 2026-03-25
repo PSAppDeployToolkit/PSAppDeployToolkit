@@ -204,7 +204,6 @@ function Start-ADTProcess
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.AllowEmptyButNotNullOrWhiteSpace()]
-        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]

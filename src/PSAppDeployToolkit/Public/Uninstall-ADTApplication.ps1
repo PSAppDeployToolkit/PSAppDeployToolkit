@@ -165,12 +165,10 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]
