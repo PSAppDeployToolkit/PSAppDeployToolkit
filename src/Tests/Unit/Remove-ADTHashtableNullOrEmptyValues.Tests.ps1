@@ -40,7 +40,6 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
 
                     if ($section.Value -is [System.Collections.Hashtable])
                     {
-
                         return (& $MyInvocation.MyCommand -Left $section.Value -Right $Right.($section.Key))
                     }
 
@@ -48,9 +47,8 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
                     {
                         return $false
                     }
-
-                    return $true
                 }
+                return $true
             }
         }
 
