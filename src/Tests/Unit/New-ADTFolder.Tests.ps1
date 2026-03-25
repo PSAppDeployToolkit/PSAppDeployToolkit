@@ -14,7 +14,8 @@ Describe 'New-ADTFolder' {
             Test-Path -LiteralPath "$TestDrive\NewFolder" -PathType Container | Should -BeTrue
         }
         It 'Does not overwrite an existing folder' {
-            New-Item -Path "$TestDrive\NewFolder\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+            New-Item -Path "$TestDrive\NewFolder\test.txt" -ItemType File -Force | Out-Null
+            Set-Content -Path "$TestDrive\NewFolder\test.txt" -Value 'original content'
 
             New-ADTFolder -LiteralPath "$TestDrive\NewFolder"
 
