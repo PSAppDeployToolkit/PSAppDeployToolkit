@@ -1238,7 +1238,7 @@ function Show-ADTInstallationWelcome
                             {
                                 if (($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                                 {
-                                    Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
+                                    Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Select-ADTUniqueObject)))'] are still running, checking again in 1 second..."
                                     [System.Threading.Thread]::Sleep(1000)
                                     continue
                                 }
@@ -1279,7 +1279,7 @@ function Show-ADTInstallationWelcome
                                 {
                                     if (($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                                     {
-                                        Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Sort-Object -Unique)))'] are still running, checking again in 1 second..."
+                                        Write-ADTLogEntry -Message "The application(s) ['$([System.String]::Join("', '", ($runningApps.Description | Select-ADTUniqueObject)))'] are still running, checking again in 1 second..."
                                         [System.Threading.Thread]::Sleep(1000)
                                         continue
                                     }

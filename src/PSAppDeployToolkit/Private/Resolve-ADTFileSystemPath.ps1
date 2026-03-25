@@ -173,7 +173,7 @@ function Private:Resolve-ADTFileSystemPath
         )
 
         # Sanitise the search paths before use.
-        $searchPaths = $searchPaths | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_.Trim() } } } | Select-Object -Unique
+        $searchPaths = $searchPaths | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_.Trim() } } } | Select-ADTUniqueObject
     }
 
     process
