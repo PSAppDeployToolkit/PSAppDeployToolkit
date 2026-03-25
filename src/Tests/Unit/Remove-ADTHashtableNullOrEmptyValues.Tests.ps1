@@ -38,9 +38,21 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
                         return $false
                     }
 
-                    if (($section.Value -is [System.Collections.Hashtable]) -and !(& $MyInvocation.MyCommand -Left $section.Value -Right $Right.($section.Key)))
+                    if ($section.Value -is [System.Collections.Hashtable])
                     {
-                        return $false
+                        # If the corresponding value on the right is not a hashtable, structures differ
+                        if (-not ($Right.($section.Key) -is [System.Collections.Hashtable]))
+                        {
+                            return $false
+                        }
+
+                        # Both sides are hashtables; compare them recursively
+                        if (-not (& $MyInvocation.MyCommand -Left $section.Value -Right $Right.($section.Key)))
+                        {
+                            return $false
+                        }
+
+                        continue
                     }
 
                     if ($section.Value -ne $Right.($section.Key))
@@ -101,6 +113,16 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Null')
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('NullString')
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Whitespace')
+
+        # Expected structure when recursing to depth 5:
+        # top-level removable entries are gone (as in $NoRecurse),
+        # and removable entries under Layer5 are also removed.
+        $Recurse5Expected = $NoRecurse.Clone()
+        $Recurse5Expected.Layer1.Layer2.Layer3.Layer4.Layer5.Remove('Empty')
+        $Recurse5Expected.Layer1.Layer2.Layer3.Layer4.Layer5.Remove('EmptyCollection')
+        $Recurse5Expected.Layer1.Layer2.Layer3.Layer4.Layer5.Remove('Null')
+        $Recurse5Expected.Layer1.Layer2.Layer3.Layer4.Layer5.Remove('NullString')
+        $Recurse5Expected.Layer1.Layer2.Layer3.Layer4.Layer5.Remove('Whitespace')
     }
 
     Context 'Functionality' {
@@ -109,8 +131,8 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
             Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 1 | Compare-ADTHashtable -Right $NoRecurse | Should -BeTrue
         }
         It 'Should remove null values recursively' {
-            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 5 | Compare-ADTHashtable -Right $Recurse5 | Should -BeFalse
-            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 6 | Compare-ADTHashtable -Right @{ } | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 5 | Compare-ADTHashtable -Right $Recurse5Expected | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 6 | Compare-ADTHashtable -Right $Recurse5 | Should -BeTrue
         }
     }
 
