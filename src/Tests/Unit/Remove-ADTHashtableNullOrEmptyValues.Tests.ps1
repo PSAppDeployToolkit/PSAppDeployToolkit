@@ -33,7 +33,7 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
 
                 foreach ($section in $Left.GetEnumerator())
                 {
-                    if (-not $right.ContainsKey($section.Key))
+                    if (-not $Right.ContainsKey($section.Key))
                     {
                         return $false
                     }
