@@ -191,9 +191,16 @@ function Write-ADTLogEntry
                 $(if ($PSBoundParameters.ContainsKey('LogStyle')) { $LogStyle })
             )
         }
-        if ($PassThru -and $logEntries)
+        if ($logEntries)
         {
-            return $logEntries
+            foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnLogEntry)))
+            {
+                $logEntries | & $callback
+            }
+            if ($PassThru)
+            {
+                return $logEntries
+            }
         }
     }
 }

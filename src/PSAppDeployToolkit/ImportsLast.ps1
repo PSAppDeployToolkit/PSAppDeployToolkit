@@ -4706,6 +4706,7 @@ try
                     [PSAppDeployToolkit.Foundation.CallbackType]::OnStart = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                     [PSAppDeployToolkit.Foundation.CallbackType]::PreOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                     [PSAppDeployToolkit.Foundation.CallbackType]::PostOpen = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
+                    [PSAppDeployToolkit.Foundation.CallbackType]::OnLogEntry = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                     [PSAppDeployToolkit.Foundation.CallbackType]::OnDefer = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                     [PSAppDeployToolkit.Foundation.CallbackType]::PreClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()
                     [PSAppDeployToolkit.Foundation.CallbackType]::PostClose = [System.Collections.Generic.List[System.Management.Automation.CommandInfo]]::new()

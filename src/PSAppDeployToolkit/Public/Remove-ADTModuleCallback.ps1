@@ -16,6 +16,18 @@ function Remove-ADTModuleCallback
     .PARAMETER Hookpoint
         Where you wish for the callback to be removed from.
 
+        Valid hookpoints are:
+        * OnInit (The callback is executed before the module is initialized)
+        * OnStart (The callback is executed before the first deployment session is opened)
+        * PreOpen (The callback is executed before a deployment session is opened)
+        * PostOpen (The callback is executed after a deployment session is opened)
+        * OnLogEntry (The callback is executed after a log entry has been written)
+        * OnDefer (The callback is executed when a user defers the active deployment)
+        * PreClose (The callback is executed before the deployment session is closed)
+        * PostClose (The callback is executed after the deployment session is closed)
+        * OnFinish (The callback is executed before the last deployment session is closed)
+        * OnExit (The callback is executed after the last deployment session is closed)
+
     .PARAMETER Callback
         The callback function to remove from the nominated hooking point.
 

@@ -26,6 +26,11 @@
         PostOpen,
 
         /// <summary>
+        /// The callback is executed after a message is logged.
+        /// </summary>
+        OnLogEntry,
+
+        /// <summary>
         /// The callback is executed when a user defers the active deployment.
         /// </summary>
         OnDefer,
