@@ -547,8 +547,15 @@ namespace PSADT.ProcessManagement
             if (canCreateProcessAsUser)
             {
                 // Ensure necessary privileges are enabled.
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                try
+                {
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
+                    PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
+                }
+                catch (Exception ex) when (ex.Message is not null)
+                {
+                    throw new InvalidOperationException($"Failed to enable necessary privileges for CreateProcessAsUser despite tests indicating they should be available. Result from [CanUseCreateProcessAsUser()] was: {createProcessAsUserAbility}", ex);
+                }
 
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
                 if (forceBreakaway || hasHandlesToInherit)
