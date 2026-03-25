@@ -294,6 +294,11 @@ namespace PSADT.Interop
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error();
                     }
+                    WIN32_ERROR lastError = ExceptionUtilities.GetLastWin32Error();
+                    if (lastError == WIN32_ERROR.ERROR_NOT_ALL_ASSIGNED)
+                    {
+                        throw ExceptionUtilities.GetException(lastError);
+                    }
                 }
             }
             if (PreviousState.Length != 0)
