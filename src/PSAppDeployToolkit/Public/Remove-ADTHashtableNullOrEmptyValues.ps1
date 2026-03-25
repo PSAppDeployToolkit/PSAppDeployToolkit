@@ -8,10 +8,10 @@ function Remove-ADTHashtableNullOrEmptyValues
 {
     <#
     .SYNOPSIS
-        Removes any key/value pairs from the supplied hashtable where the value is null, empty, or consists only of whitespace.
+        Returns a new hashtable that contains entries from the source where the value is not null, empty, or consists only of whitespace.
 
     .DESCRIPTION
-        This function returns a new hashtable that contains only entries whose values are not null, empty, or consist only of whitespace. When the **-Recurse** switch is specified, the function will also traverse any nested hashtables and apply the same filtering to them.
+        This function returns a new hashtable that contains entries from the source where the value is not null, empty, or consists only of whitespace.. When the **-Recurse** switch is specified, the function will also traverse any nested hashtables and apply the same filtering to them.
 
     .PARAMETER Hashtable
         The hashtable to remove null values from.
