@@ -113,7 +113,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Set up required stdio stuff if we're configured to capture these streams.
-                List<nint> handlesToInherit = launchInfo.HandlesToInherit.Count > 0 ? [.. launchInfo.HandlesToInherit] : [];
+                List<nint> handlesToInherit = [.. launchInfo.HandlesToInherit]; bool hasExternalHandles = handlesToInherit.Count > 0;
                 if ((startupInfo.dwFlags & STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES) == STARTUPINFOW_FLAGS.STARTF_USESTDHANDLES)
                 {
                     if (launchInfo.StandardInput.Count > 0)
@@ -140,7 +140,7 @@ namespace PSADT.ProcessManagement
                             fixed (char* pDesktop = @"winsta0\default")
                             {
                                 startupInfo.lpDesktop = new(pDesktop);
-                                _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                                _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                             }
                         }
                     }
@@ -149,7 +149,7 @@ namespace PSADT.ProcessManagement
                 {
                     // We're running elevated but have been asked to de-elevate.
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
-                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                 }
                 else
                 {
@@ -524,6 +524,8 @@ namespace PSADT.ProcessManagement
         /// <param name="commandLine">The command line to be executed by the new process.</param>
         /// <param name="handlesToInherit">An array of specific handles that the child process should inherit. When specified,
         /// a STARTUPINFOEX with PROC_THREAD_ATTRIBUTE_HANDLE_LIST is used to limit inheritance to these handles only.</param>
+        /// <param name="hasExternalHandles">Indicates whether there are any external handles to inherit, which would require
+        /// the use of CreateProcessAsUser even if the caller token is the same as the current process token.</param>
         /// <param name="creationFlags">Flags that control the priority class and the creation of the process.</param>
         /// <param name="lpEnvironment">A handle to the environment block for the new process. Can be <see langword="null"/> to use the environment
         /// of the calling process.</param>
@@ -535,7 +537,7 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, bool hasExternalHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
@@ -566,7 +568,7 @@ namespace PSADT.ProcessManagement
                     return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
                 }
             }
-            else if (hasHandlesToInherit)
+            else if (hasExternalHandles)
             {
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}");
             }
