@@ -22,6 +22,9 @@ function New-ADTTemplate
     .PARAMETER Version
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
 
+    .PARAMETER SessionProperties
+        A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Keys must be valid Open-ADTSession parameter names. Only supported when -Version is 4.
+
     .PARAMETER Show
         Opens the newly created folder in Windows Explorer.
 
@@ -50,6 +53,11 @@ function New-ADTTemplate
         New-ADTTemplate -Destination 'C:\Temp' -Name 'PSAppDeployToolkitv3' -Version 3
 
         Creates a new v3 compatibility mode template named PSAppDeployToolkitv3 under C:\Temp.
+
+    .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '2.0'; RequireAdmin = $false; AppProcessesToClose = @('notepad', @{ Name = 'calc'; Description = 'Calculator' }) }
+
+        Creates a new v4 template with the specified session properties pre-populated in the $adtSession hashtable.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -80,6 +88,9 @@ function New-ADTTemplate
         [System.Int32]$Version = 4,
 
         [Parameter(Mandatory = $false)]
+        [System.Collections.IDictionary]$SessionProperties,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Show,
 
         [Parameter(Mandatory = $false)]
@@ -93,6 +104,19 @@ function New-ADTTemplate
     {
         # Initialize the function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        # SessionProperties is only supported for v4 templates.
+        if ($Version.Equals(3) -and $PSBoundParameters.ContainsKey('SessionProperties'))
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new('The -SessionProperties parameter is not supported when -Version is 3.')
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'SessionPropertiesUnsupportedForV3'
+                TargetObject = $SessionProperties
+                RecommendedAction = 'Please use -Version 4 or remove the -SessionProperties parameter and try again.'
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
 
         # Resolve the path to handle setups like ".\", etc.
         # We can't use things like a DirectoryInfo cast as .NET doesn't
@@ -210,7 +234,77 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    Out-File -InputObject (Get-Content @params -Raw).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('O').Split('T')[0]) @params -Width ([System.Int32]::MaxValue) -Force
+                    $scriptContent = (Get-Content @params -Raw).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
+
+                    # Inject SessionProperties into the $adtSession hashtable if provided.
+                    if ($PSBoundParameters.ContainsKey('SessionProperties') -and $SessionProperties.Count -gt 0)
+                    {
+                        $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptContent, [ref]$null, [ref]$null)
+
+                        # Find the $adtSession assignment statement.
+                        $assignmentAst = $scriptAst.Find({
+                                param ($ast)
+                                $ast -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                                ($ast.Left | Get-Member -Name VariablePath) -and
+                                $ast.Left.VariablePath.UserPath -eq 'adtSession'
+                            }, $true)
+
+                        if ($assignmentAst)
+                        {
+                            $hashtableAst = $assignmentAst.Right.Expression
+
+                            # Build a lookup of existing keys to their value's absolute offsets in $scriptContent.
+                            $existingKeys = @{}
+                            foreach ($kvp in $hashtableAst.KeyValuePairs)
+                            {
+                                $existingKeys[$kvp.Item1.Value] = [PSCustomObject]@{
+                                    Start = $kvp.Item2.Extent.StartOffset
+                                    End = $kvp.Item2.Extent.EndOffset
+                                }
+                            }
+
+                            # Collect replacements (absolute offsets) for existing keys, and new entries for missing keys.
+                            $replacements = [System.Collections.Generic.List[PSCustomObject]]::new()
+                            $newEntries = [System.Collections.Generic.List[System.String]]::new()
+
+                            foreach ($key in $SessionProperties.Keys)
+                            {
+                                $serializedValue = ConvertTo-ADTExpression -InputObject $SessionProperties[$key]
+                                if ($existingKeys.ContainsKey($key))
+                                {
+                                    $replacements.Add([PSCustomObject]@{
+                                            Start = $existingKeys[$key].Start
+                                            End = $existingKeys[$key].End
+                                            Value = $serializedValue
+                                        })
+                                }
+                                else
+                                {
+                                    $newEntries.Add("    $key = $serializedValue")
+                                }
+                            }
+
+                            # Insert new entries before the closing brace of the hashtable.
+                            if ($newEntries.Count -gt 0)
+                            {
+                                $closingBraceOffset = $scriptContent.LastIndexOf('}', $hashtableAst.Extent.EndOffset - 1)
+                                $insertion = [System.Environment]::NewLine + ($newEntries -join [System.Environment]::NewLine) + [System.Environment]::NewLine
+                                $replacements.Add([PSCustomObject]@{
+                                        Start = $closingBraceOffset
+                                        End = $closingBraceOffset
+                                        Value = $insertion
+                                    })
+                            }
+
+                            # Apply all replacements from end to start to preserve earlier offsets.
+                            foreach ($replacement in ($replacements | Sort-Object -Property Start -Descending))
+                            {
+                                $scriptContent = $scriptContent.Substring(0, $replacement.Start) + $replacement.Value + $scriptContent.Substring($replacement.End)
+                            }
+                        }
+                    }
+
+                    Out-File -InputObject $scriptContent @params -Width ([System.Int32]::MaxValue) -Force
                 }
                 else
                 {
