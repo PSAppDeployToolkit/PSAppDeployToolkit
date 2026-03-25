@@ -92,11 +92,11 @@ namespace PSADT.Security
         /// available, the collection will be empty.</returns>
         internal static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
-            using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hProcessToken);
-            using (hProcessToken)
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
+            using (hToken)
             {
-                return GetPrivileges(hProcessToken, attributes);
+                return GetPrivileges(hToken, attributes);
             }
         }
 
@@ -196,11 +196,11 @@ namespace PSADT.Security
         /// <param name="privilege">The privilege to enable, specified as a value of the SE_PRIVILEGE enumeration.</param>
         internal static void EnablePrivilege(SE_PRIVILEGE privilege)
         {
-            using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hProcessToken);
-            using (hProcessToken)
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hToken);
+            using (hToken)
             {
-                EnablePrivilege(hProcessToken, privilege);
+                EnablePrivilege(hToken, privilege);
             }
         }
 
@@ -232,11 +232,11 @@ namespace PSADT.Security
         /// checked and enabled if necessary.</param>
         internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
-            using SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(cProcessSafeHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hProcessToken);
-            using (hProcessToken)
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hToken);
+            using (hToken)
             {
-                EnablePrivilegeIfDisabled(hProcessToken, privilege);
+                EnablePrivilegeIfDisabled(hToken, privilege);
             }
         }
     }
