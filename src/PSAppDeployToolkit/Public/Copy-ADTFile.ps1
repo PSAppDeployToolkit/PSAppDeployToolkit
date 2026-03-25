@@ -148,7 +148,7 @@ function Copy-ADTFile
         if ($FileCopyMode -eq 'Robocopy')
         {
             # Announce deprecation of Robocopy file copy mode.
-            Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use the [Native] file copy mode and instead." -Severity Warning
+            Write-ADTLogEntry -Message "The file copy mode [Robocopy] is deprecated and will be removed in PSAppDeployToolkit 4.3.0. Please use the [Native] file copy mode instead." -Severity Warning
 
             # Check if Robocopy is on the system.
             if (Test-Path -LiteralPath "$([System.Environment]::SystemDirectory)\Robocopy.exe" -PathType Leaf)
@@ -230,7 +230,7 @@ function Copy-ADTFile
                     if (Test-Path @pathSplat -PathType Container)
                     {
                         # Trim ending backslash from paths which can cause problems with Robocopy.
-                        # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
+                        # Resolve paths in case relative paths beginning with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
                         $getItemSplat = @{ $PSCmdlet.ParameterSetName = $srcPath.TrimEnd('\\') }
                         $robocopySource = (Get-Item @getItemSplat -Force).FullName -replace '^Microsoft\.PowerShell\.Core\\FileSystem::'
@@ -241,7 +241,7 @@ function Copy-ADTFile
                     {
                         # Else assume source is a file and split args to the format <SourceFolder> <DestinationFolder> <FileName>.
                         # Trim ending backslash from paths which can cause problems with Robocopy.
-                        # Resolve paths in case relative paths beggining with .\, ..\, or \ are used.
+                        # Resolve paths in case relative paths beginning with .\, ..\, or \ are used.
                         # Strip Microsoft.PowerShell.Core\FileSystem:: from the beginning of the resulting string, since Resolve-Path adds this to UNC paths.
                         $ParentPath = Split-Path @pathSplat
                         $robocopySource = if ([System.String]::IsNullOrWhiteSpace($ParentPath))
