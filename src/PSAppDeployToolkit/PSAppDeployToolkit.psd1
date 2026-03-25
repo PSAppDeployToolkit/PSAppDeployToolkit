@@ -155,6 +155,7 @@
         'Remove-ADTRegistryKey'
         'Reset-ADTDeferHistory'
         'Resolve-ADTErrorRecord'
+        'Select-ADTUniqueObject'
         'Send-ADTKeys'
         'Set-ADTActiveSetup'
         'Set-ADTDeferHistory'
