@@ -256,6 +256,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$AppProcessesToClose,
 
         [Parameter(Mandatory = $false)]
@@ -273,6 +274,7 @@ function Open-ADTSession
                 }
                 return $_
             })]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ScriptDirectory,
 
         [Parameter(Mandatory = $false)]
@@ -313,6 +315,7 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$DefaultMspFiles,
 
         [Parameter(Mandatory = $false)]
@@ -380,12 +383,6 @@ function Open-ADTSession
         # Make this function stop on any error and ensure the caller doesn't override ErrorAction.
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-        # Throw if we have duplicated process objects.
-        if ($AppProcessesToClose -and !($AppProcessesToClose.Name | Sort-Object | Get-Unique | Measure-Object).Count.Equals($AppProcessesToClose.Count))
-        {
-            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName AppProcessesToClose -ProvidedValue $AppProcessesToClose -ExceptionMessage 'The specified AppProcessesToClose array contains duplicate processes.'))
-        }
 
         # Determine whether this session is to be in compatibility mode.
         $compatibilityMode = Test-ADTNonNativeCaller

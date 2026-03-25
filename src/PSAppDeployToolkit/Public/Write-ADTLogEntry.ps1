@@ -80,6 +80,7 @@ function Write-ADTLogEntry
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$Message,
 
         [Parameter(Mandatory = $false)]

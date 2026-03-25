@@ -81,10 +81,12 @@ function Invoke-ADTAllUsersRegistryAction
     (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.Management.Automation.ScriptBlock[]]$ScriptBlock,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.AccountManagement.UserProfileInfo[]]$UserProfiles,
 
         [Parameter(Mandatory = $false)]

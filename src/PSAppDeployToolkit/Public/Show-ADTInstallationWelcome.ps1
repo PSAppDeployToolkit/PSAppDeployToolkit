@@ -197,6 +197,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, and with processes to close.', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
         [Parameter(Mandatory = $true, ParameterSetName = 'Silent, with processes to close, and a free disk space check.', HelpMessage = "Specify process names and an optional process description, e.g. @{ Name = 'winword'; Description = 'Microsoft Word' }")]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$CloseProcesses,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with processes to close.', HelpMessage = "Specifies that the 'Close Processes' button be hidden/disabled to force users to manually close down their running processes.")]
@@ -835,12 +836,6 @@ function Show-ADTInstallationWelcome
 
     begin
     {
-        # Throw if we have duplicated process objects.
-        if ($CloseProcesses -and !($CloseProcesses.Name | Sort-Object | Get-Unique | Measure-Object).Count.Equals($CloseProcesses.Count))
-        {
-            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcesses -ProvidedValue $CloseProcesses -ExceptionMessage 'The specified CloseProcesses array contains duplicate processes.'))
-        }
-
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $welcomeState = @{

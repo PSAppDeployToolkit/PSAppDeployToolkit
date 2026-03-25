@@ -49,6 +49,7 @@ function Get-ADTRunningProcesses
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$ProcessObjects
     )
 

@@ -60,6 +60,7 @@ function Get-ADTObjectProperty
 
         [Parameter(Mandatory = $false, Position = 2)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.Object[]]$ArgumentList
     )
 

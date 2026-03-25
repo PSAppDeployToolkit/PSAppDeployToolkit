@@ -129,6 +129,7 @@ function Start-ADTMspProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]

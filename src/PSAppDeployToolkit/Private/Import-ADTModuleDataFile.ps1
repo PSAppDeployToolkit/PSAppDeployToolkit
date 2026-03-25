@@ -12,6 +12,7 @@ function Private:Import-ADTModuleDataFile
     (
         [Parameter(Mandatory = $true)]
         [AllowNull()][PSAppDeployToolkit.Attributes.AllowNullButNotEmptyOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$BaseDirectory,
 
         [Parameter(Mandatory = $true)]

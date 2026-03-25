@@ -13,10 +13,12 @@ function Private:Get-ADTMountedWimFile
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'ImagePath')]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [ValidateNotNullOrEmpty()]
         [System.IO.FileInfo[]]$ImagePath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [ValidateNotNullOrEmpty()]
         [System.IO.DirectoryInfo[]]$Path
     )

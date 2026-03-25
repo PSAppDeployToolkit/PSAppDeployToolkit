@@ -60,8 +60,9 @@ function Block-ADTAppExecution
     param
     (
         [Parameter(Mandatory = $true, HelpMessage = 'Specify process names, separated by commas.')]
-        [ValidateNotNullOrEmpty()]
         [Alias('ProcessName')]
+        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$Processes,
 
         [Parameter(Mandatory = $false, HelpMessage = 'The location of the dialog on the screen.')]

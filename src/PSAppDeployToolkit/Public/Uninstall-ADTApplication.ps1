@@ -134,6 +134,7 @@ function Uninstall-ADTApplication
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'InstalledApplication', ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.AppManagement.InstalledApplication[]]$InstalledApplication,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
@@ -164,10 +165,12 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$AdditionalArgumentList,
 
         [Parameter(Mandatory = $false)]

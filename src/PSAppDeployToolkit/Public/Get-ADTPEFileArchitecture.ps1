@@ -60,11 +60,13 @@ function Get-ADTPEFileArchitecture
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [Alias('PSPath', 'FilePath')]
         [System.String[]]$LiteralPath,
 

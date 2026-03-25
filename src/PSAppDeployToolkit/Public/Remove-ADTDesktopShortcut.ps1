@@ -63,6 +63,7 @@ function Remove-ADTDesktopShortcut
         [Parameter(Mandatory = $false, ParameterSetName = "RemoveAllShortcuts")]
         [Parameter(Mandatory = $false, ParameterSetName = "FilterScript")]
         [ValidateSet('AllUsersDesktop', 'RunAsActiveUser')]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$Scope = 'AllUsersDesktop',
 
         [Parameter(Mandatory = $true, ParameterSetName = "SinceSessionStart")]

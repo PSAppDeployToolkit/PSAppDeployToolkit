@@ -87,6 +87,7 @@ function Get-ADTMsiTableProperty
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [ValidateScript({
                 if (!(Test-Path -LiteralPath $_ -PathType Leaf))
                 {

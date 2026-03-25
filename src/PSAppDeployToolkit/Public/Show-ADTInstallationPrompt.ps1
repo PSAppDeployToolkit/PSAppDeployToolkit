@@ -163,6 +163,7 @@ function Show-ADTInstallationPrompt
 
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowListSelectionDialog')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ListItems,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowListSelectionDialog')]

@@ -193,6 +193,7 @@ function Start-ADTProcessAsUser
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]

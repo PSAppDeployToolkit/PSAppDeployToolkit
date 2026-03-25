@@ -72,6 +72,7 @@ function Invoke-ADTObjectMethod
 
         [Parameter(Mandatory = $false, Position = 2, ParameterSetName = 'Positional')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.Object[]]$ArgumentList,
 
         [Parameter(Mandatory = $true, Position = 2, ParameterSetName = 'Named')]

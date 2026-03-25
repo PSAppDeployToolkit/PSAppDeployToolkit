@@ -61,6 +61,7 @@ function Initialize-ADTModule
                 }
                 return $_
             })]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$ScriptDirectory,
 
         [Parameter(Mandatory = $false)]

@@ -82,6 +82,7 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $false, ParameterSetName = 'InitCloseAppsDialog')]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.ProcessManagement.ProcessDefinition[]]$CloseProcesses,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]

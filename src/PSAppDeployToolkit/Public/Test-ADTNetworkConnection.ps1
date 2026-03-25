@@ -49,6 +49,7 @@ function Test-ADTNetworkConnection
     (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.Net.NetworkInformation.NetworkInterfaceType[]]$InterfaceType = ([System.Net.NetworkInformation.NetworkInterfaceType]::Ethernet, [System.Net.NetworkInformation.NetworkInterfaceType]::Wireless80211)
     )
 

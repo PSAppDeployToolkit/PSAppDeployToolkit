@@ -11,6 +11,7 @@ function Private:Import-ADTConfig
     (
         [Parameter(Mandatory = $true)]
         [AllowNull()][PSAppDeployToolkit.Attributes.AllowNullButNotEmptyOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$BaseDirectory
     )
 

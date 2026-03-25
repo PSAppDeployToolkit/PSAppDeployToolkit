@@ -109,11 +109,13 @@ function Copy-ADTFileToUserProfiles
     param (
         [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'Path')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'LiteralPath', ValueFromPipeline = $true)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $false, Position = 2)]
@@ -145,6 +147,7 @@ function Copy-ADTFileToUserProfiles
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SpecifiedProfiles')]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [PSADT.AccountManagement.UserProfileInfo[]]$UserProfiles,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'CalculatedProfiles')]

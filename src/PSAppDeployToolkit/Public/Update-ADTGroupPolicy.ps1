@@ -54,6 +54,7 @@ function Update-ADTGroupPolicy
     (
         [Parameter(Mandatory = $false)]
         [ValidateSet('Computer', 'User')]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$Target = ('Computer', 'User'),
 
         [Parameter(Mandatory = $false)]

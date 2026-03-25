@@ -93,6 +93,7 @@ function Get-ADTUserProfiles
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Specific')]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.Security.Principal.SecurityIdentifier[]]$SID,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'All')]

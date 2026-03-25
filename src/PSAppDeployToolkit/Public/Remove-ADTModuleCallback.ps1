@@ -56,6 +56,7 @@ function Remove-ADTModuleCallback
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.Management.Automation.CommandInfo[]]$Callback
     )
 
