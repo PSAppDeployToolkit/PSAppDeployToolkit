@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -495,9 +496,10 @@ namespace PSADT.WindowsInstaller
                 }
                 return hDatabase;
             }
-            catch
+            catch (Exception ex)
             {
                 hDatabase.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }

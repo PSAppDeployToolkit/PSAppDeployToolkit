@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -263,10 +264,11 @@ namespace PSADT.UserInterface
                 {
                     progressDialog.Show();
                 }
-                catch
+                catch (Exception ex)
                 {
                     progressDialog.Dispose();
                     progressDialog = null;
+                    ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
             });

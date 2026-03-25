@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
@@ -171,7 +172,7 @@ namespace PSADT.ProcessManagement
                 hThread = new(pi.hThread, true);
                 processId = pi.dwProcessId;
             }
-            catch
+            catch (Exception ex)
             {
                 stdOutHandle?.Dispose();
                 stdErrHandle?.Dispose();
@@ -179,6 +180,7 @@ namespace PSADT.ProcessManagement
                 stdOutStream?.Dispose();
                 stdErrStream?.Dispose();
                 stdInStream?.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
             finally
@@ -199,13 +201,14 @@ namespace PSADT.ProcessManagement
                         ? new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
                         : new(launchInfo, process, processId, hProcess, commandSpan.ToString());
                 }
-                catch
+                catch (Exception ex)
                 {
                     process.Dispose();
+                    ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 stdOutHandle?.Dispose();
                 stdErrHandle?.Dispose();
@@ -215,6 +218,7 @@ namespace PSADT.ProcessManagement
                 stdInStream?.Dispose();
                 hProcess.Dispose();
                 hThread.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
 
@@ -230,13 +234,14 @@ namespace PSADT.ProcessManagement
                 stdInHandle?.Task.Start(TaskScheduler.Default);
                 return new(launchState);
             }
-            catch
+            catch (Exception ex)
             {
                 stdOutStream?.Dispose();
                 stdErrStream?.Dispose();
                 stdInStream?.Dispose();
                 launchState.Process.Dispose();
                 launchState.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
@@ -296,9 +301,10 @@ namespace PSADT.ProcessManagement
                     throw new InvalidProgramException("Failed to start the process.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 process.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
 
@@ -326,10 +332,11 @@ namespace PSADT.ProcessManagement
                 }
                 return new(new(launchInfo, process, launchInfo.MakeCommandLine()));
             }
-            catch
+            catch (Exception ex)
             {
                 hProcess.Dispose();
                 process.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
@@ -358,9 +365,10 @@ namespace PSADT.ProcessManagement
                     }
                 })));
             }
-            catch
+            catch (Exception ex)
             {
                 stream.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
@@ -396,9 +404,10 @@ namespace PSADT.ProcessManagement
                     }
                 })));
             }
-            catch
+            catch (Exception ex)
             {
                 stream.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }
@@ -650,15 +659,17 @@ namespace PSADT.ProcessManagement
                     startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
                     return (startupInfoEx, hAttributeList);
                 }
-                catch
+                catch (Exception ex)
                 {
                     pinnedHandles?.Dispose();
+                    ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 hAttributeList.Dispose();
+                ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
         }

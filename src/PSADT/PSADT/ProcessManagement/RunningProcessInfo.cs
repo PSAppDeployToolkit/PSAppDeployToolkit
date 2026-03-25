@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Security.Principal;
 using PSADT.Extensions;
 using PSADT.FileSystem;
@@ -84,10 +85,11 @@ namespace PSADT.ProcessManagement
                         argv = [process.GetFilePath(ntPathLookupTable).FullName];
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     if (!ProcessUtilities.HasProcessExited(process))
                     {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
                         throw;
                     }
                     return [];
