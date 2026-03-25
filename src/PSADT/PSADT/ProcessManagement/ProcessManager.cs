@@ -491,9 +491,9 @@ namespace PSADT.ProcessManagement
             }
 
             // Test whether the process is part of an existing job object.
-            using (SafeProcessHandle cProcessSafeHandle = NativeMethods.GetCurrentProcess())
+            using (SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess())
             {
-                _ = NativeMethods.IsProcessInJob(cProcessSafeHandle, null, out BOOL inJob);
+                _ = NativeMethods.IsProcessInJob(hProcess, null, out BOOL inJob);
                 if (!inJob)
                 {
                     return CreateProcessUsingTokenStatus.OK;
