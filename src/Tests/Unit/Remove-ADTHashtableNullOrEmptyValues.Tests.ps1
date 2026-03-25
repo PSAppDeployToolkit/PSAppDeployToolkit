@@ -104,11 +104,11 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
     }
 
     Context 'Functionality' {
-        It 'Should return remove null values' {
+        It 'Should remove null values' {
             Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData | Compare-ADTHashtable -Right $NoRecurse | Should -BeTrue
             Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 1 | Compare-ADTHashtable -Right $NoRecurse | Should -BeTrue
         }
-        It 'Should return remove null values recursively' {
+        It 'Should remove null values recursively' {
             Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 5 | Compare-ADTHashtable -Right $Recurse5 | Should -BeTrue
 
             Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 6 | Compare-ADTHashtable -Right @{ } | Should -BeTrue
