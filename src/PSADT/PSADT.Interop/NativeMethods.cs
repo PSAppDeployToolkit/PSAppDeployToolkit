@@ -3011,7 +3011,10 @@ namespace PSADT.Interop
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL EnableMenuItem(SafeHandle hMenu, WM_SYSCOMMAND uIDEnableItem, MENU_ITEM_FLAGS uEnable)
         {
-            return PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
+            BOOL res = PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
+            return res == -1
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "The specified menu item does not exist.")
+                : res;
         }
 
         /// <summary>
@@ -3478,7 +3481,9 @@ namespace PSADT.Interop
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpWindowName);
             }
             HWND res = PInvoke.FindWindow(lpClassName, lpWindowName);
-            return res.IsNull ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return res.IsNull
+                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "The specified window could not be found.")
+                : res;
         }
 
         /// <summary>
