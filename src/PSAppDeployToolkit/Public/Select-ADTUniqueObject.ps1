@@ -89,18 +89,25 @@ function Select-ADTUniqueObject
 
     end
     {
-        if (!$buffer.Count)
+        try
         {
-            return
-        }
-        if ($([System.Linq.Enumerable]::Distinct([System.Type[]]($buffer | & { process { $_.GetType() } }))) -eq [System.String])
-        {
-            return [System.Linq.Enumerable]::Distinct([System.String[]]$buffer, [System.StringComparer]::$CaseSensitivity)
-        }
-        elseif ($buffer.Count)
-        {
+            if (!$buffer.Count)
+            {
+                return
+            }
+            if (($bufferTypes = $([System.Linq.Enumerable]::Distinct([System.Type[]]($buffer | & { process { $_.GetType() } })))) -eq [System.String])
+            {
+                return [System.Linq.Enumerable]::Distinct([System.String[]]$buffer, [System.StringComparer]::$CaseSensitivity)
+            }
+            if ($bufferTypes -is [System.Type])
+            {
+                return [System.Linq.Enumerable]::Distinct([System.Management.Automation.LanguagePrimitives]::ConvertTo($buffer, $bufferTypes.MakeArrayType()))
+            }
             return [System.Linq.Enumerable]::Distinct($buffer)
         }
-        Complete-ADTFunction -Cmdlet $PSCmdlet
+        finally
+        {
+            Complete-ADTFunction -Cmdlet $PSCmdlet
+        }
     }
 }
