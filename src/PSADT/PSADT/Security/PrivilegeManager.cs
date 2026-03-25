@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using PSADT.AccountManagement;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using Windows.Win32.Foundation;
@@ -125,7 +124,7 @@ namespace PSADT.Security
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool HasPrivilege(SE_PRIVILEGE privilege)
         {
-            return AccountUtilities.CallerPrivileges.Contains(privilege);
+            return GetPrivileges().Contains(privilege);
         }
 
         /// <summary>
