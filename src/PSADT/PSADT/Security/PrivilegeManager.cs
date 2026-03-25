@@ -152,6 +152,7 @@ namespace PSADT.Security
         /// the process token. It uses the current process's token to check the privilege status.</remarks>
         /// <param name="privilege">The privilege to check for its enabled status in the current process.</param>
         /// <returns>true if the specified privilege is enabled; otherwise, false.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
             return GetPrivileges(TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);

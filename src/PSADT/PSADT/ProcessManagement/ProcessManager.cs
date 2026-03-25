@@ -69,6 +69,7 @@ namespace PSADT.ProcessManagement
             // Perform initial setup and get started with the process creation.
             ProcessReadStream? stdOutHandle = null, stdErrHandle = null; ProcessWriteStream? stdInHandle = null;
             AnonymousPipeServerStream? stdOutStream = null, stdErrStream = null, stdInStream = null;
+            ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges = PrivilegeManager.GetPrivileges();
             Span<char> commandSpan = launchInfo.MakeCommandLine(true).ToCharArray();
             SafeProcessHandle hProcess; SafeThreadHandle hThread; uint processId;
             ConcurrentQueue<string> interleavedData = [];
@@ -128,7 +129,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
-                if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true) == CreateProcessUsingTokenStatus.OK)))
+                if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true, callerPrivileges) == CreateProcessUsingTokenStatus.OK)))
                 {
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == ClientServerUtilities.ClientPath.FullName || launchInfo.FilePath == ClientServerUtilities.ClientLauncherPath.FullName);
@@ -140,7 +141,7 @@ namespace PSADT.ProcessManagement
                             fixed (char* pDesktop = @"winsta0\default")
                             {
                                 startupInfo.lpDesktop = new(pDesktop);
-                                _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                                _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                             }
                         }
                     }
@@ -149,7 +150,7 @@ namespace PSADT.ProcessManagement
                 {
                     // We're running elevated but have been asked to de-elevate.
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
-                    _ = CreateProcessUsingToken(hPrimaryToken, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
+                    _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                 }
                 else
                 {
@@ -198,8 +199,8 @@ namespace PSADT.ProcessManagement
                 try
                 {
                     _ = process.Handle; launchState = stdOutHandle is not null && stdErrHandle is not null
-                        ? new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
-                        : new(launchInfo, process, processId, hProcess, commandSpan.ToString());
+                        ? new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess, stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
+                        : new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess);
                 }
                 catch (Exception ex)
                 {
@@ -419,20 +420,20 @@ namespace PSADT.ProcessManagement
         /// to use the CreateProcessAsUser function. It verifies the presence of specific privileges and evaluates
         /// whether the process is part of a job object that allows breakaway.</remarks>
         /// <returns><see langword="true"/> if the process can use CreateProcessAsUser; otherwise, <see langword="false"/>.</returns>
-        private static CreateProcessUsingTokenStatus CanUseCreateProcessAsUser(bool isCallerToken)
+        private static CreateProcessUsingTokenStatus CanUseCreateProcessAsUser(bool isCallerToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges)
         {
             // Test whether the caller has the required privileges to use CreateProcessAsUser.
-            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeIncreaseQuotaPrivilege))
+            if (!callerPrivilges.Contains(SE_PRIVILEGE.SeIncreaseQuotaPrivilege))
             {
                 return CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege;
             }
-            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege))
+            if (!callerPrivilges.Contains(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege))
             {
                 return CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege;
             }
 
             // Perform common job object checks.
-            return CanCreateProcessUsingToken(isCallerToken);
+            return CanCreateProcessUsingToken(isCallerToken, callerPrivilges);
         }
 
         /// <summary>
@@ -441,10 +442,10 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <returns><see langword="true"/> if the current process has the SeImpersonatePrivilege; otherwise, <see
         /// langword="false"/>.</returns>
-        private static CreateProcessUsingTokenStatus CanUseCreateProcessWithToken(bool isCallerToken)
+        private static CreateProcessUsingTokenStatus CanUseCreateProcessWithToken(bool isCallerToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges)
         {
             // Test whether the caller has the required privileges to use CreateProcessWithToken.
-            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeImpersonatePrivilege))
+            if (!callerPrivilges.Contains(SE_PRIVILEGE.SeImpersonatePrivilege))
             {
                 return CreateProcessUsingTokenStatus.SeImpersonatePrivilege;
             }
@@ -466,7 +467,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Perform common job object checks.
-            return CanCreateProcessUsingToken(isCallerToken);
+            return CanCreateProcessUsingToken(isCallerToken, callerPrivilges);
         }
 
         /// <summary>
@@ -479,9 +480,11 @@ namespace PSADT.ProcessManagement
         /// indicate the specific limitation.</remarks>
         /// <param name="isCallerToken">true to indicate that the token represents the current caller; false if the token represents a different
         /// user or security context.</param>
+        /// <param name="callerPrivilges">A read-only collection of the privileges held by the caller, used to determine if specific
+        /// privileges are present that may allow process creation even when job object restrictions are in place.</param>
         /// <returns>A CreateProcessUsingTokenStatus value indicating whether process creation is permitted, or the reason it is
         /// not allowed.</returns>
-        private static CreateProcessUsingTokenStatus CanCreateProcessUsingToken(bool isCallerToken)
+        private static CreateProcessUsingTokenStatus CanCreateProcessUsingToken(bool isCallerToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges)
         {
             // Test whether the token's SID is the same as the caller's SID.
             // If it is, the following job object checks are not necessary.
@@ -506,7 +509,7 @@ namespace PSADT.ProcessManagement
             ref readonly JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref lpJobObjectInformation.AsReadOnlyStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
             if (!(jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
             {
-                return !PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege) ? CreateProcessUsingTokenStatus.SeTcbPrivilege : CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
+                return !callerPrivilges.Contains(SE_PRIVILEGE.SeTcbPrivilege) ? CreateProcessUsingTokenStatus.SeTcbPrivilege : CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
             }
 
             // If we're here, everything we need to be able to use CreateProcessAsUser() is available.
@@ -520,6 +523,8 @@ namespace PSADT.ProcessManagement
         /// possible, falling back to <c>CreateProcessWithToken</c> if necessary. It requires specific privileges to be
         /// enabled, such as <c>SeIncreaseQuotaPrivilege</c> and <c>SeAssignPrimaryTokenPrivilege</c>.</remarks>
         /// <param name="hPrimaryToken">The primary token representing the user context under which the process will be created.</param>
+        /// <param name="callerPrivilges">A read-only collection of the privileges held by the caller, used to determine if specific
+        /// privileges are present that may allow process creation even when job object restrictions are in place.</param>
         /// <param name="filePath">The fully qualified path to the executable file for the new process.</param>
         /// <param name="commandLine">The command line to be executed by the new process.</param>
         /// <param name="handlesToInherit">An array of specific handles that the child process should inherit. When specified,
@@ -537,12 +542,12 @@ namespace PSADT.ProcessManagement
         /// newly created process and its primary thread.</param>
         /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
         /// specified token.</exception>
-        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, bool hasExternalHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
+        private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, bool hasExternalHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
-            CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken);
+            CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken, callerPrivilges);
             bool forceBreakaway = createProcessAsUserAbility == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
             bool canCreateProcessAsUser = createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK || forceBreakaway;
             bool hasHandlesToInherit = handlesToInherit.Count > 0;
@@ -574,7 +579,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
-            CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken);
+            CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken, callerPrivilges);
             if (createProcessWithTokenAbility != CreateProcessUsingTokenStatus.OK)
             {
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}");
