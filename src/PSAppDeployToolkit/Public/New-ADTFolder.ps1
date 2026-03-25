@@ -16,15 +16,18 @@ function New-ADTFolder
     .PARAMETER LiteralPath
         Path to the new folder to create.
 
-    .INPUTS
-        None
+    .PARAMETER PassThru
+        Returns the newly created folder object.
 
-        You cannot pipe objects to this function.
+    .INPUTS
+        System.String
+
+        Accepts a string value for the folder path.
 
     .OUTPUTS
-        None
+        System.IO.DirectoryInfo
 
-        This function does not generate any output.
+        The folder created by this function.
 
     .EXAMPLE
         New-ADTFolder -LiteralPath "$env:WinDir\System32"
@@ -46,12 +49,16 @@ function New-ADTFolder
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([System.IO.DirectoryInfo])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [Alias('Path', 'PSPath')]
-        [System.String]$LiteralPath
+        [System.String]$LiteralPath,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.Switchparameter]$PassThru
     )
 
     begin
@@ -64,6 +71,12 @@ function New-ADTFolder
         if (Test-Path -LiteralPath $LiteralPath -PathType Container)
         {
             Write-ADTLogEntry -Message "Folder [$LiteralPath] already exists."
+
+            if ($PassThru)
+            {
+                return (Get-Item -LiteralPath $LiteralPath)
+            }
+
             return
         }
 
@@ -72,9 +85,16 @@ function New-ADTFolder
             try
             {
                 Write-ADTLogEntry -Message "Creating folder [$LiteralPath]."
-                if ($PSCmdlet.ShouldProcess("Folder [$LiteralPath]", 'Create'))
+                if (!$PSCmdlet.ShouldProcess("Folder [$LiteralPath]", 'Create'))
                 {
-                    $null = New-Item -Path $LiteralPath -ItemType Directory -Force
+                    return
+                }
+
+                $item = New-Item -Path $LiteralPath -ItemType Directory -Force
+
+                if ($PassThru)
+                {
+                    return $item
                 }
             }
             catch
