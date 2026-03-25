@@ -118,9 +118,9 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
     }
 
     Context 'Input Validation' {
-        It 'Should verify that Depth is a positive Int32' {
-            { Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ } -Recurse -Depth -1 } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentValidationError,Remove-ADTHashtableNullOrEmptyValues'
-            { Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ } -Recurse -Depth ([System.Int32]::MaxValue + 1) } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentTransformationError,Remove-ADTHashtableNullOrEmptyValues'
+        It 'Should verify that Depth is a positive UInt32' {
+            { Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ } -Recurse -Depth -1 } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentTransformationError,Remove-ADTHashtableNullOrEmptyValues'
+            { Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ } -Recurse -Depth ([System.UInt32]::MaxValue + 1) } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentTransformationError,Remove-ADTHashtableNullOrEmptyValues'
         }
     }
 }
