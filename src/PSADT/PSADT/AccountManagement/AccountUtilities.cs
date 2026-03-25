@@ -96,6 +96,11 @@ namespace PSADT.AccountManagement
         }
 
         /// <summary>
+        /// Gets a read-only list of privileges associated with the caller.
+        /// </summary>
+        public static IReadOnlyList<SE_PRIVILEGE> CallerPrivileges => PrivilegeManager.GetPrivileges();
+
+        /// <summary>
         /// Determines whether the current process is elevated.
         /// </summary>
         public static readonly bool CallerIsAdmin;
@@ -168,11 +173,6 @@ namespace PSADT.AccountManagement
         /// active user.
         /// </summary>
         public static readonly RunAsActiveUser CallerRunAsActiveUser;
-
-        /// <summary>
-        /// Gets a read-only list of privileges associated with the caller.
-        /// </summary>
-        public static readonly IReadOnlyList<SE_PRIVILEGE> CallerPrivileges = PrivilegeManager.GetPrivileges();
 
         /// <summary>
         /// Represents the security identifier (SID) for the local system account (NT AUTHORITY\SYSTEM).
