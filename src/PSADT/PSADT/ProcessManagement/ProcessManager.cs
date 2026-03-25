@@ -79,9 +79,6 @@ namespace PSADT.ProcessManagement
                 PROCESS_INFORMATION pi; STARTUPINFOW startupInfo = new()
                 {
                     cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
-                    hStdInput = HANDLE.INVALID_HANDLE_VALUE,
-                    hStdOutput = HANDLE.INVALID_HANDLE_VALUE,
-                    hStdError = HANDLE.INVALID_HANDLE_VALUE,
                 };
                 PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
                     PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
