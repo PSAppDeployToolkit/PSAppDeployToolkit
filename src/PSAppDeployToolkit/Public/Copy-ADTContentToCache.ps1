@@ -82,6 +82,7 @@ function Copy-ADTContentToCache
 
         [Parameter(Mandatory = $false)]
         [ValidateSet('Files', 'SupportFiles', 'Toolkit')]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$Exclude
     )
 

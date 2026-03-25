@@ -11,6 +11,7 @@
 ## General Coding Conventions
 - When editing existing code, prefer repository consistency over introducing style-only rewrites. Follow the surrounding file's patterns unless a broader cleanup is explicitly requested.
 - When working on a feature branch from `main`, public function contracts should remain backward compatible wherever practical. Avoid breaking changes to parameter names, parameter behaviour, and output types unless the work clearly justifies it. On release branches such as `4.1.x`, avoid breaking changes to public contracts entirely.
+- Ignore IDE0028 in this repository context because it is an IntelliSense bug and should not block work.
 
 ## Language-Specific Coding Conventions
 
