@@ -229,7 +229,7 @@ function Uninstall-ADTDeployment
 
 
     ##================================================
-    ## MARK: Post-Uninstallation
+    ## MARK: Post-Uninstall
     ##================================================
     $adtSession.InstallPhase = "Post-$($adtSession.DeploymentType)"
 
