@@ -180,16 +180,16 @@ Describe 'New-ADTTemplate' {
         Context 'All phases replaced' {
             BeforeAll {
                 $content = (Get-ADTTemplateContent -Params @{
-                    PreInstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-install' }
-                    InstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-install' }
-                    PostInstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-post-install' }
-                    PreUninstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-uninstall' }
-                    UninstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-uninstall' }
-                    PostUninstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-post-uninstall' }
-                    PreRepairScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-repair' }
-                    RepairScriptBlock = { Write-ADTLogEntry -Message 'TEST-repair' }
-                    PostRepairScriptBlock = { Write-ADTLogEntry -Message 'TEST-post-repair' }
-                }).ScriptContent
+                        PreInstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-install' }
+                        InstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-install' }
+                        PostInstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-post-install' }
+                        PreUninstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-uninstall' }
+                        UninstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-uninstall' }
+                        PostUninstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-post-uninstall' }
+                        PreRepairScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-repair' }
+                        RepairScriptBlock = { Write-ADTLogEntry -Message 'TEST-repair' }
+                        PostRepairScriptBlock = { Write-ADTLogEntry -Message 'TEST-post-repair' }
+                    }).ScriptContent
             }
 
             It 'Replaces the Pre-Install phase content' {
@@ -241,8 +241,8 @@ Describe 'New-ADTTemplate' {
         Context 'Single phase preserves others' {
             BeforeAll {
                 $content = (Get-ADTTemplateContent -Params @{
-                    InstallScriptBlock = { Write-ADTLogEntry -Message 'custom install' }
-                }).ScriptContent
+                        InstallScriptBlock = { Write-ADTLogEntry -Message 'custom install' }
+                    }).ScriptContent
             }
 
             It 'Preserves unspecified phases when only one param is provided' {
