@@ -300,7 +300,8 @@ Describe 'Copy-ADTFile'-ForEach @(
     }
 
     It 'Overwrites existing newer files ($FileCopyMode = $<FileCopyMode>)' {
-        New-Item -Path "$DestinationPath\old.txt" -ItemType File -Force | Set-Content -Value 'new file'
+        New-Item -Path "$DestinationPath\old.txt" -ItemType File -Force | Out-Null
+        Set-Content -Path "$DestinationPath\old.txt" -Value 'new file'
 
         Copy-ADTFile -Path "$SourcePath\Subfolder3\old.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
 
@@ -361,7 +362,8 @@ Describe 'Copy-ADTFile'-ForEach @(
 
     Context 'NoClobber tests' {
         It 'Does not overwrite an existing file with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
-            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Out-Null
+            Set-Content -Path "$DestinationPath\test.txt" -Value 'original content'
 
             Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
 
@@ -375,7 +377,8 @@ Describe 'Copy-ADTFile'-ForEach @(
         }
 
         It 'Copies only new files with wildcard and -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
-            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Out-Null
+            Set-Content -Path "$DestinationPath\test.txt" -Value 'original content'
 
             Copy-ADTFile -Path "$SourcePath\test*.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
 
@@ -384,7 +387,8 @@ Describe 'Copy-ADTFile'-ForEach @(
         }
 
         It 'Copies only new files recursively with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
-            New-Item -Path "$DestinationPath\Source\Subfolder1\test1.txt" -ItemType File -Force | Set-Content -Value 'original content'
+            New-Item -Path "$DestinationPath\Source\Subfolder1\test1.txt" -ItemType File -Force | Out-Null
+            Set-Content -Path "$DestinationPath\Source\Subfolder1\test1.txt" -Value 'original content'
 
             Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber -Recurse
 
@@ -393,7 +397,8 @@ Describe 'Copy-ADTFile'-ForEach @(
         }
 
         It 'Copies only new files with -Flatten and -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
-            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Out-Null
+            Set-Content -Path "$DestinationPath\test.txt" -Value 'original content'
 
             Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber -Flatten
 
@@ -404,7 +409,8 @@ Describe 'Copy-ADTFile'-ForEach @(
         }
 
         It 'Copies only new files from an array with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
-            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Set-Content -Value 'original content'
+            New-Item -Path "$DestinationPath\test.txt" -ItemType File -Force | Out-Null
+            Set-Content -Path "$DestinationPath\test.txt" -Value 'original content'
 
             Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder1\test1.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
 
