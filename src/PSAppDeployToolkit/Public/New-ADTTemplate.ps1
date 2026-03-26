@@ -23,10 +23,10 @@ function New-ADTTemplate
         Defaults to 4 for the standard v4 template. Use 3 for the v3 compatibility mode template.
 
     .PARAMETER SessionProperties
-        A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Keys must be valid Open-ADTSession parameter names. Only supported when -Version is 4.
+        A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Only supported when -Version is 4.
 
     .PARAMETER Config
-        A dictionary of key-value pairs to override in the generated Config\config.psd1. The dictionary structure must mirror the config file's nested hashtable layout (e.g. @{ MSI = @{ InstallParams = 'REBOOT=ReallySuppress /QB-!' } }). Only existing keys can be overridden; specifying a key that does not exist in the default config will throw an error. Only supported when -Version is 4.
+        A dictionary of key-value pairs to override in the generated Config\config.psd1. The dictionary structure must mirror the config file's nested hashtable layout (e.g. @{ MSI = @{ InstallParams = 'REBOOT=ReallySuppress /QB-!' } }). Only existing keys can be overridden; specifying a key that does not exist in the default config will throw an error.
 
     .PARAMETER PreInstallScriptBlock
         A ScriptBlock whose content will replace the Pre-Install phase of the Install-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
@@ -94,9 +94,14 @@ function New-ADTTemplate
         Creates a new v3 compatibility mode template named PSAppDeployToolkitv3 under C:\Temp.
 
     .EXAMPLE
-        New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '2.0'; RequireAdmin = $false; AppProcessesToClose = @('notepad', @{ Name = 'calc'; Description = 'Calculator' }) }
+        New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7'; RequireAdmin = $false; AppProcessesToClose = @('notepad', @{ Name = 'calc'; Description = 'Calculator' }) }
 
         Creates a new v4 template with the specified session properties pre-populated in the $adtSession hashtable.
+
+    .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -Config @{ Toolkit = @{ LogPath = '$env:ProgramData\Microsoft\IntuneManagementExtension\Logs' } }
+
+        Creates a new v4 template with a custom log folder.
 
     .EXAMPLE
         New-ADTTemplate -Destination 'C:\Temp' -Assets 'C:\Assets\AppIconLight.png', 'C:\Assets\AppIconDark.png' -Config @{ Assets = @{ Logo = '..\Assets\AppIconLight.png'; LogoDark = '..\Assets\AppIconDark.png' } }
@@ -104,9 +109,9 @@ function New-ADTTemplate
         Creates a new v4 template with custom icons copied to Assets and config.psd1 updated configured to use them.
 
     .EXAMPLE
-        New-ADTTemplate -Destination 'C:\Temp' -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock {  Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
+        New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7' } -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock {  Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
 
-        Creates a new v4 template with an MSI copied to Files and install/uninstall commands added.
+        Creates a new v4 template with session properties defined, an MSI copied to Files and install/uninstall commands added.
 
     .NOTES
         An active ADT session is NOT required to use this function.
