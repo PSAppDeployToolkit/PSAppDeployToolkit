@@ -25,6 +25,45 @@ function New-ADTTemplate
     .PARAMETER SessionProperties
         A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Keys must be valid Open-ADTSession parameter names. Only supported when -Version is 4.
 
+    .PARAMETER Config
+        A dictionary of key-value pairs to override in the generated Config\config.psd1. The dictionary structure must mirror the config file's nested hashtable layout (e.g. @{ MSI = @{ InstallParams = 'REBOOT=ReallySuppress /QB-!' } }). Only existing keys can be overridden; specifying a key that does not exist in the default config will throw an error. Only supported when -Version is 4.
+
+    .PARAMETER PreInstallScriptBlock
+        A ScriptBlock whose content will replace the Pre-Install phase of the Install-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER InstallScriptBlock
+        A ScriptBlock whose content will replace the Install phase of the Install-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER PostInstallScriptBlock
+        A ScriptBlock whose content will replace the Post-Install phase of the Install-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER PreUninstallScriptBlock
+        A ScriptBlock whose content will replace the Pre-Uninstall phase of the Uninstall-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER UninstallScriptBlock
+        A ScriptBlock whose content will replace the Uninstall phase of the Uninstall-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER PostUninstallScriptBlock
+        A ScriptBlock whose content will replace the Post-Uninstall phase of the Uninstall-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER PreRepairScriptBlock
+        A ScriptBlock whose content will replace the Pre-Repair phase of the Repair-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER RepairScriptBlock
+        A ScriptBlock whose content will replace the Repair phase of the Repair-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER PostRepairScriptBlock
+        A ScriptBlock whose content will replace the Post-Repair phase of the Repair-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
+
+    .PARAMETER Assets
+        An array of file or folder paths to copy into the Assets folder of the generated template. Paths are passed to Copy-Item with -Recurse.
+
+    .PARAMETER Files
+        An array of file or folder paths to copy into the Files folder of the generated template. Paths are passed to Copy-Item with -Recurse.
+
+    .PARAMETER SupportFiles
+        An array of file or folder paths to copy into the SupportFiles folder of the generated template. Paths are passed to Copy-Item with -Recurse.
+
     .PARAMETER Show
         Opens the newly created folder in Windows Explorer.
 
@@ -59,6 +98,16 @@ function New-ADTTemplate
 
         Creates a new v4 template with the specified session properties pre-populated in the $adtSession hashtable.
 
+    .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -Assets 'C:\Assets\AppIconLight.png', 'C:\Assets\AppIconDark.png' -Config @{ Assets = @{ Logo = '..\Assets\AppIconLight.png'; LogoDark = '..\Assets\AppIconDark.png' } }
+
+        Creates a new v4 template with custom icons copied to Assets and config.psd1 updated configured to use them.
+
+    .EXAMPLE
+        New-ADTTemplate -Destination 'C:\Temp' -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock {  Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
+
+        Creates a new v4 template with an MSI copied to Files and install/uninstall commands added.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
@@ -91,6 +140,48 @@ function New-ADTTemplate
         [System.Collections.IDictionary]$SessionProperties,
 
         [Parameter(Mandatory = $false)]
+        [System.Collections.IDictionary]$Config,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$PreInstallScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$InstallScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$PostInstallScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$PreUninstallScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$UninstallScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$PostUninstallScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$PreRepairScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$RepairScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.ScriptBlock]$PostRepairScriptBlock,
+
+        [Parameter(Mandatory = $false)]
+        [SupportsWildcards()]
+        [System.String[]]$Assets,
+
+        [Parameter(Mandatory = $false)]
+        [SupportsWildcards()]
+        [System.String[]]$Files,
+
+        [Parameter(Mandatory = $false)]
+        [SupportsWildcards()]
+        [System.String[]]$SupportFiles,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Show,
 
         [Parameter(Mandatory = $false)]
@@ -105,17 +196,92 @@ function New-ADTTemplate
         # Initialize the function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        # SessionProperties is only supported for v4 templates.
-        if ($Version.Equals(3) -and $PSBoundParameters.ContainsKey('SessionProperties'))
+        # Helper to convert objects to their PowerShell expression string representation.
+        function ConvertTo-ADTExpression
         {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new('The -SessionProperties parameter is not supported when -Version is 3.')
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'SessionPropertiesUnsupportedForV3'
-                TargetObject = $SessionProperties
-                RecommendedAction = 'Please use -Version 4 or remove the -SessionProperties parameter and try again.'
+            [CmdletBinding()]
+            param
+            (
+                [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+                [AllowNull()]
+                [System.Object]$InputObject,
+
+                [Parameter(Mandatory = $false)]
+                [System.Management.Automation.SwitchParameter]$LiteralString
+            )
+
+            if ($null -eq $InputObject)
+            {
+                return '$null'
             }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            if ($InputObject -is [System.Boolean] -or $InputObject -is [System.Management.Automation.SwitchParameter])
+            {
+                if ($InputObject) { return '$true' } else { return '$false' }
+            }
+            if ($InputObject -is [System.DateTime])
+            {
+                return "'$($InputObject.ToString('yyyy-MM-dd'))'"
+            }
+            if ($InputObject -is [System.TimeSpan])
+            {
+                return $InputObject.TotalSeconds.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+            }
+            if (($InputObject -is [System.String]) -or ($InputObject -is [System.Char]) -or ($InputObject -is [System.Version]) -or ($InputObject -is [System.Guid]) -or ($InputObject -is [System.IO.FileSystemInfo]) -or ($InputObject.GetType().IsEnum))
+            {
+                $str = $InputObject.ToString()
+                if (!$LiteralString -and ($str -match '(?<!`)\$'))
+                {
+                    return "`"$($str -replace '(?<!`)"', '`"')`""
+                }
+                return "'$($str.Replace("'", "''"))'"
+            }
+            if ($InputObject -is [System.ValueType])
+            {
+                return $InputObject.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+            }
+            if ($InputObject -is [System.Collections.IDictionary])
+            {
+                $pairs = foreach ($entry in $InputObject.GetEnumerator())
+                {
+                    $entryKey = $entry.Key.ToString().Replace("'", "''")
+                    "'$entryKey' = $(ConvertTo-ADTExpression -InputObject $entry.Value -LiteralString:$LiteralString)"
+                }
+                $dictionaryPrefix = if ($InputObject -is [System.Collections.Specialized.OrderedDictionary]) { '[ordered]@{' } else { '@{' }
+                return "$dictionaryPrefix $($pairs -join '; ') }"
+            }
+            if (($InputObject -is [System.Collections.IEnumerable]) -and !($InputObject -is [System.String]))
+            {
+                $items = foreach ($item in $InputObject)
+                {
+                    ConvertTo-ADTExpression -InputObject $item -LiteralString:$LiteralString
+                }
+                return "@($($items -join ', '))"
+            }
+
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new("Session property value of type [$($InputObject.GetType().FullName)] is not supported.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'UnsupportedSessionPropertyValueType'
+                TargetObject = $InputObject
+                RecommendedAction = 'Use any System.ValueType, strings, datetimes, timespans, arrays, hashtables, or ordered dictionaries.'
+            }
+            throw (New-ADTErrorRecord @naerParams)
+        }
+
+        # Some parameters are only supported for v4 templates.
+        if ($Version.Equals(3))
+        {
+            if (($invalidParams = @('SessionProperties', 'PreInstallScriptBlock', 'InstallScriptBlock', 'PostInstallScriptBlock', 'PreUninstallScriptBlock', 'UninstallScriptBlock', 'PostUninstallScriptBlock', 'PreRepairScriptBlock', 'RepairScriptBlock', 'PostRepairScriptBlock').Where({ $PSBoundParameters.ContainsKey($_) })))
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The following parameters are not supported when -Version is 3: $($invalidParams -join ', ').")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId = 'InvalidParameter'
+                    TargetObject = $invalidParams
+                    RecommendedAction = "Please use -Version 4 or remove the -$($invalidParams -join ', -') parameter(s) and try again."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
         }
 
         # Resolve the path to handle setups like ".\", etc.
@@ -155,7 +321,7 @@ function New-ADTTemplate
                         TargetObject = $badFiles
                         RecommendedAction = "Please re-download $($MyInvocation.MyCommand.Module.Name) and try again."
                     }
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    throw (New-ADTErrorRecord @naerParams)
                 }
 
                 # Create directories.
@@ -182,10 +348,76 @@ function New-ADTTemplate
 
                 # Export default module assets to disk.
                 $null = New-Item -Path "$templatePath\Assets" -ItemType Directory -Force
-                $assets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
-                [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $assets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value)))
-                [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.ico", [System.Convert]::FromBase64String(($logo = $assets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value)))
-                $config = [System.Management.Automation.ScriptBlock]::Create($ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.ico'))
+                $defaultAssets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
+                [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $defaultAssets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value)))
+                [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.ico", [System.Convert]::FromBase64String(($logo = $defaultAssets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value)))
+                $configBlock = [System.Management.Automation.ScriptBlock]::Create($ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.ico'))
+
+                # Override config values if specified.
+                if ($PSBoundParameters.ContainsKey('Config') -and $Config.Count -gt 0)
+                {
+                    $configText = $configBlock.ToString()
+                    $configAst = [System.Management.Automation.Language.Parser]::ParseInput($configText, [ref]$null, [ref]$null)
+                    $configHashtableAst = $configAst.EndBlock.Statements[0].PipelineElements[0].Expression
+                    $configReplacements = [System.Collections.Generic.List[PSCustomObject]]::new()
+
+                    # Recursive scriptblock to walk user dictionary against config AST.
+                    $collectReplacements = {
+                        param ([System.Collections.IDictionary]$UserDict, $HashtableAst, [System.String]$Path)
+                        foreach ($key in $UserDict.Keys)
+                        {
+                            $currentPath = if ($Path) { "$Path.$key" } else { $key }
+                            $matchingKvp = $HashtableAst.KeyValuePairs.Where({ $_.Item1.Value -eq $key })
+                            if ($matchingKvp.Count -eq 0)
+                            {
+                                $naerParams = @{
+                                    Exception = [System.ArgumentException]::new("The config key '$currentPath' does not exist in the default configuration.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                                    ErrorId = 'ConfigKeyNotFound'
+                                    TargetObject = $currentPath
+                                    RecommendedAction = 'Please specify only keys that exist in the default config.psd1 and try again.'
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+                            $astValue = $matchingKvp[0].Item2.PipelineElements[0].Expression
+                            if ($UserDict[$key] -is [System.Collections.IDictionary])
+                            {
+                                if ($astValue -isnot [System.Management.Automation.Language.HashtableAst])
+                                {
+                                    $naerParams = @{
+                                        Exception = [System.ArgumentException]::new("The config key '$currentPath' is not a hashtable in the default configuration but a hashtable value was provided.")
+                                        Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                                        ErrorId = 'ConfigKeyTypeMismatch'
+                                        TargetObject = $currentPath
+                                        RecommendedAction = 'Please provide a scalar value for this key and try again.'
+                                    }
+                                    throw (New-ADTErrorRecord @naerParams)
+                                }
+                                & $collectReplacements -UserDict $UserDict[$key] -HashtableAst $astValue -Path $currentPath
+                            }
+                            else
+                            {
+                                $configReplacements.Add([PSCustomObject]@{
+                                        Start = $matchingKvp[0].Item2.Extent.StartOffset
+                                        End = $matchingKvp[0].Item2.Extent.EndOffset
+                                        Value = (ConvertTo-ADTExpression -InputObject $UserDict[$key] -LiteralString)
+                                    })
+                            }
+                        }
+                    }
+                    & $collectReplacements -UserDict $Config -HashtableAst $configHashtableAst -Path $null
+
+                    # Apply all replacements from end to start to preserve earlier offsets.
+                    foreach ($replacement in ($configReplacements | Sort-Object -Property Start -Descending))
+                    {
+                        $configText = $configText.Substring(0, $replacement.Start) + $replacement.Value + $configText.Substring($replacement.End)
+                    }
+                    $configBlock = [System.Management.Automation.ScriptBlock]::Create($configText)
+                }
+
+                # Export the string data from the module to disk.
+                $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
+                Export-ADTScriptBlockToFile -ScriptBlock $configBlock -LiteralPath "$templatePath\Config\config.psd1"
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
@@ -199,10 +431,6 @@ function New-ADTTemplate
                     Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
                 }
                 Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
-
-                # Export the string data from the module to disk.
-                $null = New-Item -Path "$templatePath\Config" -ItemType Directory -Force
-                Export-ADTScriptBlockToFile -ScriptBlock $config -LiteralPath "$templatePath\Config\config.psd1"
 
                 # Remove any digital signatures from the ps*1 files.
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
@@ -227,19 +455,49 @@ function New-ADTTemplate
                     }
                 }
 
-                # Process the generated script to ensure the Import-Module is correct.
+                # Copy user-supplied content into the template folders.
+                foreach ($folder in 'Assets', 'Files', 'SupportFiles')
+                {
+                    if ($PSBoundParameters.ContainsKey($folder) -and $PSBoundParameters[$folder].Count -gt 0)
+                    {
+                        Copy-Item -Path $PSBoundParameters[$folder] -Destination "$templatePath\$folder" -Recurse -Force
+                    }
+                }
+
+                # Process the generated script
                 if ($Version.Equals(4))
                 {
                     $params = @{
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    $scriptContent = (Get-Content @params -Raw).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
+                    $scriptContent = (Get-Content @params -Raw).Replace("`r`n", "`n").Replace("`r", "`n").Replace("`n", "`r`n").Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
 
-                    # Inject SessionProperties into the $adtSession hashtable if provided.
-                    if ($PSBoundParameters.ContainsKey('SessionProperties') -and $SessionProperties.Count -gt 0)
+                    # Collect all script content replacements (absolute offsets) across both features,
+                    # then apply them in a single pass from end to start to preserve earlier offsets.
+                    $scriptReplacements = [System.Collections.Generic.List[PSCustomObject]]::new()
+                    $hasSessionProperties = $PSBoundParameters.ContainsKey('SessionProperties') -and $SessionProperties.Count -gt 0
+                    $deploymentScriptMap = @{
+                        PreInstallScriptBlock = @{ Function = 'Install-ADTDeployment'; PhaseIndex = 0 }
+                        InstallScriptBlock = @{ Function = 'Install-ADTDeployment'; PhaseIndex = 1 }
+                        PostInstallScriptBlock = @{ Function = 'Install-ADTDeployment'; PhaseIndex = 2 }
+                        PreUninstallScriptBlock = @{ Function = 'Uninstall-ADTDeployment'; PhaseIndex = 0 }
+                        UninstallScriptBlock = @{ Function = 'Uninstall-ADTDeployment'; PhaseIndex = 1 }
+                        PostUninstallScriptBlock = @{ Function = 'Uninstall-ADTDeployment'; PhaseIndex = 2 }
+                        PreRepairScriptBlock = @{ Function = 'Repair-ADTDeployment'; PhaseIndex = 0 }
+                        RepairScriptBlock = @{ Function = 'Repair-ADTDeployment'; PhaseIndex = 1 }
+                        PostRepairScriptBlock = @{ Function = 'Repair-ADTDeployment'; PhaseIndex = 2 }
+                    }
+                    $boundDeployScripts = $deploymentScriptMap.Keys.Where({ $PSBoundParameters.ContainsKey($_) })
+
+                    if ($hasSessionProperties -or $boundDeployScripts.Count -gt 0)
                     {
                         $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptContent, [ref]$null, [ref]$null)
+                    }
+
+                    # Inject SessionProperties into the $adtSession hashtable if provided.
+                    if ($hasSessionProperties)
+                    {
 
                         # Find the $adtSession assignment statement.
                         $assignmentAst = $scriptAst.Find({
@@ -264,7 +522,6 @@ function New-ADTTemplate
                             }
 
                             # Collect replacements (absolute offsets) for existing keys, and new entries for missing keys.
-                            $replacements = [System.Collections.Generic.List[PSCustomObject]]::new()
                             $newEntries = [System.Collections.Generic.List[System.String]]::new()
 
                             foreach ($key in $SessionProperties.Keys)
@@ -272,7 +529,7 @@ function New-ADTTemplate
                                 $serializedValue = ConvertTo-ADTExpression -InputObject $SessionProperties[$key]
                                 if ($existingKeys.ContainsKey($key))
                                 {
-                                    $replacements.Add([PSCustomObject]@{
+                                    $scriptReplacements.Add([PSCustomObject]@{
                                             Start = $existingKeys[$key].Start
                                             End = $existingKeys[$key].End
                                             Value = $serializedValue
@@ -289,19 +546,132 @@ function New-ADTTemplate
                             {
                                 $closingBraceOffset = $scriptContent.LastIndexOf('}', $hashtableAst.Extent.EndOffset - 1)
                                 $insertion = [System.Environment]::NewLine + ($newEntries -join [System.Environment]::NewLine) + [System.Environment]::NewLine
-                                $replacements.Add([PSCustomObject]@{
+                                $scriptReplacements.Add([PSCustomObject]@{
                                         Start = $closingBraceOffset
                                         End = $closingBraceOffset
                                         Value = $insertion
                                     })
                             }
-
-                            # Apply all replacements from end to start to preserve earlier offsets.
-                            foreach ($replacement in ($replacements | Sort-Object -Property Start -Descending))
-                            {
-                                $scriptContent = $scriptContent.Substring(0, $replacement.Start) + $replacement.Value + $scriptContent.Substring($replacement.End)
-                            }
                         }
+                    }
+
+                    # Inject deployment script blocks into their corresponding phases if provided.
+                    if ($boundDeployScripts.Count -gt 0)
+                    {
+                        foreach ($paramName in $boundDeployScripts)
+                        {
+                            $mapping = $deploymentScriptMap[$paramName]
+
+                            # Find the target function in the AST.
+                            $funcAst = $scriptAst.Find({
+                                    param ($ast)
+                                    $ast -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                                    $ast.Name -eq $mapping.Function
+                                }, $true)
+                            if (!$funcAst)
+                            {
+                                $naerParams = @{
+                                    Exception = [System.InvalidOperationException]::new("Function '$($mapping.Function)' not found in template script.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                                    ErrorId = 'TemplateFunctionNotFound'
+                                    TargetObject = $mapping.Function
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+
+                            # Find all $adtSession.InstallPhase assignments within the function.
+                            $phaseAssignments = @($funcAst.FindAll({
+                                        param ($ast)
+                                        $ast -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                                        $ast.Left -is [System.Management.Automation.Language.MemberExpressionAst] -and
+                                        $ast.Left.Member.Value -eq 'InstallPhase'
+                                    }, $true))
+
+                            $targetAssignment = $phaseAssignments[$mapping.PhaseIndex]
+                            if (!$targetAssignment)
+                            {
+                                $naerParams = @{
+                                    Exception = [System.InvalidOperationException]::new("InstallPhase assignment at index $($mapping.PhaseIndex) not found in function '$($mapping.Function)'.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                                    ErrorId = 'TemplatePhaseAssignmentNotFound'
+                                    TargetObject = $mapping
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+
+                            # Determine the start of the replacement region (line after the InstallPhase assignment).
+                            $replaceStart = $scriptContent.IndexOf("`n", $targetAssignment.Extent.EndOffset) + 1
+
+                            # Determine the end of the replacement region.
+                            if ($mapping.PhaseIndex -eq 2)
+                            {
+                                # Post phase: replace up to the last line before the function's closing brace.
+                                $replaceEnd = $scriptContent.LastIndexOf("`n", $funcAst.Extent.EndOffset - 1) + 1
+                            }
+                            else
+                            {
+                                # Pre/Main phase: replace up to the next MARK separator.
+                                $separatorPattern = "    ##================================================`r`n    ## MARK:"
+                                $replaceEnd = $scriptContent.IndexOf($separatorPattern, $replaceStart)
+                                if ($replaceEnd -eq -1)
+                                {
+                                    $naerParams = @{
+                                        Exception = [System.InvalidOperationException]::new("MARK separator not found after phase index $($mapping.PhaseIndex) in function '$($mapping.Function)'.")
+                                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                                        ErrorId = 'TemplateSeparatorNotFound'
+                                        TargetObject = $mapping
+                                    }
+                                    throw (New-ADTErrorRecord @naerParams)
+                                }
+                            }
+
+                            # Normalize the user's script block to 4-space indentation.
+                            $userLines = $PSBoundParameters[$paramName].ToString().Split("`n").Where({ $_.Trim().Length -gt 0 })
+                            $minIndent = [System.Int32]::MaxValue
+                            foreach ($line in $userLines)
+                            {
+                                $trimmed = $line.TrimStart()
+                                if ($trimmed.Length -gt 0)
+                                {
+                                    $indent = $line.Length - $trimmed.Length
+                                    if ($indent -lt $minIndent)
+                                    {
+                                        $minIndent = $indent
+                                    }
+                                }
+                            }
+                            if ($minIndent -eq [System.Int32]::MaxValue) { $minIndent = 0 }
+                            $normalizedLines = foreach ($line in $userLines)
+                            {
+                                $stripped = if ($line.Length -gt $minIndent) { $line.Substring($minIndent) } else { $line.TrimStart() }
+                                "    $($stripped.TrimEnd())"
+                            }
+                            $normalizedText = $normalizedLines -join "`r`n"
+
+                            # Build the replacement text.
+                            if ($mapping.PhaseIndex -eq 2)
+                            {
+                                # Post phase: content + newline before closing brace.
+                                $replacementText = "`r`n$normalizedText`r`n"
+                            }
+                            else
+                            {
+                                # Pre/Main phase: content + blank line before the next MARK separator.
+                                $replacementText = "`r`n$normalizedText`r`n`r`n"
+                            }
+
+                            $scriptReplacements.Add([PSCustomObject]@{
+                                    Start = $replaceStart
+                                    End = $replaceEnd
+                                    Value = $replacementText
+                                })
+                        }
+                    }
+
+                    # Apply all replacements from end to start to preserve earlier offsets.
+                    foreach ($replacement in ($scriptReplacements | Sort-Object -Property Start -Descending))
+                    {
+                        $scriptContent = $scriptContent.Substring(0, $replacement.Start) + $replacement.Value + $scriptContent.Substring($replacement.End)
                     }
 
                     Out-File -InputObject $scriptContent @params -Width ([System.Int32]::MaxValue) -Force
