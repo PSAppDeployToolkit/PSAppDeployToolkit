@@ -4,8 +4,18 @@
 }
 Describe 'Convert-ADTRegistryPath' {
     BeforeAll {
+        # Mock Set-ADTPreferenceVariables to avoid changing preference state during tests.
+        Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables {}
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+        # Convert-ADTRegistryPath requires admin rights because PowerShell's static member
+        # optimizer resolves [PSADT.AccountManagement.AccountUtilities]::CallerSid at function
+        # compile time, triggering the static constructor which calls OpenProcess (admin-only).
+        $script:IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+
+    BeforeEach {
+        if (!$script:IsAdmin) { Set-ItResult -Skipped -Because 'Requires admin rights (AccountUtilities static constructor triggered at compile time)'; return }
     }
 
     Context 'Functionality' {

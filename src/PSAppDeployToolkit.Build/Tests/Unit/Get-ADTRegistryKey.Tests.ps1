@@ -66,8 +66,19 @@ Describe 'Get-ADTRegistryKey' {
             }
         }
 
+        # Mock Set-ADTPreferenceVariables to avoid changing preference state during tests.
+        Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables {}
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+
+        # Get-ADTRegistryKey calls Convert-ADTRegistryPath internally, which references
+        # [PSADT.AccountManagement.AccountUtilities]::CallerSid at compile time.
+        # PowerShell resolves all type literals at compile time, requiring admin rights.
+        $script:IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+
+    BeforeEach {
+        if (!$script:IsAdmin) { Set-ItResult -Skipped -Because 'Requires admin rights (AccountUtilities static constructor triggered at compile time)'; return }
     }
 
     Context 'Functionality' {

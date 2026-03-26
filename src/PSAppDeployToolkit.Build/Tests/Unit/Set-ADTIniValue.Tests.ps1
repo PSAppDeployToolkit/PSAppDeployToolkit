@@ -13,6 +13,8 @@ MyKey=MyValue
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'IniPath', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
         $IniPath = "$TestDrive\IniFile.ini"
 
+        # Mock Set-ADTPreferenceVariables to avoid changing preference state during tests.
+        Mock -ModuleName PSAppDeployToolkit Set-ADTPreferenceVariables {}
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
     }
