@@ -36,11 +36,10 @@ namespace PSADT.TerminalServices
             _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
             using (pSessionInfo)
             {
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>();
-                int objCount = pSessionInfo.Length / objLength;
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>(); int objCount = pSessionInfo.Length / objLength;
                 ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
                 List<SessionInfo> sessions = new(objCount);
-                for (int i = 0; i < pSessionInfo.Length / objLength; i++)
+                for (int i = 0; i < objCount; i++)
                 {
                     ref readonly WTS_SESSION_INFO_1W session = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
                     if (GetSessionInfo(in session) is SessionInfo sessionInfo)
@@ -85,20 +84,40 @@ namespace PSADT.TerminalServices
                 }
             }
 
-            // Declare initial variables for data we need to get from a structured object.
+            // Set up an NTAccount object for the user first and foremost.
             if (session.pUserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
             {
                 return null;
             }
             string domainName = session.pDomainName.ToString();
             NTAccount ntAccount = new(domainName, userName);
-            SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
+
+            // Get the SID and whether the user is administrative.
+            SecurityIdentifier sid; bool? isLocalAdmin = null;
+            if (ntAccount != AccountUtilities.CallerUsername)
+            {
+                if (AccountUtilities.CallerIsAdmin)
+                {
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(session.SessionId, ElevatedTokenType.HighestAvailable);
+                    sid = TokenUtilities.GetTokenSid(hPrimaryToken); isLocalAdmin = TokenUtilities.IsTokenAdministrative(hPrimaryToken);
+                }
+                else
+                {
+                    sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
+                }
+            }
+            else
+            {
+                sid = AccountUtilities.CallerSid; isLocalAdmin = AccountUtilities.CallerIsAdmin;
+            }
+
+            // Set up the remaining session information values.
             bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
             bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
             bool isActiveUserSession = session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
             bool isValidUserSession = isActiveUserSession || session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
-            string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
+            string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string? pWinStationName = session.pSessionName.ToString();
             if (string.IsNullOrWhiteSpace(pWinStationName))
             {
@@ -120,9 +139,6 @@ namespace PSADT.TerminalServices
                 logonTime = DateTime.FromFileTime(sessionInfo.LogonTime);
             }
 
-            // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
-            bool? isLocalAdmin = IsWtsSessionUserLocalAdmin(session.SessionId, ntAccount);
-
             // If there's an active console session and we've got the privileges, get the idle time via GetLastInputInfo().
             if (isConsoleSession)
             {
@@ -130,13 +146,13 @@ namespace PSADT.TerminalServices
                 {
                     idleTime = ShellUtilities.GetLastInputTime();
                 }
-                else if ((AccountUtilities.CallerIsLocalSystem || AccountUtilities.CallerIsAdmin) && isValidUserSession)
+                else if (AccountUtilities.CallerIsAdmin && isValidUserSession)
                 {
                     try
                     {
                         RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         ProcessLaunchInfo args = new(ClientServerUtilities.ClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
-                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut![0], CultureInfo.InvariantCulture));
+                        idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut[0], CultureInfo.InvariantCulture));
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
@@ -169,66 +185,6 @@ namespace PSADT.TerminalServices
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
                 (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
-        }
-
-        /// <summary>
-        /// Retrieves the security identifier (SID) associated with a specified session and user account.
-        /// </summary>
-        /// <remarks>This method attempts multiple approaches to retrieve the SID, including translating
-        /// the user account to a SID, querying the user's token if the necessary privileges are enabled, and
-        /// retrieving group policy information. If none of these methods succeed, the method returns <see
-        /// langword="null"/>.</remarks>
-        /// <param name="sessionid">The ID of the session for which the SID is being retrieved.</param>
-        /// <param name="username">The user account, represented as an <see cref="NTAccount"/>, for which the SID is being retrieved.</param>
-        /// <returns>A <see cref="SecurityIdentifier"/> representing the SID of the specified session and user account</returns>
-        private static SecurityIdentifier GetWtsSessionSid(uint sessionid, NTAccount username)
-        {
-            // Return this caller's SID if the caller NT account is the same as what's provided.
-            if (username == AccountUtilities.CallerUsername)
-            {
-                return AccountUtilities.CallerSid;
-            }
-
-            // If we have the privileges, we can get the SID from the user's token.
-            if (AccountUtilities.CallerIsAdmin)
-            {
-                using SafeFileHandle hUserToken = TokenManager.GetUserPrimaryToken(sessionid);
-                return TokenUtilities.GetTokenSid(hUserToken);
-            }
-
-            // If any of the above fail, just try to translate the SID using the builtin API.
-            // We don't do this first off as it can fail for domain users while not on the network.
-            return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
-        }
-
-        /// <summary>
-        /// Determines whether the user associated with the specified Windows Terminal Services (WTS) session is a
-        /// local administrator.
-        /// </summary>
-        /// <remarks>This method checks the user's administrative status by attempting to query the user's
-        /// token and evaluating their group membership. If the required privileges are not enabled, it falls back to 
-        /// checking the user's SID against the well-known local administrators group.</remarks>
-        /// <param name="sessionid">The ID of the WTS session for which the user's administrative status is being checked.</param>
-        /// <param name="username">The user account, represented as an <see cref="NTAccount"/>, for which the admin status is being retrieved.</param>
-        /// <returns><see langword="true"/> if the user is a member of the local administrators group; otherwise, <see
-        /// langword="false"/>.</returns>
-        private static bool? IsWtsSessionUserLocalAdmin(uint sessionid, NTAccount username)
-        {
-            // Return this caller's admin status if the caller NT account is the same as what's provided.
-            if (username == AccountUtilities.CallerUsername)
-            {
-                return AccountUtilities.CallerIsAdmin;
-            }
-
-            // If we have the privileges, we can get the user's token and do a WindowsIdentity check.
-            if (AccountUtilities.CallerIsAdmin)
-            {
-                using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionid, ElevatedTokenType.HighestAvailable);
-                return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
-            }
-
-            // We don't know, and if we can't get it, it doesn't matter.
-            return null;
         }
     }
 }
