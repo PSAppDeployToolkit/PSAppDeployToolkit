@@ -546,16 +546,14 @@ namespace PSADT.ProcessManagement
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken, callerPrivilges);
             bool forceBreakaway = createProcessAsUserAbility == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
-            bool canCreateProcessAsUser = createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK || forceBreakaway;
-            bool hasHandlesToInherit = handlesToInherit.Count > 0;
-            if (canCreateProcessAsUser)
+            if (createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK || forceBreakaway)
             {
                 // Ensure necessary privileges are enabled.
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
 
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
-                if (forceBreakaway || hasHandlesToInherit)
+                if (forceBreakaway || handlesToInherit.Count > 0)
                 {
                     // Create the extended startup info with the necessary attributes.
                     (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) = CreateStartupInfoEx(in startupInfo, handlesToInherit, forceBreakaway, out SafePinnedGCHandle? pinnedHandles);
