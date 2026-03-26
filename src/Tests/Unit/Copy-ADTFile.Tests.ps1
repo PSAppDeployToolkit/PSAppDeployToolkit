@@ -367,7 +367,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
             Copy-ADTFile -Path "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
 
-            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test.txt" | Should -FileContentMatchExactly '^original content$'
         }
 
         It 'Copies a file when destination does not exist with -NoClobber ($FileCopyMode = $<FileCopyMode>)' {
@@ -382,7 +382,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
             Copy-ADTFile -Path "$SourcePath\test*.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
 
-            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test.txt" | Should -FileContentMatchExactly '^original content$'
             "$DestinationPath\test3.txt" | Should -Exist
         }
 
@@ -392,7 +392,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
             Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber -Recurse
 
-            "$DestinationPath\Source\Subfolder1\test1.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\Source\Subfolder1\test1.txt" | Should -FileContentMatchExactly '^original content$'
             "$DestinationPath\Source\Subfolder2\test2.txt" | Should -Exist
         }
 
@@ -402,7 +402,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
             Copy-ADTFile -Path $SourcePath -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber -Flatten
 
-            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test.txt" | Should -FileContentMatchExactly '^original content$'
             "$DestinationPath\test1.txt" | Should -Exist
             "$DestinationPath\test2.txt" | Should -Exist
             "$DestinationPath\test3.txt" | Should -Exist
@@ -414,7 +414,7 @@ Describe 'Copy-ADTFile'-ForEach @(
 
             Copy-ADTFile -Path @("$SourcePath\test.txt", "$SourcePath\Subfolder1\test1.txt") -Destination $DestinationPath -FileCopyMode $FileCopyMode -NoClobber
 
-            "$DestinationPath\test.txt" | Should -FileContentMatch 'original content'
+            "$DestinationPath\test.txt" | Should -FileContentMatchExactly '^original content$'
             "$DestinationPath\test1.txt" | Should -Exist
         }
     }
