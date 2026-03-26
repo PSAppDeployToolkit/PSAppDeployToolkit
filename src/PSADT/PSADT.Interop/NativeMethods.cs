@@ -375,6 +375,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
         internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hToken);
             if (lpApplicationName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
@@ -383,7 +384,9 @@ namespace PSADT.Interop
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
-            ArgumentException.ThrowIfNullOrInvalid(hToken);
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdOutput, "The hStdOutput handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdError, "The hStdError handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdInput, "The hStdInput handle in the STARTUPINFO structure is invalid.");
             bool lpEnvironmentAddRef = false;
             try
             {
@@ -432,6 +435,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
         internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hToken);
             if (lpApplicationName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
@@ -440,7 +444,9 @@ namespace PSADT.Interop
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
-            ArgumentException.ThrowIfNullOrInvalid(hToken);
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdOutput, "The hStdOutput handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdError, "The hStdError handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdInput, "The hStdInput handle in the STARTUPINFO structure is invalid.");
             bool lpEnvironmentAddRef = false;
             try
             {
@@ -492,6 +498,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
         internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hToken);
             if (lpApplicationName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
@@ -504,7 +511,9 @@ namespace PSADT.Interop
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
-            ArgumentException.ThrowIfNullOrInvalid(hToken);
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfoEx.StartupInfo.hStdOutput, "The hStdOutput handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfoEx.StartupInfo.hStdError, "The hStdError handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfoEx.StartupInfo.hStdInput, "The hStdInput handle in the STARTUPINFO structure is invalid.");
             bool hTokenAddRef = false;
             bool lpEnvironmentAddRef = false;
             try
@@ -1681,6 +1690,9 @@ namespace PSADT.Interop
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdOutput, "The hStdOutput handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdError, "The hStdError handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfo.hStdInput, "The hStdInput handle in the STARTUPINFO structure is invalid.");
             bool lpEnvironmentAddRef = false;
             try
             {
@@ -1745,6 +1757,9 @@ namespace PSADT.Interop
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
             }
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfoEx.StartupInfo.hStdOutput, "The hStdOutput handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfoEx.StartupInfo.hStdError, "The hStdError handle in the STARTUPINFO structure is invalid.");
+            InvalidOperationException.ThrowIfInvalid(lpStartupInfoEx.StartupInfo.hStdInput, "The hStdInput handle in the STARTUPINFO structure is invalid.");
             bool lpEnvironmentAddRef = false;
             try
             {
