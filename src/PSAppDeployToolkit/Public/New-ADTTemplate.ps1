@@ -205,9 +205,10 @@ function New-ADTTemplate
         function ConvertTo-ADTExpression
         {
             [CmdletBinding()]
+            [OutputType([System.String])]
             param
             (
-                [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+                [Parameter(Mandatory = $false)]
                 [AllowNull()]
                 [System.Object]$InputObject,
 
