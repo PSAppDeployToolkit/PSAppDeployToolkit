@@ -3665,41 +3665,11 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Enumerates the sessions on the specified Remote Desktop Session Host (RD Session Host) server.
-        /// </summary>
-        /// <remarks>If the method returns <see langword="false"/>, an exception is thrown containing the
-        /// relevant Win32 error information. The returned SafeWtsHandle must be disposed to free the associated
-        /// unmanaged resources.</remarks>
-        /// <param name="hServer">A handle to an RD Session Host server. This handle must be opened with appropriate access rights.</param>
-        /// <param name="pSessionInfo">When this method returns, contains a SafeWtsHandle that encapsulates the session information buffer. The
-        /// caller is responsible for releasing the handle when it is no longer needed.</param>
-        /// <returns>A value that is <see langword="true"/> if the session enumeration succeeds; otherwise, <see
-        /// langword="false"/>.</returns>
-        internal static BOOL WTSEnumerateSessions(HANDLE hServer, out SafeWtsHandle pSessionInfo)
-        {
-            ArgumentOutOfRangeException.ThrowIfInvalid(hServer);
-            unsafe
-            {
-                BOOL res = PInvoke.WTSEnumerateSessions(hServer, 0, 1, out WTS_SESSION_INFOW* ppSessionInfo, out uint pCount);
-                if (!res)
-                {
-                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                }
-                InvalidOperationException.ThrowIfZeroOrInvalid((nint)ppSessionInfo, "The session information buffer returned from 'WTSEnumerateSessions()' is null or invalid.");
-                InvalidOperationException.ThrowIfZero(pCount, "The session count returned from 'WTSEnumerateSessions()' is zero.");
-                pSessionInfo = new((nint)ppSessionInfo, (int)pCount * sizeof(WTS_SESSION_INFOW), true);
-                return res;
-            }
-        }
-
-        /// <summary>
         /// Retrieves information about a specified session on a Remote Desktop Services server.
         /// </summary>
         /// <remarks>If the operation fails, an exception is thrown containing the relevant Win32 error
         /// information. The format and content of the returned buffer depend on the value of the WTSInfoClass
         /// parameter.</remarks>
-        /// <param name="hServer">A handle to the server from which to retrieve session information. This handle must be obtained by calling
-        /// the WTSOpenServer function.</param>
         /// <param name="SessionId">The identifier of the session for which information is being requested. This value is typically obtained
         /// from a previous call to WTSEnumerateSessions.</param>
         /// <param name="WTSInfoClass">A value that specifies the type of session information to retrieve. The value must be a member of the
@@ -3708,10 +3678,9 @@ namespace PSADT.Interop
         /// information. The caller is responsible for disposing of this handle when it is no longer needed.</param>
         /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the information
         /// was retrieved successfully; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL WTSQuerySessionInformation(HANDLE hServer, uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
+        internal static BOOL WTSQuerySessionInformation(uint SessionId, WTS_INFO_CLASS WTSInfoClass, out SafeWtsHandle pBuffer)
         {
-            ArgumentOutOfRangeException.ThrowIfInvalid(hServer);
-            BOOL res = PInvoke.WTSQuerySessionInformation(hServer, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
+            BOOL res = PInvoke.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, SessionId, WTSInfoClass, out PWSTR ppBuffer, out uint bytesReturned);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -4326,6 +4295,31 @@ namespace PSADT.Interop
         {
             HRESULT res = PInvoke.PropVariantClear(ref pvar);
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+        }
+
+        /// <summary>
+        /// Enumerates the sessions on the Remote Desktop Session Host server and retrieves extended session
+        /// information.
+        /// </summary>
+        /// <remarks>This method wraps the native WTSEnumerateSessionsEx function and throws an exception
+        /// if the underlying call fails or returns invalid data. The returned session information provides details
+        /// about each session, such as session ID, user name, and session state.</remarks>
+        /// <param name="pSessionInfo">When this method returns, contains a handle to a buffer that receives an array of session information
+        /// structures. The caller is responsible for releasing the handle when it is no longer needed.</param>
+        internal static BOOL WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo)
+        {
+            unsafe
+            {
+                uint pLevel = 1; BOOL res = PInvoke.WTSEnumerateSessionsEx(null, ref pLevel, 0, out WTS_SESSION_INFO_1W* ppSessionInfo, out uint pCount);
+                if (!res)
+                {
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                }
+                InvalidOperationException.ThrowIfZeroOrInvalid((nint)ppSessionInfo, "The session information buffer returned from 'WTSEnumerateSessionsEx()' is null or invalid.");
+                InvalidOperationException.ThrowIfZero(pCount, "The session count returned from 'WTSEnumerateSessionsEx()' is zero.");
+                pSessionInfo = new((nint)ppSessionInfo, WTS_TYPE_CLASS.WTSTypeSessionInfoLevel1, (int)pCount * sizeof(WTS_SESSION_INFO_1W), true);
+                return res;
+            }
         }
 
         /// <summary>

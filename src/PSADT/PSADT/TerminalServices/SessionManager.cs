@@ -14,7 +14,6 @@ using PSADT.ProcessManagement;
 using PSADT.Security;
 using PSADT.Utilities;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.System.RemoteDesktop;
 
 namespace PSADT.TerminalServices
@@ -34,16 +33,16 @@ namespace PSADT.TerminalServices
         /// The list is empty if no active sessions are found.</returns>
         public static IReadOnlyList<SessionInfo> GetSessionInfo()
         {
-            _ = NativeMethods.WTSEnumerateSessions(HANDLE.WTS_CURRENT_SERVER_HANDLE, out SafeWtsHandle pSessionInfo);
+            _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
             using (pSessionInfo)
             {
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFOW>();
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>();
                 int objCount = pSessionInfo.Length / objLength;
                 ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
                 List<SessionInfo> sessions = new(objCount);
                 for (int i = 0; i < pSessionInfo.Length / objLength; i++)
                 {
-                    ref readonly WTS_SESSION_INFOW session = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFOW>();
+                    ref readonly WTS_SESSION_INFO_1W session = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
                     if (GetSessionInfo(in session) is SessionInfo sessionInfo)
                     {
                         sessions.Add(sessionInfo);
@@ -66,48 +65,59 @@ namespace PSADT.TerminalServices
         /// <returns>A SessionInfo object containing user account details, session state, client information, and other relevant
         /// session attributes, or null if the session does not have a valid username.</returns>
         /// <exception cref="NotSupportedException">Thrown if the requested type for session information is not supported.</exception>
-        private static SessionInfo? GetSessionInfo(in WTS_SESSION_INFOW session)
+        private static SessionInfo? GetSessionInfo(in WTS_SESSION_INFO_1W session)
         {
             // Internal helper for retrieving session information values.
             static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
             {
-                _ = NativeMethods.WTSQuerySessionInformation(HANDLE.WTS_CURRENT_SERVER_HANDLE, sessionId, infoClass, out SafeWtsHandle pBuffer);
+                _ = NativeMethods.WTSQuerySessionInformation(sessionId, infoClass, out SafeWtsHandle pBuffer);
                 using (pBuffer)
                 {
-                    return typeof(T) == typeof(string)
+                    return pBuffer.Length == 0
+                        ? (T?)(object?)null
+                        : typeof(T) == typeof(string)
                         ? (T?)(object?)pBuffer.AsReadOnlySpan<char>().ToStringUni()
                         : typeof(T) == typeof(ushort)
                         ? (T)(object)(ushort)pBuffer.ReadInt16()
                         : typeof(T) == typeof(uint)
                         ? (T)(object)(uint)pBuffer.ReadInt32()
-                        : typeof(T) == typeof(WTSINFOEXW)
-                        ? (T)(object)pBuffer.AsReadOnlyStructure<WTSINFOEXW>()
                         : throw new NotSupportedException($"The type {typeof(T).FullName} is not supported by {nameof(GetValue)}.");
                 }
             }
 
-            // Get extended information about the session, bombing out if we have no username (not a proper session).
-            WTSINFOEX_LEVEL1_W sessionInfo = GetValue<WTSINFOEXW>(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx).Data.WTSInfoExLevel1;
-            if (sessionInfo.UserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
+            // Declare initial variables for data we need to get from a structured object.
+            if (session.pUserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
             {
                 return null;
             }
-
-            // Declare initial variables for data we need to get from a structured object.
-            string domainName = sessionInfo.DomainName.ToString();
+            string domainName = session.pDomainName.ToString();
             NTAccount ntAccount = new(domainName, userName);
             SecurityIdentifier sid = GetWtsSessionSid(session.SessionId, ntAccount);
             bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
             bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
-            bool isActiveUserSession = sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
-            bool isValidUserSession = isActiveUserSession || sessionInfo.SessionState == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
-            TimeSpan? idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
+            bool isActiveUserSession = session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
+            bool isValidUserSession = isActiveUserSession || session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
             string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
-            string? pWinStationName = session.pWinStationName.ToString();
+            string? pWinStationName = session.pSessionName.ToString();
             if (string.IsNullOrWhiteSpace(pWinStationName))
             {
                 pWinStationName = null;
+            }
+
+            // Get extended information about the session.
+            TimeSpan? idleTime; DateTime logonTime; DateTime? disconnectTime = null;
+            _ = NativeMethods.WTSQuerySessionInformation(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx, out SafeWtsHandle pBuffer);
+            using (pBuffer)
+            {
+                ref readonly WTSINFOEXW wtsInfoEx = ref pBuffer.AsReadOnlyStructure<WTSINFOEXW>();
+                ref readonly WTSINFOEX_LEVEL1_W sessionInfo = ref wtsInfoEx.Data.WTSInfoExLevel1;
+                if (sessionInfo.DisconnectTime != 0 && !isActiveUserSession)
+                {
+                    disconnectTime = DateTime.FromFileTime(sessionInfo.DisconnectTime);
+                }
+                idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
+                logonTime = DateTime.FromFileTime(sessionInfo.LogonTime);
             }
 
             // Determine whether the user is a local admin or not. This process can be unreliable for domain devices.
@@ -143,7 +153,7 @@ namespace PSADT.TerminalServices
                 domainName,
                 session.SessionId,
                 pWinStationName,
-                (Interop.WTS_CONNECTSTATE_CLASS)sessionInfo.SessionState,
+                (Interop.WTS_CONNECTSTATE_CLASS)session.State,
                 isCurrentSession,
                 isConsoleSession,
                 isActiveUserSession,
@@ -151,9 +161,9 @@ namespace PSADT.TerminalServices
                 pWinStationName is not "Services" and not "RDP-Tcp",
                 clientProtocolType != 0,
                 isLocalAdmin,
-                DateTime.FromFileTime(sessionInfo.LogonTime),
+                logonTime,
                 idleTime,
-                sessionInfo.DisconnectTime != 0 && !isActiveUserSession ? DateTime.FromFileTime(sessionInfo.DisconnectTime) : null,
+                disconnectTime,
                 clientName,
                 (WTS_PROTOCOL_TYPE)clientProtocolType,
                 GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
@@ -186,13 +196,6 @@ namespace PSADT.TerminalServices
                 return TokenUtilities.GetTokenSid(hUserToken);
             }
 
-            // Return the caller's SID if it's the same session.
-            // This is done second in case of ServiceUI use, etc.
-            if (sessionid == AccountUtilities.CallerSessionId)
-            {
-                return AccountUtilities.CallerSid;
-            }
-
             // If any of the above fail, just try to translate the SID using the builtin API.
             // We don't do this first off as it can fail for domain users while not on the network.
             return (SecurityIdentifier)username.Translate(typeof(SecurityIdentifier));
@@ -222,13 +225,6 @@ namespace PSADT.TerminalServices
             {
                 using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionid, ElevatedTokenType.HighestAvailable);
                 return TokenUtilities.IsTokenAdministrative(hPrimaryToken);
-            }
-
-            // Rreturn the caller's admin state if it's the same session.
-            // This is done second in case of ServiceUI use, etc.
-            if (sessionid == AccountUtilities.CallerSessionId)
-            {
-                return AccountUtilities.CallerIsAdmin;
             }
 
             // We don't know, and if we can't get it, it doesn't matter.
