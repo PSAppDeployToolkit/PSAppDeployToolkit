@@ -12,7 +12,8 @@ Describe 'New-ADTTemplate' {
         function Get-ADTTemplateContent
         {
             [CmdletBinding()]
-            param ([hashtable]$Params = @{})
+            [OutputType([System.Collections.Hashtable])]
+            param ([System.Collections.Hashtable]$Params = @{})
             $Params.Destination = $TestDrive
             $Params.Force = $true
             $Params.PassThru = $true
@@ -45,6 +46,7 @@ Describe 'New-ADTTemplate' {
         function Get-ADTSessionPropertiesFromScriptContent
         {
             [CmdletBinding()]
+            [OutputType([System.Collections.Hashtable])]
             param ([System.String]$Content)
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($Content, [ref]$null, [ref]$null)
             $assignmentAst = $ast.Find({
@@ -82,6 +84,7 @@ Describe 'New-ADTTemplate' {
                 }
             }
             $content = $template.ScriptContent
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'keys', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
             $keys = Get-ADTSessionPropertiesFromScriptContent -Content $content
         }
 
@@ -140,6 +143,7 @@ Describe 'New-ADTTemplate' {
 
     Context 'Config' {
         BeforeAll {
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
             $template = Get-ADTTemplateContent -Params @{
                 Config = @{
                     MSI = @{ InstallParams = 'TEST PASSED!'; MutexWaitTime = 99999 }
@@ -179,6 +183,7 @@ Describe 'New-ADTTemplate' {
     Context 'ScriptBlocks' {
         Context 'All phases replaced' {
             BeforeAll {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $content = (Get-ADTTemplateContent -Params @{
                         PreInstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-install' }
                         InstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-install' }
@@ -240,6 +245,7 @@ Describe 'New-ADTTemplate' {
 
         Context 'Single phase preserves others' {
             BeforeAll {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $content = (Get-ADTTemplateContent -Params @{
                         InstallScriptBlock = { Write-ADTLogEntry -Message 'custom install' }
                     }).ScriptContent
@@ -272,6 +278,7 @@ Describe 'New-ADTTemplate' {
 
         Context 'Combined file copy' {
             BeforeAll {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $template = Get-ADTTemplateContent -Params @{
                     Assets = "$TestDrive\SourceAssets\custom.ico"
                     Files = "$TestDrive\SourceFiles\setup.msi", "$TestDrive\SourceFiles\app.mst"
@@ -310,6 +317,7 @@ Describe 'New-ADTTemplate' {
         BeforeAll {
             $null = New-Item -Path "$TestDrive\SourceFiles" -ItemType Directory -Force
             'installer' | Set-Content -Path "$TestDrive\SourceFiles\setup.msi" -Force
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
             $template = Get-ADTTemplateContent -Params @{
                 Version = 3
                 Config = @{ MSI = @{ InstallParams = 'TEST' } }
