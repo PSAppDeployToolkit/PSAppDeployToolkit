@@ -832,7 +832,7 @@ namespace PSADT.ShortcutManagement
                     {
                         return null;
                     }
-                    string? bstrValStr = Marshal.PtrToStringBSTR(bstrVal);
+                    string bstrValStr = Marshal.PtrToStringBSTR(bstrVal);
                     return !string.IsNullOrWhiteSpace(bstrValStr) ? bstrValStr : null;
                 }
                 if (vt == VARENUM.VT_LPWSTR)
