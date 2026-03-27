@@ -112,6 +112,11 @@ $adtSession = @{
     DeployAppScriptVersion = '4.2.0'
 }
 
+
+##================================================
+## MARK: Deployment type definitions
+##================================================
+
 function Install-ADTDeployment
 {
     [CmdletBinding()]
@@ -307,7 +312,7 @@ try
     if (Test-Path -LiteralPath "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -PathType Leaf)
     {
         Get-ChildItem -LiteralPath "$PSScriptRoot\PSAppDeployToolkit" -Recurse -File | Unblock-File -ErrorAction Ignore
-        Import-Module -FullyQualifiedName @{ ModuleName = "$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' } -Force
+        Import-Module -FullyQualifiedName @{ ModuleName = [System.Management.Automation.WildcardPattern]::Escape("$PSScriptRoot\PSAppDeployToolkit\PSAppDeployToolkit.psd1"); Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' } -Force
     }
     else
     {
@@ -340,7 +345,7 @@ try
             if ($_.Name -match 'PSAppDeployToolkit\..+$')
             {
                 Get-ChildItem -LiteralPath $_.FullName -Recurse -File | Unblock-File -ErrorAction Ignore
-                Import-Module -Name $_.FullName -Force
+                Import-Module -Name ([System.Management.Automation.WildcardPattern]::Escape("$($_.FullName)\$($_.BaseName).psd1")) -Force
             }
         }
     }
@@ -353,12 +358,13 @@ catch
 {
     # An unhandled error has been caught.
     $mainErrorMessage = "An unhandled error within [$($MyInvocation.MyCommand.Name)] has occurred.`n$(Resolve-ADTErrorRecord -ErrorRecord $_)"
-    Write-ADTLogEntry -Message $mainErrorMessage -Severity 3
+    Write-ADTLogEntry -Message $mainErrorMessage -Severity Error
 
     ## Error details hidden from the user by default. Show a simple dialog with full stack trace:
     # Show-ADTDialogBox -Text $mainErrorMessage -Icon Stop -NoWait
 
     ## Or, a themed dialog with basic error message:
-    Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) failed at line $($_.InvocationInfo.ScriptLineNumber), char $($_.InvocationInfo.OffsetInLine):`n$($_.InvocationInfo.Line.Trim())`n`nMessage:`n$($_.Exception.Message)" -MessageAlignment Left -ButtonRightText OK -Icon Error -NoWait
+    Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) failed at line $($_.InvocationInfo.ScriptLineNumber), char $($_.InvocationInfo.OffsetInLine):`n$($_.InvocationInfo.Line.Trim())`n`nMessage:`n$($_.Exception.Message)" -ButtonRightText OK -Icon Error -NoWait
+
     Close-ADTSession -ExitCode 60001
 }
