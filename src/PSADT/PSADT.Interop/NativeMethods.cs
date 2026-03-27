@@ -22,6 +22,7 @@ using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.Security;
 using Windows.Win32.Security.Authentication.Identity;
 using Windows.Win32.Security.Authorization;
+using Windows.Win32.Security.WinTrust;
 using Windows.Win32.Storage.FileSystem;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
 using Windows.Win32.System.Com;
@@ -3672,10 +3673,16 @@ namespace PSADT.Interop
         /// its contents depend on the action specified by the action identifier.</param>
         /// <returns>An integer value indicating the result of the trust verification. A value of 0 indicates that the
         /// verification succeeded.</returns>
-        internal static unsafe HRESULT WinVerifyTrust(HWND hwnd, ref Guid pgActionID, void* pWVTData)
+        internal static HRESULT WinVerifyTrust(HWND hwnd, ref Guid pgActionID, in WINTRUST_DATA pWVTData)
         {
-            HRESULT res = (HRESULT)PInvoke.WinVerifyTrust(hwnd, ref pgActionID, pWVTData);
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+            unsafe
+            {
+                fixed (WINTRUST_DATA* pWVTDataPtr = &pWVTData)
+                {
+                    HRESULT res = (HRESULT)PInvoke.WinVerifyTrust(hwnd, ref pgActionID, pWVTDataPtr);
+                    return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+                }
+            }
         }
 
         /// <summary>
