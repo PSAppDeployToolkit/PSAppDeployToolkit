@@ -146,14 +146,23 @@ Describe 'New-ADTTemplate' {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
             $template = Get-ADTTemplateContent -Params @{
                 Config = @{
-                    MSI = @{ InstallParams = 'TEST PASSED!'; MutexWaitTime = 99999 }
-                    Toolkit = @{ LogPath = '$env:TEMP\logs' }
+                    # Level 1: replacement + insertion inside existing 'MSI' section.
+                    MSI = @{ InstallParams = 'InstallParamsText'; MutexWaitTime = 99999; NewMSIParams = 'NewMSIParamsText' }
+                    # Level 1: replacement + insertion inside existing 'Toolkit' section.
+                    Toolkit = @{ LogPath = '$env:TEMP\logs'; NewToolkitParams = 'NewToolkitParamsText' }
+                    # Level 1: replacement + insertion inside existing 'UI' section.
+                    UI = @{ NewUIParams = 'NewUIParamsText'; DefaultTimeout = 7777; MoreNewUIParams = 'MoreNewUIParamsText' }
+                    # Level 0: full replacement of existing 'Assets' section (all new values).
+                    Assets = @{ Logo = 'CustomLogo.png'; LogoDark = 'CustomLogoDark.png'; NewAssetsParams = 'NewAssetsParamsText' }
+                    # Level 0: entirely new top-level section.
+                    CustomAppSettings = @{ Timeout = 3600; CustomAppProperties = @{ Retries = 5 } }
+                    MoreCustomAppSettings = @{ IsValid = $true; CustomAppProperties = @{ MoreStuff = 'No' } }
                 }
             }
         }
 
         It 'Overrides a scalar config value' {
-            $template.ConfigData.MSI.InstallParams | Should -Be 'TEST PASSED!'
+            $template.ConfigData.MSI.InstallParams | Should -Be 'InstallParamsText'
         }
 
         It 'Single-quotes strings containing dollar signs' {
@@ -165,16 +174,37 @@ Describe 'New-ADTTemplate' {
             $template.ConfigData.MSI.LoggingOptions | Should -Not -BeNullOrEmpty
         }
 
+        It 'Replaces values at every nesting level' {
+            # Level 0 replacement: existing top-level section overridden.
+            $template.ConfigData.Assets.Logo | Should -Be 'CustomLogo.png'
+            $template.ConfigData.Assets.LogoDark | Should -Be 'CustomLogoDark.png'
+            # Level 1 replacements: existing keys inside existing sections.
+            $template.ConfigData.MSI.InstallParams | Should -Be 'InstallParamsText'
+            $template.ConfigData.MSI.MutexWaitTime | Should -Be 99999
+            $template.ConfigData.Toolkit.LogPath | Should -Be '$env:TEMP\logs'
+            $template.ConfigData.UI.DefaultTimeout | Should -Be 7777
+        }
+
+        It 'Allows adding new top-level and nested config sections' {
+            # Level 1 insertions: new keys inside existing sections.
+            $template.ConfigData.MSI.NewMSIParams | Should -Be 'NewMSIParamsText'
+            $template.ConfigData.Toolkit.NewToolkitParams | Should -Be 'NewToolkitParamsText'
+            $template.ConfigData.UI.NewUIParams | Should -Be 'NewUIParamsText'
+            $template.ConfigData.UI.MoreNewUIParams | Should -Be 'MoreNewUIParamsText'
+            $template.ConfigData.Assets.NewAssetsParams | Should -Be 'NewAssetsParamsText'
+            # Level 0 insertion: entirely new top-level section.
+            $template.ConfigData.CustomAppSettings.Timeout | Should -Be 3600
+            $template.ConfigData.CustomAppSettings.CustomAppProperties.Retries | Should -Be 5
+            $template.ConfigData.MoreCustomAppSettings.IsValid | Should -Be $true
+            $template.ConfigData.MoreCustomAppSettings.CustomAppProperties.MoreStuff | Should -Be 'No'
+        }
+
         It 'Config file has UTF-8 BOM' {
             $template.ConfigHasBom | Should -BeTrue
         }
     }
 
     Context 'Config error handling' {
-        It 'Throws ConfigKeyNotFound on nonexistent key' {
-            { New-ADTTemplate -Destination $TestDrive -Force -Config @{ BogusSection = @{ Fake = 1 } } } | Should -Throw -ErrorId 'ConfigKeyNotFound*'
-        }
-
         It 'Throws ConfigKeyTypeMismatch when providing hashtable for scalar key' {
             { New-ADTTemplate -Destination $TestDrive -Force -Config @{ MSI = @{ InstallParams = @{ Nested = 'bad' } } } } | Should -Throw -ErrorId 'ConfigKeyTypeMismatch*'
         }

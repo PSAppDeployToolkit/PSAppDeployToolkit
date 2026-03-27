@@ -26,7 +26,7 @@ function New-ADTTemplate
         A dictionary of key-value pairs to inject into the $adtSession hashtable of the generated Invoke-AppDeployToolkit.ps1. Accepts [hashtable], [ordered], or any [System.Collections.IDictionary] type. Only supported when -Version is 4.
 
     .PARAMETER Config
-        A dictionary of key-value pairs to override in the generated Config\config.psd1. The dictionary structure must mirror the config file's nested hashtable layout (e.g. @{ MSI = @{ InstallParams = 'REBOOT=ReallySuppress /QB-!' } }). Only existing keys can be overridden; specifying a key that does not exist in the default config will throw an error.
+        A dictionary of key-value pairs to override or add to the generated Config\config.psd1. The dictionary structure must mirror the config file's nested hashtable layout (e.g. @{ MSI = @{ InstallParams = 'REBOOT=ReallySuppress /QB-!' } }). Existing keys are overridden in place. New keys or sections that do not exist in the default config are appended at the end of the relevant hashtable level.
 
     .PARAMETER PreInstallScriptBlock
         A ScriptBlock whose content will replace the Pre-Install phase of the Install-ADTDeployment function in the generated Invoke-AppDeployToolkit.ps1. Only supported when -Version is 4.
@@ -366,6 +366,7 @@ function New-ADTTemplate
                     $configAst = [System.Management.Automation.Language.Parser]::ParseInput($configText, [ref]$null, [ref]$null)
                     $configHashtableAst = $configAst.EndBlock.Statements[0].PipelineElements[0].Expression
                     $configReplacements = [System.Collections.Generic.List[PSCustomObject]]::new()
+                    $configInsertions = @{}
 
                     # Recursive scriptblock to walk user dictionary against config AST.
                     $collectReplacements = {
@@ -376,14 +377,24 @@ function New-ADTTemplate
                             $matchingKvp = $HashtableAst.KeyValuePairs.Where({ $_.Item1.Value -eq $key })
                             if ($matchingKvp.Count -eq 0)
                             {
-                                $naerParams = @{
-                                    Exception = [System.ArgumentException]::new("The config key '$currentPath' does not exist in the default configuration.")
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                                    ErrorId = 'ConfigKeyNotFound'
-                                    TargetObject = $currentPath
-                                    RecommendedAction = 'Please specify only keys that exist in the default config.psd1 and try again.'
+                                # Key does not exist in the default config; accumulate it for insertion.
+                                $serializedValue = ConvertTo-ADTExpression -InputObject $UserDict[$key] -LiteralString
+                                $closingBraceOffset = $configText.LastIndexOf('}', $HashtableAst.Extent.EndOffset - 1)
+                                $braceLineStart = $configText.LastIndexOf("`n", $closingBraceOffset - 1) + 1
+                                $indent = if ($HashtableAst.KeyValuePairs.Count -gt 0)
+                                {
+                                    ' ' * ($HashtableAst.KeyValuePairs[0].Item1.Extent.StartColumnNumber - 1)
                                 }
-                                throw (New-ADTErrorRecord @naerParams)
+                                else
+                                {
+                                    '    '
+                                }
+                                if (!$configInsertions.ContainsKey($braceLineStart))
+                                {
+                                    $configInsertions[$braceLineStart] = [System.Collections.Generic.List[System.String]]::new()
+                                }
+                                $configInsertions[$braceLineStart].Add("${indent}$($key.Replace("'", "''")) = $serializedValue")
+                                continue
                             }
                             $astValue = $matchingKvp[0].Item2.PipelineElements[0].Expression
                             if ($UserDict[$key] -is [System.Collections.IDictionary])
@@ -412,6 +423,16 @@ function New-ADTTemplate
                         }
                     }
                     & $collectReplacements -UserDict $Config -HashtableAst $configHashtableAst -Path $null
+
+                    # Convert accumulated new-key insertions into replacement objects.
+                    foreach ($offset in $configInsertions.Keys)
+                    {
+                        $configReplacements.Add([PSCustomObject]@{
+                                Start = $offset
+                                End = $offset
+                                Value = (($configInsertions[$offset] -join "`n") + "`n")
+                            })
+                    }
 
                     # Apply all replacements from end to start to preserve earlier offsets.
                     foreach ($replacement in ($configReplacements | Sort-Object -Property Start -Descending))
