@@ -533,7 +533,7 @@ namespace PSADT.WindowsInstaller
         internal static MsiCloseHandleSafeHandle GetSummaryInformation(string szDatabasePath, IReadOnlyList<string>? szTransformFiles = null)
         {
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
-            _ = NativeMethods.MsiGetSummaryInformation(hDatabase, 0, out MsiCloseHandleSafeHandle hSummaryInfo);
+            _ = NativeMethods.MsiGetSummaryInformation(hDatabase, out MsiCloseHandleSafeHandle hSummaryInfo);
             return hSummaryInfo;
         }
 

@@ -131,7 +131,7 @@ namespace PSADT.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void MinimizeAllWindows()
         {
-            _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL, default);
+            _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace PSADT.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void RestoreAllWindows()
         {
-            _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL_UNDO, default);
+            _ = NativeMethods.SendMessage(GetTrayWindowHandle(), WINDOW_MESSAGE.WM_COMMAND, NativeMethods.MIN_ALL_UNDO);
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace PSADT.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static HWND GetTrayWindowHandle()
         {
-            return NativeMethods.FindWindow("Shell_TrayWnd", null);
+            return NativeMethods.FindWindow("Shell_TrayWnd");
         }
     }
 }

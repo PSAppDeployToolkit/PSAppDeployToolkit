@@ -34,7 +34,7 @@ namespace PSADT.Security
             // Internal worker function to retrieve the privilege name from the token attributes.
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
-                _ = NativeMethods.LookupPrivilegeName(null, attr.Luid, buffer, out uint retLength);
+                _ = NativeMethods.LookupPrivilegeName(attr.Luid, buffer, out uint retLength);
                 ReadOnlySpan<char> refBuf = buffer.Slice(0, (int)retLength).Trim();
                 if (refBuf.IsEmpty)
                 {
