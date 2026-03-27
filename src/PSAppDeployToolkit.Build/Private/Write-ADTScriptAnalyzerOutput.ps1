@@ -17,7 +17,7 @@ function Write-ADTScriptAnalyzerOutput
     # Write each result out to the console.
     for ($i = 0; $i -lt $DiagnosticRecord.Count; $i++)
     {
-        $output = ($DiagnosticRecord[$i] | Format-List -Property * | Out-String -Width ([System.Int32]::MaxValue)).Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None).Trim() -replace '^', "> "
+        $output = ($DiagnosticRecord[$i] | Format-List -Property * | Out-String -Width ([System.Int16]::MaxValue)).Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None).Trim() -replace '^', "> "
         Write-ADTBuildLogEntry -Message "Output for Invoke-ScriptAnalyzer DiagnosticRecord [$($i+1)/$($DiagnosticRecord.Count)]" -ForegroundColor DarkRed
         Write-ADTBuildLogEntry -Message $output -ForegroundColor DarkRed
     }

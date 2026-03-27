@@ -201,7 +201,7 @@ function Invoke-ADTMarkdownExport
         {
             for ($i = 0; $i -lt $MissingDocumentation.Count; $i++)
             {
-                $output = ($MissingDocumentation[$i] | Select-Object -Property FileName, LineNumber, Line | Format-List -Property * | Out-String -Width ([System.Int32]::MaxValue)).Trim().Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None).Trim() -replace '^', "> "
+                $output = ($MissingDocumentation[$i] | Select-Object -Property FileName, LineNumber, Line | Format-List -Property * | Out-String -Width ([System.Int16]::MaxValue)).Trim().Split([System.String[]]("`r`n", "`n"), [System.StringSplitOptions]::None).Trim() -replace '^', "> "
                 Write-ADTBuildLogEntry -Message "Output for missing documentation MatchInfo [$($i+1)/$($MissingDocumentation.Count)]" -ForegroundColor DarkRed
                 Write-ADTBuildLogEntry -Message $output -ForegroundColor DarkRed
             }
