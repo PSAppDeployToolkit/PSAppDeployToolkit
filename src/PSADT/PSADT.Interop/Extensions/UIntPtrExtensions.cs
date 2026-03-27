@@ -56,25 +56,6 @@ namespace PSADT.Interop.Extensions
         }
 
         /// <summary>
-        /// Converts a native integer handle to a read-only span of characters, trimming any trailing null characters.
-        /// </summary>
-        /// <remarks>This method is intended for use with unmanaged memory and should be used with
-        /// caution. Ensure that the handle points to valid memory containing character data.</remarks>
-        /// <param name="handle">The native integer handle pointing to a memory location containing character data.</param>
-        /// <param name="length">The number of characters to read from the memory location specified by the handle.</param>
-        /// <returns>A read-only span of characters representing the data at the specified handle, trimmed of any trailing null
-        /// characters.</returns>
-        internal static ReadOnlySpan<char> AsReadOnlyCharSpan(this nuint handle, int length)
-        {
-            InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
-            unsafe
-            {
-                return new ReadOnlySpan<char>((char*)handle, length).TrimRemoveEndNull();
-            }
-        }
-
-        /// <summary>
         /// Converts a pointer to unmanaged memory into a managed string representation using the specified length.
         /// </summary>
         /// <remarks>This method is intended for use with unmanaged memory. Ensure that <paramref
@@ -90,7 +71,11 @@ namespace PSADT.Interop.Extensions
         {
             InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon UIntPtr instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
-            ReadOnlySpan<char> stringSpan = handle.AsReadOnlyCharSpan(length);
+            ReadOnlySpan<char> stringSpan;
+            unsafe
+            {
+                stringSpan = new ReadOnlySpan<char>((char*)handle, length).TrimRemoveEndNull();
+            }
             return stringSpan.IsWhiteSpace()
                 ? throw new FormatException("The specified pointer does not contain a valid string.")
                 : stringSpan.ToString();
