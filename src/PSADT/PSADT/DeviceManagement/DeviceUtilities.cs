@@ -144,7 +144,7 @@ namespace PSADT.DeviceManagement
         /// computer is joined to.</returns>
         public static DomainStatus GetDomainStatus()
         {
-            _ = NativeMethods.NetGetJoinInformation(out SafeNetApiBufferFreeHandle? nameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS bufferType);
+            _ = NativeMethods.NetGetJoinInformation(out SafeNetApiBufferFreeHandle nameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS bufferType);
             using (nameBuffer)
             {
                 return new((NETSETUP_JOIN_STATUS)bufferType, nameBuffer.ToStringUni());
