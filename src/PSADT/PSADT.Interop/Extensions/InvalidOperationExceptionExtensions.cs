@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
@@ -79,7 +80,7 @@ namespace System
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
-            public static void ThrowIfNull(PWSTR value, string message)
+            public static void ThrowIfNull([NotNull] PWSTR value, string message)
             {
                 unsafe
                 {
@@ -100,14 +101,11 @@ namespace System
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
-            public static void ThrowIfNull(object? value, string message)
+            public static void ThrowIfNull([NotNull] object? value, string message)
             {
-                unsafe
+                if (value is null)
                 {
-                    if (value is null)
-                    {
-                        throw new InvalidOperationException(message);
-                    }
+                    throw new InvalidOperationException(message);
                 }
             }
 
@@ -210,7 +208,7 @@ namespace System
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
-            public static void ThrowIfNullOrInvalid(PWSTR value, string message)
+            public static void ThrowIfNullOrInvalid([NotNull] PWSTR value, string message)
             {
                 unsafe
                 {
@@ -232,7 +230,7 @@ namespace System
             /// <exception cref="InvalidOperationException">Thrown if the handle is null, closed, or invalid.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
-            public static void ThrowIfNullOrInvalid<T>(T handle, string message) where T : SafeHandle
+            public static void ThrowIfNullOrInvalid<T>([NotNull] T handle, string message) where T : SafeHandle
             {
                 if (handle is null || handle.IsClosed || handle.IsInvalid)
                 {
