@@ -37,3 +37,13 @@ dotnet_diagnostic.CA1310.severity = none
 dotnet_diagnostic.CA1847.severity = none
 dotnet_diagnostic.CA1849.severity = none
 dotnet_diagnostic.CA1866.severity = none
+
+# Explicitly enable what `latest-all` doesn't enable.
+dotnet_diagnostic.CA1017.severity = error 
+dotnet_diagnostic.CA1045.severity = error 
+dotnet_diagnostic.CA1005.severity = error 
+dotnet_diagnostic.CA1014.severity = error 
+dotnet_diagnostic.CA1060.severity = error 
+dotnet_diagnostic.CA1021.severity = error 
+dotnet_diagnostic.CA1501.severity = error 
+dotnet_diagnostic.CA1509.severity = error
