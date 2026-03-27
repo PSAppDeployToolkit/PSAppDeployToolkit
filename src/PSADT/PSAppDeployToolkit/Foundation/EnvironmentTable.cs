@@ -1079,7 +1079,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property retrieves information about all user sessions on the system, which can be useful for
         /// managing user interactions and session-specific operations.</remarks>
-        public IReadOnlyList<SessionInfo> LoggedOnUserSessions { get; } = SessionManager.GetSessionInfo();
+        public IReadOnlyList<SessionInfo> LoggedOnUserSessions { get; } = SessionInfo.Get();
 
         /// <summary>
         /// Gets a read-only list of users currently logged on to the system.

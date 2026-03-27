@@ -103,7 +103,7 @@ function Get-ADTLoggedOnUser
         {
             try
             {
-                if (($sessionInfo = [PSADT.TerminalServices.SessionManager]::GetSessionInfo()))
+                if (($sessionInfo = [PSADT.TerminalServices.SessionInfo]::Get()))
                 {
                     return $sessionInfo
                 }
