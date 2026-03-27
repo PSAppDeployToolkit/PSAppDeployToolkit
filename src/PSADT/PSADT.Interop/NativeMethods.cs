@@ -4167,36 +4167,15 @@ namespace PSADT.Interop
         /// </summary>
         /// <remarks>The caller must release the buffer referenced by lpNameBuffer to avoid memory leaks.
         /// This method throws an exception if the underlying Windows API call fails.</remarks>
-        /// <param name="lpServer">The name of the remote server to query, or null to specify the local computer. The name must begin with \\
-        /// if specified.</param>
         /// <param name="lpNameBuffer">When this method returns, contains a handle to a buffer that receives the name of the domain or workgroup.
         /// The caller is responsible for releasing this handle.</param>
         /// <param name="BufferType">When this method returns, contains a value that indicates the join status of the computer.</param>
         /// <returns>A WIN32_ERROR value that indicates the result of the operation. Returns NERR_Success if successful.</returns>
-        internal static WIN32_ERROR NetGetJoinInformation(string? lpServer, out SafeNetApiBufferFreeHandle lpNameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS BufferType)
-        {
-            if (lpServer is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpServer);
-            }
-            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(lpServer, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid(lpNameBufferLocal, "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
-            lpNameBuffer = new(lpNameBufferLocal, true);
-            return res;
-        }
-
-        /// <summary>
-        /// Retrieves information about the join status of the local computer to a domain or workgroup.
-        /// </summary>
-        /// <param name="lpNameBuffer">When this method returns, contains a handle to a buffer that receives the name of the domain or workgroup.
-        /// The caller is responsible for freeing this buffer.</param>
-        /// <param name="BufferType">When this method returns, contains a value that specifies the join status of the local computer.</param>
-        /// <returns>A WIN32_ERROR value that indicates the result of the operation. Returns ERROR_SUCCESS if the information is
-        /// retrieved successfully; otherwise, returns a system error code.</returns>
         internal static WIN32_ERROR NetGetJoinInformation(out SafeNetApiBufferFreeHandle lpNameBuffer, out Windows.Win32.NetworkManagement.NetManagement.NETSETUP_JOIN_STATUS BufferType)
         {
-            WIN32_ERROR res = NetGetJoinInformation(null, out lpNameBuffer, out BufferType).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid(lpNameBuffer, "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.NetGetJoinInformation(null, out PWSTR lpNameBufferLocal, out BufferType)).ThrowOnFailure();
+            InvalidOperationException.ThrowIfNullOrInvalid(lpNameBufferLocal, "The name buffer returned from 'NetGetJoinInformation()' is null or invalid.");
+            lpNameBuffer = new(lpNameBufferLocal, true);
             return res;
         }
 
