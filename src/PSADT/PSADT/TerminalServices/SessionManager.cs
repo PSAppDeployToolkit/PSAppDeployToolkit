@@ -66,21 +66,21 @@ namespace PSADT.TerminalServices
         /// <exception cref="NotSupportedException">Thrown if the requested type for session information is not supported.</exception>
         private static SessionInfo? GetSessionInfo(in WTS_SESSION_INFO_1W session)
         {
-            // Internal helper for retrieving session information values.
-            static T? GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass)
+            // Internal helpers for retrieving session information values.
+            static string? GetString(uint sessionId, WTS_INFO_CLASS infoClass)
             {
                 _ = NativeMethods.WTSQuerySessionInformation(sessionId, infoClass, out SafeWtsHandle pBuffer);
                 using (pBuffer)
                 {
-                    return pBuffer.Length == 0
-                        ? (T?)(object?)null
-                        : typeof(T) == typeof(string)
-                        ? (T?)(object?)pBuffer.AsReadOnlySpan<char>().ToStringUni()
-                        : typeof(T) == typeof(ushort)
-                        ? (T)(object)(ushort)pBuffer.ReadInt16()
-                        : typeof(T) == typeof(uint)
-                        ? (T)(object)(uint)pBuffer.ReadInt32()
-                        : throw new NotSupportedException($"The type {typeof(T).FullName} is not supported by {nameof(GetValue)}.");
+                    return pBuffer.AsReadOnlySpan<char>().ToStringUni();
+                }
+            }
+            static T GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass) where T : unmanaged
+            {
+                _ = NativeMethods.WTSQuerySessionInformation(sessionId, infoClass, out SafeWtsHandle pBuffer);
+                using (pBuffer)
+                {
+                    return pBuffer.AsReadOnlyStructure<T>();
                 }
             }
 
@@ -116,8 +116,8 @@ namespace PSADT.TerminalServices
             bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
             bool isActiveUserSession = session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
             bool isValidUserSession = isActiveUserSession || session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
-            ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType)!;
-            string? clientName = GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientName);
+            ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType);
+            string? clientName = GetString(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string? pWinStationName = session.pSessionName.ToString();
             if (string.IsNullOrWhiteSpace(pWinStationName))
             {
@@ -182,7 +182,7 @@ namespace PSADT.TerminalServices
                 disconnectTime,
                 clientName,
                 (WTS_PROTOCOL_TYPE)clientProtocolType,
-                GetValue<string>(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
+                GetString(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
                 (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
             );
         }
