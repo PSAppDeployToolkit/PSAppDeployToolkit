@@ -406,11 +406,10 @@ namespace PSADT.Interop
         /// <returns>A value indicating whether the process was created successfully. Returns <see langword="true"/> if the
         /// process was created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
-        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
-            ArgumentException.ThrowIfNullOrInvalid(lpEnvironment);
             if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
@@ -467,7 +466,7 @@ namespace PSADT.Interop
         /// <param name="lpProcessInformation">When this method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
-        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
@@ -475,7 +474,6 @@ namespace PSADT.Interop
             {
                 throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
             }
-            ArgumentException.ThrowIfNullOrInvalid(lpEnvironment);
             if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();

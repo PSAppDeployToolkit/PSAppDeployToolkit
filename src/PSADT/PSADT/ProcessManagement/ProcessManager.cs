@@ -560,12 +560,12 @@ namespace PSADT.ProcessManagement
                     using (hAttributeList)
                     using (pinnedHandles)
                     {
-                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment!, workingDirectory, in startupInfoEx, out pi);
+                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, in startupInfoEx, out pi);
                     }
                 }
                 else
                 {
-                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment!, workingDirectory, in startupInfo, out pi);
+                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
                 }
             }
             else if (hasExternalHandles)
