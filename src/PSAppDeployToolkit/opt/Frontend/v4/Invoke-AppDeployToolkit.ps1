@@ -318,7 +318,7 @@ try
 }
 catch
 {
-    $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int32]::MaxValue)))
+    $Host.UI.WriteErrorLine((Out-String -InputObject $_ -Width ([System.Int16]::MaxValue)))
     exit 60008
 }
 

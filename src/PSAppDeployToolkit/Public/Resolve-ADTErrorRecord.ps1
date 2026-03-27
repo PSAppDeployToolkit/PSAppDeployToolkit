@@ -200,7 +200,7 @@ function Resolve-ADTErrorRecord
         }
 
         # Build out error properties.
-        $logErrorMessage = [System.String]::Join([System.Environment]::NewLine, "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int32]::MaxValue)).Trim())
+        $logErrorMessage = [System.String]::Join([System.Environment]::NewLine, "Error Record:", "-------------", $null, (Out-String -InputObject (Format-List -InputObject ([pscustomobject]$logErrorProperties)) -Width ([System.Int16]::MaxValue)).Trim())
 
         # Capture Error Inner Exception(s).
         if ($IncludeErrorInnerException -and $ErrorRecord.Exception -and $ErrorRecord.Exception.InnerException)
@@ -219,7 +219,7 @@ function Resolve-ADTErrorRecord
                 }
 
                 # Add error record and get next inner exception.
-                $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String -Width ([System.Int32]::MaxValue)).Trim())
+                $innerExceptions.Add(($errInnerException | Select-Object -Property ($errInnerException | Get-ErrorPropertyNames) | Format-List | Out-String -Width ([System.Int16]::MaxValue)).Trim())
                 $errInnerException = $errInnerException.InnerException
             }
 
