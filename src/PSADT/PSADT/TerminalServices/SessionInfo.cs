@@ -41,7 +41,7 @@ namespace PSADT.TerminalServices
                 _ = NativeMethods.WTSQuerySessionInformation(sessionId, infoClass, out SafeWtsHandle pBuffer);
                 using (pBuffer)
                 {
-                    return pBuffer.AsReadOnlySpan<char>().ToStringUni();
+                    return pBuffer.ReadNullTerminatedString();
                 }
             }
             static T GetValue<T>(uint sessionId, WTS_INFO_CLASS infoClass) where T : unmanaged

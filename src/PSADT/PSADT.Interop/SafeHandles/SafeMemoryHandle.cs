@@ -64,6 +64,19 @@ namespace PSADT.Interop.SafeHandles
         }
 
         /// <summary>
+        /// Reads a null-terminated string from the memory location represented by the handle, starting at the specified
+        /// byte offset.
+        /// </summary>
+        /// <param name="offset">The byte offset from the start of the handle.</param>
+        /// <returns>The string value at the specified offset.</returns>
+        internal string? ReadNullTerminatedString(int offset = 0)
+        {
+            InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            return (handle + offset).AsReadOnlySpan<char>((Length - offset) / sizeof(char)).ToStringUni();
+        }
+
+        /// <summary>
         /// Reads a 64-bit signed integer from the memory location represented by the handle, starting at the specified
         /// byte offset.
         /// </summary>
