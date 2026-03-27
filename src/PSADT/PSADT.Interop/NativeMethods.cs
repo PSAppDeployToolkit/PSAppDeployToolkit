@@ -3666,20 +3666,19 @@ namespace PSADT.Interop
         /// <remarks>If the trust verification fails or if the provided parameters are invalid, an
         /// exception is thrown. Ensure that the action identifier and verification data are valid and appropriate for
         /// the intended verification operation.</remarks>
-        /// <param name="hwnd">A handle to the parent window to be used for any user interface that may be displayed during the trust
-        /// verification process.</param>
         /// <param name="pgActionID">A reference to a GUID that specifies the action to be performed during the trust verification.</param>
         /// <param name="pWVTData">A pointer to a structure containing additional data required for the trust verification. The structure and
         /// its contents depend on the action specified by the action identifier.</param>
         /// <returns>An integer value indicating the result of the trust verification. A value of 0 indicates that the
         /// verification succeeded.</returns>
-        internal static HRESULT WinVerifyTrust(HWND hwnd, ref Guid pgActionID, in WINTRUST_DATA pWVTData)
+        internal static HRESULT WinVerifyTrust(in Guid pgActionID, in WINTRUST_DATA pWVTData)
         {
             unsafe
             {
                 fixed (WINTRUST_DATA* pWVTDataPtr = &pWVTData)
+                fixed (Guid* pgActionIDPtr = &pgActionID)
                 {
-                    HRESULT res = (HRESULT)PInvoke.WinVerifyTrust(hwnd, ref pgActionID, pWVTDataPtr);
+                    HRESULT res = (HRESULT)PInvoke.WinVerifyTrust((HWND)(nint)HANDLE.INVALID_HANDLE_VALUE, pgActionIDPtr, pWVTDataPtr);
                     return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
                 }
             }

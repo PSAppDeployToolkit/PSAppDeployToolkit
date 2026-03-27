@@ -52,9 +52,7 @@ namespace PSADT.Interop.Extensions
                     };
                     try
                     {
-                        Guid guid = PInvoke.WINTRUST_ACTION_GENERIC_VERIFY_V2;
-                        HWND handle = (HWND)(nint)HANDLE.INVALID_HANDLE_VALUE;
-                        return NativeMethods.WinVerifyTrust(handle, ref guid, in wtData) == HRESULT.S_OK;
+                        return NativeMethods.WinVerifyTrust(in PInvoke.WINTRUST_ACTION_GENERIC_VERIFY_V2, in wtData) == HRESULT.S_OK;
                     }
                     catch
                     {
