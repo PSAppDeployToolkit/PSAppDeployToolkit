@@ -914,7 +914,7 @@ namespace PSADT.Interop
         /// leave the SACL unchanged.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal static WIN32_ERROR SetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? psidOwner, SafeNoReleaseHandle? psidGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl)
+        internal static WIN32_ERROR SetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? psidOwner, SafeNoReleaseHandle? psidGroup, LocalFreeSafeHandle? pDacl = null, LocalFreeSafeHandle? pSacl = null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(pObjectName);
             bool psidOwnerAddRef = false;
@@ -1005,7 +1005,7 @@ namespace PSADT.Interop
         /// <param name="Args">An optional pointer to additional arguments passed to the progress callback function.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation.  Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation completes successfully.</returns>
-        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress, PROG_INVOKE_SETTING ProgressInvokeSetting, [Optional] nint? Args)
+        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress, PROG_INVOKE_SETTING ProgressInvokeSetting, nint Args = 0)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(pObjectName);
             bool pOwnerAddRef = false;
@@ -1022,7 +1022,7 @@ namespace PSADT.Interop
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        return PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, Args is not null ? (void*)Args.Value : null).ThrowOnFailure();
+                        return PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, (void*)Args).ThrowOnFailure();
                     }
                 }
             }
@@ -2018,8 +2018,7 @@ namespace PSADT.Interop
         /// langword="false"/>.</returns>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool TermsrvAppInstallMode();
+        internal static extern BOOL TermsrvAppInstallMode();
 
         /// <summary>
         /// Retrieves system firmware table data for the specified firmware table provider and table ID.
@@ -2331,7 +2330,7 @@ namespace PSADT.Interop
         /// require arguments.</param>
         /// <returns>The number of characters stored in the output buffer, excluding the terminating null character.</returns>
         /// <exception cref="Win32Exception">Thrown if the message formatting operation fails.</exception>
-        internal static uint FormatMessage(FORMAT_MESSAGE_OPTIONS dwFlags, [Optional] FreeLibrarySafeHandle? lpSource, uint dwMessageId, Span<char> lpBuffer, uint dwLanguageId = 0, in nint Arguments = default)
+        internal static uint FormatMessage(FORMAT_MESSAGE_OPTIONS dwFlags, [Optional] FreeLibrarySafeHandle? lpSource, uint dwMessageId, Span<char> lpBuffer, uint dwLanguageId = 0, nint Arguments = default)
         {
             unsafe
             {
@@ -2646,7 +2645,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if ProcessHandle is null or closed, or if StartRoutine is null, closed, or invalid.</exception>
         internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, nint? Argument = null, THREAD_CREATE_FLAGS CreateFlags = 0, uint ZeroBits = 0, uint StackSize = 0, uint MaximumStackSize = 0)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern NTSTATUS NtCreateThreadEx(out nint ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, nint ObjectAttributes, nint ProcessHandle, nint StartRoutine, nint Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, nint AttributeList);
             ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
             ArgumentException.ThrowIfNullOrInvalid(StartRoutine);
@@ -2688,7 +2687,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if ThreadHandle is null or has already been closed.</exception>
         internal static NTSTATUS NtTerminateThread(SafeThreadHandle ThreadHandle, in NTSTATUS ExitStatus)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern NTSTATUS NtTerminateThread(nint ThreadHandle, NTSTATUS ExitStatus);
             ArgumentException.ThrowIfNullOrInvalid(ThreadHandle);
             bool ThreadHandleAddRef = false;
@@ -2944,7 +2943,7 @@ namespace PSADT.Interop
         /// interpretation depends on the values of wEventId and uFlags. This parameter is optional and may be
         /// default if not required.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void SHChangeNotify([MarshalAs(UnmanagedType.I4)] SHCNE_ID wEventId, SHCNF_FLAGS uFlags, [Optional] nint dwItem1, [Optional] nint dwItem2)
+        internal static void SHChangeNotify(SHCNE_ID wEventId, SHCNF_FLAGS uFlags, nint dwItem1 = 0, nint dwItem2 = 0)
         {
             unsafe
             {
@@ -2966,7 +2965,7 @@ namespace PSADT.Interop
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, out SHSTOCKICONINFO psii)
         {
-            [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
             psii = new() { cbSize = (uint)Marshal.SizeOf<SHSTOCKICONINFO>() };
             HRESULT res = SHGetStockIconInfo(siid, uFlags, ref psii);
@@ -3089,7 +3088,7 @@ namespace PSADT.Interop
         /// exception is thrown if a Windows error code is set.</returns>
         internal static int LoadString(SafeHandle hInstance, uint uID, out nint lpBuffer)
         {
-            [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "LoadStringW", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "LoadStringW", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern int LoadString(HINSTANCE hInstance, uint uID, out nint lpBuffer, int cchBufferMax);
             ArgumentException.ThrowIfNullOrInvalid(hInstance);
             bool hInstanceAddRef = false;
@@ -3229,7 +3228,7 @@ namespace PSADT.Interop
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (uint* p = &lpdwProcessId)
                 {
-                    [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+                    [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
                     static extern uint GetWindowThreadProcessId(HWND hWnd, uint* lpdwProcessId);
                     if ((res = GetWindowThreadProcessId(hWnd, p)) == 0)
                     {
@@ -3257,7 +3256,7 @@ namespace PSADT.Interop
         /// mechanisms were successfully attached or detached; otherwise, <see langword="false"/>.</returns>
         internal static BOOL AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
-            [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern BOOL AttachThreadInput(uint idAttach, uint idAttachTo, BOOL fAttach);
             BOOL res = AttachThreadInput(idAttach, idAttachTo, fAttach);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3544,7 +3543,7 @@ namespace PSADT.Interop
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the user's response to the message box.</returns>
         internal static MESSAGEBOX_RESULT MessageBoxTimeout(HWND? hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwTimeout)
         {
-            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(HWND hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpText); ArgumentException.ThrowIfNullOrWhiteSpace(lpCaption);
             MESSAGEBOX_RESULT res = MessageBoxTimeoutW(hWnd ?? default, lpText, lpCaption, uType, wLanguageId, dwTimeout);
@@ -4249,7 +4248,7 @@ namespace PSADT.Interop
         /// other codes indicate errors or special conditions.</returns>
         internal static NTSTATUS RtlExpandEnvironmentStrings_U(SafeEnvironmentBlockHandle Environment, in UNICODE_STRING SourceString, ref UNICODE_STRING DestinationString, out uint RequiredBytes)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern NTSTATUS RtlExpandEnvironmentStrings_U(IntPtr Environment, in UNICODE_STRING SourceString, ref UNICODE_STRING DestinationString, out uint RequiredBytes);
             ArgumentException.ThrowIfNullOrInvalid(Environment); ArgumentException.ThrowIfNullOrInvalid(SourceString); ArgumentException.ThrowIfInvalid(DestinationString);
             bool EnvironmentAddRef = false;
