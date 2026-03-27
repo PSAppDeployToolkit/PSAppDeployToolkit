@@ -194,33 +194,13 @@ namespace PSADT.Interop
         /// </summary>
         /// <remarks>If the lookup fails, an exception is thrown containing the last Win32 error. This
         /// method wraps the native LookupPrivilegeValue function and enforces error handling via exceptions.</remarks>
-        /// <param name="lpSystemName">The name of the system on which the privilege name is to be looked up. If this parameter is null, the local
-        /// system is used.</param>
         /// <param name="lpName">The name of the privilege to look up. This must be a valid privilege constant.</param>
         /// <param name="lpLuid">When this method returns, contains the LUID that represents the specified privilege on the specified system.</param>
         /// <returns>true if the privilege name was successfully found and the LUID was retrieved; otherwise, false.</returns>
-        internal static BOOL LookupPrivilegeValue(string? lpSystemName, SE_PRIVILEGE lpName, out LUID lpLuid)
-        {
-            if (lpSystemName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpSystemName);
-            }
-            BOOL res = PInvoke.LookupPrivilegeValue(lpSystemName, lpName.ToString(), out lpLuid);
-            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
-        }
-
-        /// <summary>
-        /// Retrieves the locally unique identifier (LUID) that represents the specified privilege on the local system.
-        /// </summary>
-        /// <param name="lpName">The name of the privilege to retrieve the LUID for. This must be a valid privilege name recognized by the
-        /// system.</param>
-        /// <param name="lpLuid">When this method returns, contains the LUID that corresponds to the specified privilege name.</param>
-        /// <returns>A value that indicates whether the operation succeeded. Returns <see langword="true"/> if the privilege name
-        /// was found and the LUID was retrieved successfully; otherwise, <see langword="false"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL LookupPrivilegeValue(SE_PRIVILEGE lpName, out LUID lpLuid)
         {
-            return LookupPrivilegeValue(null, lpName, out lpLuid);
+            BOOL res = PInvoke.LookupPrivilegeValue(null, lpName.ToString(), out lpLuid);
+            return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -328,21 +308,16 @@ namespace PSADT.Interop
         /// </summary>
         /// <remarks>If the buffer specified by lpName is too small, an exception is thrown. The privilege
         /// name is returned as a null-terminated Unicode string.</remarks>
-        /// <param name="lpSystemName">The name of the target system. If this parameter is null, the local system is used.</param>
         /// <param name="lpLuid">A reference to the LUID that uniquely identifies the privilege to look up.</param>
         /// <param name="lpName">A span of characters that receives the name of the privilege. The buffer must be large enough to receive the
         /// privilege name, including the terminating null character.</param>
         /// <param name="cchName">On input, specifies the size of the lpName buffer, in characters. On output, receives the number of
         /// characters written to lpName, including the terminating null character.</param>
         /// <returns>true if the privilege name was successfully retrieved; otherwise, false.</returns>
-        internal static BOOL LookupPrivilegeName(string? lpSystemName, in LUID lpLuid, Span<char> lpName, out uint cchName)
+        internal static BOOL LookupPrivilegeName(in LUID lpLuid, Span<char> lpName, out uint cchName)
         {
-            if (lpSystemName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpSystemName);
-            }
             cchName = (uint)lpName.Length;
-            BOOL res = PInvoke.LookupPrivilegeName(lpSystemName, in lpLuid, lpName, ref cchName);
+            BOOL res = PInvoke.LookupPrivilegeName(null, in lpLuid, lpName, ref cchName);
             if (!res)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -374,13 +349,10 @@ namespace PSADT.Interop
         /// <param name="lpProcessInformation">When the method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns><see langword="true"/> if the process is successfully created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null, closed, or invalid.</exception>
-        internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string? lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessWithToken(SafeHandle hToken, CREATE_PROCESS_LOGON_FLAGS dwLogonFlags, string lpApplicationName, ref Span<char> lpCommandLine, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
-            if (lpApplicationName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
             if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
@@ -434,13 +406,11 @@ namespace PSADT.Interop
         /// <returns>A value indicating whether the process was created successfully. Returns <see langword="true"/> if the
         /// process was created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
-        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
-            if (lpApplicationName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
+            ArgumentException.ThrowIfNullOrInvalid(lpEnvironment);
             if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
@@ -497,17 +467,15 @@ namespace PSADT.Interop
         /// <param name="lpProcessInformation">When this method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
-        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
-            if (lpApplicationName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
             }
+            ArgumentException.ThrowIfNullOrInvalid(lpEnvironment);
             if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
@@ -555,56 +523,12 @@ namespace PSADT.Interop
         /// <summary>
         /// Opens a handle to the specified service control manager database.
         /// </summary>
-        /// <param name="lpMachineName">The name of the target computer. If <see langword="null"/>, the local computer is used.</param>
-        /// <param name="lpDatabaseName">The name of the service control manager database. If <see langword="null"/>, the default database is used.</param>
-        /// <param name="dwDesiredAccess">The access rights to the service control manager. This parameter must be a combination of <see
-        /// cref="SC_MANAGER_ACCESS"/> values.</param>
         /// <returns>A <see cref="CloseServiceHandleSafeHandle"/> that represents the handle to the service control manager
         /// database.</returns>
-        internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpMachineName, string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
-        {
-            if (lpMachineName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpMachineName);
-            }
-            if (lpDatabaseName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpDatabaseName);
-            }
-            CloseServiceHandleSafeHandle res = PInvoke.OpenSCManager(lpMachineName, lpDatabaseName, (uint)dwDesiredAccess);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
-        }
-
-        /// <summary>
-        /// Opens a handle to the service control manager database on the specified computer with the desired access
-        /// rights.
-        /// </summary>
-        /// <param name="lpDatabaseName">The name of the service control manager database. This parameter is typically null to specify the default
-        /// database, "ServicesActive".</param>
-        /// <param name="dwDesiredAccess">A bitmask of access rights required for the returned handle. This determines the operations that can be
-        /// performed on the service control manager.</param>
-        /// <returns>A safe handle to the service control manager database. The caller is responsible for closing the handle when
-        /// it is no longer needed.</returns>
-        internal static CloseServiceHandleSafeHandle OpenSCManager(string? lpDatabaseName, SC_MANAGER_ACCESS dwDesiredAccess)
-        {
-            if (lpDatabaseName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpDatabaseName);
-            }
-            return OpenSCManager(null, lpDatabaseName, dwDesiredAccess);
-        }
-
-        /// <summary>
-        /// Opens a handle to the Service Control Manager on the local computer with the specified access rights.
-        /// </summary>
-        /// <param name="dwDesiredAccess">A bitmask of access rights to request for the Service Control Manager. This value determines the operations
-        /// that can be performed with the returned handle.</param>
-        /// <returns>A safe handle to the Service Control Manager. The caller is responsible for closing the handle when it is no
-        /// longer needed.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static CloseServiceHandleSafeHandle OpenSCManager(SC_MANAGER_ACCESS dwDesiredAccess)
         {
-            return OpenSCManager(null, null, dwDesiredAccess);
+            CloseServiceHandleSafeHandle res = PInvoke.OpenSCManager(null, null, (uint)dwDesiredAccess);
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -915,7 +839,7 @@ namespace PSADT.Interop
         /// leave the SACL unchanged.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal static WIN32_ERROR SetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? psidOwner, SafeNoReleaseHandle? psidGroup, LocalFreeSafeHandle? pDacl = null, LocalFreeSafeHandle? pSacl = null)
+        internal static WIN32_ERROR SetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? psidOwner, SafeNoReleaseHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(pObjectName);
             bool psidOwnerAddRef = false;
@@ -1006,7 +930,7 @@ namespace PSADT.Interop
         /// <param name="Args">An optional pointer to additional arguments passed to the progress callback function.</param>
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation.  Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation completes successfully.</returns>
-        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, [Optional] LocalFreeSafeHandle? pDacl, [Optional] LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress, PROG_INVOKE_SETTING ProgressInvokeSetting, nint Args = 0)
+        internal static WIN32_ERROR TreeResetNamedSecurityInfo(string pObjectName, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeNoReleaseHandle? pOwner, SafeNoReleaseHandle? pGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl, BOOL KeepExplicit, FN_PROGRESS? fnProgress = null, PROG_INVOKE_SETTING ProgressInvokeSetting = PROG_INVOKE_SETTING.ProgressInvokeNever, nint Args = 0)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(pObjectName);
             bool pOwnerAddRef = false;
@@ -1066,7 +990,7 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the resource manager was successfully initialized; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the initialization fails due to a system error.</exception>
-        internal static BOOL AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS Flags, PFN_AUTHZ_DYNAMIC_ACCESS_CHECK? pfnDynamicAccessCheck, PFN_AUTHZ_COMPUTE_DYNAMIC_GROUPS? pfnComputeDynamicGroups, PFN_AUTHZ_FREE_DYNAMIC_GROUPS? pfnFreeDynamicGroups, string szResourceManagerName, out AuthzFreeResourceManagerSafeHandle phAuthzResourceManager)
+        private static BOOL AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS Flags, PFN_AUTHZ_DYNAMIC_ACCESS_CHECK? pfnDynamicAccessCheck, PFN_AUTHZ_COMPUTE_DYNAMIC_GROUPS? pfnComputeDynamicGroups, PFN_AUTHZ_FREE_DYNAMIC_GROUPS? pfnFreeDynamicGroups, string szResourceManagerName, out AuthzFreeResourceManagerSafeHandle phAuthzResourceManager)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(szResourceManagerName);
             BOOL res = PInvoke.AuthzInitializeResourceManager((uint)Flags, pfnDynamicAccessCheck, pfnComputeDynamicGroups, pfnFreeDynamicGroups, szResourceManagerName, out phAuthzResourceManager);
@@ -1076,6 +1000,23 @@ namespace PSADT.Interop
             }
             InvalidOperationException.ThrowIfNullOrInvalid(phAuthzResourceManager, "Failed to initialize the Authz resource manager.");
             return res;
+        }
+
+        /// <summary>
+        /// Initializes a new Authz resource manager for managing access control and authorization operations.
+        /// </summary>
+        /// <param name="Flags">A set of flags that specify the behavior of the resource manager. This parameter can include values such as
+        /// <see langword="0"/> for default behavior.</param>
+        /// <param name="szResourceManagerName">The name of the resource manager. This parameter cannot be <see langword="null"/> and must be a valid
+        /// string.</param>
+        /// <param name="phAuthzResourceManager">When this method returns, contains a handle to the initialized Authz resource manager. This handle must be
+        /// released using the appropriate cleanup method.</param>
+        /// <returns><see langword="true"/> if the resource manager was successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the initialization fails due to a system error.</exception>
+        internal static BOOL AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS Flags, string szResourceManagerName, out AuthzFreeResourceManagerSafeHandle phAuthzResourceManager)
+        {
+            return AuthzInitializeResourceManager(Flags, null, null, null, szResourceManagerName, out phAuthzResourceManager);
         }
 
         /// <summary>
@@ -1101,7 +1042,7 @@ namespace PSADT.Interop
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the initialization fails due to a Win32 error, or if the resulting authorization context is
         /// invalid.</exception>
-        internal static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        private static BOOL AuthzInitializeContextFromSid(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle UserSid, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             ArgumentException.ThrowIfNullOrInvalid(hAuthzResourceManager);
             ArgumentException.ThrowIfNullOrInvalid(UserSid);
@@ -1130,6 +1071,27 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Initializes an authorization context from a security identifier (SID).
+        /// </summary>
+        /// <remarks>This method wraps the native <c>AuthzInitializeContextFromSid</c> function and
+        /// ensures proper error handling. It throws exceptions for common failure scenarios, such as invalid handles or
+        /// system errors.</remarks>
+        /// <param name="UserSid">A <see cref="SafeHandle"/> representing the security identifier (SID) of the user for whom the context is
+        /// being initialized. This parameter cannot be null.</param>
+        /// <param name="hAuthzResourceManager">A <see cref="SafeHandle"/> representing the handle to the resource manager associated with the authorization
+        /// context. This parameter cannot be null.</param>
+        /// <param name="phAuthzClientContext">When this method returns, contains an <see cref="AuthzFreeContextSafeHandle"/> representing the initialized
+        /// authorization context. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the initialization fails due to a Win32 error, or if the resulting authorization context is
+        /// invalid.</exception>
+        internal static BOOL AuthzInitializeContextFromSid(SafeHandle UserSid, SafeHandle hAuthzResourceManager, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        {
+            return AuthzInitializeContextFromSid(0, UserSid, hAuthzResourceManager, null, default, default, out phAuthzClientContext);
+        }
+
+        /// <summary>
         /// Initializes an authorization context from a specified token.
         /// </summary>
         /// <param name="Flags">A combination of <see cref="AUTHZ_CONTEXT_FLAGS"/> values that specify the behavior of the authorization
@@ -1148,7 +1110,7 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
-        internal static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        private static BOOL AuthzInitializeContextFromToken(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext)
         {
             ArgumentException.ThrowIfNullOrInvalid(hAuthzResourceManager);
             ArgumentException.ThrowIfNullOrInvalid(TokenHandle);
@@ -1162,6 +1124,23 @@ namespace PSADT.Interop
             }
             InvalidOperationException.ThrowIfNullOrInvalid(phAuthzClientContext, "Failed to initialize the authorization context from the specified token.");
             return res;
+        }
+
+        /// <summary>
+        /// Initializes an authorization context from a specified token.
+        /// </summary>
+        /// <param name="TokenHandle">A handle to the token from which the authorization context is initialized. This handle must be valid and
+        /// cannot be null.</param>
+        /// <param name="hAuthzResourceManager">A handle to the resource manager associated with the authorization context. This handle must be valid and
+        /// cannot be null.</param>
+        /// <param name="phAuthzClientContext">When this method returns, contains an <see cref="AuthzFreeContextSafeHandle"/> representing the initialized
+        /// authorization context. This handle must be released by the caller when no longer needed.</param>
+        /// <returns><see langword="true"/> if the authorization context is successfully initialized; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the authorization context is initialized but the resulting handle is invalid.</exception>
+        internal static BOOL AuthzInitializeContextFromToken(SafeHandle TokenHandle, SafeHandle hAuthzResourceManager, out AuthzFreeContextSafeHandle phAuthzClientContext)
+        {
+            return AuthzInitializeContextFromToken(0, TokenHandle, hAuthzResourceManager, null, default, default, out phAuthzClientContext);
         }
 
         /// <summary>
@@ -1188,7 +1167,7 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the access check is successful and the results are valid; otherwise, <see
         /// langword="false"/>.</returns>
         /// <exception cref="Win32Exception">Thrown if the access check fails or if the results handle is invalid.</exception>
-        internal static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
+        private static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
         {
             if (hAuditEvent is not null)
             {
@@ -1221,6 +1200,29 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Performs an access check using the specified client context, access request, and security descriptors.
+        /// </summary>
+        /// <remarks>This method wraps the native <c>AuthzAccessCheck</c> function and performs additional
+        /// error handling to ensure proper resource management. The caller must ensure that all input handles and
+        /// structures are valid and properly initialized before calling this method.</remarks>
+        /// <param name="hAuthzClientContext">A handle to the client context used for the access check. This handle must be valid and initialized.</param>
+        /// <param name="pRequest">The access request structure that specifies the desired access rights and other parameters for the access
+        /// check.</param>
+        /// <param name="pSecurityDescriptor">A handle to the primary security descriptor against which the access check is performed. This handle must be
+        /// valid and properly initialized.</param>
+        /// <param name="pReply">A reference to an <see cref="AUTHZ_ACCESS_REPLY"/> structure that receives the results of the access check,
+        /// including granted access rights and any error information.</param>
+        /// <param name="phAccessCheckResults">When the method returns, contains a handle to the access check results. The caller is responsible for
+        /// releasing this handle when it is no longer needed.</param>
+        /// <returns><see langword="true"/> if the access check is successful and the results are valid; otherwise, <see
+        /// langword="false"/>.</returns>
+        /// <exception cref="Win32Exception">Thrown if the access check fails or if the results handle is invalid.</exception>
+        internal static BOOL AuthzAccessCheck(SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, LocalFreeSafeHandle pSecurityDescriptor, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
+        {
+            return AuthzAccessCheck(0, hAuthzClientContext, in pRequest, null, pSecurityDescriptor, null, ref pReply, out phAccessCheckResults);
+        }
+
+        /// <summary>
         /// Renames a subkey of the specified registry key.
         /// </summary>
         /// <param name="hKey">A handle to an open registry key. This handle must have the appropriate access rights for the operation.</param>
@@ -1244,8 +1246,6 @@ namespace PSADT.Interop
         /// <remarks>This method wraps the native LsaOpenPolicy function and provides error handling by
         /// throwing a <see cref="Win32Exception"/> if the operation fails. Ensure that the caller has the necessary 
         /// privileges to access the specified policy object.</remarks>
-        /// <param name="SystemName">An optional <see cref="LSA_UNICODE_STRING"/> that specifies the name of the system whose LSA Policy object
-        /// is to be opened. If <see langword="null"/>, the local system's LSA Policy object is opened.</param>
         /// <param name="ObjectAttributes">A reference to an <see cref="LSA_OBJECT_ATTRIBUTES"/> structure that specifies attributes for the policy
         /// object. This parameter is typically initialized to default values.</param>
         /// <param name="DesiredAccess">A bitmask specifying the access rights requested for the policy object. Use constants defined in the
@@ -1256,9 +1256,9 @@ namespace PSADT.Interop
         /// cref="NTSTATUS.STATUS_SUCCESS"/> if the operation is successful.</returns>
         /// <exception cref="Win32Exception">Thrown if the operation fails. The exception's error code corresponds to the Windows error code derived
         /// from the returned <see cref="NTSTATUS"/> value.</exception>
-        internal static NTSTATUS LsaOpenPolicy(LSA_UNICODE_STRING? SystemName, in LSA_OBJECT_ATTRIBUTES ObjectAttributes, LSA_POLICY_ACCESS DesiredAccess, out LsaCloseSafeHandle PolicyHandle)
+        internal static NTSTATUS LsaOpenPolicy(in LSA_OBJECT_ATTRIBUTES ObjectAttributes, LSA_POLICY_ACCESS DesiredAccess, out LsaCloseSafeHandle PolicyHandle)
         {
-            NTSTATUS res = PInvoke.LsaOpenPolicy(SystemName, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle).ThrowOnFailure();
+            NTSTATUS res = PInvoke.LsaOpenPolicy(null, in ObjectAttributes, (uint)DesiredAccess, out PolicyHandle).ThrowOnFailure();
             InvalidOperationException.ThrowIfNullOrInvalid(PolicyHandle, "Failed to open a handle to the LSA Policy object.");
             return res;
         }
@@ -1300,34 +1300,23 @@ namespace PSADT.Interop
         /// Displays a task dialog, a modal dialog box that provides a flexible and customizable user interface for presenting information and receiving user input.
         /// </summary>
         /// <remarks>This method wraps the native TaskDialog API, providing a managed interface for displaying a task dialog. The dialog is modal and blocks the calling thread until the user closes it.</remarks>
-        /// <param name="hwndOwner">A handle to the owner window for the task dialog. This can be <see langword="null"/> if the dialog has no owner.</param>
-        /// <param name="hInstance">A handle to the module instance that contains the dialog box template. This can be <see langword="null"/> if not applicable.</param>
         /// <param name="pszWindowTitle">The title of the task dialog window. This can be <see langword="null"/> to use the default title.</param>
         /// <param name="pszMainInstruction">The main instruction text displayed prominently in the task dialog. This can be <see langword="null"/> if no main instruction is needed.</param>
         /// <param name="pszContent">The additional content text displayed in the task dialog. This can be <see langword="null"/> if no additional content is needed.</param>
         /// <param name="dwCommonButtons">A combination of <see cref="TASKDIALOG_COMMON_BUTTON_FLAGS"/> values that specify the common buttons to display in the task dialog.</param>
         /// <param name="pszIcon">The resource identifier or name of the icon to display in the task dialog. This can be <see langword="null"/> if no icon is needed.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the result of the task dialog operation.</returns>
-        internal static MESSAGEBOX_RESULT TaskDialog(HWND? hwndOwner, HINSTANCE? hInstance, string? pszWindowTitle, string? pszMainInstruction, string? pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
+        internal static MESSAGEBOX_RESULT TaskDialog(string pszWindowTitle, string pszMainInstruction, string pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, TASKDIALOG_ICON pszIcon)
         {
-            if (pszWindowTitle is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(pszWindowTitle);
-            }
-            if (pszMainInstruction is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(pszMainInstruction);
-            }
-            if (pszContent is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(pszContent);
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(pszWindowTitle);
+            ArgumentException.ThrowIfNullOrWhiteSpace(pszMainInstruction);
+            ArgumentException.ThrowIfNullOrWhiteSpace(pszContent);
             unsafe
             {
                 fixed (char* pszWindowTitleLocal = pszWindowTitle, pszMainInstructionLocal = pszMainInstruction, pszContentLocal = pszContent)
                 {
                     int pnButtonLocal = 0;
-                    HRESULT res = PInvoke.TaskDialog(hwndOwner ?? default, hInstance ?? default, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
+                    HRESULT res = PInvoke.TaskDialog(default, default, pszWindowTitleLocal, pszMainInstructionLocal, pszContentLocal, dwCommonButtons, pszIcon.ToPCWSTR(), &pnButtonLocal);
                     return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : (MESSAGEBOX_RESULT)pnButtonLocal;
                 }
             }
@@ -1527,7 +1516,7 @@ namespace PSADT.Interop
         /// existing port.</param>
         /// <returns>A SafeFileHandle representing the I/O completion port. The handle is valid and must be released by the
         /// caller.</returns>
-        internal static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
+        private static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
             if (ExistingCompletionPort is not null)
             {
@@ -1562,18 +1551,15 @@ namespace PSADT.Interop
         /// <remarks>The caller must have appropriate permissions to create job objects. If the job object
         /// cannot be created due to a system error, an exception is thrown containing the relevant error
         /// information.</remarks>
-        /// <param name="lpJobAttributes">An optional SECURITY_ATTRIBUTES structure that specifies the security descriptor for the job object and
-        /// determines whether child processes can inherit the returned handle. Specify null to use default security
-        /// settings.</param>
         /// <param name="lpName">An optional name for the job object. Specify null to create an unnamed job object.</param>
         /// <returns>A SafeFileHandle representing the newly created job object. If the creation fails, an exception is thrown.</returns>
-        internal static SafeFileHandle CreateJobObject(SECURITY_ATTRIBUTES? lpJobAttributes, string? lpName)
+        internal static SafeFileHandle CreateJobObject(string? lpName = null)
         {
             if (lpName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpName);
             }
-            SafeFileHandle res = PInvoke.CreateJobObject(lpJobAttributes, lpName);
+            SafeFileHandle res = PInvoke.CreateJobObject(null, lpName);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -1681,12 +1667,9 @@ namespace PSADT.Interop
         /// process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentNullException">Thrown if lpEnvironment is null or has been closed.</exception>
-        internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcess(string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpApplicationName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
             if (lpCurrentDirectory is not null)
             {
                 lpCurrentDirectory = lpCurrentDirectory.ThrowIfDirectoryDoesNotExist();
@@ -1744,12 +1727,9 @@ namespace PSADT.Interop
         /// <returns>A <see cref="BOOL"/> value that is <see langword="true"/> if the process is created successfully; otherwise,
         /// <see langword="false"/>.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not empty and does not contain a null terminator.</exception>
-        internal static BOOL CreateProcess(string? lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcess(string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
-            if (lpApplicationName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
-            }
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
             if (lpCommandLine != Span<char>.Empty && lpCommandLine.LastIndexOf('\0') == -1)
             {
                 throw new ArgumentException("Required null terminator missing.", nameof(lpCommandLine));
@@ -2067,7 +2047,7 @@ namespace PSADT.Interop
         /// <param name="Result">When this method returns, contains a <see langword="true"/> if the process is in the specified job;
         /// otherwise, <see langword="false"/>.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL IsProcessInJob(SafeHandle ProcessHandle, SafeHandle? JobHandle, out BOOL Result)
+        private static BOOL IsProcessInJob(SafeHandle ProcessHandle, SafeHandle? JobHandle, out BOOL Result)
         {
             if (JobHandle is not null)
             {
@@ -2076,6 +2056,19 @@ namespace PSADT.Interop
             ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
             BOOL res = PInvoke.IsProcessInJob(ProcessHandle, JobHandle, out Result);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+        }
+
+        /// <summary>
+        /// Determines whether a specified process is running within a specified job.
+        /// </summary>
+        /// <param name="ProcessHandle">A handle to the process to be checked. This handle must have the PROCESS_QUERY_INFORMATION or
+        /// PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <param name="Result">When this method returns, contains a <see langword="true"/> if the process is in the specified job;
+        /// otherwise, <see langword="false"/>.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL IsProcessInJob(SafeHandle ProcessHandle, out BOOL Result)
+        {
+            return IsProcessInJob(ProcessHandle, null, out Result);
         }
 
         /// <summary>
@@ -2091,7 +2084,7 @@ namespace PSADT.Interop
         /// <param name="lpReturnLength">When this method returns, contains the size of the data returned in the <paramref
         /// name="lpJobObjectInformation"/> buffer, in bytes.</param>
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
-        internal static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, Span<byte> lpJobObjectInformation, out uint lpReturnLength)
+        private static BOOL QueryInformationJobObject(SafeHandle? hJob, JOBOBJECTINFOCLASS JobObjectInformationClass, Span<byte> lpJobObjectInformation, out uint lpReturnLength)
         {
             if (hJob is not null)
             {
@@ -2104,6 +2097,23 @@ namespace PSADT.Interop
             }
             InvalidOperationException.ThrowIfZero(lpReturnLength, "The return length from 'QueryInformationJobObject()' is zero.");
             return res;
+        }
+
+        /// <summary>
+        /// Queries information about the specified job object.
+        /// </summary>
+        /// <remarks>This method is a wrapper around the native Windows API function
+        /// <c>QueryInformationJobObject</c>. It is used to retrieve various types of information about a job object,
+        /// such as accounting information, limits, and process information.</remarks>
+        /// <param name="JobObjectInformationClass">The information class for the job object. This parameter specifies the type of information to be queried.</param>
+        /// <param name="lpJobObjectInformation">A buffer that receives the information. The format of this data depends on the value of the <paramref
+        /// name="JobObjectInformationClass"/> parameter.</param>
+        /// <param name="lpReturnLength">When this method returns, contains the size of the data returned in the <paramref
+        /// name="lpJobObjectInformation"/> buffer, in bytes.</param>
+        /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
+        internal static BOOL QueryInformationJobObject(JOBOBJECTINFOCLASS JobObjectInformationClass, Span<byte> lpJobObjectInformation, out uint lpReturnLength)
+        {
+            return QueryInformationJobObject(null, JobObjectInformationClass, lpJobObjectInformation, out lpReturnLength);
         }
 
         /// <summary>
@@ -2382,71 +2392,21 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Retrieves summary information from an installer database or summary information stream and returns a handle
-        /// to access the summary information.
-        /// </summary>
-        /// <remarks>The caller is responsible for closing the returned summary information handle when it
-        /// is no longer needed. If the operation fails, an exception is thrown and phSummaryInfo is not set.</remarks>
-        /// <param name="hDatabase">A handle to the open installer database. If null, the function opens the database specified by
-        /// szDatabasePath.</param>
-        /// <param name="szDatabasePath">The path to the installer database file. Used only if hDatabase is null. Can be null if hDatabase is
-        /// provided.</param>
-        /// <param name="uiUpdateCount">The number of summary information properties to be updated. Set to 0 if no properties will be updated.</param>
-        /// <param name="phSummaryInfo">When this method returns, contains a handle to the summary information stream. This parameter is passed
-        /// uninitialized.</param>
-        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns ERROR_SUCCESS if the operation succeeds.</returns>
-        internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle? hDatabase, string? szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
-        {
-            MSIHANDLE phSummaryInfoLocal = default;
-            WIN32_ERROR res;
-            if (szDatabasePath is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(szDatabasePath); using SafeFileHandle nullHandle = new(default, true);
-                res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(nullHandle, szDatabasePath.ThrowIfFileDoesNotExist(), uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
-            }
-            else
-            {
-                ArgumentException.ThrowIfNullOrInvalid(hDatabase);
-                res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, szDatabasePath, uiUpdateCount, ref phSummaryInfoLocal)).ThrowOnFailure();
-            }
-            InvalidOperationException.ThrowIfZeroOrInvalid((nint)phSummaryInfoLocal, "Failed to retrieve summary information.");
-            phSummaryInfo = new((nint)phSummaryInfoLocal, true);
-            return res;
-        }
-
-        /// <summary>
         /// Retrieves summary information from an open Windows Installer database and returns a handle to the summary
         /// information stream.
         /// </summary>
         /// <param name="hDatabase">A handle to the open Windows Installer database. Can be null to indicate that the summary information is to
         /// be retrieved from a file specified elsewhere.</param>
-        /// <param name="uiUpdateCount">The maximum number of updated properties that can be written to the summary information stream. Set to 0 to
-        /// open the stream for read-only access.</param>
         /// <param name="phSummaryInfo">When this method returns, contains a handle to the summary information stream. This handle must be closed
         /// with the appropriate method when no longer needed.</param>
         /// <returns>A value of the WIN32_ERROR enumeration that indicates the result of the operation. Returns
         /// WIN32_ERROR.SUCCESS if the operation succeeds; otherwise, returns an error code.</returns>
-        internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle hDatabase, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
+        internal static WIN32_ERROR MsiGetSummaryInformation(SafeHandle hDatabase, out MsiCloseHandleSafeHandle phSummaryInfo)
         {
-            WIN32_ERROR res = MsiGetSummaryInformation(hDatabase, null, uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid(phSummaryInfo, "Failed to retrieve summary information.");
-            return res;
-        }
-
-        /// <summary>
-        /// Retrieves summary information from a specified Windows Installer database file.
-        /// </summary>
-        /// <param name="szDatabasePath">The path to the Windows Installer database file. Can be null to indicate a null database handle.</param>
-        /// <param name="uiUpdateCount">The number of summary information properties to be updated. Set to 0 to open the summary information in
-        /// read-only mode.</param>
-        /// <param name="phSummaryInfo">When this method returns, contains a handle to the summary information stream. This parameter is passed
-        /// uninitialized.</param>
-        /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.SUCCESS if the summary
-        /// information was retrieved successfully; otherwise, returns an error code.</returns>
-        internal static WIN32_ERROR MsiGetSummaryInformation(string szDatabasePath, uint uiUpdateCount, out MsiCloseHandleSafeHandle phSummaryInfo)
-        {
-            WIN32_ERROR res = MsiGetSummaryInformation(null, szDatabasePath.ThrowIfFileDoesNotExist(), uiUpdateCount, out phSummaryInfo).ThrowOnFailure();
-            InvalidOperationException.ThrowIfNullOrInvalid(phSummaryInfo, "Failed to retrieve summary information.");
+            ArgumentException.ThrowIfNullOrInvalid(hDatabase); MSIHANDLE phSummaryInfoLocal = default;
+            WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, null, 0, ref phSummaryInfoLocal)).ThrowOnFailure();
+            InvalidOperationException.ThrowIfZeroOrInvalid((nint)phSummaryInfoLocal, "Failed to retrieve summary information.");
+            phSummaryInfo = new((nint)phSummaryInfoLocal, true);
             return res;
         }
 
@@ -3157,7 +3117,7 @@ namespace PSADT.Interop
         /// <param name="lParam">An optional string value to be passed to the callback function. Can be <see langword="null"/>.</param>
         /// <returns>A nonzero value if the function succeeds; otherwise, zero. If the callback function returns <see
         /// langword="false"/>, the enumeration stops and the return value is zero.</returns>
-        internal static BOOL EnumWindows(WNDENUMPROC lpEnumFunc, string? lParam)
+        internal static BOOL EnumWindows(WNDENUMPROC lpEnumFunc, string? lParam = null)
         {
             if (lParam is not null)
             {
@@ -3404,13 +3364,13 @@ namespace PSADT.Interop
         /// <param name="wParam">Additional message-specific information. The exact meaning depends on the value of the Msg parameter.</param>
         /// <param name="lParam">Additional message-specific information. The exact meaning depends on the value of the Msg parameter.</param>
         /// <returns>The result of the message processing, as returned by the window procedure.</returns>
-        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam)
+        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM? lParam = null)
         {
             unsafe
             {
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
             }
-            PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
+            PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam ?? default);
             return ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
@@ -3428,7 +3388,7 @@ namespace PSADT.Interop
         /// <param name="wParam">The string value to be passed as the wParam parameter of the message. Can be null.</param>
         /// <param name="lParam">The string value to be passed as the lParam parameter of the message. Can be null.</param>
         /// <returns>A value of type LRESULT that contains the result of processing the message by the target window.</returns>
-        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam)
+        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, string? wParam, string? lParam = null)
         {
             if (wParam is not null)
             {
@@ -3485,7 +3445,7 @@ namespace PSADT.Interop
         /// <param name="lpClassName">The class name of the window to find. This can be a null-terminated string or <see langword="null"/> to ignore the class name.</param>
         /// <param name="lpWindowName">The window name (title) of the window to find. This can be a null-terminated string or <see langword="null"/> to ignore the window name.</param>
         /// <returns>A handle to the window that matches the specified criteria.</returns>
-        internal static HWND FindWindow(string? lpClassName, string? lpWindowName)
+        internal static HWND FindWindow(string? lpClassName, string? lpWindowName = null)
         {
             if (lpClassName is not null)
             {
@@ -3535,19 +3495,17 @@ namespace PSADT.Interop
         /// Displays a message box with a specified timeout, allowing the caller to specify text, caption, style, language, and timeout duration.
         /// </summary>
         /// <remarks>This method wraps a native Windows API call to display a message box with a timeout. If the timeout elapses before the user responds, the message box will close automatically.</remarks>
-        /// <param name="hWnd">A handle to the owner window of the message box. Pass <see cref="IntPtr.Zero"/> if the message box has no owner.</param>
         /// <param name="lpText">The text to be displayed in the message box.</param>
         /// <param name="lpCaption">The caption to be displayed in the title bar of the message box.</param>
         /// <param name="uType">A combination of flags that specify the contents and behavior of the message box. See <see cref="MESSAGEBOX_STYLE"/> for valid options.</param>
-        /// <param name="wLanguageId">The language identifier for the text in the message box. Use 0 for the system default language.</param>
         /// <param name="dwTimeout">The timeout duration after which the message box will automatically close if no user action is taken.</param>
         /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the user's response to the message box.</returns>
-        internal static MESSAGEBOX_RESULT MessageBoxTimeout(HWND? hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwTimeout)
+        internal static MESSAGEBOX_RESULT MessageBoxTimeout(string lpText, string lpCaption, MESSAGEBOX_STYLE uType, uint dwTimeout)
         {
             [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(HWND hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpText); ArgumentException.ThrowIfNullOrWhiteSpace(lpCaption);
-            MESSAGEBOX_RESULT res = MessageBoxTimeoutW(hWnd ?? default, lpText, lpCaption, uType, wLanguageId, dwTimeout);
+            MESSAGEBOX_RESULT res = MessageBoxTimeoutW(default, lpText, lpCaption, uType, 0, dwTimeout);
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
@@ -4329,15 +4287,13 @@ namespace PSADT.Interop
         /// method is a strongly-typed wrapper for the native CoCreateInstance function.</remarks>
         /// <typeparam name="T">The type of the interface to retrieve. Must be a class type.</typeparam>
         /// <param name="rclsid">The CLSID of the object to be created.</param>
-        /// <param name="pUnkOuter">If the object is being created as part of an aggregate, a pointer to the controlling IUnknown interface of
-        /// the aggregate; otherwise, null.</param>
         /// <param name="dwClsContext">The context in which the code that manages the newly created object will run.</param>
         /// <param name="ppv">When this method returns, contains the interface pointer requested in type parameter T if the call is
         /// successful; otherwise, null. This parameter is passed uninitialized.</param>
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
-        internal static HRESULT CoCreateInstance<T>(in Guid rclsid, object? pUnkOuter, CLSCTX dwClsContext, out T ppv) where T : class
+        internal static HRESULT CoCreateInstance<T>(in Guid rclsid, CLSCTX dwClsContext, out T ppv) where T : class
         {
-            HRESULT res = PInvoke.CoCreateInstance(in rclsid, pUnkOuter, dwClsContext, out ppv);
+            HRESULT res = PInvoke.CoCreateInstance(in rclsid, null, dwClsContext, out ppv);
             return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 

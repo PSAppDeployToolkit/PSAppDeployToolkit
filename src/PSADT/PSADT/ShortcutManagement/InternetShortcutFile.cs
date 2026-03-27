@@ -77,7 +77,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         private InternetShortcutFile()
         {
-            _ = NativeMethods.CoCreateInstance(in PInvoke.CLSID_InternetShortcut, null, CLSCTX.CLSCTX_INPROC_SERVER, out _internetShortcut);
+            _ = NativeMethods.CoCreateInstance(in PInvoke.CLSID_InternetShortcut, CLSCTX.CLSCTX_INPROC_SERVER, out _internetShortcut);
             _storageMode = null;
         }
 
@@ -97,7 +97,7 @@ namespace PSADT.ShortcutManagement
             {
                 throw new FileNotFoundException("The specified shortcut file does not exist.", filePath);
             }
-            _ = NativeMethods.CoCreateInstance(in PInvoke.CLSID_InternetShortcut, null, CLSCTX.CLSCTX_INPROC_SERVER, out IUniformResourceLocatorW internetShortcut);
+            _ = NativeMethods.CoCreateInstance(in PInvoke.CLSID_InternetShortcut, CLSCTX.CLSCTX_INPROC_SERVER, out IUniformResourceLocatorW internetShortcut);
             try
             {
                 ((IPersistFile)internetShortcut).Load(filePath, (Windows.Win32.System.Com.STGM)storageMode);

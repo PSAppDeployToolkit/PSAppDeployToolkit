@@ -493,7 +493,7 @@ namespace PSADT.ProcessManagement
             // Test whether the process is part of an existing job object.
             using (SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess())
             {
-                _ = NativeMethods.IsProcessInJob(hProcess, null, out BOOL inJob);
+                _ = NativeMethods.IsProcessInJob(hProcess, out BOOL inJob);
                 if (!inJob)
                 {
                     return CreateProcessUsingTokenStatus.OK;
@@ -502,7 +502,7 @@ namespace PSADT.ProcessManagement
 
             // Since we're part of a job object, we need to check if the job has the JOB_OBJECT_LIMIT_BREAKAWAY_OK flag set.
             Span<byte> lpJobObjectInformation = stackalloc byte[Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
-            _ = NativeMethods.QueryInformationJobObject(null, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
+            _ = NativeMethods.QueryInformationJobObject(JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
             ref readonly JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref lpJobObjectInformation.AsReadOnlyStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
             if (!(jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
             {
@@ -560,12 +560,12 @@ namespace PSADT.ProcessManagement
                     using (hAttributeList)
                     using (pinnedHandles)
                     {
-                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, in startupInfoEx, out pi);
+                        return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment!, workingDirectory, in startupInfoEx, out pi);
                     }
                 }
                 else
                 {
-                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
+                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment!, workingDirectory, in startupInfo, out pi);
                 }
             }
             else if (hasExternalHandles)
