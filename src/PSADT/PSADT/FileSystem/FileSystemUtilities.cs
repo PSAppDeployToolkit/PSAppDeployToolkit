@@ -369,7 +369,7 @@ namespace PSADT.FileSystem
             using (ppDacl)
             using (ppSacl)
             {
-                _ = NativeMethods.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false, null, PROG_INVOKE_SETTING.ProgressInvokeNever);
+                _ = NativeMethods.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false);
             }
         }
 
@@ -504,11 +504,11 @@ namespace PSADT.FileSystem
             using (ppSacl)
             {
                 // Initialize the AuthZ resource manager and client context.
-                _ = NativeMethods.AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS.AUTHZ_RM_FLAG_NO_AUDIT, null, null, null, "PS-Authz", out AuthzFreeResourceManagerSafeHandle hAuthzResourceManager);
+                _ = NativeMethods.AuthzInitializeResourceManager(AUTHZ_RESOURCE_MANAGER_FLAGS.AUTHZ_RM_FLAG_NO_AUDIT, "PS-Authz", out AuthzFreeResourceManagerSafeHandle hAuthzResourceManager);
                 using (hAuthzResourceManager)
                 {
                     // Initialize the AuthZ client context.
-                    _ = AuthzInitializeContext(0, token, hAuthzResourceManager, null, default, default, out AuthzFreeContextSafeHandle phAuthzClientContext);
+                    _ = AuthzInitializeContext(token, hAuthzResourceManager, out AuthzFreeContextSafeHandle phAuthzClientContext);
                     using (phAuthzClientContext)
                     {
                         // Prepare the access request and reply structures.
@@ -522,7 +522,7 @@ namespace PSADT.FileSystem
                         }
 
                         // Perform the access check.
-                        _ = NativeMethods.AuthzAccessCheck(0, phAuthzClientContext, in req, null, ppSecurityDescriptor, null, ref reply, out AuthzFreeHandleSafeHandle phAccessCheckResults);
+                        _ = NativeMethods.AuthzAccessCheck(phAuthzClientContext, in req, ppSecurityDescriptor, ref reply, out AuthzFreeHandleSafeHandle phAccessCheckResults);
                         using (phAccessCheckResults)
                         {
                             return (FileSystemRights)grantedAccessMask;
@@ -538,19 +538,12 @@ namespace PSADT.FileSystem
         /// <remarks>This delegate is typically used to customize the initialization of authorization
         /// contexts in advanced scenarios, such as when integrating with the Windows Authz API. The caller is
         /// responsible for ensuring that all handles provided remain valid for the duration of the callback.</remarks>
-        /// <param name="Flags">A set of flags that specify options for context initialization. The value must be a valid combination of
-        /// AUTHZ_CONTEXT_FLAGS.</param>
         /// <param name="Handle">A handle to a security token or object used as the basis for the new authorization context. This handle must
         /// be valid and remain open for the duration of the callback.</param>
         /// <param name="hAuthzResourceManager">A handle to the resource manager with which the authorization context is associated. This handle must be
         /// valid.</param>
-        /// <param name="pExpirationTime">The expiration time, in 100-nanosecond intervals since January 1, 1601 (UTC), for the authorization context,
-        /// or null if no expiration is set.</param>
-        /// <param name="Identifier">A reference to a locally unique identifier (LUID) that uniquely identifies the authorization context.</param>
-        /// <param name="DynamicGroupArgs">A pointer to application-defined data used to compute dynamic groups for the context. This value may be null
-        /// if not required.</param>
         /// <param name="phAuthzClientContext">When this method returns, contains a handle to the newly created authorization client context.</param>
         /// <returns>A BOOL value that is nonzero if the context was successfully initialized; otherwise, zero.</returns>
-        private delegate BOOL AuthzInitializeContext(AUTHZ_CONTEXT_FLAGS Flags, SafeHandle Handle, SafeHandle hAuthzResourceManager, long? pExpirationTime, in LUID Identifier, nint DynamicGroupArgs, out AuthzFreeContextSafeHandle phAuthzClientContext);
+        private delegate BOOL AuthzInitializeContext(SafeHandle Handle, SafeHandle hAuthzResourceManager, out AuthzFreeContextSafeHandle phAuthzClientContext);
     }
 }

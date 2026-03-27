@@ -99,8 +99,8 @@ namespace PSADT.ProcessManagement
                 // Set up the necessary state for tracking child processes if requested.
                 if (ProcessAssignedToJobObject)
                 {
+                    JobObject = NativeMethods.CreateJobObject();
                     IoCompletionPort = NativeMethods.CreateIoCompletionPort(0);
-                    JobObject = NativeMethods.CreateJobObject(null, default);
                     _ = NativeMethods.SetInformationJobObject(JobObject, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
                     {
                         CompletionPort = (HANDLE)IoCompletionPort.DangerousGetHandle(),
