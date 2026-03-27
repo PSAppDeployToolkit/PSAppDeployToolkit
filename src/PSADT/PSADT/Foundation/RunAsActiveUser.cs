@@ -30,7 +30,7 @@ namespace PSADT.Foundation
         public static RunAsActiveUser? Get(IReadOnlyList<SessionInfo>? sessionInfo = null)
         {
             // Get all active sessions for subsequent filtration.
-            sessionInfo ??= SessionManager.GetSessionInfo();
+            sessionInfo ??= SessionInfo.Get();
 
             // Determine the account that will be used to execute client/server commands in the user's context.
             // Favour the caller's session if it's found and is currently an active user session on the device.
