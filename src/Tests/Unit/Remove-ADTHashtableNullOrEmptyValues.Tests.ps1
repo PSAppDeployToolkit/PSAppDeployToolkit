@@ -64,6 +64,31 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
             }
         }
 
+        function Copy-ADTHashtable
+        {
+            [CmdletBinding()]
+            [OutputType([System.Collections.Hashtable])]
+            param (
+                [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+                [AllowEmptyCollection()]
+                [System.Collections.Hashtable]$Hashtable
+            )
+
+            process
+            {
+                $obj = @{}; foreach ($section in $Hashtable.GetEnumerator())
+                {
+                    if ($section.Value -is [System.Collections.Hashtable])
+                    {
+                        $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value
+                    }
+
+                    $obj.Add($section.Key, $section.Value)
+                }
+                return $obj
+            }
+        }
+
         $TestData = @{
             Empty = ''
             EmptyCollection = @()
@@ -80,6 +105,10 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
 
                 Layer2 = @{
                     Layer3 = @{
+                        RealData = @{
+                            Key1 = 'Val1'
+                        }
+
                         Layer4 = @{
                             Empty = ''
                             EmptyCollection = @()
@@ -100,19 +129,26 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
             }
         }
 
-        $NoRecurse = $TestData.Clone()
+        $NoRecurse = Copy-ADTHashtable -Hashtable $TestData
         $NoRecurse.Remove('Empty')
         $NoRecurse.Remove('EmptyCollection')
         $NoRecurse.Remove('Null')
         $NoRecurse.Remove('NullString')
         $NoRecurse.Remove('Whitespace')
 
-        $Recurse5 = $NoRecurse.Clone()
+        $Recurse5 = Copy-ADTHashtable -Hashtable $NoRecurse
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Empty')
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('EmptyCollection')
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Null')
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('NullString')
         $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Whitespace')
+
+        $Recurse6 = Copy-ADTHashtable -Hashtable $Recurse5
+        $Recurse6.Layer1.Layer2.Layer3.Layer4.Remove('Layer5')
+
+        # Removing null/whitespace values on this hashtable causes it to flatten down to an empty hashtable.
+        $Empty = Copy-ADTHashtable -Hashtable $TestData
+        $Empty.Layer1.Layer2.Layer3.Remove('RealData')
     }
 
     Context 'Functionality' {
@@ -122,7 +158,8 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
         }
         It 'Should remove null values recursively' {
             Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 5 | Compare-ADTHashtable -Right $Recurse5 | Should -BeTrue
-            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 6 | Compare-ADTHashtable -Right @{ } | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 6 | Compare-ADTHashtable -Right $Recurse6 | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $Empty -Recurse -Depth 6 | Compare-ADTHashtable -Right @{ } | Should -BeTrue
         }
     }
 
