@@ -148,7 +148,7 @@ function Test-ADTMutexAvailability
             {
                 if ($IsMutexFree -and !$IsUnhandledException)
                 {
-                    $null = $OpenExistingMutex.ReleaseMutex()
+                    $OpenExistingMutex.ReleaseMutex()
                 }
                 $OpenExistingMutex.Close()
                 $OpenExistingMutex.Dispose()
