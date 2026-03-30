@@ -66,7 +66,7 @@ Describe 'Test-ADTMutexAvailability' {
                 $proc.Refresh()
                 if ($proc.HasExited -and ($proc.ExitCode -ne 0))
                 {
-                    throw "Child PowerShell process failed to aquire a lock on the mutex [$mutexName]."
+                    throw "Child PowerShell process failed to acquire a lock on the mutex [$mutexName]."
                 }
 
                 Test-ADTMutexAvailability -MutexName $mutexName | Should -BeFalse
