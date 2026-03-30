@@ -10,7 +10,7 @@ Describe 'Copy-ADTFile' -ForEach @(
     BeforeAll {
         $SourcePath = (New-Item -Path "$TestDrive\Source" -ItemType Directory).FullName
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'DestinationPath', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'DestinationPath', Justification = "Variable used in nested Pester scriptblocks.")]
         $DestinationPath = "$TestDrive\Destination"
         New-Item -ItemType File -Force -Path @(
             "$SourcePath\test.txt"
