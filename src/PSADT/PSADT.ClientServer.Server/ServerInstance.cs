@@ -190,7 +190,8 @@ namespace PSADT.ClientServer
                         {
                             throw new InvalidProgramException("The opened client process did not properly respond to the close command.");
                         }
-                        if (_clientProcess.Task.GetAwaiter().GetResult() is ProcessResult processResult && (exitCode = processResult.ExitCode) != 0)
+                        using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
+                        if ((exitCode = processResult.ExitCode) != 0)
                         {
                             if (processResult.StdErr.Count > 0)
                             {
@@ -204,13 +205,17 @@ namespace PSADT.ClientServer
                         _clientProcessCts.Cancel();
                     }
                 }
-                else if (_clientProcess.Task.GetAwaiter().GetResult() is ProcessResult processResult && (exitCode = processResult.ExitCode) != 0)
+                else
                 {
-                    if (processResult.StdErr.Count > 0)
+                    using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
+                    if ((exitCode = processResult.ExitCode) != 0)
                     {
-                        throw new ServerException("The client process threw an unhandled exception.", DataSerialization.DeserializeFromString<Exception>(processResult.StdErr[0]));
+                        if (processResult.StdErr.Count > 0)
+                        {
+                            throw new ServerException("The client process threw an unhandled exception.", DataSerialization.DeserializeFromString<Exception>(processResult.StdErr[0]));
+                        }
+                        throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
                     }
-                    throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
                 }
             }
             finally
@@ -248,7 +253,7 @@ namespace PSADT.ClientServer
                         }
                         try
                         {
-                            _ = _clientProcess.Task.GetAwaiter().GetResult();
+                            _clientProcess.Task.GetAwaiter().GetResult().Dispose();
                         }
                         catch (TaskCanceledException)
                         {

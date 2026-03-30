@@ -12,7 +12,7 @@ namespace PSADT.ProcessManagement
     /// Represents the result of a process execution, including exit code and standard output/error.
     /// </summary>
     [DataContract]
-    public sealed record ProcessResult
+    public sealed record ProcessResult : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
@@ -66,6 +66,16 @@ namespace PSADT.ProcessManagement
             {
                 Interleaved = MiscUtilities.TrimLeadingTrailingLines(interleaved);
             }
+        }
+
+        /// <summary>
+        /// Releases all resources used by the current instance.
+        /// </summary>
+        /// <remarks>Call this method when you are finished using the instance to free unmanaged resources
+        /// held by the associated process. After calling Dispose, the instance should not be used.</remarks>
+        public void Dispose()
+        {
+            Process?.Dispose();
         }
 
         /// <summary>

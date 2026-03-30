@@ -204,7 +204,7 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex)
             {
-                Dispose();
+                Process.Dispose(); Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }

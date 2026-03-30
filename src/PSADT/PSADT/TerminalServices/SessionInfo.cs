@@ -131,7 +131,8 @@ namespace PSADT.TerminalServices
                             {
                                 RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                                 ProcessLaunchInfo args = new(ClientServerUtilities.ClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
-                                idleTime = new(long.Parse(ProcessManager.LaunchAsync(args)!.Task.GetAwaiter().GetResult().StdOut[0], CultureInfo.InvariantCulture));
+                                using ProcessResult result = ProcessManager.LaunchAsync(args)?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch process to get idle time.");
+                                idleTime = new(long.Parse(result.StdOut[0], CultureInfo.InvariantCulture));
                             }
                             catch (Exception ex) when (ex.Message is not null)
                             {

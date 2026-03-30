@@ -110,8 +110,8 @@ namespace PSADT.DeviceManagement
         [DoesNotReturn]
         internal static void RestartComputer()
         {
-            Environment.Exit(ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))!.Task.GetAwaiter().GetResult().ExitCode);
-            throw new InvalidProgramException("The 'Environment.Exit()' method did not terminate the process as expected.");
+            using ProcessResult result = ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.");
+            Environment.Exit(result.ExitCode); throw new InvalidProgramException("The 'Environment.Exit()' method did not terminate the process as expected.");
         }
 
         /// <summary>
