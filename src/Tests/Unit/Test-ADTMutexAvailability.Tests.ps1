@@ -94,7 +94,8 @@ Describe 'Test-ADTMutexAvailability' {
                 }
                 catch
                 {
-                    $null = $null
+                    # Intentionally ignore all other exceptions and
+                    # continue searching for a non-existent mutex name.
                 }
             }
 
