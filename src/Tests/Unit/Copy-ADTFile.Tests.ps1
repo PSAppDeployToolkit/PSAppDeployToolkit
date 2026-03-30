@@ -3,7 +3,7 @@
     Import-Module "$PSScriptRoot\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }
 
-Describe 'Copy-ADTFile'-ForEach @(
+Describe 'Copy-ADTFile' -ForEach @(
     @{ FileCopyMode = 'Native' }
     @{ FileCopyMode = 'Robocopy' }
 ) {
@@ -72,7 +72,7 @@ Describe 'Copy-ADTFile'-ForEach @(
             "$DestinationPath\test.txt" | Should -Exist
         }
 
-        It 'Copies a single file via -LiteralPath($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
+        It 'Copies a single file via -LiteralPath ($PreCreateDestination = $<PreCreateDestination>; $FileCopyMode = $<FileCopyMode>)' {
             Copy-ADTFile -LiteralPath "$SourcePath\test.txt" -Destination $DestinationPath -FileCopyMode $FileCopyMode
 
             "$DestinationPath\test.txt" | Should -Exist
