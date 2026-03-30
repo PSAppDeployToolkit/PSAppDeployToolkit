@@ -173,10 +173,10 @@ namespace PSADT.ProcessManagement
             catch (Exception ex)
             {
                 stdOutHandle?.Dispose();
-                stdErrHandle?.Dispose();
-                stdInHandle?.Dispose();
                 stdOutStream?.Dispose();
+                stdErrHandle?.Dispose();
                 stdErrStream?.Dispose();
+                stdInHandle?.Dispose();
                 stdInStream?.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
