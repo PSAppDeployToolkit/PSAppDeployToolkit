@@ -316,65 +316,71 @@ function Copy-ADTFile
                     $robocopyArgs = "`"$robocopySource`" `"$robocopyDestination`" `"$robocopyFile`" $RobocopyParams $RobocopyAdditionalParams"
                     Write-ADTLogEntry -Message "Executing Robocopy command: $robocopyCommand $robocopyArgs"
                     $robocopyResult = Start-ADTProcess -FilePath $robocopyCommand -ArgumentList $robocopyArgs -CreateNoWindow -PassThru -SuccessExitCodes 0, 1, 2, 3, 4, 5, 6, 7, 8 -ErrorAction Ignore
-
-                    # Trim the last line plus leading whitespace from each line of Robocopy output.
-                    $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -replace '\r?\n\s+', [System.Environment]::NewLine }
-                    Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
-
-                    # Restore folder attributes in case Robocopy overwrote them.
                     try
                     {
-                        [System.IO.File]::SetAttributes($robocopyDestination, $destFolderAttributes)
-                    }
-                    catch
-                    {
-                        Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.Exception.Message)" -Severity Warning
-                    }
+                        # Trim the last line plus leading whitespace from each line of Robocopy output.
+                        $robocopyOutput = if ($robocopyResult.StdOut) { $robocopyResult.StdOut.Trim() -replace '\r?\n\s+', [System.Environment]::NewLine }
+                        Write-ADTLogEntry -Message "Robocopy output:`n$robocopyOutput"
 
-                    # Process the resulting exit code.
-                    switch ($robocopyResult.ExitCode)
+                        # Restore folder attributes in case Robocopy overwrote them.
+                        try
+                        {
+                            [System.IO.File]::SetAttributes($robocopyDestination, $destFolderAttributes)
+                        }
+                        catch
+                        {
+                            Write-ADTLogEntry -Message "Failed to apply attributes [$destFolderAttributes] destination folder [$robocopyDestination]: $($_.Exception.Message)" -Severity Warning
+                        }
+
+                        # Process the resulting exit code.
+                        switch ($robocopyResult.ExitCode)
+                        {
+                            0 { Write-ADTLogEntry -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped."; break }
+                            1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully."; break }
+                            2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied."; break }
+                            3 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered."; break }
+                            4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity Warning; break }
+                            5 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered."; break }
+                            6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity Warning; break }
+                            7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity Warning; break }
+                            8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity Warning; break }
+                            16
+                            {
+                                Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]: Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories." -Severity Error
+                                if (!$ContinueFileCopyOnError)
+                                {
+                                    $naerParams = @{
+                                        Exception = [System.Runtime.InteropServices.ExternalException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult.ExitCode)
+                                        Category = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                        ErrorId = 'RobocopyError'
+                                        TargetObject = $srcPath
+                                        RecommendedAction = "Please verify that Path and Destination are accessible and try again."
+                                    }
+                                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+                                }
+                                break
+                            }
+                            default
+                            {
+                                Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]. Unknown Robocopy error." -Severity Error
+                                if (!$ContinueFileCopyOnError)
+                                {
+                                    $naerParams = @{
+                                        Exception = [System.Runtime.InteropServices.ExternalException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult.ExitCode)
+                                        Category = [System.Management.Automation.ErrorCategory]::OperationStopped
+                                        ErrorId = 'RobocopyError'
+                                        TargetObject = $srcPath
+                                        RecommendedAction = "Please verify that Path and Destination are accessible and try again."
+                                    }
+                                    Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
+                                }
+                                break
+                            }
+                        }
+                    }
+                    finally
                     {
-                        0 { Write-ADTLogEntry -Message "Robocopy completed. No files were copied. No failure was encountered. No files were mismatched. The files already exist in the destination directory; therefore, the copy operation was skipped."; break }
-                        1 { Write-ADTLogEntry -Message "Robocopy completed. All files were copied successfully."; break }
-                        2 { Write-ADTLogEntry -Message "Robocopy completed. There are some additional files in the destination directory that aren't present in the source directory. No files were copied."; break }
-                        3 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Additional files were present. No failure was encountered."; break }
-                        4 { Write-ADTLogEntry -Message "Robocopy completed. Some Mismatched files or directories were detected. Examine the output log. Housekeeping might be required." -Severity Warning; break }
-                        5 { Write-ADTLogEntry -Message "Robocopy completed. Some files were copied. Some files were mismatched. No failure was encountered."; break }
-                        6 { Write-ADTLogEntry -Message "Robocopy completed. Additional files and mismatched files exist. No files were copied and no failures were encountered meaning that the files already exist in the destination directory." -Severity Warning; break }
-                        7 { Write-ADTLogEntry -Message "Robocopy completed. Files were copied, a file mismatch was present, and additional files were present." -Severity Warning; break }
-                        8 { Write-ADTLogEntry -Message "Robocopy completed. Several files didn't copy." -Severity Warning; break }
-                        16
-                        {
-                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]: Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories." -Severity Error
-                            if (!$ContinueFileCopyOnError)
-                            {
-                                $naerParams = @{
-                                    Exception = [System.Runtime.InteropServices.ExternalException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult.ExitCode)
-                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId = 'RobocopyError'
-                                    TargetObject = $srcPath
-                                    RecommendedAction = "Please verify that Path and Destination are accessible and try again."
-                                }
-                                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                            }
-                            break
-                        }
-                        default
-                        {
-                            Write-ADTLogEntry -Message "Robocopy error [$($robocopyResult.ExitCode)]. Unknown Robocopy error." -Severity Error
-                            if (!$ContinueFileCopyOnError)
-                            {
-                                $naerParams = @{
-                                    Exception = [System.Runtime.InteropServices.ExternalException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult.ExitCode)
-                                    Category = [System.Management.Automation.ErrorCategory]::OperationStopped
-                                    ErrorId = 'RobocopyError'
-                                    TargetObject = $srcPath
-                                    RecommendedAction = "Please verify that Path and Destination are accessible and try again."
-                                }
-                                Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
-                            }
-                            break
-                        }
+                        $robocopyResult.Dispose()
                     }
                 }
                 catch

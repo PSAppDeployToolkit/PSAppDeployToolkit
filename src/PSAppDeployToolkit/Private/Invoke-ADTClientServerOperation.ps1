@@ -643,7 +643,14 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Deserialise the result for returning to the caller.
-        $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0], $type)
+        try
+        {
+            $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0], $type)
+        }
+        finally
+        {
+            $return.Dispose()
+        }
     }
 
     # Test that the received result is valid and expected.

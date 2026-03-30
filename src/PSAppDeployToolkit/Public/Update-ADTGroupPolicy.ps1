@@ -103,6 +103,7 @@ function Update-ADTGroupPolicy
                             }
                             throw (New-ADTErrorRecord @naerParams)
                         }
+                        $result.Dispose()
                     }
                     catch
                     {
