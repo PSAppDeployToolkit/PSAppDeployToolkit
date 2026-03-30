@@ -1097,11 +1097,6 @@ function Start-ADTProcess
         }
         finally
         {
-            if ($cancellationTokenSource)
-            {
-                $cancellationToken = $null
-                $cancellationTokenSource.Dispose()
-            }
             if ($SEE_MASK_NOZONECHECKS)
             {
                 [PSADT.Utilities.EnvironmentUtilities]::SetEnvironmentVariable('SEE_MASK_NOZONECHECKS', $SEE_MASK_NOZONECHECKS)
@@ -1109,6 +1104,14 @@ function Start-ADTProcess
             else
             {
                 [PSADT.Utilities.EnvironmentUtilities]::RemoveEnvironmentVariable('SEE_MASK_NOZONECHECKS')
+            }
+            if ($cancellationTokenSource)
+            {
+                $cancellationTokenSource.Dispose()
+            }
+            if ($result -and !$PassThru)
+            {
+                $result.Dispose()
             }
         }
     }
