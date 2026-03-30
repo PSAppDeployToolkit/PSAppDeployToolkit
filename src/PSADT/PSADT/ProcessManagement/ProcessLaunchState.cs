@@ -59,8 +59,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="launchInfo">The launch information that describes how the process was started.</param>
         /// <param name="process">The Process object representing the running process.</param>
-        /// <param name="commandLine">The full command line used to start the process.</param>
-        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, string commandLine) : this(launchInfo, process, commandLine, PrivilegeManager.GetPrivileges(), (uint)process.Id, process.SafeHandle)
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process) : this(launchInfo, process, launchInfo.MakeCommandLine(), PrivilegeManager.GetPrivileges(), (uint)process.Id, process.SafeHandle)
         {
             CanDisposeProcessHandle = false;
         }
@@ -92,6 +91,12 @@ namespace PSADT.ProcessManagement
             LaunchInfo = launchInfo;
             ProcessId = processId;
             Process = process;
+
+            // Since the process might not have spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
+            // Otherwise, accessing properties like `ExitCode` will throw Exceptions like "Process was not started by this object", etc.
+            // Fetching the process handle will trigger the `Process` object to update its internal state by calling `SetProcessHandle`,
+            // the result is discarded as it's not used later in this code.
+            _ = Process.Handle;
 
             // Ensure we dispose of any resources we create if an exception is thrown during initialization.
             try
