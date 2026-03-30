@@ -445,6 +445,17 @@ namespace PSADT.ProcessManagement
                 }
             }
             IoCompletionPort?.Dispose();
+
+            // Dispose of the task if it's completed. If it's not complete, we're not transferring
+            // ownership of the Process object to a ProcessResult object, so we handle that here too.
+            if (ProcessResultTask?.IsCompleted == true)
+            {
+                ProcessResultTask.Dispose();
+            }
+            else
+            {
+                Process.Dispose();
+            }
         }
 
         /// <summary>
