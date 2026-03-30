@@ -133,11 +133,14 @@ function Open-ADTSession
     .PARAMETER LogName
         Specifies an override for the default-generated log file name.
 
+    .PARAMETER AdditionalEnvironmentVariables
+        A dictionary of key/value pairs to inject into the generated environment table. This only applies if this function initialises the module also.
+
     .PARAMETER SessionClass
         Specifies an override for PSAppDeployToolkit.Foundation.DeploymentSession class. Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
 
     .PARAMETER UnboundArguments
-        Captures any additional arguments passed to the function.
+        Captures any additional arguments passed to the function. Do not directly use this parameter on the command line or in your scripts.
 
     .INPUTS
         None
@@ -359,6 +362,10 @@ function Open-ADTSession
             })]
         [System.String]$LogName,
 
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.IDictionary]$AdditionalEnvironmentVariables,
+
         [Parameter(Mandatory = $false, DontShow = $true)]
         [ValidateScript({
                 if ($null -eq $_)
@@ -494,7 +501,14 @@ function Open-ADTSession
             {
                 if (($initialized = !$Script:ADT.Initialized))
                 {
-                    Initialize-ADTModule -ScriptDirectory $PSBoundParameters.ScriptDirectory
+                    $iamParams = @{
+                        ScriptDirectory = $PSBoundParameters.ScriptDirectory
+                    }
+                    if ($PSBoundParameters.ContainsKey('AdditionalEnvironmentVariables'))
+                    {
+                        $iamParams.Add('AdditionalEnvironmentVariables', $AdditionalEnvironmentVariables)
+                    }
+                    Initialize-ADTModule @iamParams
                 }
                 foreach ($callback in $($Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnStart)))
                 {
