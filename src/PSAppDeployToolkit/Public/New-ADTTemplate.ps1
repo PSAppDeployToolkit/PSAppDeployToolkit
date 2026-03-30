@@ -241,10 +241,6 @@ function New-ADTTemplate
                 }
                 return "'$($str.Replace("'", "''"))'"
             }
-            if ($InputObject -is [System.ValueType])
-            {
-                return $InputObject.ToString([System.Globalization.CultureInfo]::InvariantCulture)
-            }
             if ($InputObject -is [System.Collections.IDictionary])
             {
                 $pairs = foreach ($entry in $InputObject.GetEnumerator())
@@ -262,6 +258,10 @@ function New-ADTTemplate
                     ConvertTo-ADTExpression -InputObject $item -LiteralString:$LiteralString
                 }
                 return "@($($items -join ', '))"
+            }
+            if ($InputObject -is [System.ValueType])
+            {
+                return $InputObject.ToString([System.Globalization.CultureInfo]::InvariantCulture)
             }
 
             $naerParams = @{
