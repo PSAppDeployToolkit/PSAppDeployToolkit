@@ -92,7 +92,7 @@ param
 # The actual app we'll install.
 $adtSession = @{
     AppVendor = 'Microsoft'
-    AppName = 'Offce 365'
+    AppName = 'Office 365'
     AppVersion = 'LTSC 2024'
     AppArch = 'x64'
     AppLang = 'EN'
