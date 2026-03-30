@@ -230,7 +230,16 @@ function New-ADTTemplate
             }
             if ($InputObject -is [System.TimeSpan])
             {
-                return $InputObject.TotalSeconds.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+                # Look at Days/Hours/Minutes/Seconds/Milliseconds properties in ascending order. whichever one is the first non-zero is the most concise format to represent the TimeSpan. Output a string of the form (New-Timespan -Minutes 5) or (New-Timespan -Seconds 30) etc. Include the parentheses in the string.
+                $timeSpanArgs = foreach ($property in 'Days', 'Hours', 'Minutes', 'Seconds', 'Milliseconds')
+                {
+                    if ($InputObject.$property -ne 0)
+                    {
+                        "-$property $($InputObject.$property)"
+                    }
+                }
+                Write-Host "(New-TimeSpan $($timeSpanArgs -join ' '))" -ForegroundColor Magenta
+                return "(New-TimeSpan $($timeSpanArgs -join ' '))"
             }
             if (($InputObject -is [System.String]) -or ($InputObject -is [System.Char]) -or ($InputObject -is [System.Version]) -or ($InputObject -is [System.Guid]) -or ($InputObject -is [System.IO.FileSystemInfo]) -or ($InputObject.GetType().IsEnum))
             {
