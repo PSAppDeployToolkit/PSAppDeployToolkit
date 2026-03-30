@@ -220,6 +220,15 @@ function New-ADTTemplate
             {
                 return '$null'
             }
+            if (($InputObject -is [System.String]) -or ($InputObject -is [System.Char]) -or ($InputObject -is [System.Version]) -or ($InputObject -is [System.Guid]) -or ($InputObject -is [System.IO.FileSystemInfo]) -or ($InputObject.GetType().IsEnum))
+            {
+                $str = $InputObject.ToString()
+                if (!$LiteralString -and ($str -match '(?<!`)\$'))
+                {
+                    return "`"$($str -replace '(?<!`)"', '`"')`""
+                }
+                return "'$($str.Replace("'", "''"))'"
+            }
             if ($InputObject -is [System.Boolean] -or $InputObject -is [System.Management.Automation.SwitchParameter])
             {
                 if ($InputObject) { return '$true' } else { return '$false' }
@@ -245,15 +254,6 @@ function New-ADTTemplate
             {
                 return $InputObject.Ast.Extent.Text
             }
-            if (($InputObject -is [System.String]) -or ($InputObject -is [System.Char]) -or ($InputObject -is [System.Version]) -or ($InputObject -is [System.Guid]) -or ($InputObject -is [System.IO.FileSystemInfo]) -or ($InputObject.GetType().IsEnum))
-            {
-                $str = $InputObject.ToString()
-                if (!$LiteralString -and ($str -match '(?<!`)\$'))
-                {
-                    return "`"$($str -replace '(?<!`)"', '`"')`""
-                }
-                return "'$($str.Replace("'", "''"))'"
-            }
             if ($InputObject -is [System.Collections.IDictionary])
             {
                 $pairs = foreach ($entry in $InputObject.GetEnumerator())
@@ -264,7 +264,7 @@ function New-ADTTemplate
                 $dictionaryPrefix = if ($InputObject -is [System.Collections.Specialized.OrderedDictionary]) { '[ordered]@{' } else { '@{' }
                 return "$dictionaryPrefix $($pairs -join '; ') }"
             }
-            if (($InputObject -is [System.Collections.IEnumerable]) -and !($InputObject -is [System.String]))
+            if ($InputObject -is [System.Collections.IEnumerable])
             {
                 $items = foreach ($item in $InputObject)
                 {
