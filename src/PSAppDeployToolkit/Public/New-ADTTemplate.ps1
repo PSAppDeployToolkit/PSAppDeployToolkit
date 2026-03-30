@@ -241,6 +241,10 @@ function New-ADTTemplate
                 Write-Host "(New-TimeSpan $($timeSpanArgs -join ' '))" -ForegroundColor Magenta
                 return "(New-TimeSpan $($timeSpanArgs -join ' '))"
             }
+            if ($InputObject -is [System.Management.Automation.ScriptBlock])
+            {
+                return $InputObject.Ast.Extent.Text
+            }
             if (($InputObject -is [System.String]) -or ($InputObject -is [System.Char]) -or ($InputObject -is [System.Version]) -or ($InputObject -is [System.Guid]) -or ($InputObject -is [System.IO.FileSystemInfo]) -or ($InputObject.GetType().IsEnum))
             {
                 $str = $InputObject.ToString()
@@ -278,7 +282,7 @@ function New-ADTTemplate
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 ErrorId = 'UnsupportedSessionPropertyValueType'
                 TargetObject = $InputObject
-                RecommendedAction = 'Use any System.ValueType, strings, datetimes, timespans, arrays, hashtables, or ordered dictionaries.'
+                RecommendedAction = 'Use any System.ValueType, strings, datetimes, timespans, scriptblocks, hashtables, or ordered dictionaries.'
             }
             throw (New-ADTErrorRecord @naerParams)
         }
