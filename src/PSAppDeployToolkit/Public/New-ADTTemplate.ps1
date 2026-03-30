@@ -224,9 +224,9 @@ function New-ADTTemplate
             {
                 if ($InputObject) { return '$true' } else { return '$false' }
             }
-            if ($InputObject -is [System.DateTime])
+            if ($InputObject -is [System.DateTime] -or $InputObject -is [System.DateTimeOffset])
             {
-                return "'$($InputObject.ToString('yyyy-MM-dd'))'"
+                return "(Get-Date '$($InputObject.ToString('o'))')"
             }
             if ($InputObject -is [System.TimeSpan])
             {
