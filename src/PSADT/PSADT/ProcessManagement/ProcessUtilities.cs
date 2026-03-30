@@ -334,10 +334,20 @@ namespace PSADT.ProcessManagement
             catch (Exception ex1) when (ex1.Message is not null)
             {
                 // The kernel API call failed. This can occur when the caller is a 32-bit process on a 64-bit system, etc.
+                // Open a handle to the target process. If this fails, something is seriously wrong and we cannot continue.
+                SafeFileHandle hProcess;
                 try
                 {
-                    // Open a handle to the target process. If this fails, something is seriously wrong and we cannot continue.
-                    using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+                    hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+                }
+                catch (Exception ex2) when (ex2.Message is not null)
+                {
+                    throw new AggregateException($"Failed to open process ID [{processId}] for querying the image name after the kernel API call failed.", ex1, ex2);
+                }
+
+                // Continue trying to get the process's image name using handle-based methods.
+                using (hProcess)
+                {
                     try
                     {
                         // QueryFullProcessImageName is the standard API for this purpose.
@@ -375,10 +385,6 @@ namespace PSADT.ProcessManagement
                             }
                         }
                     }
-                }
-                catch (Exception ex2) when (ex2.Message is not null)
-                {
-                    throw new AggregateException($"Failed to open process ID [{processId}] for querying the image name after the kernel API call failed.", ex1, ex2);
                 }
             }
         }
