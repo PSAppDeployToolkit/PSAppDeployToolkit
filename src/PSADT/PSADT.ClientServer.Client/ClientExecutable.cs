@@ -415,16 +415,14 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.GroupPolicyUpdate:
                                             {
-                                                WriteSuccess(GroupPolicyUpdate(DeserializeBytes<GroupPolicyUpdatePayload>(requestBytes, payloadOffset).Force));
+                                                using ProcessResult result = GroupPolicyUpdate(DeserializeBytes<GroupPolicyUpdatePayload>(requestBytes, payloadOffset).Force);
+                                                WriteSuccess(result);
                                                 break;
                                             }
 
                                         case PipeCommand.ShellExecuteProcess:
                                             {
-                                                if (ProcessManager.LaunchAsync(DeserializeBytes<ShellExecuteProcessPayload>(requestBytes, payloadOffset).Options.ToLaunchInfo())?.Task.GetAwaiter().GetResult() is not ProcessResult result)
-                                                {
-                                                    result = new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
-                                                }
+                                                using ProcessResult result = ShellExecuteProcess(DeserializeBytes<ShellExecuteProcessPayload>(requestBytes, payloadOffset).Options);
                                                 WriteSuccess(result);
                                                 break;
                                             }
@@ -614,15 +612,13 @@ namespace PSADT.ClientServer
                         throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetClientServerOperationSuccess();
-                    Console.WriteLine(SerializeToString(GroupPolicyUpdate(force)));
+                    using ProcessResult result = GroupPolicyUpdate(force);
+                    Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/ShellExecuteProcess" or "/sep")
                 {
-                    if (ProcessManager.LaunchAsync(DeserializeString<UserShellExecuteOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))).ToLaunchInfo())?.Task.GetAwaiter().GetResult() is not ProcessResult result)
-                    {
-                        result = new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
-                    }
+                    using ProcessResult result = ShellExecuteProcess(DeserializeString<UserShellExecuteOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
                     Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
@@ -680,9 +676,12 @@ namespace PSADT.ClientServer
                 }
 
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                if (handle?.Task.GetAwaiter().GetResult().ExitCode is int exitCode)
+                using (ProcessResult? result = handle?.Task.GetAwaiter().GetResult())
                 {
-                    Environment.Exit(exitCode);
+                    if (result?.ExitCode is int exitCode)
+                    {
+                        Environment.Exit(exitCode);
+                    }
                 }
                 return SerializeToString(BlockExecution.ButtonText);
             }
@@ -889,6 +888,18 @@ namespace PSADT.ClientServer
             return ProcessManager.LaunchAsync(launchInfo) is not ProcessHandle handle
                 ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
                 : handle.Task.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Executes a process using the specified shell execution options and returns the result synchronously.
+        /// </summary>
+        /// <param name="options">The options that define how the process should be launched, including executable path, arguments, and user
+        /// context.</param>
+        /// <returns>A ProcessResult object containing the outcome of the executed process. If the process could not be started,
+        /// returns a result indicating success with a default code.</returns>
+        internal static ProcessResult ShellExecuteProcess(UserShellExecuteOptions options)
+        {
+            return ProcessManager.LaunchAsync(options.ToLaunchInfo())?.Task.GetAwaiter().GetResult() ?? new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
         }
 
         /// <summary>
