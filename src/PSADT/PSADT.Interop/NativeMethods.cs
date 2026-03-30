@@ -75,11 +75,11 @@ namespace PSADT.Interop
         /// opened successfully; otherwise, an error code is returned.</returns>
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_OPEN_CREATE_OPTIONS ulOptions, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hKey);
             if (lpSubKey is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpSubKey);
             }
-            ArgumentException.ThrowIfNullOrInvalid(hKey);
             WIN32_ERROR res = PInvoke.RegOpenKeyEx(hKey, lpSubKey, (uint)ulOptions, samDesired, out phkResult).ThrowOnFailure();
             InvalidOperationException.ThrowIfNullOrInvalid(phkResult, "The returned registry key handle from 'RegOpenKeyEx()' is invalid.");
             return res;
@@ -678,6 +678,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null or closed.</exception>
         internal static WIN32_ERROR SetSecurityInfo(SafeHandle handle, SE_OBJECT_TYPE ObjectType, OBJECT_SECURITY_INFORMATION SecurityInfo, SafeHandle? psidOwner, SafeHandle? psidGroup, LocalFreeSafeHandle? pDacl, LocalFreeSafeHandle? pSacl)
         {
+            ArgumentException.ThrowIfNullOrInvalid(handle);
             if (psidOwner is not null)
             {
                 ArgumentException.ThrowIfNullOrInvalid(psidOwner);
@@ -694,7 +695,6 @@ namespace PSADT.Interop
             {
                 ArgumentException.ThrowIfNullOrInvalid(pSacl);
             }
-            ArgumentException.ThrowIfNullOrInvalid(handle);
             bool handleAddRef = false;
             bool psidOwnerAddRef = false;
             bool psidGroupAddRef = false;
@@ -1167,12 +1167,12 @@ namespace PSADT.Interop
         /// <exception cref="Win32Exception">Thrown if the access check fails or if the results handle is invalid.</exception>
         private static BOOL AuthzAccessCheck(AUTHZ_ACCESS_CHECK_FLAGS Flags, SafeHandle hAuthzClientContext, in AUTHZ_ACCESS_REQUEST pRequest, SafeHandle? hAuditEvent, LocalFreeSafeHandle pSecurityDescriptor, ReadOnlySpan<PSECURITY_DESCRIPTOR> OptionalSecurityDescriptorArray, ref AUTHZ_ACCESS_REPLY pReply, out AuthzFreeHandleSafeHandle phAccessCheckResults)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hAuthzClientContext);
+            ArgumentException.ThrowIfNullOrInvalid(pSecurityDescriptor);
             if (hAuditEvent is not null)
             {
                 ArgumentException.ThrowIfNullOrInvalid(hAuditEvent);
             }
-            ArgumentException.ThrowIfNullOrInvalid(hAuthzClientContext);
-            ArgumentException.ThrowIfNullOrInvalid(pSecurityDescriptor);
             bool pSecurityDescriptorAddRef = false;
             BOOL res;
             try
@@ -1230,11 +1230,12 @@ namespace PSADT.Interop
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
         internal static WIN32_ERROR RegRenameKey(SafeHandle hKey, string? lpSubKeyName, string lpNewKeyName)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hKey);
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpNewKeyName);
             if (lpSubKeyName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpSubKeyName);
             }
-            ArgumentException.ThrowIfNullOrInvalid(hKey); ArgumentException.ThrowIfNullOrWhiteSpace(lpNewKeyName);
             return PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName).ThrowOnFailure();
         }
 
@@ -1424,6 +1425,7 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
         internal static uint GetPrivateProfileString(string lpAppName, string? lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             if (lpKeyName is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpKeyName);
@@ -1432,7 +1434,6 @@ namespace PSADT.Interop
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpDefault);
             }
-            ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
@@ -1460,11 +1461,11 @@ namespace PSADT.Interop
         /// written successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL WritePrivateProfileSection(string lpAppName, string? lpString, string lpFileName)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             if (lpString is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpString);
             }
-            ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             BOOL res = PInvoke.WritePrivateProfileSection(lpAppName, lpString, lpFileName.ThrowIfFileDirectoryDoesNotExist());
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -1516,11 +1517,11 @@ namespace PSADT.Interop
         /// caller.</returns>
         private static SafeFileHandle CreateIoCompletionPort(SafeHandle FileHandle, SafeHandle? ExistingCompletionPort, nuint CompletionKey, uint NumberOfConcurrentThreads)
         {
+            ArgumentException.ThrowIfNullOrClosed(FileHandle);
             if (ExistingCompletionPort is not null)
             {
                 ArgumentException.ThrowIfNullOrClosed(ExistingCompletionPort);
             }
-            ArgumentException.ThrowIfNullOrClosed(FileHandle);
             SafeFileHandle res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res; ;
         }
@@ -2047,11 +2048,11 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the function succeeds; otherwise, <see langword="false"/>.</returns>
         private static BOOL IsProcessInJob(SafeHandle ProcessHandle, SafeHandle? JobHandle, out BOOL Result)
         {
+            ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
             if (JobHandle is not null)
             {
                 ArgumentException.ThrowIfNullOrInvalid(JobHandle);
             }
-            ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
             BOOL res = PInvoke.IsProcessInJob(ProcessHandle, JobHandle, out Result);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -2268,11 +2269,11 @@ namespace PSADT.Interop
         /// defined, modified, or deleted successfully; otherwise, <see langword="false"/>.</returns>
         internal static BOOL DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS dwFlags, string lpDeviceName, string? lpTargetPath)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(lpDeviceName);
             if (lpTargetPath is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpTargetPath);
             }
-            ArgumentException.ThrowIfNullOrWhiteSpace(lpDeviceName);
             BOOL res = PInvoke.DefineDosDevice(dwFlags, lpDeviceName, lpTargetPath);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
@@ -3819,11 +3820,11 @@ namespace PSADT.Interop
         /// <returns>A WIN32_ERROR code indicating the result of the operation. Throws an exception if the operation fails.</returns>
         internal static WIN32_ERROR MsiRecordSetString(SafeHandle hRecord, uint iField, string? szValue)
         {
+            ArgumentException.ThrowIfNullOrInvalid(hRecord);
             if (szValue is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(szValue);
             }
-            ArgumentException.ThrowIfNullOrInvalid(hRecord);
             return ((WIN32_ERROR)PInvoke.MsiRecordSetString(hRecord, iField, szValue)).ThrowOnFailure();
         }
 
