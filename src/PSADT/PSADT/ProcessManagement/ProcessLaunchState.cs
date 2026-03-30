@@ -102,7 +102,7 @@ namespace PSADT.ProcessManagement
             try
             {
                 // Set up the necessary state for tracking child processes if requested.
-                if (ProcessAssignedToJobObject)
+                if (ProcessAssignedToJobObject = LaunchInfo.WaitForChildProcesses || LaunchInfo.KillChildProcessesWithParent)
                 {
                     JobObject = NativeMethods.CreateJobObject();
                     IoCompletionPort = NativeMethods.CreateIoCompletionPort(0);
@@ -312,7 +312,7 @@ namespace PSADT.ProcessManagement
                 }
                 if (processFinished)
                 {
-                    await WaitForStdIoTaskCompletionAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
+                    await Task.WhenAll(StdOut?.Task ?? Task.CompletedTask, StdErr?.Task ?? Task.CompletedTask, StdIn?.Task ?? Task.CompletedTask).WaitAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
                 }
                 return new(Process, LaunchInfo, CommandLine, exitCode, StdOut?.Buffer, StdErr?.Buffer, InterleavedBuffer);
             }
@@ -326,14 +326,14 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Asynchronously waits for the completion of all standard input, output, and error I/O tasks.
+        /// Represents the cached task for obtaining process results.
         /// </summary>
-        /// <param name="cancellationToken">A cancellation token used to cancel waiting for standard I/O completion.</param>
-        /// <returns>A task that completes when all standard I/O tasks have finished or waiting is canceled.</returns>
-        private async Task WaitForStdIoTaskCompletionAsync(CancellationToken cancellationToken)
-        {
-            await Task.WhenAll(StdOut?.Task ?? Task.CompletedTask, StdErr?.Task ?? Task.CompletedTask, StdIn?.Task ?? Task.CompletedTask).WaitAsync(cancellationToken).ConfigureAwait(false);
-        }
+        private Task<ProcessResult>? ProcessResultTask;
+
+        /// <summary>
+        /// Indicates whether the job can be disposed.
+        /// </summary>
+        private bool CanDisposeJobObject = true;
 
         /// <summary>
         /// Represents the safe handle for the associated process.
@@ -380,26 +380,9 @@ namespace PSADT.ProcessManagement
         private readonly IReadOnlyCollection<string>? InterleavedBuffer;
 
         /// <summary>
-        /// Indicates whether the object has been disposed (0 = not disposed, 1 = disposed).
-        /// </summary>
-        /// <remarks>This field is used with <see cref="Interlocked.Exchange(ref int, int)"/> to ensure
-        /// thread-safe disposal and prevent multiple calls to the dispose logic.</remarks>
-        private int Disposed;
-
-        /// <summary>
         /// Indicates whether the process is currently assigned to a Windows job object.
         /// </summary>
-        private bool ProcessAssignedToJobObject => LaunchInfo.WaitForChildProcesses || LaunchInfo.KillChildProcessesWithParent;
-
-        /// <summary>
-        /// Represents the cached task for obtaining process results.
-        /// </summary>
-        private Task<ProcessResult>? ProcessResultTask;
-
-        /// <summary>
-        /// Indicates whether the job can be disposed.
-        /// </summary>
-        private bool CanDisposeJobObject = true;
+        private readonly bool ProcessAssignedToJobObject;
 
         /// <summary>
         /// Indicates whether the process handle can be disposed.
@@ -463,5 +446,12 @@ namespace PSADT.ProcessManagement
             }
             IoCompletionPort?.Dispose();
         }
+
+        /// <summary>
+        /// Indicates whether the object has been disposed (0 = not disposed, 1 = disposed).
+        /// </summary>
+        /// <remarks>This field is used with <see cref="Interlocked.Exchange(ref int, int)"/> to ensure
+        /// thread-safe disposal and prevent multiple calls to the dispose logic.</remarks>
+        private int Disposed;
     }
 }
