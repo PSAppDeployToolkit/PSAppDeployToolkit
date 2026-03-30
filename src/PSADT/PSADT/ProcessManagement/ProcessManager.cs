@@ -188,16 +188,31 @@ namespace PSADT.ProcessManagement
                 stdInStream?.DisposeLocalCopyOfClientHandle();
             }
 
-            // Since the process wasn't spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
-            ProcessLaunchState launchState;
+            // Finalise the process creation and return the handle to the caller.
             try
             {
                 Process process = Process.GetProcessById((int)processId);
                 try
                 {
-                    _ = process.Handle; launchState = stdOutHandle is not null && stdErrHandle is not null
-                        ? new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess, stdOutHandle, stdErrHandle, interleavedData, stdInHandle)
-                        : new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess);
+                    if (stdOutHandle is not null && stdErrHandle is not null)
+                    {
+                        stdOutHandle.Task.Start(TaskScheduler.Default);
+                        stdErrHandle.Task.Start(TaskScheduler.Default);
+                        using (hThread)
+                        {
+                            _ = NativeMethods.ResumeThread(hThread);
+                        }
+                        stdInHandle?.Task.Start(TaskScheduler.Default);
+                        return new(new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess, stdOutHandle, stdErrHandle, interleavedData, stdInHandle));
+                    }
+                    else
+                    {
+                        using (hThread)
+                        {
+                            _ = NativeMethods.ResumeThread(hThread);
+                        }
+                        return new(new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -209,36 +224,13 @@ namespace PSADT.ProcessManagement
             catch (Exception ex)
             {
                 stdOutHandle?.Dispose();
-                stdErrHandle?.Dispose();
-                stdInHandle?.Dispose();
                 stdOutStream?.Dispose();
+                stdErrHandle?.Dispose();
                 stdErrStream?.Dispose();
+                stdInHandle?.Dispose();
                 stdInStream?.Dispose();
                 hProcess.Dispose();
                 hThread.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
-            }
-
-            // Resume the main thread and return information about the process.
-            try
-            {
-                using (hThread)
-                {
-                    stdOutHandle?.Task.Start(TaskScheduler.Default);
-                    stdErrHandle?.Task.Start(TaskScheduler.Default);
-                    _ = NativeMethods.ResumeThread(hThread);
-                }
-                stdInHandle?.Task.Start(TaskScheduler.Default);
-                return new(launchState);
-            }
-            catch (Exception ex)
-            {
-                stdOutStream?.Dispose();
-                stdErrStream?.Dispose();
-                stdInStream?.Dispose();
-                launchState.Process.Dispose();
-                launchState.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -328,7 +320,7 @@ namespace PSADT.ProcessManagement
                 {
                     process.PriorityClass = launchInfo.PriorityClass.Value;
                 }
-                return new(new(launchInfo, process, launchInfo.MakeCommandLine()));
+                return new(new(launchInfo, process));
             }
             catch (Exception ex)
             {
