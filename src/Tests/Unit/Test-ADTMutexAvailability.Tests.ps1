@@ -34,47 +34,40 @@ Describe 'Test-ADTMutexAvailability' {
             Test-ADTMutexAvailability -MutexName $mutexName | Should -BeTrue
         }
         It 'Should return $false when the mutex is locked' {
-            $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
-
             # Named mutex ownership in .NET is thread-affine: WaitOne() on the same thread that
             # already holds the mutex is re-entrant and always returns $true. We therefore acquire
             # the mutex on a background thread (a dedicated PowerShell instance running via
             # BeginInvoke on a thread pool thread) so that the test thread's WaitOne() call
             # correctly sees the mutex as unavailable.
-            $cts = [System.Threading.CancellationTokenSource]::new()
+            $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
             $mutexAcquired = [System.Threading.ManualResetEventSlim]::new($false)
-            $runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
-            $runspace.Open()
-            $runspace.SessionStateProxy.SetVariable('mutexName', $mutexName)
-            $runspace.SessionStateProxy.SetVariable('mutexAcquired', $mutexAcquired)
-            $runspace.SessionStateProxy.SetVariable('cts', $cts)
+            $cts = [System.Threading.CancellationTokenSource]::new()
             $ps = [System.Management.Automation.PowerShell]::Create()
-            $ps.Runspace = $runspace
-            $lockScript = {
-                $mutex = [System.Threading.Mutex]::new($false, $mutexName)
-                try
-                {
-                    if ($mutex.WaitOne(1))
+            ($ps.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()).Open()
+            $ps.Runspace.SessionStateProxy.SetVariable('mutexName', $mutexName)
+            $ps.Runspace.SessionStateProxy.SetVariable('mutexAcquired', $mutexAcquired)
+            $ps.Runspace.SessionStateProxy.SetVariable('cts', $cts)
+            $asyncResult = $ps.AddScript({
+                    $mutex = [System.Threading.Mutex]::new($false, $mutexName)
+                    try
                     {
-                        $mutexAcquired.Set()
-                        [void]$cts.Token.WaitHandle.WaitOne()
-                        $mutex.ReleaseMutex()
+                        if ($mutex.WaitOne(1))
+                        {
+                            $mutexAcquired.Set()
+                            [void]$cts.Token.WaitHandle.WaitOne()
+                            $mutex.ReleaseMutex()
+                        }
                     }
-                }
-                finally
-                {
-                    $mutex.Close()
-                    $mutex.Dispose()
-                }
-            }
-            $null = $ps.AddScript($lockScript)
-            $asyncResult = $ps.BeginInvoke()
-
+                    finally
+                    {
+                        $mutex.Close()
+                        $mutex.Dispose()
+                    }
+                }).BeginInvoke()
             if (-not $mutexAcquired.Wait(5000))
             {
                 throw "Background PowerShell instance failed to acquire a lock on the mutex [$mutexName]."
             }
-
             try
             {
                 Test-ADTMutexAvailability -MutexName $mutexName | Should -BeFalse
