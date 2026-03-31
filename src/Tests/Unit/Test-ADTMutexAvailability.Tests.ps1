@@ -7,8 +7,11 @@ Describe 'Test-ADTMutexAvailability' {
     Context 'Functionality' {
         It 'Should return $true when the mutex is not locked' {
             $mutexName = $null
-            while ($true)
+            $maxAttempts = 100
+            $attempt = 0
+            while ($attempt -lt $maxAttempts)
             {
+                $attempt++
                 $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
                 $mutex = [System.Threading.Mutex]::new($false, $mutexName)
                 try
@@ -27,6 +30,10 @@ Describe 'Test-ADTMutexAvailability' {
                     $mutex.Close()
                     $mutex.Dispose()
                 }
+            }
+            if (-not $isMutexLocked)
+            {
+                throw "Failed to acquire an unlocked mutex after $maxAttempts attempts."
             }
 
             Test-ADTMutexAvailability -MutexName $mutexName | Should -BeTrue
@@ -83,8 +90,12 @@ Describe 'Test-ADTMutexAvailability' {
         }
         It 'Should return $true when the mutex does not exist' {
             $mutexName = $null
-            while ($true)
+            $maxAttempts = 100
+            $attempt = 0
+            $foundNonExistentMutex = $false
+            while ($attempt -lt $maxAttempts)
             {
+                $attempt++
                 try
                 {
                     $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
@@ -95,6 +106,7 @@ Describe 'Test-ADTMutexAvailability' {
                 catch [System.Threading.WaitHandleCannotBeOpenedException]
                 {
                     # The named mutex does not exist.
+                    $foundNonExistentMutex = $true
                     break
                 }
                 catch
@@ -103,6 +115,10 @@ Describe 'Test-ADTMutexAvailability' {
                     # continue searching for a non-existent mutex name.
                     continue
                 }
+            }
+            if (-not $foundNonExistentMutex)
+            {
+                throw "Failed to find a non-existent mutex name after $maxAttempts attempts."
             }
 
             Test-ADTMutexAvailability -MutexName $mutexName | Should -BeTrue
