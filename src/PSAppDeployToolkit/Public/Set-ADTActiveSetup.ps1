@@ -11,7 +11,7 @@ function Set-ADTActiveSetup
         Creates an Active Setup entry in the registry to execute a file for each user upon login.
 
     .DESCRIPTION
-        Active Setup allows handling of per-user changes registry/file changes upon login.
+        Active Setup allows handling of per-user registry/file changes upon login.
 
         A registry key is created in the HKLM registry hive which gets replicated to the HKCU hive when a user logs in.
 
@@ -40,7 +40,7 @@ function Set-ADTActiveSetup
         Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
 
     .PARAMETER Version
-        Optional. Specify version for Active setup entry. Active Setup is not triggered if Version value has more than 8 consecutive digits. Use commas to get around this limitation.
+        Optional. Specify version for Active setup entry. Due to a Windows Active Setup/registry limitation, the entry is not triggered if the Version value contains more than 8 consecutive digits. Use separators such as commas in the version string (for example, `1,0,20240101`) to break up long digit sequences and work around this limitation.
 
         Note:
             - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
