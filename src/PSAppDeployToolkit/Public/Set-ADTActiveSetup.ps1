@@ -268,7 +268,7 @@ function Set-ADTActiveSetup
                     }
                     process
                     {
-                        # Only digits or dots/commas are valud.
+                        # Only digits or dots/commas are valid.
                         if ([System.Char]::IsDigit($_) -or ($_ -eq '.'))
                         {
                             $chars.Add($_)
@@ -334,7 +334,7 @@ function Set-ADTActiveSetup
                             $chars.Add('0')
                         }
 
-                        # Finally, padd out the version to a full four octets.
+                        # Finally, pad out the version to a full four octets.
                         if (($padding = 3 - ($chars.GetEnumerator() | & { process { if ($_ -match '^\.$') { return $_ } } } | Measure-Object).Count) -gt 0)
                         {
                             for ($i = 0; $i -lt $padding; $i++)
@@ -427,7 +427,7 @@ function Set-ADTActiveSetup
             }
         }
 
-        # Define internal function to the required ActiveSetup registry keys.
+        # Define internal function to set the required ActiveSetup registry keys.
         function Set-ADTActiveSetupRegistryEntry
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is an internal worker function that requires no end user confirmation.')]
