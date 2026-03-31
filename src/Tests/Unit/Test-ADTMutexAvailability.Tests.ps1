@@ -27,8 +27,6 @@ Describe 'Test-ADTMutexAvailability' {
                     $mutex.Close()
                     $mutex.Dispose()
                 }
-
-                break
             }
 
             Test-ADTMutexAvailability -MutexName $mutexName | Should -BeTrue
@@ -94,7 +92,7 @@ Describe 'Test-ADTMutexAvailability' {
                     $mutex.Close()
                     $mutex.Dispose()
                 }
-                catch [Threading.WaitHandleCannotBeOpenedException]
+                catch [System.Threading.WaitHandleCannotBeOpenedException]
                 {
                     # The named mutex does not exist.
                     break
