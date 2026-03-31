@@ -203,6 +203,17 @@ function Set-ADTActiveSetup
         {
             if (!$PSBoundParameters.ContainsKey('Description'))
             {
+                if ($null -eq $adtSession)
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidProgramException]::new("An active DeploymentSession was not found when one was expected.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'ADTSessionUnexpectedNull'
+                        TargetObject = $Script:ADT.Sessions
+                        RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review.."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                }
                 $adtSession.InstallName
             }
             else
@@ -212,6 +223,17 @@ function Set-ADTActiveSetup
         }
         $Key = if (!$PSBoundParameters.ContainsKey('Key'))
         {
+            if ($null -eq $adtSession)
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidProgramException]::new("An active DeploymentSession was not found when one was expected.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                    ErrorId = 'ADTSessionUnexpectedNull'
+                    TargetObject = $Script:ADT.Sessions
+                    RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review.."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
             $adtSession.InstallName
         }
         else
