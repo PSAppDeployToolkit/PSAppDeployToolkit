@@ -496,7 +496,7 @@ function Set-ADTActiveSetup
                     {
                         return
                     }
-                    # HLKM first.
+                    # HKLM first.
                     Write-ADTLogEntry -Message "Removing Active Setup entry [$HKLMRegKey]."
                     Remove-ADTRegistryKey -Key $HKLMRegKey -Recurse
 
