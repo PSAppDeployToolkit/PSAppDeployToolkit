@@ -30,7 +30,7 @@ function Set-ADTActiveSetup
 
         Note: Place the file you want users to execute in the '\Files' subdirectory of the script directory and the toolkit will install it to the path specificed in this parameter.
 
-    .PARAMETER Arguments
+    .PARAMETER ArgumentList
         Arguments to pass to the file being executed.
 
     .PARAMETER Wow6432Node
@@ -72,10 +72,10 @@ function Set-ADTActiveSetup
         This function returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
 
     .EXAMPLE
-        Set-ADTActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -Arguments '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
+        Set-ADTActiveSetup -StubExePath 'C:\Users\Public\Company\ProgramUserConfig.vbs' -ArgumentList '/Silent' -Description 'Program User Config' -Key 'ProgramUserConfig' -Locale 'en'
 
     .EXAMPLE
-        Set-ADTActiveSetup -StubExePath "$envWinDir\regedit.exe" -Arguments "/S `"%SystemDrive%\Program Files (x86)\PS App Deploy\PSAppDeployHKCUSettings.reg`"" -Description 'PS App Deploy Config' -Key 'PS_App_Deploy_Config'
+        Set-ADTActiveSetup -StubExePath "$envWinDir\regedit.exe" -ArgumentList "/S", "%SystemDrive%\Program Files (x86)\PS App Deploy\PSAppDeployHKCUSettings.reg" -Description 'PS App Deploy Config' -Key 'PS_App_Deploy_Config'
 
     .EXAMPLE
         Set-ADTActiveSetup -Key 'ProgramUserConfig' -PurgeActiveSetupKey
@@ -114,8 +114,9 @@ function Set-ADTActiveSetup
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
+        [Alias('Arguments')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Arguments,
+        [System.String[]]$ArgumentList,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Wow6432Node,
@@ -535,6 +536,17 @@ function Set-ADTActiveSetup
                 }
 
                 # Define Active Setup StubPath according to file extension of $StubExePath.
+                $Arguments = if (($null -ne $ArgumentList) -and ($ArgumentList.Length -gt 0))
+                {
+                    if ($ArgumentList.Length -gt 1)
+                    {
+                        [PSADT.ProcessManagement.CommandLineUtilities]::ArgumentListToCommandLine($ArgumentList)
+                    }
+                    else
+                    {
+                        $ArgumentList[0]
+                    }
+                }
                 switch ($StubExeExt)
                 {
                     '.exe'
