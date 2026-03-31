@@ -228,66 +228,62 @@ Describe 'New-ADTTemplate' {
             }
 
             It 'Replaces the Pre-Install phase content' {
-                $content | Should -Match 'TEST-pre-install'
-                $content | Should -Not -Match '<Perform Pre-Installation tasks here>'
+                $content | Should -Match '\$PreInstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-install''\r?\n\}'
+                $content | Should -Not -Match 'Show-ADTInstallationWelcome @saiwParams'
             }
 
             It 'Replaces the Install phase content' {
-                $content | Should -Match 'TEST-install'
-                $content | Should -Not -Match '<Perform Installation tasks here>'
+                $content | Should -Match '\$Install = \{\r?\n    Write-ADTLogEntry -Message ''TEST-install''\r?\n\}'
+                $content | Should -Not -Match 'UseDefaultMsi'
             }
 
             It 'Replaces the Post-Install phase content' {
-                $content | Should -Match 'TEST-post-install'
-                $content | Should -Not -Match '<Perform Post-Installation tasks here>'
+                $content | Should -Match '\$PostInstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-install''\r?\n\}'
             }
 
             It 'Replaces the Pre-Uninstall phase content' {
-                $content | Should -Match 'TEST-pre-uninstall'
-                $content | Should -Not -Match '<Perform Pre-Uninstallation tasks here>'
+                $content | Should -Match '\$PreUninstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-uninstall''\r?\n\}'
+                $content | Should -Not -Match 'CloseProcessesCountdown 60'
             }
 
             It 'Replaces the Uninstall phase content' {
-                $content | Should -Match 'TEST-uninstall'
-                $content | Should -Not -Match '<Perform Uninstallation tasks here>'
+                $content | Should -Match '\$Uninstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-uninstall''\r?\n\}'
             }
 
             It 'Replaces the Post-Uninstall phase content' {
-                $content | Should -Match 'TEST-post-uninstall'
-                $content | Should -Not -Match '<Perform Post-Uninstallation tasks here>'
+                $content | Should -Match '\$PostUninstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-uninstall''\r?\n\}'
             }
 
             It 'Replaces the Pre-Repair phase content' {
-                $content | Should -Match 'TEST-pre-repair'
-                $content | Should -Not -Match '<Perform Pre-Repair tasks here>'
+                $content | Should -Match '\$PreRepair = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-repair''\r?\n\}'
             }
 
             It 'Replaces the Repair phase content' {
-                $content | Should -Match 'TEST-repair'
-                $content | Should -Not -Match '<Perform Repair tasks here>'
+                $content | Should -Match '\$Repair = \{\r?\n    Write-ADTLogEntry -Message ''TEST-repair''\r?\n\}'
             }
 
             It 'Replaces the Post-Repair phase content' {
-                $content | Should -Match 'TEST-post-repair'
-                $content | Should -Not -Match '<Perform Post-Repair tasks here>'
+                $content | Should -Match '\$PostRepair = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-repair''\r?\n\}'
             }
         }
 
         Context 'Single phase preserves others' {
             BeforeAll {
+                $originalContent = (Get-ADTTemplateContent).ScriptContent
                 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $content = (Get-ADTTemplateContent -Params @{
                         InstallScriptBlock = { Write-ADTLogEntry -Message 'custom install' }
                     }).ScriptContent
             }
 
-            It 'Preserves unspecified phases when only one param is provided' {
-                # Pre-Install should still have default Welcome dialog.
-                $content | Should -Match 'Show-ADTInstallationWelcome'
-                # Post-Install should still have default prompt.
-                $content | Should -Match 'Show-ADTInstallationPrompt'
-                # Uninstall function should be unmodified.
-                $content | Should -Match '<Perform Pre-Uninstallation tasks here>'
+            It 'Preserves unspecified scriptblocks when only one scriptblock is modified' {
+                foreach ($phase in 'PreInstall', 'PostInstall', 'PreUninstall', 'Uninstall', 'PostUninstall', 'PreRepair', 'Repair', 'PostRepair')
+                {
+                    $pattern = '(?s)\$' + $phase + ' = \{.*?\r?\n\}'
+                    $originalMatch = [regex]::Match($originalContent, $pattern).Value
+                    $customMatch = [regex]::Match($content, $pattern).Value
+                    $customMatch | Should -Be $originalMatch -Because "$phase should be unchanged"
+                }
             }
         }
     }

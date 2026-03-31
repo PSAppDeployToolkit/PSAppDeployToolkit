@@ -517,22 +517,61 @@ function New-ADTTemplate
                     # then apply them in a single pass from end to start to preserve earlier offsets.
                     $scriptReplacements = [System.Collections.Generic.List[PSCustomObject]]::new()
                     $hasSessionProperties = $PSBoundParameters.ContainsKey('SessionProperties') -and $SessionProperties.Count -gt 0
-                    $deploymentScriptMap = @{
-                        PreInstallScriptBlock = @{ Function = 'Install-ADTDeployment'; PhaseIndex = 0 }
-                        InstallScriptBlock = @{ Function = 'Install-ADTDeployment'; PhaseIndex = 1 }
-                        PostInstallScriptBlock = @{ Function = 'Install-ADTDeployment'; PhaseIndex = 2 }
-                        PreUninstallScriptBlock = @{ Function = 'Uninstall-ADTDeployment'; PhaseIndex = 0 }
-                        UninstallScriptBlock = @{ Function = 'Uninstall-ADTDeployment'; PhaseIndex = 1 }
-                        PostUninstallScriptBlock = @{ Function = 'Uninstall-ADTDeployment'; PhaseIndex = 2 }
-                        PreRepairScriptBlock = @{ Function = 'Repair-ADTDeployment'; PhaseIndex = 0 }
-                        RepairScriptBlock = @{ Function = 'Repair-ADTDeployment'; PhaseIndex = 1 }
-                        PostRepairScriptBlock = @{ Function = 'Repair-ADTDeployment'; PhaseIndex = 2 }
-                    }
-                    $boundDeployScripts = $deploymentScriptMap.Keys.Where({ $PSBoundParameters.ContainsKey($_) })
+                    $sectionsToProcess = @('PostRepair', 'Repair', 'PreRepair', 'PostUninstall', 'Uninstall', 'PreUninstall', 'PostInstall', 'Install', 'PreInstall' ).Where({ $PSBoundParameters.ContainsKey($_ + 'ScriptBlock') })
 
-                    if ($hasSessionProperties -or $boundDeployScripts.Count -gt 0)
+                    if ($hasSessionProperties -or $sectionsToProcess.Count -gt 0)
                     {
                         $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptContent, [ref]$null, [ref]$null)
+                    }
+
+                    # Inject deployment script blocks into their corresponding phase variables if provided.
+                    if ($sectionsToProcess.Count -gt 0)
+                    {
+                        foreach ($section in $sectionsToProcess)
+                        {
+                            $sbParamName = $section + 'ScriptBlock'
+
+                            # Find the variable assignment in the AST (e.g. $PreInstall = { ... }).
+                            $sbAssignment = $scriptAst.Find({
+                                    param ($ast)
+                                    $ast -is [System.Management.Automation.Language.AssignmentStatementAst] -and
+                                    ($ast.Left | Get-Member -Name VariablePath) -and
+                                    $ast.Left.VariablePath.UserPath -eq $section
+                                }, $true)
+                            if (!$sbAssignment)
+                            {
+                                $naerParams = @{
+                                    Exception = [System.InvalidOperationException]::new("Variable '`$$section' not found in template script.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                                    ErrorId = 'TemplateVariableNotFound'
+                                    TargetObject = $sbParamName
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+
+                            # Get the scriptblock expression on the right-hand side.
+                            $sbAst = $sbAssignment.Right.Expression
+                            if ($sbAst -isnot [System.Management.Automation.Language.ScriptBlockExpressionAst])
+                            {
+                                $naerParams = @{
+                                    Exception = [System.InvalidOperationException]::new("Variable '`$$section' is not assigned a scriptblock in the template script.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                                    ErrorId = 'TemplateVariableNotScriptBlock'
+                                    TargetObject = $sbParamName
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+
+                            # Normalize text by trimming leading/trailing whitespace, converting all line endings to \r\n, and replacing leading tabs with 4 spaces.
+                            $scriptText = "{`r`n    $([regex]::Replace($PSBoundParameters[$sbParamName].ToString().Trim().Replace("`r`n", "`n").Replace("`r", "`n").Replace("`n", "`r`n"), '(?m)^\t+', { param($m) '    ' * $m.Value.Length }))`r`n}"
+
+                            # Replace the entire scriptblock expression (including braces) with the user's content.
+                            $scriptReplacements.Add([PSCustomObject]@{
+                                    Start = $sbAst.Extent.StartOffset
+                                    End = $sbAst.Extent.EndOffset
+                                    Value = $scriptText
+                                })
+                        }
                     }
 
                     # Inject SessionProperties into the $adtSession hashtable if provided.
@@ -592,119 +631,6 @@ function New-ADTTemplate
                                         Value = $insertion
                                     })
                             }
-                        }
-                    }
-
-                    # Inject deployment script blocks into their corresponding phases if provided.
-                    if ($boundDeployScripts.Count -gt 0)
-                    {
-                        foreach ($paramName in $boundDeployScripts)
-                        {
-                            $mapping = $deploymentScriptMap[$paramName]
-
-                            # Find the target function in the AST.
-                            $funcAst = $scriptAst.Find({
-                                    param ($ast)
-                                    $ast -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-                                    $ast.Name -eq $mapping.Function
-                                }, $true)
-                            if (!$funcAst)
-                            {
-                                $naerParams = @{
-                                    Exception = [System.InvalidOperationException]::new("Function '$($mapping.Function)' not found in template script.")
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                                    ErrorId = 'TemplateFunctionNotFound'
-                                    TargetObject = $mapping.Function
-                                }
-                                throw (New-ADTErrorRecord @naerParams)
-                            }
-
-                            # Find all $adtSession.InstallPhase assignments within the function.
-                            $phaseAssignments = @($funcAst.FindAll({
-                                        param ($ast)
-                                        $ast -is [System.Management.Automation.Language.AssignmentStatementAst] -and
-                                        $ast.Left -is [System.Management.Automation.Language.MemberExpressionAst] -and
-                                        $ast.Left.Member.Value -eq 'InstallPhase'
-                                    }, $true))
-
-                            $targetAssignment = $phaseAssignments[$mapping.PhaseIndex]
-                            if (!$targetAssignment)
-                            {
-                                $naerParams = @{
-                                    Exception = [System.InvalidOperationException]::new("InstallPhase assignment at index $($mapping.PhaseIndex) not found in function '$($mapping.Function)'.")
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                                    ErrorId = 'TemplatePhaseAssignmentNotFound'
-                                    TargetObject = $mapping
-                                }
-                                throw (New-ADTErrorRecord @naerParams)
-                            }
-
-                            # Determine the start of the replacement region (line after the InstallPhase assignment).
-                            $replaceStart = $scriptContent.IndexOf("`n", $targetAssignment.Extent.EndOffset) + 1
-
-                            # Determine the end of the replacement region.
-                            if ($mapping.PhaseIndex -eq 2)
-                            {
-                                # Post phase: replace up to the last line before the function's closing brace.
-                                $replaceEnd = $scriptContent.LastIndexOf("`n", $funcAst.Extent.EndOffset - 1) + 1
-                            }
-                            else
-                            {
-                                # Pre/Main phase: replace up to the next MARK separator.
-                                $separatorPattern = "    ##================================================`r`n    ## MARK:"
-                                $replaceEnd = $scriptContent.IndexOf($separatorPattern, $replaceStart)
-                                if ($replaceEnd -eq -1)
-                                {
-                                    $naerParams = @{
-                                        Exception = [System.InvalidOperationException]::new("MARK separator not found after phase index $($mapping.PhaseIndex) in function '$($mapping.Function)'.")
-                                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                                        ErrorId = 'TemplateSeparatorNotFound'
-                                        TargetObject = $mapping
-                                    }
-                                    throw (New-ADTErrorRecord @naerParams)
-                                }
-                            }
-
-                            # Normalize the user's script block to 4-space indentation.
-                            $userLines = $PSBoundParameters[$paramName].ToString().Split("`n").Where({ $_.Trim().Length -gt 0 })
-                            $minIndent = [System.Int32]::MaxValue
-                            foreach ($line in $userLines)
-                            {
-                                $trimmed = $line.TrimStart()
-                                if ($trimmed.Length -gt 0)
-                                {
-                                    $indent = $line.Length - $trimmed.Length
-                                    if ($indent -lt $minIndent)
-                                    {
-                                        $minIndent = $indent
-                                    }
-                                }
-                            }
-                            if ($minIndent -eq [System.Int32]::MaxValue) { $minIndent = 0 }
-                            $normalizedLines = foreach ($line in $userLines)
-                            {
-                                $stripped = if ($line.Length -gt $minIndent) { $line.Substring($minIndent) } else { $line.TrimStart() }
-                                "    $($stripped.TrimEnd())"
-                            }
-                            $normalizedText = $normalizedLines -join "`r`n"
-
-                            # Build the replacement text.
-                            if ($mapping.PhaseIndex -eq 2)
-                            {
-                                # Post phase: content + newline before closing brace.
-                                $replacementText = "`r`n$normalizedText`r`n"
-                            }
-                            else
-                            {
-                                # Pre/Main phase: content + blank line before the next MARK separator.
-                                $replacementText = "`r`n$normalizedText`r`n`r`n"
-                            }
-
-                            $scriptReplacements.Add([PSCustomObject]@{
-                                    Start = $replaceStart
-                                    End = $replaceEnd
-                                    Value = $replacementText
-                                })
                         }
                     }
 
