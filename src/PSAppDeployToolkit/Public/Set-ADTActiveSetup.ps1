@@ -572,7 +572,7 @@ function Set-ADTActiveSetup
                         }
                         else
                         {
-                            "//nologo `"$StubExePath`"  $Arguments"
+                            "//nologo `"$StubExePath`" $Arguments"
                         }
                         $StubPath = "`"$CUStubExePath`" $CUArguments"
                         break
