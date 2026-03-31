@@ -35,16 +35,31 @@ Describe 'Test-ADTMutexAvailability' {
         }
         It 'Should return $false when the mutex is locked' {
             $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
-            $command = {
+
+            # Named mutex ownership in .NET is thread-affine: WaitOne() on the same thread that
+            # already holds the mutex is re-entrant and always returns $true. We therefore acquire
+            # the mutex on a background thread (a dedicated PowerShell instance running via
+            # BeginInvoke on a thread pool thread) so that the test thread's WaitOne() call
+            # correctly sees the mutex as unavailable.
+            $cts = [System.Threading.CancellationTokenSource]::new()
+            $mutexAcquired = [System.Threading.ManualResetEventSlim]::new($false)
+            $runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()
+            $runspace.Open()
+            $runspace.SessionStateProxy.SetVariable('mutexName', $mutexName)
+            $runspace.SessionStateProxy.SetVariable('mutexAcquired', $mutexAcquired)
+            $runspace.SessionStateProxy.SetVariable('cts', $cts)
+            $ps = [System.Management.Automation.PowerShell]::Create()
+            $ps.Runspace = $runspace
+            $lockScript = {
                 $mutex = [System.Threading.Mutex]::new($false, $mutexName)
                 try
                 {
-                    if (-not $mutex.WaitOne(1))
+                    if ($mutex.WaitOne(1))
                     {
-                        exit 1
+                        $mutexAcquired.Set()
+                        [void]$cts.Token.WaitHandle.WaitOne()
+                        $mutex.ReleaseMutex()
                     }
-                    Start-Sleep -Seconds 10
-                    $mutex.ReleaseMutex()
                 }
                 finally
                 {
@@ -52,28 +67,27 @@ Describe 'Test-ADTMutexAvailability' {
                     $mutex.Dispose()
                 }
             }
+            $null = $ps.AddScript($lockScript)
+            $asyncResult = $ps.BeginInvoke()
 
-            $encodedCommand = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($command.ToString().Replace('$mutexName', "'$mutexName'")))
-
-            # Lock the mutex in another process because locking it in this one will return $true every time WaitOne(1) is called
-            $proc = Start-Process -FilePath (Join-Path -Path $PSHOME -ChildPath (('powershell.exe', 'pwsh.exe')[$PSVersionTable.PSEdition.Equals('Core')])) -ArgumentList "-NoLogo -NoProfile -NonInteractive -EncodedCommand $encodedCommand" -WindowStyle Hidden -PassThru
-
-            # Give the new PowerShell process time to start before checking if the mutex is locked
-            Start-Sleep -Seconds 5
+            if (-not $mutexAcquired.Wait(5000))
+            {
+                throw "Background PowerShell instance failed to acquire a lock on the mutex [$mutexName]."
+            }
 
             try
             {
-                $proc.Refresh()
-                if ($proc.HasExited -and ($proc.ExitCode -ne 0))
-                {
-                    throw "Child PowerShell process failed to acquire a lock on the mutex [$mutexName]."
-                }
-
                 Test-ADTMutexAvailability -MutexName $mutexName | Should -BeFalse
             }
             finally
             {
-                $proc.Dispose()
+                $cts.Cancel()
+                $null = $ps.EndInvoke($asyncResult)
+                $ps.Runspace.Close()
+                $ps.Runspace.Dispose()
+                $ps.Dispose()
+                $cts.Dispose()
+                $mutexAcquired.Dispose()
             }
         }
         It 'Should return $true when the mutex does not exist' {
@@ -96,7 +110,7 @@ Describe 'Test-ADTMutexAvailability' {
                 {
                     # Intentionally ignore all other exceptions and
                     # continue searching for a non-existent mutex name.
-                    $null = $null
+                    continue
                 }
             }
 
