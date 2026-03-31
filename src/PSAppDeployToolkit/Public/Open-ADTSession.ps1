@@ -17,10 +17,10 @@ function Open-ADTSession
         Defaults to $PSCmdlet.SessionState to get the caller's SessionState, so only required if you need to override this.
 
     .PARAMETER DeploymentType
-        Specifies the type of deployment: Install, Uninstall, or Repair.
+        Specifies the type of deployment.
 
     .PARAMETER DeployMode
-        Specifies the deployment mode: Interactive, NonInteractive, or Silent.
+        Specifies the deployment mode.
 
     .PARAMETER SuppressRebootPassThru
         Suppresses reboot pass-through.
