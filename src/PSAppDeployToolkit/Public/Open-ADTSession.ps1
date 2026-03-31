@@ -134,7 +134,7 @@ function Open-ADTSession
         Specifies an override for the default-generated log file name.
 
     .PARAMETER AdditionalEnvironmentVariables
-        A dictionary of key/value pairs to inject into the generated environment table. This only applies if this function initialises the module also.
+        A dictionary of key/value pairs to inject into the generated environment table. This only applies if this function initializes the module also.
 
     .PARAMETER SessionClass
         Specifies an override for PSAppDeployToolkit.Foundation.DeploymentSession class. Use this if you're deriving a class inheriting off PSAppDeployToolkit's base.
