@@ -98,19 +98,7 @@ $PreInstall = {
 
 ## MARK: Install
 $Install = {
-    if ($adtSession.UseDefaultMsi)
-    {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-        if ($adtSession.DefaultMstFile)
-        {
-            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-        }
-        Start-ADTMsiProcess @ExecuteDefaultMSISplat
-        if ($adtSession.DefaultMspFiles)
-        {
-            $adtSession.DefaultMspFiles | Start-ADTMsiProcess -Action Patch
-        }
-    }
+
 }
 
 
@@ -133,20 +121,14 @@ $PreUninstall = {
 
 ## MARK: Uninstall
 $Uninstall = {
-    if ($adtSession.UseDefaultMsi)
-    {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-        if ($adtSession.DefaultMstFile)
-        {
-            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-        }
-        Start-ADTMsiProcess @ExecuteDefaultMSISplat
-    }
+
 }
 
 
 ## MARK: Post-Uninstall
-$PostUninstall = {}
+$PostUninstall = {
+
+}
 
 
 ## MARK: Pre-Repair
@@ -162,15 +144,7 @@ $PreRepair = {
 
 ## MARK: Repair
 $Repair = {
-    if ($adtSession.UseDefaultMsi)
-    {
-        $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
-        if ($adtSession.DefaultMstFile)
-        {
-            $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
-        }
-        Start-ADTMsiProcess @ExecuteDefaultMSISplat
-    }
+
 }
 
 
