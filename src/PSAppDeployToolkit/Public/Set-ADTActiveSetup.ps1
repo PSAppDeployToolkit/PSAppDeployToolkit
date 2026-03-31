@@ -28,7 +28,7 @@ function Set-ADTActiveSetup
     .PARAMETER StubExePath
         Use this parameter to specify the destination path of the file that will be executed upon user login.
 
-        Note: Place the file you want users to execute in the '\Files' subdirectory of the script directory and the toolkit will install it to the path specificed in this parameter.
+        Note: Place the file you want users to execute in the '\Files' subdirectory of the script directory and the toolkit will install it to the path specified in this parameter.
 
     .PARAMETER ArgumentList
         Arguments to pass to the file being executed.
