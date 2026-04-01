@@ -431,8 +431,14 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <returns><see langword="true"/> if the current process has the SeImpersonatePrivilege; otherwise, <see
         /// langword="false"/>.</returns>
-        private static CreateProcessUsingTokenStatus CanUseCreateProcessWithToken(bool isCallerToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges)
+        private static CreateProcessUsingTokenStatus CanUseCreateProcessWithToken(bool isCallerToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges, ReadOnlySpan<char> commandLine)
         {
+            // If the command line exceeds 1024 characters, we can't use CreateProcessWithToken at all.
+            if (commandLine.Length > 1024)
+            {
+                return CreateProcessUsingTokenStatus.CommandLineTooLong;
+            }
+
             // Test whether the caller has the required privileges to use CreateProcessWithToken.
             if (!callerPrivilges.Contains(SE_PRIVILEGE.SeImpersonatePrivilege))
             {
@@ -566,7 +572,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
-            CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken, callerPrivilges);
+            CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken, callerPrivilges, commandLine);
             if (createProcessWithTokenAbility != CreateProcessUsingTokenStatus.OK)
             {
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}");
@@ -678,6 +684,7 @@ namespace PSADT.ProcessManagement
             SeAssignPrimaryTokenPrivilege,
             JobBreakawayNotPermitted,
             SeTcbPrivilege,
+            CommandLineTooLong,
             SeImpersonatePrivilege,
             SecLogonServiceNotFound,
             SecLogonServiceDisabled,
@@ -696,6 +703,7 @@ namespace PSADT.ProcessManagement
             { CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege." },
             { CreateProcessUsingTokenStatus.JobBreakawayNotPermitted, "The calling process is part of a job that does not allow breakaway." },
             { CreateProcessUsingTokenStatus.SeTcbPrivilege, "The calling process does not have the necessary SeTcbPrivilege privilege." },
+            { CreateProcessUsingTokenStatus.CommandLineTooLong, "The process command line exceeds the API limitation of 1024 characters." },
             { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege." },
             { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
             { CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled." },
