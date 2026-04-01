@@ -92,13 +92,31 @@ namespace PSADT.Foundation
         /// Gets the username associated with the user.
         /// </summary>
         [IgnoreDataMember]
-        public string UserName => NTAccount.Value.IndexOf('\\') is int divider && divider != -1 ? NTAccount.Value.Substring(divider + 1) : NTAccountValue;
+        public string UserName
+        {
+            get
+            {
+                int divider = NTAccount.Value.IndexOf('\\');
+                return divider != -1
+                    ? NTAccount.Value.Substring(divider + 1)
+                    : NTAccountValue;
+            }
+        }
 
         /// <summary>
         /// Represents the domain name associated with the current context.
         /// </summary>
         [IgnoreDataMember]
-        public string? DomainName => NTAccount.Value.IndexOf('\\') is int divider && divider != -1 ? NTAccount.Value.Substring(0, divider) : null;
+        public string? DomainName
+        {
+            get
+            {
+                int divider = NTAccount.Value.IndexOf('\\');
+                return divider != -1
+                    ? NTAccount.Value.Substring(0, divider)
+                    : null;
+            }
+        }
 
         /// <summary>
         /// Represents the session ID of the user.

@@ -45,8 +45,19 @@ namespace PSADT.SMBIOS
         /// </summary>
         private static SystemEnclosure Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
-            // Height (0 => unspecified; 0xFF => unknown per spec)
+            // OemDefined value, if present and non-zero.
             ArgumentOutOfRangeException.ThrowIfLessThan(structureLength, 9);
+            uint? oemDefined = null;
+            if (structureLength >= 17)
+            {
+                uint oemValue = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(structureOffset + 13, 4));
+                if (oemValue > 0)
+                {
+                    oemDefined = oemValue;
+                }
+            }
+
+            // Height (0 => unspecified; 0xFF => unknown per spec)
             byte? height = null;
             if (structureLength >= 18)
             {
@@ -143,7 +154,7 @@ namespace PSADT.SMBIOS
                 powerSupplyState: structureLength >= 11 ? (ChassisState)buffer[structureOffset + 10] : null,
                 thermalState: structureLength >= 12 ? (ChassisState)buffer[structureOffset + 11] : null,
                 securityStatus: structureLength >= 13 ? (ChassisSecurityStatus)buffer[structureOffset + 12] : null,
-                oemDefined: structureLength >= 17 && BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(structureOffset + 13, 4)) is uint oemDefined && oemDefined > 0 ? oemDefined : null,
+                oemDefined: oemDefined,
                 height: height,
                 numberOfPowerCords: numberOfPowerCords,
                 containedElementCount: containedElementCount,
