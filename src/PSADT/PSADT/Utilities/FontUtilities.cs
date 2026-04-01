@@ -61,7 +61,6 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="fontFilePath">The full path to the font file.</param>
         /// <returns>True if the font was removed successfully; otherwise, false.</returns>
-        /// ///
         public static void RemoveFont(string fontFilePath)
         {
             // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.

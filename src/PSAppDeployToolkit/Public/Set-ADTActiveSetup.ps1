@@ -210,7 +210,7 @@ function Set-ADTActiveSetup
                         Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                         ErrorId = 'ADTSessionUnexpectedNull'
                         TargetObject = $Script:ADT.Sessions
-                        RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review.."
+                        RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
                     }
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
@@ -230,7 +230,7 @@ function Set-ADTActiveSetup
                     Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                     ErrorId = 'ADTSessionUnexpectedNull'
                     TargetObject = $Script:ADT.Sessions
-                    RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review.."
+                    RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
