@@ -101,6 +101,14 @@ jobs:
         overwrite: true
         archive: false
 
+    - name: Upload v4 ZeroConfig module template
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      with:
+        path: ${{ steps.exports.outputs.Template_v4_ZeroConfig }}
+        if-no-files-found: error
+        overwrite: true
+        archive: false
+
     - name: Upload pester results
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
       with:
