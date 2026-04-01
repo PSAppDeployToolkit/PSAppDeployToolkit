@@ -275,10 +275,10 @@ namespace PSADT.Interop
                     {
                         throw ExceptionUtilities.GetExceptionForLastWin32Error();
                     }
-                    WIN32_ERROR lastError = ExceptionUtilities.GetLastWin32Error();
-                    if (lastError == WIN32_ERROR.ERROR_NOT_ALL_ASSIGNED)
+                    WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+                    if (lastWin32Error == WIN32_ERROR.ERROR_NOT_ALL_ASSIGNED)
                     {
-                        throw ExceptionUtilities.GetException(lastError);
+                        throw ExceptionUtilities.GetException(lastWin32Error);
                     }
                 }
             }
@@ -562,9 +562,13 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(hService);
             BOOL res = PInvoke.QueryServiceStatusEx(hService, InfoLevel, lpBuffer, out pcbBytesNeeded);
-            if (!res && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0))
+            if (!res)
             {
-                throw ExceptionUtilities.GetException(lastWin32Error);
+                WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+                if (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0)
+                {
+                    throw ExceptionUtilities.GetException(lastWin32Error);
+                }
             }
             InvalidOperationException.ThrowIfZero(pcbBytesNeeded, "The return length from 'QueryServiceStatusEx()' is zero.");
             return res;
@@ -1384,9 +1388,16 @@ namespace PSADT.Interop
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
             uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
-            return res == lpReturnedString.Length - 2
-                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
-                : res;
+            WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+            if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+            {
+                throw ExceptionUtilities.GetException(lastWin32Error);
+            }
+            else if (res == lpReturnedString.Length - 2)
+            {
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
+            }
+            return res;
         }
 
         /// <summary>
@@ -1405,9 +1416,16 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             uint res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
-            return res == lpReturnedString.Length - 2
-                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
-                : res;
+            WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+            if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+            {
+                throw ExceptionUtilities.GetException(lastWin32Error);
+            }
+            else if (res == lpReturnedString.Length - 2)
+            {
+                throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER);
+            }
+            return res;
         }
 
         /// <summary>
@@ -1435,7 +1453,8 @@ namespace PSADT.Interop
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpDefault);
             }
             uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
-            if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
+            WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+            if (lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
                 throw ExceptionUtilities.GetException(lastWin32Error);
             }
@@ -2289,9 +2308,15 @@ namespace PSADT.Interop
         internal static FILE_TYPE GetFileType(SafeHandle hFile)
         {
             ArgumentException.ThrowIfNullOrInvalid(hFile); FILE_TYPE res = PInvoke.GetFileType(hFile);
-            return res == FILE_TYPE.FILE_TYPE_UNKNOWN && ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
-                ? throw ExceptionUtilities.GetException(lastWin32Error)
-                : res;
+            if (res == FILE_TYPE.FILE_TYPE_UNKNOWN)
+            {
+                WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+                if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+                {
+                    throw ExceptionUtilities.GetException(lastWin32Error);
+                }
+            }
+            return res;
         }
 
         /// <summary>
@@ -3057,7 +3082,8 @@ namespace PSADT.Interop
             {
                 hInstance.DangerousAddRef(ref hInstanceAddRef);
                 res = LoadString((HINSTANCE)hInstance.DangerousGetHandle(), uID, out lpBuffer, 0);
-                if (res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR)
+                WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+                if (lastWin32Error != WIN32_ERROR.NO_ERROR)
                 {
                     throw ExceptionUtilities.GetException(lastWin32Error);
                 }
@@ -3147,9 +3173,15 @@ namespace PSADT.Interop
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
             }
             PInvoke.SetLastError(0); int res = PInvoke.GetWindowTextLength(hWnd);
-            return res == 0 && (ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error) && lastWin32Error != WIN32_ERROR.NO_ERROR
-                ? throw ExceptionUtilities.GetException(lastWin32Error)
-                : res;
+            if (res == 0)
+            {
+                WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+                if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+                {
+                    throw ExceptionUtilities.GetException(lastWin32Error);
+                }
+            }
+            return res;
         }
 
         /// <summary>
@@ -3363,14 +3395,15 @@ namespace PSADT.Interop
         /// <param name="wParam">Additional message-specific information. The exact meaning depends on the value of the Msg parameter.</param>
         /// <param name="lParam">Additional message-specific information. The exact meaning depends on the value of the Msg parameter.</param>
         /// <returns>The result of the message processing, as returned by the window procedure.</returns>
-        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM? lParam = null)
+        internal static LRESULT SendMessage(HWND hWnd, WINDOW_MESSAGE Msg, WPARAM wParam, LPARAM lParam = default)
         {
             unsafe
             {
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
             }
-            PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam ?? default);
-            return ExceptionUtilities.GetLastWin32Error() is WIN32_ERROR lastWin32Error && lastWin32Error != WIN32_ERROR.NO_ERROR
+            LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
+            WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
+            return lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
@@ -3399,7 +3432,6 @@ namespace PSADT.Interop
             }
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {

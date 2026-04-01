@@ -183,7 +183,8 @@ namespace PSADT.Security
                 }
 
                 // Read the token length from the pipe.
-                if (pipe.ReadByte() is int tokenLength && tokenLength == -1)
+                int tokenLength = pipe.ReadByte();
+                if (tokenLength == -1)
                 {
                     throw new InvalidProgramException("No token length received from the token broker.");
                 }

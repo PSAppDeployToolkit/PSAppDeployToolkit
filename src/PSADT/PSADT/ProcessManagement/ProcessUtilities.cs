@@ -564,9 +564,9 @@ namespace PSADT.ProcessManagement
             Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
             _ = NativeMethods.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
             ref readonly SERVICE_STATUS_PROCESS serviceStatus = ref buffer.AsReadOnlyStructure<SERVICE_STATUS_PROCESS>();
-            return serviceStatus.dwProcessId is uint dwProcessId && dwProcessId == 0
+            return serviceStatus.dwProcessId == 0
                 ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
-                : dwProcessId;
+                : serviceStatus.dwProcessId;
         }
 
         /// <summary>
