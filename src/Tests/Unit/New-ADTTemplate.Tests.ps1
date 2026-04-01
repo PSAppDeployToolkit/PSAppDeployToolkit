@@ -296,15 +296,15 @@ Describe 'New-ADTTemplate' {
                 }
 
                 It 'Injects zero-config MSI logic into the Install phase' {
-                    $content | Should -Match '\$Install = \{\r?\n    ## Handle Zero-Config MSI installations\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                    $content | Should -Match '\$Install = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
                 }
 
                 It 'Injects zero-config MSI logic into the Uninstall phase' {
-                    $content | Should -Match '\$Uninstall = \{\r?\n    ## Handle Zero-Config MSI installations\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                    $content | Should -Match '\$Uninstall = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
                 }
 
                 It 'Injects zero-config MSI logic into the Repair phase' {
-                    $content | Should -Match '\$Repair = \{\r?\n    ## Handle Zero-Config MSI installations\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                    $content | Should -Match '\$Repair = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
                 }
             }
 
@@ -320,15 +320,15 @@ Describe 'New-ADTTemplate' {
                 }
 
                 It 'Zero-config content precedes user Install scriptblock content' {
-                    $content | Should -Match '(?s)\$Install = \{.*## Handle Zero-Config MSI installations\..*Write-ADTLogEntry -Message ''USER-install'''
+                    $content | Should -Match '(?s)\$Install = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-install'''
                 }
 
                 It 'Zero-config content precedes user Uninstall scriptblock content' {
-                    $content | Should -Match '(?s)\$Uninstall = \{.*## Handle Zero-Config MSI installations\..*Write-ADTLogEntry -Message ''USER-uninstall'''
+                    $content | Should -Match '(?s)\$Uninstall = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-uninstall'''
                 }
 
                 It 'Zero-config content precedes user Repair scriptblock content' {
-                    $content | Should -Match '(?s)\$Repair = \{.*## Handle Zero-Config MSI installations\..*Write-ADTLogEntry -Message ''USER-repair'''
+                    $content | Should -Match '(?s)\$Repair = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-repair'''
                 }
             }
         }

@@ -334,7 +334,7 @@ function New-ADTTemplate
         if ($ZeroConfig)
         {
             $zeroConfigScriptBlock = {
-                ## Handle Zero-Config MSI installations.
+                ## Handle Zero-Config MSI actions.
                 if ($adtSession.UseDefaultMsi)
                 {
                     $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
