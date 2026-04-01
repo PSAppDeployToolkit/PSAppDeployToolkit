@@ -9,13 +9,14 @@ Describe 'Test-ADTMutexAvailability' {
             $mutexName = $null
             $maxAttempts = 100
             $attempt = 0
+            $mutex = $null
             while ($attempt -lt $maxAttempts)
             {
                 $attempt++
                 $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
-                $mutex = [System.Threading.Mutex]::new($false, $mutexName)
                 try
                 {
+                    $mutex = [System.Threading.Mutex]::new($false, $mutexName)
                     if ($isMutexLocked = $mutex.WaitOne(1))
                     {
                         break
@@ -23,12 +24,16 @@ Describe 'Test-ADTMutexAvailability' {
                 }
                 finally
                 {
-                    if ($isMutexLocked)
+                    if ($mutex -ne $null)
                     {
-                        $mutex.ReleaseMutex()
+                        if ($isMutexLocked)
+                        {
+                            $mutex.ReleaseMutex()
+                        }
+                        $mutex.Close()
+                        $mutex.Dispose()
+                        $mutex = $null
                     }
-                    $mutex.Close()
-                    $mutex.Dispose()
                 }
             }
             if (-not $isMutexLocked)
@@ -53,20 +58,23 @@ Describe 'Test-ADTMutexAvailability' {
             $ps.Runspace.SessionStateProxy.SetVariable('mutexAcquired', $mutexAcquired)
             $ps.Runspace.SessionStateProxy.SetVariable('cts', $cts)
             $asyncResult = $ps.AddScript({
-                    $mutex = [System.Threading.Mutex]::new($false, $mutexName)
                     try
                     {
+                        $mutex = [System.Threading.Mutex]::new($false, $mutexName)
                         if ($mutex.WaitOne(1))
                         {
                             $mutexAcquired.Set()
-                            [void]$cts.Token.WaitHandle.WaitOne()
+                            [void]$cts.Token.WaitHandle.WaitOne(30000)
                             $mutex.ReleaseMutex()
                         }
                     }
                     finally
                     {
-                        $mutex.Close()
-                        $mutex.Dispose()
+                        if ($null -ne $mutex)
+                        {
+                            $mutex.Close()
+                            $mutex.Dispose()
+                        }
                     }
                 }).BeginInvoke()
             if (-not $mutexAcquired.Wait(5000))
@@ -100,8 +108,14 @@ Describe 'Test-ADTMutexAvailability' {
                 {
                     $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
                     $mutex = [System.Threading.Mutex]::OpenExisting($mutexName)
-                    $mutex.Close()
-                    $mutex.Dispose()
+                    try
+                    {
+                        $mutex.Close()
+                    }
+                    finally
+                    {
+                        $mutex.Dispose()
+                    }
                 }
                 catch [System.Threading.WaitHandleCannotBeOpenedException]
                 {
