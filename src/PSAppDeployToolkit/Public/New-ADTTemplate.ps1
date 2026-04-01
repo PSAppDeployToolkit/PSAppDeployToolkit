@@ -73,6 +73,9 @@ function New-ADTTemplate
     .PARAMETER PassThru
         Returns the newly created folder object.
 
+    .PARAMETER ZeroConfig
+        When specified, injects a default MSI scriptblock into the Install, Uninstall, and Repair phases that executes the detected default MSI. If InstallScriptBlock, UninstallScriptBlock, or RepairScriptBlock are also provided, the zero-config content is prepended to the user-supplied scriptblock. Only supported when -Version is 4.
+
     .INPUTS
         None
 
@@ -193,7 +196,10 @@ function New-ADTTemplate
         [System.Management.Automation.SwitchParameter]$Force,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$PassThru
+        [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$ZeroConfig
     )
 
     begin
@@ -247,12 +253,13 @@ function New-ADTTemplate
                         "-$property $($InputObject.$property)"
                     }
                 }
-                Write-Host "(New-TimeSpan $($timeSpanArgs -join ' '))" -ForegroundColor Magenta
                 return "(New-TimeSpan $($timeSpanArgs -join ' '))"
             }
             if ($InputObject -is [System.Management.Automation.ScriptBlock])
             {
-                return $InputObject.Ast.Extent.Text
+                $scriptBody = (ConvertTo-ADTScriptBody -ScriptBlock $InputObject)
+                # Add extra indentation here for multi-line script blocks, since this output will be injected into a hash table value assignment that is already indented once.
+                if ($scriptBody -match '\n') { return ('{' + [System.Environment]::NewLine + ($scriptBody -replace '(?m)^', '    ') + [System.Environment]::NewLine + '    }') } else { return ('{ ' + $scriptBody.Trim() + ' }') }
             }
             if ($InputObject -is [System.Collections.IDictionary])
             {
@@ -287,10 +294,30 @@ function New-ADTTemplate
             throw (New-ADTErrorRecord @naerParams)
         }
 
+        # Helper to normalize (and optionally concatenate) scriptblocks. Each input is trimmed, line endings normalized, source indentation stripped, leading tabs replaced with spaces.
+        function ConvertTo-ADTScriptBody
+        {
+            [CmdletBinding()]
+            [OutputType([System.String])]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [System.Management.Automation.ScriptBlock[]]$ScriptBlock
+            )
+
+            $scriptBodies = foreach ($sb in $ScriptBlock)
+            {
+                $lines = [regex]::Replace(($sb.ToString() -replace '\r?\n', [System.Environment]::NewLine).TrimStart([System.Environment]::NewLine).TrimEnd(), '(?m)^\t+', { param($m) '    ' * $m.Value.Length }) -split [System.Environment]::NewLine
+                $minIndent = ($lines | Where-Object { $_ -match '\S' } | ForEach-Object { [regex]::Match($_, '^ *').Length } | Measure-Object -Minimum).Minimum
+                ($lines | ForEach-Object { if ([System.String]::IsNullOrWhiteSpace($_)) { $_ } elseif ($_.Length -ge $minIndent) { '    ' + $_.Substring($minIndent) } else { '    ' + $_ } }) -join [System.Environment]::NewLine
+            }
+            return ($scriptBodies -join ([System.Environment]::NewLine * 2))
+        }
+
         # Some parameters are only supported for v4 templates.
         if ($Version.Equals(3))
         {
-            if (($invalidParams = @('SessionProperties', 'PreInstallScriptBlock', 'InstallScriptBlock', 'PostInstallScriptBlock', 'PreUninstallScriptBlock', 'UninstallScriptBlock', 'PostUninstallScriptBlock', 'PreRepairScriptBlock', 'RepairScriptBlock', 'PostRepairScriptBlock').Where({ $PSBoundParameters.ContainsKey($_) })))
+            if (($invalidParams = @('SessionProperties', 'PreInstallScriptBlock', 'InstallScriptBlock', 'PostInstallScriptBlock', 'PreUninstallScriptBlock', 'UninstallScriptBlock', 'PostUninstallScriptBlock', 'PreRepairScriptBlock', 'RepairScriptBlock', 'PostRepairScriptBlock', 'ZeroConfig').Where({ $PSBoundParameters.ContainsKey($_) })))
             {
                 $naerParams = @{
                     Exception = [System.InvalidOperationException]::new("The following parameters are not supported when -Version is 3: $($invalidParams -join ', ').")
@@ -300,6 +327,34 @@ function New-ADTTemplate
                     RecommendedAction = "Please use -Version 4 or remove the -$($invalidParams -join ', -') parameter(s) and try again."
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+        }
+
+        # Handle -ZeroConfig: inject the default MSI scriptblock into Install/Uninstall/Repair phases.
+        if ($ZeroConfig)
+        {
+            $zeroConfigScriptBlock = {
+                ## Handle Zero-Config MSI installations.
+                if ($adtSession.UseDefaultMsi)
+                {
+                    $ExecuteDefaultMSISplat = @{ Action = $adtSession.DeploymentType; FilePath = $adtSession.DefaultMsiFile }
+                    if ($adtSession.DefaultMstFile)
+                    {
+                        $ExecuteDefaultMSISplat.Add('Transforms', $adtSession.DefaultMstFile)
+                    }
+                    Start-ADTMsiProcess @ExecuteDefaultMSISplat
+                }
+            }
+            foreach ($sbName in 'InstallScriptBlock', 'UninstallScriptBlock', 'RepairScriptBlock')
+            {
+                if ($PSBoundParameters.ContainsKey($sbName))
+                {
+                    $PSBoundParameters[$sbName] = [System.Management.Automation.ScriptBlock]::Create((ConvertTo-ADTScriptBody -ScriptBlock $zeroConfigScriptBlock, $PSBoundParameters[$sbName]))
+                }
+                else
+                {
+                    $PSBoundParameters[$sbName] = $zeroConfigScriptBlock
+                }
             }
         }
 
@@ -443,7 +498,7 @@ function New-ADTTemplate
                         $configReplacements.Add([PSCustomObject]@{
                                 Start = $offset
                                 End = $offset
-                                Value = (($configInsertions[$offset] -join "`n") + "`n")
+                                Value = (($configInsertions[$offset] -join [System.Environment]::NewLine) + [System.Environment]::NewLine)
                             })
                     }
 
@@ -511,7 +566,7 @@ function New-ADTTemplate
                         LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
                         Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
                     }
-                    $scriptContent = (Get-Content @params -Raw).Replace("`r`n", "`n").Replace("`r", "`n").Replace("`n", "`r`n").Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
+                    $scriptContent = ((Get-Content @params -Raw) -replace '\r?\n', [System.Environment]::NewLine).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
 
                     # Collect all script content replacements (absolute offsets) across both features,
                     # then apply them in a single pass from end to start to preserve earlier offsets.
@@ -562,8 +617,7 @@ function New-ADTTemplate
                                 throw (New-ADTErrorRecord @naerParams)
                             }
 
-                            # Normalize text by trimming leading/trailing whitespace, converting all line endings to \r\n, and replacing leading tabs with 4 spaces.
-                            $scriptText = "{`r`n    $([regex]::Replace($PSBoundParameters[$sbParamName].ToString().Trim().Replace("`r`n", "`n").Replace("`r", "`n").Replace("`n", "`r`n"), '(?m)^\t+', { param($m) '    ' * $m.Value.Length }))`r`n}"
+                            $scriptText = '{' + [System.Environment]::NewLine + (ConvertTo-ADTScriptBody -ScriptBlock $PSBoundParameters[$sbParamName]) + [System.Environment]::NewLine + '}'
 
                             # Replace the entire scriptblock expression (including braces) with the user's content.
                             $scriptReplacements.Add([PSCustomObject]@{

@@ -269,6 +269,7 @@ Describe 'New-ADTTemplate' {
 
         Context 'Single phase preserves others' {
             BeforeAll {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'originalContent', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $originalContent = (Get-ADTTemplateContent).ScriptContent
                 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
                 $content = (Get-ADTTemplateContent -Params @{
@@ -283,6 +284,51 @@ Describe 'New-ADTTemplate' {
                     $originalMatch = [regex]::Match($originalContent, $pattern).Value
                     $customMatch = [regex]::Match($content, $pattern).Value
                     $customMatch | Should -Be $originalMatch -Because "$phase should be unchanged"
+                }
+            }
+        }
+
+        Context 'ZeroConfig' {
+            Context 'ZeroConfig alone injects default MSI logic into Install, Uninstall, and Repair' {
+                BeforeAll {
+                    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                    $content = (Get-ADTTemplateContent -Params @{ ZeroConfig = $true }).ScriptContent
+                }
+
+                It 'Injects zero-config MSI logic into the Install phase' {
+                    $content | Should -Match '\$Install = \{\r?\n    ## Handle Zero-Config MSI installations\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                }
+
+                It 'Injects zero-config MSI logic into the Uninstall phase' {
+                    $content | Should -Match '\$Uninstall = \{\r?\n    ## Handle Zero-Config MSI installations\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                }
+
+                It 'Injects zero-config MSI logic into the Repair phase' {
+                    $content | Should -Match '\$Repair = \{\r?\n    ## Handle Zero-Config MSI installations\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                }
+            }
+
+            Context 'ZeroConfig prepended to user-supplied scriptblocks' {
+                BeforeAll {
+                    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                    $content = (Get-ADTTemplateContent -Params @{
+                            ZeroConfig = $true
+                            InstallScriptBlock = { Write-ADTLogEntry -Message 'USER-install' }
+                            UninstallScriptBlock = { Write-ADTLogEntry -Message 'USER-uninstall' }
+                            RepairScriptBlock = { Write-ADTLogEntry -Message 'USER-repair' }
+                        }).ScriptContent
+                }
+
+                It 'Zero-config content precedes user Install scriptblock content' {
+                    $content | Should -Match '(?s)\$Install = \{.*## Handle Zero-Config MSI installations\..*Write-ADTLogEntry -Message ''USER-install'''
+                }
+
+                It 'Zero-config content precedes user Uninstall scriptblock content' {
+                    $content | Should -Match '(?s)\$Uninstall = \{.*## Handle Zero-Config MSI installations\..*Write-ADTLogEntry -Message ''USER-uninstall'''
+                }
+
+                It 'Zero-config content precedes user Repair scriptblock content' {
+                    $content | Should -Match '(?s)\$Repair = \{.*## Handle Zero-Config MSI installations\..*Write-ADTLogEntry -Message ''USER-repair'''
                 }
             }
         }
