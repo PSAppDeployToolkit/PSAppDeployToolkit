@@ -248,7 +248,7 @@ namespace PSADT.SMBIOS
 
         /// <summary>
         /// Gets the contained element record length in bytes.
-        /// /// </summary>
+        /// </summary>
         public byte ContainedElementRecordLength { get; }
 
         /// <summary>
