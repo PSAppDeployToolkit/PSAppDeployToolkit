@@ -142,7 +142,7 @@ namespace PSADT.SMBIOS
             }
 
             // Return the information to the caller.
-            return new SystemEnclosure(
+            return new(
                 structureLength,
                 handle: BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(structureOffset + 2, 2)),
                 manufacturer: SmbiosParsing.GetSmbiosString(buffer, stringTableOffset, buffer[structureOffset + 4]),

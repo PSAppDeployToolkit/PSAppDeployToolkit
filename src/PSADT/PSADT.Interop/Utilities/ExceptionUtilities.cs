@@ -168,7 +168,7 @@ namespace PSADT.Interop.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static HRESULT HRESULT_FROM_NT(NTSTATUS ntStatus)
         {
-            return new HRESULT(unchecked((int)(unchecked((uint)ntStatus.Value) | (uint)FACILITY_CODE.FACILITY_NT_BIT)));
+            return new(unchecked((int)(unchecked((uint)ntStatus.Value) | (uint)FACILITY_CODE.FACILITY_NT_BIT)));
         }
 
         /// <summary>

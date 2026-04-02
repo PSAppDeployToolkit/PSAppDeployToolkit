@@ -38,7 +38,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["DialogAllowMove"] as bool?,
             options["DialogExpiryDuration"] as TimeSpan?,
             options["DialogPersistInterval"] as TimeSpan?,
-            options["Strings"] as IDictionary is { Count: > 0 } strings ? new RestartDialogStrings(strings, deploymentType) : null!,
+            options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings, deploymentType) : null!,
             options["CountdownDuration"] as TimeSpan?,
             options["CountdownNoMinimizeDuration"] as TimeSpan?,
             options["CustomMessageText"] as string)

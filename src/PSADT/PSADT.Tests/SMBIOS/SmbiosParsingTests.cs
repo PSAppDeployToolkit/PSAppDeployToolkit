@@ -199,7 +199,7 @@ namespace PSADT.Tests.SMBIOS
         private static FakeStructure FakeStructureParser(ReadOnlySpan<byte> buffer, int offset, byte length)
         {
             ushort handle = (ushort)(buffer[offset + 2] | (buffer[offset + 3] << 8));
-            return new FakeStructure(buffer[offset], length, handle);
+            return new(buffer[offset], length, handle);
         }
 
         /// <summary>

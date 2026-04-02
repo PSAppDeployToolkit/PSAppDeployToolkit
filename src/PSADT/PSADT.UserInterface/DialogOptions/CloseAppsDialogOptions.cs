@@ -37,7 +37,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["DialogAllowMove"] as bool?,
             options["DialogExpiryDuration"] as TimeSpan?,
             options["DialogPersistInterval"] as TimeSpan?,
-            options["Strings"] as IDictionary is { Count: > 0 } strings ? new CloseAppsDialogStrings(strings, deploymentType) : null!,
+            options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings, deploymentType) : null!,
             options["DeferralsRemaining"] as uint?,
             options["DeferralDeadline"] as DateTime?,
             options["UnlimitedDeferrals"] as bool? ?? false,
@@ -191,8 +191,8 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings">An IDictionary containing localized string resources for the dialog, organized by deployment type.</param>
             /// <param name="deploymentType">The deployment type that determines which set of localized strings to use.</param>
             internal CloseAppsDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
-                strings["Classic"] is IDictionary classicStrings ? new CloseAppsDialogClassicStrings(classicStrings, deploymentType) : null!,
-                strings["Fluent"] is IDictionary fluentStrings ? new CloseAppsDialogFluentStrings(fluentStrings, deploymentType) : null!)
+                strings["Classic"] is IDictionary classicStrings ? new(classicStrings, deploymentType) : null!,
+                strings["Fluent"] is IDictionary fluentStrings ? new(fluentStrings, deploymentType) : null!)
             {
             }
 

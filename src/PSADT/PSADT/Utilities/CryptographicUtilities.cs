@@ -23,7 +23,7 @@ namespace PSADT.Utilities
         {
             using RandomNumberGenerator rng = RandomNumberGenerator.Create();
             byte[] randomBytes = new byte[16]; rng.GetBytes(randomBytes);
-            return new Guid(randomBytes);
+            return new(randomBytes);
         }
 
         /// <summary>

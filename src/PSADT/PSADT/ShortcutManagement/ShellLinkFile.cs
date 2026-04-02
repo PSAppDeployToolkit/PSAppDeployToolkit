@@ -930,7 +930,7 @@ namespace PSADT.ShortcutManagement
                 if (value.HasValue)
                 {
                     propVariant.Anonymous.Anonymous.vt = VARENUM.VT_BOOL;
-                    propVariant.Anonymous.Anonymous.Anonymous.boolVal = new VARIANT_BOOL((short)(value.Value ? -1 : 0));
+                    propVariant.Anonymous.Anonymous.Anonymous.boolVal = new((short)(value.Value ? -1 : 0));
                 }
                 else
                 {
