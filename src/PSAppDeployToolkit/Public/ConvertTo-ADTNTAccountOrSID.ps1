@@ -93,20 +93,18 @@ function ConvertTo-ADTNTAccountOrSID
         [System.Security.Principal.SecurityIdentifier]$SID,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownName', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLdap', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLocalHost', ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [System.Security.Principal.WellKnownSidType]$WellKnownSIDName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownNameLdap')]
         [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownNameLocalHost')]
         [System.Management.Automation.SwitchParameter]$WellKnownToNTAccount,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLocalHost')]
         [System.Management.Automation.SwitchParameter]$LocalHost,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'WellKnownNameLdap')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'WellKnownName')]
         [ValidateSet('LDAP://', 'LDAPS://')]
         [System.String]$LdapUri = 'LDAP://'
     )
