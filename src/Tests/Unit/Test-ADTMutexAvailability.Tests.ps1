@@ -24,7 +24,7 @@ Describe 'Test-ADTMutexAvailability' {
                 }
                 finally
                 {
-                    if ($mutex -ne $null)
+                    if ($null -ne $mutex)
                     {
                         if ($isMutexLocked)
                         {
@@ -108,14 +108,7 @@ Describe 'Test-ADTMutexAvailability' {
                 {
                     $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
                     $mutex = [System.Threading.Mutex]::OpenExisting($mutexName)
-                    try
-                    {
-                        $mutex.Close()
-                    }
-                    finally
-                    {
-                        $mutex.Dispose()
-                    }
+                    $mutex.Close()
                 }
                 catch [System.Threading.WaitHandleCannotBeOpenedException]
                 {
@@ -128,6 +121,14 @@ Describe 'Test-ADTMutexAvailability' {
                     # Intentionally ignore all other exceptions and
                     # continue searching for a non-existent mutex name.
                     continue
+                }
+                finally
+                {
+                    if ($null -ne $mutex)
+                    {
+                        $mutex.Dispose()
+                        $mutex = $null
+                    }
                 }
             }
             if (-not $foundNonExistentMutex)
