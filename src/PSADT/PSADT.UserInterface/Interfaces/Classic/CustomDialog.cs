@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
+using Windows.Win32;
 
 namespace PSADT.UserInterface.Interfaces.Classic
 {
@@ -99,8 +100,21 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
                 else
                 {
-                    using Icon icon = SystemIcons.Get(options.Icon.Value, Interop.SHIL_SIZE.SHIL_EXTRALARGE);
-                    pictureIcon.Image = icon.ToBitmap();
+                    using DestroyIconSafeHandle hIcon = SystemIcons.Get(options.Icon.Value, Interop.SHIL_SIZE.SHIL_EXTRALARGE);
+                    bool hIconAddRef = false;
+                    try
+                    {
+                        hIcon.DangerousAddRef(ref hIconAddRef);
+                        using Icon icon = Icon.FromHandle(hIcon.DangerousGetHandle());
+                        pictureIcon.Image = icon.ToBitmap();
+                    }
+                    finally
+                    {
+                        if (hIconAddRef)
+                        {
+                            hIcon.DangerousRelease();
+                        }
+                    }
                 }
 
                 // Set up the message.
