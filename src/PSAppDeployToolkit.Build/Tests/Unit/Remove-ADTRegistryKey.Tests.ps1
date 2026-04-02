@@ -66,7 +66,7 @@ Describe 'Remove-ADTRegistryKey' {
         }
 
         It 'Throws when removing a key that has subkeys without -Recurse' {
-            { Remove-ADTRegistryKey -LiteralPath $script:ParentKey } | Should -Throw
+            { Remove-ADTRegistryKey -LiteralPath $script:ParentKey -ErrorAction Stop } | Should -Throw
         }
 
         It 'Does not throw when removing a key with subkeys using -Recurse' {
@@ -96,7 +96,7 @@ Describe 'Remove-ADTRegistryKey' {
 
         It 'The value is gone after removal' {
             Remove-ADTRegistryKey -LiteralPath $script:TestKey -Name 'TestVal'
-            $props = (Get-ItemProperty -LiteralPath $script:TestKey).PSObject.Properties.Name
+            $props = (Get-ItemProperty -LiteralPath $script:TestKey).PSObject.Properties | Select-Object -ExpandProperty Name
             $props | Should -Not -Contain 'TestVal'
         }
 

@@ -108,7 +108,7 @@ Describe 'Start-ADTProcess' {
 
         It 'Verifies the working directory is used by the process' {
             $result = Start-ADTProcess -FilePath $CmdExe -ArgumentList '/c', 'cd' -WorkingDirectory $env:TEMP -CreateNoWindow -PassThru
-            $result.StdOut.Trim() | Should -Be $env:TEMP.TrimEnd('\')
+            $result.StdOut.Trim() | Should -Be (Get-Item -LiteralPath $env:TEMP).FullName.TrimEnd('\')
         }
     }
 

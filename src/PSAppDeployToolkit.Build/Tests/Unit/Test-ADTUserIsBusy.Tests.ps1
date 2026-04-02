@@ -31,6 +31,13 @@ Describe 'Test-ADTUserIsBusy' {
     }
 
     Context 'All delegates return false/null (user not busy)' {
+        BeforeAll {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { return [PSCustomObject]@{ UserName = 'DOMAIN\TestUser' } }
+            Mock -ModuleName PSAppDeployToolkit Test-ADTUserInFocusMode { $false }
+            Mock -ModuleName PSAppDeployToolkit Get-ADTUserToastNotificationMode { return 0 }
+            Mock -ModuleName PSAppDeployToolkit Get-ADTUserNotificationState { return [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_ACCEPTS_NOTIFICATIONS }
+        }
+
         It 'Returns $false when microphone is not in use, no presentation mode, PowerPoint not running' {
             Test-ADTUserIsBusy | Should -Be $false
         }
