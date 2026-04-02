@@ -149,11 +149,7 @@ namespace PSADT.ProcessManagement
                 else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
                 {
                     // We're running elevated but have been asked to de-elevate.
-                    if (SessionInfo.Get().FirstOrDefault(s => s.SessionId == AccountUtilities.CallerSessionId) is not SessionInfo wtsSession)
-                    {
-                        throw new InvalidOperationException($"An active user session for Id {AccountUtilities.CallerSessionId} could not be found.");
-                    }
-                    if (AccountUtilities.CallerSid != wtsSession.SID)
+                    if (!AccountUtilities.CallerIsLoggedOnUser)
                     {
                         throw new InvalidOperationException("Cannot create process using unelevated token when running in a different user's session.");
                     }

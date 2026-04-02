@@ -10,6 +10,7 @@ using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.Security;
+using PSADT.TerminalServices;
 using Windows.Win32;
 using Windows.Win32.Security.Authentication.Identity;
 
@@ -75,6 +76,8 @@ namespace PSADT.AccountManagement
 
             // Generate a RunAsActiveUser object for the current user.
             CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
+            SessionRunAsActiveUser = SessionInfo.Get(CallerSessionId)?.ToRunAsActiveUser();
+            CallerIsLoggedOnUser = CallerRunAsActiveUser == SessionRunAsActiveUser;
         }
 
         /// <summary>
@@ -169,10 +172,21 @@ namespace PSADT.AccountManagement
         public static readonly bool CallerUsingServiceUI;
 
         /// <summary>
+        /// Indicates whether the current caller is the user currently logged on to the system.
+        /// </summary>
+        public static readonly bool CallerIsLoggedOnUser;
+
+        /// <summary>
         /// Represents a predefined instance of <see cref="RunAsActiveUser"/> that executes operations as the currently
         /// active user.
         /// </summary>
         public static readonly RunAsActiveUser CallerRunAsActiveUser;
+
+        /// <summary>
+        /// Gets the value indicating whether the session should run as the active user, or null if the setting is
+        /// unspecified.
+        /// </summary>
+        public static readonly RunAsActiveUser? SessionRunAsActiveUser;
 
         /// <summary>
         /// Represents the security identifier (SID) for the local system account (NT AUTHORITY\SYSTEM).
