@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
@@ -18,6 +19,7 @@ using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
+using PSADT.TerminalServices;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
@@ -147,6 +149,14 @@ namespace PSADT.ProcessManagement
                 else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
                 {
                     // We're running elevated but have been asked to de-elevate.
+                    if (SessionInfo.Get().FirstOrDefault(s => s.SessionId == AccountUtilities.CallerSessionId) is not SessionInfo wtsSession)
+                    {
+                        throw new InvalidOperationException($"An active user session for Id {AccountUtilities.CallerSessionId} could not be found.");
+                    }
+                    if (AccountUtilities.CallerSid != wtsSession.SID)
+                    {
+                        throw new InvalidOperationException("Cannot create process using unelevated token when running in a different user's session.");
+                    }
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(AccountUtilities.CallerSessionId);
                     _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                 }
