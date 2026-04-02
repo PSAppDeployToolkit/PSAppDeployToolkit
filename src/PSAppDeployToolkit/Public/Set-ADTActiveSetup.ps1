@@ -144,7 +144,7 @@ function Set-ADTActiveSetup
                 }
                 return !!$_
             })]
-        [System.String]$Version = [System.DateTime]::Now.ToString('yyMM,ddHH,mmss'), # Ex: 1405,1515,0522
+        [System.String]$Version,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $false, ParameterSetName = 'CreateNoExecute')]
@@ -239,6 +239,10 @@ function Set-ADTActiveSetup
         else
         {
             $PSBoundParameters.Key
+        }
+        if (!$PSBoundParameters.ContainsKey('Version'))
+        {
+            $Version = [System.DateTime]::Now.ToString('yyMM,ddHH,mmss')
         }
 
         # Define initial variables.
