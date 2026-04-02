@@ -546,10 +546,6 @@ namespace PSADT.ProcessManagement
             bool forceBreakaway = createProcessAsUserAbility == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
             if (createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK || forceBreakaway)
             {
-                // Ensure necessary privileges are enabled.
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeIncreaseQuotaPrivilege);
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeAssignPrimaryTokenPrivilege);
-
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
                 if (forceBreakaway || handlesToInherit.Count > 0)
                 {
