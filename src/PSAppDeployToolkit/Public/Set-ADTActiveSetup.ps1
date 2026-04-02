@@ -461,7 +461,13 @@ function Set-ADTActiveSetup
             param
             (
                 [Parameter(Mandatory = $true)]
-                [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+                [ValidateScript({
+                        if ($_ -notmatch 'Microsoft\.PowerShell\.Core\\Registry::(HKEY_LOCAL_MACHINE|HKEY_CURRENT_USER)\\SOFTWARE\\(Wow6432Node\\)?Microsoft\\Active Setup\\Installed Components\\')
+                        {
+                            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName RegPath -ProvidedValue $_ -ExceptionMessage "The provided RegPath is not a valid ActiveSetup registry path."))
+                        }
+                        return $true
+                    })]
                 [System.String]$RegPath,
 
                 [Parameter(Mandatory = $false)]
