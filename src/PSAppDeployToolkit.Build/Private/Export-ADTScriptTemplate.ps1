@@ -17,9 +17,14 @@ function Export-ADTScriptTemplate
     try
     {
         Write-ADTBuildLogEntry -Message "Creating frontend templates, this may take a while."
+        $templateArgs = @(
+            "-Name 'Template_v3' -Version 3 -Force"
+            "-Name 'Template_v4' -Version 4 -Force"
+            "-Name 'Template_v4_ZeroConfig' -Version 4 -ZeroConfig -Force"
+        )
         $spParams = @{
             FilePath = [System.Diagnostics.Process]::GetCurrentProcess().Path
-            ArgumentList = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -FullyQualifiedName @{ ModuleName = '$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleOutput))\$($Script:ModuleConstants.ModuleName).psd1'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }; $([System.String]::Join('; ', (3, 4).ForEach({"New-ADTTemplate -Destination '$($Script:ModuleConstants.Paths.BuildOutput)' -Name 'Template_v$_' -Version $_ -Force"})))"
+            ArgumentList = "-ExecutionPolicy Bypass -NonInteractive -NoProfile -NoLogo -Command `$ErrorActionPreference = 'Stop'; Import-Module -FullyQualifiedName @{ ModuleName = '$([System.Management.Automation.WildcardPattern]::Escape($Script:ModuleConstants.Paths.ModuleOutput))\$($Script:ModuleConstants.ModuleName).psd1'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }; $([System.String]::Join('; ', $templateArgs.ForEach({"New-ADTTemplate -Destination '$($Script:ModuleConstants.Paths.BuildOutput)' $_"})))"
             NoNewWindow = $true
             Wait = $true
         }
