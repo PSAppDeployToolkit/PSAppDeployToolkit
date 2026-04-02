@@ -313,7 +313,7 @@ function Set-ADTActiveSetup
                         }
 
                         # Return null if we've got no digits to work with.
-                        if (!($chars -match '^\d$'))
+                        if (!($chars | & { process { if ([System.Char]::IsDigit($_)) { return $_ } } } | Select-Object -First 1))
                         {
                             return
                         }
