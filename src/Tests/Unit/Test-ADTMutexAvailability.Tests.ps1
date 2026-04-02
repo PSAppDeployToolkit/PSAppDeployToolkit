@@ -101,6 +101,7 @@ Describe 'Test-ADTMutexAvailability' {
             $maxAttempts = 100
             $attempt = 0
             $foundNonExistentMutex = $false
+            $mutex = $null
             while ($attempt -lt $maxAttempts)
             {
                 $attempt++
