@@ -3558,17 +3558,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Retrieves the handle to the shell's desktop window.
-        /// </summary>
-        /// <returns>A <see cref="HWND"/> representing the handle to the shell's desktop window.</returns>
-        /// <exception cref="Win32Exception">Thrown if the shell window handle cannot be retrieved.</exception>
-        internal static HWND GetShellWindow()
-        {
-            HWND res = PInvoke.GetShellWindow();
-            return res.IsNull ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INVALID_HANDLE) : res;
-        }
-
-        /// <summary>
         /// Retrieves the time of the last input event (e.g., keyboard or mouse activity) for the system.
         /// </summary>
         /// <remarks>This method wraps the native <c>GetLastInputInfo</c> function and ensures that the

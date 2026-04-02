@@ -60,7 +60,6 @@ GetProcessId
 GetProcessImageFileName
 GetProductInfo
 GetQueuedCompletionStatus
-GetShellWindow
 GetSystemFirmwareTable
 GetSystemMenu
 GetSystemPowerStatus
@@ -2117,7 +2116,6 @@ TD_SHIELD_ICON
 TD_WARNING_ICON
 TerminateJobObject
 THREAD_ACCESS_RIGHTS
-TOKEN_ELEVATION
 TOKEN_LINKED_TOKEN
 TOKEN_USER
 TreeResetNamedSecurityInfo

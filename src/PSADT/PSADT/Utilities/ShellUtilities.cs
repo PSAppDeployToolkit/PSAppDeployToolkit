@@ -145,19 +145,6 @@ namespace PSADT.Utilities
         }
 
         /// <summary>
-        /// Retrieves the process ID of the Windows Explorer shell process.
-        /// </summary>
-        /// <remarks>This method uses the Windows API to obtain the process ID associated with the shell
-        /// window. It is intended for internal use and may not be suitable for general-purpose process
-        /// management.</remarks>
-        /// <returns>The process ID of the Windows Explorer shell process as an unsigned integer.</returns>
-        internal static uint GetExplorerProcessId()
-        {
-            _ = NativeMethods.GetWindowThreadProcessId(NativeMethods.GetShellWindow(), out uint pid);
-            return pid;
-        }
-
-        /// <summary>
         /// Retrieves the process ID of the application associated with the current foreground window.
         /// </summary>
         /// <remarks>This method uses the Windows API to determine the process ID of the foreground

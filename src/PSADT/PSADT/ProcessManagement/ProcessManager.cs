@@ -147,7 +147,7 @@ namespace PSADT.ProcessManagement
                 else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
                 {
                     // We're running elevated but have been asked to de-elevate.
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUnelevatedCallerToken();
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(AccountUtilities.CallerSessionId);
                     _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, null, launchInfo.WorkingDirectory?.FullName, in startupInfo, out pi);
                 }
                 else
