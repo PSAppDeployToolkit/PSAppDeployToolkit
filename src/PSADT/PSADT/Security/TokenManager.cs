@@ -14,7 +14,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.TaskScheduler;
-using Windows.Win32.System.Threading;
 
 namespace PSADT.Security
 {
@@ -226,36 +225,6 @@ namespace PSADT.Security
                     }
                     return GetPrimaryToken(hUserToken, uiAccess);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Retrieves a primary token for the Explorer process with limited access rights.
-        /// </summary>
-        /// <remarks>This method obtains a token associated with the Explorer process and duplicates it to
-        /// create a primary token. The returned token can be used for operations requiring an unelevated
-        /// context.</remarks>
-        /// <returns>A <see cref="SafeFileHandle"/> representing the primary token for the Explorer process, or <see
-        /// langword="null"/> if the operation fails.</returns>
-        internal static SafeFileHandle GetUnelevatedCallerToken()
-        {
-            if (AccountUtilities.CallerIsLocalSystem)
-            {
-                throw new NotSupportedException("Cannot retrieve an unelevated token when running as the local system account.");
-            }
-            if (!AccountUtilities.CallerIsAdmin)
-            {
-                throw new InvalidOperationException("The current process is already running with an unelevated token.");
-            }
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, ShellUtilities.GetExplorerProcessId());
-            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hProcessToken);
-            using (hProcessToken)
-            {
-                return TokenUtilities.GetTokenSid(hProcessToken) != AccountUtilities.CallerSid
-                    ? throw new InvalidProgramException("Failed to retrieve an unelevated token for the calling account.")
-                    : TokenUtilities.IsTokenElevated(hProcessToken)
-                    ? throw new InvalidOperationException("The calling account's shell is running elevated, therefore unable to get unelevated token.")
-                    : GetPrimaryToken(hProcessToken);
             }
         }
 

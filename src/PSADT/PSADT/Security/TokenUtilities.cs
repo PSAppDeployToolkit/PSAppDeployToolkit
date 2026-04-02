@@ -42,23 +42,6 @@ namespace PSADT.Security
         }
 
         /// <summary>
-        /// Determines whether the specified access token is elevated.
-        /// </summary>
-        /// <remarks>An elevated token is associated with a process that has been granted administrative
-        /// privileges. This method queries the token's elevation status using the Windows API.</remarks>
-        /// <param name="tokenHandle">A handle to the access token to be checked. This handle must have the appropriate access rights for querying
-        /// token information.</param>
-        /// <returns><see langword="true"/> if the access token is elevated; otherwise, <see langword="false"/>. Elevated tokens
-        /// typically indicate that the process is running with administrative privileges.</returns>
-        internal static bool IsTokenElevated(SafeHandle tokenHandle)
-        {
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_ELEVATION>()];
-            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenElevation, buffer, out _);
-            ref readonly TOKEN_ELEVATION tokenElevation = ref buffer.AsReadOnlyStructure<TOKEN_ELEVATION>();
-            return tokenElevation.TokenIsElevated != 0;
-        }
-
-        /// <summary>
         /// Retrieves the security identifier (SID) associated with the specified token handle.
         /// </summary>
         /// <remarks>This method extracts the user SID from the token handle by querying token
