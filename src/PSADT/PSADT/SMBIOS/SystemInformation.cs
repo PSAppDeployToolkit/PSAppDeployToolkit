@@ -55,7 +55,7 @@ namespace PSADT.SMBIOS
 
             // Return the information to the caller.
             int stringTableOffset = structureOffset + structureLength;
-            return new SystemInformation(
+            return new(
                 structureLength,
                 handle: BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(structureOffset + 2, 2)),
                 manufacturer: SmbiosParsing.GetSmbiosString(buffer, stringTableOffset, buffer[structureOffset + 4]),
@@ -94,7 +94,7 @@ namespace PSADT.SMBIOS
             }
 
             // Construct Guid directly from raw bytes (layout already matches Guid(byte[])).
-            return !allZero && !allFF ? new Guid(raw16.ToArray()) : null;
+            return !allZero && !allFF ? new(raw16.ToArray()) : null;
         }
 
         /// <summary>

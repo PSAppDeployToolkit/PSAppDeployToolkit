@@ -223,7 +223,7 @@ namespace PSADT.SMBIOS
             ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
             byte major = buffer[1]; byte minor = buffer[2]; byte dmiRevision = buffer[3];
             SmbiosEntryPointType entryPointType = major >= 3 ? SmbiosEntryPointType.Smbios3x : SmbiosEntryPointType.Smbios2x;
-            return new SmbiosVersionInfo(major, minor, dmiRevision, entryPointType);
+            return new(major, minor, dmiRevision, entryPointType);
         }
     }
 }

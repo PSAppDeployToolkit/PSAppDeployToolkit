@@ -19,7 +19,7 @@ namespace System.Threading
         public Scope EnterScope()
         {
             Monitor.Enter(_syncRoot);
-            return new Scope(_syncRoot);
+            return new(_syncRoot);
         }
 
         /// <summary>

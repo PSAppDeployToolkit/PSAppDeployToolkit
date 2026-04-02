@@ -163,7 +163,7 @@ namespace PSADT.ShortcutManagement
             }
             return keyCode == 0
                 ? throw new ArgumentException($"No valid key found in hotkey string: '{hotkeyString}'", nameof(hotkeyString))
-                : new ShortcutHotkey(keyCode, control, shift, alt);
+                : new(keyCode, control, shift, alt);
         }
 
         /// <summary>

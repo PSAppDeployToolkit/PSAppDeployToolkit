@@ -47,7 +47,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["MinimizeWindows"] as bool? ?? false,
             options["ListItems"] as IReadOnlyList<string> ?? null!,
             options["SelectedIndex"] as int?,
-            options["Strings"] as IDictionary is { Count: > 0 } strings ? new ListSelectionDialogStrings(strings) : null!)
+            options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings) : null!)
         {
         }
 
