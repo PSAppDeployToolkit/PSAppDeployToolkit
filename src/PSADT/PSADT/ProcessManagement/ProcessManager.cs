@@ -83,6 +83,7 @@ namespace PSADT.ProcessManagement
                 PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
                     PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                     PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
+                    PROCESS_CREATION_FLAGS.CREATE_SEPARATE_WOW_VDM |
                     PROCESS_CREATION_FLAGS.CREATE_SUSPENDED;
 
                 // Set up the window style if the caller's provided a value.
