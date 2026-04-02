@@ -22,7 +22,7 @@ namespace PSADT.UserInterface
         /// <param name="size">The desired size of the icon. If not specified, the default size of the cached icon is used.</param>
         /// <returns>An <see cref="Icon"/> object containing the requested system icon.</returns>
         /// <exception cref="KeyNotFoundException">Thrown if the specified <paramref name="icon"/> does not exist in the system icon lookup table.</exception>
-        internal static Icon Get(DialogSystemIcon icon, SHIL_SIZE size)
+        internal static DestroyIconSafeHandle Get(DialogSystemIcon icon, SHIL_SIZE size)
         {
             // Get a handle to specified stock icon.
             _ = NativeMethods.SHGetImageList(size, out IImageList imageList);
@@ -33,23 +33,7 @@ namespace PSADT.UserInterface
                 {
                     imageList.GetIcon(shii.iSysImageIndex, (uint)(IMAGE_LIST_DRAW_STYLE.ILD_TRANSPARENT | IMAGE_LIST_DRAW_STYLE.ILD_PRESERVEALPHA), out DestroyIconSafeHandle hIcon);
                     InvalidOperationException.ThrowIfNullOrInvalid(hIcon, $"Failed to get a valid handle for the stock icon '{icon}'.");
-                    using (hIcon)
-                    {
-                        bool hIconAddRef = false;
-                        try
-                        {
-                            hIcon.DangerousAddRef(ref hIconAddRef);
-                            using Icon hIconObj = Icon.FromHandle(hIcon.DangerousGetHandle());
-                            return new(hIconObj, hIconObj.Width, hIconObj.Height);
-                        }
-                        finally
-                        {
-                            if (hIconAddRef)
-                            {
-                                hIcon.DangerousRelease();
-                            }
-                        }
-                    }
+                    return hIcon;
                 }
             }
             finally
