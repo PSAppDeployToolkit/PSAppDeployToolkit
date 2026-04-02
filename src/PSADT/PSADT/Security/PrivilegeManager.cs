@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
@@ -77,7 +76,7 @@ namespace PSADT.Security
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }
-            return new ReadOnlyCollection<SE_PRIVILEGE>([.. privileges.OrderBy(static p => p)]);
+            return privileges.AsReadOnly();
         }
 
         /// <summary>
