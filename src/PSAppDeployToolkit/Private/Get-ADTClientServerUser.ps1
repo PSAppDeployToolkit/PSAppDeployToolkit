@@ -24,18 +24,7 @@ function Private:Get-ADTClientServerUser
     # Get the active user from the environment if available.
     $runAsActiveUser = if ($Username)
     {
-        if ($Username.Value.Contains('\'))
-        {
-            if ($Username -eq [PSADT.AccountManagement.AccountUtilities]::CallerUsername)
-            {
-                [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
-            }
-            else
-            {
-                Get-ADTLoggedOnUser | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
-            }
-        }
-        else
+        if (!$Username.Value.Contains('\'))
         {
             if ($Username.Value -eq [PSADT.AccountManagement.AccountUtilities]::CallerUsername.Value.Split('\')[-1])
             {
@@ -44,6 +33,17 @@ function Private:Get-ADTClientServerUser
             else
             {
                 Get-ADTLoggedOnUser | & { process { if ($_.Username -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
+            }
+        }
+        else
+        {
+            if ($Username -eq [PSADT.AccountManagement.AccountUtilities]::CallerUsername)
+            {
+                [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser
+            }
+            else
+            {
+                Get-ADTLoggedOnUser | & { process { if ($_.NTAccount -eq $Username) { return $_.ToRunAsActiveUser() } } } | Select-Object -First 1
             }
         }
     }

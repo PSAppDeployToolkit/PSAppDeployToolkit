@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
@@ -19,7 +18,6 @@ using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
-using PSADT.TerminalServices;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
@@ -129,7 +127,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
-                if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser.SID != AccountUtilities.CallerSid || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true, callerPrivileges) == CreateProcessUsingTokenStatus.OK)))
+                if (launchInfo.RunAsActiveUser is not null && (launchInfo.RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser || (AccountUtilities.CallerIsAdmin && CanUseCreateProcessAsUser(true, callerPrivileges) == CreateProcessUsingTokenStatus.OK)))
                 {
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType, launchInfo.FilePath == ClientServerUtilities.ClientPath.FullName || launchInfo.FilePath == ClientServerUtilities.ClientLauncherPath.FullName);
@@ -146,7 +144,7 @@ namespace PSADT.ProcessManagement
                         }
                     }
                 }
-                else if (launchInfo.UseUnelevatedToken && AccountUtilities.CallerIsAdmin)
+                else if (AccountUtilities.CallerIsAdmin && ((launchInfo.RunAsActiveUser == AccountUtilities.CallerRunAsActiveUser && launchInfo.ElevatedTokenType == ElevatedTokenType.None) || launchInfo.UseUnelevatedToken))
                 {
                     // We're running elevated but have been asked to de-elevate.
                     if (!AccountUtilities.CallerIsLoggedOnUser)

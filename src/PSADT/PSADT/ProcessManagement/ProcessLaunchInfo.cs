@@ -95,6 +95,12 @@ namespace PSADT.ProcessManagement
             UseUnelevatedToken = useUnelevatedToken;
             RunAsActiveUser = runAsActiveUser;
 
+            // Invalidate the use of RunAsActiveUser and UseUnelevatedToken as they run on exclusive paths.
+            if (RunAsActiveUser is not null && UseUnelevatedToken)
+            {
+                throw new NotSupportedException("Cannot configure launch info when RunAsActiveUser and UseUnelevatedToken are both specified.");
+            }
+
             // Expand out environment variables for FilePath/ArgumentList as required.
             if (ExpandEnvironmentVariables = expandEnvironmentVariables)
             {
