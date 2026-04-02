@@ -559,7 +559,14 @@ namespace PSADT.ProcessManagement
                 }
                 else
                 {
-                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
+                    // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
+                    // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
+                    // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+                    if (!isCallerToken)
+                    {
+                        creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
+                    }
+                    return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, null, null, false, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
                 }
             }
             else if (hasExternalHandles)
@@ -574,7 +581,15 @@ namespace PSADT.ProcessManagement
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}");
             }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
-            return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags | PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB, lpEnvironment, workingDirectory, in startupInfo, out pi);
+
+            // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
+            // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
+            // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+            if (!isCallerToken)
+            {
+                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
+            }
+            return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
         }
 
         /// <summary>
