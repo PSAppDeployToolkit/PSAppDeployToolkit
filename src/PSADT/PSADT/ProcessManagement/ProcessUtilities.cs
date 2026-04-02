@@ -82,8 +82,19 @@ namespace PSADT.ProcessManagement
             List<int> processesIds = [];
             while (true)
             {
+                // Attempt to get the parent process ID. If this fails (e.g., process has exited or can't access parent), break the loop.
+                try
+                {
+                    processId = GetParentProcessId(processId);
+                }
+                catch
+                {
+                    break;
+                    throw;
+                }
+
                 // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
-                if (processesIds.Contains(processId = GetParentProcessId(processId)))
+                if (processesIds.Contains(processId))
                 {
                     break;
                 }
