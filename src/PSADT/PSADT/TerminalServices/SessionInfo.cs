@@ -35,6 +35,64 @@ namespace PSADT.TerminalServices
         /// The list is empty if no active sessions are found.</returns>
         public static IReadOnlyList<SessionInfo> Get()
         {
+            // Enumerate the sessions process each session in the returned buffer.
+            _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
+            using (pSessionInfo)
+            {
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>(); int objCount = pSessionInfo.Length / objLength;
+                ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
+                List<SessionInfo> sessions = new(objCount);
+                for (int i = 0; i < objCount; i++)
+                {
+                    ref readonly WTS_SESSION_INFO_1W sessionInfo = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
+                    if (Get(in sessionInfo) is SessionInfo session)
+                    {
+                        sessions.Add(session);
+                    }
+                }
+                return sessions.AsReadOnly();
+            }
+        }
+
+        /// <summary>
+        /// Retrieves information about a Terminal Services session with the specified session identifier.
+        /// </summary>
+        /// <param name="sessionId">The identifier of the session to retrieve information for.</param>
+        /// <returns>A <see cref="SessionInfo"/> object containing details about the session if found; otherwise, <see
+        /// langword="null"/>.</returns>
+        public static SessionInfo? Get(uint sessionId)
+        {
+            // Enumerate the sessions process each session in the returned buffer.
+            _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
+            using (pSessionInfo)
+            {
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>(); int objCount = pSessionInfo.Length / objLength;
+                ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
+                for (int i = 0; i < objCount; i++)
+                {
+                    ref readonly WTS_SESSION_INFO_1W sessionInfo = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
+                    if (sessionInfo.SessionId == sessionId && Get(in sessionInfo) is SessionInfo session)
+                    {
+                        return session;
+                    }
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves detailed information about a Windows Terminal Services session based on the provided session
+        /// structure.
+        /// </summary>
+        /// <remarks>This method queries various session attributes, including user identity, session
+        /// state, client protocol, and idle time. Administrative privileges may be required to retrieve certain
+        /// information, such as idle time for sessions other than the current user. If the session does not represent a
+        /// valid user, the method returns null.</remarks>
+        /// <param name="session">A reference to a WTS_SESSION_INFO_1W structure containing information about the session to query.</param>
+        /// <returns>A SessionInfo object containing user, session, and client details if the session is valid; otherwise, null.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if a required process to retrieve idle time information cannot be launched.</exception>
+        private static SessionInfo? Get(in WTS_SESSION_INFO_1W session)
+        {
             // Internal helpers for retrieving session information values.
             static string? GetString(uint sessionId, WTS_INFO_CLASS infoClass)
             {
@@ -53,121 +111,108 @@ namespace PSADT.TerminalServices
                 }
             }
 
-            // Enumerate the sessions process each session in the returned buffer.
-            _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
-            using (pSessionInfo)
+            // Set up an NTAccount object for the user first and foremost.
+            if (session.pUserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
             {
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>(); int objCount = pSessionInfo.Length / objLength;
-                ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
-                List<SessionInfo> sessions = new(objCount);
-                for (int i = 0; i < objCount; i++)
-                {
-                    // Set up an NTAccount object for the user first and foremost.
-                    ref readonly WTS_SESSION_INFO_1W session = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
-                    if (session.pUserName.ToString() is not string userName || string.IsNullOrWhiteSpace(userName))
-                    {
-                        continue;
-                    }
-                    string domainName = session.pDomainName.ToString();
-                    NTAccount ntAccount = new(domainName, userName);
-
-                    // Get the SID and whether the user is administrative.
-                    SecurityIdentifier sid; bool? isLocalAdmin = null;
-                    if (ntAccount != AccountUtilities.CallerUsername)
-                    {
-                        if (AccountUtilities.CallerIsAdmin)
-                        {
-                            using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(session.SessionId, ElevatedTokenType.HighestAvailable);
-                            sid = TokenUtilities.GetTokenSid(hPrimaryToken); isLocalAdmin = TokenUtilities.IsTokenAdministrative(hPrimaryToken);
-                        }
-                        else
-                        {
-                            sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
-                        }
-                    }
-                    else
-                    {
-                        sid = AccountUtilities.CallerSid; isLocalAdmin = AccountUtilities.CallerIsAdmin;
-                    }
-
-                    // Set up the remaining session information values.
-                    bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
-                    bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
-                    bool isActiveUserSession = session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
-                    bool isValidUserSession = isActiveUserSession || session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
-                    ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType);
-                    string? clientName = GetString(session.SessionId, WTS_INFO_CLASS.WTSClientName);
-                    string? pWinStationName = session.pSessionName.ToString();
-                    if (string.IsNullOrWhiteSpace(pWinStationName))
-                    {
-                        pWinStationName = null;
-                    }
-
-                    // Get extended information about the session.
-                    TimeSpan? idleTime; DateTime logonTime; DateTime? disconnectTime = null;
-                    _ = NativeMethods.WTSQuerySessionInformation(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx, out SafeWtsHandle pBuffer);
-                    using (pBuffer)
-                    {
-                        ref readonly WTSINFOEXW wtsInfoEx = ref pBuffer.AsReadOnlyStructure<WTSINFOEXW>();
-                        ref readonly WTSINFOEX_LEVEL1_W sessionInfo = ref wtsInfoEx.Data.WTSInfoExLevel1;
-                        if (sessionInfo.DisconnectTime != 0 && !isActiveUserSession)
-                        {
-                            disconnectTime = DateTime.FromFileTime(sessionInfo.DisconnectTime);
-                        }
-                        idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
-                        logonTime = DateTime.FromFileTime(sessionInfo.LogonTime);
-                    }
-
-                    // If there's an active console session and we've got the privileges, get the idle time via GetLastInputInfo().
-                    if (isConsoleSession)
-                    {
-                        if (isCurrentSession)
-                        {
-                            idleTime = ShellUtilities.GetLastInputTime();
-                        }
-                        else if (AccountUtilities.CallerIsAdmin && isValidUserSession)
-                        {
-                            try
-                            {
-                                RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
-                                ProcessLaunchInfo args = new(ClientServerUtilities.ClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
-                                using ProcessResult result = ProcessManager.LaunchAsync(args)?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch process to get idle time.");
-                                idleTime = new(long.Parse(result.StdOut[0], CultureInfo.InvariantCulture));
-                            }
-                            catch (Exception ex) when (ex.Message is not null)
-                            {
-                                idleTime = null;
-                            }
-                        }
-                    }
-
-                    // Instantiate a SessionInfo object and return it to the caller.
-                    sessions.Add(new(
-                        ntAccount,
-                        sid,
-                        userName,
-                        domainName,
-                        session.SessionId,
-                        pWinStationName,
-                        session.State,
-                        isCurrentSession,
-                        isConsoleSession,
-                        isActiveUserSession,
-                        isValidUserSession,
-                        pWinStationName is not "Services" and not "RDP-Tcp",
-                        clientProtocolType != 0,
-                        isLocalAdmin,
-                        logonTime,
-                        idleTime,
-                        disconnectTime,
-                        clientName,
-                        (WTS_PROTOCOL_TYPE)clientProtocolType,
-                        GetString(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
-                        (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
-                    ));
-                }
-                return sessions.AsReadOnly();
+                return null;
             }
+            string domainName = session.pDomainName.ToString();
+            NTAccount ntAccount = new(domainName, userName);
+
+            // Get the SID and whether the user is administrative.
+            SecurityIdentifier sid; bool? isLocalAdmin = null;
+            if (ntAccount != AccountUtilities.CallerUsername)
+            {
+                if (AccountUtilities.CallerIsAdmin)
+                {
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(session.SessionId, ElevatedTokenType.HighestAvailable);
+                    sid = TokenUtilities.GetTokenSid(hPrimaryToken); isLocalAdmin = TokenUtilities.IsTokenAdministrative(hPrimaryToken);
+                }
+                else
+                {
+                    sid = (SecurityIdentifier)ntAccount.Translate(typeof(SecurityIdentifier));
+                }
+            }
+            else
+            {
+                sid = AccountUtilities.CallerSid; isLocalAdmin = AccountUtilities.CallerIsAdmin;
+            }
+
+            // Set up the remaining session information values.
+            bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
+            bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
+            bool isActiveUserSession = session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
+            bool isValidUserSession = isActiveUserSession || session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
+            ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType);
+            string? clientName = GetString(session.SessionId, WTS_INFO_CLASS.WTSClientName);
+            string? pWinStationName = session.pSessionName.ToString();
+            if (string.IsNullOrWhiteSpace(pWinStationName))
+            {
+                pWinStationName = null;
+            }
+
+            // Get extended information about the session.
+            TimeSpan? idleTime; DateTime logonTime; DateTime? disconnectTime = null;
+            _ = NativeMethods.WTSQuerySessionInformation(session.SessionId, WTS_INFO_CLASS.WTSSessionInfoEx, out SafeWtsHandle pBuffer);
+            using (pBuffer)
+            {
+                ref readonly WTSINFOEXW wtsInfoEx = ref pBuffer.AsReadOnlyStructure<WTSINFOEXW>();
+                ref readonly WTSINFOEX_LEVEL1_W sessionInfo = ref wtsInfoEx.Data.WTSInfoExLevel1;
+                if (sessionInfo.DisconnectTime != 0 && !isActiveUserSession)
+                {
+                    disconnectTime = DateTime.FromFileTime(sessionInfo.DisconnectTime);
+                }
+                idleTime = DateTime.Now - DateTime.FromFileTime(sessionInfo.LastInputTime);
+                logonTime = DateTime.FromFileTime(sessionInfo.LogonTime);
+            }
+
+            // If there's an active console session and we've got the privileges, get the idle time via GetLastInputInfo().
+            if (isConsoleSession)
+            {
+                if (isCurrentSession)
+                {
+                    idleTime = ShellUtilities.GetLastInputTime();
+                }
+                else if (AccountUtilities.CallerIsAdmin && isValidUserSession)
+                {
+                    try
+                    {
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
+                        ProcessLaunchInfo args = new(ClientServerUtilities.ClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
+                        using ProcessResult result = ProcessManager.LaunchAsync(args)?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch process to get idle time.");
+                        idleTime = new(long.Parse(result.StdOut[0], CultureInfo.InvariantCulture));
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        idleTime = null;
+                    }
+                }
+            }
+
+            // Instantiate a SessionInfo object and return it to the caller.
+            return new(
+                ntAccount,
+                sid,
+                userName,
+                domainName,
+                session.SessionId,
+                pWinStationName,
+                session.State,
+                isCurrentSession,
+                isConsoleSession,
+                isActiveUserSession,
+                isValidUserSession,
+                pWinStationName is not "Services" and not "RDP-Tcp",
+                clientProtocolType != 0,
+                isLocalAdmin,
+                logonTime,
+                idleTime,
+                disconnectTime,
+                clientName,
+                (WTS_PROTOCOL_TYPE)clientProtocolType,
+                GetString(session.SessionId, WTS_INFO_CLASS.WTSClientDirectory),
+                (clientName is not null) ? GetValue<uint>(session.SessionId, WTS_INFO_CLASS.WTSClientBuildNumber) : null
+            );
         }
 
         /// <summary>
