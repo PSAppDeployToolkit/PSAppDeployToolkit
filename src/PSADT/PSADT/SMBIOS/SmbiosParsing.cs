@@ -110,7 +110,7 @@ namespace PSADT.SMBIOS
                 }
                 offset += 2;
             }
-            return offsets.Count != 0 ? (IReadOnlyList<SmbiosTablePosition>)offsets.AsReadOnly() : throw new SmbiosTypeNotFoundException(targetType);
+            return offsets.Count != 0 ? offsets.AsReadOnly() : throw new SmbiosTypeNotFoundException(targetType);
         }
 
         /// <summary>
