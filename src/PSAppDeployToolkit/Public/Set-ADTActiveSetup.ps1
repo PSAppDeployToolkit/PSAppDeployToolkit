@@ -40,7 +40,7 @@ function Set-ADTActiveSetup
         Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
 
     .PARAMETER Version
-        Optional. Specify version for Active setup entry. Due to a Windows Active Setup/registry limitation, the entry is not triggered if the Version value contains more than 8 consecutive digits. Use separators such as commas in the version string (for example, `1,0,20240101`) to break up long digit sequences and work around this limitation.
+        Optional. Specify version for Active setup entry. Due to a Windows Active Setup/registry limitation, the entry is not triggered if the Version value contains a sequence of more than 8 digits without separators. Use separators such as commas in the version string (for example, `1,0,20240101`) to break up long digit sequences and work around this limitation.
 
         Note:
             - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
