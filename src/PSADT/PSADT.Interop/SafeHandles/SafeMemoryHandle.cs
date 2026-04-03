@@ -60,6 +60,10 @@ namespace PSADT.Interop.SafeHandles
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            if (Marshal.SizeOf<T>() > Length - offset)
+            {
+                throw new InvalidOperationException("The size of the structure exceeds the remaining length of the memory region at the specified offset.");
+            }
             return ref handle.AsReadOnlyStructure<T>(offset);
         }
 
