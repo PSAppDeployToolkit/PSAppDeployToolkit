@@ -47,7 +47,7 @@ function Unblock-ADTAppExecution
         https://psappdeploytoolkit.com/docs/reference/functions/Unblock-ADTAppExecution
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(SupportsShouldProcess = $false)]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -65,24 +65,23 @@ function Unblock-ADTAppExecution
 
     process
     {
-        # Bypass if no admin rights.
-        if (!(Test-ADTCallerIsAdmin))
-        {
-            Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([PSADT.AccountManagement.AccountUtilities]::CallerUsername)] is not admin."
-            return
-        }
-
-        # Clean up blocked apps using our backend worker.
-        if (!$PSCmdlet.ShouldProcess('Blocked applications', 'Unblock'))
-        {
-            return
-        }
         try
         {
             try
             {
-                Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
-                Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+                try
+                {
+                    if (!(Test-ADTCallerIsAdmin))
+                    {
+                        Write-ADTLogEntry -Message "Bypassing Function [$($MyInvocation.MyCommand.Name)], because [User: $([PSADT.AccountManagement.AccountUtilities]::CallerUsername)] is not admin."
+                        return
+                    }
+                    Unblock-ADTAppExecutionInternal @uaaeiParams -Verbose 4>&1 | Write-ADTLogEntry
+                }
+                finally
+                {
+                    Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+                }
             }
             catch
             {
