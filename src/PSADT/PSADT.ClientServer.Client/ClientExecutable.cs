@@ -816,7 +816,7 @@ namespace PSADT.ClientServer
             }
             if (!arguments.TryGetValue("UIAccess", out string? uiAccessStr) || string.IsNullOrWhiteSpace(uiAccessStr) || !bool.TryParse(uiAccessStr, out bool uiAccess))
             {
-                throw new ClientException("The 'SessionId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                throw new ClientException("The 'UIAccess' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
 
             // Confirm we've got a ElevatedTokenType and that it's valid.
