@@ -109,7 +109,6 @@ Describe 'Test-ADTMutexAvailability' {
                 {
                     $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
                     $mutex = [System.Threading.Mutex]::OpenExisting($mutexName)
-                    $mutex.Close()
                 }
                 catch [System.Threading.WaitHandleCannotBeOpenedException]
                 {
