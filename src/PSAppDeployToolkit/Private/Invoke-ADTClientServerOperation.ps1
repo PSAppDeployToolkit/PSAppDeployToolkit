@@ -525,7 +525,6 @@ function Private:Invoke-ADTClientServerOperation
         # Set up the parameters for Start-ADTProcessAsUser.
         $sapauParams = @{
             RunAsActiveUser = $User
-            UseHighestAvailableToken = $true
             DenyUserTermination = $true
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
