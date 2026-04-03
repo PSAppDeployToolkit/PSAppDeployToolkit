@@ -232,7 +232,6 @@ function Set-ADTActiveSetup
                     TargetObject = $Script:ADT.Sessions
                     RecommendedAction = "Please report this to the PSAppDeployToolkit team for further review."
                 }
-                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
             $adtSession.InstallName
         }
