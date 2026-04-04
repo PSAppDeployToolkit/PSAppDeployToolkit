@@ -2457,7 +2457,6 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(hSummaryInfo); pcchValueBuf = (uint)szValueBuf.Length;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiSummaryInfoGetProperty(hSummaryInfo, (uint)uiProperty, out uint puiDataTypeLocal, out piValue, out pftValue, szValueBuf, ref pcchValueBuf)).ThrowOnFailure();
-            InvalidOperationException.ThrowIfZero(pcchValueBuf, "The return length from 'MsiSummaryInfoGetProperty()' is zero.");
             puiDataType = (VARENUM)puiDataTypeLocal;
             return res;
         }
