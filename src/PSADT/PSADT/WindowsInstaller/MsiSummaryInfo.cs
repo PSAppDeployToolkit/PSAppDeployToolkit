@@ -107,17 +107,17 @@ namespace PSADT.WindowsInstaller
         public string? RevisionNumber { get; }
 
         /// <summary>
-        /// Gets the date and time when the MSI package was last printed.
+        /// Gets the UTC date and time when the MSI package was last printed.
         /// </summary>
         public DateTime? LastPrinted { get; }
 
         /// <summary>
-        /// Gets the date and time when the MSI package was created.
+        /// Gets the UTC date and time when the MSI package was created.
         /// </summary>
         public DateTime? CreateTimeDate { get; }
 
         /// <summary>
-        /// Gets the date and time when the MSI package was last saved.
+        /// Gets the UTC date and time when the MSI package was last saved.
         /// </summary>
         public DateTime? LastSaveTimeDate { get; }
 

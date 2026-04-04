@@ -584,11 +584,11 @@ namespace PSADT.WindowsInstaller
         /// for use with MSI summary information properties that store date and time values.</remarks>
         /// <param name="hSummaryInfo">The handle to the summary information structure from which to retrieve the date property.</param>
         /// <param name="propertyId">The identifier of the summary property to retrieve, specified as an MSI_PROPERTY_ID value.</param>
-        /// <returns>A nullable DateTime representing the value of the requested date property if it is set; otherwise, null.</returns>
+        /// <returns>A nullable UTC DateTime representing the value of the requested date property if it is set; otherwise, null.</returns>
         internal static DateTime? GetSummaryInfoDateProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out FILETIME pftValue, null, out _);
-            return !pftValue.IsZero() ? pftValue.ToDateTime() : null;
+            return !pftValue.IsZero() ? pftValue.ToDateTimeUtc() : null;
         }
 
         /// <summary>
