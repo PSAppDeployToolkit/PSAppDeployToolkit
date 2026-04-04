@@ -551,6 +551,10 @@ namespace PSADT.WindowsInstaller
         internal static string? GetSummaryInfoStringProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, null, out uint requiredSize);
+            if (requiredSize == 0)
+            {
+                return null;
+            }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
             ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
@@ -569,7 +573,7 @@ namespace PSADT.WindowsInstaller
         internal static int? GetSummaryInfoIntProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out VARENUM puiDataType, out int piValue, out _, null, out _);
-            return puiDataType is VARENUM.VT_I2 or VARENUM.VT_I4 ? piValue : null;
+            return puiDataType is VARENUM.VT_I2 or VARENUM.VT_I4 && piValue != 0 ? piValue : null;
         }
 
         /// <summary>
