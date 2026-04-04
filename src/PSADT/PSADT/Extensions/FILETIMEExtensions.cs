@@ -36,5 +36,19 @@ namespace PSADT.Extensions
         {
             return DateTime.FromFileTime(((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
         }
+
+        /// <summary>
+        /// Converts a <see cref="FILETIME"/> structure to a UTC <see cref="DateTime"/> object.
+        /// </summary>
+        /// <remarks>The conversion is based on the Windows file time, which is a 64-bit value
+        /// representing the number of 100-nanosecond intervals since January 1, 1601 (UTC).</remarks>
+        /// <param name="filetime">The <see cref="FILETIME"/> structure to convert.</param>
+        /// <returns>A UTC <see cref="DateTime"/> object that represents the same point in time as the specified
+        /// <see cref="FILETIME"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static DateTime ToDateTimeUtc(this FILETIME filetime)
+        {
+            return DateTime.FromFileTimeUtc(((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
+        }
     }
 }

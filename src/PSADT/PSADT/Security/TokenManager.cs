@@ -200,7 +200,7 @@ namespace PSADT.Security
                 }
 
                 // Return the token handle.
-                return new((nint)(tokenLength == 8 ? BitConverter.ToInt64(tokenBuf, 0) : BitConverter.ToInt32(tokenBuf, 0)), true);
+                return new(tokenBuf.AsReadOnlyStructure<nint>(), true);
             }
             else
             {

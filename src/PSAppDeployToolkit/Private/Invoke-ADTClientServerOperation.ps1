@@ -195,11 +195,12 @@ function Private:Invoke-ADTClientServerOperation
         Set-ADTClientServerProcessPermissions -User $User
     }
 
+    # Establish conditions for whether to go the client/server route, or standalone.
+    $mustUseClientServer = ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType)
+    $canUseClientServer = !$PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess') -and !$NoWait -and (((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser)) -or ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User)))
+
     # Go into client/server mode if a session is active and we're not asked to wait.
-    if (($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|PromptToCloseApps|ProgressDialogOpen|ShowProgressDialog|UpdateProgressDialog|CloseProgressDialog|MinimizeAllWindows|RestoreAllWindows)$') -or
-        [PSADT.UserInterface.DialogType]::CloseAppsDialog.Equals($DialogType) -or
-        ((Test-ADTSessionActive) -and $User.Equals((Get-ADTEnvironmentTable).RunAsActiveUser) -and !$NoWait) -or
-        ($Script:ADT.ClientServerProcess -and $Script:ADT.ClientServerProcess.RunAsActiveUser.Equals($User) -and !$NoWait))
+    if ($mustUseClientServer -or $canUseClientServer)
     {
         # Instantiate a new ClientServerProcess object if one's not already present.
         $clientServerClientProcessResult = $null
@@ -525,7 +526,6 @@ function Private:Invoke-ADTClientServerOperation
         # Set up the parameters for Start-ADTProcessAsUser.
         $sapauParams = @{
             RunAsActiveUser = $User
-            UseHighestAvailableToken = $true
             DenyUserTermination = $true
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
