@@ -73,9 +73,16 @@ namespace PSADT.ProcessManagement
             }
 
             // Confirm we're not using incompatible options.
-            if (useShellExecute && !(runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
+            if (!(runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
             {
-                throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+                if (useUnelevatedToken)
+                {
+                    throw new NotSupportedException("Cannot specify UseUnelevatedToken while specifying a RunAsActiveUser.");
+                }
+                if (useShellExecute)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+                }
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
@@ -94,12 +101,6 @@ namespace PSADT.ProcessManagement
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             UseUnelevatedToken = useUnelevatedToken;
             RunAsActiveUser = runAsActiveUser;
-
-            // Invalidate the use of RunAsActiveUser and UseUnelevatedToken as they run on exclusive paths.
-            if (RunAsActiveUser is not null && UseUnelevatedToken)
-            {
-                throw new NotSupportedException("Cannot configure launch info when RunAsActiveUser and UseUnelevatedToken are both specified.");
-            }
 
             // Expand out environment variables for FilePath/ArgumentList as required.
             if (ExpandEnvironmentVariables = expandEnvironmentVariables)
