@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using PSADT.AccountManagement;
@@ -27,14 +28,12 @@ namespace PSADT.Foundation
         /// session information.</param>
         /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
         /// session is found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RunAsActiveUser? Get(IReadOnlyList<SessionInfo>? sessionInfo = null)
         {
-            // Get all active sessions for subsequent filtration.
-            sessionInfo ??= SessionInfo.Get();
-
             // Determine the account that will be used to execute client/server commands in the user's context.
             // Favour the caller's session if it's found and is currently an active user session on the device.
-            return sessionInfo.FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession) is not SessionInfo callerSession
+            return (sessionInfo ??= SessionInfo.Get()).FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession) is not SessionInfo callerSession
                 ? sessionInfo.Where(static s => s.IsActiveUserSession).OrderByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser()
                 : callerSession.ToRunAsActiveUser();
         }
