@@ -305,7 +305,7 @@ namespace PSADT.ProcessManagement
 
             // Try to get the process's handle and process Id. For a pure
             // shell action, the calls will throw so just return null here.
-            ClientServerUtilities.SetClientServerOperationSuccess();
+            ClientServerUtilities.SetOperationSuccessFlag();
             SafeProcessHandle hProcess;
             try
             {

@@ -60,7 +60,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             }
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            Load += (sender, e) => ClientServerUtilities.SetClientServerOperationSuccess();
+            Load += (sender, e) => ClientServerUtilities.SetOperationSuccessFlag();
         }
     }
 }

@@ -388,7 +388,7 @@ namespace PSADT.UserInterface
             // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
             using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = icon, Visible = true, };
             using ManualResetEventSlim balloonTipClosed = new();
-            notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetClientServerOperationSuccess();
+            notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetOperationSuccessFlag();
             notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
             notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
             notifyIcon.ShowBalloonTip((int)options.BalloonTipTime, options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);

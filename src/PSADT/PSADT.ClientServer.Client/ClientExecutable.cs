@@ -612,7 +612,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
-                    ClientServerUtilities.SetClientServerOperationSuccess();
+                    ClientServerUtilities.SetOperationSuccessFlag();
                     using ProcessResult result = GroupPolicyUpdate(force);
                     Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
