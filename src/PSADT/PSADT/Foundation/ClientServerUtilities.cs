@@ -30,11 +30,9 @@ namespace PSADT.Foundation
         /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ProcessHandle StartClientOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
+        public static ProcessHandle StartClientOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
-            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
-                ? InvokeClientOperationImpl(ClientCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType)
-                : InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, elevatedTokenType);
+            return InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -46,11 +44,9 @@ namespace PSADT.Foundation
         /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ProcessHandle StartClientLauncherOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
+        public static ProcessHandle StartClientLauncherOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
-            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
-                ? InvokeClientOperationImpl(ClientLauncherCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType)
-                : InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, elevatedTokenType);
+            return InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -65,11 +61,9 @@ namespace PSADT.Foundation
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ProcessHandle StartClientOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        internal static ProcessHandle StartClientOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
-                ? InvokeClientOperationImpl(ClientCompatiblePath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken)
-                : InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+            return InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -84,11 +78,9 @@ namespace PSADT.Foundation
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ProcessHandle StartClientLauncherOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        internal static ProcessHandle StartClientLauncherOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
-                ? InvokeClientOperationImpl(ClientLauncherCompatiblePath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken)
-                : InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+            return InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -105,7 +97,7 @@ namespace PSADT.Foundation
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ProcessHandle InvokeClientOperationImpl(FileInfo filePath, IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType? elevatedTokenType = null, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        private static ProcessHandle InvokeClientOperationImpl(FileInfo filePath, IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType? elevatedTokenType = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
             return ProcessManager.LaunchAsync(new(
                 filePath.FullName,
@@ -114,9 +106,10 @@ namespace PSADT.Foundation
                 runAsActiveUser,
                 elevatedTokenType: elevatedTokenType ?? DefaultElevationType,
                 denyUserTermination: true,
+                runAsInvoker: runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false && handlesToInherit?.Count > 0,
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
-                createNoWindow: filePath == ClientPath,
+                createNoWindow: !filePath.Name.Contains("Launcher"),
                 waitForChildProcesses: true,
                 windowStyle: ProcessWindowStyle.Hidden,
                 cancellationToken: cancellationToken

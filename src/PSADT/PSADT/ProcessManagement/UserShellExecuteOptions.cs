@@ -32,7 +32,7 @@ namespace PSADT.ProcessManagement
         /// <param name="windowStyle">The window style to use when launching the process. If null, the default window style is used.</param>
         /// <param name="priorityClass">The priority class for the new process. If null, the default priority is used.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
-        public UserShellExecuteOptions(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, bool expandEnvironmentVariables = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null)
+        public UserShellExecuteOptions(string filePath, IReadOnlyList<string>? argumentList = null, string? workingDirectory = null, bool expandEnvironmentVariables = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null)
         {
             // Validate all string parameters are properly set up.
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
