@@ -781,7 +781,6 @@ function Start-ADTProcess
                         $DenyUserTermination,
                         $UseUnelevatedToken,
                         $StandardInput,
-                        $null,
                         $UseShellExecute,
                         $PSBoundParameters.Verb,
                         $CreateNoWindow,

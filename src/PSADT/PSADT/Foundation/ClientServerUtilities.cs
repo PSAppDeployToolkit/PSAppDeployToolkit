@@ -1,6 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Win32;
+using PSADT.AccountManagement;
 using PSADT.Interop.Extensions;
+using PSADT.ProcessManagement;
+using PSADT.Security;
 
 namespace PSADT.Foundation
 {
@@ -13,6 +21,79 @@ namespace PSADT.Foundation
     /// infrastructure and is not designed for direct use by external code.</remarks>
     public static class ClientServerUtilities
     {
+        /// <summary>
+        /// Launches the client process with the specified arguments and security context, returning a handle to the
+        /// created process.
+        /// </summary>
+        /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
+        /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
+        /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
+        /// <param name="handlesToInherit">A collection of native handles to inherit by the client process. May be null if no handles are to be
+        /// inherited.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
+        /// <returns>A handle to the launched client process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ProcessHandle StartClientOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        {
+            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
+                ? StartClientOperation(ClientCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken)
+                : StartClientOperation(ClientPath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken);
+        }
+
+        /// <summary>
+        /// Launches the client process with the specified arguments and security context, returning a handle to the
+        /// created process.
+        /// </summary>
+        /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
+        /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
+        /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
+        /// <param name="handlesToInherit">A collection of native handles to inherit by the client process. May be null if no handles are to be
+        /// inherited.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
+        /// <returns>A handle to the launched client process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ProcessHandle StartClientLauncherOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        {
+            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
+                ? StartClientOperation(ClientLauncherCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken)
+                : StartClientOperation(ClientLauncherPath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken);
+        }
+
+        /// <summary>
+        /// Launches the client process with the specified arguments and security context, returning a handle to the
+        /// created process.
+        /// </summary>
+        /// <param name="filePath">The file system path to the client executable to launch.</param>
+        /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
+        /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
+        /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
+        /// <param name="handlesToInherit">A collection of native handles to inherit by the client process. May be null if no handles are to be
+        /// inherited.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
+        /// <returns>A handle to the launched client process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ProcessHandle StartClientOperation(FileInfo filePath, IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        {
+            return ProcessManager.LaunchAsync(new(
+                filePath.FullName,
+                argumentList,
+                Environment.SystemDirectory,
+                runAsActiveUser,
+                useLinkedAdminToken: elevatedTokenType == ElevatedTokenType.HighestMandatory,
+                useHighestAvailableToken: elevatedTokenType == ElevatedTokenType.HighestAvailable,
+                denyUserTermination: true,
+                uiAccess: true,
+                handlesToInherit: handlesToInherit,
+                createNoWindow: filePath == ClientPath,
+                waitForChildProcesses: true,
+                windowStyle: ProcessWindowStyle.Hidden,
+                cancellationToken: cancellationToken
+            )) ?? throw new InvalidOperationException("Failed to launch client operation.");
+        }
+
         /// <summary>
         /// Marks the operation as successful by setting the corresponding registry value to indicate a no-wait state.
         /// </summary>

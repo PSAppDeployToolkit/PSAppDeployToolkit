@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
@@ -16,7 +15,6 @@ using PSADT.Security;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
-using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Foundation;
 
@@ -80,21 +78,13 @@ namespace PSADT.ClientServer
                     nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
                     nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
                     nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
-                    _clientProcess = ProcessManager.LaunchAsync(new(
-                        ClientServerUtilities.ClientPath.FullName,
+                    _clientProcess = ClientServerUtilities.StartClientOperation(
                         ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
-                        Environment.SystemDirectory,
                         RunAsActiveUser,
-                        ElevatedTokenType == ElevatedTokenType.HighestMandatory,
-                        ElevatedTokenType == ElevatedTokenType.HighestAvailable,
-                        denyUserTermination: true,
-                        handlesToInherit: [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
-                        createNoWindow: true,
-                        waitForChildProcesses: true,
-                        killChildProcessesWithParent: true,
-                        windowStyle: ProcessWindowStyle.Hidden,
-                        cancellationToken: (_clientProcessCts = new()).Token
-                    ));
+                        ElevatedTokenType,
+                        [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
+                        (_clientProcessCts = new()).Token
+                    );
                 }
                 finally
                 {
@@ -134,7 +124,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex)
             {
-                throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess!);
+                throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess);
             }
             finally
             {
