@@ -197,16 +197,14 @@ namespace PSADT.ProcessManagement
             // Handle the CreateNoWindow parameter.
             if (createNoWindow)
             {
-                WindowStyle = WindowStyleMap[System.Diagnostics.ProcessWindowStyle.Hidden];
-                ProcessWindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                WindowStyle = ProcessWindowStyle.Hidden;
                 CreateNoWindow = true;
             }
 
             // Handle remaining nullable parameters.
             if (windowStyle is not null)
             {
-                WindowStyle = WindowStyleMap[windowStyle.Value];
-                ProcessWindowStyle = windowStyle.Value;
+                WindowStyle = windowStyle.Value;
             }
             if (streamEncoding is not null)
             {
@@ -230,17 +228,6 @@ namespace PSADT.ProcessManagement
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
         }
-
-        /// <summary>
-        /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
-        /// </summary>
-        private static readonly ReadOnlyDictionary<ProcessWindowStyle, SHOW_WINDOW_CMD> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, SHOW_WINDOW_CMD>()
-        {
-            { System.Diagnostics.ProcessWindowStyle.Normal, SHOW_WINDOW_CMD.SW_SHOWNORMAL },
-            { System.Diagnostics.ProcessWindowStyle.Hidden, SHOW_WINDOW_CMD.SW_HIDE },
-            { System.Diagnostics.ProcessWindowStyle.Minimized, SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
-            { System.Diagnostics.ProcessWindowStyle.Maximized, SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED },
-        });
 
         /// <summary>
         /// Gets the file path of the process to launch.
@@ -380,14 +367,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly SHOW_WINDOW_CMD? WindowStyle;
-
-        /// <summary>
-        /// Gets the window style of the process.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
-        [DataMember]
-        public readonly ProcessWindowStyle? ProcessWindowStyle;
+        public readonly ProcessWindowStyle? WindowStyle;
 
         /// <summary>
         /// Gets the priority class of the process.
