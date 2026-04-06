@@ -14,10 +14,12 @@ jobs:
         if: ${{ github.event.issue.assignee != null }}
         uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0  # https://github.com/actions-ecosystem/action-remove-labels/releases/tag/v1.3.0
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: "Status: Needs Triage"
 
       - name: "Add 'Status: Needs Triage' if issue has no assignee"
         if: ${{ github.event.issue.assignee == null }}
         uses: actions-ecosystem/action-add-labels@bd52874380e3909a1ac983768df6976535ece7f8  # https://github.com/actions-ecosystem/action-add-labels/releases/tag/v1.1.0
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           labels: "Status: Needs Triage"
