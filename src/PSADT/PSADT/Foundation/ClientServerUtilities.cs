@@ -1,9 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Microsoft.Win32;
 using PSADT.Interop.Extensions;
 
-namespace PSADT.ClientServer
+namespace PSADT.Foundation
 {
     /// <summary>
     /// Provides utility constants and methods for managing client-server operation state and configuration settings in
@@ -26,21 +25,13 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Gets the directory path of the assembly that contains the ClientServerUtilities type.
-        /// </summary>
-        /// <remarks>This field can be used to locate files or resources relative to the assembly's
-        /// location at runtime. The returned path is determined by the assembly's current location, which may vary
-        /// depending on how the application is deployed or executed.</remarks>
-        public static readonly DirectoryInfo AssemblyPath = new DirectoryInfo(typeof(ClientServerUtilities).Assembly.Location).Parent ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly.");
-
-        /// <summary>
         /// Gets the default file system path to the ClientServer client executable within the application directory
         /// structure.
         /// </summary>
         /// <remarks>This path is constructed by combining the assembly's directory path with the
         /// executable name "PSADT.ClientServer.Client.exe". It is intended for use when launching or referencing the
         /// ClientServer client from within the application.</remarks>
-        internal static readonly FileInfo ClientDefaultPath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.exe"));
+        internal static readonly FileInfo ClientDefaultPath = new(Path.Combine(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.exe"));
 
         /// <summary>
         /// Gets the file path for the compatible version of the PSADT Client Server executable.
@@ -48,7 +39,7 @@ namespace PSADT.ClientServer
         /// <remarks>This path is constructed by combining the base assembly path with the specific
         /// executable name. Ensure that the executable exists at the specified location before attempting to use
         /// it.</remarks>
-        internal static readonly FileInfo ClientCompatiblePath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.Compatible.exe"));
+        internal static readonly FileInfo ClientCompatiblePath = new(Path.Combine(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.Compatible.exe"));
 
         /// <summary>
         /// Gets the path to the client server executable, selecting a compatible version if the primary executable is
@@ -66,14 +57,14 @@ namespace PSADT.ClientServer
         /// <remarks>The path is constructed by combining the assembly directory with the executable name.
         /// Use this value to locate the launcher for the Client Server Client application when performing operations
         /// that require its presence.</remarks>
-        internal static readonly FileInfo ClientLauncherDefaultPath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.Launcher.exe"));
+        internal static readonly FileInfo ClientLauncherDefaultPath = new(Path.Combine(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.Launcher.exe"));
 
         /// <summary>
         /// Gets the file path for the compatible version of the Client Server Client Launcher executable.
         /// </summary>
         /// <remarks>This path is constructed by combining the assembly path with the executable name.
         /// Ensure that the executable is present at the specified location for proper functionality.</remarks>
-        internal static readonly FileInfo ClientLauncherCompatiblePath = new(Path.Combine(AssemblyPath.FullName, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
+        internal static readonly FileInfo ClientLauncherCompatiblePath = new(Path.Combine(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
 
         /// <summary>
         /// Gets the path to the client server launcher executable, selecting a compatible version if the primary

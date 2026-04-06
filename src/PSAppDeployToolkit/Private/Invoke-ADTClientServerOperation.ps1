@@ -516,9 +516,9 @@ function Private:Invoke-ADTClientServerOperation
                     $csArgsDictionary.Add($_.Key, $_.Value)
                 }
             }
-            Set-ADTRegistryKey -LiteralPath ([PSADT.ClientServer.ClientServerUtilities]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
+            Set-ADTRegistryKey -LiteralPath ([PSADT.Foundation.ClientServerUtilities]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
             @{
-                ArgumentsDictionary = "$([PSADT.ClientServer.ClientServerUtilities]::UserRegistryPath)\$csArgsRegValue"
+                ArgumentsDictionary = "$([PSADT.Foundation.ClientServerUtilities]::UserRegistryPath)\$csArgsRegValue"
                 RemoveArgumentsDictionaryStorage = $true
             }
         }
@@ -545,11 +545,11 @@ function Private:Invoke-ADTClientServerOperation
                 $arkParams = @{
                     InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                     WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                    LiteralPath = [PSADT.ClientServer.ClientServerUtilities]::UserRegistryPath
-                    Name = [PSADT.ClientServer.ClientServerUtilities]::OperationSuccessRegistryValueName
+                    LiteralPath = [PSADT.Foundation.ClientServerUtilities]::UserRegistryPath
+                    Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryValueName
                     SID = $User.SID
                 }
-                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientLauncherPath) -NoWait
+                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath) -NoWait
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -577,7 +577,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
+                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]
@@ -667,7 +667,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.ClientServer.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
+    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.Foundation.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
     {
         return $result
     }

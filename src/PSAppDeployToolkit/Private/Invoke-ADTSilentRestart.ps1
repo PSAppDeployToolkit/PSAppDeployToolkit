@@ -25,5 +25,5 @@ function Private:Invoke-ADTSilentRestart
     )
 
     # Hand this off to the client/server process to deal with. Run it as this current user though.
-    Start-ADTProcess -FilePath ([PSADT.ClientServer.ClientServerUtilities]::ClientLauncherPath) -ArgumentList "/SilentRestart -Delay $Delay" -CreateNoWindow -MsiExecWaitTime 1 -NoWait -InformationAction SilentlyContinue -ErrorAction SilentlyContinue
+    Start-ADTProcess -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath) -ArgumentList "/SilentRestart -Delay $Delay" -CreateNoWindow -MsiExecWaitTime 1 -NoWait -InformationAction SilentlyContinue -ErrorAction SilentlyContinue
 }

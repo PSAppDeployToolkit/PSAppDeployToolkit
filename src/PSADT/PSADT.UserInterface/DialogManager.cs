@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
-using PSADT.ClientServer;
+using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
