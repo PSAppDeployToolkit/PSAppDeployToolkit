@@ -1124,6 +1124,8 @@ namespace PSADT.Tests.ProcessManagement
                    new[] { "C:\\Program Files\\App\\app.exe", "C:\\Some Path\\config.txt", "/option" })]
         [InlineData("\"C:\\Quoted Path\\app.exe\" D:\\Unquoted Path\\data.txt /flag",
                    new[] { "C:\\Quoted Path\\app.exe", "D:\\Unquoted Path\\data.txt", "/flag" })]
+        [InlineData("C:\\Program Files\\Autodesk\\DWG TrueView 2021 - English\\Setup\\en-us\\Setup\\Setup.exe /P",
+                   new[] { "C:\\Program Files\\Autodesk\\DWG TrueView 2021 - English\\Setup\\en-us\\Setup\\Setup.exe", "/P" })]
         public void CommandLineToArgumentList_MixedQuotedUnquotedPaths_ParsedCorrectly(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
@@ -1131,6 +1133,24 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests that strict parsing does not apply unquoted path detection heuristics.
+        /// </summary>
+        [Fact]
+        public void CommandLineToArgumentList_UnquotedPathWithStandaloneHyphen_UsesEnhancedParsingOnly()
+        {
+            // Arrange
+            const string commandLine = "C:\\Program Files\\Autodesk\\DWG TrueView 2021 - English\\Setup\\en-us\\Setup\\Setup.exe /P";
+
+            // Act
+            IReadOnlyList<string> compatibleResult = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+            IReadOnlyList<string> strictResult = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+
+            // Assert
+            Assert.Equal(["C:\\Program Files\\Autodesk\\DWG TrueView 2021 - English\\Setup\\en-us\\Setup\\Setup.exe", "/P"], compatibleResult);
+            Assert.Equal(["C:\\Program", "Files\\Autodesk\\DWG", "TrueView", "2021", "-", "English\\Setup\\en-us\\Setup\\Setup.exe", "/P"], strictResult);
         }
 
         /// <summary>
