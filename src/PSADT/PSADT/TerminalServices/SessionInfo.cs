@@ -39,8 +39,9 @@ namespace PSADT.TerminalServices
             _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
             using (pSessionInfo)
             {
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>(); int objCount = pSessionInfo.Length / objLength;
                 ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>();
+                int objCount = pSessionInfo.Length / objLength;
                 List<SessionInfo> sessions = new(objCount);
                 for (int i = 0; i < objCount; i++)
                 {
@@ -66,8 +67,9 @@ namespace PSADT.TerminalServices
             _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
             using (pSessionInfo)
             {
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>(); int objCount = pSessionInfo.Length / objLength;
                 ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
+                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>();
+                int objCount = pSessionInfo.Length / objLength;
                 for (int i = 0; i < objCount; i++)
                 {
                     ref readonly WTS_SESSION_INFO_1W sessionInfo = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
