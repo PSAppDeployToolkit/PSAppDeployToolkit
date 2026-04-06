@@ -52,10 +52,10 @@ Describe 'Test-ADTMutexAvailability' {
             # correctly sees the mutex as unavailable.
             $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
             $mutexHoldTimeout = 30000
+            $mutexAcquireTimeoutMs = 5000
             $mutexAcquired = [System.Threading.ManualResetEventSlim]::new($false)
             $cts = [System.Threading.CancellationTokenSource]::new()
             $ps = [System.Management.Automation.PowerShell]::Create()
-            $mutexAcquireTimeoutMs = 5000
             ($ps.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()).Open()
             $ps.Runspace.SessionStateProxy.SetVariable('mutexName', $mutexName)
             $ps.Runspace.SessionStateProxy.SetVariable('mutexAcquired', $mutexAcquired)
