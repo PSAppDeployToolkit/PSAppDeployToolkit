@@ -77,18 +77,18 @@ namespace PSADT.ClientServer
                 _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
                 try
                 {
-                    string outputServerClientSafePipeHandle = _outputServer.GetClientHandleAsString();
-                    string inputServerClientSafePipeHandle = _inputServer.GetClientHandleAsString();
-                    string logServerClientSafePipeHandle = _logServer.GetClientHandleAsString();
+                    nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
+                    nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
+                    nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
                     _clientProcess = ProcessManager.LaunchAsync(new(
                         ClientServerUtilities.ClientPath.FullName,
-                        ["/ClientServer", "-InputPipe", outputServerClientSafePipeHandle, "-OutputPipe", inputServerClientSafePipeHandle, "-LogPipe", logServerClientSafePipeHandle],
+                        ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
                         Environment.SystemDirectory,
                         RunAsActiveUser,
                         ElevatedTokenType == ElevatedTokenType.HighestMandatory,
                         ElevatedTokenType == ElevatedTokenType.HighestAvailable,
                         denyUserTermination: true,
-                        handlesToInherit: [NumericalUtilities.ParseIntPtr(outputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(inputServerClientSafePipeHandle), NumericalUtilities.ParseIntPtr(logServerClientSafePipeHandle)],
+                        handlesToInherit: [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
                         createNoWindow: true,
                         waitForChildProcesses: true,
                         killChildProcessesWithParent: true,
