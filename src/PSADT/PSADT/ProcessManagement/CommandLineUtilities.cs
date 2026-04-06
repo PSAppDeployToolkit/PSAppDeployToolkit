@@ -531,9 +531,13 @@ namespace PSADT.ProcessManagement
 
             // Check for common argument start patterns: flags, quotes, GUIDs.
             char ch = commandLine[position];
-            if (ch is '/' or '-' or '"' or '{')
+            if (ch is '"' or '{')
             {
                 return true;
+            }
+            if (ch is '/' or '-')
+            {
+                return position + 1 < commandLine.Length && !IsWhitespace(commandLine[position + 1]);
             }
 
             // Check for key=value patterns.
@@ -555,7 +559,7 @@ namespace PSADT.ProcessManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsArgumentLike(string part)
         {
-            return !string.IsNullOrWhiteSpace(part) && part[0] is char first && (first is '/' or '-' || part.Contains("=") || (first == '{' && part.EndsWith("}")));
+            return !string.IsNullOrWhiteSpace(part) && part[0] is char first && (((first is '/' or '-') && part.Length > 1) || part.Contains("=") || (first == '{' && part.EndsWith("}")));
         }
 
         /// <summary>
