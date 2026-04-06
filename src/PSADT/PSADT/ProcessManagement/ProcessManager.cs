@@ -89,8 +89,8 @@ namespace PSADT.ProcessManagement
                 // Set up the window style if the caller's provided a value.
                 if (launchInfo.WindowStyle is not null)
                 {
+                    startupInfo.wShowWindow = WindowStyleMap[launchInfo.WindowStyle.Value];
                     startupInfo.dwFlags |= STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
-                    startupInfo.wShowWindow = (ushort)launchInfo.WindowStyle.Value;
                 }
 
                 // We must create a console window for console apps when the window is shown.
@@ -283,9 +283,9 @@ namespace PSADT.ProcessManagement
                 {
                     process.StartInfo.Verb = launchInfo.Verb;
                 }
-                if (launchInfo.ProcessWindowStyle is not null)
+                if (launchInfo.WindowStyle is not null)
                 {
-                    process.StartInfo.WindowStyle = launchInfo.ProcessWindowStyle.Value;
+                    process.StartInfo.WindowStyle = launchInfo.WindowStyle.Value;
                 }
                 if (launchInfo.CreateNoWindow)
                 {
@@ -726,6 +726,17 @@ namespace PSADT.ProcessManagement
             { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege." },
             { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
             { CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled." },
+        });
+
+        /// <summary>
+        /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
+        /// </summary>
+        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, ushort>()
+        {
+            { ProcessWindowStyle.Normal, (ushort)SHOW_WINDOW_CMD.SW_SHOWNORMAL },
+            { ProcessWindowStyle.Hidden, (ushort)SHOW_WINDOW_CMD.SW_HIDE },
+            { ProcessWindowStyle.Minimized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMINIMIZED },
+            { ProcessWindowStyle.Maximized, (ushort)SHOW_WINDOW_CMD.SW_SHOWMAXIMIZED },
         });
 
         /// <summary>
