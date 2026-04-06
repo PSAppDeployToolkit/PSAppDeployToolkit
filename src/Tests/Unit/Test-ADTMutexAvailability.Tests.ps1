@@ -10,6 +10,7 @@ Describe 'Test-ADTMutexAvailability' {
             $maxAttempts = 100
             $attempt = 0
             $mutex = $null
+            $isMutexLocked = $false
             while ($attempt -lt $maxAttempts)
             {
                 $attempt++
@@ -50,13 +51,16 @@ Describe 'Test-ADTMutexAvailability' {
             # BeginInvoke on a thread pool thread) so that the test thread's WaitOne() call
             # correctly sees the mutex as unavailable.
             $mutexName = "Global\PSADT_Pester_$([System.Guid]::NewGuid().Guid)"
+            $mutexHoldTimeout = 30000
             $mutexAcquired = [System.Threading.ManualResetEventSlim]::new($false)
             $cts = [System.Threading.CancellationTokenSource]::new()
             $ps = [System.Management.Automation.PowerShell]::Create()
+            $mutexAcquireTimeoutMs = 5000
             ($ps.Runspace = [System.Management.Automation.Runspaces.RunspaceFactory]::CreateRunspace()).Open()
             $ps.Runspace.SessionStateProxy.SetVariable('mutexName', $mutexName)
             $ps.Runspace.SessionStateProxy.SetVariable('mutexAcquired', $mutexAcquired)
             $ps.Runspace.SessionStateProxy.SetVariable('cts', $cts)
+            $ps.Runspace.SessionStateProxy.SetVariable('mutexHoldTimeout', $mutexHoldTimeout)
             $asyncResult = $ps.AddScript({
                     try
                     {
@@ -64,7 +68,7 @@ Describe 'Test-ADTMutexAvailability' {
                         if ($mutex.WaitOne(1))
                         {
                             $mutexAcquired.Set()
-                            [void]$cts.Token.WaitHandle.WaitOne(30000)
+                            [void]$cts.Token.WaitHandle.WaitOne($mutexHoldTimeout)
                             $mutex.ReleaseMutex()
                         }
                     }
@@ -77,7 +81,7 @@ Describe 'Test-ADTMutexAvailability' {
                         }
                     }
                 }).BeginInvoke()
-            if (-not $mutexAcquired.Wait(5000))
+            if (-not $mutexAcquired.Wait($mutexAcquireTimeoutMs))
             {
                 throw "Background PowerShell instance failed to acquire a lock on the mutex [$mutexName]."
             }
