@@ -99,17 +99,7 @@ function Get-ADTWindowTitle
         [System.String[]]$ParentProcess,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ($null -eq $_)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ParentProcessId -ProvidedValue $_ -ExceptionMessage 'The specified ParentProcessId interval was null.'))
-                }
-                if ($_ -le 0)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ParentProcessId -ProvidedValue $_ -ExceptionMessage 'The specified ParentProcessId interval must be greater than zero.'))
-                }
-                return !!$_
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.UInt32[]]$ParentProcessId,
 
         [Parameter(Mandatory = $false)]

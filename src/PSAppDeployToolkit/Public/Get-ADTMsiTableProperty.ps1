@@ -105,12 +105,12 @@ function Get-ADTMsiTableProperty
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'MSI file: 1; MSP file: 2')]
-        [System.Nullable[System.Int32]]$TablePropertyNameColumnNum,
+        [System.Nullable[System.UInt32]]$TablePropertyNameColumnNum,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'TableInfo')]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Help = 'MSI file: 2; MSP file: 3')]
-        [System.Nullable[System.Int32]]$TablePropertyValueColumnNum,
+        [System.Nullable[System.UInt32]]$TablePropertyValueColumnNum,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SummaryInfo')]
         [System.Management.Automation.SwitchParameter]$GetSummaryInformation
