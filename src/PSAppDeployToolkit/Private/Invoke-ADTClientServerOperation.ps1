@@ -76,6 +76,9 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'GetUserToastNotificationMode')]
         [System.Management.Automation.SwitchParameter]$GetUserToastNotificationMode,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
+        [System.Management.Automation.SwitchParameter]$SilentRestart,
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSADT.Foundation.RunAsActiveUser]$User,
@@ -144,6 +147,10 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'SendKeys')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.Object]$Options,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
+        [System.UInt32]$Delay,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
@@ -481,6 +488,11 @@ function Private:Invoke-ADTClientServerOperation
             GetUserToastNotificationMode
             {
                 [PSADT.Interop.ToastNotificationMode]
+                break
+            }
+            SilentRestart
+            {
+                [System.Boolean]
                 break
             }
             default

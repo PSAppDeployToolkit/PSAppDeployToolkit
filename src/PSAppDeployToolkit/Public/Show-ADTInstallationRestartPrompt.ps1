@@ -265,7 +265,7 @@ function Show-ADTInstallationRestartPrompt
                     }
                     else
                     {
-                        Invoke-ADTSilentRestart -Delay $SilentCountdownSeconds
+                        Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $SilentCountdownSeconds -NoWait
                     }
                     return
                 }

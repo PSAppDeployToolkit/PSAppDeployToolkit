@@ -591,6 +591,7 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
+                    ClientServerUtilities.SetOperationSuccessFlag();
                     Thread.Sleep(delayValue * 1000);
                     DeviceUtilities.RestartComputer();
                     Console.WriteLine(SerializeToString(true));
