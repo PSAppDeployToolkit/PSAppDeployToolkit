@@ -36,13 +36,11 @@ namespace PSADT.ProcessManagement
         /// provided.</param>
         /// <param name="workingDirectory">The working directory for the process. If null or whitespace, the process uses the current directory.</param>
         /// <param name="runAsActiveUser">Specifies the user context under which to run the process. If null, the default user context is used.</param>
-        /// <param name="useLinkedAdminToken">true to attempt to launch the process with a linked administrator token; otherwise, false.</param>
-        /// <param name="useHighestAvailableToken">true to request the highest available privilege token for the process; otherwise, false.</param>
         /// <param name="inheritEnvironmentVariables">true to inherit the current process's environment variables; otherwise, false.</param>
         /// <param name="expandEnvironmentVariables">true to expand environment variables in the file path and arguments before launching the process; otherwise,
         /// false.</param>
         /// <param name="denyUserTermination">true to prevent the user from terminating the process; otherwise, false.</param>
-        /// <param name="useUnelevatedToken">true to attempt to launch the process with an unelevated token; otherwise, false.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to use when starting a process for another user. If null, no elevation is performed.</param>
         /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
         /// The string is encoded using the specified <paramref name="streamEncoding"/> (or the default encoding if not specified).</param>
         /// <param name="useShellExecute">true to use the operating system shell to start the process; otherwise, false.</param>
@@ -60,7 +58,7 @@ namespace PSADT.ProcessManagement
         /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
-        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList, string? workingDirectory, RunAsActiveUser? runAsActiveUser, bool useLinkedAdminToken, bool useHighestAvailableToken, bool inheritEnvironmentVariables, bool expandEnvironmentVariables, bool denyUserTermination, bool useUnelevatedToken, IEnumerable<string>? standardInput, bool useShellExecute, string? verb, bool createNoWindow, bool waitForChildProcesses, bool killChildProcessesWithParent, Encoding? streamEncoding, ProcessWindowStyle? windowStyle, ProcessPriorityClass? priorityClass, CancellationToken? cancellationToken, bool noTerminateOnTimeout) : this(filePath, argumentList, workingDirectory, runAsActiveUser, useLinkedAdminToken, useHighestAvailableToken, inheritEnvironmentVariables, expandEnvironmentVariables, denyUserTermination, useUnelevatedToken, runAsInvoker: false, uiAccess: false, standardInput, handlesToInherit: null, useShellExecute, verb, createNoWindow, waitForChildProcesses, killChildProcessesWithParent, streamEncoding, windowStyle, priorityClass, cancellationToken, noTerminateOnTimeout)
+        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList, string? workingDirectory, RunAsActiveUser? runAsActiveUser, bool inheritEnvironmentVariables, bool expandEnvironmentVariables, bool denyUserTermination, ElevatedTokenType? elevatedTokenType, IEnumerable<string>? standardInput, bool useShellExecute, string? verb, bool createNoWindow, bool waitForChildProcesses, bool killChildProcessesWithParent, Encoding? streamEncoding, ProcessWindowStyle? windowStyle, ProcessPriorityClass? priorityClass, CancellationToken? cancellationToken, bool noTerminateOnTimeout) : this(filePath, argumentList, workingDirectory, runAsActiveUser, inheritEnvironmentVariables, expandEnvironmentVariables, denyUserTermination, elevatedTokenType, runAsInvoker: false, uiAccess: false, standardInput, handlesToInherit: null, useShellExecute, verb, createNoWindow, waitForChildProcesses, killChildProcessesWithParent, streamEncoding, windowStyle, priorityClass, cancellationToken, noTerminateOnTimeout)
         {
         }
 
@@ -73,13 +71,11 @@ namespace PSADT.ProcessManagement
         /// provided.</param>
         /// <param name="workingDirectory">The working directory for the process. If null or whitespace, the process uses the current directory.</param>
         /// <param name="runAsActiveUser">Specifies the user context under which to run the process. If null, the default user context is used.</param>
-        /// <param name="useLinkedAdminToken">true to attempt to launch the process with a linked administrator token; otherwise, false.</param>
-        /// <param name="useHighestAvailableToken">true to request the highest available privilege token for the process; otherwise, false.</param>
         /// <param name="inheritEnvironmentVariables">true to inherit the current process's environment variables; otherwise, false.</param>
         /// <param name="expandEnvironmentVariables">true to expand environment variables in the file path and arguments before launching the process; otherwise,
         /// false.</param>
         /// <param name="denyUserTermination">true to prevent the user from terminating the process; otherwise, false.</param>
-        /// <param name="useUnelevatedToken">true to attempt to launch the process with an unelevated token; otherwise, false.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to use when starting a process for another user. If null, no elevation is performed.</param>
         /// <param name="runAsInvoker">true to launch the process with the same token as the parent process; otherwise, false.</param>
         /// <param name="uiAccess">true to launch the process with UI access privileges; otherwise, false.</param>
         /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
@@ -101,7 +97,7 @@ namespace PSADT.ProcessManagement
         /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
-        internal ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, bool useUnelevatedToken = false, bool runAsInvoker = false, bool uiAccess = false, IEnumerable<string>? standardInput = null, IEnumerable<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
+        internal ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, ElevatedTokenType? elevatedTokenType = null, bool runAsInvoker = false, bool uiAccess = false, IEnumerable<string>? standardInput = null, IEnumerable<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
         {
             // Validate all string parameters are properly set up.
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
@@ -112,13 +108,13 @@ namespace PSADT.ProcessManagement
             }
 
             // Confirm we're not using incompatible options.
-            if (!(runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
+            if (useShellExecute)
             {
-                if (useUnelevatedToken)
+                if (elevatedTokenType is not null and not Security.ElevatedTokenType.None)
                 {
-                    throw new NotSupportedException("Cannot specify UseUnelevatedToken while specifying a RunAsActiveUser.");
+                    throw new NotSupportedException("Cannot specify ElevatedTokenType while specifying a RunAsActiveUser.");
                 }
-                if (useShellExecute)
+                if (!(runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser))
                 {
                     throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
                 }
@@ -129,16 +125,11 @@ namespace PSADT.ProcessManagement
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
-            if (useHighestAvailableToken)
+            if (elevatedTokenType.HasValue)
             {
-                ElevatedTokenType = ElevatedTokenType.HighestAvailable;
-            }
-            if (useLinkedAdminToken)
-            {
-                ElevatedTokenType = ElevatedTokenType.HighestMandatory;
+                ElevatedTokenType = elevatedTokenType.Value;
             }
             InheritEnvironmentVariables = inheritEnvironmentVariables;
-            UseUnelevatedToken = useUnelevatedToken;
             RunAsActiveUser = runAsActiveUser;
             UIAccess = uiAccess;
 
@@ -296,7 +287,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly ElevatedTokenType ElevatedTokenType;
+        public readonly ElevatedTokenType? ElevatedTokenType;
 
         /// <summary>
         /// Gets a value indicating whether to inherit the environment variables of the current process.
@@ -318,13 +309,6 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool DenyUserTermination;
-
-        /// <summary>
-        /// Indicates whether an unelevated token should be used for operations.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
-        [DataMember]
-        public readonly bool UseUnelevatedToken;
 
         /// <summary>
         /// Indicates whether an unelevated token should be used for operations.

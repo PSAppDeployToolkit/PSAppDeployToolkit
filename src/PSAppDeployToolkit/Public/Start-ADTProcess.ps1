@@ -617,6 +617,23 @@ function Start-ADTProcess
             $cancellationTokenSource.Token
         }
 
+        # Set up the elevation type to use for the new process.
+        $elevatedTokenType = if ($RunAsActiveUser)
+        {
+            if ($UseLinkedAdminToken)
+            {
+                [PSADT.Security.ElevatedTokenType]::HighestMandatory
+            }
+            elseif ($UseHighestAvailableToken)
+            {
+                [PSADT.Security.ElevatedTokenType]::HighestAvailable
+            }
+        }
+        elseif ($UseUnelevatedToken)
+        {
+            [PSADT.Security.ElevatedTokenType]::None
+        }
+
         # Internal worker function to set the session exit code.
         function Set-ADTSessionExitCode
         {
@@ -774,12 +791,10 @@ function Start-ADTProcess
                         $ArgumentList,
                         $PSBoundParameters.WorkingDirectory,
                         $RunAsActiveUser,
-                        $UseLinkedAdminToken,
-                        $UseHighestAvailableToken,
                         $InheritEnvironmentVariables,
                         $ExpandEnvironmentVariables,
                         $DenyUserTermination,
-                        $UseUnelevatedToken,
+                        $elevatedTokenType,
                         $StandardInput,
                         $UseShellExecute,
                         $PSBoundParameters.Verb,
