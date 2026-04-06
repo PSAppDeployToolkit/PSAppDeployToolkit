@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using PSADT.ClientServer;
+using PSADT.Foundation;
 using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Interfaces.Classic

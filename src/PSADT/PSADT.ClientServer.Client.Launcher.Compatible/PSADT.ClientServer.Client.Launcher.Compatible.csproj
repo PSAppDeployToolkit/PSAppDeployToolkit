@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher\PSADT.ClientServer.Client.Launcher.csproj" />
-    <ProjectReference Include="..\PSADT.ClientServer.Common\PSADT.ClientServer.Common.csproj" />
     <ProjectReference Include="..\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
     <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />

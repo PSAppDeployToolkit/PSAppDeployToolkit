@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.ClientServer;
+using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;

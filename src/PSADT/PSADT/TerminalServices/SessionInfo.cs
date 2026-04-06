@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.ClientServer;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -203,7 +202,7 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyManager.RemediatePermissions(user);
                         ProcessLaunchInfo args = new(ClientServerUtilities.ClientCompatiblePath.FullName, ["/GetLastInputTime"], Environment.SystemDirectory, user, createNoWindow: true);
                         using ProcessResult result = ProcessManager.LaunchAsync(args)?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch process to get idle time.");
                         idleTime = new(long.Parse(result.StdOut[0], CultureInfo.InvariantCulture));

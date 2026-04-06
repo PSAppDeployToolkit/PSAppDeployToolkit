@@ -13,6 +13,7 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.ClientServer.Payloads;
 using PSADT.DeviceManagement;
+using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.Security;

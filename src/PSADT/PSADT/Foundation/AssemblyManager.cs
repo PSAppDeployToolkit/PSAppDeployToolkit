@@ -5,20 +5,19 @@ using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
-using PSADT.ClientServer;
 using PSADT.FileSystem;
 using PSADT.Security;
 
 namespace PSADT.Foundation
 {
     /// <summary>
-    /// Provides methods for managing and ensuring file system permissions for specific users and file paths.
+    /// Provides utility methods and fields for managing assembly-related file system operations, including permission
+    /// remediation and assembly path discovery.
     /// </summary>
-    /// <remarks>The <see cref="AssemblyPermissions"/> class includes functionality to verify and remediate file
-    /// system permissions for a user on specified file paths. It ensures that the user has the required permissions to
-    /// access and execute files, without modifying them unnecessarily. This class is designed for scenarios where file
-    /// system access control needs to be programmatically enforced.</remarks>
-    internal static class AssemblyPermissions
+    /// <remarks>This class is intended for internal use to facilitate file system permission checks and
+    /// access to assembly locations required by the application. It is not intended to be used directly by external
+    /// consumers.</remarks>
+    internal static class AssemblyManager
     {
         /// <summary>
         /// Ensures that the specified user has the required file system permissions for a set of file paths.
@@ -35,7 +34,7 @@ namespace PSADT.Foundation
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
-        internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
+        internal static void RemediatePermissions(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
             // Get the primary token for the user if they have a valid session ID, then proceed to check and remediate file system permissions.
             using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType) : null;
@@ -75,9 +74,17 @@ namespace PSADT.Foundation
         }
 
         /// <summary>
+        /// Gets the directory path of this assembly.
+        /// </summary>
+        /// <remarks>This field can be used to locate files or resources relative to the assembly's
+        /// location at runtime. The returned path is determined by the assembly's current location, which may vary
+        /// depending on how the application is deployed or executed.</remarks>
+        internal static readonly DirectoryInfo AssemblyDirectory = new(Path.GetDirectoryName(typeof(AssemblyManager).Assembly.Location) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly."));
+
+        /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(new DirectoryInfo(typeof(ClientServerUtilities).Assembly.Location).Parent?.GetFiles("*", SearchOption.AllDirectories) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly."));
+        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(AssemblyDirectory.GetFiles("*.dll", SearchOption.AllDirectories));
 
         /// <summary>
         /// Represents the required file system permissions for the operation.

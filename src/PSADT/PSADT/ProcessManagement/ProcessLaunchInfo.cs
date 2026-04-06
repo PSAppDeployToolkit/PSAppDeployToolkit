@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
-using PSADT.ClientServer;
 using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.Interop;

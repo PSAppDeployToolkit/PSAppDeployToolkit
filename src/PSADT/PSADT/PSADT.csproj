@@ -36,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSADT.ClientServer.Common\PSADT.ClientServer.Common.csproj" />
     <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
   </ItemGroup>
 </Project>

@@ -172,7 +172,7 @@ function Block-ADTAppExecution
 
                 # Store the BlockExection command in the registry due to IFEO length issues when > 255 chars.
                 $blockExecRegPath = "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\$($adtEnv.appDeployToolkitName)"; $blockExecRegName = [PSADT.UserInterface.BlockExecution]::RegistryKeyName
-                $blockExecDbgPath = "`"$([PSADT.ClientServer.ClientServerUtilities]::ClientLauncherPath)`" /smd -ArgV $($blockExecRegPath.Split('::')[1])\$blockExecRegName"
+                $blockExecDbgPath = "`"$([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath)`" /smd -ArgV $($blockExecRegPath.Split('::')[1])\$blockExecRegName"
 
                 # If the IFEO path is > 255 characters, warn about it and bomb out.
                 if ($blockExecDbgPath -gt 255)
