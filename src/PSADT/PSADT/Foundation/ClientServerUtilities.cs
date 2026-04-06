@@ -32,7 +32,7 @@ namespace PSADT.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ProcessHandle StartClientOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
-            return InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, elevatedTokenType);
+            return InvokeClientOperationImpl(ClientDefaultPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace PSADT.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ProcessHandle StartClientLauncherOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
-            return InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, elevatedTokenType);
+            return InvokeClientOperationImpl(ClientLauncherDefaultPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace PSADT.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessHandle StartClientOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            return InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+            return InvokeClientOperationImpl(ClientDefaultPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace PSADT.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessHandle StartClientLauncherOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            return InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+            return InvokeClientOperationImpl(ClientLauncherDefaultPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
