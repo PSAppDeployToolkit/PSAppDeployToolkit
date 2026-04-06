@@ -628,6 +628,10 @@ function Start-ADTProcess
             {
                 [PSADT.Security.ElevatedTokenType]::HighestAvailable
             }
+            elseif ($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser)
+            {
+                [PSADT.Security.ElevatedTokenType]::None
+            }
         }
         elseif ($UseUnelevatedToken)
         {
