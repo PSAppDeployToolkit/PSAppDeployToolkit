@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Win32;
+using PSADT.AccountManagement;
 using PSADT.Interop.Extensions;
 using PSADT.ProcessManagement;
 using PSADT.Security;
@@ -80,7 +81,7 @@ namespace PSADT.Foundation
                 useLinkedAdminToken: elevatedTokenType == ElevatedTokenType.HighestMandatory,
                 useHighestAvailableToken: elevatedTokenType == ElevatedTokenType.HighestAvailable,
                 denyUserTermination: true,
-                runAsInvoker: RequiresRunAsInvoker,
+                runAsInvoker: ClientIsUnsigned || runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser,
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
                 createNoWindow: filePath == ClientPath,
@@ -141,6 +142,6 @@ namespace PSADT.Foundation
         /// <remarks>This property evaluates to <see langword="true"/> if either the client or launcher
         /// executable is not Authenticode trusted. When <see langword="true"/>, the application should be started with
         /// the RunAsInvoker compatibility flag to avoid elevation prompts or trust issues.</remarks>
-        private static readonly bool RequiresRunAsInvoker = !ClientPath.IsAuthenticodeTrusted() || !ClientLauncherPath.IsAuthenticodeTrusted();
+        private static readonly bool ClientIsUnsigned = !ClientPath.IsAuthenticodeTrusted() || !ClientLauncherPath.IsAuthenticodeTrusted();
     }
 }
