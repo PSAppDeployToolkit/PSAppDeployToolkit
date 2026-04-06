@@ -7,10 +7,17 @@ namespace PSADT.ProcessManagement
     /// Represents an abstract base class for managing a standard input, output, or error handle associated with a
     /// process, providing resource management and disposal functionality.
     /// </summary>
-    /// <param name="Task">The task associated with the standard I/O handle. This task typically represents asynchronous operations related
-    /// to the handle and is disposed when the object is disposed.</param>
-    internal abstract record ProcessStream(Task Task) : IDisposable
+    internal abstract record ProcessStream : IDisposable
     {
+        /// <summary>
+        /// Initializes a new instance of the ProcessStream class with the specified task.
+        /// </summary>
+        /// <param name="task">The task to associate with the process stream. Cannot be null.</param>
+        private protected ProcessStream(Task task)
+        {
+            Task = task;
+        }
+
         /// <summary>
         /// Releases all resources used by the current instance.
         /// </summary>
@@ -23,5 +30,10 @@ namespace PSADT.ProcessManagement
                 Task.Dispose();
             }
         }
+
+        /// <summary>
+        /// Represents the underlying asynchronous operation associated with this instance.
+        /// </summary>
+        internal readonly Task Task;
     }
 }
