@@ -43,6 +43,7 @@ namespace PSADT.ProcessManagement
         /// false.</param>
         /// <param name="denyUserTermination">true to prevent the user from terminating the process; otherwise, false.</param>
         /// <param name="useUnelevatedToken">true to attempt to launch the process with an unelevated token; otherwise, false.</param>
+        /// <param name="runAsInvoker">true to launch the process with the same token as the parent process; otherwise, false.</param>
         /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
         /// The string is encoded using the specified <paramref name="streamEncoding"/> (or the default encoding if not specified).</param>
         /// <param name="handlesToInherit">An optional collection of handles to inherit by the new process. If null, no additional handles are
@@ -62,7 +63,7 @@ namespace PSADT.ProcessManagement
         /// <param name="noTerminateOnTimeout">true to prevent the process from being terminated when a timeout occurs; otherwise, false.</param>
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
-        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, bool useUnelevatedToken = false, IEnumerable<string>? standardInput = null, IEnumerable<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
+        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool useLinkedAdminToken = false, bool useHighestAvailableToken = false, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, bool useUnelevatedToken = false, bool runAsInvoker = false, IEnumerable<string>? standardInput = null, IEnumerable<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
         {
             // Validate all string parameters are properly set up.
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
@@ -223,6 +224,7 @@ namespace PSADT.ProcessManagement
 
             // Set remaining parameters.
             DenyUserTermination = denyUserTermination;
+            RunAsInvoker = runAsInvoker;
             StandardInput = new ReadOnlyCollection<string>([.. standardInput ?? []]);
             HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit?.Select(static h => (long)h) ?? []]);
             WaitForChildProcesses = waitForChildProcesses;
@@ -310,6 +312,13 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool UseUnelevatedToken;
+
+        /// <summary>
+        /// Indicates whether an unelevated token should be used for operations.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
+        [DataMember]
+        public readonly bool RunAsInvoker;
 
         /// <summary>
         /// Gets the lines to write to the process's standard input stream.
