@@ -546,7 +546,7 @@ function Private:Invoke-ADTClientServerOperation
                     InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                     WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
                     LiteralPath = [PSADT.Foundation.ClientServerUtilities]::UserRegistryPath
-                    Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryValueName
+                    Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty
                     SID = $User.SID
                 }
                 Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath) -NoWait

@@ -19,9 +19,9 @@ namespace PSADT.Foundation
         /// <remarks>This method updates a specific registry key to signal that a no-wait operation has
         /// completed successfully. It is intended for internal use and should not be called directly by external
         /// code.</remarks>
-        internal static void SetClientServerOperationSuccess()
+        internal static void SetOperationSuccessFlag()
         {
-            Registry.SetValue(UserRegistryPath, OperationSuccessRegistryValueName, 1, RegistryValueKind.DWord);
+            Registry.SetValue(UserRegistryPath, OperationSuccessRegistryProperty, 1, RegistryValueKind.DWord);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace PSADT.Foundation
         /// <summary>
         /// Specifies the registry value name used to indicate that the operation should not wait for success.
         /// </summary>
-        public const string OperationSuccessRegistryValueName = "ClientServerOperationSuccess";
+        public const string OperationSuccessRegistryProperty = "ClientServerOperationSuccess";
 
         /// <summary>
         /// Specifies the exit code used to indicate a successful shell execute process operation in the client-server communication protocol.

@@ -225,7 +225,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             expiryTimer?.Start();
 
             // Set the NoWait success flag as the caller may be waiting for it.
-            ClientServerUtilities.SetClientServerOperationSuccess();
+            ClientServerUtilities.SetOperationSuccessFlag();
         }
 
         /// <summary>
