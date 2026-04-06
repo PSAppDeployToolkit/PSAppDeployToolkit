@@ -73,9 +73,9 @@ namespace PSADT.TerminalServices
                 for (int i = 0; i < objCount; i++)
                 {
                     ref readonly WTS_SESSION_INFO_1W sessionInfo = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
-                    if (sessionInfo.SessionId == sessionId && Get(in sessionInfo) is SessionInfo session)
+                    if (sessionInfo.SessionId == sessionId)
                     {
-                        return session;
+                        return Get(in sessionInfo);
                     }
                 }
                 return null;
