@@ -14,18 +14,8 @@ function Private:Set-ADTPreferenceVariables
         [System.Management.Automation.SessionState]$SessionState,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ($null -eq $_)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Scope -ProvidedValue $_ -ExceptionMessage 'The specified Scope interval was null.'))
-                }
-                if ($_ -le 0)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Scope -ProvidedValue $_ -ExceptionMessage 'The specified Scope interval must be greater than zero.'))
-                }
-                return !!$_
-            })]
-        [System.Nullable[System.UInt32]]$Scope = 1
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
+        [System.UInt32]$Scope = 1
     )
 
     # Get the callstack so we can enumerate bound parameters of our callers.
