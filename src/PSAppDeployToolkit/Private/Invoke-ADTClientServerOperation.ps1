@@ -523,66 +523,50 @@ function Private:Invoke-ADTClientServerOperation
             }
         }
 
-        # Set up the parameters for Start-ADTProcess.
-        $sapParams = @{
-            ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
-            WorkingDirectory = [System.Environment]::SystemDirectory
-            RunAsActiveUser = $User
-            DenyUserTermination = $true
-            MsiExecWaitTime = 1
-            InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-            PassThru = $true
-        }
+        # Set up the parameters for the client/server client.
+        [System.String[]]$argumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
 
-        # Farm this out to a new process.
-        $return = try
+        # For -NoWait operations, we want to ensure the operation was successful before continuing.
+        # Some platforms clean up the local cache before a dialog can appears, causing breaks.
+        $return = if ($NoWait)
         {
-            # For -NoWait operations, we want to ensure the operation was successful before continuing.
-            # Some platforms clean up the local cache before a dialog can appears, causing breaks.
-            if ($NoWait)
-            {
-                # Remove any previous success flags before starting the process.
-                $arkParams = @{
-                    InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                    WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                    LiteralPath = [PSADT.Foundation.ClientServerUtilities]::UserRegistryPath
-                    Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty
-                    SID = $User.SID
-                }
-                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath) -NoWait
+            # Remove any previous success flags before starting the process.
+            $arkParams = @{
+                InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                LiteralPath = [PSADT.Foundation.ClientServerUtilities]::UserRegistryPath
+                Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty
+                SID = $User.SID
+            }
+            Remove-ADTRegistryKey @arkParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation($argumentList, $User, [PSADT.Security.ElevatedTokenType]::None, $null, $null)
 
-                # Wait for the success flag. When found, remove it to clean up house and break to continue.
-                $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
-                while ($true)
+            # Wait for the success flag. When found, remove it to clean up house and break to continue.
+            $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
+            while ($true)
+            {
+                if ((Get-ADTRegistryKey @arkParams) -eq 1)
                 {
-                    if ((Get-ADTRegistryKey @arkParams) -eq 1)
-                    {
-                        Remove-ADTRegistryKey @arkParams
-                        break
-                    }
-                    if ($noWaitTimer.ElapsedMilliseconds -ge 15000)
-                    {
-                        $naerParams = @{
-                            Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")
-                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                            ErrorId = 'ClientServerNoWaitTimeoutExceeded'
-                            TargetObject = $sapResult
-                            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-                        }
-                        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-                    }
-                    [System.Threading.Thread]::Sleep(1)
+                    Remove-ADTRegistryKey @arkParams
+                    break
                 }
-                return
+                if ($noWaitTimer.ElapsedMilliseconds -ge 15000)
+                {
+                    $naerParams = @{
+                        Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'ClientServerNoWaitTimeoutExceeded'
+                        TargetObject = $sapResult
+                        RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                    }
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                }
+                [System.Threading.Thread]::Sleep(1)
             }
-            else
-            {
-                Start-ADTProcess @sapParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
-            }
+            return
         }
-        catch [System.Runtime.InteropServices.ExternalException]
+        else
         {
-            $_.TargetObject
+            [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, [PSADT.Security.ElevatedTokenType]::None, $null, $null).Task.GetAwaiter.GetResult()
         }
 
         # Confirm we were successful in our operation.
