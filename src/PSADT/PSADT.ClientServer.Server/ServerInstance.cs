@@ -11,7 +11,6 @@ using PSADT.ClientServer.Payloads;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
-using PSADT.Security;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -81,7 +80,6 @@ namespace PSADT.ClientServer
                     _clientProcess = ClientServerUtilities.StartClientOperation(
                         ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
                         RunAsActiveUser,
-                        ElevatedTokenType,
                         [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
                         (_clientProcessCts = new()).Token
                     );
@@ -959,13 +957,6 @@ namespace PSADT.ClientServer
         /// be used as a marker in protocols or data streams to signify success. Ensure that the receiving system
         /// interprets this character as intended, as it is a non-printable control character.</remarks>
         public const string SuccessSentinel = "\x1F";
-
-        /// <summary>
-        /// Indicates whether the highest available token should be used.
-        /// </summary>
-        /// <remarks>This constant is set to <see langword="true"/> and is intended for internal use to
-        /// specify that the highest available token should be utilized in relevant operations.</remarks>
-        internal static readonly ElevatedTokenType ElevatedTokenType = ElevatedTokenType.HighestAvailable;
 
         /// <summary>
         /// Represents the server side of an anonymous pipe used for interprocess communication.
