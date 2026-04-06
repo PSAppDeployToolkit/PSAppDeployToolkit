@@ -13,6 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PSADT.ClientServer.Client.Compatible\PSADT.ClientServer.Client.Compatible.csproj" />
+    <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher.Compatible\PSADT.ClientServer.Client.Launcher.Compatible.csproj" />
     <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher\PSADT.ClientServer.Client.Launcher.csproj" />
     <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
     <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
