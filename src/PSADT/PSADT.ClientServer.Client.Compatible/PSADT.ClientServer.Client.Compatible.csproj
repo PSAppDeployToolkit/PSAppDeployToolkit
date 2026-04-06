@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
-    <AssemblyName>PSADT.ClientServer.Client.Launcher</AssemblyName>
-    <Product>PSAppDeployToolkit Client/Server Client Launcher Executable</Product>
-    <AssemblyTitle>PSAppDeployToolkit Client/Server Client Launcher Executable</AssemblyTitle>
+    <AssemblyName>PSADT.ClientServer.Client.Compatible</AssemblyName>
+    <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
+    <AssemblyTitle>PSAppDeployToolkit Client/Server Client Executable</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
     <StartupObject>PSADT.ClientServer.ClientExecutable</StartupObject>
-    <ApplicationManifest>..\PSADT.ClientServer.Client\Properties\app.manifest</ApplicationManifest>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSADT.ClientServer.Client.Compatible\PSADT.ClientServer.Client.Compatible.csproj" />
+    <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
     <ProjectReference Include="..\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
     <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
