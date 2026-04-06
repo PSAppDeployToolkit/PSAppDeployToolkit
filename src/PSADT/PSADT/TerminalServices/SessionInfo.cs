@@ -35,24 +35,16 @@ namespace PSADT.TerminalServices
         /// The list is empty if no active sessions are found.</returns>
         public static IReadOnlyList<SessionInfo> Get()
         {
-            // Enumerate the sessions process each session in the returned buffer.
-            _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
-            using (pSessionInfo)
+            List<SessionInfo> sessions = [];
+            EnumerateSessions((in sessionInfo) =>
             {
-                ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>();
-                int objCount = pSessionInfo.Length / objLength;
-                List<SessionInfo> sessions = new(objCount);
-                for (int i = 0; i < objCount; i++)
+                if (Get(in sessionInfo) is SessionInfo session)
                 {
-                    ref readonly WTS_SESSION_INFO_1W sessionInfo = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
-                    if (Get(in sessionInfo) is SessionInfo session)
-                    {
-                        sessions.Add(session);
-                    }
+                    sessions.Add(session);
                 }
-                return sessions.AsReadOnly();
-            }
+                return true;
+            });
+            return sessions.AsReadOnly();
         }
 
         /// <summary>
@@ -63,7 +55,31 @@ namespace PSADT.TerminalServices
         /// langword="null"/>.</returns>
         public static SessionInfo? Get(uint sessionId)
         {
-            // Enumerate the sessions process each session in the returned buffer.
+            SessionInfo? session = null;
+            EnumerateSessions((in sessionInfo) =>
+            {
+                if (sessionInfo.SessionId != sessionId)
+                {
+                    return true;
+                }
+                session = Get(in sessionInfo);
+                return false;
+            });
+            return session;
+        }
+
+        /// <summary>
+        /// Enumerates all active Windows Terminal Services (WTS) sessions and invokes the specified callback for each
+        /// session.
+        /// </summary>
+        /// <remarks>This method provides a way to process each session by supplying a delegate that
+        /// determines whether enumeration should continue. The enumeration stops immediately if the callback returns
+        /// false for any session.</remarks>
+        /// <param name="callback">A delegate that is called for each enumerated session. The callback receives a read-only reference to the
+        /// session information structure. If the callback returns false, enumeration stops.</param>
+        private static void EnumerateSessions(SessionEnumerator callback)
+        {
+            // Enumerate the sessions and process each session in the returned buffer.
             _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
             using (pSessionInfo)
             {
@@ -73,14 +89,22 @@ namespace PSADT.TerminalServices
                 for (int i = 0; i < objCount; i++)
                 {
                     ref readonly WTS_SESSION_INFO_1W sessionInfo = ref pSessionInfoSpan.Slice(objLength * i).AsReadOnlyStructure<WTS_SESSION_INFO_1W>();
-                    if (sessionInfo.SessionId == sessionId)
+                    if (!callback(in sessionInfo))
                     {
-                        return Get(in sessionInfo);
+                        return;
                     }
                 }
-                return null;
             }
         }
+
+        /// <summary>
+        /// Represents a method that processes a Windows Terminal Services session and returns a value indicating
+        /// whether the session meets specific criteria.
+        /// </summary>
+        /// <param name="sessionInfo">A read-only reference to a WTS_SESSION_INFO_1W structure containing information about a Windows Terminal
+        /// Services session.</param>
+        /// <returns>true if the session meets the criteria defined by the delegate implementation; otherwise, false.</returns>
+        private delegate bool SessionEnumerator(in WTS_SESSION_INFO_1W sessionInfo);
 
         /// <summary>
         /// Retrieves detailed information about a Windows Terminal Services session based on the provided session
