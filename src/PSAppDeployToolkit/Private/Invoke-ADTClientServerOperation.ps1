@@ -523,12 +523,12 @@ function Private:Invoke-ADTClientServerOperation
             }
         }
 
-        # Set up the parameters for Start-ADTProcessAsUser.
-        $sapauParams = @{
-            RunAsActiveUser = $User
-            DenyUserTermination = $true
+        # Set up the parameters for Start-ADTProcess.
+        $sapParams = @{
             ArgumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
             WorkingDirectory = [System.Environment]::SystemDirectory
+            RunAsActiveUser = $User
+            DenyUserTermination = $true
             MsiExecWaitTime = 1
             InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
             PassThru = $true
@@ -549,7 +549,7 @@ function Private:Invoke-ADTClientServerOperation
                     Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty
                     SID = $User.SID
                 }
-                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath) -NoWait
+                Remove-ADTRegistryKey @arkParams; $sapResult = Start-ADTProcess @sapParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientLauncherPath) -NoWait
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -577,7 +577,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                Start-ADTProcess @sapauParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
+                Start-ADTProcess @sapParams -FilePath ([PSADT.Foundation.ClientServerUtilities]::ClientPath) -CreateNoWindow -ErrorAction SilentlyContinue
             }
         }
         catch [System.Runtime.InteropServices.ExternalException]
