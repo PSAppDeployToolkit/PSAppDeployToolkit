@@ -582,7 +582,7 @@ function Private:Invoke-ADTClientServerOperation
         }
         else
         {
-            [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).Task.GetAwaiter.GetResult()
+            [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).Task.GetAwaiter().GetResult()
         }
 
         # Confirm we were successful in our operation.
