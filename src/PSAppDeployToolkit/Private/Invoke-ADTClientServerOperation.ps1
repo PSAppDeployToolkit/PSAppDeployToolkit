@@ -525,6 +525,10 @@ function Private:Invoke-ADTClientServerOperation
 
         # Set up the parameters for the client/server client.
         [System.String[]]$argumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
+        $elevatedTokenType = if ($PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess'))
+        {
+            [PSADT.Security.ElevatedTokenType]::None
+        }
 
         # For -NoWait operations, we want to ensure the operation was successful before continuing.
         # Some platforms clean up the local cache before a dialog can appears, causing breaks.
@@ -538,7 +542,7 @@ function Private:Invoke-ADTClientServerOperation
                 Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty
                 SID = $User.SID
             }
-            Remove-ADTRegistryKey @arkParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation($argumentList, $User, [PSADT.Security.ElevatedTokenType]::None, $null, $null)
+            Remove-ADTRegistryKey @arkParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation($argumentList, $User, $elevatedTokenType)
 
             # Wait for the success flag. When found, remove it to clean up house and break to continue.
             $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -566,7 +570,7 @@ function Private:Invoke-ADTClientServerOperation
         }
         else
         {
-            [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, [PSADT.Security.ElevatedTokenType]::None, $null, $null).Task.GetAwaiter.GetResult()
+            [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).Task.GetAwaiter.GetResult()
         }
 
         # Confirm we were successful in our operation.

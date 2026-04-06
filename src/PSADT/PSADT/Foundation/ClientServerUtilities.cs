@@ -28,17 +28,13 @@ namespace PSADT.Foundation
         /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
         /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
         /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
-        /// <param name="handlesToInherit">A collection of native handles to inherit by the client process. May be null if no handles are to be
-        /// inherited.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
-        /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ProcessHandle StartClientOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        public static ProcessHandle StartClientOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
             return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
-                ? StartClientOperation(ClientCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken)
-                : StartClientOperation(ClientPath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken);
+                ? InvokeClientOperationImpl(ClientCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType)
+                : InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -48,17 +44,51 @@ namespace PSADT.Foundation
         /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
         /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
         /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ProcessHandle StartClientLauncherOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
+        {
+            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
+                ? InvokeClientOperationImpl(ClientLauncherCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType)
+                : InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, elevatedTokenType);
+        }
+
+        /// <summary>
+        /// Launches the client process with the specified arguments and security context, returning a handle to the
+        /// created process.
+        /// </summary>
+        /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
+        /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
         /// <param name="handlesToInherit">A collection of native handles to inherit by the client process. May be null if no handles are to be
         /// inherited.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ProcessHandle StartClientLauncherOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        internal static ProcessHandle StartClientOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
             return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
-                ? StartClientOperation(ClientLauncherCompatiblePath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken)
-                : StartClientOperation(ClientLauncherPath, argumentList, runAsActiveUser, elevatedTokenType, handlesToInherit, cancellationToken);
+                ? InvokeClientOperationImpl(ClientCompatiblePath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken)
+                : InvokeClientOperationImpl(ClientPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Launches the client process with the specified arguments and security context, returning a handle to the
+        /// created process.
+        /// </summary>
+        /// <param name="argumentList">The list of command-line arguments to pass to the client process.</param>
+        /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
+        /// <param name="handlesToInherit">A collection of native handles to inherit by the client process. May be null if no handles are to be
+        /// inherited.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
+        /// <returns>A handle to the launched client process.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ProcessHandle StartClientLauncherOperation(IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        {
+            return runAsActiveUser is null || runAsActiveUser == AccountUtilities.CallerRunAsActiveUser
+                ? InvokeClientOperationImpl(ClientLauncherCompatiblePath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken)
+                : InvokeClientOperationImpl(ClientLauncherPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -75,14 +105,14 @@ namespace PSADT.Foundation
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ProcessHandle StartClientOperation(FileInfo filePath, IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
+        private static ProcessHandle InvokeClientOperationImpl(FileInfo filePath, IEnumerable<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType? elevatedTokenType = null, IEnumerable<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
             return ProcessManager.LaunchAsync(new(
                 filePath.FullName,
                 argumentList,
                 Environment.SystemDirectory,
                 runAsActiveUser,
-                elevatedTokenType: elevatedTokenType,
+                elevatedTokenType: elevatedTokenType ?? DefaultElevationType,
                 denyUserTermination: true,
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
@@ -172,5 +202,13 @@ namespace PSADT.Foundation
         /// </summary>
         /// <remarks>The value of this constant is derived from `'ShellExecuteProcess'.GetHashCode()` under Windows PowerShell 5.1.</remarks>
         public const int ShellExecuteProcessSuccessCode = -1556154312;
+
+        /// <summary>
+        /// Specifies the default elevation type to use when requesting an elevated token.
+        /// </summary>
+        /// <remarks>This constant is typically used as a default value when an explicit elevation type is
+        /// not provided. The value is set to HighestAvailable, which requests the highest available privileges for the
+        /// current user context.</remarks>
+        internal const ElevatedTokenType DefaultElevationType = ElevatedTokenType.HighestAvailable;
     }
 }

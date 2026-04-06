@@ -25,5 +25,5 @@ function Private:Invoke-ADTSilentRestart
     )
 
     # Hand this off to the client/server process to deal with. Run it as this current user though.
-    $null = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation([System.String[]]('/SilentRestart', '-Delay', "$Delay"), $null, [PSADT.Security.ElevatedTokenType]::None, $null, $null)
+    $null = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation([System.String[]]('/SilentRestart', '-Delay', "$Delay"), $null, $null)
 }
