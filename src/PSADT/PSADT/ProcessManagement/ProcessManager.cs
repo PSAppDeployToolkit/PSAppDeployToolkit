@@ -144,7 +144,7 @@ namespace PSADT.ProcessManagement
                         }
                     }
                 }
-                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType == ElevatedTokenType.None || (launchInfo.UIAccess && CanUseCreateProcessAsUser(true, callerPrivileges) == CreateProcessUsingTokenStatus.OK)))
+                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType == ElevatedTokenType.None || (launchInfo.UIAccess && (!hasExternalHandles || CanUseCreateProcessAsUser(true, callerPrivileges) == CreateProcessUsingTokenStatus.OK))))
                 {
                     // We're running elevated but have been asked to de-elevate.
                     if (!AccountUtilities.CallerIsLoggedOnUser)
