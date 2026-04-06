@@ -11,43 +11,39 @@
     #-------------------------------------------------------------------------
 }
 Describe 'Module Tests' -Tag Unit {
-    Context "Module Tests" {
+    Context 'Module Tests' {
         $script:manifestEval = $null
-        It 'Passes Test-ModuleManifest' {
+        It 'Should pass Test-ModuleManifest' {
             { $script:manifestEval = Test-ModuleManifest -Path $PathToManifest } | Should -Not -Throw
             $? | Should -BeTrue
         } #manifestTest
-        It 'root module PSAppDeployToolkit.psm1 should exist' {
+        It "The root module 'PSAppDeployToolkit.psm1' should exist" {
             $PathToModule | Should -Exist
             $? | Should -BeTrue
         } #psm1Exists
-        It 'manifest should contain PSAppDeployToolkit.psm1' {
-            $PathToManifest |
-                Should -FileContentMatchExactly "PSAppDeployToolkit.psm1"
+        It "The root module should be 'PSAppDeployToolkit.psm1' in the module manifest" {
+            $script:manifestEval.RootModule | Should -BeExactly 'PSAppDeployToolkit.psm1'
         } #validPSM1
-        It 'should have a matching module name in the manifest' {
+        It 'Should have a matching module name in the manifest' {
             $script:manifestEval.Name | Should -BeExactly $ModuleName
         } #name
-        It 'should have a valid description in the manifest' {
-            $script:manifestEval.Description | Should -Not -BeNullOrEmpty
+        It 'Should have a valid description in the manifest' {
+            [System.String]::IsNullOrWhiteSpace($script:manifestEval.Description) | Should -BeFalse
         } #description
-        It 'should have a valid author in the manifest' {
-            $script:manifestEval.Author | Should -Not -BeNullOrEmpty
+        It 'Should have a valid author in the manifest' {
+            [System.String]::IsNullOrWhiteSpace($script:manifestEval.Author) | Should -BeFalse
         } #author
-        It 'should have a valid version in the manifest' {
-            $script:manifestEval.Version -as [Version] | Should -Not -BeNullOrEmpty
-        } #version
-        It 'should have a valid guid in the manifest' {
-            { [guid]::Parse($script:manifestEval.Guid) } | Should -Not -Throw
+        It 'Should have a valid guid in the manifest' {
+            $script:manifestEval.Guid | Should -Not -Be ([System.Guid]::Empty)
         } #guid
-        It 'should not have any spaces in the tags' {
+        It 'Should not have any whitespace in the tags' {
             foreach ($tag in $script:manifestEval.Tags)
             {
                 $tag | Should -Not -Match '\s'
             }
         } #tagSpaces
-        It 'should have a valid project Uri' {
-            $script:manifestEval.ProjectUri | Should -Not -BeNullOrEmpty
+        It 'Should have a valid project Uri' {
+            [System.String]::IsNullOrWhiteSpace($script:manifestEval.ProjectUri) | Should -BeFalse
         } #uri
     } #context_ModuleTests
 } #describe_ModuleTests
