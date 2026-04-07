@@ -106,7 +106,7 @@ namespace PSADT.Foundation
                 runAsActiveUser,
                 elevatedTokenType: elevatedTokenType ?? DefaultElevationType,
                 denyUserTermination: true,
-                runAsInvoker: runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false && handlesToInherit?.Count > 0,
+                runAsInvoker: runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false && (!AccountUtilities.CallerIsAdmin || handlesToInherit?.Count > 0),
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
                 createNoWindow: !filePath.Name.Contains("Launcher"),
