@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.26100.7705" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.28000.1721" />
   </ItemGroup>
 
   <PropertyGroup>
