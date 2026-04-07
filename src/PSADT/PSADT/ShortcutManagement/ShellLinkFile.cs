@@ -1144,7 +1144,7 @@ namespace PSADT.ShortcutManagement
             {
                 return;
             }
-            if (disposing && _shellLink != null)
+            if (disposing && _shellLink is not null)
             {
                 _ = Marshal.FinalReleaseComObject(_shellLink);
             }
