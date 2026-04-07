@@ -19,6 +19,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
+using Windows.Win32.System.WindowsProgramming;
 
 namespace PSADT.ProcessManagement
 {
@@ -577,6 +578,20 @@ namespace PSADT.ProcessManagement
             return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
                 ? throw new FormatException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from NT path [{ntPath}].")
                 : ntPath.Replace(ntDeviceName, driveLetter);
+        }
+
+        /// <summary>
+        /// Retrieves the access rights granted to a specified process handle.
+        /// </summary>
+        /// <param name="hProcess">A safe handle to the process whose access rights are to be retrieved. The handle must be valid and have
+        /// appropriate query permissions.</param>
+        /// <returns>A value of type PROCESS_ACCESS_RIGHTS that specifies the access rights granted to the process handle.</returns>
+        internal static PROCESS_ACCESS_RIGHTS GetProcessAccessRights(SafeProcessHandle hProcess)
+        {
+            Span<byte> buf = stackalloc byte[NativeMethods.ObjectInfoClassSizes[OBJECT_INFORMATION_CLASS.ObjectBasicInformation]];
+            _ = NativeMethods.NtQueryObject(hProcess, OBJECT_INFORMATION_CLASS.ObjectBasicInformation, buf, out _);
+            ref readonly PUBLIC_OBJECT_BASIC_INFORMATION pobi = ref buf.AsReadOnlyStructure<PUBLIC_OBJECT_BASIC_INFORMATION>();
+            return (PROCESS_ACCESS_RIGHTS)pobi.GrantedAccess;
         }
 
         /// <summary>

@@ -321,7 +321,7 @@ namespace PSADT.ProcessManagement
             // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
             try
             {
-                if (launchInfo.PriorityClass is not null && ProcessTools.TestProcessAccessRights(hProcess, PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION))
+                if (launchInfo.PriorityClass is not null && (ProcessUtilities.GetProcessAccessRights(hProcess) & PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION) != 0)
                 {
                     process.PriorityClass = launchInfo.PriorityClass.Value;
                 }
