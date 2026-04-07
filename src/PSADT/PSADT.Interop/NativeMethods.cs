@@ -38,6 +38,7 @@ using Windows.Win32.System.Services;
 using Windows.Win32.System.SystemInformation;
 using Windows.Win32.System.Threading;
 using Windows.Win32.System.Variant;
+using Windows.Win32.System.WindowsProgramming;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
@@ -4330,6 +4331,7 @@ namespace PSADT.Interop
         /// </summary>
         internal static readonly ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>()
         {
+            { OBJECT_INFORMATION_CLASS.ObjectBasicInformation, Marshal.SizeOf<PUBLIC_OBJECT_BASIC_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf<OBJECT_TYPES_INFORMATION>() }
