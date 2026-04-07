@@ -208,7 +208,7 @@ namespace PSADT.ProcessManagement
                             _ = NativeMethods.ResumeThread(hThread);
                         }
                         stdInHandle?.Task.Start(TaskScheduler.Default);
-                        return new(new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess, stdOutHandle, stdErrHandle, interleavedData, stdInHandle));
+                        return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges, stdOutHandle, stdErrHandle, interleavedData, stdInHandle));
                     }
                     else
                     {
@@ -216,7 +216,7 @@ namespace PSADT.ProcessManagement
                         {
                             _ = NativeMethods.ResumeThread(hThread);
                         }
-                        return new(new(launchInfo, process, commandSpan.ToString(), callerPrivileges, processId, hProcess));
+                        return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges));
                     }
                 }
                 catch (Exception ex)

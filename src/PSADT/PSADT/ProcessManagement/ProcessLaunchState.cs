@@ -37,15 +37,15 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
         /// <param name="process">The Process object representing the running process.</param>
-        /// <param name="commandLine">The full command line used to launch the process.</param>
-        /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
         /// <param name="processId">The unique identifier of the started process.</param>
         /// <param name="processHandle">A safe handle to the process, used for resource management and native operations.</param>
+        /// <param name="commandLine">The full command line used to launch the process.</param>
+        /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
         /// <param name="stdOutHandle">The handle responsible for asynchronously reading the standard output stream of the process.</param>
         /// <param name="stdErrHandle">The handle responsible for asynchronously reading the standard error stream of the process.</param>
         /// <param name="interleavedBuffer">A read-only collection containing the combined output from both standard output and standard error streams.</param>
         /// <param name="stdInHandle">An optional handle for writing to the standard input stream of the process, if input is being provided.</param>
-        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, string commandLine, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, uint processId, SafeProcessHandle processHandle, ProcessReadStream stdOutHandle, ProcessReadStream stdErrHandle, IReadOnlyCollection<string> interleavedBuffer, ProcessWriteStream? stdInHandle = null) : this(launchInfo, process, commandLine, callerPrivileges, processId, processHandle)
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, ProcessReadStream stdOutHandle, ProcessReadStream stdErrHandle, IReadOnlyCollection<string> interleavedBuffer, ProcessWriteStream? stdInHandle = null) : this(launchInfo, process, processId, processHandle, commandLine, callerPrivileges)
         {
             StdOut = stdOutHandle;
             StdErr = stdErrHandle;
@@ -59,7 +59,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="launchInfo">The launch information that describes how the process was started.</param>
         /// <param name="process">The Process object representing the running process.</param>
-        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process) : this(launchInfo, process, launchInfo.MakeCommandLine(), PrivilegeManager.GetPrivileges(), (uint)process.Id, process.SafeHandle)
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process) : this(launchInfo, process, (uint)process.Id, process.SafeHandle, launchInfo.MakeCommandLine(), PrivilegeManager.GetPrivileges())
         {
             CanDisposeProcessHandle = false;
         }
@@ -73,11 +73,11 @@ namespace PSADT.ProcessManagement
         /// invalid.</remarks>
         /// <param name="launchInfo">The launch information describing how the process was started. Cannot be null.</param>
         /// <param name="process">The Process object representing the started process. Cannot be null.</param>
-        /// <param name="commandLine">The full command line used to start the process. Cannot be null or whitespace.</param>
-        /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
         /// <param name="processId">The unique identifier of the started process.</param>
         /// <param name="processHandle">A safe handle to the started process. Cannot be null.</param>
-        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, string commandLine, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges, uint processId, SafeProcessHandle processHandle)
+        /// <param name="commandLine">The full command line used to start the process. Cannot be null or whitespace.</param>
+        /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
+        internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges)
         {
             // Confirm all inputs are valid.
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
