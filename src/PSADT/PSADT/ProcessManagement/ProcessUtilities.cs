@@ -150,6 +150,23 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves the parent process of the specified process handle.
+        /// </summary>
+        /// <remarks>This method uses the NtQueryInformationProcess function to retrieve information about
+        /// the specified process. Ensure that the provided process handle is valid and has the required
+        /// permissions.</remarks>
+        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose parent process is to be retrieved.
+        /// The handle must have the necessary access rights to query process information.</param>
+        /// <returns>The process Id representing the parent process of the specified process.</returns>
+        internal static uint GetParentProcessId(SafeHandle hProcess)
+        {
+            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
+            ref readonly PROCESS_BASIC_INFORMATION pbi = ref buffer.AsReadOnlyStructure<PROCESS_BASIC_INFORMATION>();
+            return (uint)pbi.InheritedFromUniqueProcessId;
+        }
+
+        /// <summary>
         /// Determines whether the specified process has exited using minimal privileges.
         /// </summary>
         /// <remarks>This method opens the process with <c>PROCESS_QUERY_LIMITED_INFORMATION</c> access
@@ -253,6 +270,27 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves the full command-line string used to start the specified process.
+        /// </summary>
+        /// <remarks>This method requires that the caller has sufficient permissions to query information
+        /// about the target process. If the process has already exited or access is denied, the returned string may be
+        /// empty.</remarks>
+        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose command-line arguments are to be retrieved.</param>
+        /// <returns>A string containing the complete command-line used to launch the specified process. Returns an empty string
+        /// if the command-line cannot be retrieved.</returns>
+        internal static string GetProcessCommandLine(SafeHandle hProcess)
+        {
+            // Get the required length we need for the buffer.
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
+
+            // Allocate the buffer, then retrieve the actual command line string.
+            Span<byte> buffer = stackalloc byte[(int)requiredLength];
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
+            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
+            return unicodeString.ToManagedString();
+        }
+
+        /// <summary>
         /// Retrieves the full file system path of the executable image for the specified process.
         /// </summary>
         /// <param name="process">The process for which to obtain the image file path. Must not be null.</param>
@@ -281,41 +319,24 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the parent process of the specified process handle.
+        /// Retrieves the full image file name of a process specified by its process identifier (PID), using multiple
+        /// fallback methods to maximize compatibility across Windows versions and process types.
         /// </summary>
-        /// <remarks>This method uses the NtQueryInformationProcess function to retrieve information about
-        /// the specified process. Ensure that the provided process handle is valid and has the required
-        /// permissions.</remarks>
-        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose parent process is to be retrieved.
-        /// The handle must have the necessary access rights to query process information.</param>
-        /// <returns>The process Id representing the parent process of the specified process.</returns>
-        internal static uint GetParentProcessId(SafeHandle hProcess)
+        /// <remarks>This method attempts several approaches to obtain the process image name, including
+        /// kernel and user-mode APIs, to ensure compatibility with different Windows versions and process
+        /// architectures. The returned path may be in NT device format or DOS drive letter format, depending on which
+        /// method succeeds. Callers should be prepared to handle either format.</remarks>
+        /// <param name="processId">The identifier of the process whose image file name is to be retrieved.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to DOS drive letter paths, if applicable. Can be
+        /// empty if no translation is required.</param>
+        /// <returns>A string containing the full path to the process's executable image. The path format may vary depending on
+        /// the method used and system configuration.</returns>
+        /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
+        /// of each failure encountered during the retrieval attempts.</exception>
+        internal static FileInfo GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
-            ref readonly PROCESS_BASIC_INFORMATION pbi = ref buffer.AsReadOnlyStructure<PROCESS_BASIC_INFORMATION>();
-            return (uint)pbi.InheritedFromUniqueProcessId;
-        }
-
-        /// <summary>
-        /// Retrieves the full command-line string used to start the specified process.
-        /// </summary>
-        /// <remarks>This method requires that the caller has sufficient permissions to query information
-        /// about the target process. If the process has already exited or access is denied, the returned string may be
-        /// empty.</remarks>
-        /// <param name="hProcess">A <see cref="SafeHandle"/> representing the handle to the process whose command-line arguments are to be retrieved.</param>
-        /// <returns>A string containing the complete command-line used to launch the specified process. Returns an empty string
-        /// if the command-line cannot be retrieved.</returns>
-        internal static string GetProcessCommandLine(SafeHandle hProcess)
-        {
-            // Get the required length we need for the buffer.
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
-
-            // Allocate the buffer, then retrieve the actual command line string.
-            Span<byte> buffer = stackalloc byte[(int)requiredLength];
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, buffer, out _);
-            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString();
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+            return GetProcessImageName((uint)processId, ntPathLookupTable);
         }
 
         /// <summary>
@@ -401,94 +422,6 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
-        /// Retrieves the full image file name of a process specified by its process identifier (PID), using multiple
-        /// fallback methods to maximize compatibility across Windows versions and process types.
-        /// </summary>
-        /// <remarks>This method attempts several approaches to obtain the process image name, including
-        /// kernel and user-mode APIs, to ensure compatibility with different Windows versions and process
-        /// architectures. The returned path may be in NT device format or DOS drive letter format, depending on which
-        /// method succeeds. Callers should be prepared to handle either format.</remarks>
-        /// <param name="processId">The identifier of the process whose image file name is to be retrieved.</param>
-        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to DOS drive letter paths, if applicable. Can be
-        /// empty if no translation is required.</param>
-        /// <returns>A string containing the full path to the process's executable image. The path format may vary depending on
-        /// the method used and system configuration.</returns>
-        /// <exception cref="AggregateException">Thrown if all available methods for retrieving the process image name fail. The exception contains details
-        /// of each failure encountered during the retrieval attempts.</exception>
-        internal static FileInfo GetProcessImageName(int processId, ReadOnlyDictionary<string, string>? ntPathLookupTable)
-        {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
-            return GetProcessImageName((uint)processId, ntPathLookupTable);
-        }
-
-        /// <summary>
-        /// Retrieves the full path of the executable file for the specified process.
-        /// </summary>
-        /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
-        /// <returns>A string containing the full path to the executable file of the process.</returns>
-        /// <exception cref="InvalidProgramException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
-        internal static FileInfo QueryFullProcessImageName(SafeHandle hProcess)
-        {
-            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
-            _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
-            string result = buffer.Slice(0, (int)requiredLength).ToString();
-            return string.IsNullOrWhiteSpace(result)
-                ? throw new InvalidProgramException("The QueryFullProcessImageName() call returned a null or empty result.")
-                : new(result);
-        }
-
-        /// <summary>
-        /// Retrieves the full Win32 file system path of the executable image for the specified process.
-        /// </summary>
-        /// <remarks>The returned path is translated from the native NT device path to a Win32 file system
-        /// path using the provided lookup table. This method does not validate whether the process is still running or
-        /// whether the returned path points to an existing file.</remarks>
-        /// <param name="hProcess">A handle to the process whose image file name is to be retrieved. The handle must have the required access
-        /// rights to query information about the process.</param>
-        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to Win32 file system paths. The method uses this
-        /// table to convert the native NT path returned by the system to a standard Win32 path.</param>
-        /// <returns>A string containing the full Win32 file system path of the process's executable image.</returns>
-        /// <exception cref="InvalidProgramException">Thrown if the underlying system call does not return a valid image file name.</exception>
-        internal static FileInfo GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
-        {
-            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
-            string result = buffer.Slice(0, (int)NativeMethods.GetProcessImageFileName(hProcess, buffer)).ToString();
-            return string.IsNullOrWhiteSpace(result)
-                ? throw new InvalidProgramException("The GetProcessImageFileName() call returned a null or empty result.")
-                : new(TranslateNtPathToWin32Path(result, ntPathLookupTable));
-        }
-
-        /// <summary>
-        /// Retrieves the Win32 path of the executable image for the specified process.
-        /// </summary>
-        /// <param name="hProcess">A handle to the process whose image file name is to be retrieved. The handle must have the required access
-        /// rights to query information about the process.</param>
-        /// <returns>A string containing the Win32 path of the process's executable image, or null if the path cannot be
-        /// determined.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static FileInfo QueryProcessImageFileNameWin32(SafeHandle hProcess)
-        {
-            return new(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32));
-        }
-
-        /// <summary>
-        /// Retrieves the full Win32 file system path of the executable image for the specified process.
-        /// </summary>
-        /// <remarks>If the process is running under a different user context or with restricted
-        /// permissions, the returned path may be inaccessible or incomplete depending on the caller's
-        /// privileges.</remarks>
-        /// <param name="hProcess">A handle to the process whose image file name is to be queried. The handle must have the required access
-        /// rights to query process information.</param>
-        /// <param name="ntPathLookupTable">A read-only dictionary used to map NT device paths to Win32 file system paths. This table is applied to
-        /// translate the native path format returned by the system.</param>
-        /// <returns>A string containing the full Win32 path to the executable image of the specified process.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static FileInfo QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
-        {
-            return new(TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable));
-        }
-
-        /// <summary>
         /// Retrieves the image file path of the process associated with the specified process ID, returning the path in
         /// Win32 format.
         /// </summary>
@@ -501,7 +434,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The Win32-formatted image file path of the specified process.</returns>
         /// <exception cref="NotSupportedException">Thrown if the method is called from a 32-bit process on a 64-bit operating system, if the image name query
         /// returns a null or empty result, or if the retrieved image name is not a valid NT path.</exception>
-        internal static FileInfo QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        private static FileInfo QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             // Throw if we're a 32-bit process on a 64-bit system as we cannot query the image name in that case.
             if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture)
@@ -541,6 +474,92 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Retrieves the full path of the executable file for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process. The handle must have the PROCESS_QUERY_LIMITED_INFORMATION access right.</param>
+        /// <returns>A string containing the full path to the executable file of the process.</returns>
+        /// <exception cref="InvalidProgramException">Thrown if the process image name cannot be retrieved or the result is null or empty.</exception>
+        private static FileInfo QueryFullProcessImageName(SafeHandle hProcess)
+        {
+            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
+            _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
+            string result = buffer.Slice(0, (int)requiredLength).ToString();
+            return string.IsNullOrWhiteSpace(result)
+                ? throw new InvalidProgramException("The QueryFullProcessImageName() call returned a null or empty result.")
+                : new(result);
+        }
+
+        /// <summary>
+        /// Retrieves the full Win32 file system path of the executable image for the specified process.
+        /// </summary>
+        /// <remarks>The returned path is translated from the native NT device path to a Win32 file system
+        /// path using the provided lookup table. This method does not validate whether the process is still running or
+        /// whether the returned path points to an existing file.</remarks>
+        /// <param name="hProcess">A handle to the process whose image file name is to be retrieved. The handle must have the required access
+        /// rights to query information about the process.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to translate NT device paths to Win32 file system paths. The method uses this
+        /// table to convert the native NT path returned by the system to a standard Win32 path.</param>
+        /// <returns>A string containing the full Win32 file system path of the process's executable image.</returns>
+        /// <exception cref="InvalidProgramException">Thrown if the underlying system call does not return a valid image file name.</exception>
+        private static FileInfo GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        {
+            Span<char> buffer = stackalloc char[1024]; buffer.Clear();
+            string result = buffer.Slice(0, (int)NativeMethods.GetProcessImageFileName(hProcess, buffer)).ToString();
+            return string.IsNullOrWhiteSpace(result)
+                ? throw new InvalidProgramException("The GetProcessImageFileName() call returned a null or empty result.")
+                : new(TranslateNtPathToWin32Path(result, ntPathLookupTable));
+        }
+
+        /// <summary>
+        /// Retrieves the Win32 path of the executable image for the specified process.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process whose image file name is to be retrieved. The handle must have the required access
+        /// rights to query information about the process.</param>
+        /// <returns>A string containing the Win32 path of the process's executable image, or null if the path cannot be
+        /// determined.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static FileInfo QueryProcessImageFileNameWin32(SafeHandle hProcess)
+        {
+            return new(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32));
+        }
+
+        /// <summary>
+        /// Retrieves the full Win32 file system path of the executable image for the specified process.
+        /// </summary>
+        /// <remarks>If the process is running under a different user context or with restricted
+        /// permissions, the returned path may be inaccessible or incomplete depending on the caller's
+        /// privileges.</remarks>
+        /// <param name="hProcess">A handle to the process whose image file name is to be queried. The handle must have the required access
+        /// rights to query process information.</param>
+        /// <param name="ntPathLookupTable">A read-only dictionary used to map NT device paths to Win32 file system paths. This table is applied to
+        /// translate the native path format returned by the system.</param>
+        /// <returns>A string containing the full Win32 path to the executable image of the specified process.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static FileInfo QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        {
+            return new(TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable));
+        }
+
+        /// <summary>
+        /// Retrieves the image file name of a process using the specified process information class.
+        /// </summary>
+        /// <param name="hProcess">A handle to the process for which to query the image file name. The handle must have appropriate access
+        /// rights for the requested information.</param>
+        /// <param name="processInfoClass">The type of process information to query, specifying how the image file name should be retrieved.</param>
+        /// <returns>A string containing the image file name of the specified process.</returns>
+        private static string QueryProcessImageFileNameCommon(SafeHandle hProcess, PROCESSINFOCLASS processInfoClass)
+        {
+            // Determine required buffer size.
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, processInfoClass, null, out uint requiredLength);
+            Span<byte> buffer = stackalloc byte[(int)requiredLength];
+
+            // Perform the query.
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, processInfoClass, buffer, out _);
+            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
+            return unicodeString.ToManagedString();
+        }
+
+        /// <summary>
         /// Translates an NT device path to its corresponding Win32 path using the specified lookup table.
         /// </summary>
         /// <remarks>This method is intended for scenarios where conversion between NT device paths and
@@ -552,7 +571,7 @@ namespace PSADT.ProcessManagement
         /// Win32 drive letters (e.g., "C:").</param>
         /// <returns>A string containing the Win32 path equivalent of the specified NT device path.</returns>
         /// <exception cref="FormatException">Thrown if the NT device name derived from the specified path does not exist in the lookup table.</exception>
-        internal static string TranslateNtPathToWin32Path(string ntPath, ReadOnlyDictionary<string, string> ntPathLookupTable)
+        private static string TranslateNtPathToWin32Path(string ntPath, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             string ntDeviceName = $@"\{string.Join(@"\", ntPath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
             return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
@@ -578,25 +597,6 @@ namespace PSADT.ProcessManagement
             return serviceStatus.dwProcessId == 0
                 ? throw new InvalidOperationException($"The service [{service.ServiceName}] is not running or does not have a valid process ID.")
                 : serviceStatus.dwProcessId;
-        }
-
-        /// <summary>
-        /// Retrieves the image file name of a process using the specified process information class.
-        /// </summary>
-        /// <param name="hProcess">A handle to the process for which to query the image file name. The handle must have appropriate access
-        /// rights for the requested information.</param>
-        /// <param name="processInfoClass">The type of process information to query, specifying how the image file name should be retrieved.</param>
-        /// <returns>A string containing the image file name of the specified process.</returns>
-        private static string QueryProcessImageFileNameCommon(SafeHandle hProcess, PROCESSINFOCLASS processInfoClass)
-        {
-            // Determine required buffer size.
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, processInfoClass, null, out uint requiredLength);
-            Span<byte> buffer = stackalloc byte[(int)requiredLength];
-
-            // Perform the query.
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, processInfoClass, buffer, out _);
-            ref readonly UNICODE_STRING unicodeString = ref buffer.AsReadOnlyStructure<UNICODE_STRING>();
-            return unicodeString.ToManagedString();
         }
     }
 }
