@@ -19,7 +19,7 @@ namespace PSADT.Interop.Extensions
         {
             unsafe
             {
-                return pwstr.Value == null;
+                return pwstr.Value is null;
             }
         }
 

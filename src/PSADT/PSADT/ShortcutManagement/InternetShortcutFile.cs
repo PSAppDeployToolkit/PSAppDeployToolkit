@@ -843,7 +843,7 @@ namespace PSADT.ShortcutManagement
             {
                 return;
             }
-            if (disposing && _internetShortcut != null)
+            if (disposing && _internetShortcut is not null)
             {
                 _ = Marshal.FinalReleaseComObject(_internetShortcut);
             }
