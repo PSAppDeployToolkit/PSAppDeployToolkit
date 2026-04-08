@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -143,7 +142,6 @@ namespace PSADT.Foundation
                 useShellExecute: useShellExecute,
                 createNoWindow: !filePath.Name.Contains("Launcher"),
                 waitForChildProcesses: true,
-                windowStyle: ProcessWindowStyle.Hidden,
                 cancellationToken: cancellationToken
             )) ?? throw new InvalidOperationException("Failed to launch client operation.");
         }
