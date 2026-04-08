@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -225,8 +226,8 @@ namespace PSADT.FileSystem
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(path);
             }
-            int handleInfoExSize = Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
-            int handleEntryExSize = Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
+            int handleInfoExSize = Unsafe.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>();
+            int handleEntryExSize = Unsafe.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
             byte[] handleBuffer = new byte[GetExtendedHandleBufferSize(handleInfoExSize + handleEntryExSize) * 5 / 4];
             _ = NativeMethods.NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, handleBuffer, out _);
 

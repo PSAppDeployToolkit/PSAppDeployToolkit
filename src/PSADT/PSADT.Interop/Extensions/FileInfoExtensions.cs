@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security.WinTrust;
@@ -36,12 +36,12 @@ namespace PSADT.Interop.Extensions
                     // Set up WINTRUST_DATA to not perform any network comms.
                     WINTRUST_FILE_INFO wtFileInfo = new()
                     {
-                        cbStruct = (uint)Marshal.SizeOf<WINTRUST_FILE_INFO>(),
+                        cbStruct = (uint)Unsafe.SizeOf<WINTRUST_FILE_INFO>(),
                         pcwszFilePath = pFilePath,
                     };
                     WINTRUST_DATA wtData = new()
                     {
-                        cbStruct = (uint)Marshal.SizeOf<WINTRUST_DATA>(),
+                        cbStruct = (uint)Unsafe.SizeOf<WINTRUST_DATA>(),
                         dwUIChoice = WINTRUST_DATA_UICHOICE.WTD_UI_NONE,
                         fdwRevocationChecks = WINTRUST_DATA_REVOCATION_CHECKS.WTD_REVOKE_NONE,
                         dwUnionChoice = WINTRUST_DATA_UNION_CHOICE.WTD_CHOICE_FILE,

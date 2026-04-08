@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -54,7 +53,7 @@ namespace PSADT.Security
             ref readonly TOKEN_PRIVILEGES tokenPrivileges = ref buffer.AsReadOnlyStructure<TOKEN_PRIVILEGES>();
             uint privilegeCount = tokenPrivileges.PrivilegeCount;
             int bufferOffset = sizeof(uint);
-            int increment = Marshal.SizeOf<LUID_AND_ATTRIBUTES>();
+            int increment = Unsafe.SizeOf<LUID_AND_ATTRIBUTES>();
             Span<char> charSpan = stackalloc char[1024]; charSpan.Clear();
             List<SE_PRIVILEGE> privileges = [];
             if (attributes is not null)

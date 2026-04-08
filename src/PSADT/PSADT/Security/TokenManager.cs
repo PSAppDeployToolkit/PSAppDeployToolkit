@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Pipes;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
@@ -267,7 +268,7 @@ namespace PSADT.Security
         /// handle.</returns>
         internal static SafeFileHandle GetLinkedToken(SafeHandle tokenHandle)
         {
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<TOKEN_LINKED_TOKEN>()];
+            Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<TOKEN_LINKED_TOKEN>()];
             _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
             ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
             return new(tokenLinkedToken.LinkedToken, true);

@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 
@@ -106,7 +106,7 @@ namespace PSADT.UserInterface.Utilities
             }
 
             // Confirm the stream has enough data for an ICONDIR header.
-            int iconDirSize = Marshal.SizeOf<ICONDIR>();
+            int iconDirSize = Unsafe.SizeOf<ICONDIR>();
             if (stream.Length < iconDirSize)
             {
                 return false;
@@ -179,8 +179,8 @@ namespace PSADT.UserInterface.Utilities
                 resized.Save(pngStream, ImageFormat.Png);
                 frames[i] = (newSize, pngStream.ToArray());
             }
-            int iconDirEntrySize = Marshal.SizeOf<ICONDIRENTRY>();
-            int imageDataOffset = Marshal.SizeOf<ICONDIR>() - iconDirEntrySize + (frames.Length * iconDirEntrySize);
+            int iconDirEntrySize = Unsafe.SizeOf<ICONDIRENTRY>();
+            int imageDataOffset = Unsafe.SizeOf<ICONDIR>() - iconDirEntrySize + (frames.Length * iconDirEntrySize);
             int totalLength = imageDataOffset;
             for (int i = 0; i < frames.Length; i++)
             {

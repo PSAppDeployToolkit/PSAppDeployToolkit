@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
@@ -78,7 +79,7 @@ namespace PSADT.ProcessManagement
                 // Set up the startup information for the process.
                 PROCESS_INFORMATION pi; STARTUPINFOW startupInfo = new()
                 {
-                    cb = (uint)Marshal.SizeOf<STARTUPINFOW>(),
+                    cb = (uint)Unsafe.SizeOf<STARTUPINFOW>(),
                 };
                 PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
                     PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
@@ -505,7 +506,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Since we're part of a job object, we need to check if the job has the JOB_OBJECT_LIMIT_BREAKAWAY_OK flag set.
-            Span<byte> lpJobObjectInformation = stackalloc byte[Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
+            Span<byte> lpJobObjectInformation = stackalloc byte[Unsafe.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>()];
             _ = NativeMethods.QueryInformationJobObject(JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, lpJobObjectInformation, out _);
             ref readonly JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobObjectInfo = ref lpJobObjectInformation.AsReadOnlyStructure<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
             if (!(jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK) || jobObjectInfo.BasicLimitInformation.LimitFlags.HasFlag(JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_BREAKAWAY_OK)))
@@ -672,7 +673,7 @@ namespace PSADT.ProcessManagement
 
                     // Create the STARTUPINFOEXW structure.
                     STARTUPINFOEXW startupInfoEx = new() { StartupInfo = startupInfo };
-                    startupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf<STARTUPINFOEXW>();
+                    startupInfoEx.StartupInfo.cb = (uint)Unsafe.SizeOf<STARTUPINFOEXW>();
                     startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
                     return (startupInfoEx, hAttributeList);
                 }

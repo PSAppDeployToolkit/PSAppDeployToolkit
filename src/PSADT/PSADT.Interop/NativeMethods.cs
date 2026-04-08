@@ -2508,7 +2508,7 @@ namespace PSADT.Interop
         /// information was retrieved successfully.</returns>
         internal static NTSTATUS RtlGetVersion(out OSVERSIONINFOEXW lpVersionInformation)
         {
-            lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Marshal.SizeOf<OSVERSIONINFOEXW>() };
+            lpVersionInformation = new() { dwOSVersionInfoSize = (uint)Unsafe.SizeOf<OSVERSIONINFOEXW>() };
             unsafe
             {
                 fixed (OSVERSIONINFOEXW* lpVersionInformationLocal = &lpVersionInformation)
@@ -2799,7 +2799,7 @@ namespace PSADT.Interop
                 {
                     fixed (MODULEINFO* pModuleInfo = &lpmodinfo)
                     {
-                        BOOL res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Marshal.SizeOf<MODULEINFO>());
+                        BOOL res = PInvoke.GetModuleInformation((HANDLE)hProcess.DangerousGetHandle(), hModule, pModuleInfo, (uint)Unsafe.SizeOf<MODULEINFO>());
                         return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                     }
                 }
@@ -2952,7 +2952,7 @@ namespace PSADT.Interop
         {
             [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
             static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
-            psii = new() { cbSize = (uint)Marshal.SizeOf<SHSTOCKICONINFO>() };
+            psii = new() { cbSize = (uint)Unsafe.SizeOf<SHSTOCKICONINFO>() };
             HRESULT res = SHGetStockIconInfo(siid, uFlags, ref psii);
             try
             {
@@ -3571,7 +3571,7 @@ namespace PSADT.Interop
         /// <exception cref="Win32Exception">Thrown if the method fails to retrieve the last input information.</exception>
         internal static BOOL GetLastInputInfo(out LASTINPUTINFO plii)
         {
-            plii = new() { cbSize = (uint)Marshal.SizeOf<LASTINPUTINFO>() }; BOOL res = PInvoke.GetLastInputInfo(ref plii);
+            plii = new() { cbSize = (uint)Unsafe.SizeOf<LASTINPUTINFO>() }; BOOL res = PInvoke.GetLastInputInfo(ref plii);
             return !res ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to retrieve the last input info.") : res;
         }
 
@@ -4174,7 +4174,7 @@ namespace PSADT.Interop
         {
             lpBuffer = new MEMORYSTATUSEX
             {
-                dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>()
+                dwLength = (uint)Unsafe.SizeOf<MEMORYSTATUSEX>()
             };
             BOOL res = PInvoke.GlobalMemoryStatusEx(ref lpBuffer);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -4322,8 +4322,8 @@ namespace PSADT.Interop
         /// </summary>
         internal static readonly ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()
         {
-            { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Marshal.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Marshal.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
-            { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Marshal.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
+            { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Unsafe.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Unsafe.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
+            { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Unsafe.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
         });
 
         /// <summary>
@@ -4331,10 +4331,10 @@ namespace PSADT.Interop
         /// </summary>
         internal static readonly ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>()
         {
-            { OBJECT_INFORMATION_CLASS.ObjectBasicInformation, Marshal.SizeOf<PUBLIC_OBJECT_BASIC_INFORMATION>() },
-            { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Marshal.SizeOf<OBJECT_NAME_INFORMATION>() },
-            { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Marshal.SizeOf<OBJECT_TYPE_INFORMATION>() },
-            { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Marshal.SizeOf<OBJECT_TYPES_INFORMATION>() }
+            { OBJECT_INFORMATION_CLASS.ObjectBasicInformation, Unsafe.SizeOf<PUBLIC_OBJECT_BASIC_INFORMATION>() },
+            { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Unsafe.SizeOf<OBJECT_NAME_INFORMATION>() },
+            { OBJECT_INFORMATION_CLASS.ObjectTypeInformation, Unsafe.SizeOf<OBJECT_TYPE_INFORMATION>() },
+            { OBJECT_INFORMATION_CLASS.ObjectTypesInformation, Unsafe.SizeOf<OBJECT_TYPES_INFORMATION>() }
         });
 
         /// <summary>
@@ -4342,18 +4342,18 @@ namespace PSADT.Interop
         /// </summary>
         internal static readonly ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>()
         {
-            { POLICY_INFORMATION_CLASS.PolicyAuditLogInformation, Marshal.SizeOf<POLICY_AUDIT_LOG_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyAuditEventsInformation, Marshal.SizeOf<POLICY_AUDIT_EVENTS_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyPrimaryDomainInformation, Marshal.SizeOf<POLICY_PRIMARY_DOMAIN_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyPdAccountInformation, Marshal.SizeOf<POLICY_PD_ACCOUNT_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, Marshal.SizeOf<POLICY_ACCOUNT_DOMAIN_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyLsaServerRoleInformation, Marshal.SizeOf<POLICY_LSA_SERVER_ROLE_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyReplicaSourceInformation, Marshal.SizeOf<POLICY_REPLICA_SOURCE_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyDefaultQuotaInformation, Marshal.SizeOf<POLICY_DEFAULT_QUOTA_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyModificationInformation, Marshal.SizeOf<POLICY_MODIFICATION_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyAuditFullSetInformation, Marshal.SizeOf<POLICY_AUDIT_FULL_SET_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyAuditFullQueryInformation, Marshal.SizeOf<POLICY_AUDIT_FULL_QUERY_INFO>() },
-            { POLICY_INFORMATION_CLASS.PolicyDnsDomainInformation, Marshal.SizeOf<POLICY_DNS_DOMAIN_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditLogInformation, Unsafe.SizeOf<POLICY_AUDIT_LOG_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditEventsInformation, Unsafe.SizeOf<POLICY_AUDIT_EVENTS_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyPrimaryDomainInformation, Unsafe.SizeOf<POLICY_PRIMARY_DOMAIN_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyPdAccountInformation, Unsafe.SizeOf<POLICY_PD_ACCOUNT_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAccountDomainInformation, Unsafe.SizeOf<POLICY_ACCOUNT_DOMAIN_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyLsaServerRoleInformation, Unsafe.SizeOf<POLICY_LSA_SERVER_ROLE_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyReplicaSourceInformation, Unsafe.SizeOf<POLICY_REPLICA_SOURCE_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyDefaultQuotaInformation, Unsafe.SizeOf<POLICY_DEFAULT_QUOTA_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyModificationInformation, Unsafe.SizeOf<POLICY_MODIFICATION_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditFullSetInformation, Unsafe.SizeOf<POLICY_AUDIT_FULL_SET_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyAuditFullQueryInformation, Unsafe.SizeOf<POLICY_AUDIT_FULL_QUERY_INFO>() },
+            { POLICY_INFORMATION_CLASS.PolicyDnsDomainInformation, Unsafe.SizeOf<POLICY_DNS_DOMAIN_INFO>() },
         });
 
         /// <summary>

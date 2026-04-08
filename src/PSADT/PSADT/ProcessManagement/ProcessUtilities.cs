@@ -161,7 +161,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The process Id representing the parent process of the specified process.</returns>
         internal static uint GetParentProcessId(SafeHandle hProcess)
         {
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<PROCESS_BASIC_INFORMATION>()];
+            Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<PROCESS_BASIC_INFORMATION>()];
             _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessBasicInformation, buffer, out _);
             ref readonly PROCESS_BASIC_INFORMATION pbi = ref buffer.AsReadOnlyStructure<PROCESS_BASIC_INFORMATION>();
             return (uint)pbi.InheritedFromUniqueProcessId;
@@ -606,7 +606,7 @@ namespace PSADT.ProcessManagement
         {
             using CloseServiceHandleSafeHandle scm = NativeMethods.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);
             using CloseServiceHandleSafeHandle svc = NativeMethods.OpenService(scm, service.ServiceName, SERVICE_ACCESS_RIGHTS.SERVICE_QUERY_STATUS);
-            Span<byte> buffer = stackalloc byte[Marshal.SizeOf<SERVICE_STATUS_PROCESS>()];
+            Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<SERVICE_STATUS_PROCESS>()];
             _ = NativeMethods.QueryServiceStatusEx(svc, SC_STATUS_TYPE.SC_STATUS_PROCESS_INFO, buffer, out _);
             ref readonly SERVICE_STATUS_PROCESS serviceStatus = ref buffer.AsReadOnlyStructure<SERVICE_STATUS_PROCESS>();
             return serviceStatus.dwProcessId == 0

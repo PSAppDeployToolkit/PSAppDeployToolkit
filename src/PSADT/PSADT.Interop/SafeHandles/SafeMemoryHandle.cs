@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop.Extensions;
@@ -60,7 +61,7 @@ namespace PSADT.Interop.SafeHandles
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            if (Marshal.SizeOf<T>() > Length - offset)
+            if (Unsafe.SizeOf<T>() > Length - offset)
             {
                 throw new InvalidOperationException("The size of the structure exceeds the remaining length of the memory region at the specified offset.");
             }
@@ -241,10 +242,10 @@ namespace PSADT.Interop.SafeHandles
         internal ReadOnlySpan<T> AsReadOnlySpan<T>(int offset = 0) where T : unmanaged
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
-            ArgumentOutOfRangeException.ThrowIfNegative(offset); int length = (Length - offset) / Marshal.SizeOf<T>();
+            ArgumentOutOfRangeException.ThrowIfNegative(offset); int length = (Length - offset) / Unsafe.SizeOf<T>();
             return length < 0
                 ? throw new InvalidOperationException("Offset exceeds the length of the memory region.")
-                : (Length - offset) % Marshal.SizeOf<T>() != 0
+                : (Length - offset) % Unsafe.SizeOf<T>() != 0
                 ? throw new InvalidOperationException("Offset must be aligned to the size of the type T.")
                 : (handle + offset).AsReadOnlySpan<T>(length);
         }
