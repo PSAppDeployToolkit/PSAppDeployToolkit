@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -52,6 +52,6 @@ namespace PSADT.Interop.SafeHandles
         /// <remarks>This collection contains the sizes of the structures <see cref="WTS_PROCESS_INFOW"/>,
         /// <see cref="WTS_PROCESS_INFO_EXW"/>, and <see cref="WTS_SESSION_INFO_1W"/>. These sizes are
         /// used for operations involving Windows Terminal Services data structures.</remarks>
-        private static readonly ReadOnlyCollection<int> WtsTypeClassSizes = new([Marshal.SizeOf<WTS_PROCESS_INFOW>(), Marshal.SizeOf<WTS_PROCESS_INFO_EXW>(), Marshal.SizeOf<WTS_SESSION_INFO_1W>()]);
+        private static readonly ReadOnlyCollection<int> WtsTypeClassSizes = new([Unsafe.SizeOf<WTS_PROCESS_INFOW>(), Unsafe.SizeOf<WTS_PROCESS_INFO_EXW>(), Unsafe.SizeOf<WTS_SESSION_INFO_1W>()]);
     }
 }

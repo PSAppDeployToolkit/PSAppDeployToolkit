@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -83,7 +82,7 @@ namespace PSADT.TerminalServices
             using (pSessionInfo)
             {
                 ReadOnlySpan<byte> pSessionInfoSpan = pSessionInfo.AsReadOnlySpan<byte>();
-                int objLength = Marshal.SizeOf<WTS_SESSION_INFO_1W>();
+                int objLength = Unsafe.SizeOf<WTS_SESSION_INFO_1W>();
                 int objCount = pSessionInfo.Length / objLength;
                 for (int i = 0; i < objCount; i++)
                 {

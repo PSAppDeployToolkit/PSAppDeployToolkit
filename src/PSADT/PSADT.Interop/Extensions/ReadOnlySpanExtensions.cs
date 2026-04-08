@@ -21,9 +21,9 @@ namespace PSADT.Interop.Extensions
         /// <returns>A reference to the structure of type T at the start of the span.</returns>
         internal static ref readonly T AsReadOnlyStructure<T>(this ReadOnlySpan<byte> span) where T : unmanaged
         {
-            if (Marshal.SizeOf<T>() > span.Length)
+            if (Unsafe.SizeOf<T>() > span.Length)
             {
-                throw new ArgumentException($"The provided span is too small to contain a structure of type {typeof(T).FullName}.", nameof(span));
+                throw new InvalidOperationException($"The provided span is too small to contain a structure of type {typeof(T).FullName}.");
             }
             return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span));
         }
