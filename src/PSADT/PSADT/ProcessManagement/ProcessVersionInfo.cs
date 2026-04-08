@@ -107,14 +107,14 @@ namespace PSADT.ProcessManagement
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
 
             // Get the main module base address and read the version resource from memory.
-            if (filePath is null)
-            {
-                FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
-            }
-            else
+            if (filePath is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
                 FileName = new(filePath);
+            }
+            else
+            {
+                FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
             }
             ReadOnlySpan<byte> versionResource;
             using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
@@ -124,7 +124,7 @@ namespace PSADT.ProcessManagement
                     MODULEINFO moduleInfo = GetMainModuleInfo(processHandle);
                     versionResource = ReadVersionResource(processHandle, in moduleInfo);
                 }
-                catch
+                catch (Exception ex) when (ex is not BadImageFormatException and not FileFormatException)
                 {
                     return;
                     throw;
@@ -231,7 +231,7 @@ namespace PSADT.ProcessManagement
                 ref readonly IMAGE_OPTIONAL_HEADER32 optionalHeader32 = ref optionalHeader32Buf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER32>();
                 if (optionalHeader32.NumberOfRvaAndSizes <= 2)
                 {
-                    throw new InvalidOperationException("The specified process does not have enough data directories to contain a resource directory.");
+                    throw new FileFormatException("The specified process does not have enough data directories to contain a resource directory.");
                 }
                 resourceRva = optionalHeader32.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
                 resourceSize = optionalHeader32.DataDirectory._2.Size;
@@ -243,7 +243,7 @@ namespace PSADT.ProcessManagement
                 ref readonly IMAGE_OPTIONAL_HEADER64 optionalHeader64 = ref optionalHeader64Buf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER64>();
                 if (optionalHeader64.NumberOfRvaAndSizes <= 2)
                 {
-                    throw new InvalidOperationException("The specified process does not have enough data directories to contain a resource directory.");
+                    throw new FileFormatException("The specified process does not have enough data directories to contain a resource directory.");
                 }
                 resourceRva = optionalHeader64.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
                 resourceSize = optionalHeader64.DataDirectory._2.Size;
@@ -285,7 +285,7 @@ namespace PSADT.ProcessManagement
                     return ReadVersionResourceData(processHandle, resourceDirectoryAddress, baseAddress, entry.Anonymous2.OffsetToData);
                 }
             }
-            throw new InvalidOperationException("The specified process does not contain an RT_VERSION resource in its Level 1 data.");
+            throw new FileFormatException("The specified process does not contain an RT_VERSION resource in its Level 1 data.");
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace PSADT.ProcessManagement
                 _ = NativeMethods.ReadProcessMemory(processHandle, unchecked(baseAddress + (int)dataEntry.OffsetToData), buffer, out _);
                 return buffer;
             }
-            throw new InvalidProgramException($"Invalid data entry size: {dataEntry.Size} at address 0x{(long)dataEntryAddress:X}");
+            throw new BadImageFormatException($"Invalid data entry size: {dataEntry.Size} at address 0x{(long)dataEntryAddress:X}");
         }
 
         /// <summary>
