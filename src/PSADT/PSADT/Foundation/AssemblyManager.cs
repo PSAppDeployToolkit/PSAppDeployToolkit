@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.Security;
 
@@ -19,6 +21,19 @@ namespace PSADT.Foundation
     /// consumers.</remarks>
     internal static class AssemblyManager
     {
+        /// <summary>
+        /// Initializes static members of the AssemblyManager class by determining the file path of the calling process.
+        /// </summary>
+        /// <remarks>This static constructor retrieves the executable path of the current process and
+        /// assigns it to the CallingProcessPath property. This ensures that the path is available for use by other
+        /// static members of the class.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "Needs to be in a static initialiser for process disposal management.")]
+        static AssemblyManager()
+        {
+            using Process currentProcess = Process.GetCurrentProcess();
+            CallingProcessPath = currentProcess.GetFilePath();
+        }
+
         /// <summary>
         /// Ensures that the specified user has the required file system permissions for a set of file paths.
         /// </summary>
@@ -72,6 +87,11 @@ namespace PSADT.Foundation
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the file path of the process that initiated the current execution context.
+        /// </summary>
+        internal static readonly FileInfo CallingProcessPath;
 
         /// <summary>
         /// Gets the directory path of this assembly.
