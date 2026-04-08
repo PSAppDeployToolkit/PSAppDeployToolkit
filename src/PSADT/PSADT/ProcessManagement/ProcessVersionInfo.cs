@@ -124,7 +124,7 @@ namespace PSADT.ProcessManagement
                     MODULEINFO moduleInfo = GetMainModuleInfo(processHandle);
                     versionResource = ReadVersionResource(processHandle, in moduleInfo);
                 }
-                catch (Exception ex) when (ex is not BadImageFormatException and not FileFormatException)
+                catch (Exception ex) when (ex is BadImageFormatException or FileFormatException)
                 {
                     return;
                     throw;
