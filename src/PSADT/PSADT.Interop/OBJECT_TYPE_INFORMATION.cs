@@ -95,14 +95,12 @@ namespace PSADT.Interop
         /// <summary>
         /// The type's security required flag.
         /// </summary>
-        [MarshalAs(UnmanagedType.U1)]
-        internal readonly bool SecurityRequired;
+        internal readonly BOOLEAN SecurityRequired;
 
         /// <summary>
         /// The type's security descriptor present flag.
         /// </summary>
-        [MarshalAs(UnmanagedType.U1)]
-        internal readonly bool MaintainHandleCount;
+        internal readonly BOOLEAN MaintainHandleCount;
 
         /// <summary>
         /// The object type's index.
