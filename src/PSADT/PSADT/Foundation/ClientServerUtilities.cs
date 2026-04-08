@@ -22,6 +22,22 @@ namespace PSADT.Foundation
     public static class ClientServerUtilities
     {
         /// <summary>
+        /// Initializes static members of the ClientServerUtilities class.
+        /// </summary>
+        /// <remarks>This static constructor determines whether the calling process matches any of the
+        /// predefined client or launcher paths and sets the CallerIsClientServerClient property accordingly. This
+        /// affects how the class identifies the context in which it is being used.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "This is fine.")]
+        static ClientServerUtilities()
+        {
+            string callingProcessPath = AssemblyManager.CallingProcessPath.FullName;
+            CallerIsClientServerClient = callingProcessPath.Equals(ClientDefaultPath.FullName, StringComparison.OrdinalIgnoreCase)
+                || callingProcessPath.Equals(ClientCompatiblePath.FullName, StringComparison.OrdinalIgnoreCase)
+                || callingProcessPath.Equals(ClientLauncherDefaultPath.FullName, StringComparison.OrdinalIgnoreCase)
+                || callingProcessPath.Equals(ClientLauncherCompatiblePath.FullName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Launches the client process with the specified arguments and security context, returning a handle to the
         /// created process.
         /// </summary>
@@ -141,6 +157,10 @@ namespace PSADT.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void SetOperationSuccessFlag()
         {
+            if (!CallerIsClientServerClient)
+            {
+                return;
+            }
             Registry.SetValue(UserRegistryPath, OperationSuccessRegistryProperty, 1, RegistryValueKind.DWord);
         }
 
@@ -219,5 +239,10 @@ namespace PSADT.Foundation
         /// not provided. The value is set to HighestAvailable, which requests the highest available privileges for the
         /// current user context.</remarks>
         internal const ElevatedTokenType DefaultElevationType = ElevatedTokenType.HighestAvailable;
+
+        /// <summary>
+        /// Indicates whether the current caller is the client component of the client-server architecture.
+        /// </summary>
+        internal static readonly bool CallerIsClientServerClient;
     }
 }

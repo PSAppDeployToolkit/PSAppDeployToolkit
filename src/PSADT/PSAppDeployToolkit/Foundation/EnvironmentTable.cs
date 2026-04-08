@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,7 +15,6 @@ using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
-using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.TerminalServices;
@@ -212,10 +210,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // PowerShell version information.
-            using (Process currentProcess = Process.GetCurrentProcess())
-            {
-                EnvPSProcessPath = currentProcess.GetFilePath();
-            }
+            EnvPSProcessPath = AssemblyManager.CallingProcessPath;
             if (psVersionTable["CLRVersion"] is Version clrVersion)
             {
                 EnvCLRVersion = clrVersion;
