@@ -48,8 +48,7 @@ namespace PSADT.Interop
         /// <summary>
         /// The path to the file containing the icon.
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-        internal readonly string szPath;
+        internal readonly __char_260 szPath;
 
         /// <summary>
         /// Releases the icon handle if one was retrieved.
