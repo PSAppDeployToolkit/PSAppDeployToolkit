@@ -110,13 +110,17 @@ namespace PSADT.ProcessManagement
             // Confirm we're not using incompatible options.
             if (useShellExecute)
             {
+                if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+                }
                 if (elevatedTokenType?.Equals(Security.ElevatedTokenType.None) == false)
                 {
                     throw new NotSupportedException("Cannot specify ElevatedTokenType while specifying a RunAsActiveUser.");
                 }
-                if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
+                if (runAsInvoker)
                 {
-                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying RunAsInvoker.");
                 }
             }
 
