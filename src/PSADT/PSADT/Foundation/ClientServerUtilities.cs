@@ -96,19 +96,35 @@ namespace PSADT.Foundation
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ProcessHandle InvokeClientOperationImpl(FileInfo filePath, IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType? elevatedTokenType = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
+            bool denyUserTermination = true; bool runAsInvoker = false; bool useShellExecute = false;
+            if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false)
+            {
+                if (useShellExecute = !AccountUtilities.CallerIsAdmin && filePath == ClientLauncherPath && elevatedTokenType?.Equals(ElevatedTokenType.None) != false)
+                {
+                    denyUserTermination = filePath != ClientLauncherDefaultPath || AccountUtilities.CallerIsAdmin;
+                }
+                else
+                {
+                    runAsInvoker = !AccountUtilities.CallerIsAdmin || handlesToInherit?.Count > 0;
+                }
+            }
+            if (!useShellExecute)
+            {
+                elevatedTokenType ??= DefaultElevationType;
+            }
             return ProcessManager.LaunchAsync(new(
                 filePath.FullName,
                 argumentList,
                 Environment.SystemDirectory,
                 runAsActiveUser,
-                elevatedTokenType: elevatedTokenType ?? DefaultElevationType,
-                denyUserTermination: true,
-                runAsInvoker: runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false && (!AccountUtilities.CallerIsAdmin || handlesToInherit?.Count > 0),
+                elevatedTokenType: elevatedTokenType,
+                denyUserTermination: denyUserTermination,
+                runAsInvoker: runAsInvoker,
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
+                useShellExecute: useShellExecute,
                 createNoWindow: !filePath.Name.Contains("Launcher"),
                 waitForChildProcesses: true,
                 windowStyle: ProcessWindowStyle.Hidden,
