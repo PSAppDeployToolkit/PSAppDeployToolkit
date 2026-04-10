@@ -9,7 +9,8 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
         {
             [CmdletBinding()]
             [OutputType([System.Boolean])]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
                 [AllowEmptyCollection()]
                 [System.Collections.Hashtable]$Left,
@@ -68,7 +69,8 @@ Describe 'Remove-ADTHashtableNullOrEmptyValues' {
         {
             [CmdletBinding()]
             [OutputType([System.Collections.Hashtable])]
-            param (
+            param
+            (
                 [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
                 [AllowEmptyCollection()]
                 [System.Collections.Hashtable]$Hashtable
