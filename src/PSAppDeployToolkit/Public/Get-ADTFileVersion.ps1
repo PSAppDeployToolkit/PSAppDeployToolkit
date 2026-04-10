@@ -20,9 +20,9 @@ function Get-ADTFileVersion
         Switch that makes the command return the file's ProductVersion instead of its FileVersion.
 
     .INPUTS
-        None
+        System.IO.FileInfo
 
-        You cannot pipe objects to this function.
+        The file to get version info for.
 
     .OUTPUTS
         System.String
@@ -55,7 +55,7 @@ function Get-ADTFileVersion
     [OutputType([System.String])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateScript({
                 $_.Refresh()
                 if (!$_.Exists)
