@@ -46,6 +46,7 @@ function Get-ADTStringTable
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
     param
     (
         [Parameter(Mandatory = $false)]

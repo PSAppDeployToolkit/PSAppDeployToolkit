@@ -170,7 +170,12 @@ function Start-ADTProcess
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.ProcessResult
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
+        PSADT.ProcessManagement.ProcessResult
 
         Returns an object with the results of the installation if -PassThru is specified.
         - ProcessId
@@ -178,6 +183,15 @@ function Start-ADTProcess
         - StdOut
         - StdErr
         - Interleaved
+
+    .OUTPUTS
+        PSADT.ProcessManagement.ProcessHandle
+
+        Returns an object with the handle of the installation process if -PassThru and -NoWait are specified.
+        - Process
+        - LaunchInfo
+        - CommandLine
+        - Task
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -194,8 +208,8 @@ function Start-ADTProcess
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Default_CreateWindow_Wait')]
-    [OutputType([PSADT.ProcessManagement.ProcessHandle])]
     [OutputType([PSADT.ProcessManagement.ProcessResult])]
+    [OutputType([PSADT.ProcessManagement.ProcessHandle])]
     param
     (
         [Parameter(Mandatory = $true)]

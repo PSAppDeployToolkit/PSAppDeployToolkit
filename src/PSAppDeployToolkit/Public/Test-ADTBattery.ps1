@@ -31,7 +31,12 @@ function Test-ADTBattery
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.BatteryInfo
+        System.Boolean
+
+        By default, this function returns a Boolean where $true represents that the computer is running on AC power and $false represents that the computer is running on DC/battery power.
+
+    .OUTPUTS
+        PSADT.DeviceManagement.BatteryInfo
 
         Returns an object containing the following properties:
 
@@ -67,6 +72,7 @@ function Test-ADTBattery
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     [OutputType([PSADT.DeviceManagement.BatteryInfo])]
     param
     (

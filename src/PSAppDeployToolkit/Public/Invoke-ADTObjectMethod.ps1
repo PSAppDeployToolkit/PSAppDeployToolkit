@@ -60,6 +60,7 @@ function Invoke-ADTObjectMethod
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Positional')]
+    [OutputType([System.Object])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]

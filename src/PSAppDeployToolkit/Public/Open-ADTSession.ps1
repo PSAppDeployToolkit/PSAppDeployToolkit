@@ -148,6 +148,11 @@ function Open-ADTSession
         You cannot pipe objects to this function.
 
     .OUTPUTS
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
         PSAppDeployToolkit.Foundation.DeploymentSession
 
         This function returns the session object if -PassThru is specified.
@@ -170,6 +175,7 @@ function Open-ADTSession
     #>
 
     [CmdletBinding()]
+    [OutputType([PSAppDeployToolkit.Foundation.DeploymentSession])]
     param
     (
         [Parameter(Mandatory = $false)]

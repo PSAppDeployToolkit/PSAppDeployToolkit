@@ -44,6 +44,7 @@ function Get-ADTServiceStartMode
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]

@@ -41,6 +41,7 @@ function Get-ADTEnvironmentTable
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Specialized.OrderedDictionary])]
     param
     (
     )

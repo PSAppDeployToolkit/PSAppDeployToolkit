@@ -55,6 +55,7 @@ function Get-ADTShortcut
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.ShortcutManagement.IShortcutLinkInfo])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]

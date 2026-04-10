@@ -52,6 +52,7 @@ function Get-ADTFileVersion
     #>
 
     [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true)]

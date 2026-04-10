@@ -34,9 +34,9 @@ function Get-ADTModuleCallback
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        None
+        System.Collections.Generic.IReadOnlyList[System.Management.Automation.CommandInfo]
 
-        This function does not generate any output.
+        The callback commands for the hookpoint specified.
 
     .EXAMPLE
         Get-ADTModuleCallback -Hookpoint PostOpen
@@ -58,6 +58,7 @@ function Get-ADTModuleCallback
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Generic.IReadOnlyList[System.Management.Automation.CommandInfo]])]
     param
     (
         [Parameter(Mandatory = $true)]

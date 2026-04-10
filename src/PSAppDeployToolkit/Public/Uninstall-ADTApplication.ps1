@@ -77,7 +77,7 @@ function Uninstall-ADTApplication
         Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER PassThru
-        Returns a PSADT.Types.ProcessResult object, providing the ExitCode, StdOut, and StdErr output from the uninstallation.
+        Returns an object with ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
 
     .INPUTS
         PSADT.AppManagement.InstalledApplication
@@ -85,12 +85,19 @@ function Uninstall-ADTApplication
         This function can receive one or more InstalledApplication objects for uninstallation.
 
     .OUTPUTS
-        PSADT.Types.ProcessResult
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
+        PSADT.ProcessManagement.ProcessResult
 
         Returns an object with the results of the installation if -PassThru is specified.
+        - ProcessId
         - ExitCode
         - StdOut
         - StdErr
+        - Interleaved
 
     .EXAMPLE
         Uninstall-ADTApplication -Name 'Acrobat' -ApplicationType 'MSI' -FilterScript { $_.Publisher -match 'Adobe' }

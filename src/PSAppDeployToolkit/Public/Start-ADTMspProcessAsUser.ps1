@@ -72,7 +72,7 @@ function Start-ADTMspProcessAsUser
         Immediately continue after executing the process.
 
     .PARAMETER PassThru
-        Returns ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
+        If `-NoWait` is not specified, returns an object with ExitCode, StdOut, and StdErr output from the process. If `-NoWait` is specified, returns a task that can be awaited. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
 
     .INPUTS
         None
@@ -82,7 +82,26 @@ function Start-ADTMspProcessAsUser
     .OUTPUTS
         None
 
-        This function does not generate any output.
+        By default, this function returns no output.
+
+    .OUTPUTS
+        PSADT.ProcessManagement.ProcessResult
+
+        Returns an object with the results of the installation if -PassThru is specified.
+        - ProcessId
+        - ExitCode
+        - StdOut
+        - StdErr
+        - Interleaved
+
+    .OUTPUTS
+        PSADT.ProcessManagement.ProcessHandle
+
+        Returns an object with the handle of the installation process if -PassThru and -NoWait are specified.
+        - Process
+        - LaunchInfo
+        - CommandLine
+        - Task
 
     .EXAMPLE
         Start-ADTMspProcessAsUser -FilePath 'Adobe_Reader_11.0.3_EN.msp'
@@ -109,7 +128,8 @@ function Start-ADTMspProcessAsUser
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
-    [OutputType([System.Int32])]
+    [OutputType([PSADT.ProcessManagement.ProcessResult])]
+    [OutputType([PSADT.ProcessManagement.ProcessHandle])]
     param
     (
         [Parameter(Mandatory = $false)]

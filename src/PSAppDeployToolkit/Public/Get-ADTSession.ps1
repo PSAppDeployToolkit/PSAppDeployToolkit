@@ -51,6 +51,7 @@ function Get-ADTSession
     #>
 
     [CmdletBinding()]
+    [OutputType([PSAppDeployToolkit.Foundation.DeploymentSession])]
     param
     (
     )

@@ -84,6 +84,7 @@ function Get-ADTWindowTitle
     #>
 
     [CmdletBinding()]
+    [OutputType([PSADT.WindowManagement.WindowInfo])]
     param
     (
         [Parameter(Mandatory = $false)]

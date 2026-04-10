@@ -19,9 +19,12 @@ function Get-ADTDeferHistory
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        None
+        PSAppDeployToolkit.Foundation.DeferHistory
 
-        This function does not return any objects.
+        When a deferal history exists for the current deployment, this function returns a DeferHistory object represending the deferal history with the following properties:
+        - DeferTimesRemaining
+        - DeferDeadline
+        - DeferRunIntervalLastTime
 
     .EXAMPLE
         Get-DeferHistory
@@ -40,6 +43,7 @@ function Get-ADTDeferHistory
     #>
 
     [CmdletBinding()]
+    [OutputType([PSAppDeployToolkit.Foundation.DeferHistory])]
     param
     (
     )

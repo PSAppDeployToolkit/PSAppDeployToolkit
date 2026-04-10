@@ -22,12 +22,12 @@ function Convert-ADTValueType
     .INPUTS
         System.Int64
 
-        Convert-ADTValueType will accept any value type as a signed 64-bit integer, then cast to the requested type.
+        This function accepts any value type as a signed 64-bit integer, then cast to the requested type.
 
     .OUTPUTS
         System.ValueType
 
-        Convert-ADTValueType will convert the piped input to this type if specified by the caller.
+        This function converts the provided input to the type specified in the -To parameter.
 
     .EXAMPLE
         Convert-ADTValueType -Value 256 -To SByte
@@ -47,6 +47,7 @@ function Convert-ADTValueType
     #>
 
     [CmdletBinding()]
+    [OutputType([System.ValueType])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]

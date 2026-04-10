@@ -33,7 +33,12 @@ function Close-ADTSession
     .OUTPUTS
         None
 
-        This function does not generate any output.
+        By default, this function returns no output.
+
+    .OUTPUTS
+        System.Int32
+
+        When the -PassThru parameter is provided, this function returns an Int32 object representing the exitcode the deployment session was closed with.
 
     .EXAMPLE
         Close-ADTSession
@@ -58,6 +63,7 @@ function Close-ADTSession
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
+    [OutputType([System.Int32])]
     param
     (
         [Parameter(Mandatory = $false, ParameterSetName = 'None')]

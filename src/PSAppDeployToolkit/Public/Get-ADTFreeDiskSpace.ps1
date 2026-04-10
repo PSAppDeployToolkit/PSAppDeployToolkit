@@ -44,6 +44,7 @@ function Get-ADTFreeDiskSpace
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Double])]
     param
     (
         [Parameter(Mandatory = $false)]

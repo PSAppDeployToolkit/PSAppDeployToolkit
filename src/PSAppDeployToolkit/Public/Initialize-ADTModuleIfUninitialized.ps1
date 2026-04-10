@@ -31,9 +31,14 @@ function Initialize-ADTModuleIfUninitialized
         You cannot pipe objects to this function.
 
     .OUTPUTS
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
         PSAppDeployToolkit.Foundation.DeploymentSession
 
-        Returns the most recent session object from the ADT module data.
+        If an active DeploymentSession is available and the -PassThruActiveSession parameter is provided, this function returns the active DeploymentSession.
 
     .EXAMPLE
         Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
@@ -53,6 +58,7 @@ function Initialize-ADTModuleIfUninitialized
     #>
 
     [CmdletBinding()]
+    [OutputType([PSAppDeployToolkit.Foundation.DeploymentSession])]
     param
     (
         [Parameter(Mandatory = $true)]

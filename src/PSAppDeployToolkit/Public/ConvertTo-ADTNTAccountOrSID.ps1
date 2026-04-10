@@ -42,9 +42,14 @@ function ConvertTo-ADTNTAccountOrSID
         Accepts a string containing the NT Account name or SID.
 
     .OUTPUTS
-        System.String
+        System.Security.Principal.NTAccount
 
-        Returns the NT Account name or SID.
+        When the input is an SID or a Well Known SID name and the WellKnownToNTAccount parameter is specified, this function returns an NTAccount object representing the account name of SID specified.
+
+    .OUTPUTS
+        System.Security.Principal.SecurityIdentifier
+
+        When the input is an NTAccount or a Well Known SID name and the WellKnownToNTAccount parameter is not specified, this function returns a SecurityIdentifier object representing the SID of the specified account.
 
     .EXAMPLE
         ConvertTo-ADTNTAccountOrSID -AccountName 'CONTOSO\User1'
@@ -80,8 +85,8 @@ function ConvertTo-ADTNTAccountOrSID
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Security.Principal.SecurityIdentifier])]
     [OutputType([System.Security.Principal.NTAccount])]
+    [OutputType([System.Security.Principal.SecurityIdentifier])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'NTAccountToSID', ValueFromPipelineByPropertyName = $true)]

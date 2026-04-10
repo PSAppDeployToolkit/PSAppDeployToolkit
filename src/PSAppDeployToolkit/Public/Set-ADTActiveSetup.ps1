@@ -67,6 +67,11 @@ function Set-ADTActiveSetup
         You cannot pipe objects to this function.
 
     .OUTPUTS
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
         PSADT.ProcessManagement.ProcessResult
 
         This function returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
@@ -99,6 +104,7 @@ function Set-ADTActiveSetup
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Create')]
+    [OutputType([PSADT.ProcessManagement.ProcessResult])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]

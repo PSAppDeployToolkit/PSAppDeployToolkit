@@ -57,6 +57,7 @@ function New-ADTValidateScriptErrorRecord
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]
     [CmdletBinding()]
+    [OutputType([System.Management.Automation.ErrorRecord])]
     param
     (
         [Parameter(Mandatory = $true)]

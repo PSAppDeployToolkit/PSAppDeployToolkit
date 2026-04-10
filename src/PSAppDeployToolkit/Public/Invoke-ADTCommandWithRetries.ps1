@@ -80,6 +80,7 @@ function Invoke-ADTCommandWithRetries
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Object])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]

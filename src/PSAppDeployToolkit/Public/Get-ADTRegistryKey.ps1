@@ -44,7 +44,19 @@ function Get-ADTRegistryKey
         You cannot pipe objects to this function.
 
     .OUTPUTS
+        System.Int32
+
+    .OUTPUTS
+        System.Int64
+
+    .OUTPUTS
         System.String
+
+    .OUTPUTS
+        System.Object[]
+
+    .OUTPUTS
+        System.Management.Automation.PSCustomObject
 
         Returns the value of the registry key or value.
 
@@ -86,6 +98,11 @@ function Get-ADTRegistryKey
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Int32])]
+    [OutputType([System.Int64])]
+    [OutputType([System.String])]
+    [OutputType([System.Object[]])]
+    [OutputType([System.Management.Automation.PSCustomObject])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]

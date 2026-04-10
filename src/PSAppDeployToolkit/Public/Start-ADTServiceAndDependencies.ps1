@@ -34,9 +34,14 @@ function Start-ADTServiceAndDependencies
         You cannot pipe objects to this function.
 
     .OUTPUTS
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
         System.ServiceProcess.ServiceController
 
-        Returns the service object.
+        When the -PassThru parameter is provided, this function returns a ServiceController object representing the service that was started.
 
     .EXAMPLE
         Start-ADTServiceAndDependencies -Name 'wuauserv'
@@ -68,6 +73,7 @@ function Start-ADTServiceAndDependencies
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([System.ServiceProcess.ServiceController])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]

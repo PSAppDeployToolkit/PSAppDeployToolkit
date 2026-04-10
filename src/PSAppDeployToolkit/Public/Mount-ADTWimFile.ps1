@@ -37,6 +37,16 @@ function Mount-ADTWimFile
         You cannot pipe objects to this function.
 
     .OUTPUTS
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
+        Microsoft.Dism.Commands.ImageObject
+
+        If the -PassThru parameter is provided, this function returns an ImageObject object representing the mounted WIM file.
+
+    .OUTPUTS
         Microsoft.Dism.Commands.ImageObject
 
         Returns the mounted image details if the PassThru parameter is specified.
@@ -71,6 +81,7 @@ function Mount-ADTWimFile
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([Microsoft.Dism.Commands.ImageObject])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Index')]

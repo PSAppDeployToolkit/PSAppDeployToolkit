@@ -49,6 +49,11 @@ function Write-ADTLogEntry
         The message to write to the log file or output to the console.
 
     .OUTPUTS
+        None
+
+        By default, this function returns no output.
+
+    .OUTPUTS
         PSAppDeployToolkit.Logging.LogEntry[]
 
         This function returns the provided output if -PassThru is specified.
@@ -76,6 +81,7 @@ function Write-ADTLogEntry
     #>
 
     [CmdletBinding()]
+    [OutputType([PSAppDeployToolkit.Logging.LogEntry[]])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]

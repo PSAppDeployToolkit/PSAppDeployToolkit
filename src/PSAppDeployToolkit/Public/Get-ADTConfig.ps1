@@ -43,6 +43,7 @@ function Get-ADTConfig
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
     param
     (
     )

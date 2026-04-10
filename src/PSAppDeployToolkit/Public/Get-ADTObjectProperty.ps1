@@ -48,6 +48,7 @@ function Get-ADTObjectProperty
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Object])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
