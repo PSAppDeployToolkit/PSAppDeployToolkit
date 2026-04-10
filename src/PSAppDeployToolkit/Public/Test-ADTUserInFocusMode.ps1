@@ -19,9 +19,14 @@ function Test-ADTUserInFocusMode
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        [System.Nullable[System.Boolean]]
+        None
 
-        Returns true/false if the user is in focus mode or not, or $null if there is no active user or the API is unavailable.
+        Returns $null if there is no active user or the API is unavailable.
+
+    .OUTPUTS
+        System.Boolean
+
+        Returns true/false if the user is in focus mode or not.
 
     .EXAMPLE
         Test-ADTUserInFocusMode
