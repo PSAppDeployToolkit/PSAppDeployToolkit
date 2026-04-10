@@ -57,6 +57,7 @@ function Get-ADTFileVersion
     (
         [Parameter(Mandatory = $true)]
         [ValidateScript({
+                $_.Refresh()
                 if (!$_.Exists)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName File -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
