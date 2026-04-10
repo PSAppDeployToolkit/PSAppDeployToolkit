@@ -24,10 +24,14 @@ function Test-ADTMutexAvailability
         A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 
     .INPUTS
-        None. You cannot pipe objects to this function.
+        None
+
+        You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Boolean. Returns $true if the current thread acquires an exclusive lock on the named mutex, $false otherwise.
+        System.Boolean
+
+        Returns $true if the current thread acquires an exclusive lock on the named mutex, $false otherwise.
 
     .EXAMPLE
         Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime 00:00:05
