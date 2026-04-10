@@ -41,7 +41,7 @@ function Get-ADTUserToastNotificationMode
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Boolean])]
+    [OutputType([PSADT.Interop.ToastNotificationMode])]
     param
     (
     )

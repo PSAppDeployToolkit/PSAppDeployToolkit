@@ -19,7 +19,7 @@ function Get-ADTLoggedOnUser
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Types.UserSessionInfo
+        System.Collections.Generic.IReadOnlyList[PSADT.TerminalServices.SessionInfo]
 
         Returns a custom type with information about user sessions:
         - NTAccount

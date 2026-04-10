@@ -22,7 +22,7 @@ function Get-ADTRunningProcesses
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Generic.IReadOnlyList`1[[PSADT.ProcessManagement.RunningProcess]].
+        System.Collections.Generic.IReadOnlyList[PSADT.ProcessManagement.RunningProcessInfo]
 
         Returns one or more RunningProcess objects representing each running process.
 

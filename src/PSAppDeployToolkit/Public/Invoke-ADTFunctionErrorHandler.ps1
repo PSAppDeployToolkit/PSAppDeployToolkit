@@ -70,7 +70,6 @@ function Invoke-ADTFunctionErrorHandler
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]
-    [OutputType([System.Management.Automation.ErrorRecord])]
     param
     (
         [Parameter(Mandatory = $true)]

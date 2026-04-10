@@ -33,9 +33,9 @@ function Get-ADTPEFileArchitecture
         Accepts a FileInfo object from the pipeline.
 
     .OUTPUTS
-        System.String
+        PSADT.Interop.IMAGE_FILE_MACHINE
 
-        Returns a string indicating the file binary type.
+        Returns an IMAGE_FILE_MACHINE enum value indicating the file binary type.
 
     .EXAMPLE
         Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
