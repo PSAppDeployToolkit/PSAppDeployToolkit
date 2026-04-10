@@ -43,6 +43,28 @@ function Get-ADTMsiTableProperty
 
         Returns a readonly dictionary with the properties as key/value pairs.
 
+    .OUTPUTS
+        PSADT.WindowsInstaller.MsiSummaryInfo
+
+        When the -GetSummaryInformation parameter is specified, this function returns a custom type with information about the MSI:
+        - CodePage
+        - Title
+        - Subject
+        - Author
+        - Keywords
+        - Comments
+        - Template
+        - LastSavedby
+        - RevisionNumber
+        - LastPrinted
+        - CreateTimeDate
+        - LastSaveTimeDate
+        - PageCount
+        - WordCount
+        - CharacterCount
+        - CreatingApplication
+        - Security
+
     .EXAMPLE
         Get-ADTMsiTableProperty -LiteralPath 'C:\Package\AppDeploy.msi' -TransformPath 'C:\Package\AppDeploy.mst'
 
