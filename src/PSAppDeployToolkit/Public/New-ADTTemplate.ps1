@@ -39,7 +39,12 @@ function New-ADTTemplate
     .OUTPUTS
         None
 
-        This function does not generate any output.
+        By default, this function returns no output.
+
+    .OUTPUTS
+        System.IO.DirectoryInfo
+
+        When the `-PassThru` parameter is specified, this function returns a DirectoryInfo object representing the directory containing the new PSADT template.
 
     .EXAMPLE
         New-ADTTemplate -Destination 'C:\Temp' -Name 'PSAppDeployToolkitv4'
@@ -64,6 +69,7 @@ function New-ADTTemplate
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]
+    [OutputType([System.IO.DirectoryInfo])]
     param
     (
         [Parameter(Mandatory = $false)]
