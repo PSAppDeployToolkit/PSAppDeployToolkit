@@ -38,7 +38,7 @@ function Close-ADTSession
     .OUTPUTS
         System.Int32
 
-        When the -PassThru parameter is provided, this function returns an Int32 object representing the exitcode the deployment session was closed with.
+        When the `-PassThru` parameter is provided, this function returns an Int32 value representing the exit code the deployment session was closed with.
 
     .EXAMPLE
         Close-ADTSession
