@@ -68,7 +68,8 @@ Describe $ModuleName {
                 $help.returnValues | Should -Not -BeNullOrEmpty
             }
             It 'All outputs defined in the comment-based help are defined in OutputType attributes' {
-                $returnValueTypes = foreach ($returnValue in $help.returnValues.returnValue.Type.Name)
+                $returnValueTypes = [System.Collections.Generic.HashSet[System.Type]]::new()
+                foreach ($returnValue in $help.returnValues.returnValue.Type.Name)
                 {
                     $returnValueName = $returnValue.Split([System.Environment]::NewLine)[0]
                     if ($returnValueName -eq 'None')
@@ -99,17 +100,18 @@ Describe $ModuleName {
                         }
                     }
 
-                    $returnValueType
+                    $returnValueTypes.Add($returnValueType) | Should -BeTrue -Because 'outputs should only appear once in the comment-based help'
                 }
 
-                if ($null -eq $returnValueTypes)
+                if ($returnValueTypes.Count -eq 0)
                 {
                     $outputTypes | Should -BeNullOrEmpty -Because 'all outputs defined in OutputType attributes should be also defined in the comment-based help'
                 }
 
-                foreach ($outputType in $outputTypes)
+                foreach ($outputType in ($outputTypes | Group-Object))
                 {
-                    $outputType | Should -BeIn $returnValueTypes -Because 'all outputs defined in OutputType attributes should also be defined in the comment-based help'
+                    $outputType.Group | Should -HaveCount 1 -Because 'outputs should only be defined once in OutputType attributes'
+                    $outputType.Group[0] | Should -BeIn $returnValueTypes -Because 'all outputs defined in OutputType attributes should also be defined in the comment-based help'
                 }
             }
         }
