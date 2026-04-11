@@ -177,8 +177,10 @@ function Start-ADTProcess
     .OUTPUTS
         PSADT.ProcessManagement.ProcessResult
 
-        Returns an object with the results of the installation if -PassThru is specified.
-        - ProcessId
+        Returns an object with the results of the installation if `-PassThru` is specified.
+        - Process
+        - LaunchInfo
+        - CommandLine
         - ExitCode
         - StdOut
         - StdErr
@@ -187,7 +189,7 @@ function Start-ADTProcess
     .OUTPUTS
         PSADT.ProcessManagement.ProcessHandle
 
-        Returns an object with the handle of the installation process if -PassThru and -NoWait are specified.
+        Returns an object with the handle of the installation process if `-PassThru` and `-NoWait` are specified.
         - Process
         - LaunchInfo
         - CommandLine

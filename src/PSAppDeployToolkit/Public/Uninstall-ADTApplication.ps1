@@ -92,8 +92,10 @@ function Uninstall-ADTApplication
     .OUTPUTS
         PSADT.ProcessManagement.ProcessResult
 
-        Returns an object with the results of the installation if -PassThru is specified.
-        - ProcessId
+        Returns an object with the results of the installation if `-PassThru` is specified.
+        - Process
+        - LaunchInfo
+        - CommandLine
         - ExitCode
         - StdOut
         - StdErr
