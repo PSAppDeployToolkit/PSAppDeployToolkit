@@ -42,7 +42,6 @@ function Set-ADTIniSection
 
         This function does not return any output.
 
-
     .EXAMPLE
         Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content ([ordered]@{'KeyFileName' = 'MyFile.ID'; 'KeyFileType' = 'ID'})
 
@@ -52,7 +51,6 @@ function Set-ADTIniSection
         Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content @{'KeyFileName' = 'MyFile.ID'} -Overwrite
 
         Overwrites the 'Notes' section to only contain the content specified.
-
 
     .EXAMPLE
         Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content $null -Overwrite

@@ -58,7 +58,6 @@ function Stop-ADTServiceAndDependencies
 
         Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
 
-
     .NOTES
         An active ADT session is NOT required to use this function.
 
