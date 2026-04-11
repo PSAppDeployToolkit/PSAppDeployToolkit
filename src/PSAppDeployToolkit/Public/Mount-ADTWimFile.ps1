@@ -44,12 +44,7 @@ function Mount-ADTWimFile
     .OUTPUTS
         Microsoft.Dism.Commands.ImageObject
 
-        If the -PassThru parameter is provided, this function returns an ImageObject object representing the mounted WIM file.
-
-    .OUTPUTS
-        Microsoft.Dism.Commands.ImageObject
-
-        Returns the mounted image details if the PassThru parameter is specified.
+        When the `-PassThru` parameter is provided, this function returns an ImageObject object representing the mounted WIM file.
 
     .EXAMPLE
         Mount-ADTWimFile -ImagePath 'C:\Images\install.wim' -Path 'C:\Mount' -Index 1
