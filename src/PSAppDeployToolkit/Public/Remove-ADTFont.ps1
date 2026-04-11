@@ -19,8 +19,12 @@ function Remove-ADTFont
     .INPUTS
         None
 
+        You cannot pipe objects to this function.
+
     .OUTPUTS
         None
+
+        This function does not generate any output.
 
     .EXAMPLE
         Remove-ADTFont -Name 'MyFont.ttf'
