@@ -53,7 +53,7 @@ function Get-ADTRegistryKey
         System.String
 
     .OUTPUTS
-        System.Object[]
+        System.Object
 
     .OUTPUTS
         System.Management.Automation.PSCustomObject
@@ -101,7 +101,7 @@ function Get-ADTRegistryKey
     [OutputType([System.Int32])]
     [OutputType([System.Int64])]
     [OutputType([System.String])]
-    [OutputType([System.Object[]])]
+    [OutputType([System.Object])]
     [OutputType([System.Management.Automation.PSCustomObject])]
     param
     (

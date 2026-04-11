@@ -20,10 +20,14 @@ function Select-ADTUniqueObject
         The StringComparison value to use when checking for string equality.
 
     .INPUTS
-        System.Object. One or more objects that will be collected for processing their uniqueness.
+        System.Object
+
+        One or more objects that will be collected for processing their uniqueness.
 
     .OUTPUTS
-        System.Object[]. An array of unique objects derived from the provided input.
+        System.Object
+
+        Unique objects derived from the provided input.
 
     .EXAMPLE
         1, 2, 2, 3 | Select-ADTUniqueObject
@@ -53,7 +57,7 @@ function Select-ADTUniqueObject
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Object[]])]
+    [OutputType([System.Object])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
