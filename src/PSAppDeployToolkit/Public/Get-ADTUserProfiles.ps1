@@ -16,7 +16,7 @@ function Get-ADTUserProfiles
         Please note that the NTAccount property may be empty for some user profiles but the SID and ProfilePath properties will always be populated.
 
     .PARAMETER FilterScript
-        Allows filtration of the returned result by any property in a UserProfile object.
+        Allows filtration of the returned result by any property in a UserProfileInfo object.
 
     .PARAMETER SID
         Specifies the SID to get rather than returning all user profiles.
