@@ -50,20 +50,29 @@ function Get-ADTUserProfiles
     .OUTPUTS
         PSADT.AccountManagement.UserProfileInfo
 
-        Returns a PSADT.AccountManagement.UserProfileInfo object with the following properties:
+        Returns a UserProfileInfo object with the following properties:
         - NTAccount
         - SID
         - ProfilePath
+        - AppDataPath
+        - LocalAppDataPath
+        - DesktopPath
+        - DocumentsPath
+        - StartMenuPath
+        - TempPath
+        - OneDrivePath
+        - OneDriveCommercialPath
+        - UserLocale
 
     .EXAMPLE
         Get-ADTUserProfiles
 
-        Return the following properties for each user profile on the system: NTAccount, SID, ProfilePath.
+        Return a UserProfileInfo object for each user profile on the system.
 
     .EXAMPLE
         Get-ADTUserProfiles -ExcludeNTAccount CONTOSO\Robot,CONTOSO\ntadmin
 
-        Return the following properties for each user profile on the system, except for 'Robot' and 'ntadmin': NTAccount, SID, ProfilePath.
+        Return a UserProfileInfo object for each user profile on the system, except for 'Robot' and 'ntadmin'.
 
     .EXAMPLE
         [string[]]$ProfilePaths = Get-ADTUserProfiles | Select-Object -ExpandProperty ProfilePath
