@@ -27,7 +27,7 @@ function Convert-ADTValueType
     .OUTPUTS
         System.ValueType
 
-        This function converts the provided input to the type specified in the -To parameter.
+        This function converts the provided input to the type specified in the `-To` parameter.
 
     .EXAMPLE
         Convert-ADTValueType -Value 256 -To SByte
