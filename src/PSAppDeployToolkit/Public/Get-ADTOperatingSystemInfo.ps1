@@ -21,12 +21,12 @@ function Get-ADTOperatingSystemInfo
     .OUTPUTS
         PSADT.DeviceManagement.OperatingSystemInfo
 
-        Returns an PSADT.DeviceManagement.OperatingSystemInfo object containing the current computer's operating system information.
+        Returns an OperatingSystemInfo object containing the current computer's operating system information.
 
     .EXAMPLE
         Get-ADTOperatingSystemInfo
 
-        Gets an PSADT.DeviceManagement.OperatingSystemInfo object containing the current computer's operating system information.
+        Gets an OperatingSystemInfo object containing the current computer's operating system information.
 
     .NOTES
         An active ADT session is NOT required to use this function.
