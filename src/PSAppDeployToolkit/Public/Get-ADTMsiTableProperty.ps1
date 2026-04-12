@@ -11,7 +11,7 @@ function Get-ADTMsiTableProperty
         Get all of the properties from a Windows Installer database table or the Summary Information stream and return as a custom object.
 
     .DESCRIPTION
-        Use the Windows Installer object to read all of the properties from a Windows Installer database table or the Summary Information stream.
+        The `Get-ADTMsiTableProperty` function reads all of the properties from a Windows Installer database table or the Summary Information stream.
 
     .PARAMETER LiteralPath
         The fully qualified path to an database file. Supports .msi and .msp files.
