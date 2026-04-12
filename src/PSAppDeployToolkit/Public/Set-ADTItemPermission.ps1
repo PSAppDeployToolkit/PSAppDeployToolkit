@@ -20,7 +20,7 @@ function Set-ADTItemPermission
         The ACL object to apply to the given path.
 
     .PARAMETER User
-        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to give the permissions to. If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to assign the permissions to. If you want to use a SID, prefix it with an asterisk (*). Ex: *S-1-5-18
 
     .PARAMETER Permission
         Permission or list of permissions to be set/added/removed/replaced. Permission DeleteSubdirectoriesAndFiles does not apply to files.
