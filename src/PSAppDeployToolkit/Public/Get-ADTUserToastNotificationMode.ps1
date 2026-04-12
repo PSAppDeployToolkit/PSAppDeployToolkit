@@ -11,7 +11,7 @@ function Get-ADTUserToastNotificationMode
         Gets the user's toast notification mode.
 
     .DESCRIPTION
-        The `Get-ADTUserToastNotificationMode` function gets, returning the mode, or null if the API is unavailable (older OS, etc).
+        The `Get-ADTUserToastNotificationMode` function gets the logged on user's toast notification mode, returning the mode, or `$null` if the API is unavailable (older OS, etc).
 
     .INPUTS
         None
