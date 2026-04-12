@@ -27,7 +27,7 @@ function Get-ADTPendingReboot
     .OUTPUTS
         PSADT.DeviceManagement.RebootInfo
 
-        Returns a custom object with the following properties:
+        Returns a RebootInfo object with the following properties:
 
         - ComputerName
         - LastBootUpTime

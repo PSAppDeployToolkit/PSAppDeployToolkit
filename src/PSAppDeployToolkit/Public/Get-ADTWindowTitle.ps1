@@ -46,7 +46,7 @@ function Get-ADTWindowTitle
     .OUTPUTS
         PSADT.WindowManagement.WindowInfo
 
-        Returns a PSADT.WindowManagement.WindowInfo object with the following properties:
+        Returns a WindowInfo object with the following properties:
 
         - WindowTitle
         - WindowHandle

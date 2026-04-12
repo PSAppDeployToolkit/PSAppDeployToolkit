@@ -21,7 +21,7 @@ function Get-ADTLoggedOnUser
     .OUTPUTS
         PSADT.TerminalServices.SessionInfo
 
-        Returns a custom type with information about user sessions:
+        Returns a SessionInfo object with information about user sessions:
         - NTAccount
         - SID
         - UserName

@@ -39,7 +39,7 @@ function Get-ADTApplication
     .OUTPUTS
         PSADT.AppManagement.InstalledApplication
 
-        Returns a custom type with information about an installed application:
+        Returns a InstalledApplication object with information about an installed application:
         - PSPath
         - PSParentPath
         - PSChildName
