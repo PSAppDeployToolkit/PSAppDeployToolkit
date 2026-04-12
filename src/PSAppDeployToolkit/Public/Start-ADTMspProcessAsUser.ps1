@@ -37,7 +37,7 @@ function Start-ADTMspProcessAsUser
         Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
 
     .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-AdditionalArgumentList` parameters.
 
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the config.psd1 file.

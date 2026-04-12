@@ -43,7 +43,7 @@ function Start-ADTMspProcess
         If the current process is elevated, starts the new process unelevated using the user's unelevated linked token.
 
     .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-AdditionalArgumentList` parameters.
 
     .PARAMETER LoggingOptions
         Overrides the default logging options specified in the config.psd1 file.

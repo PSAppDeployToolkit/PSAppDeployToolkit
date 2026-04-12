@@ -62,7 +62,7 @@ function Start-ADTMsiProcessAsUser
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
     .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-ArgumentList` parameters.
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath`, `-ArgumentList`, and `-AdditionalArgumentList` parameters.
 
     .PARAMETER DenyUserTermination
         Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
