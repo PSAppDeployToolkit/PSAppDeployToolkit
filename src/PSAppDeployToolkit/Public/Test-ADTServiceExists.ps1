@@ -32,7 +32,17 @@ function Test-ADTServiceExists
     .OUTPUTS
         System.Boolean
 
-        Returns `$true` if the service exists, otherwise returns `$false`.
+        By default, this function returns `$true` if the service exists, otherwise returns `$false`.
+
+    .OUTPUTS
+        System.ServiceProcess.ServiceController
+
+        When the `-PassThru` parameter is provided and the service specified exists, a ServiceController object representing the service is returned, otherwise `$null`.
+
+    .OUTPUTS
+        Microsoft.Management.Infrastructure.CimInstance
+
+        When the `-PassThru` and `-UseCIM` parameters are provided and the service specified exists, a Win32_Service or Win32_BaseService CimInstance object representing the service is returned, otherwise `$null`.
 
     .EXAMPLE
         Test-ADTServiceExists -Name 'wuauserv'
@@ -58,6 +68,8 @@ function Test-ADTServiceExists
 
     [CmdletBinding()]
     [OutputType([System.Boolean])]
+    [OutputType([System.ServiceProcess.ServiceController])]
+    [OutputType([Microsoft.Management.Infrastructure.CimInstance])]
     param
     (
         [Parameter(Mandatory = $true)]
