@@ -11,7 +11,7 @@ function Get-ADTApplication
         Retrieves information about installed applications.
 
     .DESCRIPTION
-        Retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both. Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
+        The `Get-ADTApplication` function retrieves information about installed applications by querying the registry. You can specify an application name, a product code, or both. Returns information about application publisher, name & version, product code, uninstall string, install source, location, date, and application architecture.
 
     .PARAMETER Name
         The name of the application to retrieve information for. Performs a contains match on the application display name by default.

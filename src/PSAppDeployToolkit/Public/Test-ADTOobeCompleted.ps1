@@ -11,7 +11,7 @@ function Test-ADTOobeCompleted
         Checks if the device's Out-of-Box Experience (OOBE) has completed or not.
 
     .DESCRIPTION
-        This function checks if the current device has completed the Out-of-Box Experience (OOBE).
+        The `Test-ADTOobeCompleted` function checks if the current device has completed the Out-of-Box Experience (OOBE).
 
     .INPUTS
         None

@@ -11,7 +11,7 @@ function Show-ADTInstallationPrompt
         Displays a custom installation prompt with the toolkit branding and optional buttons.
 
     .DESCRIPTION
-        Displays a custom installation prompt with the toolkit branding and optional buttons. Any combination of Left, Middle, or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified. The prompt can also display a system icon and be configured to persist, minimize other windows, or timeout after a specified period.
+        The `Show-ADTInstallationPrompt` function displays a custom installation prompt with the toolkit branding and optional buttons. Any combination of Left, Middle, or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified. The prompt can also display a system icon and be configured to persist, minimize other windows, or timeout after a specified period.
 
     .PARAMETER RequestInput
         Show a text box for the user to provide an answer.

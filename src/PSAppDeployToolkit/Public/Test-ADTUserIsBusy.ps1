@@ -11,7 +11,7 @@ function Test-ADTUserIsBusy
         Tests whether the device is considered to be in a busy state, such as when a user is using the microphone, device is in focus mode, presenting a PowerPoint slide deck, and more.
 
     .DESCRIPTION
-        This function tests whether the device is considered to be in a busy state using the following metrics in the following order:
+        The `Test-ADTUserIsBusy` function tests whether the device is considered to be in a busy state using the following metrics in the following order:
         * Device's microphone is in use.
         * User has entered "focus mode".
         * User has enabled "do not disturb" mode.

@@ -11,7 +11,7 @@ function Show-ADTDialogBox
         Display a custom dialog box with optional title, buttons, icon, and timeout.
 
     .DESCRIPTION
-        Display a custom dialog box with optional title, buttons, icon, and timeout. The default button is "OK", the default Icon is "None", and the default Timeout is None.
+        The `Show-ADTDialogBox` function displays a custom dialog box with optional title, buttons, icon, and timeout. The default button is "OK", the default Icon is "None", and the default Timeout is None.
 
         `Show-ADTInstallationPrompt` is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
 

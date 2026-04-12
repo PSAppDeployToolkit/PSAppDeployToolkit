@@ -11,7 +11,7 @@ function Get-ADTConfig
         Retrieves the configuration data for the ADT module.
 
     .DESCRIPTION
-        The Get-ADTConfig function retrieves the configuration data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the configuration data. If the module is not initialized, it throws an error.
+        The `Get-ADTConfig` function retrieves the configuration data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the configuration data. If the module is not initialized, it throws an error.
 
     .INPUTS
         None

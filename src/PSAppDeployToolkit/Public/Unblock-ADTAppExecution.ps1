@@ -11,7 +11,7 @@ function Unblock-ADTAppExecution
         Unblocks the execution of applications performed by the `Block-ADTAppExecution` function.
 
     .DESCRIPTION
-        This function is called by the `Close-ADTSession` function. It undoes the actions performed by `Block-ADTAppExecution`, allowing previously blocked applications to execute.
+        The `Unblock-ADTAppExecution` function is called by the `Close-ADTSession` function. It undoes the actions performed by `Block-ADTAppExecution`, allowing previously blocked applications to execute.
 
     .PARAMETER Tasks
         Specify the scheduled tasks to unblock.

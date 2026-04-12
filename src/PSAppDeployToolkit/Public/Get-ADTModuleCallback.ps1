@@ -11,7 +11,7 @@ function Get-ADTModuleCallback
         Returns all callbacks from the nominated hooking point.
 
     .DESCRIPTION
-        This function returns all callbacks from the nominated hooking point.
+        The `Get-ADTModuleCallback` function returns all callbacks from the nominated hooking point.
 
     .PARAMETER Hookpoint
         The hook point to return the callbacks for.

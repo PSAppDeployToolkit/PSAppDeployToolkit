@@ -8,10 +8,10 @@ function Install-ADTMSUpdates
 {
     <#
     .SYNOPSIS
-        Install all Microsoft Updates in a given directory.
+        Installs all Microsoft Updates in a given directory.
 
     .DESCRIPTION
-        Install all Microsoft Updates of type ".msu" in a given directory (recursively searches directory).
+        The `Install-ADTMSUpdates` function installs all Microsoft Updates of type ".msu" in a given directory (recursively searches directory).
 
     .PARAMETER LiteralPath
         Directory containing the updates.

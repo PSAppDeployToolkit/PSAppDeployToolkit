@@ -11,7 +11,7 @@ function Remove-ADTFile
         Removes one or more items from a given path on the filesystem.
 
     .DESCRIPTION
-        This function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-Recurse` parameter is specified.
+        The `Remove-ADTFile` function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-Recurse` parameter is specified.
 
     .PARAMETER Path
         Specifies the file on the filesystem to be removed. The value of Path will accept wildcards. Will accept an array of values.

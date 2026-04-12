@@ -11,7 +11,7 @@ function Get-ADTBoundParametersAndDefaultValues
         Returns a hashtable with the output of `$PSBoundParameters` and default-valued parameters for the given InvocationInfo.
 
     .DESCRIPTION
-        This function processes the provided InvocationInfo and combines the results of `$PSBoundParameters` and default-valued parameters via the InvocationInfo's ScriptBlock AST (Abstract Syntax Tree).
+        The `Get-ADTBoundParametersAndDefaultValues` function processes the provided InvocationInfo and combines the results of `$PSBoundParameters` and default-valued parameters via the InvocationInfo's ScriptBlock AST (Abstract Syntax Tree).
 
     .PARAMETER Invocation
         The script or function's InvocationInfo (`$MyInvocation`) to process.

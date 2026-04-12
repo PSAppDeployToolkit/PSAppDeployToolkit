@@ -11,7 +11,7 @@ function Set-ADTIniSection
         Opens an INI file and sets the values of the specified section.
 
     .DESCRIPTION
-        Opens an INI file and sets the values of the specified section.
+        The `Set-ADTIniSection` function opens an INI file and sets the values of the specified section.
 
         Please note that the INI file provided cannot have a byte order mark (BOM) present as the underlying Win32 API cannot process it correctly.
 

@@ -11,7 +11,7 @@ function Add-ADTFont
         Installs a font file to the system.
 
     .DESCRIPTION
-        Installs a font file to the system by copying it to the Windows Fonts directory, registering it with the system, and creating the registry entry.
+        The `Add-ADTFont` function installs a font file to the system by copying it to the Windows Fonts directory, registering it with the system, and creating the registry entry.
 
         Supports .ttf, .ttc, and .otf file types.
 

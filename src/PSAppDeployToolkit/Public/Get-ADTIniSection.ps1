@@ -11,7 +11,7 @@ function Get-ADTIniSection
         Parses an INI file and returns the specified section as an ordered hashtable of key value pairs.
 
     .DESCRIPTION
-        Parses an INI file and returns the specified section as an ordered hashtable of key value pairs.
+        The `Get-ADTIniSection` function parses an INI file and returns the specified section as an ordered hashtable of key value pairs.
 
         Please note that the INI file provided cannot have a byte order mark (BOM) present as the underlying Win32 API cannot process it correctly.
 

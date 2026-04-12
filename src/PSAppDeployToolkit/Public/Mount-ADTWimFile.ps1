@@ -11,7 +11,7 @@ function Mount-ADTWimFile
         Mounts a WIM file to a specified directory.
 
     .DESCRIPTION
-        Mounts a WIM file to a specified directory. The function supports mounting by image index or image name. It also provides options to forcefully remove existing directories and return the mounted image details.
+        The `Mount-ADTWimFile` function mounts a WIM file to a specified directory. The function supports mounting by image index or image name. It also provides options to forcefully remove existing directories and return the mounted image details.
 
     .PARAMETER ImagePath
         Path to the WIM file to be mounted.

@@ -11,7 +11,7 @@ function Get-ADTCommandTable
         Returns PSAppDeployToolkit's safe command lookup table.
 
     .DESCRIPTION
-        This function returns PSAppDeployToolkit's safe command lookup table, which can be used for command lookups within extending modules.
+        The `Get-ADTCommandTable` function returns PSAppDeployToolkit's safe command lookup table, which can be used for command lookups within extending modules.
 
         Please note that PSAppDeployToolkit's safe command table only has commands in it that are used within this module, and not necessarily all commands offered by PowerShell and its built-in modules out of the box.
 

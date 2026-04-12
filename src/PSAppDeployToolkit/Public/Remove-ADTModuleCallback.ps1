@@ -11,7 +11,7 @@ function Remove-ADTModuleCallback
         Removes a callback function from the nominated hooking point.
 
     .DESCRIPTION
-        This function removes a specified callback function from the nominated hooking point.
+        The `Remove-ADTModuleCallback` function removes a specified callback function from the nominated hooking point.
 
     .PARAMETER Hookpoint
         Where you wish for the callback to be removed from.

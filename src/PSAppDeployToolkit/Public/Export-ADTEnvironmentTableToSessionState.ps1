@@ -11,7 +11,7 @@ function Export-ADTEnvironmentTableToSessionState
         Exports the content of `Get-ADTEnvironmentTable` to the provided SessionState as variables.
 
     .DESCRIPTION
-        This function exports the content of `Get-ADTEnvironmentTable` to the provided SessionState as variables.
+        The `Export-ADTEnvironmentTableToSessionState` function exports the content of `Get-ADTEnvironmentTable` to the provided SessionState as variables.
 
     .PARAMETER SessionState
         Defaults to `$PSCmdlet.SessionState` to get the caller's SessionState, so only required if you need to override this.

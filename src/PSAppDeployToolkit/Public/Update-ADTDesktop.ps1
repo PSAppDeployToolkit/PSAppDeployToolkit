@@ -11,7 +11,7 @@ function Update-ADTDesktop
         Refresh the Windows Explorer Shell, which causes the desktop icons and the environment variables to be reloaded.
 
     .DESCRIPTION
-        This function refreshes the Windows Explorer Shell, causing the desktop icons and environment variables to be reloaded. This can be useful after making changes that affect the desktop or environment variables, ensuring that the changes are reflected immediately.
+        The `Update-ADTDesktop` function refreshes the Windows Explorer Shell, causing the desktop icons and environment variables to be reloaded. This can be useful after making changes that affect the desktop or environment variables, ensuring that the changes are reflected immediately.
 
     .INPUTS
         None

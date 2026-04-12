@@ -11,7 +11,7 @@ function Convert-ADTRegistryPath
         Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
     .DESCRIPTION
-        Converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
+        The `Convert-ADTRegistryPath` function converts the specified registry key path to a format that is compatible with built-in PowerShell cmdlets.
 
         Converts registry key hives to their full paths. Example: HKLM is converted to "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE".
 

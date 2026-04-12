@@ -11,7 +11,7 @@ function Get-ADTEnvironmentVariable
         Gets the value of the specified environment variable.
 
     .DESCRIPTION
-        This function gets the value of the specified environment variable.
+        The `Get-ADTEnvironmentVariable` function gets the value of the specified environment variable.
 
     .PARAMETER Variable
         The variable to get.

@@ -11,7 +11,7 @@ function Remove-ADTContentFromCache
         Removes the toolkit content from the cache folder on the local machine and reverts the `$adtSession.DirFiles` and `$adtSession.SupportFiles` directory.
 
     .DESCRIPTION
-        This function removes the toolkit content from the cache folder on the local machine. It also reverts the `$adtSession.DirFiles` and `$adtSession.SupportFiles` directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
+        The `Remove-ADTContentFromCache` function removes the toolkit content from the cache folder on the local machine. It also reverts the `$adtSession.DirFiles` and `$adtSession.SupportFiles` directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
 
     .PARAMETER LiteralPath
         The path to the software cache folder.

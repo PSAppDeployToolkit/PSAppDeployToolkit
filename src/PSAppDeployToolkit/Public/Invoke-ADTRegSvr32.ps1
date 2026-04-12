@@ -11,7 +11,7 @@ function Invoke-ADTRegSvr32
         Register or unregister a DLL file.
 
     .DESCRIPTION
-        Register or unregister a DLL file using regsvr32.exe. This function determines the bitness of the DLL file and uses the appropriate version of regsvr32.exe to perform the action. It supports both 32-bit and 64-bit DLL files on corresponding operating systems.
+        The `Invoke-ADTRegSvr32` function registers or unregisters a DLL file using regsvr32.exe. This function determines the bitness of the DLL file and uses the appropriate version of regsvr32.exe to perform the action. It supports both 32-bit and 64-bit DLL files on corresponding operating systems.
 
     .PARAMETER FilePath
         Path to the DLL file.

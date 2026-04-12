@@ -11,7 +11,7 @@ function New-ADTShortcut
         Creates a new .lnk or .url type shortcut.
 
     .DESCRIPTION
-        Creates a new shortcut .lnk or .url file, with configurable options. This function allows you to specify various parameters such as the target path, arguments, icon location, description, working directory, window style, run as administrator, and hotkey.
+        The `New-ADTShortcut` function creates a new shortcut .lnk or .url file, with configurable options. This function allows you to specify various parameters such as the target path, arguments, icon location, description, working directory, window style, run as administrator, and hotkey.
 
     .PARAMETER LiteralPath
         Path to save the shortcut.

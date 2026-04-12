@@ -11,7 +11,7 @@ function Get-ADTExecutableInfo
         Retrieves information about any valid Windows PE executable.
 
     .DESCRIPTION
-        This function retrieves information about any valid Windows PE executable, such as version, bitness, and other characteristics.
+        The `Get-ADTExecutableInfo` function retrieves information about any valid Windows PE executable, such as version, bitness, and other characteristics.
 
     .PARAMETER Path
         One or more expandable executable paths to retrieve info from.

@@ -11,7 +11,7 @@ function Start-ADTMsiProcessAsUser
         Executes msiexec.exe to perform actions such as install, uninstall, patch, repair, or active setup for MSI and MSP files or MSI product codes.
 
     .DESCRIPTION
-        This function utilizes msiexec.exe to handle various operations on MSI and MSP files, as well as MSI product codes. The operations include installation, uninstallation, patching, repair, and setting up active configurations.
+        The `Start-ADTMsiProcessAsUser` function utilizes msiexec.exe to handle various operations on MSI and MSP files, as well as MSI product codes. The operations include installation, uninstallation, patching, repair, and setting up active configurations.
 
         If the `-Action` parameter is set to "Install" and the MSI is already installed, the function will terminate without performing any actions.
 

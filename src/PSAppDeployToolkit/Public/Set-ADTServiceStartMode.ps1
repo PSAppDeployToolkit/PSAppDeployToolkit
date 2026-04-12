@@ -11,7 +11,7 @@ function Set-ADTServiceStartMode
         Set the service startup mode.
 
     .DESCRIPTION
-        Set the service startup mode. This function allows you to configure the startup mode of a specified service. The startup modes available are: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, and System.
+        The `Set-ADTServiceStartMode` function sets the service startup mode. This function allows you to configure the startup mode of a specified service. The startup modes available are: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, and System.
 
     .PARAMETER Service
         Specify the name of the service.

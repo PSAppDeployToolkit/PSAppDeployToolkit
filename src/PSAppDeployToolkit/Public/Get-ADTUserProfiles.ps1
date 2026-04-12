@@ -11,7 +11,7 @@ function Get-ADTUserProfiles
         Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User.
 
     .DESCRIPTION
-        Get the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User (which does not log on).
+        The `Get-ADTUserProfiles` function gets the User Profile Path, User Account SID, and the User Account Name for all users that log onto the machine and also the Default User (which does not log on).
 
         Please note that the NTAccount property may be empty for some user profiles but the SID and ProfilePath properties will always be populated.
 

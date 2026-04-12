@@ -11,7 +11,7 @@ function Install-ADTSCCMSoftwareUpdates
         Scans for outstanding SCCM updates to be installed and installs the pending updates.
 
     .DESCRIPTION
-        Scans for outstanding SCCM updates to be installed and installs the pending updates.
+        The `Install-ADTSCCMSoftwareUpdates` function scans for outstanding SCCM updates to be installed and installs the pending updates.
 
         Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
 

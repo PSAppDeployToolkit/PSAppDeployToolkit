@@ -11,7 +11,7 @@ function Set-ADTPowerShellCulture
         Changes the current thread's Culture and UICulture to the specified culture.
 
     .DESCRIPTION
-        This function changes the current thread's Culture and UICulture to the specified culture.
+        The `Set-ADTPowerShellCulture` function changes the current thread's Culture and UICulture to the specified culture.
 
     .PARAMETER CultureInfo
         The culture to set the current thread's Culture and UICulture to. Can be a CultureInfo object, or any valid IETF BCP 47 language tag.

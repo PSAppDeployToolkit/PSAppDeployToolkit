@@ -11,7 +11,7 @@ function Initialize-ADTModuleIfUninitialized
         Convenience function to initialize the module if required, optionally returning the active session if available.
 
     .DESCRIPTION
-        Convenience function to initialize the module if required, optionally returning the active session if available. This is available as a shorthand function for extension module developers and will likely serve no benefit for regular deployment scripts.
+        The `Initialize-ADTModuleIfUninitialized` function initializes the PSAppDeployToolkit module if it is not already initialized, using `Initialize-ADTModule` and optionally returns the active session, if one is available. This is available as a shorthand function for extension module developers and will likely serve no benefit for regular deployment scripts.
 
     .PARAMETER Cmdlet
         The cmdlet that is being initialized.

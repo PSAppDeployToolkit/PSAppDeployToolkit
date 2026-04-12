@@ -11,7 +11,7 @@ function Open-ADTSession
         Opens a new ADT session.
 
     .DESCRIPTION
-        This function initializes and opens a new ADT session with the specified parameters. It handles the setup of the session environment and processes any callbacks defined for the session. If the session fails to open, it handles the error and closes the session if necessary.
+        The `Open-ADTSession` function initializes and opens a new ADT session with the specified parameters. It handles the setup of the session environment and processes any callbacks defined for the session. If the session fails to open, it handles the error and closes the session if necessary.
 
     .PARAMETER SessionState
         Defaults to `$PSCmdlet.SessionState` to get the caller's SessionState, so only required if you need to override this.

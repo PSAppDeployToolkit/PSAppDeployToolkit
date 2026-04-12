@@ -11,7 +11,7 @@ function Get-ADTShortcut
         Get information from a .lnk or .url type shortcut.
 
     .DESCRIPTION
-        Get information from a .lnk or .url type shortcut. Returns a hashtable with details about the shortcut such as TargetPath, Arguments, Description, and more.
+        The `Get-ADTShortcut` function gets information from a .lnk or .url type shortcut. Returns a hashtable with details about the shortcut such as TargetPath, Arguments, Description, and more.
 
     .PARAMETER LiteralPath
         Path to the shortcut to get information from.

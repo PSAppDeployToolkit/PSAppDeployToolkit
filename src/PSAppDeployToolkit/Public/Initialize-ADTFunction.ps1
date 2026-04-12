@@ -11,7 +11,7 @@ function Initialize-ADTFunction
         Initializes the ADT function environment.
 
     .DESCRIPTION
-        Initializes the ADT function environment by setting up necessary variables and logging function start details. It ensures that the function always stops on errors and handles verbose logging.
+        The `Initialize-ADTFunction` function initializes the ADT function environment by setting up necessary variables and logging function start details. It ensures that the function always stops on errors and handles verbose logging.
 
     .PARAMETER Cmdlet
         The cmdlet that is being initialized.

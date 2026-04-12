@@ -11,7 +11,7 @@ function Remove-ADTIniValue
         Opens an INI file and removes the specified key or section.
 
     .DESCRIPTION
-        Opens an INI file and removes the specified key or section.
+        The `Remove-ADTIniValue` function opens an INI file and removes the specified key or section.
 
         Please note that the INI file provided cannot have a byte order mark (BOM) present as the underlying Win32 API cannot process it correctly.
 

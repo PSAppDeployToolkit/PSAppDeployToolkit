@@ -11,7 +11,7 @@ function Test-ADTSessionActive
         Checks if there is an active ADT session.
 
     .DESCRIPTION
-        This function checks if there is an active ADT (App Deploy Toolkit) session by retrieving the module data and returning the count of active sessions.
+        The `Test-ADTSessionActive` function checks if there is an active ADT (App Deploy Toolkit) session by retrieving the module data and returning the count of active sessions.
 
     .INPUTS
         None

@@ -11,7 +11,7 @@ function Start-ADTProcess
         Execute a process with optional arguments, working directory, window style.
 
     .DESCRIPTION
-        Executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine. Provides various options for handling the return codes (see Parameters).
+        The `Start-ADTProcess` function executes a process, e.g. a file included in the Files directory of the App Deploy Toolkit, or a file on the local machine. Provides various options for handling the return codes (see Parameters).
 
     .PARAMETER FilePath
         Path to the file to be executed. If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.

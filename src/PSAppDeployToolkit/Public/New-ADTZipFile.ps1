@@ -11,7 +11,7 @@ function New-ADTZipFile
         Create a new zip archive or add content to an existing archive.
 
     .DESCRIPTION
-        Create a new zip archive or add content to an existing archive by using PowerShell's Compress-Archive.
+        The `New-ADTZipFile` function creates a new zip archive or add content to an existing archive by using PowerShell's Compress-Archive.
 
     .PARAMETER Path
         One or more paths to compress. Supports wildcards.

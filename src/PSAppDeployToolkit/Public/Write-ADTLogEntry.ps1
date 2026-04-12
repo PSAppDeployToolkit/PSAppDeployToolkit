@@ -11,7 +11,7 @@ function Write-ADTLogEntry
         Write messages to a log file in CMTrace.exe compatible format or Legacy text file format.
 
     .DESCRIPTION
-        Write messages to a log file in CMTrace.exe compatible format or Legacy text file format and optionally display in the console. This function supports different severity levels and can be used to log debug messages if required.
+        The `Write-ADTLogEntry` function writes messages to a log file in CMTrace.exe compatible format or Legacy text file format and optionally display in the console. This function supports different severity levels and can be used to log debug messages if required.
 
     .PARAMETER Message
         The message to write to the log file or output to the console.

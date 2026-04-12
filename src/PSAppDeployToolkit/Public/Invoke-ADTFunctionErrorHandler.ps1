@@ -11,7 +11,7 @@ function Invoke-ADTFunctionErrorHandler
         Handles errors within ADT functions by logging and optionally passing through the error.
 
     .DESCRIPTION
-        This function handles errors within ADT functions by logging the error message and optionally passing through the error record. It recovers the true ErrorActionPreference set by the caller and sets it within the function. If a log message is provided, it appends the resolved error record to the log message. Depending on the ErrorActionPreference, it either throws a terminating error or writes a non-terminating error.
+        The `Invoke-ADTFunctionErrorHandler` function handles errors within ADT functions by logging the error message and optionally passing through the error record. It recovers the true ErrorActionPreference set by the caller and sets it within the function. If a log message is provided, it appends the resolved error record to the log message. Depending on the ErrorActionPreference, it either throws a terminating error or writes a non-terminating error.
 
     .PARAMETER Cmdlet
         The cmdlet that is calling this function.

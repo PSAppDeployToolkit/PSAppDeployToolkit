@@ -11,7 +11,7 @@ function Close-ADTSession
         Closes the active ADT session.
 
     .DESCRIPTION
-        The Close-ADTSession function closes the active ADT session, updates the session's exit code if provided, invokes all registered callbacks, and cleans up the session state. If this is the last session, it flags the module as uninitialized and exits the process with the last exit code.
+        The `Close-ADTSession` function closes the active ADT session, updates the session's exit code if provided, invokes all registered callbacks, and cleans up the session state. If this is the last session, it flags the module as uninitialized and exits the process with the last exit code.
 
     .PARAMETER ExitCode
         The exit code to set for the session.

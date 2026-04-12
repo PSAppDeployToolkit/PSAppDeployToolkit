@@ -11,7 +11,7 @@ function Set-ADTDeferHistory
         Set the history of deferrals in the registry for the current application.
 
     .DESCRIPTION
-        Set the history of deferrals in the registry for the current application.
+        The `Set-ADTDeferHistory` function sets the history of deferrals in the registry for the current application.
 
     .PARAMETER DeferTimesRemaining
         Specify the number of deferrals remaining.

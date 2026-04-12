@@ -11,7 +11,7 @@ function Unregister-ADTDll
         Unregister a DLL file.
 
     .DESCRIPTION
-        Unregister a DLL file using regsvr32.exe. This function takes the path to the DLL file and attempts to unregister it using the regsvr32.exe utility.
+        The `Unregister-ADTDll` function unregisters a DLL file using regsvr32.exe. This function takes the path to the DLL file and attempts to unregister it using the regsvr32.exe utility.
 
     .PARAMETER FilePath
         Path to the DLL file.

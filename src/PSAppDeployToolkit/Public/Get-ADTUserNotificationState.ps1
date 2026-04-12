@@ -11,7 +11,7 @@ function Get-ADTUserNotificationState
         Gets the specified user's notification state.
 
     .DESCRIPTION
-        This function gets the specified user's notification state.
+        The `Get-ADTUserNotificationState` function gets the active user's notification state.
 
     .INPUTS
         None

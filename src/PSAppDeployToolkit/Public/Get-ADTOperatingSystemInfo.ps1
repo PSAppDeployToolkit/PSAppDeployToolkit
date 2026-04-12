@@ -11,7 +11,7 @@ function Get-ADTOperatingSystemInfo
         Gets information about the current computer's operating system.
 
     .DESCRIPTION
-        Gets information about the current computer's operating system, such as name, version, edition, and other information.
+        The `Get-ADTOperatingSystemInfo` function gets information about the current computer's operating system, such as name, version, edition, and other information.
 
     .INPUTS
         None

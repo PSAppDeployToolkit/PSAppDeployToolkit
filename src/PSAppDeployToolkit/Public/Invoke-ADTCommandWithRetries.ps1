@@ -11,7 +11,7 @@ function Invoke-ADTCommandWithRetries
         Drop-in replacement for any cmdlet/function where a retry is desirable due to transient issues.
 
     .DESCRIPTION
-        This function invokes the specified cmdlet/function, accepting all of its parameters but retries an operation for the configured value before throwing.
+        The `Invoke-ADTCommandWithRetries` function invokes the specified cmdlet/function, accepting all of its parameters but retries an operation for the configured value before throwing.
 
     .PARAMETER Command
         The name of the command to invoke.

@@ -11,7 +11,7 @@ function Test-ADTUserInFocusMode
         Tests whether the user is in focus mode.
 
     .DESCRIPTION
-        This function tests whether the user is in focus mode, returning `$true`/`$false`, or `$null` if the API is unavailable (older OS, etc).
+        The `Test-ADTUserInFocusMode` function tests whether the user is in focus mode, returning `$true`/`$false`, or `$null` if the API is unavailable (older OS, etc).
 
     .INPUTS
         None

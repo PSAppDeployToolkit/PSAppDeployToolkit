@@ -11,7 +11,7 @@ function Register-ADTDll
         Register a DLL file.
 
     .DESCRIPTION
-        This function registers a DLL file using regsvr32.exe. It ensures that the specified DLL file exists before attempting to register it. If the file does not exist, it throws an error.
+        The `Register-ADTDll` function registers a DLL file using regsvr32.exe. It ensures that the specified DLL file exists before attempting to register it. If the file does not exist, it throws an error.
 
     .PARAMETER FilePath
         Path to the DLL file.

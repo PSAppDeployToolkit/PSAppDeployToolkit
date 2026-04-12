@@ -11,7 +11,7 @@ function Update-ADTGroupPolicy
         Performs a gpupdate command to refresh Group Policies on the local machine.
 
     .DESCRIPTION
-        This function performs a gpupdate command to refresh Group Policies on the local machine.
+        The `Update-ADTGroupPolicy` function performs a gpupdate command to refresh Group Policies on the local machine.
 
     .PARAMETER Target
         Specifies that only User or only Computer policy settings are updated. By default, both User and Computer policy settings are updated.

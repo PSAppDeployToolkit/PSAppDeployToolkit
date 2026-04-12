@@ -11,7 +11,7 @@ function Remove-ADTFileFromUserProfiles
         Removes one or more items from each user profile on the system.
 
     .DESCRIPTION
-        This function removes one or more items from each user profile on the system. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-Recurse` parameter is specified. Additionally, it allows excluding specific NT accounts, system profiles, service profiles, and the default user profile.
+        The `Remove-ADTFileFromUserProfiles` function removes one or more items from each user profile on the system. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-Recurse` parameter is specified. Additionally, it allows excluding specific NT accounts, system profiles, service profiles, and the default user profile.
 
     .PARAMETER Path
         Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.

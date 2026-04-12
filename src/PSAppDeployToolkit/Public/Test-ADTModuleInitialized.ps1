@@ -11,7 +11,7 @@ function Test-ADTModuleInitialized
         Checks if the ADT (PSAppDeployToolkit) module is initialized.
 
     .DESCRIPTION
-        This function checks if the ADT (PSAppDeployToolkit) module is initialized by retrieving the module data and returning the initialization status.
+        The `Test-ADTModuleInitialized` function checks if the ADT (PSAppDeployToolkit) module is initialized by retrieving the module data and returning the initialization status.
 
     .INPUTS
         None

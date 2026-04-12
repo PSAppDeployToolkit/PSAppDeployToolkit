@@ -11,10 +11,10 @@ function Resolve-ADTErrorRecord
         Enumerates ErrorRecord details.
 
     .DESCRIPTION
-        Enumerates an ErrorRecord, or a collection of ErrorRecord properties. This function can filter and display specific properties of the ErrorRecord, and can exclude certain parts of the error details.
+        The `Resolve-ADTErrorRecord` function enumerates an ErrorRecord, or a collection of ErrorRecord properties. This function can filter and display specific properties of the ErrorRecord, and can exclude certain parts of the error details.
 
     .PARAMETER ErrorRecord
-        The ErrorRecord to resolve. For usage in a catch block, you'd use the automatic variable `$PSItem`. For usage out of a catch block, you can access the global $Error array's first error (on index 0).
+        The ErrorRecord to resolve. For usage in a catch block, you'd use the automatic variable `$PSItem`. For usage out of a catch block, you can access the global `$Error` array's first error (on index 0).
 
     .PARAMETER Property
         The list of properties to display from the ErrorRecord. Use "*" to display all properties.

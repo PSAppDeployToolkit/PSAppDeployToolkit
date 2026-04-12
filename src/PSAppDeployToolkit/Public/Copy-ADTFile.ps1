@@ -11,7 +11,7 @@ function Copy-ADTFile
         Copies files and directories from a source to a destination.
 
     .DESCRIPTION
-        Copies files and directories from a source to a destination. This function supports recursive copying, overwriting existing files, and returning the copied items.
+        The `Copy-ADTFile` function copies files and directories from a source to a destination. This function supports recursive copying, overwriting existing files, and returning the copied items.
 
     .PARAMETER Path
         Path of the file to copy. Multiple paths can be specified.

@@ -11,7 +11,7 @@ function New-ADTFolder
         Create a new folder.
 
     .DESCRIPTION
-        Create a new folder if it does not exist. This function checks if the specified path already exists and creates the folder if it does not. It logs the creation process and handles any errors that may occur during the folder creation.
+        The `New-ADTFolder` function creates a new folder if it does not already exist. This function checks if the specified path already exists and creates the folder if it does not. It logs the creation process and handles any errors that may occur during the folder creation.
 
     .PARAMETER LiteralPath
         Path to the new folder to create.

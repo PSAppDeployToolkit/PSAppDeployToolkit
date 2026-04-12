@@ -11,7 +11,7 @@ function Set-ADTShortcut
         Modifies a .lnk or .url type shortcut.
 
     .DESCRIPTION
-        Modifies a shortcut - .lnk or .url file, with configurable options. Only specify the parameters that you want to change.
+        The `Set-ADTShortcut` function modifies a shortcut - .lnk or .url file, with configurable options. Only specify the parameters that you want to change.
 
     .PARAMETER LiteralPath
         Path to the shortcut to be changed.

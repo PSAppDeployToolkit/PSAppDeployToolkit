@@ -11,7 +11,7 @@ function Test-ADTRegistryValue
         Test if a registry value exists.
 
     .DESCRIPTION
-        Checks a registry key path to see if it has a value with a given name. Can correctly handle cases where a value simply has an empty or null value.
+        The `Test-ADTRegistryValue` function checks a registry key path to see if it has a value with a given name. Can correctly handle cases where a value simply has an empty or null value.
 
     .PARAMETER Key
         Path of the registry key.

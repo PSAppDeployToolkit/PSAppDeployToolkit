@@ -11,7 +11,7 @@ function Test-ADTEspActive
         Checks if the device is currently within a device or user Enrollment Status Page (ESP) phase.
 
     .DESCRIPTION
-        This function checks if the device is currently within a device or user Enrollment Status Page (ESP) phase.
+        The `Test-ADTEspActive` function checks if the device is currently within a device or user Enrollment Status Page (ESP) phase.
 
     .INPUTS
         None

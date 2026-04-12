@@ -11,7 +11,7 @@ function Get-ADTPendingReboot
         Get the pending reboot status on a local computer.
 
     .DESCRIPTION
-        Check WMI and the registry to determine if the system has a pending reboot operation from any of the following:
+        The `Get-ADTPendingReboot` function checks WMI and various registry keys to determine if the system has a pending reboot operation from any of the following:
 
         - Component Based Servicing (Vista, Windows 2008)
         - Windows Update / Auto Update (XP, Windows 2003 / 2008)

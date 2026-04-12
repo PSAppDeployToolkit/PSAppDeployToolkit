@@ -11,7 +11,7 @@ function New-ADTValidateScriptErrorRecord
         Creates a new ErrorRecord for script validation errors.
 
     .DESCRIPTION
-        This function creates a new ErrorRecord object for script validation errors. It takes the parameter name, provided value, exception message, and an optional inner exception to build a detailed error record. This helps in identifying and handling invalid parameter values in scripts.
+        The `New-ADTValidateScriptErrorRecord` function creates a new ErrorRecord object for script validation errors. It takes the parameter name, provided value, exception message, and an optional inner exception to build a detailed error record. This helps in identifying and handling invalid parameter values in scripts.
 
     .PARAMETER ParameterName
         The name of the parameter that caused the validation error.

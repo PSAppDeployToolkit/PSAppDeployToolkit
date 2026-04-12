@@ -11,7 +11,7 @@ function New-ADTMsiTransform
         Create a transform file for an MSI database.
 
     .DESCRIPTION
-        Create a transform file for an MSI database and create/modify properties in the Properties table. This function allows you to specify an existing transform to apply before making changes and to define the path for the new transform file. If the new transform file already exists, it will be deleted before creating a new one.
+        The `New-ADTMsiTransform` function creates a transform file for an MSI database and create/modify properties in the Properties table. This function allows you to specify an existing transform to apply before making changes and to define the path for the new transform file. If the new transform file already exists, it will be deleted before creating a new one.
 
     .PARAMETER MsiPath
         Specify the path to an MSI file.

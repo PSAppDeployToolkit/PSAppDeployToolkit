@@ -11,7 +11,7 @@ function Remove-ADTFolder
         Remove folder and files if they exist.
 
     .DESCRIPTION
-        This function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-DisableRecursion` parameter is not specified.
+        The `Remove-ADTFolder` function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-DisableRecursion` parameter is not specified.
 
     .PARAMETER Path
         A path to the folder to remove. Can contain wildcards.

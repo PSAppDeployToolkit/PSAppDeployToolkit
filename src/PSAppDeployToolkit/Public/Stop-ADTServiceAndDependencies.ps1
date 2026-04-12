@@ -11,7 +11,7 @@ function Stop-ADTServiceAndDependencies
         Stop a Windows service and its dependencies.
 
     .DESCRIPTION
-        This function stops a specified Windows service and its dependencies. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
+        The `Stop-ADTServiceAndDependencies` function stops a specified Windows service and its dependencies. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
 
     .PARAMETER Name
         Specify the name of the service.

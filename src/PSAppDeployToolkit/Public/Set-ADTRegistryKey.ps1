@@ -11,7 +11,7 @@ function Set-ADTRegistryKey
         Creates or sets a registry key name, value, and value data.
 
     .DESCRIPTION
-        Creates a registry key name, value, and value data; it sets the same if it already exists. This function can also handle registry keys for specific user SIDs and 32-bit registry on 64-bit systems.
+        The `Set-ADTRegistryKey` function creates a registry key name, value, and value data; it sets the same if it already exists. This function can also handle registry keys for specific user SIDs and 32-bit registry on 64-bit systems.
 
     .PARAMETER LiteralPath
         The registry key path.

@@ -11,7 +11,7 @@ function Convert-ADTValueType
         Casts the provided value to the requested type without range errors.
 
     .DESCRIPTION
-        This function uses C# code to cast the provided value to the requested type. This avoids errors from PowerShell when values exceed the casted value type's range.
+        The `Convert-ADTValueType` function uses C# code to cast the provided value to the requested type. This avoids errors from PowerShell when values exceed the casted value type's range.
 
     .PARAMETER Value
         The value to convert.

@@ -11,7 +11,7 @@ function Test-ADTBattery
         Tests whether the local machine is running on AC power or not.
 
     .DESCRIPTION
-        Tests whether the local machine is running on AC power and returns true/false. For detailed information, use the `-PassThru` parameter to get a hashtable containing various battery and power status properties.
+        The `Test-ADTBattery` function tests whether the local machine is running on AC power and returns true/false. For detailed information, use the `-PassThru` parameter to get a hashtable containing various battery and power status properties.
 
     .PARAMETER PassThru
         Outputs an object containing the following properties:

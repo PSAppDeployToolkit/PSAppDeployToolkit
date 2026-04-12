@@ -11,7 +11,7 @@ function Clear-ADTModuleCallback
         Clears the nominated hooking point of all callbacks.
 
     .DESCRIPTION
-        This function clears the nominated hooking point of all callbacks.
+        The `Clear-ADTModuleCallback` function clears the nominated hooking point of all callbacks.
 
     .PARAMETER Hookpoint
         The callback hook point that you wish to clear.

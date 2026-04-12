@@ -11,7 +11,7 @@ function Show-ADTBalloonTip
         Displays a balloon tip notification in the system tray.
 
     .DESCRIPTION
-        Displays a balloon tip notification in the system tray. This function can be used to show notifications to the user with customizable text, title, icon, and display duration.
+        The `Show-ADTBalloonTip` function displays a balloon tip notification in the system tray. This function can be used to show notifications to the user with customizable text, title, icon, and display duration.
 
         For Windows 10 and above, balloon tips automatically get translated by the system into toast notifications.
 

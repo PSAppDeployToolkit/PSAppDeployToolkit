@@ -11,7 +11,7 @@ function Invoke-ADTSCCMTask
         Triggers SCCM to invoke the requested schedule task ID.
 
     .DESCRIPTION
-        Triggers SCCM to invoke the requested schedule task ID. This function supports a variety of Schedule Id values as defined via https://learn.microsoft.com/en-us/intune/configmgr/develop/reference/core/clients/client-classes/triggerschedule-method-in-class-sms_client.
+        The `Invoke-ADTSCCMTask` function triggers SCCM to invoke the requested schedule task ID. This function supports a variety of Schedule Id values as defined via https://learn.microsoft.com/en-us/intune/configmgr/develop/reference/core/clients/client-classes/triggerschedule-method-in-class-sms_client.
 
     .PARAMETER ScheduleId
         Name of the Schedule Id to trigger.

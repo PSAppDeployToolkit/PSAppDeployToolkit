@@ -11,7 +11,7 @@ function Get-ADTRunningProcesses
         Gets the processes that are running from a list of process objects.
 
     .DESCRIPTION
-        Gets the processes that are running from a list of process objects.
+        The `Get-ADTRunningProcesses` function returns the processes that are running from the provided list of process objects.
 
     .PARAMETER ProcessObjects
         One or more process objects to search for.

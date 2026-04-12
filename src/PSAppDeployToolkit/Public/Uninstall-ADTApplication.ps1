@@ -11,7 +11,7 @@ function Uninstall-ADTApplication
         Removes one or more applications specified by name, filter script, or InstalledApplication object from `Get-ADTApplication`.
 
     .DESCRIPTION
-        Removes one or more applications specified by name, filter script, or InstalledApplication object from `Get-ADTApplication`.
+        The `Uninstall-ADTApplication` function removes one or more applications specified by name, filter script, or InstalledApplication object from `Get-ADTApplication`.
 
         Enumerates the registry for installed applications via `Get-ADTApplication`, matching the specified application name and uninstalls that application using its uninstall string, with the ability to specify additional uninstall parameters also.
 

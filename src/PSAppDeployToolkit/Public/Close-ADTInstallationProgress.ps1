@@ -11,7 +11,7 @@ function Close-ADTInstallationProgress
         Closes the dialog created by `Show-ADTInstallationProgress`.
 
     .DESCRIPTION
-        Closes the dialog created by `Show-ADTInstallationProgress`. This function is called by the `Close-ADTSession` function to close a running instance of the progress dialog if found.
+        The `Close-ADTInstallationProgress` function closes the dialog created by `Show-ADTInstallationProgress`. This function is called by the `Close-ADTSession` function to close a running instance of the progress dialog if found.
 
     .INPUTS
         None

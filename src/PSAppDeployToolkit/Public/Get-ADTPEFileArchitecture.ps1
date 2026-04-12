@@ -11,7 +11,7 @@ function Get-ADTPEFileArchitecture
         Determine if a PE file is a 32-bit or a 64-bit file.
 
     .DESCRIPTION
-        Determine if a PE file is a 32-bit or a 64-bit file by examining the file's image file header.
+        The `Get-ADTPEFileArchitecture` function determines if a PE file is a 32-bit or a 64-bit file by examining the file's image file header.
 
         PE file extensions: .exe, .dll, .ocx, .drv, .sys, .scr, .efi, .cpl, .fon
 

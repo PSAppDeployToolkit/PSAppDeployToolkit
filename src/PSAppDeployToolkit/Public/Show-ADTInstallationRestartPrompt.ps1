@@ -11,7 +11,7 @@ function Show-ADTInstallationRestartPrompt
         Displays a restart prompt with a countdown to a forced restart.
 
     .DESCRIPTION
-        Displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
+        The `Show-ADTInstallationRestartPrompt` function displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
 
     .PARAMETER CountdownSeconds
         Specifies the number of seconds to display the restart prompt.

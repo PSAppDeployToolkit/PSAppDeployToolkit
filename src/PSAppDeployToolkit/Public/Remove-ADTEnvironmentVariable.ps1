@@ -11,7 +11,7 @@ function Remove-ADTEnvironmentVariable
         Removes the specified environment variable.
 
     .DESCRIPTION
-        This function removes the specified environment variable.
+        The `Remove-ADTEnvironmentVariable` function removes the specified environment variable.
 
     .PARAMETER Variable
         The variable to remove.

@@ -11,7 +11,7 @@ function Set-ADTItemPermission
         Allows you to easily change permissions on files or folders.
 
     .DESCRIPTION
-        Allows you to easily change permissions on files or folders for a given user or group. You can add, remove or replace permissions, set inheritance and propagation.
+        The `Set-ADTItemPermission` function allows you to easily change permissions on files or folders for a given user or group. You can add, remove or replace permissions, set inheritance and propagation.
 
     .PARAMETER LiteralPath
         Path to the folder or file you want to modify (ex: C:\Temp)

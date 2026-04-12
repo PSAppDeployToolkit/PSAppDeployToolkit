@@ -11,7 +11,7 @@ function Add-ADTModuleCallback
         Adds a callback function to the nominated hooking point.
 
     .DESCRIPTION
-        This function adds a specified callback function to the nominated hooking point.
+        The `Add-ADTModuleCallback` function adds a specified callback function to the nominated hooking point.
 
     .PARAMETER Hookpoint
         Where you wish for the callback to be executed at.

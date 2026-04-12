@@ -11,7 +11,7 @@ function Remove-ADTFont
         Removes a font from the system.
 
     .DESCRIPTION
-        Removes a font from the system by removing the font resource, deleting the registry entry, and removing the file from the Windows Fonts directory.
+        The `Remove-ADTFont` removes a font from the system by removing the font resource, deleting the registry entry, and removing the file from the Windows Fonts directory.
 
     .PARAMETER Name
         The name of the font file (e.g., 'arial.ttf') or the font name as it appears in the registry.

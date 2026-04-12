@@ -11,7 +11,7 @@ function Show-ADTHelpConsole
         Displays a help console for the ADT module.
 
     .DESCRIPTION
-        Displays a help console for the ADT module in a new PowerShell window. The console provides a graphical interface to browse and view detailed help information for all commands exported by the ADT module. The help console includes a list box to select commands and a text box to display the full help content for the selected command.
+        The `Show-ADTHelpConsole` function displays a help console for the ADT module in a new PowerShell window. The console provides a graphical interface to browse and view detailed help information for all commands exported by the ADT module. The help console includes a list box to select commands and a text box to display the full help content for the selected command.
 
     .INPUTS
         None

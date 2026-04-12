@@ -11,7 +11,7 @@ function Set-ADTEnvironmentVariable
         Sets the value for the specified environment variable.
 
     .DESCRIPTION
-        This function sets the value for the specified environment variable.
+        The `Set-ADTEnvironmentVariable` function sets the value for the specified environment variable.
 
     .PARAMETER Variable
         The variable to set.

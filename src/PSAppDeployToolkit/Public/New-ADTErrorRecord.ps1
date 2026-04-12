@@ -11,7 +11,7 @@ function New-ADTErrorRecord
         Creates a new ErrorRecord object.
 
     .DESCRIPTION
-        This function creates a new ErrorRecord object with the specified exception, error category, and optional parameters. It allows for detailed error information to be captured and returned to the caller, who can then throw the error.
+        The `New-ADTErrorRecord` function creates a new ErrorRecord object with the specified exception, error category, and optional parameters. It allows for detailed error information to be captured and returned to the caller, who can then throw the error.
 
     .PARAMETER Exception
         The exception object that caused the error.

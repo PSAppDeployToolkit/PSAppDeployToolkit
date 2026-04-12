@@ -11,7 +11,7 @@ function Reset-ADTDeferHistory
         Reset the history of deferrals in the registry for the current application.
 
     .DESCRIPTION
-        Reset the history of deferrals in the registry for the current application.
+        The `Reset-ADTDeferHistory` function resets the deferral history for the current application, in the registry.
 
     .INPUTS
         None

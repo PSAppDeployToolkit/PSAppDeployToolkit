@@ -11,7 +11,7 @@ function Remove-ADTDesktopShortcut
         Removes desktop shortcuts from the common desktop folder or logged on user's desktop.
 
     .DESCRIPTION
-        Removes desktop shortcuts from the common desktop folder or logged on user's desktop, either all since the commencement of the session, all shortcuts in general, or based on a custom FilterScript.
+        The `Remove-ADTDesktopShortcut` function removes desktop shortcuts from the common desktop folder or logged on user's desktop, either all since the commencement of the session, all shortcuts in general, or based on a custom FilterScript.
 
     .PARAMETER Scope
         The scope of which to target (common desktop and/or logged on user's desktop).

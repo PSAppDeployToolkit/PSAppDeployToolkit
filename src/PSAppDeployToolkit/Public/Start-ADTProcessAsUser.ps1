@@ -11,7 +11,7 @@ function Start-ADTProcessAsUser
         Invokes a process in another user's session.
 
     .DESCRIPTION
-        Invokes a process from SYSTEM in another user's session.
+        The `Start-ADTProcessAsUser` function invokes a process from SYSTEM in another user's session.
 
     .PARAMETER FilePath
         Path to the file to be executed. If the file is located directly in the "Files" directory of the App Deploy Toolkit, only the file name needs to be specified.

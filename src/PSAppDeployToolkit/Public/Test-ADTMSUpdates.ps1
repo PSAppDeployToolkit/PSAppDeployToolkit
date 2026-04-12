@@ -11,7 +11,7 @@ function Test-ADTMSUpdates
         Test whether a Microsoft Windows update is installed.
 
     .DESCRIPTION
-        This function checks if a specified Microsoft Windows update, identified by its KB number, is installed on the local machine. It first attempts to find the update using the `Get-HotFix` cmdlet and, if unsuccessful, uses a COM object to search the update history.
+        The `Test-ADTMSUpdates` function checks if a specified Microsoft Windows update, identified by its KB number, is installed on the local machine. It first attempts to find the update using the `Get-HotFix` cmdlet and, if unsuccessful, uses a COM object to search the update history.
 
     .PARAMETER KbNumber
         KBNumber of the update.

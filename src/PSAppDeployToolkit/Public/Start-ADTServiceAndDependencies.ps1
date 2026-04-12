@@ -11,7 +11,7 @@ function Start-ADTServiceAndDependencies
         Start a Windows service and its dependencies.
 
     .DESCRIPTION
-        This function starts a specified Windows service and its dependencies. It provides options to skip starting dependent services, wait for a service to get out of a pending state, and return the service object.
+        The `Start-ADTServiceAndDependencies` function starts a specified Windows service and its dependencies. It provides options to skip starting dependent services, wait for a service to get out of a pending state, and return the service object.
 
     .PARAMETER Name
         Specify the name of the service.

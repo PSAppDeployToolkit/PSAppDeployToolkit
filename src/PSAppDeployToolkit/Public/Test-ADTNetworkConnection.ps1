@@ -11,7 +11,7 @@ function Test-ADTNetworkConnection
         Tests for an active local network connection; ethernet/Wi-Fi by default but can test for a number of other connection types.
 
     .DESCRIPTION
-        Tests for an active local network connection via Get-NetAdapter; ethernet/Wi-Fi by default but can test for a number of other connection types. This function checks if any of the nominated interface types is in the 'Up' status.
+        The `Test-ADTNetworkConnection` function tests for an active local network connection via Get-NetAdapter; ethernet/Wi-Fi by default but can test for a number of other connection types. This function checks if any of the nominated interface types is in the 'Up' status.
 
     .PARAMETER InterfaceType
         Specifies one or more interface types to test. Defaults to `Ethernet` and `Wireless80211` (Wi-Fi).

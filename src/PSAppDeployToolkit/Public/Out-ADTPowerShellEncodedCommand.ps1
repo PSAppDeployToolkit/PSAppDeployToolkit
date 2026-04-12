@@ -11,7 +11,7 @@ function Out-ADTPowerShellEncodedCommand
         Encodes a PowerShell command into a Base64 string.
 
     .DESCRIPTION
-        This function takes a PowerShell command as input and encodes it into a Base64 string. This is useful for passing commands to PowerShell through mechanisms that require encoded input.
+        The `Out-ADTPowerShellEncodedCommand` function takes a PowerShell command as input and encodes it into a Base64 string. This is useful for passing commands to PowerShell through mechanisms that require encoded input.
 
     .PARAMETER Command
         The PowerShell command to be encoded.
