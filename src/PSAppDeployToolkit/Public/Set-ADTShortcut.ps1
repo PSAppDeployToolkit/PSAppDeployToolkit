@@ -75,6 +75,7 @@ function Set-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTShortcut
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSPossibleIncorrectUsageOfAssignmentOperator', '', Justification = "PSScriptAnalyzer doesn't understand variable assignment within conditional statements.")]
     [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
