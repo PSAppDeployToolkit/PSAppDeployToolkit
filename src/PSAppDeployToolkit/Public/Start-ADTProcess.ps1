@@ -397,13 +397,7 @@ function Start-ADTProcess
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ($_ -le [System.TimeSpan]::Zero)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MsiExecWaitTime -ProvidedValue $_ -ExceptionMessage "The provided `-MsiExecWaitTime` parameter value must be greater than zero."))
-                }
-                return !!$_
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$MsiExecWaitTime,
 
         [Parameter(Mandatory = $false)]
@@ -424,13 +418,7 @@ function Start-ADTProcess
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'UseShellExecute_CreateNoWindow_Timeout')]
-        [ValidateScript({
-                if ($_.TotalMilliseconds -lt 1)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage "The `-Timeout` parameter expects a `[System.TimeSpan]` object of 1ms or above; the supplied value of $($_.Ticks) ticks equates to $($_.TotalMilliSeconds) milliseconds. Try `-Timeout (New-Timespan -Seconds $($_.Ticks))` instead."))
-                }
-                return !!$_
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$Timeout,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Default_CreateWindow_Timeout')]

@@ -92,23 +92,11 @@ function Invoke-ADTCommandWithRetries
         [System.UInt32]$Retries = 3,
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ($_ -le [System.TimeSpan]::Zero)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName SleepDuration -ProvidedValue $_ -ExceptionMessage 'The specified TimeSpan must be greater than zero.'))
-                }
-                return !!$_
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$SleepDuration = [System.TimeSpan]::FromSeconds(5),
 
         [Parameter(Mandatory = $false)]
-        [ValidateScript({
-                if ($_ -le [System.TimeSpan]::Zero)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName MaximumElapsedTime -ProvidedValue $_ -ExceptionMessage 'The specified TimeSpan must be greater than zero.'))
-                }
-                return !!$_
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$MaximumElapsedTime,
 
         [Parameter(Mandatory = $false, ValueFromRemainingArguments = $true, DontShow = $true)]
