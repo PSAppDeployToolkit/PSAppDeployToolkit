@@ -94,7 +94,7 @@ function Set-ADTServiceStartMode
                 $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $StartMode 2>&1
                 if (!$Global:LASTEXITCODE)
                 {
-                    Write-ADTLogEntry -Message "Successfully set service [($Service.Name)] startup mode to [$StartMode]."
+                    Write-ADTLogEntry -Message "Successfully set service [$($Service.Name)] startup mode to [$StartMode]."
                     return
                 }
 
