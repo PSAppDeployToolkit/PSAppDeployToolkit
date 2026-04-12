@@ -11,7 +11,7 @@ function Get-ADTLoggedOnUser
         Retrieves session details for all local and RDP logged on users.
 
     .DESCRIPTION
-        The Get-ADTLoggedOnUser function retrieves session details for all local and RDP logged on users using Win32 APIs. It provides information such as NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession, IsActiveUserSession, IsRdpSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, and ClientBuildNumber.
+        The `Get-ADTLoggedOnUser` function retrieves session details for all local and RDP logged on users using Win32 APIs. It provides information such as NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession, IsActiveUserSession, IsRdpSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, and ClientBuildNumber.
 
     .INPUTS
         None

@@ -20,10 +20,10 @@ function Set-ADTActiveSetup
         This Function:
 
         - Creates the registry entries in "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)".
-        - Creates StubPath value depending on the file extension of the $StubExePath parameter.
+        - Creates StubPath value depending on the file extension of the `-StubExePath` parameter.
         - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
-        - Copies/overwrites the StubPath file to $StubExePath destination path if file exists in 'Files' subdirectory of script directory.
-        - Executes the StubPath file for the current user based on $NoExecuteForCurrentUser (no need to logout/login to trigger Active Setup).
+        - Copies/overwrites the StubPath file to `-StubExePath` destination path if file exists in 'Files' subdirectory of script directory.
+        - Executes the StubPath file for the current user based on the value of the `-NoExecuteForCurrentUser` parameter (no need to logout/login to trigger Active Setup).
 
     .PARAMETER StubExePath
         Use this parameter to specify the destination path of the file that will be executed upon user login.
@@ -37,14 +37,14 @@ function Set-ADTActiveSetup
         Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS.
 
     .PARAMETER ExecutionPolicy
-        Specifies the ExecutionPolicy to set when StubExePath is a PowerShell script.
+        Specifies the ExecutionPolicy to set when `-StubExePath` is a PowerShell script.
 
     .PARAMETER Version
         Optional. Specify version for Active setup entry. Due to a Windows Active Setup/registry limitation, the entry is not triggered if the Version value contains a sequence of more than 8 digits without separators. Use separators such as commas in the version string (for example, `1,0,20240101`) to break up long digit sequences and work around this limitation.
 
         Note:
             - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
-            - In Windows 10, scripts and executables might be blocked by AppLocker. Ensure that the path given to -StubExePath will permit end users to run scripts and executables unelevated.
+            - In Windows 10, scripts and executables might be blocked by AppLocker. Ensure that the path given to `-StubExePath` will permit end users to run scripts and executables unelevated.
 
     .PARAMETER Locale
         Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
@@ -53,10 +53,10 @@ function Set-ADTActiveSetup
         Remove Active Setup entry from HKLM registry hive. Will also load each logon user's HKCU registry hive to remove Active Setup entry. Function returns after purging.
 
     .PARAMETER DisableActiveSetup
-        Disables the Active Setup entry so that the StubPath file will not be executed. This also enables -NoExecuteForCurrentUser.
+        Disables the Active Setup entry so that the StubPath file will not be executed. This also enables `-NoExecuteForCurrentUser`.
 
     .PARAMETER NoExecuteForCurrentUser
-        Specifies whether the StubExePath should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in.
+        Specifies whether the `-StubExePath` value should be executed for the current user. Since this user is already logged in, the user won't have the application started without logging out and logging back in.
 
     .PARAMETER PassThru
         Returns a ProcessResult from the execution of the ActiveSetup configuration for the current user if `-PassThru` is provided.
@@ -92,7 +92,7 @@ function Set-ADTActiveSetup
 
         Original code borrowed from: Denis St-Pierre (Ottawa, Canada), Todd MacNaught (Ottawa, Canada)
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

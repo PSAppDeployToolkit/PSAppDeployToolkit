@@ -11,7 +11,7 @@ function Get-ADTSession
         Retrieves the most recent ADT session.
 
     .DESCRIPTION
-        The Get-ADTSession function returns the most recent session from the ADT module data. If no sessions are found, it throws an error indicating that an ADT session should be opened using Open-ADTSession before calling this function.
+        The `Get-ADTSession` function returns the most recent session from the ADT module data. If no sessions are found, it throws an error indicating that an ADT session should be opened using `Open-ADTSession` before calling this function.
 
     .INPUTS
         None
@@ -21,7 +21,7 @@ function Get-ADTSession
     .OUTPUTS
         PSAppDeployToolkit.Foundation.DeploymentSession
 
-        Returns the most recent session object from the ADT module data.
+        Returns the most recent DeploymentSession object from the ADT module data.
 
     .EXAMPLE
         Get-ADTSession
@@ -39,7 +39,7 @@ function Get-ADTSession
     .NOTES
         An active ADT session is required to use this function.
 
-        Requires: PSADT session should be initialized using Open-ADTSession
+        Requires: PSADT session should be initialized using `Open-ADTSession`
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

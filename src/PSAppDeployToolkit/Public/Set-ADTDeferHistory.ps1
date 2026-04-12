@@ -24,10 +24,10 @@ function Set-ADTDeferHistory
 
         This helps address the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
-        This parameter is specifically utilized within the `Show-ADTInstallationWelcome` function, and if specified, the current date and time will be used for the DeferRunIntervalLastTime.
+        This parameter is specifically utilized within the `Show-ADTInstallationWelcome` function, and if specified, the current date and time will be used for the `-DeferRunIntervalLastTime` parameter.
 
     .PARAMETER DeferRunIntervalLastTime
-        Specifies the last time the DeferRunInterval value was tested. This is set from within `Show-ADTInstallationWelcome` as required.
+        Specifies the last time the `-DeferRunInterval` value was tested. This is set from within `Show-ADTInstallationWelcome` as required.
 
     .INPUTS
         None

@@ -8,12 +8,12 @@ function Start-ADTMspProcessAsUser
 {
     <#
     .SYNOPSIS
-        Executes an MSP file using the same logic as Start-ADTMsiProcess.
+        Executes an MSP file using the same logic as `Start-ADTMsiProcess`.
 
     .DESCRIPTION
-        Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the Start-ADTMsiProcess function to patch the installation.
+        Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the `Start-ADTMsiProcess` function to patch the installation.
 
-        Uses default config MSI parameters. You can use -AdditionalArgumentList to add additional parameters.
+        Uses default config MSI parameters. You can use the `-AdditionalArgumentList` parameter to add additional parameters.
 
     .PARAMETER FilePath
         Path to the MSP file.
@@ -118,7 +118,7 @@ function Start-ADTMspProcessAsUser
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

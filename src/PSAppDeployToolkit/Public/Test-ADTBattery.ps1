@@ -11,7 +11,7 @@ function Test-ADTBattery
         Tests whether the local machine is running on AC power or not.
 
     .DESCRIPTION
-        Tests whether the local machine is running on AC power and returns true/false. For detailed information, use the -PassThru option to get a hashtable containing various battery and power status properties.
+        Tests whether the local machine is running on AC power and returns true/false. For detailed information, use the `-PassThru` parameter to get a hashtable containing various battery and power status properties.
 
     .PARAMETER PassThru
         Outputs an object containing the following properties:
@@ -33,7 +33,7 @@ function Test-ADTBattery
     .OUTPUTS
         System.Boolean
 
-        By default, this function returns a Boolean where $true represents that the computer is running on AC power and $false represents that the computer is running on DC/battery power.
+        By default, this function returns a Boolean where `$true` represents that the computer is running on AC power and `$false` represents that the computer is running on DC/battery power.
 
     .OUTPUTS
         PSADT.DeviceManagement.BatteryInfo

@@ -11,7 +11,7 @@ function Get-ADTFileVersion
         Gets the version of the specified file.
 
     .DESCRIPTION
-        The Get-ADTFileVersion function retrieves the version information of the specified file. By default, it returns the FileVersion, but it can also return the ProductVersion if the -ProductVersion switch is specified.
+        The `Get-ADTFileVersion` function retrieves the version information of the specified file. By default, it returns the FileVersion, but it can also return the ProductVersion if the `-ProductVersion` switch is specified.
 
     .PARAMETER File
         The path of the file.

@@ -11,7 +11,7 @@ function Get-ADTPowerShellProcessPath
         Retrieves the path to the PowerShell executable.
 
     .DESCRIPTION
-        The Get-ADTPowerShellProcessPath function returns the path to the PowerShell executable. It determines whether the current PowerShell session is running in Windows PowerShell or PowerShell Core and returns the appropriate executable path.
+        The `Get-ADTPowerShellProcessPath` function returns the path to the PowerShell executable. It determines whether the current PowerShell session is running in Windows PowerShell or PowerShell Core and returns the appropriate executable path.
 
     .INPUTS
         None

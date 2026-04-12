@@ -8,17 +8,17 @@ function Uninstall-ADTApplication
 {
     <#
     .SYNOPSIS
-        Removes one or more applications specified by name, filter script, or InstalledApplication object from Get-ADTApplication.
+        Removes one or more applications specified by name, filter script, or InstalledApplication object from `Get-ADTApplication`.
 
     .DESCRIPTION
-        Removes one or more applications specified by name, filter script, or InstalledApplication object from Get-ADTApplication.
+        Removes one or more applications specified by name, filter script, or InstalledApplication object from `Get-ADTApplication`.
 
-        Enumerates the registry for installed applications via Get-ADTApplication, matching the specified application name and uninstalls that application using its uninstall string, with the ability to specify additional uninstall parameters also.
+        Enumerates the registry for installed applications via `Get-ADTApplication`, matching the specified application name and uninstalls that application using its uninstall string, with the ability to specify additional uninstall parameters also.
 
         The application will be uninstalled using its QuietUninstallString where possible. If it doesn't exist, is null, is invalid, or `-ForceUninstallString` is specified, the UninstallString will be used.
 
     .PARAMETER InstalledApplication
-        Specifies the [PSADT.AppManagement.InstalledApplication] object to remove. This parameter is typically used when piping Get-ADTApplication to this function.
+        Specifies the [PSADT.AppManagement.InstalledApplication] object to remove. This parameter is typically used when piping the output of `Get-ADTApplication` to this function.
 
     .PARAMETER Name
         The name of the application to retrieve information for. Performs a contains match on the application display name by default.
@@ -54,7 +54,7 @@ function Uninstall-ADTApplication
         Overrides the default MSI logging options specified in the config.psd1 file. Default options are: "/L*v".
 
     .PARAMETER LogFileName
-        Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
+        Overrides the default log file name for MSI applications. The default log file name is generated from the MSI file name. If the value of `-LogFileName` does not end in .log, it will be automatically appended.
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
@@ -74,7 +74,7 @@ function Uninstall-ADTApplication
         List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead, or `-ErrorAction SilentlyContinue` as this parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER ExitOnProcessFailure
-        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+        Automatically closes the active deployment session via `Close-ADTSession` in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER PassThru
         Returns an object with ExitCode, StdOut, and StdErr output from the process. Note that a failed execution will only return an object if either `-ErrorAction` is set to `SilentlyContinue`/`Ignore`, or if `-SuccessExitCodes` is used.
@@ -121,7 +121,7 @@ function Uninstall-ADTApplication
 
         More reading on how to create filterscripts https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/where-object?view=powershell-5.1#description
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

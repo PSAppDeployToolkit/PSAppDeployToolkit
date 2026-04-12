@@ -8,13 +8,13 @@ function Get-ADTBoundParametersAndDefaultValues
 {
     <#
     .SYNOPSIS
-        Returns a hashtable with the output of $PSBoundParameters and default-valued parameters for the given InvocationInfo.
+        Returns a hashtable with the output of `$PSBoundParameters` and default-valued parameters for the given InvocationInfo.
 
     .DESCRIPTION
-        This function processes the provided InvocationInfo and combines the results of $PSBoundParameters and default-valued parameters via the InvocationInfo's ScriptBlock AST (Abstract Syntax Tree).
+        This function processes the provided InvocationInfo and combines the results of `$PSBoundParameters` and default-valued parameters via the InvocationInfo's ScriptBlock AST (Abstract Syntax Tree).
 
     .PARAMETER Invocation
-        The script or function's InvocationInfo ($MyInvocation) to process.
+        The script or function's InvocationInfo (`$MyInvocation`) to process.
 
     .PARAMETER ParameterSetName
         The ParameterSetName to use as a filter against the Invocation's parameters.
@@ -36,7 +36,7 @@ function Get-ADTBoundParametersAndDefaultValues
     .OUTPUTS
         System.Collections.Generic.Dictionary[System.String, System.Object]
 
-        Get-ADTBoundParametersAndDefaultValues returns a dictionary of the same base type as $PSBoundParameters for API consistency.
+        `Get-ADTBoundParametersAndDefaultValues` returns a dictionary of the same base type as `$PSBoundParameters` for API consistency.
 
     .EXAMPLE
         Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation

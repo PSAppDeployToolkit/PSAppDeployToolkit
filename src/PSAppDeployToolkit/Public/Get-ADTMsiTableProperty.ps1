@@ -46,7 +46,7 @@ function Get-ADTMsiTableProperty
     .OUTPUTS
         PSADT.WindowsInstaller.MsiSummaryInfo
 
-        When the -GetSummaryInformation parameter is specified, this function returns a custom type with information about the MSI:
+        When the `-GetSummaryInformation` parameter is specified, this function returns a custom type with information about the MSI:
         - CodePage
         - Title
         - Subject

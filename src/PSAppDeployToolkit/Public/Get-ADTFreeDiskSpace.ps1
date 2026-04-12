@@ -11,7 +11,7 @@ function Get-ADTFreeDiskSpace
         Retrieves the free disk space in MB on a particular drive (defaults to system drive).
 
     .DESCRIPTION
-        The Get-ADTFreeDiskSpace function retrieves the free disk space in MB on a specified drive. If no drive is specified, it defaults to the system drive. This function is useful for monitoring disk space availability.
+        The `Get-ADTFreeDiskSpace` function retrieves the free disk space in MB on a specified drive. If no drive is specified, it defaults to the system drive. This function is useful for monitoring disk space availability.
 
     .PARAMETER Drive
         The drive to check free disk space on.

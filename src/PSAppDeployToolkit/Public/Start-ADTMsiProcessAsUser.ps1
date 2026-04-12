@@ -13,7 +13,7 @@ function Start-ADTMsiProcessAsUser
     .DESCRIPTION
         This function utilizes msiexec.exe to handle various operations on MSI and MSP files, as well as MSI product codes. The operations include installation, uninstallation, patching, repair, and setting up active configurations.
 
-        If the -Action parameter is set to "Install" and the MSI is already installed, the function will terminate without performing any actions.
+        If the `-Action` parameter is set to "Install" and the MSI is already installed, the function will terminate without performing any actions.
 
         The function automatically sets default switches for msiexec based on preferences defined in the config.psd1 file. Additionally, it generates a log file name and creates a verbose log for all msiexec operations, ensuring detailed tracking.
 
@@ -62,7 +62,7 @@ function Start-ADTMsiProcessAsUser
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
     .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-ArgumentList` parameters.
 
     .PARAMETER DenyUserTermination
         Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
@@ -71,7 +71,7 @@ function Start-ADTMsiProcessAsUser
         Overrides the default logging options specified in the config.psd1 file.
 
     .PARAMETER LogFileName
-        Overrides the default log file name. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
+        Overrides the default log file name. The default log file name is generated from the MSI file name. If the value of `-LogFileName` does not end in .log, it will be automatically appended.
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
@@ -100,7 +100,7 @@ function Start-ADTMsiProcessAsUser
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
     .PARAMETER ExitOnProcessFailure
-        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+        Automatically closes the active deployment session via `Close-ADTSession` in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER ContinueWhenNoUserLoggedOn
         When specified, if no user is logged on, the condition is logged and the function returns without throwing an exception.
@@ -173,7 +173,7 @@ function Start-ADTMsiProcessAsUser
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

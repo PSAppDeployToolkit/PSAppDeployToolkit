@@ -21,12 +21,12 @@ function Test-ADTOobeCompleted
     .OUTPUTS
         System.Boolean
 
-        Returns $true if the device has proceeded past the OOBE, otherwise $false.
+        Returns `$true` if the device has proceeded past the OOBE, otherwise `$false`.
 
     .EXAMPLE
         Test-ADTOobeCompleted
 
-        Checks if the device has completed the OOBE or not and returns true or false.
+        Checks if the device has completed the OOBE or not and returns `$true` or `$false`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

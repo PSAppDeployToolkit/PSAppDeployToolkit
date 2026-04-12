@@ -24,12 +24,12 @@ function Test-ADTNetworkConnection
     .OUTPUTS
         System.Boolean
 
-        Returns $true if a wired network connection is detected, otherwise returns $false.
+        Returns `$true` if a wired network connection is detected, otherwise returns `$false`.
 
     .EXAMPLE
         Test-ADTNetworkConnection
 
-        Checks if there is an active wired network connection and returns true or false.
+        Checks if there is an active wired network connection and returns `$true` or `$false`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

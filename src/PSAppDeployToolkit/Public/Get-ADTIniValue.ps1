@@ -11,7 +11,7 @@ function Get-ADTIniValue
         Parses an INI file and returns the value of the specified section and key.
 
     .DESCRIPTION
-        The Get-ADTIniValue function parses an INI file and returns the value of the specified section and key.
+        The `Get-ADTIniValue` function parses an INI file and returns the value of the specified section and key.
 
         Please note that the INI file provided cannot have a byte order mark (BOM) present as the underlying Win32 API cannot process it correctly.
 

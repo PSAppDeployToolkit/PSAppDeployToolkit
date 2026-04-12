@@ -11,7 +11,7 @@ function Remove-ADTFile
         Removes one or more items from a given path on the filesystem.
 
     .DESCRIPTION
-        This function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the Recurse parameter is specified.
+        This function removes one or more items from a given path on the filesystem. It can handle both wildcard paths and literal paths. If the specified path does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-Recurse` parameter is specified.
 
     .PARAMETER Path
         Specifies the file on the filesystem to be removed. The value of Path will accept wildcards. Will accept an array of values.
@@ -47,7 +47,7 @@ function Remove-ADTFile
 
         This function continues on received errors by default. To have the function stop on an error, please provide `-ErrorAction Stop` on the end of your call.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

@@ -91,7 +91,7 @@ function Set-ADTItemPermission
 
         Original Author: Julian DA CUNHA - dacunha.julian@gmail.com, used with permission.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

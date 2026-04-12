@@ -41,7 +41,7 @@ function Start-ADTServiceAndDependencies
     .OUTPUTS
         System.ServiceProcess.ServiceController
 
-        When the -PassThru parameter is provided, this function returns a ServiceController object representing the service that was started.
+        When the `-PassThru` parameter is provided, this function returns a ServiceController object representing the service that was started.
 
     .EXAMPLE
         Start-ADTServiceAndDependencies -Name 'wuauserv'
@@ -61,7 +61,7 @@ function Start-ADTServiceAndDependencies
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

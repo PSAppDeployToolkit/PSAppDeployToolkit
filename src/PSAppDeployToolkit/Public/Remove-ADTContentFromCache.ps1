@@ -8,10 +8,10 @@ function Remove-ADTContentFromCache
 {
     <#
     .SYNOPSIS
-        Removes the toolkit content from the cache folder on the local machine and reverts the $adtSession.DirFiles and $adtSession.SupportFiles directory.
+        Removes the toolkit content from the cache folder on the local machine and reverts the `$adtSession.DirFiles` and `$adtSession.SupportFiles` directory.
 
     .DESCRIPTION
-        This function removes the toolkit content from the cache folder on the local machine. It also reverts the $adtSession.DirFiles and $adtSession.SupportFiles directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
+        This function removes the toolkit content from the cache folder on the local machine. It also reverts the `$adtSession.DirFiles` and `$adtSession.SupportFiles` directory to their original state. If the specified cache folder does not exist, it logs a message and exits.
 
     .PARAMETER LiteralPath
         The path to the software cache folder.
@@ -34,7 +34,7 @@ function Remove-ADTContentFromCache
     .NOTES
         An active ADT session is required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

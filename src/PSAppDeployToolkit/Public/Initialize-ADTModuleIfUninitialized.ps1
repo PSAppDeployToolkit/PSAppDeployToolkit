@@ -38,7 +38,7 @@ function Initialize-ADTModuleIfUninitialized
     .OUTPUTS
         PSAppDeployToolkit.Foundation.DeploymentSession
 
-        If an active DeploymentSession is available and the -PassThruActiveSession parameter is provided, this function returns the active DeploymentSession.
+        If an active DeploymentSession is available and the `-PassThruActiveSession` parameter is provided, this function returns the active DeploymentSession.
 
     .EXAMPLE
         Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet

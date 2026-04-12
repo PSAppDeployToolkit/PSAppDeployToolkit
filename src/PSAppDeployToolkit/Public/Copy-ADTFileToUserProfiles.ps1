@@ -11,7 +11,7 @@ function Copy-ADTFileToUserProfiles
         Copy one or more items to each user profile on the system.
 
     .DESCRIPTION
-        The Copy-ADTFileToUserProfiles function copies one or more items to each user profile on the system. It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
+        The `Copy-ADTFileToUserProfiles` function copies one or more items to each user profile on the system. It supports various options such as recursion, flattening files, and using Robocopy to overcome the 260 character limit.
 
     .PARAMETER Path
         The path of the file or folder to copy.
@@ -64,7 +64,7 @@ function Copy-ADTFileToUserProfiles
     .INPUTS
         System.String[]
 
-        You can pipe in string values for $LiteralPath.
+        You can pipe in string values for the `-LiteralPath` parameter.
 
     .OUTPUTS
         None
@@ -94,7 +94,7 @@ function Copy-ADTFileToUserProfiles
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

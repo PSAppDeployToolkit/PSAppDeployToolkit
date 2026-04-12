@@ -11,7 +11,7 @@ function Enable-ADTTerminalServerInstallMode
         Changes the current Remote Desktop Session Host/Citrix server to user install mode.
 
     .DESCRIPTION
-        The Enable-ADTTerminalServerInstallMode function changes the current Remote Desktop Session Host/Citrix server to user install mode. This is useful for ensuring that applications are installed in a way that is compatible with multi-user environments.
+        The `Enable-ADTTerminalServerInstallMode` function changes the current Remote Desktop Session Host/Citrix server to user install mode. This is useful for ensuring that applications are installed in a way that is compatible with multi-user environments.
 
     .INPUTS
         None
@@ -31,7 +31,7 @@ function Enable-ADTTerminalServerInstallMode
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

@@ -11,7 +11,7 @@ function Remove-ADTRegistryKey
         Deletes the specified registry key or value.
 
     .DESCRIPTION
-        This function deletes the specified registry key or value. It can handle both registry keys and values, and it supports recursive deletion of registry keys. If the SID parameter is specified, it converts HKEY_CURRENT_USER registry keys to the HKEY_USERS\$SID format, allowing for the manipulation of HKCU registry settings for all users on the system.
+        This function deletes the specified registry key or value. It can handle both registry keys and values, and it supports recursive deletion of registry keys via the `-Recurse` parameter. If the `-SID` parameter is specified, it converts HKEY_CURRENT_USER registry keys to the HKEY_USERS\$SID format, allowing for the manipulation of HKCU registry settings for all users on the system.
 
     .PARAMETER Path
         Path of the registry key to delete, wildcards permitted.
@@ -31,7 +31,7 @@ function Remove-ADTRegistryKey
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.
 
-        Specify this parameter from the Invoke-ADTAllUsersRegistryAction function to read/edit HKCU registry settings for all users on the system.
+        Specify this parameter from the `Invoke-ADTAllUsersRegistryAction` function to read/edit HKCU registry settings for all users on the system.
 
     .INPUTS
         None
@@ -71,7 +71,7 @@ function Remove-ADTRegistryKey
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

@@ -14,7 +14,7 @@ function Open-ADTSession
         This function initializes and opens a new ADT session with the specified parameters. It handles the setup of the session environment and processes any callbacks defined for the session. If the session fails to open, it handles the error and closes the session if necessary.
 
     .PARAMETER SessionState
-        Defaults to $PSCmdlet.SessionState to get the caller's SessionState, so only required if you need to override this.
+        Defaults to `$PSCmdlet.SessionState` to get the caller's SessionState, so only required if you need to override this.
 
     .PARAMETER DeploymentType
         Specifies the type of deployment.
@@ -155,7 +155,7 @@ function Open-ADTSession
     .OUTPUTS
         PSAppDeployToolkit.Foundation.DeploymentSession
 
-        This function returns the session object if -PassThru is specified.
+        This function returns the session object if `-PassThru` is specified.
 
     .EXAMPLE
         Open-ADTSession -SessionState $ExecutionContext.SessionState -DeploymentType "Install" -DeployMode "Interactive"

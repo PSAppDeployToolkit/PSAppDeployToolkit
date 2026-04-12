@@ -11,7 +11,7 @@ function Remove-ADTFolder
         Remove folder and files if they exist.
 
     .DESCRIPTION
-        This function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the DisableRecursion parameter is not specified.
+        This function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-DisableRecursion` parameter is not specified.
 
     .PARAMETER Path
         A path to the folder to remove. Can contain wildcards.
@@ -48,7 +48,7 @@ function Remove-ADTFolder
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

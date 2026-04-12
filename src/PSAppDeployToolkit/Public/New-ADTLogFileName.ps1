@@ -37,7 +37,7 @@ function New-ADTLogFileName
     .NOTES
         An active ADT session is required to use this function.
 
-        Requires: PSADT session should be initialized using Open-ADTSession
+        Requires: PSADT session should be initialized using `Open-ADTSession`
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

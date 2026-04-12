@@ -21,12 +21,12 @@ function Test-ADTPowerPoint
     .OUTPUTS
         System.Boolean
 
-        Returns $true if PowerPoint is running in either fullscreen slideshow mode or presentation mode, otherwise returns $false.
+        Returns `$true` if PowerPoint is running in either fullscreen slideshow mode or presentation mode, otherwise returns `$false`.
 
     .EXAMPLE
         Test-ADTPowerPoint
 
-        Checks if PowerPoint is running in either fullscreen slideshow mode or presentation mode and returns true or false.
+        Checks if PowerPoint is running in either fullscreen slideshow mode or presentation mode and returns `$true` or `$false`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

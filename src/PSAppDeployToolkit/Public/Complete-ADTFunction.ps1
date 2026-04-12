@@ -11,7 +11,7 @@ function Complete-ADTFunction
         Completes the execution of an ADT function.
 
     .DESCRIPTION
-        The Complete-ADTFunction function finalizes the execution of an ADT function by writing a debug log message and restoring the original global verbosity if it was archived off.
+        The `Complete-ADTFunction` function finalizes the execution of an ADT function by writing a debug log message and restoring the original global verbosity if it was archived off.
 
     .PARAMETER Cmdlet
         The PSCmdlet object representing the cmdlet being completed.

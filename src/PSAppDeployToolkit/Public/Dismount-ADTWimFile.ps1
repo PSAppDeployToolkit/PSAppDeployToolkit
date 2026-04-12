@@ -11,7 +11,7 @@ function Dismount-ADTWimFile
         Dismounts a WIM file from the specified mount point.
 
     .DESCRIPTION
-        The Dismount-ADTWimFile function dismounts a WIM file from the specified mount point and discards all changes. This function ensures that the specified path is a valid WIM mount point before attempting to dismount.
+        The `Dismount-ADTWimFile` function dismounts a WIM file from the specified mount point and discards all changes. This function ensures that the specified path is a valid WIM mount point before attempting to dismount.
 
     .PARAMETER ImagePath
         The path to the WIM file.
@@ -42,7 +42,7 @@ function Dismount-ADTWimFile
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

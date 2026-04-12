@@ -24,7 +24,7 @@ function Set-ADTIniSection
 	.PARAMETER Content
 		A hashtable or dictionary object containing the key-value pairs to set in the specified section.
         Supply an ordered hashtable to preserve the order of supplied entries. Values can be strings, numbers, booleans, enums, or null.
-        Supply $null or an empty hashtable in combination with -Overwrite to empty an entire section.
+        Supply `$null` or an empty hashtable in combination with `-Overwrite` to empty an entire section.
 
     .PARAMETER Overwrite
         Specifies whether the provided INI content should overwrite all existing section content.
@@ -60,7 +60,7 @@ function Set-ADTIniSection
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

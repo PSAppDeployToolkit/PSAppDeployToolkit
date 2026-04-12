@@ -8,10 +8,10 @@ function Close-ADTInstallationProgress
 {
     <#
     .SYNOPSIS
-        Closes the dialog created by Show-ADTInstallationProgress.
+        Closes the dialog created by `Show-ADTInstallationProgress`.
 
     .DESCRIPTION
-        Closes the dialog created by Show-ADTInstallationProgress. This function is called by the Close-ADTSession function to close a running instance of the progress dialog if found.
+        Closes the dialog created by `Show-ADTInstallationProgress`. This function is called by the `Close-ADTSession` function to close a running instance of the progress dialog if found.
 
     .INPUTS
         None
@@ -26,7 +26,7 @@ function Close-ADTInstallationProgress
     .EXAMPLE
         Close-ADTInstallationProgress
 
-        This example closes the dialog created by Show-ADTInstallationProgress.
+        This example closes the dialog created by `Show-ADTInstallationProgress`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

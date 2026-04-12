@@ -21,12 +21,12 @@ function Test-ADTSessionActive
     .OUTPUTS
         System.Boolean
 
-        Returns $true if there is at least one active session, otherwise $false.
+        Returns `$true` if there is at least one active session, otherwise `$false`.
 
     .EXAMPLE
         Test-ADTSessionActive
 
-        Checks if there is an active ADT session and returns true or false.
+        Checks if there is an active ADT session and returns `$true` or `$false`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

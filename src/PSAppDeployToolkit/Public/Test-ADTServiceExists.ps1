@@ -11,7 +11,7 @@ function Test-ADTServiceExists
         Check to see if a service exists.
 
     .DESCRIPTION
-        Check to see if a service exists. The UseCIM switch can be used in conjunction with PassThru to return WMI objects for PSADT v3.x compatibility, however, this method fails in Windows Sandbox.
+        Check to see if a service exists. The `-UseCIM` switch can be used in conjunction with `-PassThru` to return WMI objects for PSADT v3.x compatibility, however, this method fails in Windows Sandbox.
 
     .PARAMETER Name
         Specify the name of the service.
@@ -32,7 +32,7 @@ function Test-ADTServiceExists
     .OUTPUTS
         System.Boolean
 
-        Returns $true if the service exists, otherwise returns $false.
+        Returns `$true` if the service exists, otherwise returns `$false`.
 
     .EXAMPLE
         Test-ADTServiceExists -Name 'wuauserv'
@@ -42,7 +42,7 @@ function Test-ADTServiceExists
     .EXAMPLE
         Test-ADTServiceExists -Name testservice -UseCIM -PassThru | Invoke-CimMethod -MethodName Delete
 
-        Checks if a service exists and then deletes it by using the -PassThru parameter.
+        Checks if a service exists and then deletes it by using the `-PassThru` parameter.
 
     .NOTES
         An active ADT session is NOT required to use this function.

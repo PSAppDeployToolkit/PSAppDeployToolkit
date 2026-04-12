@@ -32,7 +32,7 @@ function Convert-ADTValueType
     .EXAMPLE
         Convert-ADTValueType -Value 256 -To SByte
 
-        Invokes the Convert-ADTValueType function and returns the value as a byte, which would equal 0.
+        Invokes the `Convert-ADTValueType` function and returns the value as a byte, which would equal 0.
 
     .NOTES
         An active ADT session is NOT required to use this function.

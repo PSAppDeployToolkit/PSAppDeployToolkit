@@ -21,12 +21,12 @@ function Test-ADTEspActive
     .OUTPUTS
         System.Boolean
 
-        Returns $true if the device is actively within a device or user ESP phase, otherwise $false.
+        Returns `$true` if the device is actively within a device or user ESP phase, otherwise `$false`.
 
     .EXAMPLE
         Test-ADTEspActive
 
-        Checks if the device is actively within a device or user ESP phase or not and returns true or false.
+        Checks if the device is actively within a device or user ESP phase or not and returns `$true` or `$false`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

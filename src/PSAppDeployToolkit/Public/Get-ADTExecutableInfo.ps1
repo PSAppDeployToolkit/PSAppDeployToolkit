@@ -25,7 +25,7 @@ function Get-ADTExecutableInfo
     .INPUTS
         System.IO.FileInfo
 
-        This function accepts FileInfo objects via the pipeline for processing, such as output from Get-ChildItem.
+        This function accepts FileInfo objects via the pipeline for processing, such as output from `Get-ChildItem`.
 
     .OUTPUTS
         PSADT.FileSystem.ExecutableInfo
@@ -35,7 +35,7 @@ function Get-ADTExecutableInfo
     .EXAMPLE
         Get-ADTExecutableInfo -LiteralPath C:\Windows\system32\cmd.exe
 
-        Invokes the Get-ADTExecutableInfo function and returns an ExecutableInfo object.
+        Invokes the `Get-ADTExecutableInfo` function and returns an ExecutableInfo object.
 
     .NOTES
         An active ADT session is NOT required to use this function.

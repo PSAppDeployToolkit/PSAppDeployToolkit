@@ -41,7 +41,7 @@ function Write-ADTLogEntry
         Return the message that was passed to the function.
 
     .PARAMETER DebugMessage
-        Specifies that the message is a debug message. Debug messages only get logged if -LogDebugMessage is set to $true.
+        Specifies that the message is a debug message. Debug messages only get logged if -LogDebugMessage is set to `$true`.
 
     .INPUTS
         System.String
@@ -56,7 +56,7 @@ function Write-ADTLogEntry
     .OUTPUTS
         PSAppDeployToolkit.Logging.LogEntry
 
-        This function returns the provided output if -PassThru is specified.
+        This function returns the provided output if `-PassThru` is specified.
 
     .EXAMPLE
         Write-ADTLogEntry -Message "Installing patch MS15-031" -Source 'Add-Patch'

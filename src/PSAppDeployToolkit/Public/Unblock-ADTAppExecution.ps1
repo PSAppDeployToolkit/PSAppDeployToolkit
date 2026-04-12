@@ -8,10 +8,10 @@ function Unblock-ADTAppExecution
 {
     <#
     .SYNOPSIS
-        Unblocks the execution of applications performed by the Block-ADTAppExecution function.
+        Unblocks the execution of applications performed by the `Block-ADTAppExecution` function.
 
     .DESCRIPTION
-        This function is called by the Close-ADTSession function. It undoes the actions performed by Block-ADTAppExecution, allowing previously blocked applications to execute.
+        This function is called by the `Close-ADTSession` function. It undoes the actions performed by `Block-ADTAppExecution`, allowing previously blocked applications to execute.
 
     .PARAMETER Tasks
         Specify the scheduled tasks to unblock.
@@ -29,14 +29,14 @@ function Unblock-ADTAppExecution
     .EXAMPLE
         Unblock-ADTAppExecution
 
-        Unblocks the execution of applications that were previously blocked by Block-ADTAppExecution.
+        Unblocks the execution of applications that were previously blocked by `Block-ADTAppExecution`.
 
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        It is used when the -BlockExecution parameter is specified with the Show-ADTInstallationWelcome function to undo the actions performed by Block-ADTAppExecution.
+        It is used when the `-BlockExecution` parameter is specified with the `Show-ADTInstallationWelcome` function to undo the actions performed by `Block-ADTAppExecution`.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

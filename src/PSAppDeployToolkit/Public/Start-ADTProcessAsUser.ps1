@@ -25,7 +25,7 @@ function Start-ADTProcessAsUser
         Hides all parameters passed to the executable from the Toolkit log file.
 
     .PARAMETER WorkingDirectory
-        The working directory used for executing the process. Defaults to the directory of the file being executed. The use of UseShellExecute affects this parameter.
+        The working directory used for executing the process. Defaults to the directory of the file being executed. The use of `-UseShellExecute` affects this parameter.
 
     .PARAMETER Username
         A username to invoke the process as. Only supported while running as the SYSTEM account.
@@ -43,22 +43,22 @@ function Start-ADTProcessAsUser
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
     .PARAMETER ExpandEnvironmentVariables
-        Specifies whether to expand any Windows/DOS-style environment variables in the specified FilePath/ArgumentList.
+        Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-ArgumentList` parameters.
 
     .PARAMETER UseShellExecute
-        Specifies whether to use the operating system shell to start the process. $true if the shell should be used when starting the process; $false if the process should be created directly from the executable file.
+        Specifies whether to use the operating system shell to start the process. `$true` if the shell should be used when starting the process; `$false` if the process should be created directly from the executable file.
 
         The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents. It lets you open a file or a url and the Shell will figure out the program to open it with.
 
-        The WorkingDirectory property behaves differently depending on the value of the UseShellExecute property. When UseShellExecute is true, the WorkingDirectory property specifies the location of the executable. When UseShellExecute is false, the WorkingDirectory property is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
+        The `-WorkingDirectory` parameter behaves differently depending on the value of the `-UseShellExecute` parameter. When `-UseShellExecute` is `$true`, the `-WorkingDirectory` parameter specifies the location of the executable. When `-UseShellExecute` is `$false`, the `-WorkingDirectory` parameter is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
 
-        If you set UseShellExecute to $true, there will be no available output from the process.
+        If you set `-UseShellExecute` to `$true`, there will be no available output from the process.
 
     .PARAMETER Verb
         The verb to use when doing a ShellExecute invocation. Common usages are "runas" to trigger a UAC elevation of the process.
 
     .PARAMETER WindowStyle
-        Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, UseShellExecute should be set to $true.
+        Style of the window of the process executed. Options: Normal, Hidden, Maximized, Minimized. Only works for native Windows GUI applications. If the WindowStyle is set to Hidden, `-UseShellExecute` should be set to `$true`.
 
         Note: Not all processes honor WindowStyle. WindowStyle is a recommendation passed to the process. They can choose to ignore it.
 
@@ -93,7 +93,7 @@ function Start-ADTProcessAsUser
         What action to take on timeout. Follows ErrorAction if not specified.
 
     .PARAMETER NoTerminateOnTimeout
-        Indicates that the process should not be terminated on timeout. Only supported for GUI-based applications, or when -CreateNoWindow isn't specified.
+        Indicates that the process should not be terminated on timeout. Only supported for GUI-based applications, or when `-CreateNoWindow` isn't specified.
 
     .PARAMETER SuccessExitCodes
         List of exit codes to be considered successful. Defaults to values set during ADTSession initialization, otherwise: 0
@@ -108,7 +108,7 @@ function Start-ADTProcessAsUser
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
     .PARAMETER ExitOnProcessFailure
-        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+        Automatically closes the active deployment session via `Close-ADTSession` in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER ContinueWhenNoUserLoggedOn
         When specified, if no user is logged on, the condition is logged and the function returns without throwing an exception.
@@ -183,7 +183,7 @@ function Start-ADTProcessAsUser
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        This function supports the -WhatIf and -Confirm parameters for testing changes before applying them.
+        This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

@@ -28,7 +28,7 @@ function Test-ADTUserIsBusy
     .OUTPUTS
         System.Boolean
 
-        Returns $true if the device is considered to be in a busy state, such as when a user is using the microphone, device is in focus mode, presenting a PowerPoint slide deck, and more.
+        Returns `$true` if the device is considered to be in a busy state, such as when a user is using the microphone, device is in focus mode, presenting a PowerPoint slide deck, and more.
 
     .EXAMPLE
         Test-ADTUserIsBusy
