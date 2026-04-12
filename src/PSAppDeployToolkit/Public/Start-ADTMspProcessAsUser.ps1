@@ -43,7 +43,7 @@ function Start-ADTMspProcessAsUser
         Overrides the default logging options specified in the config.psd1 file.
 
     .PARAMETER LogFileName
-        Overrides the default log file name. The default log file name is generated from the MSI file name. If LogFileName does not end in .log, it will be automatically appended.
+        Overrides the default log file name. The default log file name is generated from the MSI file name. If the value of `-LogFileName` does not end in a common log file extension (.log, .logx, .txt, or .out), '.log' will be automatically appended.
 
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
