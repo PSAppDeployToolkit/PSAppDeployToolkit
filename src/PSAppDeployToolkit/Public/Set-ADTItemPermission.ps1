@@ -175,6 +175,17 @@ function Set-ADTItemPermission
                 # Get the FileInfo/DirectoryInfo for the specified LiteralPath.
                 $pathInfo = Get-Item -LiteralPath $LiteralPath
 
+                if ($pathInfo -isnot [System.IO.FileSystemInfo])
+                {
+                    $naerParams = @{
+                        Exception = [System.InvalidOperationException]::new("Attempted to process an item of type [$($pathInfo.GetType().FullName)], which is not supported.")
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                        ErrorId = 'NonFileSystemInfoObjectError'
+                        TargetObject = $pathInfo
+                    }
+                    throw (New-ADTErrorRecord @naerParams)
+                }
+
                 # Directly apply the permissions if an ACL object has been provided.
                 if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
                 {
