@@ -274,7 +274,7 @@ function Get-ADTApplication
                     }
 
                     # Process the EstimatedSize if it's an integer.
-                    if (($value = $item.GetValue($_, $null)) -is [System.Int32])
+                    if (($value = $item.GetValue('EstimatedSize', $null)) -is [System.Int32])
                     {
                         $appProperties.Add('EstimatedSize', $value)
                     }
