@@ -52,6 +52,7 @@ namespace PSADT.ClientServer
         /// returning.</remarks>
         /// <exception cref="ApplicationException">Thrown if the client process fails to respond to the initial command, indicating that it is not properly
         /// initialized.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Bug", "S2952:Classes should \"Dispose\" of members from the classes' own \"Dispose\" methods", Justification = "This class supports repeated opening/closing.")]
         public void Open()
         {
             // Don't allow opening if the object's been disposed.
@@ -152,7 +153,9 @@ namespace PSADT.ClientServer
         /// <exception cref="InvalidOperationException">Thrown if the server instance is not open or has already been closed.</exception>
         /// <exception cref="ApplicationException">Thrown if the client process does not properly respond to the close command and <paramref name="force"/> is <see
         /// langword="false"/>.</exception>
-        internal void Close(bool force = false)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Bug", "S2952:Classes should \"Dispose\" of members from the classes' own \"Dispose\" methods", Justification = "This class supports repeated opening/closing.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code needs to operate synchronously and wait for things to close in the appropriate order.")]
+        internal void Close(bool force)
         {
             // Don't allow closing if the object's been disposed.
             if (_disposed)
@@ -757,6 +760,7 @@ namespace PSADT.ClientServer
         /// <param name="command">The command to execute.</param>
         /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
         /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private TResult Invoke<TResult>(PipeCommand command)
         {
             // Don't invoke anything if the object is disposed.
@@ -803,7 +807,7 @@ namespace PSADT.ClientServer
             // Don't invoke anything if the object is disposed.
             if (_disposed)
             {
-                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot invoke a command on a disposed ServerInstance.");
+                throw new ObjectDisposedException(nameof(ServerInstance));
             }
 
             // Ensure this object is opened before proceeding.

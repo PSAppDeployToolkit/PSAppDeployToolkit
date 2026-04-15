@@ -24,6 +24,7 @@ namespace PSADT.ClientServer
         /// <returns>A byte array containing the binary XML representation of the object.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="obj"/> is null.</exception>
         /// <exception cref="SerializationException">Thrown if serialization fails.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is deliberate.")]
         public static byte[] SerializeToBytes<T>(T obj)
         {
             ArgumentNullException.ThrowIfNull(obj);
@@ -42,20 +43,6 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Deserializes the specified byte array to an object of type T.
-        /// </summary>
-        /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
-        /// <param name="bytes">A byte array containing the binary XML to deserialize. Cannot be null or empty.</param>
-        /// <returns>An instance of type T deserialized from the specified bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
-        /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T DeserializeFromBytes<T>(byte[] bytes)
-        {
-            return DeserializeFromBytes<T>(bytes, 0);
-        }
-
-        /// <summary>
         /// Serializes the specified object to XML and encodes it as a Base64 string.
         /// </summary>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
@@ -65,6 +52,33 @@ namespace PSADT.ClientServer
         public static string SerializeToString<T>(T obj)
         {
             return Convert.ToBase64String(SerializeToBytes(obj));
+        }
+
+        /// <summary>
+        /// Deserializes the specified byte array to an object of type T.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
+        /// <param name="bytes">A byte array containing the binary XML to deserialize. Cannot be null or empty.</param>
+        /// <returns>An instance of type T deserialized from the specified bytes.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
+        /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3254:Default parameter values should not be passed as arguments", Justification = "PowerShell doesn't like default parameters.")]
+        public static T DeserializeFromBytes<T>(byte[] bytes)
+        {
+            return DeserializeFromBytes<T>(bytes, 0);
+        }
+
+        /// <summary>
+        /// Deserializes an object from a byte array using the specified target type.
+        /// </summary>
+        /// <param name="bytes">The byte array containing the serialized data to deserialize. Cannot be null.</param>
+        /// <param name="type">The type of the object to deserialize from the byte array. Cannot be null.</param>
+        /// <returns>An object instance of the specified type reconstructed from the provided byte array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object DeserializeFromBytes(byte[] bytes, Type type)
+        {
+            return DeserializeFromBytes(bytes, 0, type);
         }
 
         /// <summary>
@@ -79,18 +93,6 @@ namespace PSADT.ClientServer
         public static T DeserializeFromString<T>(string base64Xml)
         {
             return DeserializeFromBytes<T>(Convert.FromBase64String(base64Xml));
-        }
-
-        /// <summary>
-        /// Deserializes an object from a byte array using the specified target type.
-        /// </summary>
-        /// <param name="bytes">The byte array containing the serialized data to deserialize. Cannot be null.</param>
-        /// <param name="type">The type of the object to deserialize from the byte array. Cannot be null.</param>
-        /// <returns>An object instance of the specified type reconstructed from the provided byte array.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object DeserializeFromBytes(byte[] bytes, Type type)
-        {
-            return DeserializeFromBytes(bytes, 0, type);
         }
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static T DeserializeFromBytes<T>(byte[] bytes, int offset = 0)
+        internal static T DeserializeFromBytes<T>(byte[] bytes, int offset)
         {
             return (T)DeserializeFromBytes(bytes, offset, typeof(T));
         }
