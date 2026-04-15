@@ -8,7 +8,7 @@ function Unblock-ADTAppExecution
 {
     <#
     .SYNOPSIS
-        Unblocks the execution of applications performed by the Block-ADTAppExecution function.
+        Unblocks the execution of applications that were blocked by the Block-ADTAppExecution function.
 
     .DESCRIPTION
         This function is called by the Close-ADTSession function. It undoes the actions performed by Block-ADTAppExecution, allowing previously blocked applications to execute.
@@ -53,7 +53,7 @@ function Unblock-ADTAppExecution
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [PSDefaultValue(Help = "All scheduled tasks wildcard matching [PSAppDeployToolkit_*_BlockedApps].")]
+        [PSDefaultValue(Help = 'All scheduled tasks matching the wildcard pattern `PSAppDeployToolkit_*_BlockedApps`.')]
         [Microsoft.Management.Infrastructure.CimInstance[]]$Tasks = (Get-ScheduledTask -TaskName "$($MyInvocation.MyCommand.Module.Name)_*_BlockedApps" -ErrorAction Ignore)
     )
 
