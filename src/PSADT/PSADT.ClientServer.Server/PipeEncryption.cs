@@ -71,6 +71,7 @@ namespace PSADT.ClientServer
         /// <returns>The data read from the stream.</returns>
         /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
         /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private protected static byte[] ReadLengthPrefixedBytes(Stream stream)
         {
             // Read the 4-byte length prefix

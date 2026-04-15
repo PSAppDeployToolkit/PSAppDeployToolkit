@@ -51,7 +51,7 @@ namespace PSADT.ClientServer
         /// <param name="context">The <see cref="StreamingContext"/> object that contains contextual information about the source or
         /// destination.</param>
 #if NET8_0_OR_GREATER
-        [Obsolete(DiagnosticId = "SYSLIB0051")]
+        [Obsolete("Formatter-based exception serialization is obsolete and should not be used.", DiagnosticId = "SYSLIB0051")]
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ClientException(SerializationInfo info, StreamingContext context) : base(info, context)
@@ -68,7 +68,7 @@ namespace PSADT.ClientServer
         /// <param name="context">The <see cref="StreamingContext"/> structure that contains the source and destination of the serialized
         /// stream.</param>
 #if NET8_0_OR_GREATER
-        [Obsolete(DiagnosticId = "SYSLIB0051")]
+        [Obsolete("Formatter-based exception serialization is obsolete and should not be used.", DiagnosticId = "SYSLIB0051")]
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
