@@ -9,6 +9,7 @@ namespace PSADT.Interop
     /// command invocation, such as allowing user interface interaction, using the default verb, waiting for DDE
     /// conversations, enabling asynchronous execution, and logging usage for telemetry purposes.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "This is how they're named in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
     [Flags]
     public enum IURL_INVOKECOMMAND_FLAGS
     {

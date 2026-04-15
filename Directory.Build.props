@@ -21,6 +21,7 @@
     <DebugType>full</DebugType>
     <EmbedAllSources>false</EmbedAllSources>
     <EmbedUntrackedSources>false</EmbedUntrackedSources>
+    <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
   </PropertyGroup>
 
   <!-- Common company/product metadata -->
@@ -50,6 +51,10 @@
   <!-- Banned API analyzer -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -13,6 +13,7 @@ namespace PSADT.Interop.SafeHandles
     /// <remarks>This class ensures that the native font table resource is released appropriately when the
     /// handle is disposed or finalized. It is intended for internal use when working with DirectWrite font tables and
     /// should not be used directly by application code.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S4002:Disposable types should declare finalizers", Justification = "•\tSafeHandleMinusOneIsInvalid already provides finalization; this subtype correctly participates by overriding ReleaseHandle().")]
     internal sealed class SafeFontTableHandle : SafeHandleMinusOneIsInvalid
     {
         /// <summary>

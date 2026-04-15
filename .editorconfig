@@ -47,3 +47,15 @@ dotnet_diagnostic.CA1060.severity = error
 dotnet_diagnostic.CA1021.severity = error 
 dotnet_diagnostic.CA1501.severity = error 
 dotnet_diagnostic.CA1509.severity = error
+
+# Disable Microsoft.Extensions.StaticAnalysis rules we don't want to deal with.
+dotnet_diagnostic.S103.severity = none
+dotnet_diagnostic.S104.severity = none
+dotnet_diagnostic.S107.severity = none
+dotnet_diagnostic.S109.severity = none
+dotnet_diagnostic.S1067.severity = none
+dotnet_diagnostic.S1121.severity = none
+dotnet_diagnostic.S1659.severity = none
+dotnet_diagnostic.S2333.severity = none
+dotnet_diagnostic.S3358.severity = none
+dotnet_diagnostic.S3869.severity = none

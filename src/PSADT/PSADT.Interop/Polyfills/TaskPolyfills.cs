@@ -41,6 +41,7 @@ namespace System.Threading.Tasks
         /// <param name="task">The task to wait for completion.</param>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the wait operation.</param>
         /// <returns>A task that represents the asynchronous wait operation.</returns>
+        [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This WaitAsync polyfill must await the caller-provided task to preserve BCL semantics outside a JoinableTaskFactory context.")]
         private static async Task WaitAsyncCore(Task task, CancellationToken cancellationToken)
         {
             TaskCompletionSource<object?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -63,6 +64,7 @@ namespace System.Threading.Tasks
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the wait operation.</param>
         /// <returns>A task that represents the asynchronous wait operation. The result contains the value produced by the
         /// specified task.</returns>
+        [Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This WaitAsync polyfill must await the caller-provided task to preserve BCL semantics outside a JoinableTaskFactory context.")]
         private static async Task<TResult> WaitAsyncCore<TResult>(Task<TResult> task, CancellationToken cancellationToken)
         {
             TaskCompletionSource<object?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);

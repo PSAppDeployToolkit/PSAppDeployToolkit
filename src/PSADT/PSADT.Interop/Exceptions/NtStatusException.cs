@@ -12,7 +12,6 @@ using PSADT.Interop.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Diagnostics.Debug;
-using Windows.Win32.System.LibraryLoader;
 
 namespace PSADT.Interop.Exceptions
 {
@@ -98,7 +97,7 @@ namespace PSADT.Interop.Exceptions
         /// <summary>
         /// Cached handle to ntdll.dll for FormatMessage calls.
         /// </summary>
-        private static readonly FreeLibrarySafeHandle NtDllHandle = NativeMethods.LoadLibraryEx("ntdll.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32);
+        private static readonly FreeLibrarySafeHandle NtDllHandle = NativeMethods.LoadLibraryEx("ntdll.dll");
 
         /// <summary>
         /// Provides a read-only mapping of NTSTATUS enumeration values to their corresponding field names.
@@ -106,6 +105,7 @@ namespace PSADT.Interop.Exceptions
         /// <remarks>This dictionary is initialized using reflection to retrieve all public static fields
         /// of the NTSTATUS enumeration, allowing for efficient lookup of the string representation of NTSTATUS values.
         /// This can be useful for debugging, logging, or displaying human-readable status codes.</remarks>
+        [SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The non-public static fields of the NTSTATUS enumeration are accessed to create a mapping of NTSTATUS values to their names.")]
         private static readonly ReadOnlyDictionary<NTSTATUS, string> NtStatusValueNameMap = new(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name));
 
         /// <summary>

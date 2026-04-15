@@ -6,6 +6,7 @@
     /// <remarks>These property IDs correspond to common document metadata fields, such as title, author, and
     /// creation date, and are typically used when reading or writing summary information streams in MSI packages. The
     /// values align with standard property IDs defined by the Windows property system.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This is not a bitfield...")]
     internal enum MSI_PROPERTY_ID : uint
     {
         /// <summary>

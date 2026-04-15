@@ -14,6 +14,7 @@ namespace PSADT.Interop
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "This is typed just as it is in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "This is typed just as it is in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "Clearly this is a bitfield... C'mon Intellisense...")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
     [Flags]
     public enum SLR_FLAGS
     {

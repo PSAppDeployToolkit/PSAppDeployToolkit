@@ -9,7 +9,9 @@
     /// process freeze operations. These options are primarily intended for advanced or low-level scenarios, such as
     /// interop with unmanaged code, debugging, or process injection. Most applications do not need to set these flags
     /// explicitly.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This is not a bitfield...")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
     internal enum THREAD_CREATE_FLAGS : uint
     {
         /// <summary>
