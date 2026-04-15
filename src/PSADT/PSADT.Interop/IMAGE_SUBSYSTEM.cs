@@ -6,6 +6,7 @@
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type is correct for the underlying Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "The type is correct for the underlying Win32 API.")]
     public enum IMAGE_SUBSYSTEM : ushort
     {
         /// <summary>

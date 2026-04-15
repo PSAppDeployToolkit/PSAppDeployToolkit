@@ -9,6 +9,7 @@ namespace PSADT.Interop
     /// control manager. These rights determine the operations that can be performed on the SCM, such as connecting to
     /// it, creating services, enumerating services, and modifying boot configurations. The values are based on the
     /// Windows API constants.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
     [Flags]
     internal enum SC_MANAGER_ACCESS : uint
     {

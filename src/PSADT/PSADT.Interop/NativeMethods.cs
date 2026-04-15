@@ -628,7 +628,7 @@ namespace PSADT.Interop
                         res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal).ThrowOnFailure();
                     }
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)NewAclLocal, "Failed to create a new ACL with the specified entries.");
-                    NewAcl = new((nint)NewAclLocal, true);
+                    NewAcl = new((nint)NewAclLocal);
                 }
             }
             finally
@@ -778,7 +778,7 @@ namespace PSADT.Interop
                     res = PInvoke.GetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, &psidOwner, &pSidGroup, &pDacl, &pSacl, &pSecurityDescriptor).ThrowOnFailure();
                 }
                 InvalidOperationException.ThrowIfZeroOrInvalid((nint)pSecurityDescriptor, "Failed to retrieve a valid security descriptor for the specified object.");
-                ppSecurityDescriptor = new((nint)pSecurityDescriptor, true);
+                ppSecurityDescriptor = new((nint)pSecurityDescriptor);
                 if (psidOwner != default)
                 {
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)psidOwner.Value, "Failed to retrieve a valid owner SID for the specified object.");
@@ -1183,12 +1183,9 @@ namespace PSADT.Interop
             try
             {
                 pSecurityDescriptor.DangerousAddRef(ref pSecurityDescriptorAddRef);
-                unsafe
+                if (!(res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults)))
                 {
-                    if (!(res = PInvoke.AuthzAccessCheck(Flags, hAuthzClientContext, in pRequest, hAuditEvent, (PSECURITY_DESCRIPTOR)pSecurityDescriptor.DangerousGetHandle(), OptionalSecurityDescriptorArray, ref pReply, out phAccessCheckResults)))
-                    {
-                        throw ExceptionUtilities.GetExceptionForLastWin32Error();
-                    }
+                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
                 }
             }
             finally
@@ -2411,7 +2408,7 @@ namespace PSADT.Interop
                     res = ((WIN32_ERROR)PInvoke.MsiOpenDatabase(pszDatabasePath, szPersist.ToPCWSTR(), &phDatabaseLocal)).ThrowOnFailure();
                 }
                 InvalidOperationException.ThrowIfZeroOrInvalid((nint)phDatabaseLocal, $"Failed to open database at path '{szDatabasePath}'.");
-                phDatabase = new((nint)phDatabaseLocal, true);
+                phDatabase = new((nint)phDatabaseLocal);
             }
             return res;
         }
@@ -2431,7 +2428,7 @@ namespace PSADT.Interop
             ArgumentException.ThrowIfNullOrInvalid(hDatabase); MSIHANDLE phSummaryInfoLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiGetSummaryInformation(hDatabase, null, 0, ref phSummaryInfoLocal)).ThrowOnFailure();
             InvalidOperationException.ThrowIfZeroOrInvalid((nint)phSummaryInfoLocal, "Failed to retrieve summary information.");
-            phSummaryInfo = new((nint)phSummaryInfoLocal, true);
+            phSummaryInfo = new((nint)phSummaryInfoLocal);
             return res;
         }
 
@@ -2788,7 +2785,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hModule.Value, nameof(hModule));
+                ArgumentNullException.ThrowIfNull(hModule.Value);
             }
             ArgumentException.ThrowIfNullOrClosed(hProcess);
             bool hProcessAddRef = false;
@@ -2844,7 +2841,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hmonitor.Value, nameof(hmonitor));
+                ArgumentNullException.ThrowIfNull(hmonitor.Value);
             }
             HRESULT res = PInvoke.GetDpiForMonitor(hmonitor, dpiType, out dpiX, out dpiY);
             if (res != HRESULT.S_OK)
@@ -3027,7 +3024,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             return PInvoke.IsWindowVisible(hWnd);
         }
@@ -3041,7 +3038,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             return PInvoke.IsWindowEnabled(hWnd);
         }
@@ -3170,7 +3167,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             PInvoke.SetLastError(0); int res = PInvoke.GetWindowTextLength(hWnd);
             if (res == 0)
@@ -3197,7 +3194,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             int res = PInvoke.GetWindowText(hWnd, lpString);
             return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3217,7 +3214,7 @@ namespace PSADT.Interop
             uint res;
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
                 fixed (uint* p = &lpdwProcessId)
                 {
                     [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3267,7 +3264,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             BOOL res = PInvoke.BringWindowToTop(hWnd);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3282,7 +3279,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             HWND res = PInvoke.SetActiveWindow(hWnd);
             return res == HWND.Null ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3299,7 +3296,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             HWND res = PInvoke.SetFocus(hWnd);
             return res == HWND.Null ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3321,7 +3318,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             BOOL res = PInvoke.SendNotifyMessage(hWnd, (uint)Msg, wParam, lParam);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3352,7 +3349,7 @@ namespace PSADT.Interop
             }
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
                 fixed (char* wParamPtr = wParam)
                 fixed (char* lParamPtr = lParam)
                 {
@@ -3373,7 +3370,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             DestroyMenuSafeHandle res = PInvoke.GetSystemMenu_SafeHandle(hWnd, bRevert);
             if (!bRevert)
@@ -3399,7 +3396,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
@@ -3516,7 +3513,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hwnd.Value, nameof(hwnd));
+                ArgumentNullException.ThrowIfNull(hwnd.Value);
             }
             uint res = PInvoke.GetDpiForWindow(hwnd);
             return res == 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to get DPI scale for window handle.") : res;
@@ -3551,7 +3548,7 @@ namespace PSADT.Interop
         {
             unsafe
             {
-                ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
+                ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
             BOOL res = PInvoke.SetForegroundWindow(hWnd);
             return !res && !noThrowOnFailure ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "Failed to set the window as foreground.") : res;
@@ -3753,7 +3750,7 @@ namespace PSADT.Interop
             ArgumentException.ThrowIfNullOrWhiteSpace(szQuery); ArgumentException.ThrowIfNullOrInvalid(hDatabase); MSIHANDLE phViewLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiDatabaseOpenView(hDatabase, szQuery, ref phViewLocal)).ThrowOnFailure();
             InvalidOperationException.ThrowIfZeroOrInvalid((nint)phViewLocal, "Failed to open a view on the database with the provided query.");
-            phView = new((nint)phViewLocal, true);
+            phView = new((nint)phViewLocal);
             return res;
         }
 
@@ -3892,7 +3889,7 @@ namespace PSADT.Interop
             ArgumentException.ThrowIfNullOrInvalid(hView); MSIHANDLE phRecordLocal = default;
             WIN32_ERROR res = ((WIN32_ERROR)PInvoke.MsiViewFetch(hView, ref phRecordLocal)).ThrowOnFailure();
             InvalidOperationException.ThrowIfZeroOrInvalid((nint)phRecordLocal, "Failed to fetch a record from the view.");
-            phRecord = new((nint)phRecordLocal, true);
+            phRecord = new((nint)phRecordLocal);
             return res;
         }
 
@@ -4320,7 +4317,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>()
+        internal static readonly ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
         {
             { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Unsafe.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Unsafe.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
             { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Unsafe.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
@@ -4329,7 +4326,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>()
+        internal static readonly ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>
         {
             { OBJECT_INFORMATION_CLASS.ObjectBasicInformation, Unsafe.SizeOf<PUBLIC_OBJECT_BASIC_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Unsafe.SizeOf<OBJECT_NAME_INFORMATION>() },
@@ -4340,7 +4337,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for policy information class struct sizes.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>()
+        internal static readonly ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>
         {
             { POLICY_INFORMATION_CLASS.PolicyAuditLogInformation, Unsafe.SizeOf<POLICY_AUDIT_LOG_INFO>() },
             { POLICY_INFORMATION_CLASS.PolicyAuditEventsInformation, Unsafe.SizeOf<POLICY_AUDIT_EVENTS_INFO>() },

@@ -7,6 +7,7 @@
     /// processes associated with a job object. Each message corresponds to a particular event, such as a process
     /// exceeding a time limit or the job reaching its memory limit. These notifications can be used to monitor and
     /// manage the behavior of processes within a job.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This is not a bitfield...")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
     internal enum JOB_OBJECT_MSG : uint
     {

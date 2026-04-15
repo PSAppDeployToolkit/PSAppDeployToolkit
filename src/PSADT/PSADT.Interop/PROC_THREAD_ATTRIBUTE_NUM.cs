@@ -8,6 +8,7 @@
     /// process, defining handle lists, or specifying security capabilities. These attributes are typically used in
     /// advanced scenarios where precise control over process or thread creation is required. Extra values not from
     /// CsWin32 are from https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2691-L2720</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This is not a bitfield...")]
     internal enum PROC_THREAD_ATTRIBUTE_NUM : uint
     {
         ProcThreadAttributeParentProcess = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeParentProcess,

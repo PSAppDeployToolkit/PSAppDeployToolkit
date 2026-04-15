@@ -38,7 +38,7 @@ namespace System.Diagnostics
 
             // Set up a TaskCompletionSource to represent the asynchronous wait operation.
             TaskCompletionSource<object?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            void OnExited(object? _, EventArgs __)
+            void OnExited(object? __, EventArgs ___)
             {
                 _ = tcs.TrySetResult(null);
             }

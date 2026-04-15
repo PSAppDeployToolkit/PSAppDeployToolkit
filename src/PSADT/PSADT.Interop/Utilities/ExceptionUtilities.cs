@@ -278,7 +278,7 @@ namespace PSADT.Interop.Utilities
             {
                 if (ex.StackTrace is string trace)
                 {
-                    string marker = nameof(ExceptionUtilities) + "." + nameof(GetStackTraceAtPrefix);
+                    const string marker = nameof(ExceptionUtilities) + "." + nameof(GetStackTraceAtPrefix);
                     foreach (string line in trace.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries).Select(static s => s.TrimStart()))
                     {
                         int idx = line.IndexOf(marker, StringComparison.Ordinal);
