@@ -41,7 +41,9 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="parameters">All parameters from Open-ADTSession.</param>
         /// <param name="noExitOnClose">Indicates that the shell shouldn't exit on the last session closure.</param>
         /// <param name="compatibilityMode">Indicates whether compatibility mode is enabled.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1505:Avoid unmaintainable code", Justification = "This is unfortunately unavoidable.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "This exception type is fine here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3366:\"this\" should not be exposed from constructors", Justification = "This is deliberate, unfortunately.")]
         public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, bool? compatibilityMode = null)
         {
             try
@@ -488,7 +490,7 @@ namespace PSAppDeployToolkit.Foundation
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName);
                 FileInfo logFile = new(Path.Combine(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
-                bool logFileSizeExceeded = logFile.Exists && (logMaxSize > 0) && ((logFile.Length / 1048576.0) > logMaxSize);
+                bool logFileSizeExceeded = logFile.Exists && (logMaxSize > 0) && ((logFile.Length / 1_048_576.0) > logMaxSize);
 
                 // Check if log file needs to be rotated.
                 if ((logFile.Exists && !(bool)configToolkit["LogAppend"]!) || logFileSizeExceeded)
@@ -1001,6 +1003,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Closes the session and releases resources.
         /// </summary>
         /// <returns>The exit code.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
         public int Close()
         {
             // Throw if this object has already been disposed.
@@ -1137,7 +1140,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(IReadOnlyList<string> message)
         {
-            _ = WriteLogEntry(message, false, null, null, null, null, null, null, null);
+            _ = WriteLogEntry(message, false);
         }
 
         /// <summary>
@@ -1147,7 +1150,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message)
         {
-            _ = WriteLogEntry([message], false, null, null, null, null, null, null, null);
+            _ = WriteLogEntry([message], false);
         }
 
         /// <summary>
@@ -1158,7 +1161,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity)
         {
-            _ = WriteLogEntry([message], false, severity, null, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, severity);
         }
 
         /// <summary>
@@ -1169,7 +1172,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, string source)
         {
-            _ = WriteLogEntry([message], false, null, source, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, source: source);
         }
 
         /// <summary>
@@ -1181,7 +1184,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity, string source)
         {
-            _ = WriteLogEntry([message], false, severity, source, null, null, null, null, null);
+            _ = WriteLogEntry([message], false, severity, source);
         }
 
         /// <summary>
@@ -1192,7 +1195,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, bool writeHost)
         {
-            _ = WriteLogEntry([message], false, null, null, null, null, null, null, GetHostLogStreamTypeMode(writeHost));
+            _ = WriteLogEntry([message], false, hostLogStreamType: GetHostLogStreamTypeMode(writeHost));
         }
 
         /// <summary>
@@ -1532,12 +1535,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// The default exit code to exit out with in the event of an error.
         /// </summary>
-        private readonly int DefaultExitCode = 1618;
+        private readonly int DefaultExitCode;
 
         /// <summary>
         /// The default exit code used when the user defers a deployment.
         /// </summary>
-        private readonly int DeferExitCode = 1602;
+        private readonly int DeferExitCode;
 
         /// <summary>
         /// Indicates whether log files should be compressed upon session closure.

@@ -879,7 +879,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property can be used to monitor available system resources or to make decisions
         /// based on the total installed RAM. The value reflects the physical memory detected by the operating system at
         /// the time of retrieval.</remarks>
-        public decimal EnvSystemRAM { get; } = DeviceUtilities.GetTotalSystemMemory() / (decimal)1073741824;
+        public decimal EnvSystemRAM { get; } = DeviceUtilities.GetTotalSystemMemory() / (decimal)1_073_741_824;
 
         /// <summary>
         /// Gets the type of hardware used in the current environment.

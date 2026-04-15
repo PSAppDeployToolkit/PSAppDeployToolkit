@@ -13,6 +13,7 @@ namespace PSAppDeployToolkit.Attributes
     /// For non-string elements, uniqueness is evaluated using the type's equality implementation.
     /// Non-collection values are treated as valid.
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3253:Constructor and destructor declarations should not be redundant", Justification = "This primary constructor is required for PowerShell.")]
     public sealed class ValidateUniqueAttribute() : ValidateArgumentsAttribute
     {
         /// <summary>
