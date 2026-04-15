@@ -7,6 +7,7 @@
     /// this information to adapt behavior based on power conditions, such as conserving battery life when the device is
     /// offline.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type is correct for the data.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "The type is correct for the data.")]
     public enum PowerLineStatus : byte
     {
         /// <summary>

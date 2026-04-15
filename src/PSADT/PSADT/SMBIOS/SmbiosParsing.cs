@@ -207,6 +207,7 @@ namespace PSADT.SMBIOS
         /// </summary>
         /// <param name="buffer">The SMBIOS buffer containing version data.</param>
         /// <returns>SMBIOS version information if valid; otherwise throws exception.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "This is an example struct that I'd like to leave here.")]
         private static SmbiosVersionInfo ParseSmbiosVersion(ReadOnlySpan<byte> buffer)
         {
             /*

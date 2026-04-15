@@ -97,6 +97,7 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary for resolving NT paths to user-friendly paths. If <see langword="null"/>, a default lookup table will be used.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="process"/> is <see langword="null"/>.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown if the current process does not have the required SeDebugPrivilege to read the target process memory.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private ProcessVersionInfo(Process process, string? filePath, ReadOnlyDictionary<string, string>? ntPathLookupTable)
         {
             // Confirm we've got the privilege to read the process memory.
@@ -134,24 +135,24 @@ namespace PSADT.ProcessManagement
             // If we got a valid version resource, parse it.
             // Read the version information from the resource.
             _ = NativeMethods.VerQueryValue(versionResource, @"\", out nint fixedInfoPtr, out _);
-            FixedFileInfo = fixedInfoPtr.AsReadOnlyStructure<VS_FIXEDFILEINFO>();
-            FileMajorPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionMS);
-            FileMinorPart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionMS);
-            FileBuildPart = PInvoke.HIWORD(FixedFileInfo.dwFileVersionLS);
-            FilePrivatePart = PInvoke.LOWORD(FixedFileInfo.dwFileVersionLS);
-            ProductMajorPart = PInvoke.HIWORD(FixedFileInfo.dwProductVersionMS);
-            ProductMinorPart = PInvoke.LOWORD(FixedFileInfo.dwProductVersionMS);
-            ProductBuildPart = PInvoke.HIWORD(FixedFileInfo.dwProductVersionLS);
-            ProductPrivatePart = PInvoke.LOWORD(FixedFileInfo.dwProductVersionLS);
+            ref readonly VS_FIXEDFILEINFO fixedFileInfo = ref fixedInfoPtr.AsReadOnlyStructure<VS_FIXEDFILEINFO>();
+            FileMajorPart = PInvoke.HIWORD(fixedFileInfo.dwFileVersionMS);
+            FileMinorPart = PInvoke.LOWORD(fixedFileInfo.dwFileVersionMS);
+            FileBuildPart = PInvoke.HIWORD(fixedFileInfo.dwFileVersionLS);
+            FilePrivatePart = PInvoke.LOWORD(fixedFileInfo.dwFileVersionLS);
+            ProductMajorPart = PInvoke.HIWORD(fixedFileInfo.dwProductVersionMS);
+            ProductMinorPart = PInvoke.LOWORD(fixedFileInfo.dwProductVersionMS);
+            ProductBuildPart = PInvoke.HIWORD(fixedFileInfo.dwProductVersionLS);
+            ProductPrivatePart = PInvoke.LOWORD(fixedFileInfo.dwProductVersionLS);
             FileVersionRaw = new(FileMajorPart, FileMinorPart, FileBuildPart, FilePrivatePart);
             ProductVersionRaw = new(ProductMajorPart, ProductMinorPart, ProductBuildPart, ProductPrivatePart);
 
             // Set the flags based on the fixed file info.
-            IsDebug = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
-            IsPatched = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED) != 0;
-            IsPrivateBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD) != 0;
-            IsPreRelease = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE) != 0;
-            IsSpecialBuild = (FixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD) != 0;
+            IsDebug = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
+            IsPatched = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED) != 0;
+            IsPrivateBuild = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD) != 0;
+            IsPreRelease = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE) != 0;
+            IsSpecialBuild = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD) != 0;
 
             // Read the version resource strings.
             ReadOnlyCollection<string> codepageTable = GetTranslationTableCombinations(versionResource);
@@ -209,7 +210,7 @@ namespace PSADT.ProcessManagement
 
             // Read the signature to confirm we've got a valid NT image.
             nint ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
-            int peSignatureSize = sizeof(uint); Span<byte> peSignatureBuf = stackalloc byte[peSignatureSize];
+            const int peSignatureSize = sizeof(uint); Span<byte> peSignatureBuf = stackalloc byte[peSignatureSize];
             _ = NativeMethods.ReadProcessMemory(processHandle, ntHeadersAddress, peSignatureBuf, out _);
             ref readonly uint peSignature = ref peSignatureBuf.AsReadOnlyStructure<uint>();
             if (peSignature != PInvoke.IMAGE_NT_SIGNATURE)
@@ -587,14 +588,6 @@ namespace PSADT.ProcessManagement
         /// Gets the special build information for the file.
         /// </summary>
         public string? SpecialBuild { get; }
-
-        /// <summary>
-        /// Represents the fixed file information of a version resource.
-        /// </summary>
-        /// <remarks>This field provides version information that is fixed for a specific file, such as
-        /// the file version number, product version number, and other attributes. It is typically used in version
-        /// management and file identification.</remarks>
-        private readonly VS_FIXEDFILEINFO FixedFileInfo;
 
         /// <summary>
         /// Represents a mask used to extract the relative virtual address (RVA) from an image resource.

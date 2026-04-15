@@ -25,7 +25,8 @@ namespace PSADT.SMBIOS
     /// <summary>
     /// Represents BIOS characteristics extension byte 1.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
     [Flags]
     public enum FirmwareCharacteristicsExtensionByte1 : byte
     {

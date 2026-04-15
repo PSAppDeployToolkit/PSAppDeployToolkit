@@ -50,16 +50,18 @@ namespace PSADT.ProcessManagement
         /// not thread-safe and should not be called concurrently with other operations that start or stop
         /// polling.</remarks>
         /// <exception cref="InvalidOperationException">Thrown if the polling task is not currently running.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Bug", "S2952:Classes should \"Dispose\" of members from the classes' own \"Dispose\" methods", Justification = "This class releases its resources when the polling is stopped.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
         internal void Stop()
         {
             // We can't stop the polling task if it's not running.
-            if (_pollingTask is null)
+            if (_pollingTask is null || _cancellationTokenSource is null)
             {
                 throw new InvalidOperationException("The polling task is not running.");
             }
 
             // Cancel the task and wait for it to complete.
-            _cancellationTokenSource!.Cancel();
+            _cancellationTokenSource.Cancel();
             _pollingTask.GetAwaiter().GetResult();
             _pollingTask.Dispose();
             _pollingTask = null;

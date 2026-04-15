@@ -47,6 +47,17 @@ namespace PSADT.ProcessManagement
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
+        /// This is only here as sometimes we need to falsify a result in the module.
+        /// </summary>
+        /// <param name="exitCode">The exit code of the process.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ProcessResult(int exitCode)
+        {
+            ExitCode = exitCode;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
         /// </summary>
         /// <param name="exitCode">The exit code of the process.</param>
         /// <param name="stdOut">The standard output of the process.</param>
@@ -76,17 +87,6 @@ namespace PSADT.ProcessManagement
         public void Dispose()
         {
             Process?.Dispose();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
-        /// This is only here as sometimes we need to falsify a result in the module.
-        /// </summary>
-        /// <param name="exitCode">The exit code of the process.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ProcessResult(int exitCode)
-        {
-            ExitCode = exitCode;
         }
 
         /// <summary>
