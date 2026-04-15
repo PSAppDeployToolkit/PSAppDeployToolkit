@@ -43,7 +43,7 @@ namespace PSADT.Tests.SMBIOS
         public void Size_ReturnsLowerFourteenBits()
         {
             BiosExtendedRomSize size = new(unchecked((ushort)0b01_0011001100110011));
-            Assert.Equal(0b0011001100110011 & 0x3FFF, size.Size);
+            Assert.Equal(0b0011_0011_0011_0011 & 0x3F_FF, size.Size);
         }
 
         /// <summary>

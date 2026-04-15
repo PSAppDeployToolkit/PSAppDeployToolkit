@@ -5,7 +5,7 @@
     <ImplicitUsings>false</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NoWarn>CA1707</NoWarn>
+    <NoWarn>CA1707;S4144</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
