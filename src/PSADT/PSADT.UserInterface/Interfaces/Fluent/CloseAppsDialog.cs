@@ -68,6 +68,61 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             /// The icon of the process to close.
             /// </summary>
             public BitmapSource Icon { get; }
+
+            /// <summary>
+            /// Retrieves the application icon as a BitmapSource from the specified executable file path.
+            /// </summary>
+            /// <remarks>If the icon has been previously retrieved, it will be fetched from a cache to improve
+            /// performance. The method handles exceptions that may occur during the extraction process.</remarks>
+            /// <param name="appFilePath">The path to the executable file from which to extract the application icon. This parameter cannot be null or
+            /// empty.</param>
+            /// <returns>A BitmapSource representing the application icon. If the icon cannot be extracted, a default application
+            /// icon is returned.</returns>
+            private static BitmapSource GetAppIcon(string appFilePath)
+            {
+                // Try to get from cache first
+                if (!_appIconCache.TryGetValue(appFilePath, out BitmapSource? bitmapSource))
+                {
+                    // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
+                    Icon? icon;
+                    try
+                    {
+                        icon = System.Drawing.Icon.ExtractAssociatedIcon(appFilePath);
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        icon = null;
+                    }
+                    using (icon)
+                    {
+                        if (icon is null)
+                        {
+                            using DestroyIconSafeHandle hIcon = SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
+                            bool hIconAddRef = false;
+                            try
+                            {
+                                hIcon.DangerousAddRef(ref hIconAddRef);
+                                bitmapSource = Imaging.CreateBitmapSourceFromHIcon(hIcon.DangerousGetHandle(), Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+
+                            }
+                            finally
+                            {
+                                if (hIconAddRef)
+                                {
+                                    hIcon.DangerousRelease();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bitmapSource = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        }
+                        bitmapSource.Freeze();
+                    }
+                    _appIconCache.Add(appFilePath, bitmapSource);
+                }
+                return bitmapSource;
+            }
         }
 
         /// <summary>
@@ -75,7 +130,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <param name="state">Optional state values for the dialog.</param>
-        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout, options.CustomMessageText, options.CountdownDuration, null, state.CountdownStopwatch)
+        internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout, options.CustomMessageText, options.CountdownDuration, countdownStopwatch: state.CountdownStopwatch)
         {
             // Set up the context for data binding
             DataContext = this;
@@ -345,61 +400,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     CloseDialog();
                 });
             }
-        }
-
-        /// <summary>
-        /// Retrieves the application icon as a BitmapSource from the specified executable file path.
-        /// </summary>
-        /// <remarks>If the icon has been previously retrieved, it will be fetched from a cache to improve
-        /// performance. The method handles exceptions that may occur during the extraction process.</remarks>
-        /// <param name="appFilePath">The path to the executable file from which to extract the application icon. This parameter cannot be null or
-        /// empty.</param>
-        /// <returns>A BitmapSource representing the application icon. If the icon cannot be extracted, a default application
-        /// icon is returned.</returns>
-        private static BitmapSource GetAppIcon(string appFilePath)
-        {
-            // Try to get from cache first
-            if (!_appIconCache.TryGetValue(appFilePath, out BitmapSource? bitmapSource))
-            {
-                // Get the icon as a bitmap from the executable, then turn it into a BitmapSource.
-                Icon? icon;
-                try
-                {
-                    icon = System.Drawing.Icon.ExtractAssociatedIcon(appFilePath);
-                }
-                catch (Exception ex) when (ex.Message is not null)
-                {
-                    icon = null;
-                }
-                using (icon)
-                {
-                    if (icon is null)
-                    {
-                        using DestroyIconSafeHandle hIcon = SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
-                        bool hIconAddRef = false;
-                        try
-                        {
-                            hIcon.DangerousAddRef(ref hIconAddRef);
-                            bitmapSource = Imaging.CreateBitmapSourceFromHIcon(hIcon.DangerousGetHandle(), Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-
-                        }
-                        finally
-                        {
-                            if (hIconAddRef)
-                            {
-                                hIcon.DangerousRelease();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        bitmapSource = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                    }
-                    bitmapSource.Freeze();
-                }
-                _appIconCache.Add(appFilePath, bitmapSource);
-            }
-            return bitmapSource;
         }
 
         /// <summary>

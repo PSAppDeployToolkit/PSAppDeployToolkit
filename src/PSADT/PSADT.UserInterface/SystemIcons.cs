@@ -45,7 +45,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogSystemIcon, SHSTOCKICONID> SystemIconLookupTable = new(new Dictionary<DialogSystemIcon, SHSTOCKICONID>()
+        private static readonly ReadOnlyDictionary<DialogSystemIcon, SHSTOCKICONID> SystemIconLookupTable = new(new Dictionary<DialogSystemIcon, SHSTOCKICONID>
         {
             { DialogSystemIcon.Application, SHSTOCKICONID.SIID_APPLICATION },
             { DialogSystemIcon.Asterisk, SHSTOCKICONID.SIID_INFO },

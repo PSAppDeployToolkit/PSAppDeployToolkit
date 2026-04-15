@@ -218,6 +218,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// cannot be closed, the closing event is canceled.</remarks>
         /// <param name="sender">The source of the event, typically the form that is being closed.</param>
         /// <param name="e">A FormClosingEventArgs that contains the event data, including the ability to cancel the closing operation.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must release the countdown timer before the generated disposal runs.")]
         private protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
