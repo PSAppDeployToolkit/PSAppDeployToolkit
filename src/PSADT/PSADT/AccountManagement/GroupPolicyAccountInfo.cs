@@ -75,7 +75,7 @@ namespace PSADT.AccountManagement
         /// langword="null"/>.</exception>
         private GroupPolicyAccountInfo(NTAccount username, SecurityIdentifier sid)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(username.Value, nameof(username));
+            ArgumentException.ThrowIfNullOrWhiteSpace(username.Value);
             Username = username;
             SID = sid;
         }

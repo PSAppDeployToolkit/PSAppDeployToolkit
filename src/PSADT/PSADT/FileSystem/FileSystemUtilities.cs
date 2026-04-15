@@ -126,87 +126,83 @@ namespace PSADT.FileSystem
             // Note: this is a breadth-first parallel enumeration. It is "fire and forget" in that it does not support cancellation, progress,
             // or partial results. It is optimized for speed and low memory usage on large directory trees with many files and subdirectories.
             using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))).ThrowIfDirectoryDoesNotExist()];
-            Task[] tasks = new Task[Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32))];
+            int workerCount = Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32));
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
-            for (int i = 0; i < tasks.Length; i++)
+            _ = Parallel.For(0, workerCount, workerIndex =>
             {
-                tasks[i] = Task.Run(() =>
+                foreach (string dir in queue.GetConsumingEnumerable())
                 {
-                    foreach (string dir in queue.GetConsumingEnumerable())
+                    try
                     {
-                        try
+                        // Try to enumerate the directory. If it fails, skip it and move on (e.g. due to access denied, deleted/moved, etc.).\
+                        // Note that we use FindFirstFileEx with FindExInfoBasic and FindExSearchNameMatch to minimize overhead.
+                        FindCloseSafeHandle hFind;
+                        WIN32_FIND_DATAW data;
+                        unsafe
                         {
-                            // Try to enumerate the directory. If it fails, skip it and move on (e.g. due to access denied, deleted/moved, etc.).\
-                            // Note that we use FindFirstFileEx with FindExInfoBasic and FindExSearchNameMatch to minimize overhead.
-                            FindCloseSafeHandle hFind;
-                            WIN32_FIND_DATAW data;
-                            unsafe
-                            {
-                                hFind = PInvoke.FindFirstFileEx(dir + "\\*", FINDEX_INFO_LEVELS.FindExInfoBasic, &data, FINDEX_SEARCH_OPS.FindExSearchNameMatch, FIND_FIRST_EX_FLAGS.FIND_FIRST_EX_LARGE_FETCH);
-                            }
-                            if (hFind.IsInvalid)
-                            {
-                                hFind.Dispose();
-                                continue;
-                            }
+                            hFind = PInvoke.FindFirstFileEx(dir + "\\*", FINDEX_INFO_LEVELS.FindExInfoBasic, &data, FINDEX_SEARCH_OPS.FindExSearchNameMatch, FIND_FIRST_EX_FLAGS.FIND_FIRST_EX_LARGE_FETCH);
+                        }
+                        if (hFind.IsInvalid)
+                        {
+                            hFind.Dispose();
+                            continue;
+                        }
 
-                            // Process the first result and then continue with FindNextFile in a loop until there are no more results. For each subdirectory, add it to the queue for processing.
-                            using (hFind)
+                        // Process the first result and then continue with FindNextFile in a loop until there are no more results. For each subdirectory, add it to the queue for processing.
+                        using (hFind)
+                        {
+                            do
                             {
-                                do
+                                // Validate the file name and skip "." and ".." entries.
+                                string name = data.cFileName.ToString();
+                                if (name is "." or "..")
                                 {
-                                    // Validate the file name and skip "." and ".." entries.
-                                    string name = data.cFileName.ToString();
-                                    if (name is "." or "..")
+                                    continue;
+                                }
+
+                                // Check if this is a directory or a file. For directories, we add them to the queue for processing. For files, we add their size to the total.
+                                if (((FileAttributes)data.dwFileAttributes & FileAttributes.Directory) != 0)
+                                {
+                                    // Skip reparse points (e.g. symbolic links, junctions, mount points) to avoid potential cycles.
+                                    if (((FileAttributes)data.dwFileAttributes & FileAttributes.ReparsePoint) != 0)
                                     {
                                         continue;
                                     }
 
-                                    // Check if this is a directory or a file. For directories, we add them to the queue for processing. For files, we add their size to the total.
-                                    if (((FileAttributes)data.dwFileAttributes & FileAttributes.Directory) != 0)
+                                    // Increment the pending directory count before adding to the queue.
+                                    _ = Interlocked.Increment(ref pendingDirs);
+                                    try
                                     {
-                                        // Skip reparse points (e.g. symbolic links, junctions, mount points) to avoid potential cycles.
-                                        if (((FileAttributes)data.dwFileAttributes & FileAttributes.ReparsePoint) != 0)
-                                        {
-                                            continue;
-                                        }
-
-                                        // Increment the pending directory count before adding to the queue.
-                                        _ = Interlocked.Increment(ref pendingDirs);
-                                        try
-                                        {
-                                            queue.Add(dir + "\\" + name);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _ = Interlocked.Decrement(ref pendingDirs);
-                                            ExceptionDispatchInfo.Capture(ex).Throw();
-                                            throw;
-                                        }
+                                        queue.Add(dir + "\\" + name);
                                     }
-                                    else
+                                    catch (Exception ex)
                                     {
-                                        ulong size = ((ulong)data.nFileSizeHigh << 32) | data.nFileSizeLow;
-                                        if (size != 0)
-                                        {
-                                            _ = Interlocked.Add(ref totalBytes, unchecked((long)size));
-                                        }
+                                        _ = Interlocked.Decrement(ref pendingDirs);
+                                        ExceptionDispatchInfo.Capture(ex).Throw();
+                                        throw;
                                     }
                                 }
-                                while (PInvoke.FindNextFile(hFind, out data));
+                                else
+                                {
+                                    ulong size = ((ulong)data.nFileSizeHigh << 32) | data.nFileSizeLow;
+                                    if (size != 0)
+                                    {
+                                        _ = Interlocked.Add(ref totalBytes, unchecked((long)size));
+                                    }
+                                }
                             }
-                        }
-                        finally
-                        {
-                            if (Interlocked.Decrement(ref pendingDirs) == 0 && Interlocked.Exchange(ref completed, 1) == 0)
-                            {
-                                queue.CompleteAdding();
-                            }
+                            while (PInvoke.FindNextFile(hFind, out data));
                         }
                     }
-                });
-            }
-            Task.WaitAll(tasks);
+                    finally
+                    {
+                        if (Interlocked.Decrement(ref pendingDirs) == 0 && Interlocked.Exchange(ref completed, 1) == 0)
+                        {
+                            queue.CompleteAdding();
+                        }
+                    }
+                }
+            });
             return totalBytes;
         }
 
@@ -353,8 +349,8 @@ namespace PSADT.FileSystem
         public static void ResetPermissionsForPath(string path)
         {
             // Define the flags for setting and getting security information.
-            OBJECT_SECURITY_INFORMATION getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
-            OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
+            const OBJECT_SECURITY_INFORMATION getSiFlags = OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION;
+            const OBJECT_SECURITY_INFORMATION setSiFlags = getSiFlags | OBJECT_SECURITY_INFORMATION.UNPROTECTED_DACL_SECURITY_INFORMATION;
 
             // Create an empty ACL for the purpose of enabling inheritance, then set it on the path.
             Span<byte> pEmptyAcl = stackalloc byte[Unsafe.SizeOf<ACL>()]; _ = NativeMethods.InitializeAcl(pEmptyAcl, ACE_REVISION.ACL_REVISION);

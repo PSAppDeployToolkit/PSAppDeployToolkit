@@ -366,6 +366,8 @@ namespace PSADT.Utilities
         /// The exact set of Name IDs present can vary between fonts.For more information about these values, see
         /// https://learn.microsoft.com/en-us/typography/opentype/spec/name#name-ids</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S4016:Enumeration members should not be named \"Reserved\"", Justification = "These values are named exactly as per the specification.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum NAME_ID : ushort
         {
             /// <summary>
@@ -506,6 +508,7 @@ namespace PSADT.Utilities
         /// other font structures. Each identifier represents a different platform or encoding standard, which may
         /// affect how character data is interpreted. This enumeration is primarily used when parsing or generating font
         /// files that conform to the TrueType specification.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum TT_PLATFORM_ID : ushort
         {
             /// <summary>
@@ -542,6 +545,7 @@ namespace PSADT.Utilities
         /// tables in font files. The values correspond to different character sets, such as Unicode, Symbol, and
         /// various East Asian encodings, as defined by the OpenType specification.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum TT_MS_ID : ushort
         {
             /// <summary>
@@ -594,6 +598,7 @@ namespace PSADT.Utilities
         /// defined by Apple for font files. This enumeration is typically used when parsing or generating font metadata
         /// that targets the Macintosh platform.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum TT_MAC_ID : ushort
         {
             /// <summary>
@@ -771,6 +776,7 @@ namespace PSADT.Utilities
         /// In modern fonts, Unicode-platform name records are typically encoded as UTF-16BE in practice.
         /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum TT_UNICODE_ID : ushort
         {
             /// <summary>

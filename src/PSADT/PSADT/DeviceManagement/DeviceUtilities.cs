@@ -107,6 +107,8 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
+        [SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
+        [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
         internal static void RestartComputer()
         {

@@ -113,6 +113,7 @@ namespace PSADT.WindowsInstaller
         /// <returns>A read-only list of strings containing the values from the specified column in the specified table. The list
         /// will be empty if the table contains no rows.</returns>
         /// <exception cref="InvalidDataException">Thrown if the specified table or column does not exist in the database.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static IReadOnlyList<string> GetMsiTableColumnValues(string szDatabasePath, string table, int column, IReadOnlyList<string>? szTransformFiles = null)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
@@ -209,10 +210,10 @@ namespace PSADT.WindowsInstaller
             try
             {
                 // Open original read-only.
-                using MsiCloseHandleSafeHandle hDatabaseOrig = OpenDatabase(msiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
+                using MsiCloseHandleSafeHandle hDatabaseOrig = OpenDatabase(msiPath, szPersist: MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
 
                 // Open temp in transact mode so we can modify + commit.
-                using (MsiCloseHandleSafeHandle hDatabaseTemp = applyTransformPath is not null && !string.IsNullOrWhiteSpace(applyTransformPath) ? OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT, [applyTransformPath]) : OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
+                using (MsiCloseHandleSafeHandle hDatabaseTemp = applyTransformPath is not null && !string.IsNullOrWhiteSpace(applyTransformPath) ? OpenDatabase(tempMsiPath, [applyTransformPath], MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT) : OpenDatabase(tempMsiPath, szPersist: MSI_PERSISTENCE_MODE.MSIDBOPEN_TRANSACT))
                 {
                     // One view, executed once, then assign repeatedly. No string interpolation of keys/values; we use records.
                     _ = NativeMethods.MsiDatabaseOpenView(hDatabaseTemp, "SELECT `Property`,`Value` FROM `Property`", out MsiCloseHandleSafeHandle hView);
@@ -241,7 +242,7 @@ namespace PSADT.WindowsInstaller
                 }
 
                 // Reopen temp read-only for transform generation.
-                using MsiCloseHandleSafeHandle hDatabaseTempRo = OpenDatabase(tempMsiPath, MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
+                using MsiCloseHandleSafeHandle hDatabaseTempRo = OpenDatabase(tempMsiPath, szPersist: MSI_PERSISTENCE_MODE.MSIDBOPEN_READONLY);
 
                 // Remove existing MST if present.
                 if (!File.Exists(newTransformPath))
@@ -462,11 +463,11 @@ namespace PSADT.WindowsInstaller
         /// <remarks>If the specified database is a patch file, transformations cannot be applied. Ensure
         /// that the database path is valid and accessible.</remarks>
         /// <param name="szDatabasePath">The path to the database file to be opened. This must be a valid file path to an MSI or MSP file.</param>
-        /// <param name="szPersist">An optional persistence mode for opening the database. If null, the method will determine the appropriate mode based on the file type.</param>
         /// <param name="szTransformFiles">An optional collection of transformation file paths to apply to the database. Transforms cannot be applied
         /// to patch files.</param>
+        /// <param name="szPersist">An optional persistence mode for opening the database. If null, the method will determine the appropriate mode based on the file type.</param>
         /// <returns>A handle to the opened database. This handle must be disposed of when no longer needed.</returns>
-        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, MSI_PERSISTENCE_MODE? szPersist = null, IReadOnlyList<string>? szTransformFiles = null)
+        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, IReadOnlyList<string>? szTransformFiles = null, MSI_PERSISTENCE_MODE? szPersist = null)
         {
             // Open the msi/msp as a database.
             bool isPatchFile = Path.GetExtension(szDatabasePath).Equals(".msp", StringComparison.OrdinalIgnoreCase);
@@ -502,20 +503,6 @@ namespace PSADT.WindowsInstaller
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Opens a Windows Installer database from the specified file path and applies optional transformation files.
-        /// </summary>
-        /// <param name="szDatabasePath">The full path to the database file to open. This parameter cannot be null or empty.</param>
-        /// <param name="szTransformFiles">An optional array of transformation file paths to apply to the database. Each transformation file must be
-        /// valid and accessible. May be null.</param>
-        /// <returns>A safe handle representing the opened database. The caller is responsible for closing the handle to release
-        /// resources.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, IReadOnlyList<string>? szTransformFiles = null)
-        {
-            return OpenDatabase(szDatabasePath, null, szTransformFiles);
         }
 
         /// <summary>

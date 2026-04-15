@@ -271,7 +271,7 @@ namespace PSADT.ClientServer
                                                         Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
                                                         while (true)
                                                         {
-                                                            if (WindowUtilities.GetProcessWindowInfo([process.Id], [window.WindowHandle]).Count == 0)
+                                                            if (WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Count == 0)
                                                             {
                                                                 closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
                                                                 break;

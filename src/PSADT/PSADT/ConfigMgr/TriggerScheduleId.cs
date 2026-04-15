@@ -8,6 +8,8 @@
     /// corresponds to a specific scheduled operation that can be triggered within the system.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "The lack of a zero value is correct here.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type here is correct for the represented values.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S2437:Unnecessary bit operations should not be performed", Justification = "This is here for greater clarity.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "The type is correct for the underlying Win32 API.")]
     public enum TriggerScheduleId : ushort
     {
         /// <summary>

@@ -115,6 +115,8 @@ namespace PSADT.TerminalServices
         /// <param name="session">A reference to a WTS_SESSION_INFO_1W structure containing information about the session to query.</param>
         /// <returns>A SessionInfo object containing user, session, and client details if the session is valid; otherwise, null.</returns>
         /// <exception cref="InvalidOperationException">Thrown if a required process to retrieve idle time information cannot be launched.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is not benchmarking code.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
         private static SessionInfo? Get(in WTS_SESSION_INFO_1W session)
         {
             // Internal helpers for retrieving session information values.
@@ -289,7 +291,7 @@ namespace PSADT.TerminalServices
             string? clientDirectory,
             uint? clientBuildNumber)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount.Value, nameof(ntAccount));
+            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount.Value);
             ArgumentException.ThrowIfNullOrWhiteSpace(userName);
             ArgumentException.ThrowIfNullOrWhiteSpace(domainName);
             if (sessionName is not null)

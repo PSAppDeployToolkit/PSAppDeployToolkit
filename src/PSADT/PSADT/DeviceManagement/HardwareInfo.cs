@@ -26,9 +26,9 @@ namespace PSADT.DeviceManagement
         static HardwareInfo()
         {
             Span<byte> buffer = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(buffer);
-            PlatformFirmwareInformation = PlatformFirmwareInformation.Get(buffer) ?? throw new NotImplementedException("The query for platform firmware information returned a null result.");
-            SystemInformation = SystemInformation.Get(buffer) ?? throw new NotImplementedException("The query for platform firmware information returned a null result.");
-            SystemEnclosure = SystemEnclosure.Get(buffer) ?? throw new NotImplementedException("The query for platform firmware information returned a null result.");
+            PlatformFirmwareInformation = PlatformFirmwareInformation.Get(buffer) ?? throw new NotSupportedException("The query for platform firmware information returned a null result.");
+            SystemInformation = SystemInformation.Get(buffer) ?? throw new NotSupportedException("The query for platform firmware information returned a null result.");
+            SystemEnclosure = SystemEnclosure.Get(buffer) ?? throw new NotSupportedException("The query for platform firmware information returned a null result.");
         }
 
         /// <summary>

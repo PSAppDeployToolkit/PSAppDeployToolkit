@@ -257,6 +257,7 @@ namespace PSADT.SMBIOS
         /// </summary>
         /// <returns>The age in days; returns <see cref="double.NaN"/> if the release date is not available.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is not benchmarking code.")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public double GetBiosAgeInDays()
         {

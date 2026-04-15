@@ -717,7 +717,7 @@ namespace PSADT.ProcessManagement
         /// <remarks>This dictionary contains predefined error messages for various statuses encountered
         /// when attempting to create a process using a token. It is used to provide descriptive error messages based on
         /// the status code returned by the operation.</remarks>
-        private static readonly ReadOnlyDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = new(new Dictionary<CreateProcessUsingTokenStatus, string>()
+        private static readonly ReadOnlyDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = new(new Dictionary<CreateProcessUsingTokenStatus, string>
         {
             { CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege, "The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege." },
             { CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege." },
@@ -732,7 +732,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, ushort>()
+        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, ushort>
         {
             { ProcessWindowStyle.Normal, (ushort)SHOW_WINDOW_CMD.SW_SHOWNORMAL },
             { ProcessWindowStyle.Hidden, (ushort)SHOW_WINDOW_CMD.SW_HIDE },
@@ -744,6 +744,6 @@ namespace PSADT.ProcessManagement
         /// Special exit code used to signal when we're terminating a process due to timeout.
         /// The value is `'PSAppDeployToolkit'.GetHashCode()` under Windows PowerShell 5.1.
         /// </summary>
-        public const int TimeoutExitCode = -443991205;
+        public const int TimeoutExitCode = -443_991_205;
     }
 }

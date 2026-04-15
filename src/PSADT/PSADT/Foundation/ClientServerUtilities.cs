@@ -228,7 +228,7 @@ namespace PSADT.Foundation
         /// Specifies the exit code used to indicate a successful shell execute process operation in the client-server communication protocol.
         /// </summary>
         /// <remarks>The value of this constant is derived from `'ShellExecuteProcess'.GetHashCode()` under Windows PowerShell 5.1.</remarks>
-        public const int ShellExecuteProcessSuccessCode = -1556154312;
+        public const int ShellExecuteProcessSuccessCode = -1_556_154_312;
 
         /// <summary>
         /// Specifies the default elevation type to use when requesting an elevated token.

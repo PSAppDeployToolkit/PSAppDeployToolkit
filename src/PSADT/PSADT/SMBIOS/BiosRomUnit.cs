@@ -23,7 +23,8 @@ namespace PSADT.SMBIOS
     /// <summary>
     /// Decoded view of the BIOS Extended ROM Size field (Type 0, offset 0x18, WORD) when the legacy ROM Size byte is 0xFF.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
     public enum BiosRomUnit : byte
     {
         /// <summary>
