@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Management.Automation;
 
 namespace PSAppDeployToolkit.Attributes
@@ -10,8 +11,19 @@ namespace PSAppDeployToolkit.Attributes
     /// This attribute ensures numeric input is interpreted as seconds rather than PowerShell's default tick behavior
     /// for implicit conversions to <see cref="TimeSpan"/>.
     /// </remarks>
-    public sealed class TimeSpanTransformationAttribute : ArgumentTransformationAttribute
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3253:Constructor and destructor declarations should not be redundant", Justification = "This primary constructor is required for PowerShell.")]
+    public sealed class TimeSpanTransformationAttribute() : ArgumentTransformationAttribute
     {
+        /// <summary>
+        /// Initializes a new instance of the TimeSpanTransformationAttribute class using the specified culture
+        /// information.
+        /// </summary>
+        /// <param name="cultureInfo">The CultureInfo to use for parsing and formatting time span values. Cannot be null.</param>
+        public TimeSpanTransformationAttribute(CultureInfo cultureInfo) : this()
+        {
+            CultureInfo = cultureInfo;
+        }
+
         /// <summary>
         /// Transforms the input value into a <see cref="TimeSpan"/>.
         /// </summary>
@@ -35,7 +47,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             if (inputData is string valueAsString)
             {
-                if (TimeSpan.TryParse(valueAsString, out TimeSpan parsedTimeSpan))
+                if (TimeSpan.TryParse(valueAsString, CultureInfo, out TimeSpan parsedTimeSpan))
                 {
                     return parsedTimeSpan;
                 }
@@ -121,6 +133,7 @@ namespace PSAppDeployToolkit.Attributes
         /// <returns>A <see cref="TimeSpan"/> that represents the specified number of seconds.</returns>
         /// <exception cref="ArgumentTransformationMetadataException">Thrown when <paramref name="seconds"/> is outside the valid range for <see cref="TimeSpan"/> or is not a
         /// valid value.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private static TimeSpan TimeSpanFromSeconds(double seconds)
         {
             try
@@ -132,5 +145,10 @@ namespace PSAppDeployToolkit.Attributes
                 throw new ArgumentOutOfRangeException($"The value '{seconds}' cannot be represented as a TimeSpan in seconds.", ex);
             }
         }
+
+        /// <summary>
+        /// Represents the culture-specific information associated with the current context.
+        /// </summary>
+        public CultureInfo CultureInfo { get; } = CultureInfo.CurrentCulture;
     }
 }

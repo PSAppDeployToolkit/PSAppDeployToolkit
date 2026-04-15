@@ -37,6 +37,7 @@ namespace PSAppDeployToolkit.Logging
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logStyle">The type of log.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStreamType hostLogStreamType, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null)
         {
             // Validate nullable inputs.
@@ -211,10 +212,10 @@ namespace PSAppDeployToolkit.Logging
         /// </summary>
         private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Green } }),
-            new(new Dictionary<string, ConsoleColor>() { }),
-            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Yellow } }),
-            new(new Dictionary<string, ConsoleColor>() { { "ForegroundColor", ConsoleColor.Red } }),
+            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green } }),
+            new(new Dictionary<string, ConsoleColor> { }),
+            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow } }),
+            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red } }),
         ]);
 
         /// <summary>
