@@ -117,7 +117,7 @@ namespace PSADT.Invoke
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                string errorMessage = $"Error while preparing to invoke deployment script.";
+                const string errorMessage = $"Error while preparing to invoke deployment script.";
                 WriteDebugMessage($"{errorMessage} {ex}", true);
                 if (!inDebugMode)
                 {
