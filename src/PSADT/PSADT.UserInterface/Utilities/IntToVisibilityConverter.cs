@@ -41,10 +41,10 @@ namespace PSADT.UserInterface.Utilities
         /// <param name="parameter">An optional parameter to use in the conversion logic.</param>
         /// <param name="culture">The culture to use in the conversion.</param>
         /// <returns>The converted value, or throws an exception if the conversion is not implemented.</returns>
-        /// <exception cref="NotImplementedException">Thrown in all cases, as this method is not implemented.</exception>
+        /// <exception cref="NotSupportedException">Thrown in all cases, as this method is not implemented.</exception>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

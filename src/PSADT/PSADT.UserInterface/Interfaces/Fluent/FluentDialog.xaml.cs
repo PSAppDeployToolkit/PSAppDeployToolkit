@@ -89,9 +89,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             AppTitleTextBlock.Text = options.AppTitle;
             SubtitleTextBlock.Text = options.Subtitle;
 
-            // Set accessibility properties
-            AutomationProperties.SetName(this, options.AppTitle);
-
             // Set remaining properties from the options
             if (options.DialogPosition is not null)
             {
@@ -150,12 +147,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
 
             // Set up everything related to the dialog icon.
-            _dialogBitmapCache = new(new Dictionary<ApplicationTheme, BitmapSource>()
+            _dialogBitmapCache = new(new Dictionary<ApplicationTheme, BitmapSource>
             {
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
                 { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage ?? options.AppIconImage) },
             });
-            ThemeManager.AddActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
             SetDialogIcon();
 
             // Set the expiry timer if specified.
@@ -318,6 +314,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         {
             // Force software rendering.
             ((HwndSource)PresentationSource.FromVisual(this)).CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
+
+            // Finish registration that must occur after construction has completed.
+            AutomationProperties.SetName(this, Title);
+            if (!_themeChangeHandlerRegistered)
+            {
+                ThemeManager.AddActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
+                _themeChangeHandlerRegistered = true;
+            }
 
             // Update dialog layout
             UpdateButtonLayout();
@@ -1016,6 +1020,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private bool _canClose;
 
         /// <summary>
+        /// Whether the theme-changed handler has been registered for this window instance.
+        /// </summary>
+        private bool _themeChangeHandlerRegistered;
+
+        /// <summary>
         /// The specified position of the dialog.
         /// </summary>
         private protected readonly DialogPosition _dialogPosition = DialogPosition.BottomRight;
@@ -1137,7 +1146,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 }
 
                 // Clean up resources.
-                ThemeManager.RemoveActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
+                if (_themeChangeHandlerRegistered)
+                {
+                    ThemeManager.RemoveActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
+                    _themeChangeHandlerRegistered = false;
+                }
                 _hwndSource?.RemoveHook(WndProc);
                 _hwndSource?.Dispose();
                 _countdownTimer?.Dispose();

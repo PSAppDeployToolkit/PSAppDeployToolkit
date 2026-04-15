@@ -27,13 +27,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <remarks>This constructor enforces licensing requirements and sets up the dialog components.
         /// It is intended for internal use.</remarks>
         /// <param name="options">The options that configure the behavior and appearance of the dialog.</param>
-        /// <exception cref="NotImplementedException">Thrown if the dialog is instantiated in runtime license mode, as ListSelectionDialog is only implemented for
+        /// <exception cref="NotSupportedException">Thrown if the dialog is instantiated in runtime license mode, as ListSelectionDialog is only implemented for
         /// the Fluent dialog type.</exception>
         internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, ListSelectionDialogResult.DefaultResult)
         {
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
-                throw new NotImplementedException("The ListSelectionDialog is only implemented for the Fluent dialog type.");
+                throw new NotSupportedException("The ListSelectionDialog is only implemented for the Fluent dialog type.");
             }
             InitializeComponent();
         }
