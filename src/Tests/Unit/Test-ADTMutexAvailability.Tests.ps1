@@ -31,7 +31,6 @@ Describe 'Test-ADTMutexAvailability' {
                         {
                             $mutex.ReleaseMutex()
                         }
-                        $mutex.Close()
                         $mutex.Dispose()
                         $mutex = $null
                     }
@@ -76,7 +75,6 @@ Describe 'Test-ADTMutexAvailability' {
                     {
                         if ($null -ne $mutex)
                         {
-                            $mutex.Close()
                             $mutex.Dispose()
                         }
                     }
@@ -93,7 +91,6 @@ Describe 'Test-ADTMutexAvailability' {
             {
                 $cts.Cancel()
                 $null = $ps.EndInvoke($asyncResult)
-                $ps.Runspace.Close()
                 $ps.Runspace.Dispose()
                 $ps.Dispose()
                 $cts.Dispose()
