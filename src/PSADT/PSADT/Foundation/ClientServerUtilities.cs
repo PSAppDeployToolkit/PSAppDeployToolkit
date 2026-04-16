@@ -246,6 +246,6 @@ namespace PSADT.Foundation
         /// <summary>
         /// Indicates whether the current caller is the client component of the client-server architecture.
         /// </summary>
-        internal static readonly bool CallerIsClientServerClient;
+        private static readonly bool CallerIsClientServerClient;
     }
 }
