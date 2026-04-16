@@ -45,7 +45,7 @@ jobs:
     - name: Cache PowerShell modules
       uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8  # https://github.com/potatoqualitee/psmodulecache/releases/tag/v6.2.1
       with:
-        modules-to-cache: PSScriptAnalyzer:1.24.0, Pester:5.7.1, platyPS:0.14.2, Alt3.Docusaurus.Powershell:1.0.37
+        modules-to-cache: PSScriptAnalyzer:1.25.0, Pester:5.7.1, platyPS:0.14.2, Alt3.Docusaurus.Powershell:1.0.37
         shell: powershell
 
     - name: Test and Build
