@@ -20,9 +20,9 @@ namespace PSADT.SafeHandles
         /// <param name="value">The array of type T to be pinned in memory. This array cannot be null.</param>
         /// <returns>A SafePinnedGCHandle that represents the pinned handle for the specified array.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static SafePinnedGCHandle Alloc<T>(T[] value)
+        internal static SafePinnedGCHandle Alloc<T>(T[] value) where T : unmanaged
         {
-            return new(GCHandle.Alloc(value, GCHandleType.Pinned), Marshal.SizeOf<T>() * value.Length, true);
+            return new(GCHandle.Alloc(value, GCHandleType.Pinned), Unsafe.SizeOf<T>() * value.Length, true);
         }
 
         /// <summary>
