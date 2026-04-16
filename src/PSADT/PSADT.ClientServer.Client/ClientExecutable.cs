@@ -669,10 +669,10 @@ namespace PSADT.ClientServer
 
                 // Rename the IFEO subkey, start the process asynchronously, and then rename it back.
                 RegistryUtilities.RenameRegistryKey(ifeoPath, fileName, ifeoName);
-                ProcessHandle? handle;
+                ProcessHandle handle;
                 try
                 {
-                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory));
+                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory)) ?? throw new InvalidOperationException("Failed to launch the process.");
                 }
                 finally
                 {
@@ -680,12 +680,9 @@ namespace PSADT.ClientServer
                 }
 
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                using (ProcessResult? result = handle?.Task.GetAwaiter().GetResult())
+                using (ProcessResult result = handle.Task.GetAwaiter().GetResult())
                 {
-                    if (result?.ExitCode is int exitCode)
-                    {
-                        Environment.Exit(exitCode);
-                    }
+                    Environment.Exit(result.ExitCode);
                 }
                 return SerializeToString(BlockExecution.ButtonText);
             }
