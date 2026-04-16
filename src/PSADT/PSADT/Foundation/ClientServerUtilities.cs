@@ -215,6 +215,11 @@ namespace PSADT.Foundation
             : ClientLauncherDefaultPath;
 
         /// <summary>
+        /// Specifies the default timeout duration for client operations.
+        /// </summary>
+        public static readonly TimeSpan ClientOperationTimeout = TimeSpan.FromSeconds(30);
+
+        /// <summary>
         /// Specifies the registry path used for storing PSAppDeployToolkit configuration settings for the current user.
         /// </summary>
         public const string UserRegistryPath = "HKEY_CURRENT_USER\\SOFTWARE\\PSAppDeployToolkit";

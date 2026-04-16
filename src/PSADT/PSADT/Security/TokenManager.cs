@@ -118,7 +118,7 @@ namespace PSADT.Security
                                                     _ = Marshal.FinalReleaseComObject(runningTask);
                                                     try
                                                     {
-                                                        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
+                                                        using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
                                                         pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
                                                     }
                                                     catch (OperationCanceledException)
