@@ -34,10 +34,21 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Cache PowerShell modules
-      uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8  # https://github.com/potatoqualitee/psmodulecache/releases/tag/v6.2.1
+      id: psmodule-cache
+      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # https://github.com/actions/cache/releases/tag/v5.0.3
       with:
-        modules-to-cache: PSScriptAnalyzer:1.25.0, Pester:5.7.1, platyPS:0.14.2, Alt3.Docusaurus.Powershell:1.0.37
-        shell: powershell
+        path: ~\Documents\WindowsPowerShell\Modules
+        key: ${{ runner.os }}-psmodule-PSScriptAnalyzer-1.25.0-Pester-5.7.1-platyPS-0.14.2-Alt3.Docusaurus.Powershell-1.0.37
+
+    - name: Install PowerShell modules
+      if: steps.psmodule-cache.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+        Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.25.0 -Force -Scope CurrentUser
+        Install-Module -Name Pester -RequiredVersion 5.7.1 -Force -SkipPublisherCheck -Scope CurrentUser
+        Install-Module -Name platyPS -RequiredVersion 0.14.2 -Force -Scope CurrentUser
+        Install-Module -Name Alt3.Docusaurus.Powershell -RequiredVersion 1.0.37 -Force -Scope CurrentUser
 
     - name: Test and Build
       shell: cmd
