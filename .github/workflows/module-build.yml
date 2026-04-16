@@ -1,10 +1,3 @@
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/virtual-environments-for-github-hosted-runners
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/software-installed-on-github-hosted-runners
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#using-a-specific-shell
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
-# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-powershell
-# https://github.com/actions/upload-artifact#where-does-the-upload-go
 name: PSAppDeployToolkit-Windows-PowerShell
 on:
   pull_request:
@@ -32,10 +25,8 @@ jobs:
       shell: powershell
       run: $PSVersionTable
 
-    # actions/setup-dotnet caching is unwieldy with multiple projects
-    # https://github.com/NuGet/Home/issues/12409
     - name: Cache NuGet packages
-      uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # https://github.com/actions/cache/releases/tag/v5.0.3
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # https://github.com/actions/cache/releases/tag/v5.0.5
       with:
         path: ${{ env.NUGET_PACKAGES }}
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -58,7 +49,7 @@ jobs:
 
     - name: Azure Login
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/4.0.x' || github.ref == 'refs/heads/4.1.x'
-      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # https://github.com/Azure/login/releases/tag/v2.3.0
+      uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43  # https://github.com/Azure/login/releases/tag/v3.0.0
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -78,7 +69,7 @@ jobs:
         & (Import-Module -Name .\src\PSAppDeployToolkit.Build -PassThru) { Invoke-ADTCustomModuleBuild -Actions 'Export-ADTScriptTemplate', 'Compress-ADTBuildAssetContent' }
 
     - name: Upload module
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
         path: ${{ steps.exports.outputs.ModuleOnly }}
         if-no-files-found: error
@@ -86,7 +77,7 @@ jobs:
         archive: false
 
     - name: Upload v3 module template
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
         path: ${{ steps.exports.outputs.Template_v3 }}
         if-no-files-found: error
@@ -94,7 +85,7 @@ jobs:
         archive: false
 
     - name: Upload v4 module template
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
         path: ${{ steps.exports.outputs.Template_v4 }}
         if-no-files-found: error
@@ -102,7 +93,7 @@ jobs:
         archive: false
 
     - name: Upload pester results
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
         path: .\src\Artifacts\TestOutput\PesterTests.xml
         if-no-files-found: error
@@ -110,7 +101,7 @@ jobs:
         archive: false
 
     - name: Upload code coverage results
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # https://github.com/actions/upload-artifact/releases/tag/v7.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # https://github.com/actions/upload-artifact/releases/tag/v7.0.1
       with:
         path: .\src\Artifacts\CodeCoverage\CodeCoverage.xml
         if-no-files-found: error
