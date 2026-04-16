@@ -63,7 +63,6 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3254:Default parameter values should not be passed as arguments", Justification = "PowerShell doesn't like default parameters.")]
         public static T DeserializeFromBytes<T>(byte[] bytes)
         {
             return DeserializeFromBytes<T>(bytes, 0);
