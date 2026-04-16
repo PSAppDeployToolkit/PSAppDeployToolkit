@@ -166,7 +166,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             if (e.Button == MouseButtons.Left)
             {
                 _ = NativeMethods.ReleaseCapture();
-                _ = NativeMethods.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION, default);
+                _ = NativeMethods.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION);
             }
         }
     }
