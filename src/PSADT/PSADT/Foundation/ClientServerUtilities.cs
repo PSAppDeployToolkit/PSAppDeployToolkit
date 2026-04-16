@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
-using PSADT.Interop.Extensions;
+using PSADT.Extensions;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 

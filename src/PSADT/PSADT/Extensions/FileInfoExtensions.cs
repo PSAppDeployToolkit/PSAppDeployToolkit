@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using PSADT.Interop;
+using PSADT.Interop.Extensions;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security.WinTrust;
 
-namespace PSADT.Interop.Extensions
+namespace PSADT.Extensions
 {
     /// <summary>
     /// Provides extension methods for the FileInfo type to support file trust verification and related operations.
