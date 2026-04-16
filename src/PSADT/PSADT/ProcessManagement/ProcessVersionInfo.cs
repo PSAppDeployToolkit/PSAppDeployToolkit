@@ -209,7 +209,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Read the signature to confirm we've got a valid NT image.
-            nint ntHeadersAddress = unchecked(baseAddress + dosHeader.e_lfanew);
+            nint ntHeadersAddress = baseAddress + dosHeader.e_lfanew;
             const int peSignatureSize = sizeof(uint); Span<byte> peSignatureBuf = stackalloc byte[peSignatureSize];
             _ = NativeMethods.ReadProcessMemory(processHandle, ntHeadersAddress, peSignatureBuf, out _);
             ref readonly uint peSignature = ref peSignatureBuf.AsReadOnlyStructure<uint>();
@@ -219,7 +219,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Read the magic from the IMAGE_OPTIONAL_HEADER to know if it's 32/64-bit.
-            nint ntOptionalHeadersAddress = unchecked(ntHeadersAddress + peSignatureSize + Unsafe.SizeOf<IMAGE_FILE_HEADER>());
+            nint ntOptionalHeadersAddress = ntHeadersAddress + peSignatureSize + Unsafe.SizeOf<IMAGE_FILE_HEADER>();
             Span<byte> magicBuf = stackalloc byte[sizeof(ushort)]; _ = NativeMethods.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, magicBuf, out _);
             ref readonly IMAGE_OPTIONAL_HEADER_MAGIC magic = ref magicBuf.AsReadOnlyStructure<IMAGE_OPTIONAL_HEADER_MAGIC>();
 
@@ -271,7 +271,7 @@ namespace PSADT.ProcessManagement
             _ = NativeMethods.ReadProcessMemory(processHandle, resourceDirectoryAddress, resourceDirBuf, out _);
             ref readonly IMAGE_RESOURCE_DIRECTORY resourceDir = ref resourceDirBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY>();
             int totalEntries = resourceDir.NumberOfNamedEntries + resourceDir.NumberOfIdEntries;
-            nint entriesAddress = unchecked(resourceDirectoryAddress + resourceDirSize);
+            nint entriesAddress = resourceDirectoryAddress + resourceDirSize;
 
             // Look for RT_VERSION resource (type 16) and throw if not found.
             int entrySize = Unsafe.SizeOf<IMAGE_RESOURCE_DIRECTORY_ENTRY>();
@@ -300,7 +300,7 @@ namespace PSADT.ProcessManagement
             do
             {
                 nint currentAddress = unchecked(resourceDirectoryAddress + (int)(currentOffsetToData & IMAGE_RESOURCE_RVA_MASK));
-                nint currentEntryAddress = unchecked(currentAddress + Unsafe.SizeOf<IMAGE_RESOURCE_DIRECTORY>());
+                nint currentEntryAddress = currentAddress + Unsafe.SizeOf<IMAGE_RESOURCE_DIRECTORY>();
                 _ = NativeMethods.ReadProcessMemory(processHandle, currentEntryAddress, currentEntryBuf, out _);
                 ref readonly IMAGE_RESOURCE_DIRECTORY_ENTRY currentEntry = ref currentEntryBuf.AsReadOnlyStructure<IMAGE_RESOURCE_DIRECTORY_ENTRY>();
                 currentOffsetToData = currentEntry.Anonymous2.OffsetToData;

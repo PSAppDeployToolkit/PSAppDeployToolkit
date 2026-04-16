@@ -31,7 +31,7 @@ namespace PSADT.Interop.Extensions
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
             unsafe
             {
-                return ref Unsafe.AsRef<T>((void*)unchecked(handle + offset));
+                return ref Unsafe.AsRef<T>((void*)(handle + offset));
             }
         }
 
