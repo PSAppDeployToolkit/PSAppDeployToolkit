@@ -327,7 +327,7 @@ namespace PSADT.FileSystem
                                 {
                                     _ = NativeMethods.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                                 }
-                                _ = NativeMethods.GetExitCodeThread(hThread, out uint exitCode); res = unchecked((NTSTATUS)exitCode);
+                                _ = NativeMethods.GetExitCodeThread(hThread, out uint exitCode); res = unchecked((NTSTATUS)(int)exitCode);
                             }
 
                             // Handle the result of the NtQueryObject call; returning early on certain expected failure codes.

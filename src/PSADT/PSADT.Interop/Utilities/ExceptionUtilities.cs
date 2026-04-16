@@ -60,7 +60,7 @@ namespace PSADT.Interop.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR GetLastWin32Error()
         {
-            return unchecked((WIN32_ERROR)Marshal.GetLastWin32Error());
+            return unchecked((WIN32_ERROR)(uint)Marshal.GetLastWin32Error());
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace PSADT.Interop.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static HRESULT HRESULT_FROM_NT(NTSTATUS ntStatus)
         {
-            return new(unchecked((int)(unchecked((uint)ntStatus.Value) | (uint)FACILITY_CODE.FACILITY_NT_BIT)));
+            return new(unchecked((int)((uint)ntStatus.Value | (uint)FACILITY_CODE.FACILITY_NT_BIT)));
         }
 
         /// <summary>
