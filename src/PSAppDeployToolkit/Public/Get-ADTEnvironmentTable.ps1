@@ -19,9 +19,9 @@ function Get-ADTEnvironmentTable
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Specialized.OrderedDictionary
+        PSAppDeployToolkit.Foundation.EnvironmentTable
 
-        Returns the environment data as a read-only ordered dictionary.
+        Returns the environment data as an EnvironmentTable object with read-only properties.
 
     .EXAMPLE
         $environment = Get-ADTEnvironmentTable
@@ -41,7 +41,7 @@ function Get-ADTEnvironmentTable
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.Specialized.OrderedDictionary])]
+    [OutputType([PSAppDeployToolkit.Foundation.EnvironmentTable])]
     param
     (
     )

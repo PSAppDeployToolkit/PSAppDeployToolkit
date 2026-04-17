@@ -22,7 +22,7 @@ function Get-ADTRunningProcesses
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Generic.IReadOnlyList[PSADT.ProcessManagement.RunningProcessInfo]
+        PSADT.ProcessManagement.RunningProcessInfo
 
         Returns one or more RunningProcess objects representing each running process.
 
@@ -44,7 +44,7 @@ function Get-ADTRunningProcesses
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.Generic.IReadOnlyList[PSADT.ProcessManagement.RunningProcessInfo]])]
+    [OutputType([PSADT.ProcessManagement.RunningProcessInfo])]
     param
     (
         [Parameter(Mandatory = $true)]

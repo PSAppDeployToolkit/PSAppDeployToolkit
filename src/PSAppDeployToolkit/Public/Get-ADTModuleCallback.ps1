@@ -34,7 +34,7 @@ function Get-ADTModuleCallback
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Management.Automation.CommandInfo
+        System.Collections.ObjectModel.ReadOnlyCollection[System.Management.Automation.CommandInfo]
 
         The callback commands for the hookpoint specified.
 
@@ -58,7 +58,7 @@ function Get-ADTModuleCallback
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Management.Automation.CommandInfo])]
+    [OutputType([System.Collections.ObjectModel.ReadOnlyCollection[System.Management.Automation.CommandInfo]])]
     param
     (
         [Parameter(Mandatory = $true)]
