@@ -56,7 +56,7 @@ function Get-ADTRegistryKey
         System.Object
 
     .OUTPUTS
-        System.Management.Automation.PSCustomObject
+        PSCustomObject
 
         Returns the value of the registry key or value.
 
@@ -102,7 +102,7 @@ function Get-ADTRegistryKey
     [OutputType([System.Int64])]
     [OutputType([System.String])]
     [OutputType([System.Object])]
-    [OutputType([System.Management.Automation.PSCustomObject])]
+    [OutputType([PSCustomObject])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]

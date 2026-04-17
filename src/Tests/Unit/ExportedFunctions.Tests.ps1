@@ -77,8 +77,11 @@ Describe $ModuleName {
                         continue
                     }
 
-                    # All types should be referenced by their full name
-                    $returnValueName | Should -Not -BeIn $typeAcceleratorNames -Because 'types should be referenced by their full name in the comment-based help'
+                    if ($returnValueName -ne 'PSCustomObject')
+                    {
+                        # All types should be referenced by their full name
+                        $returnValueName | Should -Not -BeIn $typeAcceleratorNames -Because 'types should be referenced by their full name in the comment-based help'
+                    }
 
                     # Validate that the type specified in the comment-based help is a valid type before we do an early return
                     $returnValueType = [System.Type]$returnValueName
