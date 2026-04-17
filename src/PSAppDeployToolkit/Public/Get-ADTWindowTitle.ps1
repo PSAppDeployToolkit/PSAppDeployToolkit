@@ -21,8 +21,6 @@ function Get-ADTWindowTitle
         - ParentProcessId
         - ParentProcessMainWindowHandle
 
-        Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
-
     .PARAMETER WindowTitle
         The title of the application window to search for using regex matching.
 

@@ -75,7 +75,7 @@ function Show-ADTInstallationWelcome
         Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the deployment.
 
     .PARAMETER PromptToSave
-        Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
+        Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.
 
     .PARAMETER PersistPrompt
         Specify whether to make the `Show-ADTInstallationWelcome` prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
