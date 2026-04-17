@@ -16,13 +16,13 @@ function Test-ADTServiceExists
     .PARAMETER Name
         Specify the name of the service.
 
-        Note: Service name can be found by executing "Get-Service | Format-Table -AutoSize -Wrap" or by using the properties screen of a service in services.msc.
+        Note: Service name can be found by executing `Get-Service | Format-Table -AutoSize -Wrap` or by using the properties screen of a service in services.msc.
 
     .PARAMETER UseCIM
         Use CIM/WMI to check for the service. This is useful for compatibility with PSADT v3.x.
 
     .PARAMETER PassThru
-        Return the WMI service object. To see all the properties use: Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member
+        Return the WMI service object. To see all the properties use: `Test-ADTServiceExists -Name 'spooler' -PassThru | Get-Member`
 
     .INPUTS
         None

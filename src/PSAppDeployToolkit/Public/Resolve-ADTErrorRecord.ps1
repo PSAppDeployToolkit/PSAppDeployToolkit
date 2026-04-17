@@ -25,13 +25,13 @@ function Resolve-ADTErrorRecord
         Exclude ErrorRecord details as represented by $ErrorRecord.
 
     .PARAMETER ExcludeErrorInvocation
-        Exclude ErrorRecord invocation information as represented by $ErrorRecord.InvocationInfo.
+        Exclude ErrorRecord invocation information as represented by `$ErrorRecord.InvocationInfo`.
 
     .PARAMETER ExcludeErrorException
-        Exclude ErrorRecord exception details as represented by $ErrorRecord.Exception.
+        Exclude ErrorRecord exception details as represented by `$ErrorRecord.Exception`.
 
     .PARAMETER IncludeErrorInnerException
-        Includes further ErrorRecord inner exception details as represented by $ErrorRecord.Exception.InnerException. Will retrieve all inner exceptions if there is more than one.
+        Includes further ErrorRecord inner exception details as represented by `$ErrorRecord.Exception.InnerException`. Will retrieve all inner exceptions if there is more than one.
 
     .INPUTS
         System.Management.Automation.ErrorRecord

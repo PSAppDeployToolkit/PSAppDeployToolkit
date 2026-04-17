@@ -25,7 +25,7 @@ function ConvertTo-ADTNTAccountOrSID
     .PARAMETER WellKnownSIDName
         Specify the Well Known SID name to translate to the actual SID (e.g., LocalServiceSid).
 
-        To get all well known SIDs available on system: [Enum]::GetNames([Security.Principal.WellKnownSidType])
+        To get all well known SIDs available on system: `[Enum]::GetNames([Security.Principal.WellKnownSidType])`
 
     .PARAMETER WellKnownToNTAccount
         Convert the Well Known SID to an NTAccount name.

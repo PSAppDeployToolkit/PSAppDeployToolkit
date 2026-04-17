@@ -55,7 +55,7 @@ function Set-ADTIniSection
     .EXAMPLE
         Set-ADTIniSection -FilePath "$env:ProgramFilesX86\IBM\Notes\notes.ini" -Section 'Notes' -Content $null -Overwrite
 
-        Sets the 'Notes' section to be empty by sending null content in combination with the -Overwrite switch.
+        Sets the 'Notes' section to be empty by sending null content in combination with the `-Overwrite` switch.
 
     .NOTES
         An active ADT session is NOT required to use this function.

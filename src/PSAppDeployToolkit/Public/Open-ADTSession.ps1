@@ -119,7 +119,7 @@ function Open-ADTSession
         When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when the device hasn't completed the OOBE or a user ESP is active.
 
     .PARAMETER NoProcessDetection
-        When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no processes to close in the specified AppProcessesToClose list.
+        When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no processes to close in the specified `-AppProcessesToClose` list.
 
     .PARAMETER ExitWithMsiCodes
         When specified, the session will always exit with 0 upon success and 3010 upon reboot required so Intune/ConfigMgr requires no specific adjustment.

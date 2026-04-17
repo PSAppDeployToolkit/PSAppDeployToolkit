@@ -60,7 +60,7 @@ function Start-ADTMspProcessAsUser
         Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
 
     .PARAMETER ExitOnProcessFailure
-        Automatically closes the active deployment session via Close-ADTSession in the event the process exits with a non-success or non-ignored exit code.
+        Automatically closes the active deployment session via `Close-ADTSession` in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER ContinueWhenNoUserLoggedOn
         When specified, if no user is logged on, the condition is logged and the function returns without throwing an exception.

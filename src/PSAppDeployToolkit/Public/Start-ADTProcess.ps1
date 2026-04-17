@@ -53,7 +53,7 @@ function Start-ADTProcess
 
         The word "Shell" in this context refers to a graphical shell (similar to the Windows shell) rather than command shells (for example, bash or sh) and lets users launch graphical applications or open documents. It lets you open a file or a url and the Shell will figure out the program to open it with.
 
-        The WorkingDirectory property behaves differently depending on the value of the UseShellExecute property. When `-UseShellExecute` is `$true`, the `-WorkingDirectory` parameter specifies the location of the executable. When `-UseShellExecute` is `$false`, the `-WorkingDirectory` parameter is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
+        The WorkingDirectory property behaves differently depending on the value of the `-UseShellExecute` parameter. When `-UseShellExecute` is `$true`, the `-WorkingDirectory` parameter specifies the location of the executable. When `-UseShellExecute` is `$false`, the `-WorkingDirectory` parameter is not used to find the executable. Instead, it is used only by the process that is started and has meaning only within the context of the new process.
 
         If you set `-UseShellExecute` to `$true`, there will be no available output from the process.
 

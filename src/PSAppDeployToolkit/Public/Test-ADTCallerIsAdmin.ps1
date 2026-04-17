@@ -21,12 +21,12 @@ function Test-ADTCallerIsAdmin
     .OUTPUTS
         System.Boolean
 
-        Returns $true if the current user is an administrator, otherwise $false.
+        Returns `$true` if the current user is an administrator, otherwise `$false`.
 
     .EXAMPLE
         Test-ADTCallerIsAdmin
 
-        Checks if the current user has administrative privileges and returns true or false.
+        Checks if the current user has administrative privileges and returns `$true` or `$false`.
 
     .NOTES
         An active ADT session is NOT required to use this function.

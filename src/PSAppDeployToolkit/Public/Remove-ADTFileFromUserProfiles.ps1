@@ -17,7 +17,7 @@ function Remove-ADTFileFromUserProfiles
         Specifies the path to append to the root of the user profile to be resolved. The value of Path will accept wildcards. Will accept an array of values.
 
     .PARAMETER LiteralPath
-        Specifies the path to append to the root of the user profile to be resolved. The value of LiteralPath is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
+        Specifies the path to append to the root of the user profile to be resolved. The value of `-LiteralPath` is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 
     .PARAMETER Recurse
         Deletes the files in the specified location(s) and in all child items of the location(s).

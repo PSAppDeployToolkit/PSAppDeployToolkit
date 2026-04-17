@@ -78,7 +78,7 @@ function Show-ADTInstallationWelcome
         Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button. Option does not work in SYSTEM context unless toolkit launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the Show-ADTInstallationWelcome prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the `Show-ADTInstallationWelcome` prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER ContinueOnProcessClosure
         Specifies that the dialog should auto-continue when running processes have been closed by the user.
@@ -98,10 +98,10 @@ function Show-ADTInstallationWelcome
     .PARAMETER CheckDiskSpace
         Specify whether to check if there is enough disk space for the deployment to proceed.
 
-        If this parameter is specified without the RequiredDiskSpace parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
+        If this parameter is specified without the `-RequiredDiskSpace` parameter, the required disk space is calculated automatically based on the size of the script source and associated files.
 
     .PARAMETER RequiredDiskSpace
-        Specify required disk space in MB, used in combination with CheckDiskSpace.
+        Specify required disk space in MB, used in combination with the `-CheckDiskSpace` parameter.
 
     .PARAMETER PassThru
         Returns the user's prompt choice to the caller for further decision making.

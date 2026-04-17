@@ -29,7 +29,7 @@ function Export-ADTEnvironmentTableToSessionState
     .EXAMPLE
         Export-ADTEnvironmentTableToSessionState -SessionState $ExecutionContext.SessionState
 
-        Invokes the Export-ADTEnvironmentTableToSessionState function and exports the module's environment table to the provided SessionState.
+        Invokes the `Export-ADTEnvironmentTableToSessionState` function and exports the module's environment table to the provided SessionState.
 
     .EXAMPLE
         Export-ADTEnvironmentTableToSessionState -SessionState $PSCmdlet.SessionState
