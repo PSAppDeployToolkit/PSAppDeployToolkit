@@ -242,7 +242,7 @@ namespace PSADT.UserInterface.DialogOptions
                 }
                 return image;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new BadImageFormatException($"The specified [{identifier}] is not a valid image format", identifier, ex);
             }

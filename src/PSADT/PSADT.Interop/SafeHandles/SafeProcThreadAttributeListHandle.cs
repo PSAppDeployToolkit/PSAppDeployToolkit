@@ -35,7 +35,7 @@ namespace PSADT.Interop.SafeHandles
                 _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
                 return new(handle, true);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 Marshal.FreeHGlobal(handle);
                 ExceptionDispatchInfo.Capture(ex).Throw();

@@ -984,7 +984,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 #endregion
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
                 RemoveSubstDrive(); DismountWimFiles();

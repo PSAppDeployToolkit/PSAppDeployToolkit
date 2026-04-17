@@ -40,7 +40,7 @@ namespace PSADT.Interop.Extensions
                     InvalidOperationException.ThrowIfZero(tableSize, "Retrieved font table size is zero, which is invalid.");
                     tableContext = new(fontFace, (nint)tableContextLocal, (nint)tableData, tableSize, true);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     fontFace.ReleaseFontTable(tableContextLocal);
                     ExceptionDispatchInfo.Capture(ex).Throw();

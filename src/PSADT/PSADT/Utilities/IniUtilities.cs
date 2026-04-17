@@ -103,7 +103,7 @@ namespace PSADT.Utilities
             {
                 res = NativeMethods.GetPrivateProfileSection(section, buffer, filepath);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new InvalidDataException($"Failed to get section [{section}] from the INI file.", ex);
             }

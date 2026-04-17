@@ -264,7 +264,7 @@ namespace PSADT.UserInterface
                 {
                     progressDialog.Show();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     progressDialog.Dispose();
                     progressDialog = null;
