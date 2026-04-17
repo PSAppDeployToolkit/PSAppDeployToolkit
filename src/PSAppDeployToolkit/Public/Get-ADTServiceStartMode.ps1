@@ -78,7 +78,7 @@ function Get-ADTServiceStartMode
 
                 # Return startup type to the caller.
                 Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
-                return $serviceStartMode
+                return $serviceStartMode.ToString()
             }
             catch
             {
