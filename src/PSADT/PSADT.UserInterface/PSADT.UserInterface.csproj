@@ -9,7 +9,7 @@
     <Product>PSAppDeployToolkit User Interface Library</Product>
     <AssemblyTitle>PSAppDeployToolkit User Interface Library</AssemblyTitle>
     <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
-    <NoWarn>SYSLIB1045</NoWarn>
+    <NoWarn>SYSLIB1045;VSTHRD001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,6 +60,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.6" />
   </ItemGroup>
 </Project>

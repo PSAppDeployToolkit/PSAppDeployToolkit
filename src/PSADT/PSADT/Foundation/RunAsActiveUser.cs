@@ -48,8 +48,8 @@ namespace PSADT.Foundation
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value, nameof(nTAccount));
-            ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value, nameof(sID));
+            ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value);
             NTAccountValue = nTAccount.Value;
             SIDValue = sID.Value;
             SessionId = sessionId;

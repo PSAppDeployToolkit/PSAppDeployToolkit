@@ -4,7 +4,7 @@
     /// Represents the exit codes that can be returned by the application to indicate the result of its execution.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1027:Mark enums with FlagsAttribute", Justification = "This is not a bitfield...")]
-    public enum ClientExitCode : int
+    public enum ClientExitCode
     {
         /// <summary>
         /// The client operation completed successfully.

@@ -27,6 +27,7 @@ namespace PSADT.SMBIOS
     /// SMBIOS data can be accessed through different entry point formats depending
     /// on the SMBIOS version and system implementation.
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
     internal enum SmbiosEntryPointType : byte
     {
         /// <summary>

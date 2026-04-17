@@ -68,13 +68,13 @@ namespace PSAppDeployToolkit.Utilities
                 foreach (KeyValuePair<string, object> entry in dict)
                 {
                     // Skip anything null or excluded.
-                    string key = entry.Key.ToString() ?? throw new InvalidOperationException("The provided dictionary contains a null key.");
+                    string key = entry.Key ?? throw new InvalidOperationException("The provided dictionary contains a null key.");
                     string? val = null;
                     if (entry.Value is null)
                     {
                         continue;
                     }
-                    if ((exclusions is not null) && exclusions.Contains(entry.Key.ToString()))
+                    if ((exclusions is not null) && exclusions.Contains(entry.Key))
                     {
                         continue;
                     }

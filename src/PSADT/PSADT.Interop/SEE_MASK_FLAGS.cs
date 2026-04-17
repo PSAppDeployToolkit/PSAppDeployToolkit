@@ -5,8 +5,10 @@ namespace PSADT.Interop
     /// <summary>
     /// Execution flags for the ShellExecuteEx function.
     /// </summary>
-    [Flags]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
+    [Flags]
     internal enum SEE_MASK_FLAGS : uint
     {
         /// <summary>

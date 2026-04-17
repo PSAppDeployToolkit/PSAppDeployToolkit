@@ -19,7 +19,7 @@ namespace PSADT.UserInterface.DialogResults
         /// Initializes a new instance of the CustomDialogDerivativeResult class with the specified result string.
         /// </summary>
         /// <param name="result">The result string that represents the outcome of the dialog operation. This value cannot be null.</param>
-        internal CustomDialogDerivative(string result) : base(result)
+        private protected CustomDialogDerivative(string result) : base(result)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(result);
             Result = result;

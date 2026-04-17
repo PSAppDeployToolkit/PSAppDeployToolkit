@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
-using PSADT.Interop.Extensions;
+using PSADT.Extensions;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 
@@ -215,6 +215,11 @@ namespace PSADT.Foundation
             : ClientLauncherDefaultPath;
 
         /// <summary>
+        /// Specifies the default timeout duration for client operations.
+        /// </summary>
+        public static readonly TimeSpan ClientOperationTimeout = TimeSpan.FromSeconds(30);
+
+        /// <summary>
         /// Specifies the registry path used for storing PSAppDeployToolkit configuration settings for the current user.
         /// </summary>
         public const string UserRegistryPath = "HKEY_CURRENT_USER\\SOFTWARE\\PSAppDeployToolkit";
@@ -228,7 +233,7 @@ namespace PSADT.Foundation
         /// Specifies the exit code used to indicate a successful shell execute process operation in the client-server communication protocol.
         /// </summary>
         /// <remarks>The value of this constant is derived from `'ShellExecuteProcess'.GetHashCode()` under Windows PowerShell 5.1.</remarks>
-        public const int ShellExecuteProcessSuccessCode = -1556154312;
+        public const int ShellExecuteProcessSuccessCode = -1_556_154_312;
 
         /// <summary>
         /// Specifies the default elevation type to use when requesting an elevated token.
@@ -241,6 +246,6 @@ namespace PSADT.Foundation
         /// <summary>
         /// Indicates whether the current caller is the client component of the client-server architecture.
         /// </summary>
-        internal static readonly bool CallerIsClientServerClient;
+        private static readonly bool CallerIsClientServerClient;
     }
 }

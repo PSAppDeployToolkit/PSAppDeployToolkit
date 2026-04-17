@@ -9,6 +9,7 @@ namespace PSADT.Interop
     /// <remarks>These flags are used with functions such as AuthzInitializeContextFromSid to modify how the
     /// authorization context is created. Multiple flags can be combined using a bitwise OR operation.</remarks>
     [Flags]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
     internal enum AUTHZ_CONTEXT_FLAGS : uint
     {
         /// <summary>

@@ -7,6 +7,7 @@ namespace PSADT.Interop
     /// Defines the access rights for interacting with the Local Security Authority (LSA) policy.
     /// </summary>
     /// <remarks>https://learn.microsoft.com/en-us/windows/win32/secmgmt/policy-object-access-rights</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
     [Flags]
     internal enum LSA_POLICY_ACCESS : uint
     {

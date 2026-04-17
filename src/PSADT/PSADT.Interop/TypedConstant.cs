@@ -18,6 +18,7 @@ namespace PSADT.Interop
     /// <item>Explicit cast operators for numeric and string conversions</item>
     /// </list>
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S4035:Classes implementing \"IEquatable<T>\" should be sealed", Justification = "This is a CRTP-style abstract base for strongly typed constants; sealing it is not possible and implementing IEqualityComparer on instances would not match its role.")]
     [DataContract]
     public abstract class TypedConstant<TSelf> : IEquatable<TSelf> where TSelf : TypedConstant<TSelf>
     {

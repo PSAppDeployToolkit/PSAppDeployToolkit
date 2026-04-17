@@ -10,6 +10,7 @@ namespace PSADT.Interop
     /// corresponds to specific functions that require that level of access. For example, <see
     /// cref="SERVICE_QUERY_STATUS"/> is needed to query the status of a service, while <see cref="SERVICE_START"/> is
     /// required to start a service.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
     [Flags]
     internal enum SERVICE_ACCESS_RIGHTS : uint
     {

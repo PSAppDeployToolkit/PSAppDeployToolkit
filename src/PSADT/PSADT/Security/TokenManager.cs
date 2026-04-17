@@ -44,6 +44,7 @@ namespace PSADT.Security
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
         internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
         {
             // Confirm that the caller is an administrator.
@@ -117,7 +118,7 @@ namespace PSADT.Security
                                                     _ = Marshal.FinalReleaseComObject(runningTask);
                                                     try
                                                     {
-                                                        using CancellationTokenSource cts = new(TimeSpan.FromSeconds(15));
+                                                        using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
                                                         pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
                                                     }
                                                     catch (OperationCanceledException)

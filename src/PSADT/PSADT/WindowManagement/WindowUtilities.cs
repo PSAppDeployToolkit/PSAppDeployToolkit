@@ -28,23 +28,7 @@ namespace PSADT.WindowManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(WindowInfoOptions options)
         {
-            return GetProcessWindowInfo(null, options.ParentProcessFilter, options.ParentProcessIdFilter, options.ParentProcessMainWindowHandleFilter, options.WindowTitleRegex, options.WindowHandleFilter);
-        }
-
-        /// <summary>
-        /// Retrieves information about windows associated with the current process, filtered by the specified window
-        /// handles.
-        /// </summary>
-        /// <param name="parentProcessIdFilter">A read-only list of parent process IDs to filter the results. Only windows belonging to processes with IDs
-        /// matching these IDs are included. Cannot be null.</param>
-        /// <param name="windowHandleFilter">A read-only list of window handles to filter the results. Only windows matching these handles are included
-        /// in the returned collection. Cannot be null.</param>
-        /// <returns>A read-only collection of <see cref="WindowInfo"/> objects representing the filtered windows. The collection
-        /// will be empty if no matching windows are found.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<int> parentProcessIdFilter, IReadOnlyList<nint> windowHandleFilter)
-        {
-            return GetProcessWindowInfo(null, null, parentProcessIdFilter, null, null, windowHandleFilter);
+            return GetProcessWindowInfo(parentProcessFilter: options.ParentProcessFilter, parentProcessIdFilter: options.ParentProcessIdFilter, parentProcessMainWindowHandleFilter: options.ParentProcessMainWindowHandleFilter, windowTitleRegex: options.WindowTitleRegex, windowHandleFilter: options.WindowHandleFilter);
         }
 
         /// <summary>

@@ -142,15 +142,15 @@ namespace PSADT.UserInterface
             // Perform some result logging before returning.
             if ((options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
             {
-                if (result == CloseAppsDialogResult.Close)
+                if (result.Equals(CloseAppsDialogResult.Close))
                 {
                     state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).", LogSeverity.Info);
                 }
-                else if (result == CloseAppsDialogResult.Defer)
+                else if (result.Equals(CloseAppsDialogResult.Defer))
                 {
                     state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.", LogSeverity.Info);
                 }
-                else if (result == CloseAppsDialogResult.Continue)
+                else if (result.Equals(CloseAppsDialogResult.Continue))
                 {
                     state.LogAction("Countdown timer has elapsed and no processes running. Force continue.", LogSeverity.Info);
                 }
@@ -510,9 +510,9 @@ namespace PSADT.UserInterface
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>()
+        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>
         {
-            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>()
+            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
@@ -521,7 +521,7 @@ namespace PSADT.UserInterface
                 { DialogType.ProgressDialog, static (options, state) => new Interfaces.Classic.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, static (options, state) => new Interfaces.Classic.RestartDialog((RestartDialogOptions)options) },
             })},
-            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>()
+            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
                 { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },

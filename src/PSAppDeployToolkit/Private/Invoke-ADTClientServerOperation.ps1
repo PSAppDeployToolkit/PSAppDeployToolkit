@@ -565,7 +565,7 @@ function Private:Invoke-ADTClientServerOperation
                     Remove-ADTRegistryKey @arkParams
                     break
                 }
-                if ($noWaitTimer.ElapsedMilliseconds -ge 15000)
+                if ($noWaitTimer.Elapsed -ge [PSADT.Foundation.ClientServerUtilities]::ClientOperationTimeout)
                 {
                     $naerParams = @{
                         Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")

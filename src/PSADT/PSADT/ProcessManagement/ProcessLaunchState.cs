@@ -240,7 +240,7 @@ namespace PSADT.ProcessManagement
             async Task<ProcessResult> GetProcessResultAsyncImpl()
             {
                 CancellationToken cancellationToken = LaunchInfo.CancellationToken ?? CancellationToken.None;
-                uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
+                const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
                 int exitCode = ProcessManager.TimeoutExitCode;
                 bool processFinished = false;
                 if (ProcessAssignedToJobObject)
@@ -403,7 +403,6 @@ namespace PSADT.ProcessManagement
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         /// <summary>

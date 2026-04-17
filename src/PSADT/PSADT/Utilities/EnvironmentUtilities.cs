@@ -129,7 +129,8 @@ namespace PSADT.Utilities
         /// <paramref name="value"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the registry key for the specified target cannot be opened, or if <paramref name="target"/> is
         /// <see cref="EnvironmentVariableTarget.Process"/>.</exception>
-        public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable = false, bool append = false, bool remove = false)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
+        public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable, bool append, bool remove)
         {
             // Use the built-in method for process-level variables.
             if (target == EnvironmentVariableTarget.Process)

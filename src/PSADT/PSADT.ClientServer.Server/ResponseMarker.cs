@@ -11,6 +11,7 @@
     /// </list>
     /// This convention follows Win32 BOOL semantics where non-zero indicates success.
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This value must be sized as a byte as it's used over a byte stream.")]
     internal enum ResponseMarker : byte
     {
         /// <summary>

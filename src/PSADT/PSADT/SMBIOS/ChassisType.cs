@@ -24,7 +24,8 @@ namespace PSADT.SMBIOS
     /// Represents chassis types as defined in SMBIOS specification.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enums should have zero value", Justification = "There is no zero value for this within the SMBIOS specification.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
     public enum ChassisType : byte
     {
         /// <summary>

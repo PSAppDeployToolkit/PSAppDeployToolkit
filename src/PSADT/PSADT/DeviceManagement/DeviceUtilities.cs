@@ -107,11 +107,20 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
+        [SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
+        [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
         internal static void RestartComputer()
         {
-            using ProcessResult result = ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.");
-            Environment.Exit(result.ExitCode); throw new InvalidProgramException("The 'Environment.Exit()' method did not terminate the process as expected.");
+            using (ProcessResult result = ProcessManager.LaunchAsync(new(Path.Combine(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer."))
+            {
+                if (result.ExitCode != 0)
+                {
+                    throw new InvalidOperationException("Failed to restart the computer. Shutdown.exe returned a non-zero exit code.");
+                }
+                Environment.Exit(result.ExitCode);
+            }
+            throw new InvalidProgramException("The 'Environment.Exit()' method did not terminate the process as expected.");
         }
 
         /// <summary>

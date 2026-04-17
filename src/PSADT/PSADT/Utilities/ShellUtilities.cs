@@ -72,10 +72,10 @@ namespace PSADT.Utilities
         internal static void RefreshDesktop()
         {
             // Update desktop icons using SHChangeNotify. This covers the bulk of things.
-            NativeMethods.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH, default, default);
+            NativeMethods.SHChangeNotify(SHCNE_ID.SHCNE_ASSOCCHANGED, SHCNF_FLAGS.SHCNF_FLUSH);
 
             // Refresh the taskbar. See https://stackoverflow.com/questions/70260518/how-can-i-refresh-the-taskbar-programatically-in-windows-10-and-higher for details.
-            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "TraySettings");
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, lParam: "TraySettings");
 
             // Terminate the StartMenuExperienceHost to refresh the start menu. Windows restarts this process instantly.
             foreach (Process process in RunningProcessInfo.Get([new("StartMenuExperienceHost")]).Select(static rpi => rpi.Process))
@@ -99,7 +99,7 @@ namespace PSADT.Utilities
         {
             // Notify all top-level windows that the environment variables have changed.
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE);
-            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, null, "Environment");
+            _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_SETTINGCHANGE, lParam: "Environment");
         }
 
         /// <summary>

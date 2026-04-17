@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -13,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
+using PSADT.Extensions;
 using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
@@ -578,14 +580,14 @@ namespace PSADT.ProcessManagement
             }
             else if (hasExternalHandles)
             {
-                throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {CreateProcessUsingTokenStatusMessages[createProcessAsUserAbility]}");
+                throw new InvalidOperationException($"Unable to create a new process using CreateProcessAsUser(): {createProcessAsUserAbility.GetDescription()}");
             }
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
             CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken, callerPrivilges, commandLine);
             if (createProcessWithTokenAbility != CreateProcessUsingTokenStatus.OK)
             {
-                throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {CreateProcessUsingTokenStatusMessages[createProcessWithTokenAbility]}");
+                throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {createProcessWithTokenAbility.GetDescription()}");
             }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
 
@@ -699,40 +701,38 @@ namespace PSADT.ProcessManagement
         /// requirement related to privilege or service availability necessary for the operation.</remarks>
         private enum CreateProcessUsingTokenStatus
         {
+            // This deliberately doesn't have a description as we should never need it/be asking for it.
             OK,
+
+            [Description("The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege.")]
             SeIncreaseQuotaPrivilege,
+
+            [Description("The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege.")]
             SeAssignPrimaryTokenPrivilege,
+
+            [Description("The calling process is part of a job that does not allow breakaway.")]
             JobBreakawayNotPermitted,
+
+            [Description("The calling process does not have the necessary SeTcbPrivilege privilege.")]
             SeTcbPrivilege,
+
+            [Description("The process command line exceeds the API limitation of 1024 characters.")]
             CommandLineTooLong,
+
+            [Description("The calling process does not have the necessary SeImpersonatePrivilege privilege.")]
             SeImpersonatePrivilege,
+
+            [Description("The system's Secondary Log-on service (seclogon) could not be found.")]
             SecLogonServiceNotFound,
+
+            [Description("The system's Secondary Log-on service (seclogon) is disabled.")]
             SecLogonServiceDisabled,
         }
 
         /// <summary>
-        /// Provides a read-only dictionary mapping <see cref="CreateProcessUsingTokenStatus"/> values to their
-        /// corresponding error messages.
-        /// </summary>
-        /// <remarks>This dictionary contains predefined error messages for various statuses encountered
-        /// when attempting to create a process using a token. It is used to provide descriptive error messages based on
-        /// the status code returned by the operation.</remarks>
-        private static readonly ReadOnlyDictionary<CreateProcessUsingTokenStatus, string> CreateProcessUsingTokenStatusMessages = new(new Dictionary<CreateProcessUsingTokenStatus, string>()
-        {
-            { CreateProcessUsingTokenStatus.SeIncreaseQuotaPrivilege, "The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege." },
-            { CreateProcessUsingTokenStatus.SeAssignPrimaryTokenPrivilege, "The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege." },
-            { CreateProcessUsingTokenStatus.JobBreakawayNotPermitted, "The calling process is part of a job that does not allow breakaway." },
-            { CreateProcessUsingTokenStatus.SeTcbPrivilege, "The calling process does not have the necessary SeTcbPrivilege privilege." },
-            { CreateProcessUsingTokenStatus.CommandLineTooLong, "The process command line exceeds the API limitation of 1024 characters." },
-            { CreateProcessUsingTokenStatus.SeImpersonatePrivilege, "The calling process does not have the necessary SeImpersonatePrivilege privilege." },
-            { CreateProcessUsingTokenStatus.SecLogonServiceNotFound, "The system's Secondary Log-on service (seclogon) could not be found." },
-            { CreateProcessUsingTokenStatus.SecLogonServiceDisabled, "The system's Secondary Log-on service (seclogon) is disabled." },
-        });
-
-        /// <summary>
         /// Translator for ProcessWindowStyle to the corresponding value for CreateProcess.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, ushort>()
+        private static readonly ReadOnlyDictionary<ProcessWindowStyle, ushort> WindowStyleMap = new(new Dictionary<ProcessWindowStyle, ushort>
         {
             { ProcessWindowStyle.Normal, (ushort)SHOW_WINDOW_CMD.SW_SHOWNORMAL },
             { ProcessWindowStyle.Hidden, (ushort)SHOW_WINDOW_CMD.SW_HIDE },
@@ -744,6 +744,6 @@ namespace PSADT.ProcessManagement
         /// Special exit code used to signal when we're terminating a process due to timeout.
         /// The value is `'PSAppDeployToolkit'.GetHashCode()` under Windows PowerShell 5.1.
         /// </summary>
-        public const int TimeoutExitCode = -443991205;
+        public const int TimeoutExitCode = -443_991_205;
     }
 }

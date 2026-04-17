@@ -200,7 +200,7 @@ namespace PSADT.ClientServer
                                 {
                                     throw new ClientException("Received empty request from server.", ClientExitCode.InvalidRequest);
                                 }
-                                PipeCommand command = (PipeCommand)requestBytes[0]; int payloadOffset = 1;
+                                PipeCommand command = (PipeCommand)requestBytes[0]; const int payloadOffset = 1;
                                 try
                                 {
                                     switch (command)
@@ -271,7 +271,7 @@ namespace PSADT.ClientServer
                                                         Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
                                                         while (true)
                                                         {
-                                                            if (WindowUtilities.GetProcessWindowInfo([process.Id], [window.WindowHandle]).Count == 0)
+                                                            if (WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Count == 0)
                                                             {
                                                                 closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
                                                                 break;
@@ -492,7 +492,7 @@ namespace PSADT.ClientServer
             {
                 if (arg is "/ShowModalDialog" or "/smd")
                 {
-                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), null, argv));
+                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), argv: argv));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/ShowBalloonTip" or "/sbt")
@@ -655,6 +655,8 @@ namespace PSADT.ClientServer
         /// relevant outcome information.</returns>
         /// <exception cref="ClientException">Thrown if a required argument is missing or invalid, such as when 'DialogType' or 'DialogStyle' is not
         /// specified or is invalid, or if the dialog type is not supported.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code is deliberately synchronous.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code can deliberately short circuit.")]
         private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
@@ -662,15 +664,15 @@ namespace PSADT.ClientServer
             {
                 // Set up the required variables.
                 string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0];
-                string ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
+                const string ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 string fileName = Path.GetFileName(filePath); string ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
 
                 // Rename the IFEO subkey, start the process asynchronously, and then rename it back.
                 RegistryUtilities.RenameRegistryKey(ifeoPath, fileName, ifeoName);
-                ProcessHandle? handle;
+                ProcessHandle handle;
                 try
                 {
-                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory));
+                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory)) ?? throw new InvalidOperationException("Failed to launch the process.");
                 }
                 finally
                 {
@@ -678,12 +680,9 @@ namespace PSADT.ClientServer
                 }
 
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                using (ProcessResult? result = handle?.Task.GetAwaiter().GetResult())
+                using (ProcessResult result = handle.Task.GetAwaiter().GetResult())
                 {
-                    if (result?.ExitCode is int exitCode)
-                    {
-                        Environment.Exit(exitCode);
-                    }
+                    Environment.Exit(result.ExitCode);
                 }
                 return SerializeToString(BlockExecution.ButtonText);
             }
@@ -871,6 +870,7 @@ namespace PSADT.ClientServer
         /// <param name="force">A value indicating whether to force the update, reapplying all policy settings even if they have not
         /// changed. If <see langword="true"/>, all settings are reapplied.</param>
         /// <returns>A <see cref="ProcessResult"/> object that contains the results of the Group Policy update operation.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code is deliberately synchronous.")]
         internal static ProcessResult GroupPolicyUpdate(bool force)
         {
             // Build out argument list for gpupdate.exe.
@@ -899,6 +899,7 @@ namespace PSADT.ClientServer
         /// context.</param>
         /// <returns>A ProcessResult object containing the outcome of the executed process. If the process could not be started,
         /// returns a result indicating success with a default code.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code is deliberately synchronous.")]
         internal static ProcessResult ShellExecuteProcess(UserShellExecuteOptions options)
         {
             return ProcessManager.LaunchAsync(options.ToLaunchInfo())?.Task.GetAwaiter().GetResult() ?? new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
@@ -1063,6 +1064,7 @@ namespace PSADT.ClientServer
         /// <param name="result">The object to be serialized. Cannot be null.</param>
         /// <returns>A UTF-8 encoded byte array representation of the serialized object.</returns>
         /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private static byte[] SerializeToBytes<T>(T result)
         {
             try
@@ -1082,6 +1084,7 @@ namespace PSADT.ClientServer
         /// <param name="result">The object to be serialized. Cannot be null.</param>
         /// <returns>A string representation of the serialized object.</returns>
         /// <exception cref="ClientException">Thrown if an error occurs during serialization. The exception includes details about the failure.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private static string SerializeToString<T>(T result)
         {
             try
