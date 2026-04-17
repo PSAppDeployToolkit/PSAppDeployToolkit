@@ -11,7 +11,7 @@ function Show-ADTInstallationProgress
         Displays a progress dialog in a separate thread with an updateable custom message.
 
     .DESCRIPTION
-        The `Show-ADTInstallationProgress` function creates a WPF window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
+        The `Show-ADTInstallationProgress` function creates a UI window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
 
         The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the config.psd1 file).
 
