@@ -124,7 +124,7 @@ namespace PSADT.ClientServer
             {
                 outputPipeClient = new(PipeDirection.Out, outputPipeHandle);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
             }
@@ -132,7 +132,7 @@ namespace PSADT.ClientServer
             {
                 inputPipeClient = new(PipeDirection.In, inputPipeHandle);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
             }
@@ -140,7 +140,7 @@ namespace PSADT.ClientServer
             {
                 logPipeClient = new(PipeDirection.Out, logPipeHandle);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
             }
@@ -159,7 +159,7 @@ namespace PSADT.ClientServer
                         ioEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
                         logEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex.Message is not null)
                     {
                         throw new ClientException("Failed to establish encrypted communication with the server process.", ClientExitCode.EncryptionError, ex);
                     }
@@ -466,7 +466,7 @@ namespace PSADT.ClientServer
                     return (int)ClientExitCode.Success;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
@@ -1032,7 +1032,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.DeserializeFromBytes<T>(input, offset);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
@@ -1051,7 +1051,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.DeserializeFromString<T>(input);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
@@ -1071,7 +1071,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.SerializeToBytes(result);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
@@ -1091,7 +1091,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.SerializeToString(result);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }

@@ -104,7 +104,7 @@ namespace PSADT.ShortcutManagement
                 _internetShortcut = internetShortcut;
                 _storageMode = storageMode;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 _ = Marshal.FinalReleaseComObject(internetShortcut);
                 ExceptionDispatchInfo.Capture(ex).Throw();
