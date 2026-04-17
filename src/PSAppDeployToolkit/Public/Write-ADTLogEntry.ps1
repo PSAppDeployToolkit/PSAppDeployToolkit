@@ -41,7 +41,7 @@ function Write-ADTLogEntry
         Return the message that was passed to the function.
 
     .PARAMETER DebugMessage
-        Specifies that the message is a debug message. Debug messages are only logged when LogDebugMessage is set to `$true` in config.psd1.
+        Specifies that the message is a debug message. Debug messages are only logged when `-LogDebugMessage` is set to `$true` in config.psd1.
 
     .INPUTS
         System.String
