@@ -24,6 +24,19 @@ namespace PSADT.Extensions
         }
 
         /// <summary>
+        /// Converts a FILETIME structure to its equivalent 64-bit integer representation.
+        /// </summary>
+        /// <remarks>This method is typically used to perform arithmetic or comparisons on FILETIME values
+        /// by representing them as a single integer.</remarks>
+        /// <param name="filetime">The FILETIME structure to convert to a 64-bit integer value.</param>
+        /// <returns>A 64-bit integer representing the combined high and low parts of the specified FILETIME structure.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static long ToLong(this FILETIME filetime)
+        {
+            return ((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL);
+        }
+
+        /// <summary>
         /// Converts a <see cref="FILETIME"/> structure to a <see cref="DateTime"/> object.
         /// </summary>
         /// <remarks>The conversion is based on the Windows file time, which is a 64-bit value
@@ -34,7 +47,7 @@ namespace PSADT.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DateTime ToDateTime(this FILETIME filetime)
         {
-            return DateTime.FromFileTime(((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
+            return DateTime.FromFileTime(filetime.ToLong());
         }
 
         /// <summary>
@@ -48,7 +61,7 @@ namespace PSADT.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static DateTime ToDateTimeUtc(this FILETIME filetime)
         {
-            return DateTime.FromFileTimeUtc(((long)filetime.dwHighDateTime << 32) | (filetime.dwLowDateTime & 0xFFFFFFFFL));
+            return DateTime.FromFileTimeUtc(filetime.ToLong());
         }
     }
 }
