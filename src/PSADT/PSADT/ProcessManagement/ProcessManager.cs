@@ -178,7 +178,7 @@ namespace PSADT.ProcessManagement
                 hThread = new(pi.hThread, true);
                 processId = pi.dwProcessId;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 stdOutHandle?.Dispose();
                 stdOutStream?.Dispose();
@@ -222,14 +222,14 @@ namespace PSADT.ProcessManagement
                         return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges));
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     process.Dispose();
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 stdOutHandle?.Dispose();
                 stdOutStream?.Dispose();
@@ -299,7 +299,7 @@ namespace PSADT.ProcessManagement
                     throw new InvalidProgramException("Failed to start the process.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 process.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
@@ -330,7 +330,7 @@ namespace PSADT.ProcessManagement
                 }
                 return new(new(launchInfo, process));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 hProcess.Dispose();
                 process.Dispose();
@@ -363,7 +363,7 @@ namespace PSADT.ProcessManagement
                     }
                 })));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 stream.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
@@ -402,7 +402,7 @@ namespace PSADT.ProcessManagement
                     }
                 })));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 stream.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
@@ -678,14 +678,14 @@ namespace PSADT.ProcessManagement
                     startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
                     return (startupInfoEx, hAttributeList);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     pinnedHandles?.Dispose();
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 hAttributeList.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();

@@ -202,7 +202,7 @@ namespace PSADT.ProcessManagement
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 Process.Dispose(); Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();

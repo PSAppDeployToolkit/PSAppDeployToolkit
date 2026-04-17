@@ -106,7 +106,7 @@ namespace PSADT.ShortcutManagement
                 _shellLink = shellLink;
                 _storageMode = storageMode;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 _ = Marshal.FinalReleaseComObject(shellLink);
                 ExceptionDispatchInfo.Capture(ex).Throw();

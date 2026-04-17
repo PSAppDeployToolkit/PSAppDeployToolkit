@@ -94,7 +94,7 @@ namespace PSADT.ClientServer
                 (_ioEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
                 (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 _clientProcessCts?.Dispose();
                 _clientProcessCts = null;
@@ -121,7 +121,7 @@ namespace PSADT.ClientServer
                     throw new InvalidProgramException("The opened client process returned an invalid response.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess);
             }
@@ -780,7 +780,7 @@ namespace PSADT.ClientServer
             {
                 _ioEncryption.WriteEncrypted(_outputServer, [(byte)command]);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
             }
@@ -825,7 +825,7 @@ namespace PSADT.ClientServer
             {
                 _ioEncryption.WriteEncrypted(_outputServer, request);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
             }
@@ -862,7 +862,7 @@ namespace PSADT.ClientServer
                     throw new InvalidOperationException("The client process returned an invalid or empty response.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.Message is not null)
             {
                 throw new ServerException("An error occurred while reading from the input stream.", ex, _clientProcess!);
             }
@@ -916,7 +916,7 @@ namespace PSADT.ClientServer
                     // The log writer task reached the end of the stream, exit the loop.
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     // Some kind of read issue occurred that was unexpected.
                     throw new ServerException("An error occurred while reading from the log stream.", ex);

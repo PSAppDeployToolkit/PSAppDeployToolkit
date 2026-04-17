@@ -85,7 +85,7 @@ namespace PSADT.ProcessManagement
                         argv = [process.GetFilePath(ntPathLookupTable).FullName];
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.Message is not null)
                 {
                     if (!ProcessUtilities.HasProcessExited(process))
                     {

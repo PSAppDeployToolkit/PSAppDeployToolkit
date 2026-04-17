@@ -217,7 +217,7 @@ namespace PSADT.Security
                         {
                             return GetLinkedPrimaryToken(hUserToken, uiAccess);
                         }
-                        catch (Exception ex)
+                        catch (Exception ex) when (ex.Message is not null)
                         {
                             if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
                             {
