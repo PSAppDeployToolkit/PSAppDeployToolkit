@@ -22,7 +22,7 @@ function Get-ADTFileVersion
     .INPUTS
         System.IO.FileInfo
 
-        The file to get version info for.
+        The file to get the version info from.
 
     .OUTPUTS
         System.String

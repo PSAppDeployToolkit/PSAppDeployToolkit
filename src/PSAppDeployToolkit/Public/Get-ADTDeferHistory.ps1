@@ -11,7 +11,7 @@ function Get-ADTDeferHistory
         Get the history of deferrals in the registry for the current application.
 
     .DESCRIPTION
-        The `Get-ADTDeferHistory` function Gets the history of deferrals in the registry for the current application.
+        The `Get-ADTDeferHistory` function gets the deferral history for the current application from the registry.
 
     .INPUTS
         None

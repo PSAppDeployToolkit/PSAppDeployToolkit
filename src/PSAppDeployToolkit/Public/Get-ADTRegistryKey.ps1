@@ -13,7 +13,7 @@ function Get-ADTRegistryKey
     .DESCRIPTION
         The `Get-ADTRegistryKey` function retrieves value names and value data for a specified registry key or optionally, a specific value. If the registry key does not exist or contain any values, the function will return `$null`.
 
-        To test for the existence of a registry key path, use built-in `Test-Path` cmdlet. To test for the existsence of a registry key value, use the `Test-ADTRegistryValue` function.
+        To test for the existence of a registry key path, use built-in `Test-Path` cmdlet. To test for the existence of a registry key value, use the `Test-ADTRegistryValue` function.
 
     .PARAMETER Path
         Path of the registry key, wildcards permitted.
