@@ -192,89 +192,147 @@ function Set-ADTShortcut
                 }
 
                 # Handle .url/.lnk files separately as required.
-                $shortcutType = if ($extensionIsUrl = ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url'))
+                if ([System.IO.Path]::GetExtension($LiteralPath) -eq '.url')
                 {
-                    [PSADT.ShortcutManagement.InternetShortcutFile]
-                }
-                else
-                {
-                    [PSADT.ShortcutManagement.ShellLinkFile]
-                }
-
-                # Set up the IDisposable shortcut object.
-                $shortcut = if (!$exists)
-                {
-                    Write-ADTLogEntry -Message "Creating shortcut [$LiteralPath]."
-                    if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Create shortcut file'))
+                    # Set up the IDisposable shortcut object.
+                    $shortcut = if (!$exists)
                     {
-                        return
-                    }
-                    $shortcutType::Create($TargetPath)
-                }
-                else
-                {
-                    Write-ADTLogEntry -Message "Modifying shortcut [$LiteralPath]."
-                    $shortcutType::Load($LiteralPath, [PSADT.Interop.STGM]::STGM_READWRITE)
-                }
-
-                # Process all valid parameters.
-                try
-                {
-                    if ($PSBoundParameters.ContainsKey('TargetPath') -and $exists)
-                    {
-                        $shortcut.(('TargetPath', 'Url')[$extensionIsUrl]) = $TargetPath
-                    }
-                    if ($PSBoundParameters.ContainsKey('IconLocation'))
-                    {
-                        $shortcut.(('IconLocation', 'IconFile')[$extensionIsUrl]) = $IconLocation
-                        if (!$PSBoundParameters.ContainsKey('IconIndex'))
+                        Write-ADTLogEntry -Message "Creating shortcut [$LiteralPath]."
+                        if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Create shortcut file'))
                         {
-                            $shortcut.IconIndex = 0
+                            return
+                        }
+                        [PSADT.ShortcutManagement.InternetShortcutFile]::Create($TargetPath)
+                    }
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Changing shortcut [$LiteralPath]."
+                        [PSADT.ShortcutManagement.InternetShortcutFile]::Load($LiteralPath, [PSADT.Interop.STGM]::STGM_READWRITE)
+                    }
+
+                    # Process all valid parameters.
+                    try
+                    {
+                        if ($PSBoundParameters.ContainsKey('TargetPath') -and $exists)
+                        {
+                            $shortcut.Url = $TargetPath
+                        }
+                        if ($PSBoundParameters.ContainsKey('IconLocation'))
+                        {
+                            $shortcut.IconFile = $IconLocation
+                            if (!$PSBoundParameters.ContainsKey('IconIndex'))
+                            {
+                                $shortcut.IconIndex = 0
+                            }
+                        }
+                        if ($PSBoundParameters.ContainsKey('IconIndex'))
+                        {
+                            $shortcut.IconIndex = $IconIndex
+                        }
+                        if ($PSBoundParameters.ContainsKey('Description'))
+                        {
+                            $shortcut.Description = $Description
+                        }
+                        if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
+                        {
+                            $shortcut.WorkingDirectory = $WorkingDirectory
+                        }
+                        if ($PSBoundParameters.ContainsKey('WindowStyle'))
+                        {
+                            $shortcut.ShowCommand = $WindowStyle
+                        }
+                        if ($PSBoundParameters.ContainsKey('Hotkey'))
+                        {
+                            $shortcut.Hotkey = $Hotkey
+                        }
+                        if (!$exists)
+                        {
+                            $shortcut.Save($LiteralPath)
+                        }
+                        else
+                        {
+                            $shortcut.Save()
                         }
                     }
-                    if ($PSBoundParameters.ContainsKey('IconIndex'))
+                    finally
                     {
-                        $shortcut.IconIndex = $IconIndex
+                        $shortcut.Dispose()
                     }
-                    if ($PSBoundParameters.ContainsKey('Description'))
+                }
+                else
+                {
+                    # Set up the IDisposable shortcut object.
+                    $shortcut = if (!$exists)
                     {
-                        $shortcut.Description = $Description
+                        Write-ADTLogEntry -Message "Creating shortcut [$LiteralPath]."
+                        if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Create shortcut file'))
+                        {
+                            return
+                        }
+                        [PSADT.ShortcutManagement.ShellLinkFile]::Create($TargetPath)
                     }
-                    if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
+                    else
                     {
-                        $shortcut.WorkingDirectory = $WorkingDirectory
+                        Write-ADTLogEntry -Message "Changing shortcut [$LiteralPath]."
+                        [PSADT.ShortcutManagement.ShellLinkFile]::Load($LiteralPath, [PSADT.Interop.STGM]::STGM_READWRITE)
                     }
-                    if ($PSBoundParameters.ContainsKey('WindowStyle'))
+
+                    # Process all valid parameters.
+                    try
                     {
-                        $shortcut.ShowCommand = $WindowStyle
-                    }
-                    if ($PSBoundParameters.ContainsKey('Hotkey'))
-                    {
-                        $shortcut.Hotkey = $Hotkey
-                    }
-                    if (!$extensionIsUrl)
-                    {
+                        if ($PSBoundParameters.ContainsKey('TargetPath') -and $exists)
+                        {
+                            $shortcut.TargetPath = $TargetPath
+                        }
                         if ($PSBoundParameters.ContainsKey('Arguments'))
                         {
                             $shortcut.Arguments = $Arguments
+                        }
+                        if ($PSBoundParameters.ContainsKey('IconLocation'))
+                        {
+                            $shortcut.IconLocation = $IconLocation
+                            if (!$PSBoundParameters.ContainsKey('IconIndex'))
+                            {
+                                $shortcut.IconIndex = 0
+                            }
+                        }
+                        if ($PSBoundParameters.ContainsKey('IconIndex'))
+                        {
+                            $shortcut.IconIndex = $IconIndex
+                        }
+                        if ($PSBoundParameters.ContainsKey('Description'))
+                        {
+                            $shortcut.Description = $Description
+                        }
+                        if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
+                        {
+                            $shortcut.WorkingDirectory = $WorkingDirectory
+                        }
+                        if ($PSBoundParameters.ContainsKey('WindowStyle'))
+                        {
+                            $shortcut.WindowStyle = $WindowStyle
                         }
                         if ($PSBoundParameters.ContainsKey('RunAsAdmin'))
                         {
                             $shortcut.RunAsAdmin = $RunAsAdmin
                         }
+                        if ($PSBoundParameters.ContainsKey('Hotkey'))
+                        {
+                            $shortcut.Hotkey = $Hotkey
+                        }
+                        if (!$exists)
+                        {
+                            $shortcut.Save($LiteralPath)
+                        }
+                        else
+                        {
+                            $shortcut.Save()
+                        }
                     }
-                    if (!$exists)
+                    finally
                     {
-                        $shortcut.Save($LiteralPath)
+                        $shortcut.Dispose()
                     }
-                    else
-                    {
-                        $shortcut.Save()
-                    }
-                }
-                finally
-                {
-                    $shortcut.Dispose()
                 }
             }
             catch
@@ -284,7 +342,7 @@ function Set-ADTShortcut
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(if (!$exists) {'create'} else {'modify'}) the shortcut [$LiteralPath]."
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to $(if (!$exists) {"create"} else {"change"}) the shortcut [$LiteralPath]."
         }
     }
 
