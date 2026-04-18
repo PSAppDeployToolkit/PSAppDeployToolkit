@@ -69,7 +69,7 @@ function ConvertTo-ADTNTAccountOrSID
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        The conversion can return an empty result if the user account does not exist anymore or if translation fails Refer to: http://blogs.technet.com/b/askds/archive/2011/07/28/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious.aspx
+        The conversion can return an empty result if the user account does not exist anymore or if translation fails Refer to: https://learn.microsoft.com/en-us/archive/blogs/askds/troubleshooting-sid-translation-failures-from-the-obvious-to-the-not-so-obvious
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
@@ -80,7 +80,7 @@ function ConvertTo-ADTNTAccountOrSID
         https://psappdeploytoolkit.com/docs/reference/functions/ConvertTo-ADTNTAccountOrSID
 
     .LINK
-        http://msdn.microsoft.com/en-us/library/system.security.principal.wellknownsidtype(v=vs.110).aspx
+        https://learn.microsoft.com/en-us/dotnet/api/system.security.principal.wellknownsidtype
 
     #>
 
