@@ -70,8 +70,6 @@ function Get-ADTWindowTitle
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Function does not work in SYSTEM context unless launched with "psexec.exe -s -i" to run it as an interactive process under the SYSTEM account.
-
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />
         Copyright: (C) 2026 PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough).<br />
