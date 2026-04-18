@@ -78,7 +78,7 @@ function Show-ADTInstallationWelcome
         Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the `Show-ADTInstallationWelcome` prompt persist in the center of the screen every couple of seconds, specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER ContinueOnProcessClosure
         Specifies that the dialog should auto-continue when running processes have been closed by the user.

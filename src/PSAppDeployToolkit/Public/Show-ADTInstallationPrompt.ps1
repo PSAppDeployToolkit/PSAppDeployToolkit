@@ -47,7 +47,7 @@ function Show-ADTInstallationPrompt
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` every couple of seconds, specified in the `config.psd1` file. The user will have no option but to respond to the prompt.
+        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt.
 
     .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
