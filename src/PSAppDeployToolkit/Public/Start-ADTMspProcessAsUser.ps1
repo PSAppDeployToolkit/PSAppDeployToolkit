@@ -40,7 +40,7 @@ function Start-ADTMspProcessAsUser
         Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-AdditionalArgumentList` parameters.
 
     .PARAMETER LoggingOptions
-        Overrides the default logging options specified in the config.psd1 file.
+        Overrides the default logging options specified in the `config.psd1` file.
 
     .PARAMETER LogFileName
         Overrides the default log file name. The default log file name is generated from the MSI file name. If the value of `-LogFileName` does not end in a common log file extension (.log, .logx, .txt, or .out), '.log' will be automatically appended.

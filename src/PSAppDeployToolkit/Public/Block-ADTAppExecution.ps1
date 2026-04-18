@@ -17,7 +17,7 @@ function Block-ADTAppExecution
         2) Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the `Unblock-ADTAppExecution` function to restore the original IFEO registry keys. This is to prevent the function from overriding the backup of the original IFEO options.
         3) Creates a scheduled task to restore the IFEO registry key values in case the script is terminated uncleanly by calling `Unblock-ADTAppExecution` the local temporary copy of this module.
         4) Modifies the "Image File Execution Options" registry key for the specified process(s) to call `Show-ADTInstallationPrompt` with the appropriate messaging via this module.
-        5) When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress. The text of this message can be customized in the strings.psd1 file.
+        5) When the script is called with those parameters, it will display a custom message to the user to indicate that execution of the application has been blocked while the installation is in progress. The text of this message can be customized in the `strings.psd1` file.
 
     .PARAMETER Processes
         Name of the process or processes separated by commas.

@@ -72,13 +72,13 @@ function Show-ADTInstallationWelcome
         The location of the dialog on the screen.
 
     .PARAMETER BlockExecution
-        Option to prevent the user from launching processes/applications, specified in -CloseProcesses, during the deployment.
+        Specify whether to prevent the user from launching processes/applications, specified in `-CloseProcesses`, during the deployment. This parameter utilizes the `Block-ADTAppExecution` function to prevent the user from launching the specified processes.
 
     .PARAMETER PromptToSave
         Specify whether to prompt to save working documents when the user chooses to close applications by selecting the "Close Programs" button.
 
     .PARAMETER PersistPrompt
-        Specify whether to make the `Show-ADTInstallationWelcome` prompt persist in the center of the screen every couple of seconds, specified in the config.psd1. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+        Specify whether to make the `Show-ADTInstallationWelcome` prompt persist in the center of the screen every couple of seconds, specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
     .PARAMETER ContinueOnProcessClosure
         Specifies that the dialog should auto-continue when running processes have been closed by the user.
@@ -139,7 +139,7 @@ function Show-ADTInstallationWelcome
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 
-        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the config.psd1, so the user cannot ignore it by dragging it aside.
+        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the `config.psd1` file, so the user cannot ignore it by dragging it aside.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '2013-08-25'
@@ -158,7 +158,7 @@ function Show-ADTInstallationWelcome
 
         The process descriptions are retrieved via `Get-Process`, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself by instantiating the ProcessDefinition object with a description, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
 
-        The dialog box will timeout after the timeout specified in the config.psd1 file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
+        The dialog box will timeout after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
         Tags: psadt<br />
         Website: https://psappdeploytoolkit.com<br />

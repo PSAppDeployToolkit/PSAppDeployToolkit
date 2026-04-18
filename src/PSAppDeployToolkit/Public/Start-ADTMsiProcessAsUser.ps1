@@ -15,7 +15,7 @@ function Start-ADTMsiProcessAsUser
 
         If the `-Action` parameter is set to "Install" and the MSI is already installed, the function will terminate without performing any actions.
 
-        The function automatically sets default switches for msiexec based on preferences defined in the config.psd1 file. Additionally, it generates a log file name and creates a verbose log for all msiexec operations, ensuring detailed tracking.
+        The function automatically sets default arguments for msiexec based on preferences defined in the `config.psd1` file. Additionally, it generates a log file name and creates a verbose log for all msiexec operations, ensuring detailed tracking.
 
         The MSI or MSP file is expected to reside in the "Files" subdirectory of the App Deploy Toolkit, with transform files expected to be in the same directory as the MSI file.
 
@@ -32,13 +32,13 @@ function Start-ADTMsiProcessAsUser
         The InstalledApplication object of the installed MSI.
 
     .PARAMETER ArgumentList
-        Overrides the default parameters specified in the config.psd1 file.
+        Overrides the default arguments specified in the `config.psd1` file.
 
     .PARAMETER AdditionalArgumentList
-        Adds additional parameters to the default set specified in the config.psd1 file.
+        Adds additional arguments to the default set specified in the `config.psd1` file.
 
     .PARAMETER SecureArgumentList
-        Hides all parameters passed to the MSI or MSP file from the toolkit log file.
+        Hides all arguments passed to the MSI or MSP file from the toolkit log file.
 
     .PARAMETER WorkingDirectory
         Overrides the working directory. The working directory is set to the location of the MSI file.
@@ -68,7 +68,7 @@ function Start-ADTMsiProcessAsUser
         Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
 
     .PARAMETER LoggingOptions
-        Overrides the default logging options specified in the config.psd1 file.
+        Overrides the default logging options specified in the `config.psd1` file.
 
     .PARAMETER LogFileName
         Overrides the default log file name. The default log file name is generated from the MSI file name. If the value of `-LogFileName` does not end in a common log file extension (.log, .logx, .txt, or .out), '.log' will be automatically appended.

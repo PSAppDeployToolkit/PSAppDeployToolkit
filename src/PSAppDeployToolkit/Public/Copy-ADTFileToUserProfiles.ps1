@@ -38,7 +38,7 @@ function Copy-ADTFileToUserProfiles
         Continue copying files if an error is encountered. This will continue the deployment script and will warn about files that failed to be copied.
 
     .PARAMETER FileCopyMode
-        Select from 'Native' or 'Robocopy'. Default is configured in config.psd1. Note that Robocopy supports * in file names, but not folders, in source paths.
+        Select from 'Native' or 'Robocopy'. Default is configured in `config.psd1`. Note that Robocopy supports * in file names, but not folders, in source paths.
 
     .PARAMETER RobocopyParams
         Override the default Robocopy parameters.

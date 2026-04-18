@@ -13,13 +13,13 @@ function Show-ADTInstallationProgress
     .DESCRIPTION
         The `Show-ADTInstallationProgress` function creates a UI window in a separate thread to display a marquee style progress ellipse with a custom message that can be updated. The status message supports line breaks.
 
-        The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the config.psd1 file).
+        The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the `config.psd1` file).
 
     .PARAMETER StatusMessage
-        The status message to be displayed. The default status message is taken from the imported strings.psd1 file.
+        The status message to be displayed. The default status message is taken from the imported `strings.psd1` file.
 
     .PARAMETER StatusMessageDetail
-        The status message detail to be displayed with a fluent progress window. The default status message is taken from the imported strings.psd1 file.
+        The status message detail to be displayed with a fluent progress window. The default status message is taken from the imported `strings.psd1` file.
 
     .PARAMETER StatusBarPercentage
         The percentage to display on the status bar. If null or not supplied, the status bar will continuously scroll.
@@ -49,7 +49,7 @@ function Show-ADTInstallationProgress
     .EXAMPLE
         Show-ADTInstallationProgress
 
-        Uses the default status message from the strings.psd1 file.
+        Uses the default status message from the `strings.psd1` file.
 
     .EXAMPLE
         Show-ADTInstallationProgress -StatusMessage 'Installation in Progress...'
