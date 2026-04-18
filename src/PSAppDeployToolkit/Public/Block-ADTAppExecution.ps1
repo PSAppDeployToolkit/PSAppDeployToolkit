@@ -11,7 +11,7 @@ function Block-ADTAppExecution
         Block the execution of an application(s).
 
     .DESCRIPTION
-        The `Block-ADTAppExecution` function is called when you pass the `-BlockExecution` parameter to the `Stop-RunningApplications` function. It does the following:
+        The `Block-ADTAppExecution` function is called when you pass the `-BlockExecution` parameter to the `Show-ADTInstallationWelcome` function. It does the following:
 
         1) Makes a copy of this script in a temporary directory on the local machine.
         2) Checks for an existing scheduled task from previous failed installation attempt where apps were blocked and if found, calls the `Unblock-ADTAppExecution` function to restore the original IFEO registry keys. This is to prevent the function from overriding the backup of the original IFEO options.
