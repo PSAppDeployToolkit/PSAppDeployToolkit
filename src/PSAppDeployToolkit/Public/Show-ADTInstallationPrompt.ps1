@@ -107,8 +107,10 @@ function Show-ADTInstallationPrompt
         Show-ADTInstallationPrompt -RequestInput -DefaultValue 'XXXX' -Message 'Please type in your favourite beer.' -ButtonRightText 'Submit'
 
     .EXAMPLE
+        ```powershell
         $result = Show-ADTInstallationPrompt -Message 'Select your preferred configuration:' -ListItems @('Default', 'Minimal', 'Full', 'Custom') -DefaultIndex 0 -ButtonRightText 'OK'
         Write-ADTLogEntry "User selected: $($result.SelectedItem)"
+        ```
 
     .NOTES
         An active ADT session is NOT required to use this function.
