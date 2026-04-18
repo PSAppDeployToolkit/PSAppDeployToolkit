@@ -62,13 +62,7 @@ function Remove-ADTIniValue
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({
-                if (!(Test-Path -LiteralPath $_ -PathType Leaf))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
-                }
-                return ![System.String]::IsNullOrWhiteSpace($_)
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $true)]

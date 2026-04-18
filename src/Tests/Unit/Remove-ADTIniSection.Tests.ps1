@@ -38,7 +38,7 @@ MyOtherKey=MyOtherValue
             { Remove-ADTIniSection -FilePath " `f`n`r`t`v" -Section 'Anything' } | Should @shouldParams
         }
         It 'Should verify that FilePath exists' {
-            { Remove-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw -ExceptionType ([System.ArgumentException]) -ExpectedMessage "The specified file does not exist.*" -ErrorId 'InvalidFilePathParameterValue,Remove-ADTIniSection'
+            { Remove-ADTIniSection -FilePath "$TestDrive\DoesNotExist.ini" -Section 'Anything' } | Should -Throw -ExceptionType ([System.IO.FileNotFoundException]) -ErrorId 'LiteralPathNotFound,Remove-ADTIniSection'
         }
         It 'Should verify that Section is not null, empty or whitespace' {
             $shouldParams = @{
