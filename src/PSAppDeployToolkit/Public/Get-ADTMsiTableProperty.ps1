@@ -31,7 +31,7 @@ function Get-ADTMsiTableProperty
     .PARAMETER GetSummaryInformation
         Retrieves the Summary Information for the Windows Installer database.
 
-        Summary Information property descriptions: https://msdn.microsoft.com/en-us/library/aa372049(v=vs.85).aspx
+        Summary Information property descriptions: https://learn.microsoft.com/en-us/windows/win32/msi/summary-property-descriptions
 
     .INPUTS
         None
