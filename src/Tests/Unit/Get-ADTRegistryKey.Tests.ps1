@@ -106,9 +106,9 @@ Describe 'Get-ADTRegistryKey' {
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
                 ErrorId = 'ParameterArgumentValidationError,Get-ADTRegistryKey'
             }
-            { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name $null } | Should @shouldParams
-            { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name '' } | Should @shouldParams
-            { Get-ADTRegistryKey -LiteralPath $TestRegistry -Name " `f`n`r`t`v" } | Should @shouldParams
+            { Get-ADTRegistryKey -LiteralPath $null } | Should @shouldParams
+            { Get-ADTRegistryKey -LiteralPath '' } | Should @shouldParams
+            { Get-ADTRegistryKey -LiteralPath " `f`n`r`t`v" } | Should @shouldParams
         }
         It 'Should verify that Name is not null, empty or whitespace' {
             $shouldParams = @{
