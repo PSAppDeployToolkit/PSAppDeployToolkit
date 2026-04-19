@@ -118,6 +118,7 @@ function Remove-ADTFolder
         }
         else
         {
+            $InputObject.Refresh()
             if (!$InputObject.Exists)
             {
                 Write-ADTLogEntry -Message "Folder [$InputObject] does not exist."
