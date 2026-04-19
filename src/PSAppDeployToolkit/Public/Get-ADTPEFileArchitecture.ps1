@@ -25,7 +25,7 @@ function Get-ADTPEFileArchitecture
         A FileInfo object to retrieve executable info from. Available for pipelining.
 
     .PARAMETER PassThru
-        Get the file object, attach a property indicating the file binary type, and write to pipeline.
+        Returns a FileInfo object with an additional "BinaryType" property containing the PE file architecture, rather than a IMAGE_FILE_MACHINE enum value.
 
     .INPUTS
         System.IO.FileInfo
@@ -35,7 +35,12 @@ function Get-ADTPEFileArchitecture
     .OUTPUTS
         PSADT.Interop.IMAGE_FILE_MACHINE
 
-        Returns an IMAGE_FILE_MACHINE enum value indicating the file binary type.
+        By default, this function returns an IMAGE_FILE_MACHINE enum value indicating the file binary type.
+
+    .OUTPUTS
+        System.IO.FileInfo
+
+        When the `-PassThru` parameter is provided, a FileInfo object is returned with an additional "BinaryType" property containing the PE file architecture as an IMAGE_FILE_MACHINE enum value.
 
     .EXAMPLE
         Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
@@ -56,6 +61,7 @@ function Get-ADTPEFileArchitecture
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
     [OutputType([PSADT.Interop.IMAGE_FILE_MACHINE])]
+    [OutputType([System.IO.FileInfo])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
@@ -125,7 +131,7 @@ function Get-ADTPEFileArchitecture
                     Write-ADTLogEntry -Message "File [$($file.FullName)] has a detected file architecture of [$peArchEnum]."
                     if ($PassThru)
                     {
-                        $file | Add-Member -MemberType NoteProperty -Name BinaryType -Value $peArchEnum -Force -PassThru
+                        Add-Member -InputObject $file -MemberType NoteProperty -Name BinaryType -Value $peArchEnum -Force -PassThru
                     }
                     else
                     {
