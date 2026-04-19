@@ -68,7 +68,14 @@ function Get-ADTExecutableInfo
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InputObject', ValueFromPipeline = $true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateScript({
+                $_.Refresh()
+                if (!$_.Exists)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName InputObject -ProvidedValue $_ -ExceptionMessage 'The specified file does not exist.'))
+                }
+                return !!$_
+            })]
         [System.IO.FileInfo]$InputObject
     )
 
