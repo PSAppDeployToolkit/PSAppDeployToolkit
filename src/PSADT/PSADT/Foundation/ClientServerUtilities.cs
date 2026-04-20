@@ -116,13 +116,14 @@ namespace PSADT.Foundation
             bool denyUserTermination = true; bool runAsInvoker = false; bool useShellExecute = false;
             if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false)
             {
-                if (useShellExecute = !AccountUtilities.CallerIsAdmin && filePath == ClientLauncherPath && elevatedTokenType?.Equals(ElevatedTokenType.None) != false)
+                bool cannotUseToken = !AccountUtilities.CallerIsAdmin || !AccountUtilities.CallerIsLoggedOnUser;
+                if (useShellExecute = cannotUseToken && filePath == ClientLauncherPath && elevatedTokenType?.Equals(ElevatedTokenType.None) != false)
                 {
                     denyUserTermination = filePath != ClientLauncherDefaultPath || AccountUtilities.CallerIsAdmin;
                 }
                 else
                 {
-                    runAsInvoker = !AccountUtilities.CallerIsAdmin || handlesToInherit?.Count > 0;
+                    runAsInvoker = cannotUseToken || handlesToInherit?.Count > 0;
                 }
             }
             if (!useShellExecute)
