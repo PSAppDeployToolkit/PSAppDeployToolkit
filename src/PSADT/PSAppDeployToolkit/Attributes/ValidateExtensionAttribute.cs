@@ -68,11 +68,11 @@ namespace PSAppDeployToolkit.Attributes
             throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", ExtensionNames)}. Provide a path argument with an approved extension.");
         }
 
-        internal string[] extensions;
+        private readonly string[] extensions;
 
         /// <summary>
         /// Gets the approved extension names.
         /// </summary>
-        public IList<string> ExtensionNames => extensions;
+        public IReadOnlyList<string> ExtensionNames => extensions;
     }
 }
