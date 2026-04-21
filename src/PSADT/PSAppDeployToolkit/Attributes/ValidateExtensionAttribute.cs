@@ -12,7 +12,6 @@ namespace PSAppDeployToolkit.Attributes
     /// </summary>
     public sealed class ValidateExtensionAttribute : ValidateEnumeratedArgumentsAttribute
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidateExtensionAttribute"/> class.
         /// </summary>
@@ -27,7 +26,7 @@ namespace PSAppDeployToolkit.Attributes
             {
                 if (!extension.StartsWith(".") || extension.Length <= 1)
                 {
-                    throw new ArgumentException($"The provided argument '{extension}' is not a valid extension. Valid extensions must start with a period and be followed by one or more valid filename characters.");
+                    throw new ArgumentOutOfRangeException(nameof(extensionNames), extension, $"The provided argument '{extension}' is not a valid extension. Valid extensions must start with a period and be followed by one or more valid filename characters.");
                 }
             }
             extensions = extensionNames;
