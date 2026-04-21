@@ -48,58 +48,54 @@ function Invoke-ADTDotNetCompilation
         # Process each build item.
         foreach ($buildItem in $Script:ModuleConstants.DotNetBuildItems)
         {
-            # Only build a debug version if we're outside of a GitHub pipeline.
+            # Only build a debug version if there's changed to the C# files since the last DLL commit.
             $buildConfigs = [System.Collections.Generic.List[System.String]]'Release'
-            if (!(Test-ADTBuildingWithinPipeline))
+            if ($testFileChanges)
             {
-                # Build unconditionally if we can't test files.
-                if ($testFileChanges)
+                # Test each source path for changed/uncommitted files.
+                Write-ADTBuildLogEntry -Message "Determining C# solutions requiring compilation for [$([System.IO.Path]::GetFileName($buildItem.SolutionPath))], please wait..."
+                foreach ($sourcePath in $buildItem.SourcePath)
                 {
-                    # Test each source path for changed/uncommitted files.
-                    Write-ADTBuildLogEntry -Message "Determining C# solutions requiring compilation for [$([System.IO.Path]::GetFileName($buildItem.SolutionPath))], please wait..."
-                    foreach ($sourcePath in $buildItem.SourcePath)
+                    # Translate the Win32 slash into a POSIX slash so git can work on it.
+                    $gitPath = $sourcePath.Replace("$($Script:ModuleConstants.Paths.Repository)\", [System.Management.Automation.Language.NullString]::Value)
+                    if (!((& $git -C $Script:ModuleConstants.Paths.Repository status --porcelain) -match "^.{3}$([System.Text.RegularExpressions.Regex]::Escape($gitPath.Replace('\','/')))/"))
                     {
-                        # Translate the Win32 slash into a POSIX slash so git can work on it.
-                        $gitPath = $sourcePath.Replace("$($Script:ModuleConstants.Paths.Repository)\", [System.Management.Automation.Language.NullString]::Value)
-                        if (!((& $git -C $Script:ModuleConstants.Paths.Repository status --porcelain) -match "^.{3}$([System.Text.RegularExpressions.Regex]::Escape($gitPath.Replace('\','/')))/"))
+                        # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
+                        foreach ($outputFile in $buildItem.OutputFile)
                         {
-                            # Get the last commit date of the output file, which is similar to ISO 8601 format but with spaces and no T between date and time
-                            foreach ($outputFile in $buildItem.OutputFile)
+                            # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
+                            if (!($lastCommitDate = & $git -C $Script:ModuleConstants.Paths.Repository log -1 --format="%ci" -- $outputFile))
                             {
-                                # Get commit date via git, parse the result, then add one second and convert to proper ISO 8601 format..
-                                if (!($lastCommitDate = & $git -C $Script:ModuleConstants.Paths.Repository log -1 --format="%ci" -- $outputFile))
-                                {
-                                    Write-ADTBuildLogEntry -Message "Files have been created in [$sourcePath] since the last commit date, debug build required."
-                                    $buildConfigs.Add('Debug')
-                                    break
-                                }
-                                $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
-                                $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
+                                Write-ADTBuildLogEntry -Message "Files have been created in [$sourcePath] since the last commit date, debug build required."
+                                $buildConfigs.Add('Debug')
+                                break
+                            }
+                            $lastCommitDate = [DateTime]::ParseExact($lastCommitDate, "yyyy-MM-dd HH:mm:ss K", [System.Globalization.CultureInfo]::InvariantCulture)
+                            $sinceDateString = $lastCommitDate.AddSeconds(1).ToString('yyyy-MM-ddTHH:mm:ssK')
 
-                                # Get the list of source files modified since the last commit date of the file we're comparing against
-                                if (& $git -C $Script:ModuleConstants.Paths.Repository log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $gitPath | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } } | Sort-Object -Unique)
-                                {
-                                    Write-ADTBuildLogEntry -Message "Files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
-                                    $buildConfigs.Add('Debug')
-                                    break
-                                }
-                                else
-                                {
-                                    Write-ADTBuildLogEntry -Message "No files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build not required."
-                                }
+                            # Get the list of source files modified since the last commit date of the file we're comparing against
+                            if (& $git -C $Script:ModuleConstants.Paths.Repository log --name-only --since=$sinceDateString --diff-filter=ACDMTUXB --pretty=format: -- $gitPath | & { process { if (![System.String]::IsNullOrWhiteSpace($_)) { return $_ } } } | Sort-Object -Unique)
+                            {
+                                Write-ADTBuildLogEntry -Message "Files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build required."
+                                $buildConfigs.Add('Debug')
+                                break
+                            }
+                            else
+                            {
+                                Write-ADTBuildLogEntry -Message "No files have been modified in [$sourcePath] since the last commit date of [$([System.IO.Path]::GetFileName($outputFile))] ($($lastCommitDate.ToString('yyyy-MM-ddTHH:mm:ssK'))), debug build not required."
                             }
                         }
-                        else
-                        {
-                            Write-ADTBuildLogEntry -Message "Uncommitted file changes found under [$sourcePath], debug build required."
-                            $buildConfigs.Add('Debug')
-                        }
+                    }
+                    else
+                    {
+                        Write-ADTBuildLogEntry -Message "Uncommitted file changes found under [$sourcePath], debug build required."
+                        $buildConfigs.Add('Debug')
                     }
                 }
-                else
-                {
-                    $buildConfigs.Add('Debug')
-                }
+            }
+            else
+            {
+                $buildConfigs.Add('Debug')
             }
 
             # Manually clean out old build and obj folders for good measure.
