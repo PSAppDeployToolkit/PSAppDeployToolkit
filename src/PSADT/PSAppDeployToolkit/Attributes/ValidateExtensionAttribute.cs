@@ -65,7 +65,7 @@ namespace PSAppDeployToolkit.Attributes
                 }
             }
 
-            throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", ExtensionNames)}. Provide a path argument with an approved extension.");
+            throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", extensions)}. Provide a path argument with an approved extension.");
         }
 
         private readonly string[] extensions;
