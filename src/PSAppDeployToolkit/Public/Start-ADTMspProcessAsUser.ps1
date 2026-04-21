@@ -140,13 +140,7 @@ function Start-ADTMspProcessAsUser
         [System.Security.Principal.NTAccount]$Username,
 
         [Parameter(Mandatory = $true, HelpMessage = 'Please supply the path to the MSP file to process.')]
-        [ValidateScript({
-                if ([System.IO.Path]::GetExtension($_) -notmatch '^\.msp$')
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName FilePath -ProvidedValue $_ -ExceptionMessage 'The specified input has an invalid file extension.'))
-                }
-                return ![System.String]::IsNullOrWhiteSpace($_)
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateExtension('.msp')]
         [System.String]$FilePath,
 
         [Parameter(Mandatory = $false)]

@@ -109,13 +109,7 @@ function Set-ADTActiveSetup
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Create')]
         [Parameter(Mandatory = $true, ParameterSetName = 'CreateNoExecute')]
-        [ValidateScript({
-                if (('.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js') -notcontains ($StubExeExt = [System.IO.Path]::GetExtension($_)))
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName StubExePath -ProvidedValue $_ -ExceptionMessage "Unsupported Active Setup StubPath file extension [$StubExeExt]."))
-                }
-                return ![System.String]::IsNullOrWhiteSpace($_)
-            })]
+        [PSAppDeployToolkit.Attributes.ValidateExtension('.exe', '.vbs', '.cmd', '.bat', '.ps1', '.js')]
         [System.String]$StubExePath,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Create')]
