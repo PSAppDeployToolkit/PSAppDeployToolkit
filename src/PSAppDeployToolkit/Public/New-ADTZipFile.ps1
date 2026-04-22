@@ -146,7 +146,7 @@ function New-ADTZipFile
                     {
                         try
                         {
-                            $null = Remove-Item -LiteralPath $Directory -Recurse -Force
+                            $null = Remove-Item -LiteralPath $sourcePath -Recurse -Force
                         }
                         catch
                         {
