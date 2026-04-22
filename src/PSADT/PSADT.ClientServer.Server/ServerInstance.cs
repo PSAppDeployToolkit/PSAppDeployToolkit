@@ -536,107 +536,68 @@ namespace PSADT.ClientServer
                 return;
             }
 
-            // Shut down the client if it's running.
-            int exitCode = -1;
-            try
+            // Shut down the client process if one was started.
+            if (_clientProcess is not null)
             {
-                if (_clientProcess is not null)
+                // Attempt a graceful close if the process is still running.
+                if (IsRunning)
                 {
-                    if (IsRunning)
+                    try
                     {
-                        try
+                        _ = Invoke<bool>(PipeCommand.Close);
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        // Failed to gracefully close the process, so cancel it.
+                        if (!_clientProcessCts.IsCancellationRequested)
                         {
-                            if (Invoke<bool>(PipeCommand.Close))
-                            {
-                                using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
-                                exitCode = processResult.ExitCode;
-                            }
-                        }
-                        catch (Exception ex) when (ex.Message is not null)
-                        {
-                            // Force-cancel on any failure during graceful close.
                             _clientProcessCts.Cancel();
                         }
                     }
-                    else
-                    {
-                        try
-                        {
-                            using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
-                            exitCode = processResult.ExitCode;
-                        }
-                        catch (Exception ex) when (ex.Message is not null)
-                        {
-                            // Swallow errors when collecting a completed process result during disposal.
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                // Close the log writer and wait for it to finish.
-                if (_logWriterTask is not null)
-                {
-                    _logWriterTaskCts.Cancel();
-                    try
-                    {
-                        _logWriterTask.GetAwaiter().GetResult();
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // The log writer task was canceled, which is expected when disposing the server instance.
-                    }
-                    finally
-                    {
-                        _logWriterTask.Dispose();
-                    }
                 }
 
-                // Clean up the client process resources.
+                // We either closed or cancelled the process. Wait for that to occur.
                 try
                 {
-                    if (_clientProcess is not null)
-                    {
-                        // We only need to cancel if we didn't get an exit code already.
-                        if (exitCode == -1)
-                        {
-                            if (!_clientProcessCts.IsCancellationRequested)
-                            {
-                                _clientProcessCts.Cancel();
-                            }
-                            try
-                            {
-                                _clientProcess.Task.GetAwaiter().GetResult().Dispose();
-                            }
-                            catch (TaskCanceledException)
-                            {
-                                // The client process task was canceled, which is expected when disposing the server instance.
-                            }
-                        }
-
-                        // Wait for the client process to exit and dispose of its resources.
-                        while (!_clientProcess.Task.IsCompleted)
-                        {
-                            Thread.Sleep(1);
-                        }
-                        _clientProcess.Task.Dispose();
-                        _clientProcess.Process.Dispose();
-                    }
+                    _clientProcess.Task.GetAwaiter().GetResult().Dispose();
                 }
-                finally
+                catch (Exception ex) when (ex.Message is not null)
                 {
-                    _clientProcessCts.Dispose();
-                    _logWriterTaskCts.Dispose();
-                    _logEncryption.Dispose();
-                    _ioEncryption.Dispose();
-                    _logServer.Dispose();
-                    _inputServer.Dispose();
-                    _outputServer.Dispose();
-
-                    // Unregister the process exit handler.
-                    AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
+                    // Expected when the process faulted before disposal.
                 }
+
+                // Wait for the task to fully complete, then dispose its resources.
+                while (!_clientProcess.Task.IsCompleted)
+                {
+                    Thread.Sleep(1);
+                }
+                _clientProcess.Task.Dispose();
+                _clientProcess = null;
             }
+
+            // Cancel the log writer and wait for it to finish.
+            _logWriterTaskCts.Cancel();
+            try
+            {
+                _logWriterTask?.GetAwaiter().GetResult();
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected when disposing the server instance.
+            }
+
+            // Dispose all infrastructure.
+            _logWriterTask?.Dispose();
+            _clientProcessCts.Dispose();
+            _logWriterTaskCts.Dispose();
+            _logEncryption.Dispose();
+            _ioEncryption.Dispose();
+            _logServer.Dispose();
+            _inputServer.Dispose();
+            _outputServer.Dispose();
+
+            // Unregister the process exit handler and mark as disposed.
+            AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
             _disposed = true;
         }
 
