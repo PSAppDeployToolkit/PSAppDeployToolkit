@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ClientServer.Payloads;
@@ -26,18 +25,18 @@ namespace PSADT.ClientServer
     /// process through anonymous pipes. It manages the lifecycle of the client process, handles input and output
     /// streams, and provides methods to send commands and retrieve responses. This class implements <see
     /// cref="IDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
-    /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to initialize the client-server communication, and
+    /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to start the client-server communication, and
     /// using a number of predefined methods to send commands to the client. Once the communication is
     /// complete, the <see cref="Dispose()"/> method should be called to release resources. </para></remarks>
     public sealed record ServerInstance : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication
-        /// using anonymous pipes.
+        /// infrastructure using anonymous pipes.
         /// </summary>
-        /// <remarks>This constructor creates anonymous pipe streams for input and output communication.
-        /// The input stream is configured for reading, while the output stream is configured for writing. The output
-        /// stream is set to automatically flush data to ensure timely communication.</remarks>
+        /// <remarks>This constructor creates the instance with the specified user session information.
+        /// All communication infrastructure (pipes, encryption, cancellation tokens) is initialized inline.
+        /// Call <see cref="Open"/> to start the client process and begin communication.</remarks>
         public ServerInstance(RunAsActiveUser runAsActiveUser)
         {
             ArgumentNullException.ThrowIfNull(runAsActiveUser);
@@ -47,70 +46,43 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Opens the client-server communication by starting the client process and initializing the connection.
         /// </summary>
-        /// <remarks>This method launches the client process and establishes communication through
-        /// inter-process pipes. It ensures that the client process is ready to receive commands before
-        /// returning.</remarks>
-        /// <exception cref="ApplicationException">Thrown if the client process fails to respond to the initial command, indicating that it is not properly
-        /// initialized.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Bug", "S2952:Classes should \"Dispose\" of members from the classes' own \"Dispose\" methods", Justification = "This class supports repeated opening/closing.")]
+        /// <remarks>This method launches the client process, performs key exchange for encrypted communication,
+        /// and ensures that the client process is ready to receive commands before returning.</remarks>
+        /// <exception cref="ObjectDisposedException">Thrown if the instance has been disposed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the server instance already has an associated client process.</exception>
+        /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
         public void Open()
         {
-            // Don't allow opening if the object's been disposed.
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot open a connection on a disposed ServerInstance.");
-            }
-
             // Don't re-open if there's already a client process associated with this instance.
-            if (_clientProcessCts is not null || _clientProcess is not null)
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_clientProcess is not null)
             {
                 throw new InvalidOperationException("The server instance already has an associated client process.");
             }
 
-            // Start the server to listen for incoming connections and process data.
+            // Start the client process using the pipe handles.
             try
             {
-                _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
-                _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-                _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
-                try
-                {
-                    nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
-                    nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
-                    nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
-                    _clientProcess = ClientServerUtilities.StartClientOperation(
-                        ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
-                        RunAsActiveUser,
-                        [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
-                        (_clientProcessCts = new()).Token
-                    );
-                }
-                finally
-                {
-                    _outputServer.DisposeLocalCopyOfClientHandle();
-                    _inputServer.DisposeLocalCopyOfClientHandle();
-                    _logServer.DisposeLocalCopyOfClientHandle();
-                }
-                (_ioEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
-                (_logEncryption = new()).PerformKeyExchange(_outputServer, _inputServer);
+                nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
+                nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
+                nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
+                _clientProcess = ClientServerUtilities.StartClientOperation(
+                    ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
+                    RunAsActiveUser,
+                    [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
+                    _clientProcessCts.Token
+                );
             }
-            catch (Exception ex) when (ex.Message is not null)
+            finally
             {
-                _clientProcessCts?.Dispose();
-                _clientProcessCts = null;
-                _logEncryption?.Dispose();
-                _logEncryption = null;
-                _ioEncryption?.Dispose();
-                _ioEncryption = null;
-                _logServer?.Dispose();
-                _logServer = null;
-                _inputServer?.Dispose();
-                _inputServer = null;
-                _outputServer?.Dispose();
-                _outputServer = null;
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                _outputServer.DisposeLocalCopyOfClientHandle();
+                _inputServer.DisposeLocalCopyOfClientHandle();
+                _logServer.DisposeLocalCopyOfClientHandle();
             }
+
+            // Perform key exchange for encrypted communication.
+            _ioEncryption.PerformKeyExchange(_outputServer, _inputServer);
+            _logEncryption.PerformKeyExchange(_outputServer, _inputServer);
 
             // Confirm the client starts and is ready to receive commands.
             bool? opened = null;
@@ -129,172 +101,15 @@ namespace PSADT.ClientServer
             {
                 if (opened is null || !opened.Value)
                 {
-                    Close(true);
+                    Dispose();
                 }
             }
 
-            // Ensure this instance is closed/disposed on process exit.
+            // Ensure this instance is disposed on process exit.
             AppDomain.CurrentDomain.ProcessExit += ProcessExit_Handler;
 
             // Set up the log writer task to run in the background.
-            _logWriterTask = Task.Run(ReadLog, (_logWriterTaskCts = new()).Token);
-        }
-
-        /// <summary>
-        /// Closes the server instance and its associated client process.
-        /// </summary>
-        /// <remarks>This method ensures that the server instance and its client process are properly closed, releasing
-        /// all associated resources. If the server instance is not open or has already been closed, an <see
-        /// cref="InvalidOperationException"/> is thrown. The <paramref name="force"/> parameter can be used to forcibly
-        /// terminate the client process if it does not respond to the close command.</remarks>
-        /// <param name="force">A value indicating whether to forcibly close the client process. If <see langword="true"/>, the client process is
-        /// terminated regardless of its response to the close command. If <see langword="false"/>, the method attempts to close
-        /// the client process gracefully.</param>
-        /// <exception cref="InvalidOperationException">Thrown if the server instance is not open or has already been closed.</exception>
-        /// <exception cref="ApplicationException">Thrown if the client process does not properly respond to the close command and <paramref name="force"/> is <see
-        /// langword="false"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Bug", "S2952:Classes should \"Dispose\" of members from the classes' own \"Dispose\" methods", Justification = "This class supports repeated opening/closing.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code needs to operate synchronously and wait for things to close in the appropriate order.")]
-        internal void Close(bool force)
-        {
-            // Don't allow closing if the object's been disposed.
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot close a connection on a disposed ServerInstance.");
-            }
-
-            // Confirm that the server instance is open and has not been closed already.
-            if (_clientProcessCts is null || _clientProcess is null)
-            {
-                throw new InvalidOperationException("The server instance is not open or has already been closed.");
-            }
-
-            // Shut down the client if it's running.
-            int exitCode = -1;
-            try
-            {
-                if (IsRunning)
-                {
-                    if (!force)
-                    {
-                        if (!Invoke<bool>(PipeCommand.Close))
-                        {
-                            throw new InvalidProgramException("The opened client process did not properly respond to the close command.");
-                        }
-                        using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
-                        if ((exitCode = processResult.ExitCode) != 0)
-                        {
-                            if (processResult.StdErr.Count > 0)
-                            {
-                                throw new ServerException("The client process threw an unhandled exception.", DataSerialization.DeserializeFromString<Exception>(processResult.StdErr[0]));
-                            }
-                            throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
-                        }
-                    }
-                    else
-                    {
-                        _clientProcessCts.Cancel();
-                    }
-                }
-                else
-                {
-                    using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
-                    if ((exitCode = processResult.ExitCode) != 0)
-                    {
-                        if (processResult.StdErr.Count > 0)
-                        {
-                            throw new ServerException("The client process threw an unhandled exception.", DataSerialization.DeserializeFromString<Exception>(processResult.StdErr[0]));
-                        }
-                        throw new ServerException($"The client process exited with a non-zero exit code: {exitCode}.", _clientProcess);
-                    }
-                }
-            }
-            finally
-            {
-                // Close the log writer and wait for it to finish.
-                if (_logWriterTaskCts is not null && _logWriterTask is not null)
-                {
-                    _logWriterTaskCts.Cancel();
-                    try
-                    {
-                        _logWriterTask.GetAwaiter().GetResult();
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // The log writer task was canceled, which is expected when closing the server instance.
-                    }
-                    finally
-                    {
-                        _logWriterTask.Dispose();
-                        _logWriterTask = null;
-                        _logWriterTaskCts.Dispose();
-                        _logWriterTaskCts = null;
-                    }
-                }
-
-                // Clean up the client process resources.
-                try
-                {
-                    // We only need to cancel if we didn't get an exit code already.
-                    if (exitCode == -1)
-                    {
-                        if (!_clientProcessCts.IsCancellationRequested)
-                        {
-                            _clientProcessCts.Cancel();
-                        }
-                        try
-                        {
-                            _clientProcess.Task.GetAwaiter().GetResult().Dispose();
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            // The client process task was canceled, which is expected when closing the server instance.
-                        }
-                    }
-                }
-                finally
-                {
-                    // Wait for the client process to exit and dispose of its resources.
-                    while (!_clientProcess.Task.IsCompleted)
-                    {
-                        Thread.Sleep(1);
-                    }
-                    _clientProcess.Task.Dispose();
-                    _clientProcess.Process.Dispose();
-                    _clientProcess = null;
-                    _clientProcessCts.Dispose();
-                    _clientProcessCts = null;
-
-                    // Dispose encryption objects.
-                    _logEncryption?.Dispose();
-                    _logEncryption = null;
-                    _ioEncryption?.Dispose();
-                    _ioEncryption = null;
-
-                    // Dispose pipe servers.
-                    _logServer?.Dispose();
-                    _logServer = null;
-                    _inputServer?.Dispose();
-                    _inputServer = null;
-                    _outputServer?.Dispose();
-                    _outputServer = null;
-
-                    // Unregister the process exit handler.
-                    AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Closes the current connection and releases associated resources.
-        /// </summary>
-        /// <remarks>This method closes the connection and optionally performs additional cleanup
-        /// operations depending on the internal implementation. Once closed, the connection cannot be reused and must
-        /// be reopened if needed.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Close()
-        {
-            Close(false);
+            _logWriterTask = Task.Run(ReadLog, _logWriterTaskCts.Token);
         }
 
         /// <summary>
@@ -706,24 +521,14 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Releases the resources used by the current instance of the class.
+        /// Releases all resources used by this instance, including shutting down the client process
+        /// and cleaning up all communication infrastructure.
         /// </summary>
-        /// <remarks>This method should be called when the instance is no longer needed to free up
-        /// resources. It suppresses the finalization of the object to optimize garbage collection.</remarks>
+        /// <remarks>This method gracefully closes the client process if it is running, waits for
+        /// the log writer task to complete, and disposes all pipes, encryption objects, and cancellation
+        /// token sources. Once disposed, the instance should not be used further.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code needs to operate synchronously and wait for things to close in the appropriate order.")]
         public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Releases the resources used by the current instance of the class.
-        /// </summary>
-        /// <remarks>This method should be called to release both managed and unmanaged resources. If the
-        /// <paramref name="disposing"/> parameter is <see langword="true"/>, the method releases managed resources in
-        /// addition to unmanaged resources. Once disposed, the instance should not be used further.</remarks>
-        /// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release
-        /// only unmanaged resources.</param>
-        private void Dispose(bool disposing)
         {
             // Check we're not already done.
             if (_disposed)
@@ -731,10 +536,106 @@ namespace PSADT.ClientServer
                 return;
             }
 
-            // Close the client process if it is running.
-            if (disposing && _clientProcess is not null)
+            // Shut down the client if it's running.
+            int exitCode = -1;
+            try
             {
-                Close();
+                if (_clientProcess is not null)
+                {
+                    if (IsRunning)
+                    {
+                        try
+                        {
+                            if (Invoke<bool>(PipeCommand.Close))
+                            {
+                                using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
+                                exitCode = processResult.ExitCode;
+                            }
+                        }
+                        catch (Exception ex) when (ex.Message is not null)
+                        {
+                            // Force-cancel on any failure during graceful close.
+                            _clientProcessCts.Cancel();
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            using ProcessResult processResult = _clientProcess.Task.GetAwaiter().GetResult();
+                            exitCode = processResult.ExitCode;
+                        }
+                        catch (Exception ex) when (ex.Message is not null)
+                        {
+                            // Swallow errors when collecting a completed process result during disposal.
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                // Close the log writer and wait for it to finish.
+                if (_logWriterTask is not null)
+                {
+                    _logWriterTaskCts.Cancel();
+                    try
+                    {
+                        _logWriterTask.GetAwaiter().GetResult();
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // The log writer task was canceled, which is expected when disposing the server instance.
+                    }
+                    finally
+                    {
+                        _logWriterTask.Dispose();
+                    }
+                }
+
+                // Clean up the client process resources.
+                try
+                {
+                    if (_clientProcess is not null)
+                    {
+                        // We only need to cancel if we didn't get an exit code already.
+                        if (exitCode == -1)
+                        {
+                            if (!_clientProcessCts.IsCancellationRequested)
+                            {
+                                _clientProcessCts.Cancel();
+                            }
+                            try
+                            {
+                                _clientProcess.Task.GetAwaiter().GetResult().Dispose();
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                // The client process task was canceled, which is expected when disposing the server instance.
+                            }
+                        }
+
+                        // Wait for the client process to exit and dispose of its resources.
+                        while (!_clientProcess.Task.IsCompleted)
+                        {
+                            Thread.Sleep(1);
+                        }
+                        _clientProcess.Task.Dispose();
+                        _clientProcess.Process.Dispose();
+                    }
+                }
+                finally
+                {
+                    _clientProcessCts.Dispose();
+                    _logWriterTaskCts.Dispose();
+                    _logEncryption.Dispose();
+                    _ioEncryption.Dispose();
+                    _logServer.Dispose();
+                    _inputServer.Dispose();
+                    _outputServer.Dispose();
+
+                    // Unregister the process exit handler.
+                    AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
+                }
             }
             _disposed = true;
         }
@@ -763,17 +664,7 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private TResult Invoke<TResult>(PipeCommand command)
         {
-            // Don't invoke anything if the object is disposed.
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot invoke a command on a disposed ServerInstance.");
-            }
-
-            // Ensure this object is opened before proceeding.
-            if (_ioEncryption is null || _outputServer is null)
-            {
-                throw new InvalidOperationException("The server instance is not open.");
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             // Send the request: [1-byte command]
             try
@@ -804,17 +695,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IClientServerPayload
         {
-            // Don't invoke anything if the object is disposed.
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ServerInstance));
-            }
-
-            // Ensure this object is opened before proceeding.
-            if (_ioEncryption is null || _outputServer is null)
-            {
-                throw new InvalidOperationException("The server instance is not open.");
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             // Build and send the request: [1-byte command][serialized payload]
             byte[] payloadBytes = DataSerialization.SerializeToBytes(payload);
@@ -841,17 +722,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private T ReadResponse<T>()
         {
-            // Don't read anything if the object is disposed.
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot read a response from a disposed ServerInstance.");
-            }
-
-            // Ensure this object is opened before proceeding.
-            if (_ioEncryption is null || _inputServer is null)
-            {
-                throw new InvalidOperationException("The server instance is not open.");
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             // Read and decrypt the client's response.
             byte[] response;
@@ -880,20 +751,10 @@ namespace PSADT.ClientServer
         /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
         private void ReadLog()
         {
-            // Don't read anything if the object is disposed.
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(ServerInstance), "Cannot read logs from a disposed ServerInstance.");
-            }
-
-            // Ensure the log encryption and server are initialized before proceeding.
-            if (_logEncryption is null || _logServer is null)
-            {
-                throw new InvalidOperationException("The log reader is not initialized.");
-            }
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
             // Read the log stream until cancellation is requested or the end of the stream is reached.
-            while (!_logWriterTaskCts!.IsCancellationRequested)
+            while (!_logWriterTaskCts.IsCancellationRequested)
             {
                 try
                 {
@@ -937,7 +798,7 @@ namespace PSADT.ClientServer
         {
             if (!_disposed)
             {
-                Close(true);
+                Dispose();
             }
         }
 
@@ -963,12 +824,34 @@ namespace PSADT.ClientServer
         public const string SuccessSentinel = "\x1F";
 
         /// <summary>
+        /// Indicates whether the object has been disposed.
+        /// </summary>
+        /// <remarks>This field is used internally to track the disposal state of the object. It should
+        /// not be accessed directly outside of the class.</remarks>
+        private bool _disposed;
+
+        /// <summary>
+        /// Represents an asynchronous operation that retrieves the result of a client process.
+        /// </summary>
+        /// <remarks>The task encapsulates the execution of a client process and provides access to its
+        /// result, which may be null if the process does not produce a result or if <see cref="Open"/> has not
+        /// been called yet.</remarks>
+        private ProcessHandle? _clientProcess;
+
+        /// <summary>
+        /// Represents the task responsible for writing log entries asynchronously.
+        /// </summary>
+        /// <remarks>This field holds a reference to the current logging task, if one is active. It may
+        /// be null if <see cref="Open"/> has not been called yet.</remarks>
+        private Task? _logWriterTask;
+
+        /// <summary>
         /// Represents the server side of an anonymous pipe used for interprocess communication.
         /// </summary>
         /// <remarks>This pipe server is initialized with an output direction and allows the handle to be
         /// inherited by child processes. It is typically used to send data from the current process to another
         /// process.</remarks>
-        private AnonymousPipeServerStream? _outputServer;
+        private readonly AnonymousPipeServerStream _outputServer = new(PipeDirection.Out, HandleInheritability.Inheritable);
 
         /// <summary>
         /// Represents a server-side anonymous pipe stream for reading data.
@@ -976,7 +859,7 @@ namespace PSADT.ClientServer
         /// <remarks>This pipe stream is initialized with an input direction and inheritable handle
         /// settings, allowing it to be used for inter-process communication where the handle can be passed to a child
         /// process.</remarks>
-        private AnonymousPipeServerStream? _inputServer;
+        private readonly AnonymousPipeServerStream _inputServer = new(PipeDirection.In, HandleInheritability.Inheritable);
 
         /// <summary>
         /// Represents the server side of an anonymous pipe used for inter-process communication.
@@ -984,57 +867,34 @@ namespace PSADT.ClientServer
         /// <remarks>This field is used to manage the server stream for logging purposes. It provides a
         /// communication channel between processes, allowing data to be sent from the server to a connected
         /// client.</remarks>
-        private AnonymousPipeServerStream? _logServer;
+        private readonly AnonymousPipeServerStream _logServer = new(PipeDirection.In, HandleInheritability.Inheritable);
 
         /// <summary>
         /// Provides ECDH-based encryption for the main command/response pipe communication.
         /// </summary>
         /// <remarks>This encryption instance is used to encrypt commands sent to the client and decrypt
         /// responses received from the client, ensuring secure communication across different security contexts.</remarks>
-        private ServerPipeEncryption? _ioEncryption;
+        private readonly ServerPipeEncryption _ioEncryption = new();
 
         /// <summary>
         /// Provides ECDH-based encryption for the log pipe communication.
         /// </summary>
         /// <remarks>This separate encryption instance is used for the log channel to allow independent
         /// encrypted communication for logging purposes.</remarks>
-        private ServerPipeEncryption? _logEncryption;
+        private readonly ServerPipeEncryption _logEncryption = new();
 
         /// <summary>
-        /// Represents an asynchronous operation that retrieves the result of a client process.
+        /// Represents the <see cref="CancellationTokenSource"/> used to manage cancellation of the client process.
         /// </summary>
-        /// <remarks>The task encapsulates the execution of a client process and provides access to its
-        /// result, which may be null if the process does not produce a result or fails.</remarks>
-        private ProcessHandle? _clientProcess;
-
-        /// <summary>
-        /// Represents the <see cref="CancellationTokenSource"/> used to manage cancellation tokens for asynchronous
-        /// operations.
-        /// </summary>
-        /// <remarks>This field is initialized as a new instance of <see cref="CancellationTokenSource"/>
-        /// and is intended for internal use to signal cancellation of tasks or operations. It is not exposed
-        /// publicly.</remarks>
-        private CancellationTokenSource? _clientProcessCts;
-
-        /// <summary>
-        /// Represents the task responsible for writing log entries asynchronously.
-        /// </summary>
-        /// <remarks>This field holds a reference to the current logging task, if one is active. It may
-        /// be null if no logging operation is in progress.</remarks>
-        private Task? _logWriterTask;
+        /// <remarks>This field is initialized in the constructor and is intended for internal use to signal
+        /// cancellation of the client process. It is not exposed publicly.</remarks>
+        private readonly CancellationTokenSource _clientProcessCts = new();
 
         /// <summary>
         /// Provides a mechanism to cancel the ongoing log writer task.
         /// </summary>
-        /// <remarks>This field is used internally to signal cancellation for the log writer task. It is
-        /// initialized as a new instance of <see cref="CancellationTokenSource"/>.</remarks>
-        private CancellationTokenSource? _logWriterTaskCts;
-
-        /// <summary>
-        /// Indicates whether the object has been disposed.
-        /// </summary>
-        /// <remarks>This field is used internally to track the disposal state of the object. It should
-        /// not be accessed directly outside of the class.</remarks>
-        private bool _disposed;
+        /// <remarks>This field is initialized in the constructor and is used internally to signal
+        /// cancellation for the log writer task.</remarks>
+        private readonly CancellationTokenSource _logWriterTaskCts = new();
     }
 }
