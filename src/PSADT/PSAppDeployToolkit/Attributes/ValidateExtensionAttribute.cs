@@ -29,7 +29,7 @@ namespace PSAppDeployToolkit.Attributes
                     throw new ArgumentOutOfRangeException(nameof(extensionNames), extension, $"The provided argument '{extension}' is not a valid extension. Valid extensions must start with a period and be followed by one or more valid filename characters.");
                 }
             }
-            ExtensionNames = extensionNames;
+            ExtensionNames = [.. extensionNames];
         }
 
         /// <summary>
