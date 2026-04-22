@@ -29,7 +29,7 @@ namespace PSAppDeployToolkit.Attributes
                     throw new ArgumentOutOfRangeException(nameof(extensionNames), extension, $"The provided argument '{extension}' is not a valid extension. Valid extensions must start with a period and be followed by one or more valid filename characters.");
                 }
             }
-            extensions = extensionNames;
+            ExtensionNames = extensionNames;
         }
 
         /// <summary>
@@ -65,14 +65,12 @@ namespace PSAppDeployToolkit.Attributes
                 }
             }
 
-            throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", extensions)}. Provide a path argument with an approved extension.");
+            throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", ExtensionNames)}. Provide a path argument with an approved extension.");
         }
-
-        private readonly string[] extensions;
 
         /// <summary>
         /// Gets the approved extension names.
         /// </summary>
-        public IReadOnlyList<string> ExtensionNames => extensions;
+        public IReadOnlyList<string> ExtensionNames { get; }
     }
 }
