@@ -125,7 +125,7 @@ namespace PSAppDeployToolkit.Logging
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
-                using StreamWriter logFileWriter = new(Path.Combine(logFileDirectory!, logFileName!), true, LogEncoding);
+                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory!, logFileName!), true, LogEncoding);
                 if (logStyle.Value == LogStyle.CMTrace)
                 {
                     foreach (LogEntry logEntry in logEntries)

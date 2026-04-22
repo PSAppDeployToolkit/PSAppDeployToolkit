@@ -882,7 +882,7 @@ namespace PSADT.ClientServer
 
             // Set up the process and return its result.
             ProcessLaunchInfo launchInfo = new(
-                Path.Combine(Environment.SystemDirectory, "gpupdate.exe"),
+                Path.Join(Environment.SystemDirectory, "gpupdate.exe"),
                 argumentList,
                 standardInput: ["N"],
                 createNoWindow: true

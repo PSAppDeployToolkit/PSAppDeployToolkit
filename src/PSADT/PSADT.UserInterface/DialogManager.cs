@@ -375,7 +375,7 @@ namespace PSADT.UserInterface
             Registry.SetValue(regKey, "DisplayName", options.TrayTitle, RegistryValueKind.String);
             if (MiscUtilities.GetBase64StringBytes(options.TrayIcon) is not null)
             {
-                string trayIcon = Path.Combine(Path.GetTempPath(), "PSADT.UserInterface.TrayIcon.ico");
+                string trayIcon = Path.Join(Path.GetTempPath(), "PSADT.UserInterface.TrayIcon.ico");
                 using FileStream fs = new(trayIcon, FileMode.Create, FileAccess.Write, FileShare.None);
                 icon.Save(fs); Registry.SetValue(regKey, "IconUri", trayIcon, RegistryValueKind.ExpandString);
             }
