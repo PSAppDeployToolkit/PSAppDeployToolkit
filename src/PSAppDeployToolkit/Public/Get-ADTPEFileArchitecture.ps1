@@ -43,7 +43,7 @@ function Get-ADTPEFileArchitecture
         When the `-PassThru` parameter is provided, a FileInfo object is returned with an additional "BinaryType" property containing the PE file architecture as an IMAGE_FILE_MACHINE enum value.
 
     .EXAMPLE
-        Get-ADTPEFileArchitecture -FilePath "$env:windir\notepad.exe"
+        Get-ADTPEFileArchitecture -LiteralPath "$env:SystemRoot\notepad.exe"
 
     .NOTES
         An active ADT session is NOT required to use this function.

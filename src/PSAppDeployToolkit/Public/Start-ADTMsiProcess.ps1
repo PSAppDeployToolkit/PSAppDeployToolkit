@@ -106,7 +106,7 @@ function Start-ADTMsiProcess
         Automatically closes the active deployment session via `Close-ADTSession` in the event the process exits with a non-success or non-ignored exit code.
 
     .PARAMETER NoDesktopRefresh
-        If specifies, doesn't refresh the desktop and environment after successful MSI installation.
+        If specified, doesn't refresh the desktop and environment after successful MSI installation.
 
     .PARAMETER NoWait
         Immediately continue after executing the process.

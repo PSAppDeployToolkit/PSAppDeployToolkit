@@ -23,7 +23,7 @@ function Invoke-ADTCommandWithRetries
         How long to sleep between retries.
 
     .PARAMETER MaximumElapsedTime
-        The maximum elapsed time allowed to passed while attempting retries. If the maximum elapsted time has passed and there are still attempts remaining they will be disgarded.
+        The maximum elapsed time allowed to pass while attempting retries. If the maximum elapsed time has passed and there are still attempts remaining they will be discarded.
 
         If this parameter is supplied and the `-Retries` parameter isn't, this command will continue to retry the provided command until the time limit runs out.
 

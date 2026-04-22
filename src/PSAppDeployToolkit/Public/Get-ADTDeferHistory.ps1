@@ -21,13 +21,13 @@ function Get-ADTDeferHistory
     .OUTPUTS
         PSAppDeployToolkit.Foundation.DeferHistory
 
-        When a deferal history exists for the current deployment, this function returns a DeferHistory object represending the deferal history with the following properties:
+        When a deferral history exists for the current deployment, this function returns a DeferHistory object representing the deferral history with the following properties:
         - DeferTimesRemaining
         - DeferDeadline
         - DeferRunIntervalLastTime
 
     .EXAMPLE
-        Get-DeferHistory
+        Get-ADTDeferHistory
 
     .NOTES
         An active ADT session is required to use this function.
