@@ -1,6 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-# MARK: Get-ADTIniSection
+# MARK: Set-ADTIniSection
 #
 #-----------------------------------------------------------------------------
 
@@ -126,7 +126,10 @@ function Set-ADTIniSection
                 if (!$exists)
                 {
                     Write-ADTLogEntry -Message "Creating INI file: $FilePath."
-                    $null = New-Item -Path $FilePath -ItemType File -Force
+                    if ($PSCmdlet.ShouldProcess($FilePath, 'Create INI file'))
+                    {
+                        $null = New-Item -Path $FilePath -ItemType File -Force
+                    }
                 }
 
                 if ($null -eq $Content)
