@@ -268,7 +268,7 @@ namespace PSAppDeployToolkit.Foundation
                     // Mount the WIM file and reset DirFiles to the mount point.
                     WriteInitialDivider(ref writtenDivider);
                     WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
-                    DirectoryInfo mountPath = new(Path.Combine(DirFiles.FullName, Path.GetRandomFileName()));
+                    DirectoryInfo mountPath = new(Path.Join(DirFiles.FullName, Path.GetRandomFileName()));
                     _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath.FullName);
                     AddMountedWimFile(wimFile); DirFiles = mountPath;
                     WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
@@ -312,7 +312,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     else if (!Path.IsPathFullyQualified(DefaultMsiFile.ToString()) && DirFiles is not null)
                     {
-                        DefaultMsiFile = new(Path.Combine(DirFiles.FullName, DefaultMsiFile.ToString()));
+                        DefaultMsiFile = new(Path.Join(DirFiles.FullName, DefaultMsiFile.ToString()));
                     }
 
                     // If we have a default MSI file, proceed further with the Zero-Config configuration.
@@ -332,7 +332,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
                         else if (!Path.IsPathFullyQualified(DefaultMstFile.ToString()) && DirFiles is not null)
                         {
-                            DefaultMstFile = new(Path.Combine(DirFiles.FullName, DefaultMstFile.ToString()));
+                            DefaultMstFile = new(Path.Join(DirFiles.FullName, DefaultMstFile.ToString()));
                         }
                         if (DefaultMstFile is not null)
                         {
@@ -349,7 +349,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
                         else if (DirFiles is not null && DefaultMspFiles.Any(static f => !Path.IsPathFullyQualified(f.ToString())))
                         {
-                            DefaultMspFiles = new ReadOnlyCollection<FileInfo>([.. DefaultMspFiles.Select(f => !Path.IsPathFullyQualified(f.ToString()) ? new(Path.Combine(DirFiles!.FullName, f.ToString())) : f)]);
+                            DefaultMspFiles = new ReadOnlyCollection<FileInfo>([.. DefaultMspFiles.Select(f => !Path.IsPathFullyQualified(f.ToString()) ? new(Path.Join(DirFiles!.FullName, f.ToString())) : f)]);
                         }
                         if (DefaultMspFiles.Count > 0)
                         {
@@ -449,7 +449,7 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["CompressLogs"]!)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
-                    DirectoryInfo logTempFolder = new(Path.Combine(adtEnv.EnvTemp.FullName, $"{InstallName}_{DeploymentType}"));
+                    DirectoryInfo logTempFolder = new(Path.Join(adtEnv.EnvTemp.FullName, $"{InstallName}_{DeploymentType}"));
                     if (logTempFolder.Exists)
                     {
                         logTempFolder.Delete(true);
@@ -465,7 +465,7 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
-                    LogPath = new(Directory.CreateDirectory(Path.Combine(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null))).FullName);
+                    LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null))).FullName);
 
                     // Check how many hierarchy levels to keep based on configuration.
                     DirectoryInfo[] hierarchyDirectories = [.. LogPath.Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath.FullName, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
@@ -481,14 +481,14 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else if ((bool)configToolkit["LogToSubfolder"]!)
                 {
-                    LogPath = new(Directory.CreateDirectory(Path.Combine(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
+                    LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $"{InstallName}_{DeploymentType}")).FullName);
                 }
 
                 // Generate the log filename to use. Append the username to the log file name if the toolkit is not running as an administrator,
                 // since users do not have the rights to modify files in the ProgramData folder that belong to other users.
                 DefaultLogName = invalidChars.Replace($"{InstallName}_{{0}}_{DeploymentType}{(!isAdmin ? $"_{adtEnv.EnvUserName}" : null)}.log", string.Empty);
                 LogName = !string.IsNullOrWhiteSpace(LogName) ? invalidChars.Replace(LogName, string.Empty) : NewLogFileName(appDeployToolkitName);
-                FileInfo logFile = new(Path.Combine(LogPath.FullName, LogName));
+                FileInfo logFile = new(Path.Join(LogPath.FullName, LogName));
                 int logMaxSize = (int)configToolkit["LogMaxSize"]!;
                 bool logFileSizeExceeded = logFile.Exists && (logMaxSize > 0) && ((logFile.Length / 1_048_576.0) > logMaxSize);
 
@@ -502,7 +502,7 @@ namespace PSAppDeployToolkit.Foundation
                         string logFileExtension = LogUtilities.LogFileNameRegex.Match(LogName).Value;
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
-                        string archiveLogFilePath = Path.Combine(LogPath.FullName, archiveLogFileName);
+                        string archiveLogFilePath = Path.Join(LogPath.FullName, archiveLogFileName);
                         int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
@@ -542,7 +542,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using StreamWriter logFileWriter = new(Path.Combine(LogPath.FullName, LogName), true, LogUtilities.LogEncoding);
+                    using StreamWriter logFileWriter = new(Path.Join(LogPath.FullName, LogName), true, LogUtilities.LogEncoding);
                     foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
                     {
                         logFileWriter.WriteLine(line);
@@ -1087,7 +1087,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
 
                     // Compression of the log files.
-                    ZipFile.CreateFromDirectory(LogPath.FullName, Path.Combine(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
+                    ZipFile.CreateFromDirectory(LogPath.FullName, Path.Join(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
                     LogPath.Delete(true);
                 }
                 catch (Exception ex) when (ex.Message is not null)

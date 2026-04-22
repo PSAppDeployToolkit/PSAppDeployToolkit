@@ -129,20 +129,20 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     EnvProgramFiles = GetEnvironmentVariableDirectory("ProgramW6432");
                     EnvCommonProgramFiles = GetEnvironmentVariableDirectory("CommonProgramW6432");
-                    EnvSysNativeDirectory = EnvWinDir is not null ? new(Path.Combine(EnvWinDir.FullName, "sysnative")) : null;
+                    EnvSysNativeDirectory = EnvWinDir is not null ? new(Path.Join(EnvWinDir.FullName, "sysnative")) : null;
                     EnvSysWow64Directory = EnvSystem32Directory;
                 }
                 EnvProgramFilesX86 = GetEnvironmentFolderPath(Environment.SpecialFolder.ProgramFilesX86);
                 EnvCommonProgramFilesX86 = GetEnvironmentFolderPath(Environment.SpecialFolder.CommonProgramFilesX86);
-                EnvSystemProfile = EnvSysNativeDirectory is not null ? new(Path.Combine(EnvSysNativeDirectory.FullName, "Config", "systemprofile")) : null;
-                EnvSystemProfileX86 = EnvSysWow64Directory is not null ? new(Path.Combine(EnvSysWow64Directory.FullName, "Config", "systemprofile")) : null;
+                EnvSystemProfile = EnvSysNativeDirectory is not null ? new(Path.Join(EnvSysNativeDirectory.FullName, "Config", "systemprofile")) : null;
+                EnvSystemProfileX86 = EnvSysWow64Directory is not null ? new(Path.Join(EnvSysWow64Directory.FullName, "Config", "systemprofile")) : null;
             }
             else
             {
                 EnvProgramFiles = GetEnvironmentFolderPath(Environment.SpecialFolder.ProgramFiles);
                 EnvCommonProgramFiles = GetEnvironmentFolderPath(Environment.SpecialFolder.CommonProgramFiles);
                 EnvSysNativeDirectory = EnvSystem32Directory;
-                EnvSystemProfile = EnvSysNativeDirectory is not null ? new(Path.Combine(EnvSysNativeDirectory.FullName, "Config", "systemprofile")) : null;
+                EnvSystemProfile = EnvSysNativeDirectory is not null ? new(Path.Join(EnvSysNativeDirectory.FullName, "Config", "systemprofile")) : null;
             }
 
             // Operating system information.

@@ -201,7 +201,7 @@ namespace PSADT.WindowsInstaller
             }
             else
             {
-                tempMsiPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(msiPath) + "_" + Guid.NewGuid().ToString("N") + ".msi"));
+                tempMsiPath = Path.GetFullPath(Path.Join(Path.GetTempPath(), Path.GetFileNameWithoutExtension(msiPath) + "_" + Guid.NewGuid().ToString("N") + ".msi"));
                 deleteTempMsi = true;
             }
 
