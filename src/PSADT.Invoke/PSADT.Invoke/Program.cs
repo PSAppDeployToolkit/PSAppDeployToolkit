@@ -278,7 +278,7 @@ namespace PSADT.Invoke
             }
 
             // Determine the path to the script to invoke.
-            string adtFrontendPath = Path.Combine(currentPath, $"{typeof(Program).Assembly.GetName().Name}.ps1");
+            string adtFrontendPath = Path.Combine(currentPath, $"{Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location)}.ps1");
             int fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
