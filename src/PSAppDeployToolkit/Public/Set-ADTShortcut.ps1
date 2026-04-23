@@ -47,9 +47,11 @@ function Set-ADTShortcut
         Forces creation of the shortcut if it doesn't exist.
 
     .INPUTS
-        None
+        PSADT.ShortcutManagement.IShortcutLinkInfo
 
-        You cannot pipe objects to this function.
+        You can pipe a IShortcutLinkInfo object into this function to specify the shortcut to modify.
+
+        When piping a IShortcutLinkInfo object into this function, the only properties modified are the ones explicitly specified via this function's parameters.
 
     .OUTPUTS
         None
@@ -60,6 +62,11 @@ function Set-ADTShortcut
         Set-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
 
         Creates a shortcut on the All Users desktop named 'Application', targeted to '$envProgramFiles\Application\application.exe'.
+
+    .EXAMPLE
+        Get-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" | Set-ADTShortcut -WindowStyle Maximized
+
+        Modifies the shortcut on the All Users desktop named 'Application' to launch maximized.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -78,10 +85,14 @@ function Set-ADTShortcut
     [CmdletBinding(SupportsShouldProcess = $true)]
     param
     (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0, ParameterSetName = 'LiteralPath')]
         [PSAppDeployToolkit.Attributes.ValidateExtension('.lnk', '.url')]
         [Alias('Path')]
         [System.String]$LiteralPath,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSADT.ShortcutManagement.IShortcutLinkInfo]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
@@ -118,14 +129,14 @@ function Set-ADTShortcut
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Hotkey,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
         [System.Management.Automation.SwitchParameter]$Force
     )
 
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ($PSBoundParameters.Count -eq 1)
+        if ((($PSCmdlet.ParameterSetName -eq 'LiteralPath') -and ($PSBoundParameters.Count -eq 1)) -or $PSBoundParameters.Count -eq 0)
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("At least one change must be specified.")
@@ -137,38 +148,41 @@ function Set-ADTShortcut
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         $exists = $true
-        try
+        if ($PSCmdlet.ParameterSetName -eq 'LiteralPath')
         {
-            $LiteralPath = Resolve-ADTFileSystemPath -LiteralPath $LiteralPath -File
-        }
-        catch
-        {
-            if ($_.Exception -is [System.IO.FileNotFoundException])
+            try
             {
-                $LiteralPath = $_.TargetObject.ResolvedPath
-                $exists = $false
-                if (!$Force)
+                $LiteralPath = Resolve-ADTFileSystemPath -LiteralPath $LiteralPath -File
+            }
+            catch
+            {
+                if ($_.Exception -is [System.IO.FileNotFoundException])
+                {
+                    $LiteralPath = $_.TargetObject.ResolvedPath
+                    $exists = $false
+                    if (!$Force)
+                    {
+                        $PSCmdlet.ThrowTerminatingError($_)
+                        return
+                    }
+                }
+                else
                 {
                     $PSCmdlet.ThrowTerminatingError($_)
                     return
                 }
             }
-            else
+            if (!$exists -and [System.String]::IsNullOrWhiteSpace($TargetPath))
             {
-                $PSCmdlet.ThrowTerminatingError($_)
-                return
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The [-TargetPath] parameter must be specified when forcibly creating a new shortcut.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                    ErrorId = 'NoTargetPathForNonPreExistingShortcut'
+                    TargetObject = $PSBoundParameters
+                    RecommendedAction = "Please review the provided input and try again."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
-        }
-        if (!$exists -and [System.String]::IsNullOrWhiteSpace($TargetPath))
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The [-TargetPath] parameter must be specified when forcibly creating a new shortcut.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
-                ErrorId = 'NoTargetPathForNonPreExistingShortcut'
-                TargetObject = $PSBoundParameters
-                RecommendedAction = "Please review the provided input and try again."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
     }
 
@@ -178,6 +192,11 @@ function Set-ADTShortcut
         {
             try
             {
+                if ($PSCmdlet.ParameterSetName -eq 'InputObject')
+                {
+                    $LiteralPath = $InputObject.FilePath
+                }
+
                 # Return early if we shouldn't process.
                 if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Modify shortcut'))
                 {
