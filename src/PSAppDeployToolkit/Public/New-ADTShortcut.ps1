@@ -46,6 +46,9 @@ function New-ADTShortcut
     .PARAMETER Force
         Forces deletion of a pre-existing shortcut.
 
+    .PARAMETER PassThru
+        Returns a IShortcutLinkInfo object representing the new shortcut.
+
     .INPUTS
         None
 
@@ -54,7 +57,12 @@ function New-ADTShortcut
     .OUTPUTS
         None
 
-        This function does not return any output.
+        By default, this function does not return any output.
+
+    .OUTPUTS
+        PSADT.ShortcutManagement.IShortcutLinkInfo
+
+        When the `-PassThru` parameter is provided, this function returns a IShortcutLinkInfo object representing the new shortcut.
 
     .EXAMPLE
         New-ADTShortcut -LiteralPath "$envCommonStartMenuPrograms\My Shortcut.lnk" -TargetPath "$envWinDir\notepad.exe" -IconLocation "$envWinDir\notepad.exe" -Description 'Notepad' -WorkingDirectory '%HOMEDRIVE%\%HOMEPATH%'
@@ -78,6 +86,7 @@ function New-ADTShortcut
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([PSADT.ShortcutManagement.IShortcutLinkInfo])]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -121,7 +130,10 @@ function New-ADTShortcut
         [System.String]$Hotkey,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Force
+        [System.Management.Automation.SwitchParameter]$Force,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin

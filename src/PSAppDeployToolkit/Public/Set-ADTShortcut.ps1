@@ -56,7 +56,12 @@ function Set-ADTShortcut
     .OUTPUTS
         None
 
-        This function does not generate any output.
+        By default, this function does not return any output.
+
+    .OUTPUTS
+        PSADT.ShortcutManagement.IShortcutLinkInfo
+
+        When the `-PassThru` parameter is provided, this function returns a IShortcutLinkInfo object representing the modified shortcut.
 
     .EXAMPLE
         Set-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
@@ -83,6 +88,7 @@ function Set-ADTShortcut
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([PSADT.ShortcutManagement.IShortcutLinkInfo])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0, ParameterSetName = 'LiteralPath')]
@@ -130,7 +136,10 @@ function Set-ADTShortcut
         [System.String]$Hotkey,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
-        [System.Management.Automation.SwitchParameter]$Force
+        [System.Management.Automation.SwitchParameter]$Force,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin
@@ -265,6 +274,10 @@ function Set-ADTShortcut
                         {
                             $shortcut.Save()
                         }
+                        if ($PassThru)
+                        {
+                            return $shortcut.GetShortcutInfo()
+                        }
                     }
                     finally
                     {
@@ -339,6 +352,10 @@ function Set-ADTShortcut
                         else
                         {
                             $shortcut.Save()
+                        }
+                        if ($PassThru)
+                        {
+                            return $shortcut.GetShortcutInfo()
                         }
                     }
                     finally
