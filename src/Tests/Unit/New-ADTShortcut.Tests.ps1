@@ -60,7 +60,7 @@ Describe 'Get-ADTShortcut' {
 
     Context 'Input Validation' {
         It 'Should throw when the path provided to -LiteralPath already exists and -Force is not specified' {
-			New-ADTShortcut @shellLinkProperties
+            New-ADTShortcut @shellLinkProperties
             { New-ADTShortcut -LiteralPath $shellLinkProperties.LiteralPath -TargetPath 'test' } | Should -Throw -ExceptionType ([System.IO.IOException]) -ErrorId 'ShortcutPathIsPreExisting,New-ADTShortcut'
         }
         It 'Should validate that the path provided to -LiteralPath has a valid shortcut extension' {
