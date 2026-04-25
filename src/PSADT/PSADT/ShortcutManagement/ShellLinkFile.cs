@@ -124,18 +124,6 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
-        /// Gets shortcut info for the current <see cref="ShellLinkFile"/>.
-        /// </summary>
-        /// <returns>
-        /// Returns a <see cref="ShellLinkInfo"/> object representing the current <see cref="ShellLinkFile"/>.
-        /// </returns>
-        public ShellLinkInfo GetShortcutInfo()
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            return new(this);
-        }
-
-        /// <summary>
         /// Saves the shortcut to the currently loaded file path.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when no file path has been set or the file was opened read-only.</exception>
