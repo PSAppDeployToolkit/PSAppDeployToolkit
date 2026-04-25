@@ -8,10 +8,10 @@ function Initialize-ADTModule
 {
     <#
     .SYNOPSIS
-        Initializes the ADT module by setting up necessary configurations and environment.
+        Initializes the PSAppDeployToolkit module by setting up necessary configurations and environment.
 
     .DESCRIPTION
-        The `Initialize-ADTModule` function sets up the environment for the ADT module by initializing necessary variables, configurations, and string tables. It ensures that the module is not initialized while there is an active ADT session in progress. This function prepares the module for use by clearing callbacks, sessions, and setting up the environment table.
+        The `Initialize-ADTModule` function sets up the environment for the PSAppDeployToolkit module by initializing necessary variables, configurations, and string tables. It ensures that the module is not initialized while there is an active ADT session in progress. This function prepares the module for use by clearing callbacks, sessions, and setting up the environment table.
 
     .PARAMETER ScriptDirectory
         An override directory to use for config and string loading.
@@ -32,7 +32,7 @@ function Initialize-ADTModule
     .EXAMPLE
         Initialize-ADTModule
 
-        Initializes the ADT module with the default settings and configurations.
+        Initializes the PSAppDeployToolkit module with the default settings and configurations.
 
     .NOTES
         An active ADT session is NOT required to use this function.
