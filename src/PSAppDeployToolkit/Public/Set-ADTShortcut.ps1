@@ -97,7 +97,7 @@ function Set-ADTShortcut
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [ValidateNotNull()]
         [PSADT.ShortcutManagement.IShortcutLinkInfo]$InputObject,
 
         [Parameter(Mandatory = $false)]
@@ -276,7 +276,7 @@ function Set-ADTShortcut
                         }
                         if ($PassThru)
                         {
-                            return $shortcut.GetShortcutInfo()
+                            return [PSADT.ShortcutManagement.InternetShortcutInfo]::Get($shortcut.FilePath)
                         }
                     }
                     finally
@@ -355,7 +355,7 @@ function Set-ADTShortcut
                         }
                         if ($PassThru)
                         {
-                            return $shortcut.GetShortcutInfo()
+                            return [PSADT.ShortcutManagement.ShellLinkInfo]::Get($shortcut.FilePath)
                         }
                     }
                     finally
