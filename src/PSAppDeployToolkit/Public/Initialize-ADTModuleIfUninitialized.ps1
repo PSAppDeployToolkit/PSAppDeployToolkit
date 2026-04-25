@@ -43,7 +43,7 @@ function Initialize-ADTModuleIfUninitialized
     .EXAMPLE
         Initialize-ADTModuleIfUninitialized -Cmdlet $PSCmdlet
 
-        Initializes the ADT module with the default settings and configurations if it is uninitialized.
+        Initializes the PSAppDeployToolkit module with the default settings and configurations if it is uninitialized.
 
     .NOTES
         An active ADT session is NOT required to use this function.

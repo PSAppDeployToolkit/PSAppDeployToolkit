@@ -8,10 +8,10 @@ function Show-ADTHelpConsole
 {
     <#
     .SYNOPSIS
-        Displays a help console for the ADT module.
+        Displays a help console for the PSAppDeployToolkit module.
 
     .DESCRIPTION
-        The `Show-ADTHelpConsole` function displays a help console for the ADT module in a new PowerShell window. The console provides a graphical interface to browse and view detailed help information for all commands exported by the ADT module. The help console includes a list box to select commands and a text box to display the full help content for the selected command.
+        The `Show-ADTHelpConsole` function displays a help console for the PSAppDeployToolkit module in a new PowerShell window. The console provides a graphical interface to browse and view detailed help information for all commands exported by the PSAppDeployToolkit module. The help console includes a list box to select commands and a text box to display the full help content for the selected command.
 
     .INPUTS
         None
@@ -26,7 +26,7 @@ function Show-ADTHelpConsole
     .EXAMPLE
         Show-ADTHelpConsole
 
-        Opens a new PowerShell window displaying the help console for the ADT module.
+        Opens a new PowerShell window displaying the help console for the PSAppDeployToolkit module.
 
     .NOTES
         An active ADT session is NOT required to use this function.

@@ -8,10 +8,10 @@ function Get-ADTConfig
 {
     <#
     .SYNOPSIS
-        Retrieves the configuration data for the ADT module.
+        Retrieves the configuration data for the PSAppDeployToolkit module.
 
     .DESCRIPTION
-        The `Get-ADTConfig` function retrieves the configuration data for the ADT module. This function ensures that the ADT module has been initialized before attempting to retrieve the configuration data. If the module is not initialized, it throws an error.
+        The `Get-ADTConfig` function retrieves the configuration data for the PSAppDeployToolkit module. This function ensures that the PSAppDeployToolkit module has been initialized before attempting to retrieve the configuration data. If the module is not initialized, it throws an error.
 
     .INPUTS
         None
@@ -26,7 +26,7 @@ function Get-ADTConfig
     .EXAMPLE
         $config = Get-ADTConfig
 
-        This example retrieves the configuration data for the ADT module and stores it in the $config variable.
+        This example retrieves the configuration data for the PSAppDeployToolkit module and stores it in the `$config` variable.
 
     .NOTES
         The module must be initialized via `Initialize-ADTModule` prior to calling this function.
