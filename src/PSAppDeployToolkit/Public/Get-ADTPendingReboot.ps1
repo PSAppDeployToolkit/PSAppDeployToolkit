@@ -17,6 +17,7 @@ function Get-ADTPendingReboot
         - Windows Update / Auto Update (XP, Windows 2003 / 2008)
         - SCCM 2012 Clients (DetermineIfRebootPending WMI method)
         - App-V Pending Tasks (global based Appv 5.0 SP2)
+        - Intune Management Extension
         - Pending File Rename Operations (XP, Windows 2003 / 2008)
 
     .INPUTS
