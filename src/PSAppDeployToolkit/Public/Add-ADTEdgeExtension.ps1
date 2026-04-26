@@ -8,10 +8,10 @@ function Add-ADTEdgeExtension
 {
     <#
     .SYNOPSIS
-        Adds an extension for Microsoft Edge using the ExtensionSettings policy.
+        Adds an extension to Microsoft Edge using the ExtensionSettings policy.
 
     .DESCRIPTION
-        The `Add-ADTEdgeExtension` function adds an extension for Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide.
+        The `Add-ADTEdgeExtension` function adds an extension to Microsoft Edge using the ExtensionSettings policy: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-manage-extensions-ref-guide.
 
         This enables Edge Extensions to be installed and managed like applications, enabling extensions to be pushed to specific devices or users alongside existing GPO/Intune extension policies.
 

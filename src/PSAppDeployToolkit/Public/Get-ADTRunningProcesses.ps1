@@ -29,7 +29,7 @@ function Get-ADTRunningProcesses
     .EXAMPLE
         Get-ADTRunningProcesses -ProcessObjects $processObjects
 
-        Returns a list of running processes. If nothing is found nothing will be returned.
+        Returns a list of running processes. If nothing is found, nothing will be returned.
 
     .NOTES
         An active ADT session is NOT required to use this function.
