@@ -21,11 +21,12 @@ function Copy-ADTContentToCache
         The path to the software cache folder.
 
     .PARAMETER Exclude
-        Specifies one or more content categories to exclude from the cache copy. Acceptable values are 'Files', 'SupportFiles', and 'Toolkit'.
+        Specifies one or more content categories to exclude from the cache copy.
 
-        - Files: Excludes the Files folder and does not remap the DirFiles session property.
-        - SupportFiles: Excludes the SupportFiles folder and does not remap the DirSupportFiles session property.
-        - Toolkit: Excludes all content other than the Files and SupportFiles folders.
+        Valid values for this parameter are:
+        - `Files`: Excludes the Files folder and does not remap the DirFiles session property.
+        - `SupportFiles`: Excludes the SupportFiles folder and does not remap the DirSupportFiles session property.
+        - `Toolkit`: Excludes all content other than the Files and SupportFiles folders.
 
     .INPUTS
         None
