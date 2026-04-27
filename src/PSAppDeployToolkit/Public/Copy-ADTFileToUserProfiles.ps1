@@ -47,7 +47,7 @@ function Copy-ADTFileToUserProfiles
         Append to the default Robocopy parameters.
 
     .PARAMETER UserProfiles
-        Specifies one or more UserProfile objects to copy files into.
+        Specifies one or more UserProfileInfo objects to copy files into.
 
     .PARAMETER ExcludeNTAccount
         Specify NT account names in Domain\Username format to exclude from the list of user profiles.
