@@ -11,7 +11,7 @@ function Get-ADTLoggedOnUser
         Retrieves session details for all local and RDP logged on users.
 
     .DESCRIPTION
-        The `Get-ADTLoggedOnUser` function retrieves session details for all local and RDP logged on users using Win32 APIs. It provides information such as NTAccount, SID, UserName, DomainName, SessionId, SessionName, ConnectState, IsCurrentSession, IsConsoleSession, IsUserSession, IsActiveUserSession, IsRdpSession, IsLocalAdmin, LogonTime, IdleTime, DisconnectTime, ClientName, ClientProtocolType, ClientDirectory, and ClientBuildNumber.
+        The `Get-ADTLoggedOnUser` function retrieves session details for all local and RDP logged on users using Win32 APIs. It provides basic information about the logged on user's account and logon session.
 
     .INPUTS
         None
@@ -51,24 +51,21 @@ function Get-ADTLoggedOnUser
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        Description of ConnectState property:
-
-        Value        Description
-        -----        -----------
-        Active       A user is logged on to the session.
-        ConnectQuery The session is in the process of connecting to a client.
-        Connected    A client is connected to the session.
-        Disconnected The session is active, but the client has disconnected from it.
-        Down         The session is down due to an error.
-        Idle         The session is waiting for a client to connect.
-        Initializing The session is initializing.
-        Listening    The session is listening for connections.
-        Reset        The session is being reset.
-        Shadowing    This session is shadowing another session.
+        Valid ConnectState enum values are:
+        - `WTSActive`: A user is logged on to the session. This state occurs when a user is signed in and actively connected to the device.
+        - `WTSConnected`: The session is connected to the client.
+        - `WTSConnectQuery`: The session is in the process of connecting to the client.
+        - `WTSShadow`: The session is shadowing another session.
+        - `WTSDisconnected`: The session is active but the client is disconnected. This state occurs when a user is signed in but not actively connected to the device, such as when the user has chosen to exit to the lock screen.
+        - `WTSIdle`: The session is waiting for a client to connect.
+        - `WTSListen`: The session is listening for a connection. A listener session waits for requests for new client connections. No user is logged on a listener session. A listener session cannot be reset, shadowed, or changed to a regular client session.
+        - `WTSRest`: The session is being reset.
+        - `WTSDown`: The session is down due to an error.
+        - `WTSInit`: The session is initializing.
 
         Description of IsActiveUserSession property:
-        - If a console user exists, then that will be the active user session.
-        - If no console user exists but users are logged in, such as on terminal servers, then the first logged-in non-console user that has ConnectState either 'Active' or 'Connected' is the active user.
+        - If a console user session exists, the active user is the user with the console session.
+        - If no console user exists but users are logged in, such as on terminal servers, the first logged-in, non-console user, that has a ConnectState of `WTSActive` or `WTSConnected` is the active user.
 
         Description of IsRdpSession property:
         - Gets a value indicating whether the user is associated with an RDP client session.
