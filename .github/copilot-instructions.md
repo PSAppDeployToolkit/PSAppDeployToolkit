@@ -26,7 +26,8 @@ Detailed coding standards are maintained in dedicated instruction files that Cop
 
 The main build dependency is a current .NET SDK. Visual Studio is recommended for C# and XAML work.
 
-- Run `build.cmd` or `build.ps1` from the repository root to invoke `Invoke-ADTModuleBuild` via `src/PSAppDeployToolkit.Build/PSAppDeployToolkit.Build.psd1`.
+- If there are only PowerShell changes, the module can be re-imported via `Import-Module .\src\PSAppDeployToolkit\PSAppDeployToolkit.psd1 -Force`. If this gives an error containing `assembly of a different file hash is already loaded`, the PowerShell session needs to be restarted.
+- Run `build.cmd` or `build.ps1` from the repository root to perform a full build.
 - Prefer the existing VS Code tasks and build entry points over ad-hoc commands when validating changes.
 - Common validation tasks include `Build`, `Test`, `Analyze`, `FormattingCheck`, and `ValidateRequirements`.
 
