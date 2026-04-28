@@ -17,7 +17,7 @@ function Compress-ADTBuildAssetContent
         }
         $fileSuffix = "$(if ($env:GITHUB_REF_NAME -match 'merge$') { $env:GITHUB_REF_NAME.Split('/')[-2] } else { $env:GITHUB_REF_NAME.Split('/')[-1] })_$([System.DateTime]::Now.ToUniversalTime().ToString('O').Replace(':', [System.Management.Automation.Language.NullString]::Value) -replace '\.\d+')_$($env:GITHUB_SHA.Substring(0, 7))"
         $gitHubAction = !![System.Environment]::GetEnvironmentVariable('GITHUB_OUTPUT')
-        foreach ($childItem in ('ModuleOnly', 'Template_v3', 'Template_v4'))
+        foreach ($childItem in ('ModuleOnly', 'Template_v3', 'Template_v4', 'Template_v4_ZeroConfig'))
         {
             if (![System.IO.Directory]::Exists(($source = [System.IO.Path]::Combine($Script:ModuleConstants.Paths.BuildOutput, $childItem))))
             {
