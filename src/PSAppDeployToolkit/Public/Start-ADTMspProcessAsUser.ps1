@@ -66,7 +66,7 @@ function Start-ADTMspProcessAsUser
         When specified, if no user is logged on, the condition is logged and the function returns without throwing an exception.
 
     .PARAMETER NoDesktopRefresh
-        If specifies, doesn't refresh the desktop and environment after successful MSI installation.
+        If specified, doesn't refresh the desktop and environment after successful MSI installation.
 
     .PARAMETER NoWait
         Immediately continue after executing the process.
