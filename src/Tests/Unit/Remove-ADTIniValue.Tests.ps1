@@ -17,6 +17,11 @@ MyOtherKey=MyOtherValue
     }
 
     Context 'Functionality' {
+        It 'Should not throw when removing a non-existent Key' {
+            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'MissingKey' } | Should -Not -Throw
+            $IniPath | Should -FileContentMatchMultiline 'MyKey=MyValue'
+            $IniPath | Should -FileContentMatchMultiline 'MyOtherKey=MyOtherValue'
+        }
         It 'Should remove a Key' {
             Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'MyKey'
             $IniPath | Should -FileContentMatchMultiline '\[MySection\]\r\nMyOtherKey=MyOtherValue\r\n'
