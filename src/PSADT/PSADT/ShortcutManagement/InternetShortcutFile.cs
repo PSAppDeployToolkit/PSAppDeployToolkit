@@ -127,7 +127,7 @@ namespace PSADT.ShortcutManagement
         /// <returns>
         /// Returns a <see cref="InternetShortcutInfo"/> object representing the current <see cref="InternetShortcutFile"/>.
         /// </returns>
-        public InternetShortcutInfo GetShortcutInfo()
+        public InternetShortcutInfo GetInfoSnapshot()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             return new(this);

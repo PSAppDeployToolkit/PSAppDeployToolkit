@@ -276,7 +276,7 @@ function Set-ADTShortcut
                         }
                         if ($PassThru)
                         {
-                            return [PSADT.ShortcutManagement.InternetShortcutInfo]::Get($shortcut.FilePath)
+                            return $shortcut.GetInfoSnapshot()
                         }
                     }
                     finally
@@ -355,7 +355,7 @@ function Set-ADTShortcut
                         }
                         if ($PassThru)
                         {
-                            return [PSADT.ShortcutManagement.ShellLinkInfo]::Get($shortcut.FilePath)
+                            return $shortcut.GetInfoSnapshot()
                         }
                     }
                     finally
