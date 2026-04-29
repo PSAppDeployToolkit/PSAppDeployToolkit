@@ -12,26 +12,30 @@ function Private:Update-ADTProcessAsUserBoundParameters
     (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.PSCmdlet]$Cmdlet
+        [System.Management.Automation.PSCmdlet]$Cmdlet,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.Generic.Dictionary[System.String, System.Object]]$BoundParameters
     )
 
     # Convert the Username field into a RunAsActiveUser object as required by the subsystem.
-    $gacsuParams = @{}; if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('Username'))
+    $gacsuParams = @{}; if ($BoundParameters.ContainsKey('Username'))
     {
-        $gacsuParams.Add('Username', $Cmdlet.MyInvocation.BoundParameters.Username)
+        $gacsuParams.Add('Username', $BoundParameters.Username)
         $gacsuParams.Add('AllowAnyValidSession', $true)
     }
-    if (!($Cmdlet.MyInvocation.BoundParameters.RunAsActiveUser = Get-ADTClientServerUser @gacsuParams))
+    if (!($BoundParameters.RunAsActiveUser = Get-ADTClientServerUser @gacsuParams))
     {
-        if (!$Cmdlet.MyInvocation.BoundParameters.ContainsKey('ContinueWhenNoUserLoggedOn') -or !$Cmdlet.MyInvocation.BoundParameters.ContinueWhenNoUserLoggedOn)
+        if (!$BoundParameters.ContainsKey('ContinueWhenNoUserLoggedOn') -or !$BoundParameters.ContinueWhenNoUserLoggedOn)
         {
             try
             {
                 $naerParams = @{
-                    Exception = [System.InvalidOperationException]::new("Could not find a valid logged on user session$(if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('Username')) { " for [$($Cmdlet.MyInvocation.BoundParameters.Username)]" }).")
+                    Exception = [System.InvalidOperationException]::new("Could not find a valid logged on user session$(if ($BoundParameters.ContainsKey('Username')) { " for [$($BoundParameters.Username)]" }).")
                     Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                     ErrorId = 'NoActiveUserError'
-                    TargetObject = $(if ($Cmdlet.MyInvocation.BoundParameters.ContainsKey('Username')) { $Cmdlet.MyInvocation.BoundParameters.Username })
+                    TargetObject = $(if ($BoundParameters.ContainsKey('Username')) { $BoundParameters.Username })
                     RecommendedAction = "Please re-run this command while a user is logged onto the device and try again."
                 }
                 Write-Error -ErrorRecord (New-ADTErrorRecord @naerParams)
@@ -48,7 +52,7 @@ function Private:Update-ADTProcessAsUserBoundParameters
             return $false
         }
     }
-    $null = $Cmdlet.MyInvocation.BoundParameters.Remove('ContinueWhenNoUserLoggedOn')
-    $null = $Cmdlet.MyInvocation.BoundParameters.Remove('Username')
+    $null = $BoundParameters.Remove('ContinueWhenNoUserLoggedOn')
+    $null = $BoundParameters.Remove('Username')
     return $true
 }

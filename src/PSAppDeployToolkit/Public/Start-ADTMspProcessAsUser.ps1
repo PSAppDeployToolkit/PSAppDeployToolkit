@@ -212,7 +212,7 @@ function Start-ADTMspProcessAsUser
     process
     {
         # Update the parameters. This will return false if it failed and -ContinueWhenNoUserLoggedOn is passed.
-        if (!(Update-ADTProcessAsUserBoundParameters -Cmdlet $PSCmdlet))
+        if (!(Update-ADTProcessAsUserBoundParameters -Cmdlet $PSCmdlet -BoundParameters $PSBoundParameters) -or !$PSBoundParameters.ContainsKey('RunAsActiveUser'))
         {
             return
         }
