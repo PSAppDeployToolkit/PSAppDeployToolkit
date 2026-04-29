@@ -16,6 +16,9 @@ function Set-ADTShortcut
     .PARAMETER LiteralPath
         Path to the shortcut to be changed.
 
+    .PARAMETER InputObject
+        An existing IShortcutLinkInfo object to modify.
+
     .PARAMETER TargetPath
         Sets target path or URL that the shortcut launches.
 
@@ -45,6 +48,9 @@ function Set-ADTShortcut
 
     .PARAMETER Force
         Forces creation of the shortcut if it doesn't exist.
+
+    .PARAMETER PassThru
+        Returns an IShortcutLinkInfo snapshot of the shortcut.
 
     .INPUTS
         PSADT.ShortcutManagement.IShortcutLinkInfo
