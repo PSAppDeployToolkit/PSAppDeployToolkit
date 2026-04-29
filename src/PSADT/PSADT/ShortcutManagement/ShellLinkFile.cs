@@ -129,7 +129,7 @@ namespace PSADT.ShortcutManagement
         /// <returns>
         /// Returns a <see cref="ShellLinkInfo"/> object representing the current <see cref="ShellLinkFile"/>.
         /// </returns>
-        public ShellLinkInfo GetShortcutInfo()
+        public ShellLinkInfo GetInfoSnapshot()
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
             return new(this);
