@@ -122,6 +122,18 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
+        /// Gets shortcut info for the current <see cref="InternetShortcutFile"/>.
+        /// </summary>
+        /// <returns>
+        /// Returns a <see cref="InternetShortcutInfo"/> object representing the current <see cref="InternetShortcutFile"/>.
+        /// </returns>
+        public InternetShortcutInfo GetShortcutInfo()
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return new(this);
+        }
+
+        /// <summary>
         /// Saves the Internet shortcut to the currently loaded file path.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when no file path has been set or the file was opened read-only.</exception>
