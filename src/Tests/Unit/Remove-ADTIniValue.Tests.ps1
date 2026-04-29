@@ -22,6 +22,11 @@ MyOtherKey=MyOtherValue
             $IniPath | Should -FileContentMatchMultiline '\[MySection\]\r\nMyOtherKey=MyOtherValue\r\n'
             $IniPath  | Should -Not -FileContentMatchMultiline 'MyKey='
         }
+        It 'Should not throw when removing a non-existent Key' {
+            { Remove-ADTIniValue -FilePath $IniPath -Section 'MySection' -Key 'MissingKey' } | Should -Not -Throw
+            $IniPath | Should -FileContentMatchMultiline 'MyKey=MyValue'
+            $IniPath | Should -FileContentMatchMultiline 'MyOtherKey=MyOtherValue'
+        }
     }
 
     Context 'Input Validation' {

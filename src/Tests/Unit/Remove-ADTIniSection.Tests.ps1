@@ -24,6 +24,13 @@ MyOtherKey=MyOtherValue
             $IniPath | Should -Not -FileContentMatch 'MyKey=MyValue'
             $IniPath | Should -FileContentMatchMultiline '\[MyOtherSection\]\r\nMyOtherKey=MyOtherValue\r\n'
         }
+        It 'Should handle removing a non-existent section without changing the file' {
+            { Remove-ADTIniSection -FilePath $IniPath -Section 'SectionThatDoesNotExist' } | Should -Not -Throw
+            $IniPath | Should -FileContentMatch '\[MySection\]'
+            $IniPath | Should -FileContentMatch 'MyKey=MyValue'
+            $IniPath | Should -FileContentMatch '\[MyOtherSection\]'
+            $IniPath | Should -FileContentMatch 'MyOtherKey=MyOtherValue'
+        }
     }
 
     Context 'Input Validation' {
