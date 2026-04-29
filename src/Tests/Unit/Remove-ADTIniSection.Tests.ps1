@@ -18,6 +18,13 @@ MyOtherKey=MyOtherValue
     }
 
     Context 'Functionality' {
+        It 'Should handle removing a non-existent section without changing the file' {
+            { Remove-ADTIniSection -FilePath $IniPath -Section 'SectionThatDoesNotExist' } | Should -Not -Throw
+            $IniPath | Should -FileContentMatch '\[MySection\]'
+            $IniPath | Should -FileContentMatch 'MyKey=MyValue'
+            $IniPath | Should -FileContentMatch '\[MyOtherSection\]'
+            $IniPath | Should -FileContentMatch 'MyOtherKey=MyOtherValue'
+        }
         It 'Should remove an entire section, leaving other sections intact' {
             Remove-ADTIniSection -FilePath $IniPath -Section 'MySection'
             $IniPath | Should -Not -FileContentMatch '\[MySection\]'
