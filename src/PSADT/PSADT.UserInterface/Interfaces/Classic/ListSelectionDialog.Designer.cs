@@ -40,8 +40,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(450, 0);
+            this.ClientSize = new System.Drawing.Size(506, 117);
+            this.Name = "ListSelectionDialog";
             this.ResumeLayout(false);
             this.PerformLayout();
 

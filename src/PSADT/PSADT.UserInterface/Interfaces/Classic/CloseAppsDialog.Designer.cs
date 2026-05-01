@@ -82,11 +82,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelDialog.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelDialog.Margin = new System.Windows.Forms.Padding(0);
-            this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(450, 0);
-            this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(450, 0);
+            this.flowLayoutPanelDialog.MaximumSize = new System.Drawing.Size(506, 0);
+            this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(506, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(14, 11, 14, 13);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(450, 486);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(506, 486);
             this.flowLayoutPanelDialog.TabIndex = 3;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -97,10 +97,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelWelcomeMessage.AutoSize = true;
             this.labelWelcomeMessage.Location = new System.Drawing.Point(14, 11);
             this.labelWelcomeMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 12);
-            this.labelWelcomeMessage.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelWelcomeMessage.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelWelcomeMessage.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelWelcomeMessage.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelWelcomeMessage.Name = "labelWelcomeMessage";
-            this.labelWelcomeMessage.Size = new System.Drawing.Size(422, 15);
+            this.labelWelcomeMessage.Size = new System.Drawing.Size(478, 15);
             this.labelWelcomeMessage.TabIndex = 0;
             this.labelWelcomeMessage.Text = "The following application is about to be installed:";
             this.labelWelcomeMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -113,10 +113,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelAppName.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelAppName.Location = new System.Drawing.Point(14, 38);
             this.labelAppName.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this.labelAppName.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelAppName.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelAppName.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelAppName.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelAppName.Name = "labelAppName";
-            this.labelAppName.Size = new System.Drawing.Size(422, 21);
+            this.labelAppName.Size = new System.Drawing.Size(478, 21);
             this.labelAppName.TabIndex = 1;
             this.labelAppName.Text = "Adobe Acrobat Unified 25.001.20422";
             this.labelAppName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -128,10 +128,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelCustomMessage.AutoSize = true;
             this.labelCustomMessage.Location = new System.Drawing.Point(14, 71);
             this.labelCustomMessage.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelCustomMessage.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelCustomMessage.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelCustomMessage.Name = "labelCustomMessage";
-            this.labelCustomMessage.Size = new System.Drawing.Size(422, 30);
+            this.labelCustomMessage.Size = new System.Drawing.Size(478, 30);
             this.labelCustomMessage.TabIndex = 5;
             this.labelCustomMessage.Text = "This is a custom message that you can optionally display here. This could include" +
     " info specific to the app, or general info for your end users.";
@@ -148,10 +148,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelCloseApps.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelCloseApps.Location = new System.Drawing.Point(14, 113);
             this.flowLayoutPanelCloseApps.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.flowLayoutPanelCloseApps.MaximumSize = new System.Drawing.Size(422, 0);
-            this.flowLayoutPanelCloseApps.MinimumSize = new System.Drawing.Size(422, 0);
+            this.flowLayoutPanelCloseApps.MaximumSize = new System.Drawing.Size(478, 0);
+            this.flowLayoutPanelCloseApps.MinimumSize = new System.Drawing.Size(478, 0);
             this.flowLayoutPanelCloseApps.Name = "flowLayoutPanelCloseApps";
-            this.flowLayoutPanelCloseApps.Size = new System.Drawing.Size(422, 178);
+            this.flowLayoutPanelCloseApps.Size = new System.Drawing.Size(478, 178);
             this.flowLayoutPanelCloseApps.TabIndex = 2;
             this.flowLayoutPanelCloseApps.WrapContents = false;
             // 
@@ -162,10 +162,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelCloseProcessesMessage.AutoSize = true;
             this.labelCloseProcessesMessage.Location = new System.Drawing.Point(0, 0);
             this.labelCloseProcessesMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
-            this.labelCloseProcessesMessage.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelCloseProcessesMessage.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelCloseProcessesMessage.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelCloseProcessesMessage.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelCloseProcessesMessage.Name = "labelCloseProcessesMessage";
-            this.labelCloseProcessesMessage.Size = new System.Drawing.Size(422, 60);
+            this.labelCloseProcessesMessage.Size = new System.Drawing.Size(478, 60);
             this.labelCloseProcessesMessage.TabIndex = 0;
             this.labelCloseProcessesMessage.Text = "The following programs must be closed before the installation can proceed.\n\nPleas" +
     "e save your work, close the programs, and then continue. Alternatively, save you" +
@@ -179,7 +179,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.panelCloseProcesses.Location = new System.Drawing.Point(0, 69);
             this.panelCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.panelCloseProcesses.Name = "panelCloseProcesses";
-            this.panelCloseProcesses.Size = new System.Drawing.Size(422, 109);
+            this.panelCloseProcesses.Size = new System.Drawing.Size(478, 109);
             this.panelCloseProcesses.TabIndex = 1;
             // 
             // richTextBoxCloseProcesses
@@ -191,7 +191,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.richTextBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.richTextBoxCloseProcesses.Name = "richTextBoxCloseProcesses";
             this.richTextBoxCloseProcesses.ReadOnly = true;
-            this.richTextBoxCloseProcesses.Size = new System.Drawing.Size(420, 107);
+            this.richTextBoxCloseProcesses.Size = new System.Drawing.Size(476, 107);
             this.richTextBoxCloseProcesses.TabIndex = 0;
             this.richTextBoxCloseProcesses.Text = "Adobe Acrobat\nMicrosoft Word\nMicrosoft Excel";
             this.richTextBoxCloseProcesses.WordWrap = false;
@@ -208,10 +208,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDeferral.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelDeferral.Location = new System.Drawing.Point(14, 303);
             this.flowLayoutPanelDeferral.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.flowLayoutPanelDeferral.MaximumSize = new System.Drawing.Size(422, 0);
-            this.flowLayoutPanelDeferral.MinimumSize = new System.Drawing.Size(422, 0);
+            this.flowLayoutPanelDeferral.MaximumSize = new System.Drawing.Size(478, 0);
+            this.flowLayoutPanelDeferral.MinimumSize = new System.Drawing.Size(478, 0);
             this.flowLayoutPanelDeferral.Name = "flowLayoutPanelDeferral";
-            this.flowLayoutPanelDeferral.Size = new System.Drawing.Size(422, 63);
+            this.flowLayoutPanelDeferral.Size = new System.Drawing.Size(478, 63);
             this.flowLayoutPanelDeferral.TabIndex = 3;
             this.flowLayoutPanelDeferral.WrapContents = false;
             // 
@@ -222,10 +222,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelDeferralExpiryMessage.AutoSize = true;
             this.labelDeferralExpiryMessage.Location = new System.Drawing.Point(0, 0);
             this.labelDeferralExpiryMessage.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
-            this.labelDeferralExpiryMessage.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelDeferralExpiryMessage.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelDeferralExpiryMessage.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelDeferralExpiryMessage.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelDeferralExpiryMessage.Name = "labelDeferralExpiryMessage";
-            this.labelDeferralExpiryMessage.Size = new System.Drawing.Size(422, 15);
+            this.labelDeferralExpiryMessage.Size = new System.Drawing.Size(478, 15);
             this.labelDeferralExpiryMessage.TabIndex = 0;
             this.labelDeferralExpiryMessage.Text = "You can choose to defer the installation until the deferral expires:";
             this.labelDeferralExpiryMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -238,10 +238,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelDeferDeadline.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDeferDeadline.Location = new System.Drawing.Point(0, 24);
             this.labelDeferDeadline.Margin = new System.Windows.Forms.Padding(0, 0, 0, 9);
-            this.labelDeferDeadline.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelDeferDeadline.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelDeferDeadline.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelDeferDeadline.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelDeferDeadline.Name = "labelDeferDeadline";
-            this.labelDeferDeadline.Size = new System.Drawing.Size(422, 15);
+            this.labelDeferDeadline.Size = new System.Drawing.Size(478, 15);
             this.labelDeferDeadline.TabIndex = 1;
             this.labelDeferDeadline.Text = "Remaining Deferrals: 3";
             this.labelDeferDeadline.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -253,10 +253,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelDeferWarningMessage.AutoSize = true;
             this.labelDeferWarningMessage.Location = new System.Drawing.Point(0, 48);
             this.labelDeferWarningMessage.Margin = new System.Windows.Forms.Padding(0);
-            this.labelDeferWarningMessage.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelDeferWarningMessage.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelDeferWarningMessage.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelDeferWarningMessage.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelDeferWarningMessage.Name = "labelDeferWarningMessage";
-            this.labelDeferWarningMessage.Size = new System.Drawing.Size(422, 15);
+            this.labelDeferWarningMessage.Size = new System.Drawing.Size(478, 15);
             this.labelDeferWarningMessage.TabIndex = 2;
             this.labelDeferWarningMessage.Text = "Once the deferral has expired, you will no longer have the option to defer.";
             this.labelDeferWarningMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -272,10 +272,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelCountdown.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelCountdown.Location = new System.Drawing.Point(14, 378);
             this.flowLayoutPanelCountdown.Margin = new System.Windows.Forms.Padding(0, 6, 0, 6);
-            this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(422, 0);
-            this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(422, 0);
+            this.flowLayoutPanelCountdown.MaximumSize = new System.Drawing.Size(478, 0);
+            this.flowLayoutPanelCountdown.MinimumSize = new System.Drawing.Size(478, 0);
             this.flowLayoutPanelCountdown.Name = "flowLayoutPanelCountdown";
-            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(422, 52);
+            this.flowLayoutPanelCountdown.Size = new System.Drawing.Size(478, 52);
             this.flowLayoutPanelCountdown.TabIndex = 4;
             this.flowLayoutPanelCountdown.WrapContents = false;
             // 
@@ -287,10 +287,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelCountdownMessage.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdownMessage.Location = new System.Drawing.Point(0, 0);
             this.labelCountdownMessage.Margin = new System.Windows.Forms.Padding(0);
-            this.labelCountdownMessage.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelCountdownMessage.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelCountdownMessage.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelCountdownMessage.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelCountdownMessage.Name = "labelCountdownMessage";
-            this.labelCountdownMessage.Size = new System.Drawing.Size(422, 20);
+            this.labelCountdownMessage.Size = new System.Drawing.Size(478, 20);
             this.labelCountdownMessage.TabIndex = 0;
             this.labelCountdownMessage.Text = "The installation will automatically continue in:";
             this.labelCountdownMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -303,10 +303,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.labelCountdown.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCountdown.Location = new System.Drawing.Point(0, 20);
             this.labelCountdown.Margin = new System.Windows.Forms.Padding(0);
-            this.labelCountdown.MaximumSize = new System.Drawing.Size(422, 0);
-            this.labelCountdown.MinimumSize = new System.Drawing.Size(422, 0);
+            this.labelCountdown.MaximumSize = new System.Drawing.Size(478, 0);
+            this.labelCountdown.MinimumSize = new System.Drawing.Size(478, 0);
             this.labelCountdown.Name = "labelCountdown";
-            this.labelCountdown.Size = new System.Drawing.Size(422, 32);
+            this.labelCountdown.Size = new System.Drawing.Size(478, 32);
             this.labelCountdown.TabIndex = 1;
             this.labelCountdown.Text = "1:23:45";
             this.labelCountdown.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -329,32 +329,32 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
             this.tableLayoutPanelButton.RowCount = 1;
             this.tableLayoutPanelButton.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelButton.Size = new System.Drawing.Size(422, 25);
+            this.tableLayoutPanelButton.Size = new System.Drawing.Size(478, 25);
             this.tableLayoutPanelButton.TabIndex = 4;
             // 
             // buttonCloseProcesses
             // 
             this.buttonCloseProcesses.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonCloseProcesses.Location = new System.Drawing.Point(0, 0);
-            this.buttonCloseProcesses.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
-            this.buttonCloseProcesses.MaximumSize = new System.Drawing.Size(133, 25);
-            this.buttonCloseProcesses.MinimumSize = new System.Drawing.Size(133, 25);
+            this.buttonCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonCloseProcesses.MaximumSize = new System.Drawing.Size(152, 25);
+            this.buttonCloseProcesses.MinimumSize = new System.Drawing.Size(152, 25);
             this.buttonCloseProcesses.Name = "buttonCloseProcesses";
-            this.buttonCloseProcesses.Size = new System.Drawing.Size(133, 25);
+            this.buttonCloseProcesses.Size = new System.Drawing.Size(152, 25);
             this.buttonCloseProcesses.TabIndex = 0;
-            this.buttonCloseProcesses.Text = "Close Programs";
+            this.buttonCloseProcesses.Text = "Κλείσιμο προγραμμάτων";
             this.buttonCloseProcesses.UseVisualStyleBackColor = true;
             this.buttonCloseProcesses.Click += new System.EventHandler(this.ButtonLeft_Click);
             // 
             // buttonDefer
             // 
             this.buttonDefer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.buttonDefer.Location = new System.Drawing.Point(144, 0);
+            this.buttonDefer.Location = new System.Drawing.Point(163, 0);
             this.buttonDefer.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonDefer.MaximumSize = new System.Drawing.Size(134, 25);
-            this.buttonDefer.MinimumSize = new System.Drawing.Size(134, 25);
+            this.buttonDefer.MaximumSize = new System.Drawing.Size(152, 25);
+            this.buttonDefer.MinimumSize = new System.Drawing.Size(152, 25);
             this.buttonDefer.Name = "buttonDefer";
-            this.buttonDefer.Size = new System.Drawing.Size(134, 25);
+            this.buttonDefer.Size = new System.Drawing.Size(152, 25);
             this.buttonDefer.TabIndex = 1;
             this.buttonDefer.Text = "Defer";
             this.buttonDefer.UseVisualStyleBackColor = true;
@@ -363,12 +363,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // buttonContinue
             // 
             this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonContinue.Location = new System.Drawing.Point(289, 0);
+            this.buttonContinue.Location = new System.Drawing.Point(326, 0);
             this.buttonContinue.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonContinue.MaximumSize = new System.Drawing.Size(133, 25);
-            this.buttonContinue.MinimumSize = new System.Drawing.Size(133, 25);
+            this.buttonContinue.MaximumSize = new System.Drawing.Size(152, 25);
+            this.buttonContinue.MinimumSize = new System.Drawing.Size(152, 25);
             this.buttonContinue.Name = "buttonContinue";
-            this.buttonContinue.Size = new System.Drawing.Size(133, 25);
+            this.buttonContinue.Size = new System.Drawing.Size(152, 25);
             this.buttonContinue.TabIndex = 2;
             this.buttonContinue.Text = "Continue";
             this.toolTipButtonContinue.SetToolTip(this.buttonContinue, "Only select \"Continue\" after closing the above listed application(s).");
@@ -382,7 +382,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.pictureBanner.Location = new System.Drawing.Point(0, 0);
             this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBanner.Name = "pictureBanner";
-            this.pictureBanner.Size = new System.Drawing.Size(450, 0);
+            this.pictureBanner.Size = new System.Drawing.Size(506, 0);
             this.pictureBanner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBanner.TabIndex = 0;
             this.pictureBanner.TabStop = false;
@@ -405,14 +405,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
-            this.flowLayoutPanelBase.Size = new System.Drawing.Size(450, 486);
+            this.flowLayoutPanelBase.Size = new System.Drawing.Size(506, 486);
             this.flowLayoutPanelBase.TabIndex = 4;
             // 
             // CloseAppsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(450, 486);
+            this.ClientSize = new System.Drawing.Size(506, 486);
             this.Controls.Add(this.flowLayoutPanelBase);
             this.Name = "CloseAppsDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);
