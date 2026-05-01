@@ -119,14 +119,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Configures the specified <see cref="PictureBox"/> with an image and size based on the provided options.
         /// </summary>
-        /// <remarks>The method sets the <see cref="PictureBox.Image"/> property to the banner image specified in <paramref name="options"/>. It also adjusts the size of the <see cref="PictureBox"/> to maintain the aspect ratio of the image, with a fixed width of 450 pixels.</remarks>
+        /// <remarks>The method sets the <see cref="PictureBox.Image"/> property to the banner image specified in <paramref name="options"/>. It also adjusts the size of the <see cref="PictureBox"/> to maintain the aspect ratio of the image, with a fixed width of 506 pixels.</remarks>
         /// <param name="pictureBox">The <see cref="PictureBox"/> to configure. Cannot be <see langword="null"/>.</param>
         /// <param name="options">The options containing the banner image to display. Cannot be <see langword="null"/>.</param>
         private protected void SetPictureBox(PictureBox pictureBox, BaseDialogOptions options)
         {
             double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
             pictureBox.Image = GetBanner(options.AppBannerImage);
-            pictureBox.Size = new((int)Math.Ceiling(450.0 * dpiScale), (int)Math.Ceiling(450.0 * (pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
+            pictureBox.Size = new((int)Math.Ceiling(506.0 * dpiScale), (int)Math.Ceiling(506.0 * (pictureBox.Image.Height / (double)pictureBox.Image.Width) * dpiScale));
         }
 
         /// <summary>
