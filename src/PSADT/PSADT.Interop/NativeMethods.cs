@@ -3398,7 +3398,7 @@ namespace PSADT.Interop
             {
                 ArgumentNullException.ThrowIfNull(hWnd.Value);
             }
-            LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
+            PInvoke.SetLastError(0); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
             return lastWin32Error != WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
