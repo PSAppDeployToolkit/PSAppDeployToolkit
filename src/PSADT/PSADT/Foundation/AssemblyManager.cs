@@ -104,7 +104,7 @@ namespace PSADT.Foundation
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(AssemblyDirectory.GetFiles("*.dll", SearchOption.AllDirectories));
+        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(AssemblyDirectory.GetFiles("*", SearchOption.AllDirectories));
 
         /// <summary>
         /// Represents the required file system permissions for the operation.
