@@ -19,7 +19,7 @@ function Set-ADTActiveSetup
 
         This Function:
 
-        - Creates the registry entries in "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)".
+        - Creates registry entries in: `HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)`.
         - Creates StubPath value depending on the file extension of the `-StubExePath` parameter.
         - Handles Version value with YYYYMMDDHHMMSS granularity to permit re-installs on the same day and still trigger Active Setup after Version increase.
         - Copies/overwrites the StubPath file to `-StubExePath` destination path if file exists in 'Files' subdirectory of script directory.

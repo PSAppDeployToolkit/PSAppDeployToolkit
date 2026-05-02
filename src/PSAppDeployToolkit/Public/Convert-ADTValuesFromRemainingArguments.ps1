@@ -29,7 +29,7 @@ function Convert-ADTValuesFromRemainingArguments
     .EXAMPLE
         Convert-ADTValuesFromRemainingArguments -RemainingArguments $args
 
-        Converts an $args array into a $PSBoundParameters-compatible dictionary.
+        Converts an `$args` array into a $PSBoundParameters-compatible dictionary.
 
     .NOTES
         An active ADT session is NOT required to use this function.
