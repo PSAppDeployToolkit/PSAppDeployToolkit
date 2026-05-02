@@ -116,7 +116,7 @@ function Add-ADTEdgeExtension
                 # Add the additional extension to the current values, then re-write the definition in the registry.
                 if ($PSCmdlet.ShouldProcess("Edge Extension [$ExtensionID]", "Add extension with installation mode [$InstallationMode]"))
                 {
-                    $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value $extensionsSettings
+                    $null = Set-ADTRegistryKey -LiteralPath Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value $extensionsSettings
                 }
             }
             catch

@@ -9,10 +9,10 @@ function Private:Get-ADTEdgeExtensions
     # Check if the ExtensionSettings registry key exists. If not, create it.
     if (!(Test-ADTRegistryValue -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings))
     {
-        Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings | Out-Null
+        Set-ADTRegistryKey -LiteralPath Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings | Out-Null
         return [pscustomobject]@{}
     }
-    $extensionSettings = Get-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings
+    $extensionSettings = Get-ADTRegistryKey -LiteralPath Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings
     Write-ADTLogEntry -Message "Configured extensions: [$($extensionSettings)]."
     return $extensionSettings | ConvertFrom-Json
 }
