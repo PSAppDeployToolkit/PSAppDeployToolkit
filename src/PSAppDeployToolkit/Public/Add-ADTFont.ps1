@@ -120,7 +120,7 @@ function Add-ADTFont
                             # Register font resource and set up the font name correctly in the registry.
                             $null = [PSADT.Utilities.FontUtilities]::AddFont($destPath)
                             $regName = "$([PSADT.Utilities.FontUtilities]::GetFontTitle($destPath))$($fontTypes[$extension])"
-                            Set-ADTRegistryKey -Key $fontsRegKeyPath -Name $regName -Value $fileItem.Name -InformationAction SilentlyContinue
+                            Set-ADTRegistryKey -LiteralPath $fontsRegKeyPath -Name $regName -Value $fileItem.Name -InformationAction SilentlyContinue
                             Write-ADTLogEntry -Message "Successfully installed font [$($fileItem.Name)] as [$regName]."
                         }
                         elseif (Test-Path -LiteralPath $resolvedPath -PathType Container)

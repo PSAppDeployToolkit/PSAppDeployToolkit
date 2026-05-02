@@ -378,13 +378,13 @@ function Set-ADTActiveSetup
             # Set up initial variables.
             $HKCUProps = if ($SID)
             {
-                Get-ADTRegistryKey -Key $HKCUKey -SID $SID
+                Get-ADTRegistryKey -LiteralPath $HKCUKey -SID $SID
             }
             else
             {
-                Get-ADTRegistryKey -Key $HKCUKey
+                Get-ADTRegistryKey -LiteralPath $HKCUKey
             }
-            $HKLMProps = Get-ADTRegistryKey -Key $HKLMKey
+            $HKLMProps = Get-ADTRegistryKey -LiteralPath $HKLMKey
             $HKCUVer = $HKCUProps | Select-Object -ExpandProperty Version -ErrorAction Ignore
             $HKLMVer = $HKLMProps | Select-Object -ExpandProperty Version -ErrorAction Ignore
             $HKLMInst = $HKLMProps | Select-Object -ExpandProperty IsInstalled -ErrorAction Ignore
@@ -487,18 +487,18 @@ function Set-ADTActiveSetup
             )
 
             $srkParams = if ($SID) { @{ SID = $SID } } else { @{} }
-            Set-ADTRegistryKey -Key $RegPath -Name '(Default)' -Value $Description @srkParams
-            Set-ADTRegistryKey -Key $RegPath -Name 'Version' -Value $Version.Replace('.', ',') @srkParams
-            Set-ADTRegistryKey -Key $RegPath -Name 'StubPath' -Value $StubPath -Type ExpandString @srkParams
+            Set-ADTRegistryKey -LiteralPath $RegPath -Name '(Default)' -Value $Description @srkParams
+            Set-ADTRegistryKey -LiteralPath $RegPath -Name 'Version' -Value $Version.Replace('.', ',') @srkParams
+            Set-ADTRegistryKey -LiteralPath $RegPath -Name 'StubPath' -Value $StubPath -Type ExpandString @srkParams
             if (![System.String]::IsNullOrWhiteSpace($Locale))
             {
-                Set-ADTRegistryKey -Key $RegPath -Name 'Locale' -Value $Locale @srkParams
+                Set-ADTRegistryKey -LiteralPath $RegPath -Name 'Locale' -Value $Locale @srkParams
             }
 
             # Only Add IsInstalled to HKLM.
             if ($RegPath.Contains('HKEY_LOCAL_MACHINE'))
             {
-                Set-ADTRegistryKey -Key $RegPath -Name 'IsInstalled' -Value ([System.UInt32]!$DisableActiveSetup) -Type 'DWord' @srkParams
+                Set-ADTRegistryKey -LiteralPath $RegPath -Name 'IsInstalled' -Value ([System.UInt32]!$DisableActiveSetup) -Type 'DWord' @srkParams
             }
         }
     }
@@ -535,7 +535,7 @@ function Set-ADTActiveSetup
                     # All remaining users thereafter.
                     Write-ADTLogEntry -Message "Removing Active Setup entry [$HKCURegKey] for all logged on user registry hives on the system."
                     Invoke-ADTAllUsersRegistryAction -UserProfiles (Get-ADTUserProfiles -ExcludeDefaultUser) -ScriptBlock {
-                        if (Get-ADTRegistryKey -Key $HKCURegKey -SID $_.SID)
+                        if (Get-ADTRegistryKey -LiteralPath $HKCURegKey -SID $_.SID)
                         {
                             Remove-ADTRegistryKey -Key $HKCURegKey -SID $_.SID -Recurse
                         }

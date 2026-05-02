@@ -82,7 +82,7 @@ function Remove-ADTEdgeExtension
                 if ($PSCmdlet.ShouldProcess("Edge Extension [$ExtensionID]", 'Remove extension'))
                 {
                     $installedExtensions.PSObject.Properties.Remove($ExtensionID)
-                    $null = Set-ADTRegistryKey -Key Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress)
+                    $null = Set-ADTRegistryKey -LiteralPath Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge -Name ExtensionSettings -Value ($installedExtensions | ConvertTo-Json -Compress)
                 }
             }
             catch
