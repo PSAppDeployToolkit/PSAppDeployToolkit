@@ -19,7 +19,7 @@ function Convert-ADTRegistryPath
         Path to the registry key to convert (can be a registry hive or fully qualified path)
 
     .PARAMETER Wow6432Node
-        Specifies that the 32-bit registry view (Wow6432Node) should be used on a 64-bit system.
+        Specifies that the 32-bit registry view (WOW6432Node) should be used on a 64-bit system.
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.

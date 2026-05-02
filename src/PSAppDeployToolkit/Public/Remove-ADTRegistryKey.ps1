@@ -23,7 +23,7 @@ function Remove-ADTRegistryKey
         Name of the registry value to delete.
 
     .PARAMETER Wow6432Node
-        Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
+        Specify this switch to read the 32-bit registry (WOW6432Node) on 64-bit systems.
 
     .PARAMETER Recurse
         Delete registry key recursively.

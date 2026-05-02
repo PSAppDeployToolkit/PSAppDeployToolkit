@@ -31,7 +31,7 @@ function Set-ADTRegistryKey
         The mode to operate when working with MultiString objects. The default is Replace, but Add and Remove modes are supported also.
 
     .PARAMETER Wow6432Node
-        Specify this switch to write to the 32-bit registry (Wow6432Node) on 64-bit systems.
+        Specify this switch to write to the 32-bit registry (WOW6432Node) on 64-bit systems.
 
     .PARAMETER RegistryOptions
         Extra options to use while creating the key. This is useful for creating volatile keys that do not survive a reboot.

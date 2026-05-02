@@ -25,7 +25,7 @@ function Test-ADTRegistryValue
         Specify this parameter from the `Invoke-ADTAllUsersRegistryAction` function to read/edit HKCU registry settings for all users on the system.
 
     .PARAMETER Wow6432Node
-        Specify this switch to check the 32-bit registry (Wow6432Node) on 64-bit systems.
+        Specify this switch to check the 32-bit registry (WOW6432Node) on 64-bit systems.
 
     .INPUTS
         System.String
