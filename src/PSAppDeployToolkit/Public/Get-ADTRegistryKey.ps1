@@ -25,7 +25,7 @@ function Get-ADTRegistryKey
         Value name to retrieve (optional).
 
     .PARAMETER Wow6432Node
-        Specify this switch to read the 32-bit registry (Wow6432Node) on 64-bit systems.
+        Specify this switch to read the 32-bit registry (WOW6432Node) on 64-bit systems.
 
     .PARAMETER SID
         The security identifier (SID) for a user. Specifying this parameter will convert a HKEY_CURRENT_USER registry key to the HKEY_USERS\$SID format.

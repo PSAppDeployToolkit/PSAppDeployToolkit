@@ -34,7 +34,7 @@ function Set-ADTActiveSetup
         Arguments to pass to the file being executed.
 
     .PARAMETER Wow6432Node
-        Specify this switch to use Active Setup entry under Wow6432Node on a 64-bit OS.
+        Specify this switch to use Active Setup entry under WOW6432Node on a 64-bit OS.
 
     .PARAMETER ExecutionPolicy
         Specifies the ExecutionPolicy to set when `-StubExePath` is a PowerShell script.
