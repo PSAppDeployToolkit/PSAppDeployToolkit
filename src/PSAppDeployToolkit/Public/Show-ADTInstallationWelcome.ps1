@@ -89,6 +89,9 @@ function Show-ADTInstallationWelcome
     .PARAMETER NotTopMost
         Specifies whether the windows is the topmost window.
 
+    .PARAMETER AllowMinimize
+        Specifies that the user is allowed to minimize the dialog.
+
     .PARAMETER AllowMove
         Specifies that the user can move the dialog on the screen.
 
