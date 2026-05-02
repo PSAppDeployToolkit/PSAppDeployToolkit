@@ -8,12 +8,14 @@ function Install-ADTSCCMSoftwareUpdates
 {
     <#
     .SYNOPSIS
-        Scans for outstanding SCCM updates to be installed and installs the pending updates.
+        Scans for outstanding Configuration Manager/SCCM software updates to be installed and installs the pending updates.
 
     .DESCRIPTION
-        The `Install-ADTSCCMSoftwareUpdates` function scans for outstanding SCCM updates to be installed and installs the pending updates.
+        The `Install-ADTSCCMSoftwareUpdates` function scans for outstanding Configuration Manager/SCCM software updates to be installed and installs the pending updates.
 
-        Only compatible with SCCM 2012 Client or higher. This function can take several minutes to run.
+        This function can take several minutes to run.
+
+        Note: This function is not compatible with versions of the Configuration Manager/SCCM Client older than 2012.
 
     .PARAMETER SoftwareUpdatesScanWaitInSeconds
         The amount of time to wait in seconds for the software updates scan to complete.
@@ -34,17 +36,17 @@ function Install-ADTSCCMSoftwareUpdates
     .EXAMPLE
         Install-ADTSCCMSoftwareUpdates
 
-        Scans for outstanding SCCM updates and installs the pending updates with default wait times.
+        Scans for outstanding Configuration Manager/SCCM updates and installs the pending updates with default wait times.
 
     .EXAMPLE
         Install-ADTSCCMSoftwareUpdates -WaitForPendingUpdatesTimeout 00:30:00
 
-        Scans for outstanding SCCM updates and installs the pending updates with a 30 minute timeout.
+        Scans for outstanding Configuration Manager/SCCM updates and installs the pending updates with a 30 minute timeout.
 
     .EXAMPLE
         Install-ADTSCCMSoftwareUpdates -WaitForPendingUpdatesTimeout (New-TimeSpan -Minutes 30)
 
-        Scans for outstanding SCCM updates and installs the pending updates with a 30 minute timeout.
+        Scans for outstanding Configuration Manager/SCCM updates and installs the pending updates with a 30 minute timeout.
 
     .NOTES
         An active ADT session is NOT required to use this function.

@@ -8,10 +8,10 @@ function Invoke-ADTSCCMTask
 {
     <#
     .SYNOPSIS
-        Triggers SCCM to invoke the requested schedule task ID.
+        Triggers Configuration Manager/SCCM to invoke the requested schedule task ID.
 
     .DESCRIPTION
-        The `Invoke-ADTSCCMTask` function triggers SCCM to invoke the requested schedule task ID. This function supports a variety of Schedule Id values as defined via https://learn.microsoft.com/en-us/intune/configmgr/develop/reference/core/clients/client-classes/triggerschedule-method-in-class-sms_client.
+        The `Invoke-ADTSCCMTask` function triggers Configuration Manager/SCCM to invoke the requested schedule task ID. This function supports a variety of Schedule Id values as defined via https://learn.microsoft.com/en-us/intune/configmgr/develop/reference/core/clients/client-classes/triggerschedule-method-in-class-sms_client.
 
     .PARAMETER ScheduleId
         Name of the Schedule Id to trigger.
@@ -29,12 +29,12 @@ function Invoke-ADTSCCMTask
     .EXAMPLE
         Invoke-ADTSCCMTask -ScheduleId 'SoftwareUpdatesScan'
 
-        Triggers the 'SoftwareUpdatesScan' schedule task in SCCM.
+        Triggers the 'SoftwareUpdatesScan' schedule task in Configuration Manager/SCCM.
 
     .EXAMPLE
         Invoke-ADTSCCMTask -ScheduleId 'HardwareInventory'
 
-        Triggers the 'HardwareInventory' schedule task in SCCM.
+        Triggers the 'HardwareInventory' schedule task in Configuration Manager/SCCM.
 
     .NOTES
         An active ADT session is NOT required to use this function.
