@@ -12,6 +12,37 @@
     $manifestExported = ($manifestContent.ExportedFunctions).Keys
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'typeAcceleratorNames', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
     $typeAcceleratorNames = [System.Management.Automation.PowerShell].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Get.Keys
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'powershellCommonParameters', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+    $powershellCommonParameters = $(
+        [System.Management.Automation.PSCmdlet]::CommonParameters
+        [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
+    )
+
+    Add-ShouldOperator -Name HaveDescription -InternalName Should-HaveDescription -Test {
+        param (
+            $ActualValue,
+            [System.Management.Automation.SwitchParameter]$Negate,
+            [System.String]$Because
+        )
+
+        $succeeded = $ActualValue.psobject.Properties.Name.Contains('description') -and ![System.String]::IsNullOrWhiteSpace($ActualValue.description[0].Text)
+
+        if ($Negate)
+        {
+            $succeeded = !$succeeded
+        }
+
+        $failureMessage = if (!$succeeded)
+        {
+            "Expected parameter '$($ActualValue.name)' to$(if ($Negate) { ' not' }) have a description$(if ($Because) { " because $Because"})."
+        }
+
+        return [PSCustomObject]@{
+            Succeeded = $succeeded
+            FailureMessage = $failureMessage
+        }
+    }
 }
 BeforeDiscovery {
     Set-Location -Path $PSScriptRoot
@@ -117,7 +148,22 @@ Describe $ModuleName {
                     $outputType.Group[0] | Should -BeIn $returnValueTypes -Because 'all outputs defined in OutputType attributes should also be defined in the comment-based help'
                 }
             }
+            It 'All parameters should have a description' {
+                if (!$help.parameters.psobject.Properties.Name.Contains('parameter'))
+                {
+                    return
+                }
+
+                foreach ($parameter in $help.parameters.parameter)
+                {
+                    if ($powershellCommonParameters.Contains($parameter.name))
+                    {
+                        continue
+                    }
+
+                    $parameter | Should -HaveDescription
+                }
+            }
         }
     }
 }
-
