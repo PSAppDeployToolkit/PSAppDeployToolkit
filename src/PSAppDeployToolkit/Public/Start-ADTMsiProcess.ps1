@@ -13,7 +13,7 @@ function Start-ADTMsiProcess
     .DESCRIPTION
         The `Start-ADTMsiProcess` function utilizes msiexec.exe to handle various operations on MSI and MSP files, as well as MSI product codes. The operations include installation, uninstallation, patching, repair, and setting up active configurations.
 
-        If the `-Action` parameter is set to "Install" and the MSI is already installed, the function will terminate without performing any actions.
+        If the `-Action` parameter is set to `Install` and the MSI is already installed, the function will terminate without performing any actions.
 
         The function automatically sets default switches for msiexec based on preferences defined in the `config.psd1` file. Additionally, it generates a log file name and creates a verbose log for all msiexec operations, ensuring detailed tracking.
 
@@ -47,7 +47,7 @@ function Start-ADTMsiProcess
         The name(s) of the transform file(s) to be applied to the MSI. The transform files should be in the same directory as the MSI file.
 
     .PARAMETER Patches
-        The name(s) of the patch (MSP) file(s) to be applied to the MSI for the "Install" action. The patch files should be in the same directory as the MSI file.
+        The name(s) of the patch (MSP) file(s) to be applied to the MSI for the `Install` action. The patch files should be in the same directory as the MSI file.
 
     .PARAMETER RunAsActiveUser
         A RunAsActiveUser object to invoke the process as.
@@ -97,10 +97,10 @@ function Start-ADTMsiProcess
         List of exit codes to indicate a reboot is required. Defaults to values set during ADTSession initialization, otherwise: 1641, 3010
 
     .PARAMETER IgnoreExitCodes
-        List the exit codes to ignore or * to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead, or `-ErrorAction SilentlyContinue` as this parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
+        List the exit codes to ignore or `*` to ignore all exit codes. Where possible, please use `-SuccessExitCodes` and/or `-RebootExitCodes` instead, or `-ErrorAction SilentlyContinue` as this parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER PriorityClass
-        Specifies priority class for the process. Options: Idle, Normal, High, AboveNormal, BelowNormal, RealTime.
+        Specifies priority class for the process. Options: `Idle`, `Normal`, `High`, `AboveNormal`, `BelowNormal`, `RealTime`.
 
     .PARAMETER ExitOnProcessFailure
         Automatically closes the active deployment session via `Close-ADTSession` in the event the process exits with a non-success or non-ignored exit code.

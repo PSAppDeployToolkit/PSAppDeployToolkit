@@ -19,7 +19,7 @@ function Show-ADTBalloonTip
         Text of the balloon tip.
 
     .PARAMETER BalloonTipIcon
-        Icon to be used. Options: 'Error', 'Info', 'None', 'Warning'.
+        Icon to be used. Valid values for this parameter are: `Error`, `Info`, `None`, `Warning`.
 
     .PARAMETER BalloonTipTime
         Time in milliseconds to display the balloon tip. Default: 10000.

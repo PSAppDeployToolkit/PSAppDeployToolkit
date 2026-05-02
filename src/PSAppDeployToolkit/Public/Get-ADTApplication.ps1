@@ -29,7 +29,7 @@ function Get-ADTApplication
         The product code of the application to retrieve information for.
 
     .PARAMETER ApplicationType
-        Specifies the type of application to remove. Valid values are 'All', 'MSI', and 'EXE'. The default value is 'All'.
+        Specifies the type of application to remove. Valid values are `All`, `MSI`, and `EXE`. The default value is `All`.
 
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.

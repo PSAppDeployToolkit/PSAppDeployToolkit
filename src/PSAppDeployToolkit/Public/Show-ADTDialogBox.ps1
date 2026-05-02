@@ -22,10 +22,10 @@ function Show-ADTDialogBox
         The button(s) to display on the dialog box.
 
     .PARAMETER DefaultButton
-        The Default button that is selected. Options: First, Second, Third.
+        The Default button that is selected. Valid values for this parameter are: `First`, `Second`, `Third`.
 
     .PARAMETER Icon
-        Icon to display on the dialog box. Options: None, Stop, Question, Exclamation, Information.
+        Icon to display on the dialog box. Valid values for this parameter are: `None`, `Stop`, `Question`, `Exclamation`, `Information`.
 
     .PARAMETER NoWait
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.

@@ -20,7 +20,7 @@ function Set-ADTItemPermission
         The ACL object to apply to the given path.
 
     .PARAMETER User
-        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to assign the permissions to. If you want to use a SID, prefix it with an asterisk (*), i.e., *S-1-5-18
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to assign the permissions to. If you want to use a SID, prefix it with an asterisk (`*`), i.e., *S-1-5-18
 
     .PARAMETER Permission
         Permission or list of permissions to be set/added/removed/replaced. Permission DeleteSubdirectoriesAndFiles does not apply to files.
@@ -31,26 +31,29 @@ function Set-ADTItemPermission
     .PARAMETER Inheritance
         Sets permission inheritance. Does not apply to files. Multiple options can be specified.
 
-        * None - The permission entry is not inherited by child objects.
-        * ObjectInherit - The permission entry is inherited by child leaf objects.
-        * ContainerInherit - The permission entry is inherited by child container objects.
+        Valid values for this parameter are:
+        * `None`: The permission entry is not inherited by child objects.
+        * `ObjectInherit`: The permission entry is inherited by child leaf objects.
+        * `ContainerInherit`: The permission entry is inherited by child container objects.
 
     .PARAMETER Propagation
         Sets how to propagate inheritance. Does not apply to files.
 
-        * None - Specifies that no inheritance flags are set.
-        * NoPropagateInherit - Specifies that the permission entry is not propagated to child objects.
-        * InheritOnly - Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
+        Valid values for this parameter are:
+        * `None`: Specifies that no inheritance flags are set.
+        * `NoPropagateInherit`: Specifies that the permission entry is not propagated to child objects.
+        * `InheritOnly`: Specifies that the permission entry is propagated only to child objects. This includes both container and leaf child objects.
 
     .PARAMETER Method
         Specifies which method will be used to apply the permissions.
 
-        * AddAccessRule - Adds permissions rules but it does not remove previous permissions.
-        * SetAccessRule - Overwrites matching permission rules with new ones.
-        * ResetAccessRule - Removes matching permissions rules and then adds permission rules.
-        * RemoveAccessRule - Removes matching permission rules.
-        * RemoveAccessRuleAll - Removes all permission rules for specified user/s.
-        * RemoveAccessRuleSpecific - Removes specific permissions.
+        Valid values for this parameter are:
+        * `AddAccessRule`: Adds permissions rules but it does not remove previous permissions.
+        * `SetAccessRule`: Overwrites matching permission rules with new ones.
+        * `ResetAccessRule`: Removes matching permissions rules and then adds permission rules.
+        * `RemoveAccessRule`: Removes matching permission rules.
+        * `RemoveAccessRuleAll`: Removes all permission rules for specified user/s.
+        * `RemoveAccessRuleSpecific`: Removes specific permissions.
 
     .PARAMETER EnableInheritance
         Enables inheritance on the files/folders.
