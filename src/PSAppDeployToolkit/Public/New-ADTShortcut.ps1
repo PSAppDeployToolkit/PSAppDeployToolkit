@@ -11,7 +11,7 @@ function New-ADTShortcut
         Creates a new .lnk or .url type shortcut.
 
     .DESCRIPTION
-        The `New-ADTShortcut` function creates a new shortcut .lnk or .url file, with configurable options. This function allows you to specify various parameters such as the target path, arguments, icon location, description, working directory, window style, run as administrator, and hotkey.
+        The `New-ADTShortcut` function creates a new .lnk or .url shortcut file, with the configured options. This function allows you to specify various parameters such as the target path, arguments, icon location, description, working directory, window style, run as administrator, and hotkey.
 
     .PARAMETER LiteralPath
         Path to save the shortcut.
@@ -38,13 +38,13 @@ function New-ADTShortcut
         Windows style of the application. Options: Normal, Maximized, Minimized.
 
     .PARAMETER RunAsAdmin
-        Set shortcut to run program as administrator. This option will prompt user to elevate when executing shortcut.
+        Specifies that the command executed by the shortcut should be done so with elevated permissions. Setting this option will prompt the user to elevate when the shortcut is executed.
 
     .PARAMETER Hotkey
         Create a Hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
     .PARAMETER Force
-        Forces deletion of a pre-existing shortcut.
+        Specifies that an existing shortcut should be overwritten.
 
     .PARAMETER PassThru
         Returns a IShortcutLinkInfo object representing the new shortcut.

@@ -11,7 +11,7 @@ function Set-ADTShortcut
         Modifies a .lnk or .url type shortcut.
 
     .DESCRIPTION
-        The `Set-ADTShortcut` function modifies a shortcut - .lnk or .url file, with configurable options. Only specify the parameters that you want to change.
+        The `Set-ADTShortcut` function modifies a .lnk or .url shortcut file, with the configured options. Only specify the parameters that you want to change.
 
     .PARAMETER LiteralPath
         Path to the shortcut to be changed.
@@ -41,13 +41,13 @@ function Set-ADTShortcut
         Sets the shortcut's window style to be minimised, maximised, etc.
 
     .PARAMETER RunAsAdmin
-        Sets the shortcut to require elevated permissions to run.
+        Specifies that the command executed by the shortcut should be done so with elevated permissions. Setting this option will prompt the user to elevate when the shortcut is executed.
 
     .PARAMETER Hotkey
         Sets the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
     .PARAMETER Force
-        Forces creation of the shortcut if it doesn't exist.
+        Forces creation of the shortcut if one doesn't already exist at the `-LiteralPath` provided.
 
     .PARAMETER PassThru
         Returns an IShortcutLinkInfo snapshot of the shortcut.
