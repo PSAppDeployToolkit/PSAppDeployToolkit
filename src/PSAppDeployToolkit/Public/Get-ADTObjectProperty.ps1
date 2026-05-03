@@ -36,6 +36,8 @@ function Get-ADTObjectProperty
         Get-ADTObjectProperty -InputObject $Record -PropertyName 'StringData' -ArgumentList @(1)
 
     .NOTES
+        This function is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
+
         An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />

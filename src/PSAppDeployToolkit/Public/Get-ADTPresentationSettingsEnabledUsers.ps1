@@ -29,6 +29,8 @@ function Get-ADTPresentationSettingsEnabledUsers
         Checks whether any users users have presentation settings enabled on their device and returns an associated UserProfileInfo object.
 
     .NOTES
+        This function is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
+
         An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />
