@@ -30,7 +30,7 @@ function Start-ADTMsiProcessAsUser
         - `ActiveSetup`: Performs a partial repair of a MSI, repairing missing files, user-specific registry entries, and shortcuts. Equivalent to: `msiexec.exe /i /fups`
 
     .PARAMETER FilePath
-        The file path to the MSI/MSP file.
+        The file path to the MSI/MSP file. If the specified FilePath is just a file name, the function will look within `$adtSession.DirFiles` for the specified file, so long as a session is active.
 
     .PARAMETER ProductCode
         The product code of the installed MSI.
