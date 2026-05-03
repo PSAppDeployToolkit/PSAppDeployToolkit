@@ -25,6 +25,13 @@ function Get-ADTBoundParametersAndDefaultValues
     .PARAMETER Exclude
         One or more parameter names to exclude from the results.
 
+        Note: When a parameter name appears in both `-Include` and `-Exclude`, the `-Exclude` filter takes precedence and the parameter is excluded.
+
+    .PARAMETER Include
+        One or more parameter names to explicitly include in the results. All other parameter names will be excluded.
+
+        Note: When a parameter name appears in both `-Include` and `-Exclude`, the `-Exclude` filter takes precedence and the parameter is excluded.
+
     .PARAMETER CommonParameters
         Specifies whether PowerShell advanced function common parameters should be included.
 
@@ -58,6 +65,7 @@ function Get-ADTBoundParametersAndDefaultValues
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ParameterSetName', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'HelpMessage', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exclude', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Include', Justification = 'This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.')]
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.Dictionary[System.String, System.Object]])]
     param
@@ -77,6 +85,10 @@ function Get-ADTBoundParametersAndDefaultValues
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String[]]$Exclude,
+
+        [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String[]]$Include,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$CommonParameters
@@ -193,6 +205,13 @@ function Get-ADTBoundParametersAndDefaultValues
                 $parameters | & {
                     process
                     {
+                        # Filter in included values.
+                        if ($Include -and ($Include -notcontains $_.Name.VariablePath.UserPath))
+                        {
+                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
+                            return
+                        }
+
                         # Filter out excluded values.
                         if ($Exclude -contains $_.Name.VariablePath.UserPath)
                         {
