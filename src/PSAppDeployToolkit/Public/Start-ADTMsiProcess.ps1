@@ -48,7 +48,7 @@ function Start-ADTMsiProcess
         Hides all arguments passed to the MSI or MSP file from the toolkit log file.
 
     .PARAMETER WorkingDirectory
-        Overrides the working directory. The working directory is set to the location of the MSI file.
+        Overrides the default working directory. The default working directory is the location of the MSI file.
 
     .PARAMETER Transforms
         The name(s) of the transform file(s) to be applied to the MSI. The transform files should be in the same directory as the MSI file.
