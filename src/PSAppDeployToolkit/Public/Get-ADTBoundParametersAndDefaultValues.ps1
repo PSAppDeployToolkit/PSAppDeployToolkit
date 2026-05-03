@@ -84,10 +84,12 @@ function Get-ADTBoundParametersAndDefaultValues
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$Exclude,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [System.String[]]$Include,
 
         [Parameter(Mandatory = $false)]
