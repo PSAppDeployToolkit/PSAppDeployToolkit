@@ -28,7 +28,12 @@ function Set-ADTRegistryKey
         DWord should be specified as a decimal.
 
     .PARAMETER MultiStringValueMode
-        The mode to operate when working with MultiString objects. The default is Replace, but Add and Remove modes are supported also.
+        The mode to operate when working with MultiString objects. The default value for this parameter is `Replace`.
+
+        Valid values for this parameter are:
+        - `Replace`: Replaces the current value with the one(s) specified in `-Value`.
+        - `Add`: Appends the values from `-Value` to the current registry value.
+        - `Remove`: Removes the values from `-Value`.
 
     .PARAMETER Wow6432Node
         Specify this switch to write to the 32-bit registry (WOW6432Node) on 64-bit systems.
