@@ -17,7 +17,7 @@ function Set-ADTActiveSetup
 
         If the "Version" value of the Active Setup entry in HKLM is higher than the version value in HKCU, the file referenced in "StubPath" is executed.
 
-        This Function:
+        This function:
 
         - Creates registry entries in: `HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\$($adtSession.InstallName)`.
         - Creates StubPath value depending on the file extension of the `-StubExePath` parameter.
