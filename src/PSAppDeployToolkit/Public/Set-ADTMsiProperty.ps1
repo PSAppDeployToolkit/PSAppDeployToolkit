@@ -36,6 +36,8 @@ function Set-ADTMsiProperty
         Set-ADTMsiProperty -Database $TempMsiPathDatabase -PropertyName 'ALLUSERS' -PropertyValue '1'
 
     .NOTES
+        This function is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
+
         An active ADT session is NOT required to use this function.
 
         This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.

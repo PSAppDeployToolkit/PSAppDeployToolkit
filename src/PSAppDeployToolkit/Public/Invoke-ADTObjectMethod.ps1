@@ -48,6 +48,8 @@ function Invoke-ADTObjectMethod
         Opens the C:\Windows folder in a Windows Explorer window.
 
     .NOTES
+        This function is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
+
         An active ADT session is NOT required to use this function.
 
         Tags: psadt<br />
