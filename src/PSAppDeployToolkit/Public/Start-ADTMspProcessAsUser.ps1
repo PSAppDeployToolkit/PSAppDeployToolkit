@@ -34,7 +34,9 @@ function Start-ADTMspProcessAsUser
         Specifies whether the process running as a user should inherit the SYSTEM account's environment variables.
 
     .PARAMETER DenyUserTermination
-        Specifies that users cannot terminate the process started in their context. The user will still be able to terminate the process if they're an administrator, though.
+        Specifies that users cannot terminate the process started in their context.
+
+        Note: This will not prevent the user from terminating the process if they are a member of the built-in Administrators group.
 
     .PARAMETER ExpandEnvironmentVariables
         Specifies whether to expand any Windows/DOS-style environment variables in the specified `-FilePath` and `-AdditionalArgumentList` parameters.
