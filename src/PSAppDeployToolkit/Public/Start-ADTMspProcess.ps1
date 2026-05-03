@@ -13,13 +13,13 @@ function Start-ADTMspProcess
     .DESCRIPTION
         Reads SummaryInfo targeted product codes in MSP file and determines if the MSP file applies to any installed products. If a valid installed product is found, triggers the `Start-ADTMsiProcess` function to patch the installation.
 
-        Uses default config MSI parameters. You can use the `-AdditionalArgumentList` parameter to add additional parameters.
+        Uses default config MSI arguments. You can use the `-AdditionalArgumentList` parameter to add additional arguments.
 
     .PARAMETER FilePath
         Path to the MSP file.
 
     .PARAMETER AdditionalArgumentList
-        Additional parameters.
+        Adds additional arguments to the default MSI InstallParams/SilentParams arguments, specified in the `config.psd1` file.
 
     .PARAMETER SecureArgumentList
         Hides all parameters passed to the MSI or MSP file from the toolkit log file.

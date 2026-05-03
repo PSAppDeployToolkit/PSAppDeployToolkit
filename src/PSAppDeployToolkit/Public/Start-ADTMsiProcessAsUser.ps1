@@ -39,10 +39,10 @@ function Start-ADTMsiProcessAsUser
         The InstalledApplication object of the installed MSI.
 
     .PARAMETER ArgumentList
-        Overrides the default arguments specified in the `config.psd1` file.
+        Overrides the default MSI arguments specified in the `config.psd1` file.
 
     .PARAMETER AdditionalArgumentList
-        Adds additional arguments to the default set specified in the `config.psd1` file.
+        Adds additional arguments to the default MSI arguments specified in the `config.psd1` file.
 
     .PARAMETER SecureArgumentList
         Hides all arguments passed to the MSI or MSP file from the toolkit log file.
