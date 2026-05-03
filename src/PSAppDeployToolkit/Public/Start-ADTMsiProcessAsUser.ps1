@@ -20,7 +20,14 @@ function Start-ADTMsiProcessAsUser
         The MSI or MSP file is expected to reside in the "Files" subdirectory of the App Deploy Toolkit, with transform files expected to be in the same directory as the MSI file.
 
     .PARAMETER Action
-        Specifies the action to be performed. Available options: Install, Uninstall, Patch, Repair, ActiveSetup.
+        Specifies the action to be performed.
+
+        The valid values for this parameter are:
+        - `Install`: Installs a MSI. When this action is selected, the `-ProductCode` parameter cannot be used.
+        - `Uninstall`: Uninstalls an MSI.
+        - `Patch`: Patches a MSI by applying the MSP patch files specified to the `-Patches` parameter.
+        - `Repair`: Repairs a MSI using the repair mode specified in the `-RepairMode` parameter.
+        - `ActiveSetup`: Performs a partial repair of a MSI, repairing missing files, user-specific registry entries, and shortcuts. Equivalent to: `msiexec.exe /i /fups`
 
     .PARAMETER FilePath
         The file path to the MSI/MSP file.
