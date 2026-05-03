@@ -25,6 +25,11 @@ function New-ADTZipFile
     .PARAMETER CompressionLevel
         The level of compression to apply to the zip file.
 
+        Valid values for this parameter are:
+        - `Fastest`: Use the fastest compression method available to reduce processing time. Faster compression can result in larger file sizes.
+        - `NoCompression`: Doesn't compress the source files.
+        - `Optimal`: Processing time is dependent on file size.
+
     .PARAMETER Update
         Specifies whether to update an existing zip file or not.
 
