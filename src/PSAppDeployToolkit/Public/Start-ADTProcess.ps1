@@ -22,7 +22,7 @@ function Start-ADTProcess
         Arguments to be passed to the executable.
 
     .PARAMETER SecureArgumentList
-        Hides all parameters passed to the executable from the Toolkit log file.
+        Hides all arguments passed to the executable from the Toolkit log file.
 
     .PARAMETER WorkingDirectory
         The working directory used for executing the process. Defaults to DirFiles if there is an active DeploymentSession. The use of `-UseShellExecute` affects this parameter.
