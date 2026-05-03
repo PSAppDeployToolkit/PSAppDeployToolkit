@@ -42,9 +42,7 @@ function Set-ADTActiveSetup
     .PARAMETER Version
         Optional. Specify version for Active setup entry. Due to a Windows Active Setup/registry limitation, the entry is not triggered if the Version value contains a sequence of more than 8 digits without separators. Use separators such as commas in the version string (for example, `1,0,20240101`) to break up long digit sequences and work around this limitation.
 
-        Note:
-            - Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
-            - In Windows 10, scripts and executables might be blocked by AppLocker. Ensure that the path given to `-StubExePath` will permit end users to run scripts and executables unelevated.
+        Note: Do not use this parameter if it is not necessary. PSADT will handle this parameter automatically using the time of the installation as the version number.
 
     .PARAMETER Locale
         Optional. Arbitrary string used to specify the installation language of the file being executed. Not replicated to HKCU.
