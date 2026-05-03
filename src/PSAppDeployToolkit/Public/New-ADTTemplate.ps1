@@ -114,7 +114,7 @@ function New-ADTTemplate
     .EXAMPLE
         New-ADTTemplate -Destination 'C:\Temp' -Assets 'C:\Assets\AppIconLight.png', 'C:\Assets\AppIconDark.png' -Config @{ Assets = @{ Logo = '..\Assets\AppIconLight.png'; LogoDark = '..\Assets\AppIconDark.png' } }
 
-        Creates a new v4 template with custom icons copied to Assets and config.psd1 updated configured to use them.
+        Creates a new v4 template with custom icons copied to Assets, with config.psd1 updated and configured to use them.
 
     .EXAMPLE
         New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7' } -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock {  Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
