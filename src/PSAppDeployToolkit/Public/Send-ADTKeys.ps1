@@ -67,7 +67,7 @@ function Send-ADTKeys
         License: https://opensource.org/license/lgpl-3-0
 
     .LINK
-        http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
+        https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.sendkeys
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Send-ADTKeys
