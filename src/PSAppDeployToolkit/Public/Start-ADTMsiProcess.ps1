@@ -88,7 +88,11 @@ function Start-ADTMsiProcess
         For uninstallations, by default the product code is resolved to the DisplayName and version of the application.
 
     .PARAMETER RepairMode
-        Specifies the mode of repair. Choosing `Repair` will repair via `msiexec.exe /p` (which can trigger unsuppressable reboots). Choosing `Reinstall` will reinstall by adding `REINSTALL=ALL REINSTALLMODE=omus` to the standard InstallParams.
+        Specifies the how the MSI will be repaired. The default value for this parameter is `Reinstall`.
+
+        Valid values for this parameter are:
+        - `Repair`: Repairs the MSI using the command `msiexec.exe /f`. Note: Repairing an MSI using this mode can trigger unsuppressable reboots.
+        - `Reinstall`: Reinstalls the MSI using the command `msiexec.exe /i` and appending `REINSTALL=ALL REINSTALLMODE=omus` to the default MSI InstallParams/SilentParams, configured in the `config.psd1` file.
 
     .PARAMETER RepairFromSource
         Specifies whether we should repair from source. Also rewrites local cache.
