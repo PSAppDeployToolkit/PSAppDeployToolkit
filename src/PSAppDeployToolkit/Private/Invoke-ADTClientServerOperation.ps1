@@ -236,17 +236,17 @@ function Private:Invoke-ADTClientServerOperation
                 if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
                 {
                     $naerParams = @{
-                        Exception = if ($result.StdErr.Count)
+                        Exception = if ($clientServerClientProcessResult.StdErr.Count)
                         {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($result.StdErr[0], [System.Exception]))
+                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($clientServerClientProcessResult.StdErr[0], [System.Exception]))
                         }
                         else
                         {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$result.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($result.ExitCode)) { " Exit Code: [$($result.ExitCode)]." })$(if ($result.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $result.StdOut))]" })", $_.Exception.InnerException)
+                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
                         }
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'ClientServerProcessOpenFailure'
-                        TargetObject = $result
+                        TargetObject = $clientServerClientProcessResult
                     }
                     $Script:ADT.ClientServerProcess.Dispose()
                     $Script:ADT.ClientServerProcess = $null
@@ -330,17 +330,17 @@ function Private:Invoke-ADTClientServerOperation
             if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
             {
                 $naerParams = @{
-                    Exception = if ($result.StdErr.Count)
+                    Exception = if ($clientServerClientProcessResult.StdErr.Count)
                     {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($result.StdErr[0], [System.Exception]))
+                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($clientServerClientProcessResult.StdErr[0], [System.Exception]))
                     }
                     else
                     {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$result.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($result.ExitCode)) { " Exit Code: [$($result.ExitCode)]." })$(if ($result.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $result.StdOut))]" })", $_.Exception.InnerException)
+                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
                     }
                     Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                     ErrorId = 'ClientServerProcessCommandFailure'
-                    TargetObject = $result
+                    TargetObject = $clientServerClientProcessResult
                 }
                 $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
