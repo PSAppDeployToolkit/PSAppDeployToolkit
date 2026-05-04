@@ -72,7 +72,7 @@ Describe 'Get-ADTRegistryKey' {
 
     Context 'Functionality' {
         It 'Should return the same output as Get-ItemProperty' {
-            $left = Get-ADTRegistrykey -LiteralPath $TestRegistry
+            $left = Get-ADTRegistryKey -LiteralPath $TestRegistry
             $right = Get-ItemProperty -LiteralPath $TestRegistry
             Compare-ADTRegistry -Left $left -Right $right | Should -BeTrue
         }
@@ -85,7 +85,7 @@ Describe 'Get-ADTRegistryKey' {
             Get-ADTRegistryKey -LiteralPath $TestRegistry -Name 'EnvironmentVariable' -DoNotExpandEnvironmentNames | Should -Be '%WinDir%\System32\cmd.exe'
         }
         It 'Should return $null when the property does not exist' {
-            Get-ADTRegistrykey -LiteralPath $TestRegistry -Name 'DoesNotExist' | Should -BeNull
+            Get-ADTRegistryKey -LiteralPath $TestRegistry -Name 'DoesNotExist' | Should -BeNull
         }
     }
 
