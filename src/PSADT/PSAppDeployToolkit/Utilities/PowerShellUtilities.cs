@@ -22,9 +22,9 @@ namespace PSAppDeployToolkit.Utilities
         {
             if (!(remainingArguments?.Count > 0))
             {
-                return [];
+                return new(StringComparer.OrdinalIgnoreCase);
             }
-            Dictionary<string, object> values = [];
+            Dictionary<string, object> values = new(StringComparer.OrdinalIgnoreCase);
             try
             {
                 string currentKey = string.Empty;
