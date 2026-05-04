@@ -1745,7 +1745,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's starting date and time.
         /// </summary>
-        public DateTime CurrentDateTime { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; } = DateTime.Now;
+        public DateTime CurrentDateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// Gets the deployment session's starting date as a string.
@@ -1815,7 +1815,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the caller's SessionState from value that was supplied during object instantiation.
         /// </summary>
-        public SessionState? SessionState { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+        public SessionState? SessionState { get; }
 
 
         #endregion
