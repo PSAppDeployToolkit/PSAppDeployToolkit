@@ -244,20 +244,19 @@ function Get-ADTBoundParametersAndDefaultValues
                     }
                 }
 
-                if (!$Include)
+                if ($Include)
                 {
-                    # Return dictionary to the caller, even if it's empty.
-                    return $obj
-                }
-
-                foreach ($key in $($obj.Keys))
-                {
-                    if ($Include -notcontains $key)
+                    # Filter out parameters not specified in -Include
+                    foreach ($key in $($obj.Keys))
                     {
-                        $null = $obj.Remove($key)
+                        if ($Include -notcontains $key)
+                        {
+                            $null = $obj.Remove($key)
+                        }
                     }
                 }
 
+                # Return dictionary to the caller, even if it's empty.
                 return $obj
             }
             catch
