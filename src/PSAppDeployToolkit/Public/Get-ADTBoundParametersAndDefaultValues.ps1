@@ -176,7 +176,7 @@ function Get-ADTBoundParametersAndDefaultValues
                 }
 
                 # Open dictionary to store all params and their values to return.
-                $obj = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new()
+                $obj = [System.Collections.Generic.Dictionary[System.String, System.Object]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
                 # Inject our already bound parameters into above object.
                 if (!$CommonParameters)
