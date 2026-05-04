@@ -39,6 +39,7 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="length">The size, in bytes, of the memory block referenced by the handle.</param>
         /// <param name="ownsHandle">A value indicating whether the SafeCoTaskMemHandle instance is responsible for releasing the native memory
         /// when disposed.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SafeCoTaskMemHandle(nint handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
         {
         }
@@ -54,6 +55,7 @@ namespace PSADT.Interop.SafeHandles
         /// internal use.</param>
         /// <param name="ownsHandle">true to indicate that the SafeCoTaskMemHandle instance should release the memory when disposed; otherwise,
         /// false.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SafeCoTaskMemHandle(PWSTR handle, bool ownsHandle) : base(handle.ToIntPtr(), handle.Length * sizeof(char), ownsHandle)
         {
         }

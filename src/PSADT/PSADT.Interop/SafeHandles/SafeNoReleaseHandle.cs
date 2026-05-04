@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Win32.SafeHandles;
 
 namespace PSADT.Interop.SafeHandles
@@ -30,6 +31,7 @@ namespace PSADT.Interop.SafeHandles
         /// Releases the handle associated with the current instance.
         /// </summary>
         /// <returns><see langword="true"/> if the handle was successfully released; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool ReleaseHandle()
         {
             return true;
