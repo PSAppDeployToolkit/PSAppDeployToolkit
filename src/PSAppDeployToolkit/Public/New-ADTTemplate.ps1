@@ -117,7 +117,7 @@ function New-ADTTemplate
         Creates a new v4 template with custom icons copied to Assets, with config.psd1 updated and configured to use them.
 
     .EXAMPLE
-        New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7' } -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock {  Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
+        New-ADTTemplate -Destination 'C:\Temp' -SessionProperties @{ AppVendor = 'Contoso'; AppName = 'MyApp'; AppVersion = '6.7' } -Files 'C:\Installers\Setup.msi' -InstallScriptBlock { Start-ADTMsiProcess -Action Install -FilePath 'Setup.msi' } -UninstallScriptBlock { Start-ADTMsiProcess -Action Uninstall -FilePath 'Setup.msi' }
 
         Creates a new v4 template with session properties defined, an MSI copied to Files and install/uninstall commands added.
 
