@@ -65,7 +65,6 @@ function Get-ADTBoundParametersAndDefaultValues
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'ParameterSetName', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'HelpMessage', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Exclude', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Include', Justification = 'This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.')]
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.Dictionary[System.String, System.Object]])]
     param
@@ -207,13 +206,6 @@ function Get-ADTBoundParametersAndDefaultValues
                 $parameters | & {
                     process
                     {
-                        # Filter in included values.
-                        if ($Include -and ($Include -notcontains $_.Name.VariablePath.UserPath))
-                        {
-                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
-                            return
-                        }
-
                         # Filter out excluded values.
                         if ($Exclude -contains $_.Name.VariablePath.UserPath)
                         {
@@ -252,7 +244,20 @@ function Get-ADTBoundParametersAndDefaultValues
                     }
                 }
 
-                # Return dictionary to the caller, even if it's empty.
+                if (!$Include)
+                {
+                    # Return dictionary to the caller, even if it's empty.
+                    return $obj
+                }
+
+                foreach ($key in $($obj.Keys))
+                {
+                    if ($Include -notcontains $key)
+                    {
+                        $null = $obj.Remove($key)
+                    }
+                }
+
                 return $obj
             }
             catch
