@@ -22,8 +22,6 @@ function Invoke-ADTAllUsersRegistryAction
     .PARAMETER ScriptBlock
         Script block which contains HKCU registry actions to be run for all users on the system.
 
-        Note: This function utilizes the built-in `ForEach-Object` cmdlet for processing scriptblocks. As such, when multiple scriptblocks are provided, it will inhibit the same behavior as the `-Process` parameter, mapping the first scriptblock to the `begin` block and subsequent scriptblocks to the `process` block. When three or more scriptblocks are provided, the last script block will be mapped to the `end` block.
-
     .PARAMETER UserProfiles
         Specify the user profiles to modify HKCU registry settings for. Default is all user profiles except for system profiles.
 
