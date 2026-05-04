@@ -203,27 +203,27 @@ function Get-ADTBoundParametersAndDefaultValues
                 }
 
                 # Build out the dictionary for returning.
-                $parameters | & {
+                $null = $parameters | & {
                     process
                     {
                         # Filter out excluded values.
                         if ($Exclude -contains $_.Name.VariablePath.UserPath)
                         {
-                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
+                            $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
                         # Filter out values based on the specified parameter set.
                         if ($ParameterSetName -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument ParameterSetName -Value $ParameterSetName))
                         {
-                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
+                            $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
                         # Filter out values based on the specified help message.
                         if ($HelpMessage -and !(Test-NamedAttributeArgumentAst -Parameter $_ -Argument HelpMessage -Value $HelpMessage))
                         {
-                            $null = $obj.Remove($_.Name.VariablePath.UserPath)
+                            $obj.Remove($_.Name.VariablePath.UserPath)
                             return
                         }
 
