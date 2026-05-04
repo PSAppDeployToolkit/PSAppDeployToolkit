@@ -267,7 +267,7 @@ namespace PSADT.Interop
         internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState, Span<byte> PreviousState, out uint ReturnLength)
         {
             ArgumentException.ThrowIfNullOrInvalid(TokenHandle);
-            BOOL res;
+            BOOL res; PInvoke.SetLastError(0);
             unsafe
             {
                 fixed (TOKEN_PRIVILEGES* newStatePtr = &NewState)
@@ -1385,7 +1385,7 @@ namespace PSADT.Interop
         /// <returns>The number of characters copied to lpReturnedString, not including the final null character.</returns>
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
-            uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
+            PInvoke.SetLastError(0); uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
             if (lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
@@ -1413,7 +1413,7 @@ namespace PSADT.Interop
         internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
-            uint res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
+            PInvoke.SetLastError(0); uint res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
             if (lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
@@ -1450,7 +1450,7 @@ namespace PSADT.Interop
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpDefault);
             }
-            uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
+            PInvoke.SetLastError(0); uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
             if (lastWin32Error != WIN32_ERROR.NO_ERROR)
             {
@@ -2305,7 +2305,8 @@ namespace PSADT.Interop
         /// FILE_TYPE.FILE_TYPE_UNKNOWN if the type cannot be determined and no error occurred.</returns>
         internal static FILE_TYPE GetFileType(SafeHandle hFile)
         {
-            ArgumentException.ThrowIfNullOrInvalid(hFile); FILE_TYPE res = PInvoke.GetFileType(hFile);
+            ArgumentException.ThrowIfNullOrInvalid(hFile);
+            FILE_TYPE res = PInvoke.GetFileType(hFile);
             if (res == FILE_TYPE.FILE_TYPE_UNKNOWN)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
@@ -3077,7 +3078,7 @@ namespace PSADT.Interop
             int res;
             try
             {
-                hInstance.DangerousAddRef(ref hInstanceAddRef);
+                hInstance.DangerousAddRef(ref hInstanceAddRef); PInvoke.SetLastError(0);
                 res = LoadString((HINSTANCE)hInstance.DangerousGetHandle(), uID, out lpBuffer, 0);
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
                 if (lastWin32Error != WIN32_ERROR.NO_ERROR)
