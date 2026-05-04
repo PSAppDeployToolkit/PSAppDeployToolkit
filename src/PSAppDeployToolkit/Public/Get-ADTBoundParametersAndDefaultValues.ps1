@@ -134,7 +134,7 @@ function Get-ADTBoundParametersAndDefaultValues
             }
 
             # Test whether any NamedAttributeArgumentAst objects match our value.
-            return $namedArguments.Argument.Value.Contains($Value)
+            return ($namedArguments.Argument.Value -contains $Value)
         }
     }
 
