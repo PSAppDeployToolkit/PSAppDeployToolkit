@@ -244,14 +244,14 @@ function Get-ADTBoundParametersAndDefaultValues
                     }
                 }
 
+                # Filter out parameters not specified in -Include.
                 if ($Include)
                 {
-                    # Filter out parameters not specified in -Include
-                    foreach ($key in $($obj.Keys))
+                    $null = foreach ($key in $($obj.Keys))
                     {
                         if ($Include -notcontains $key)
                         {
-                            $null = $obj.Remove($key)
+                            $obj.Remove($key)
                         }
                     }
                 }
