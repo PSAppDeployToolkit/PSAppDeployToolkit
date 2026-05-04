@@ -1650,32 +1650,32 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's application vendor.
         /// </summary>
-        public string? AppVendor { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppVendor => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application name.
         /// </summary>
-        public string? AppName { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppName => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application version.
         /// </summary>
-        public string? AppVersion { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppVersion => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application architecture.
         /// </summary>
-        public string? AppArch { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppArch => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application language.
         /// </summary>
-        public string? AppLang { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppLang => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application package revision.
         /// </summary>
-        public string? AppRevision { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppRevision => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
@@ -1695,42 +1695,42 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's application package version.
         /// </summary>
-        public Version? AppScriptVersion { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public Version? AppScriptVersion => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application package date.
         /// </summary>
-        public DateTime? AppScriptDate { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public DateTime? AppScriptDate => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's application package author.
         /// </summary>
-        public string? AppScriptAuthor { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? AppScriptAuthor => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets an override to the deployment session's installation name.
         /// </summary>
-        public string InstallName { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string InstallName => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets an override to the deployment session's installation title.
         /// </summary>
-        public string InstallTitle { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string InstallTitle => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's frontend script name.
         /// </summary>
-        public string? DeployAppScriptFriendlyName { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string? DeployAppScriptFriendlyName => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's frontend script version.
         /// </summary>
-        public Version? DeployAppScriptVersion { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public Version? DeployAppScriptVersion => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's frontend script parameters.
         /// </summary>
-        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public IReadOnlyDictionary<string, object>? DeployAppScriptParameters => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets/sets the deployment session's installation phase.
@@ -1750,12 +1750,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's starting date as a string.
         /// </summary>
-        public string CurrentDate { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string CurrentDate => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's starting time as a string.
         /// </summary>
-        public string CurrentTime { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string CurrentTime => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
@@ -1780,12 +1780,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
         /// </summary>
-        public FileInfo? DefaultMsiFile { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public FileInfo? DefaultMsiFile => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MST file path.
         /// </summary>
-        public FileInfo? DefaultMstFile { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public FileInfo? DefaultMstFile => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
@@ -1800,12 +1800,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's log path.
         /// </summary>
-        public DirectoryInfo LogPath { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public DirectoryInfo LogPath => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's log filename.
         /// </summary>
-        public string LogName { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); }
+        public string LogName => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets a value indicating whether administrative privileges are required.
