@@ -1760,7 +1760,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
         /// </summary>
-        public static readonly TimeSpan CurrentTimeZoneBias = TimeZoneInfo.Local.BaseUtcOffset;
+        public TimeSpan CurrentTimeZoneBias { get; } = TimeZoneInfo.Local.BaseUtcOffset;
 
         /// <summary>
         /// Gets the script directory of the caller.
