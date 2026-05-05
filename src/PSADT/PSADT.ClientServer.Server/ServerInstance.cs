@@ -276,6 +276,7 @@ namespace PSADT.ClientServer
         /// <returns><see langword="true"/> if the progress dialog was successfully updated; otherwise, <see langword="false"/>.</returns>
         public bool UpdateProgressDialog(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             if (progressMessage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessage);
@@ -517,6 +518,7 @@ namespace PSADT.ClientServer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AggregateException? GetLogWriterException()
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             return _logWriterTask?.Exception;
         }
 
@@ -625,9 +627,8 @@ namespace PSADT.ClientServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private TResult Invoke<TResult>(PipeCommand command)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
             // Send the request: [1-byte command]
+            ObjectDisposedException.ThrowIf(_disposed, this);
             try
             {
                 _ioEncryption.WriteEncrypted(_outputServer, [(byte)command]);
@@ -656,9 +657,8 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private TResult Invoke<TPayload, TResult>(PipeCommand command, TPayload payload) where TPayload : IClientServerPayload
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
             // Build and send the request: [1-byte command][serialized payload]
+            ObjectDisposedException.ThrowIf(_disposed, this);
             byte[] payloadBytes = DataSerialization.SerializeToBytes(payload);
             byte[] request = new byte[payloadBytes.Length + 1];
             request[0] = (byte)command;
@@ -683,9 +683,8 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private T ReadResponse<T>()
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
             // Read and decrypt the client's response.
+            ObjectDisposedException.ThrowIf(_disposed, this);
             byte[] response;
             try
             {
@@ -712,9 +711,8 @@ namespace PSADT.ClientServer
         /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
         private void ReadLog()
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
             // Read the log stream until cancellation is requested or the end of the stream is reached.
+            ObjectDisposedException.ThrowIf(_disposed, this);
             while (!_logWriterTaskCts.IsCancellationRequested)
             {
                 try
@@ -785,13 +783,6 @@ namespace PSADT.ClientServer
         public const string SuccessSentinel = "\x1F";
 
         /// <summary>
-        /// Indicates whether the object has been disposed.
-        /// </summary>
-        /// <remarks>This field is used internally to track the disposal state of the object. It should
-        /// not be accessed directly outside of the class.</remarks>
-        private bool _disposed;
-
-        /// <summary>
         /// Represents an asynchronous operation that retrieves the result of a client process.
         /// </summary>
         /// <remarks>The task encapsulates the execution of a client process and provides access to its
@@ -805,6 +796,13 @@ namespace PSADT.ClientServer
         /// <remarks>This field holds a reference to the current logging task, if one is active. It may
         /// be null if <see cref="Open"/> has not been called yet.</remarks>
         private Task? _logWriterTask;
+
+        /// <summary>
+        /// Indicates whether the object has been disposed.
+        /// </summary>
+        /// <remarks>This field is used internally to track the disposal state of the object. It should
+        /// not be accessed directly outside of the class.</remarks>
+        private bool _disposed;
 
         /// <summary>
         /// Represents the server side of an anonymous pipe used for interprocess communication.
