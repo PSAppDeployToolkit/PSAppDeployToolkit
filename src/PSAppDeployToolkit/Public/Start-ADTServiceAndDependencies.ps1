@@ -95,7 +95,7 @@ function Start-ADTServiceAndDependencies
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$PendingStatusWait,
 
         [Parameter(Mandatory = $false)]

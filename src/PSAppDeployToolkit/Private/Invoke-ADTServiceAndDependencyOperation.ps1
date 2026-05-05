@@ -22,7 +22,7 @@ function Private:Invoke-ADTServiceAndDependencyOperation
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
 
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$PendingStatusWait = [System.TimeSpan]::FromSeconds(60),
 
         [Parameter(Mandatory = $false)]
