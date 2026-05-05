@@ -6,16 +6,16 @@ Describe 'Get-ADTServiceStartMode' {
     BeforeAll {
         $services = Get-Service
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'bootService', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'bootService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $bootService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::Boot) { return $_ } } } | Select-Object -First 1
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'systemService', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'systemService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $systemService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::System) { return $_ } } } | Select-Object -First 1
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'automaticService', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'automaticService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $automaticService = $null
         $delayedAutomaticService = $null
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manualService', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manualService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $manualService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::Manual) { return $_ } } } | Select-Object -First 1
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'disabledService', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'disabledService', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $disabledService = $services | & { process { if ($_.StartType -eq [System.ServiceProcess.ServiceStartMode]::Disabled) { return $_ } } } | Select-Object -First 1
 
         foreach ($service in $services)

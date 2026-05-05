@@ -5,7 +5,7 @@
 Describe 'Get-ADTShortcut' {
     BeforeAll {
         $hotkeyString = 'CTRL+SHIFT+F'
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'shellLinkProperties', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'shellLinkProperties', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $shellLinkProperties = @{
             LiteralPath = "$TestDrive\Shortcut.lnk"
             Arguments = 'Arguments'

@@ -4,7 +4,7 @@
 }
 Describe 'Set-ADTRegistryKey' {
     BeforeAll {
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'TestRegistry', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'TestRegistry', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $TestRegistry = (New-Item -Path 'TestRegistry:\TestLocation' -ItemType Directory).PSPath
 
         # Mock Write-ADTLogEntry due to its expense when running via Pester.

@@ -98,7 +98,7 @@ Describe 'New-ADTTemplate' {
                 }
             }
             $content = $template.ScriptContent
-            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'keys', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'keys', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
             $keys = Get-ADTSessionPropertiesFromScriptContent -Content $content
         }
 
@@ -167,7 +167,7 @@ Describe 'New-ADTTemplate' {
 
     Context 'Config' {
         BeforeAll {
-            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
             $template = Get-ADTTemplateContent -Params @{
                 Config = @{
                     # Level 1: replacement + insertion inside existing 'MSI' section.
@@ -237,7 +237,7 @@ Describe 'New-ADTTemplate' {
     Context 'ScriptBlocks' {
         Context 'All phases replaced' {
             BeforeAll {
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                 $content = (Get-ADTTemplateContent -Params @{
                         PreInstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-pre-install' }
                         InstallScriptBlock = { Write-ADTLogEntry -Message 'TEST-install' }
@@ -293,9 +293,9 @@ Describe 'New-ADTTemplate' {
 
         Context 'Single phase preserves others' {
             BeforeAll {
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'originalContent', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'originalContent', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                 $originalContent = (Get-ADTTemplateContent).ScriptContent
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                 $content = (Get-ADTTemplateContent -Params @{
                         InstallScriptBlock = { Write-ADTLogEntry -Message 'custom install' }
                     }).ScriptContent
@@ -315,7 +315,7 @@ Describe 'New-ADTTemplate' {
         Context 'ZeroConfig' {
             Context 'ZeroConfig alone injects default MSI logic into Install, Uninstall, and Repair' {
                 BeforeAll {
-                    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                     $content = (Get-ADTTemplateContent -Params @{ ZeroConfig = $true }).ScriptContent
                 }
 
@@ -334,7 +334,7 @@ Describe 'New-ADTTemplate' {
 
             Context 'ZeroConfig prepended to user-supplied scriptblocks' {
                 BeforeAll {
-                    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'content', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                     $content = (Get-ADTTemplateContent -Params @{
                             ZeroConfig = $true
                             InstallScriptBlock = { Write-ADTLogEntry -Message 'USER-install' }
@@ -374,7 +374,7 @@ Describe 'New-ADTTemplate' {
 
         Context 'Combined file copy' {
             BeforeAll {
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                 $template = Get-ADTTemplateContent -Params @{
                     Assets = "$TestDrive\SourceAssets\custom.ico"
                     Files = "$TestDrive\SourceFiles\setup.msi", "$TestDrive\SourceFiles\app.mst"
@@ -413,7 +413,7 @@ Describe 'New-ADTTemplate' {
         BeforeAll {
             $null = New-Item -Path "$TestDrive\SourceFiles" -ItemType Directory -Force
             'installer' | Set-Content -Path "$TestDrive\SourceFiles\setup.msi" -Force
-            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'template', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
             $template = Get-ADTTemplateContent -Params @{
                 Version = 3
                 Config = @{ MSI = @{ InstallParams = 'TEST' } }
