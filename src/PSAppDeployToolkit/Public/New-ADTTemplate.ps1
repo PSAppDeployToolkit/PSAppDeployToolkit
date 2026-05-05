@@ -561,7 +561,7 @@ function New-ADTTemplate
                 $defaultAssets = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).Ast.EndBlock.Statements.PipelineElements.Expression.KeyValuePairs.Where({ $_.Item1.Value.Equals('Assets') }).Item2.PipelineElements.Expression.KeyValuePairs
                 [System.IO.File]::WriteAllBytes("$templatePath\Assets\Banner.Classic.png", [System.Convert]::FromBase64String(($banner = $defaultAssets.Where({ $_.Item1.Value.Equals('Banner') }).Item2.PipelineElements.Expression.Value)))
                 [System.IO.File]::WriteAllBytes("$templatePath\Assets\AppIcon.ico", [System.Convert]::FromBase64String(($logo = $defaultAssets.Where({ $_.Item1.Value.Equals('Logo') }).Item2.PipelineElements.Expression.Value)))
-                $configText = $ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.ico')
+                $configText = $Script:ADT.ModuleDefaults.Config.([System.String]::Empty).ToString().Replace($banner, '..\Assets\Banner.Classic.png').Replace($logo, '..\Assets\AppIcon.ico')
 
                 # Override config values if specified.
                 if ($PSBoundParameters.ContainsKey('Config'))
@@ -576,7 +576,7 @@ function New-ADTTemplate
 
                 # Export the string data from the module to disk.
                 $null = New-Item -Path "$templatePath\Strings" -ItemType Directory -Force
-                foreach ($stringData in $ADT.ModuleDefaults.Strings.GetEnumerator())
+                foreach ($stringData in $Script:ADT.ModuleDefaults.Strings.GetEnumerator())
                 {
                     if ([System.String]::IsNullOrWhiteSpace($stringData.Key))
                     {
@@ -585,7 +585,7 @@ function New-ADTTemplate
                     $null = New-Item -Path "$templatePath\Strings\$($stringData.Key)" -ItemType Directory -Force
                     Export-ADTScriptBlockToFile -ScriptBlock $stringData.Value -LiteralPath "$templatePath\Strings\$($stringData.Key)\strings.psd1"
                 }
-                Export-ADTScriptBlockToFile -ScriptBlock $ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
+                Export-ADTScriptBlockToFile -ScriptBlock $Script:ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
 
                 # Remove any digital signatures from the ps*1 files.
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
