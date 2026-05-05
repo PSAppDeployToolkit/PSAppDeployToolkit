@@ -594,12 +594,9 @@ function Remove-MSIApplications
             }
         }
     )
-
-    $filterScript = [System.String]::Join(' -and ', $filterArray)
-
-    if ($filterScript)
+    if ($filterArray)
     {
-        $uaaParams.filterScript = [System.Management.Automation.ScriptBlock]::Create($filterScript)
+        $uaaParams.filterScript = [System.Management.Automation.ScriptBlock]::Create([System.String]::Join(' -and ', $filterArray))
     }
 
     # Invoke execution.
