@@ -540,7 +540,7 @@ function New-ADTTemplate
                     if (!$Force)
                     {
                         $naerParams = @{
-                            Exception = [System.IO.IOException]::new("Folders [$templatePath] already exists and is not empty.")
+                            Exception = [System.IO.IOException]::new("Folder [$templatePath] already exists and is not empty.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                             ErrorId = 'NonEmptySubfolderError'
                             TargetObject = $templatePath
