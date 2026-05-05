@@ -622,11 +622,9 @@ function New-ADTTemplate
                 # Process the generated script
                 if ($Version.Equals(4))
                 {
-                    $params = @{
-                        LiteralPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
-                        Encoding = ('utf8', 'utf8BOM')[$PSVersionTable.PSEdition.Equals('Core')]
-                    }
-                    $scriptContent = ((Get-Content @params -Raw) -replace '\r?\n', [System.Environment]::NewLine).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
+                    $scriptPath = "$templatePath\Invoke-AppDeployToolkit.ps1"
+                    $scriptEncoding = [System.Text.UTF8Encoding]::new($true, $true)
+                    $scriptContent = ([System.IO.File]::ReadAllText($scriptPath, $scriptEncoding) -replace '\r?\n', [System.Environment]::NewLine).Replace('..\..\..\..\', [System.Management.Automation.Language.NullString]::Value).Replace('2000-12-31', [System.DateTime]::Now.ToString('yyyy-MM-dd'))
 
                     # Collect all script content replacements (absolute offsets) across all features,
                     # then apply them in a single pass from end to start to preserve earlier offsets.
@@ -761,7 +759,7 @@ function New-ADTTemplate
                     {
                         $scriptContent = Set-ADTTextReplacements -InputText $scriptContent -Replacements $scriptReplacements
                     }
-                    Out-File -InputObject $scriptContent @params -Width ([System.Int16]::MaxValue) -Force
+                    [System.IO.File]::WriteAllText($scriptPath, $scriptContent, $scriptEncoding)
                 }
                 else
                 {

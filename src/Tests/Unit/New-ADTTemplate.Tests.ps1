@@ -67,6 +67,20 @@ Describe 'New-ADTTemplate' {
             }
             $keys
         }
+
+        function Get-ADTTrailingLineBreaks
+        {
+            [CmdletBinding()]
+            [OutputType([System.String])]
+            param ([System.String]$LiteralPath)
+            $content = [System.IO.File]::ReadAllText($LiteralPath, [System.Text.UTF8Encoding]::new($true))
+            $match = [System.Text.RegularExpressions.Regex]::Match($content, '(?:\r\n|\n)+$')
+            if ($match.Success)
+            {
+                return $match.Value.Replace("`r", '\r').Replace("`n", '\n')
+            }
+            return [System.String]::Empty
+        }
     }
 
     Context 'SessionProperties' {
@@ -138,6 +152,12 @@ Describe 'New-ADTTemplate' {
 
         It 'Invoke-AppDeployToolkit.ps1 has UTF-8 BOM' {
             $template.ScriptHasBom | Should -BeTrue
+        }
+
+        It 'Preserves the source template trailing line breaks' {
+            $sourcePath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\PSAppDeployToolkit\opt\Frontend\v4\Invoke-AppDeployToolkit.ps1'
+            $generatedPath = Join-Path -Path $template.Path -ChildPath 'Invoke-AppDeployToolkit.ps1'
+            (Get-ADTTrailingLineBreaks -LiteralPath $generatedPath) | Should -Be (Get-ADTTrailingLineBreaks -LiteralPath $sourcePath)
         }
 
         It 'Config\config.psd1 has UTF-8 BOM' {
