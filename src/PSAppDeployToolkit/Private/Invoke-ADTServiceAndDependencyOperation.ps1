@@ -83,13 +83,13 @@ function Private:Invoke-ADTServiceAndDependencyOperation
 
         # Stop the parent service.
         Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-        $Service = $Service | Stop-Service -PassThru -WarningAction Ignore -Force
+        $Service = Stop-Service -InputObject $Service -Force -PassThru -WarningAction Ignore
     }
     elseif (($Operation -eq 'Start') -and ($Service.Status -ne [System.ServiceProcess.ServiceControllerStatus]::Running))
     {
         # Start the parent service.
         Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
-        $Service = $Service | Start-Service -PassThru -WarningAction Ignore
+        $Service = Start-Service -InputObject $Service -PassThru -WarningAction Ignore
 
         # Process all dependent services.
         Invoke-ADTDependentServiceOperation
