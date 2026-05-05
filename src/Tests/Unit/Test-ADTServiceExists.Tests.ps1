@@ -4,7 +4,7 @@
 }
 Describe 'Test-ADTServiceExists' {
     BeforeAll {
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'realServiceName', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'realServiceName', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $realServiceName = Get-Service | Select-Object -First 1 -ExpandProperty Name
 
         while ($true)

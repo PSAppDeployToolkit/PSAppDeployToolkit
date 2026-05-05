@@ -4,9 +4,9 @@
     #-------------------------------------------------------------------------
     $ModuleName = 'PSAppDeployToolkit'
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PathToManifest', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PathToManifest', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $PathToManifest = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PathToModule', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PathToModule', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $PathToModule = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psm1")
     #-------------------------------------------------------------------------
 }

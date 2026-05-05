@@ -4,7 +4,7 @@
 }
 Describe 'Get-ADTRegistryKey' {
     BeforeAll {
-        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'TestRegistry', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'TestRegistry', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $TestRegistry = (New-Item -Path 'TestRegistry:\TestLocation' -ItemType Directory).PSPath
         New-Item -Path "$TestRegistry\Empty" -ItemType Container
         New-ItemProperty -LiteralPath $TestRegistry -Name 'EnvironmentVariable' -Value '%WinDir%\System32\cmd.exe' -PropertyType ExpandString | Out-Null

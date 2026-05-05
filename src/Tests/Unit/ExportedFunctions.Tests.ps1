@@ -6,14 +6,14 @@
     Import-Module $PathToManifest -Force
     $manifestContent = Test-ModuleManifest -Path $PathToManifest
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $moduleExported = Get-Command -Module $ModuleName | Select-Object -ExpandProperty Name
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manifestExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manifestExported', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $manifestExported = ($manifestContent.ExportedFunctions).Keys
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'typeAcceleratorNames', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'typeAcceleratorNames', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $typeAcceleratorNames = [System.Management.Automation.PowerShell].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Get.Keys
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'powershellCommonParameters', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'powershellCommonParameters', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
     $powershellCommonParameters = $(
         [System.Management.Automation.PSCmdlet]::CommonParameters
         [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
@@ -50,9 +50,9 @@ BeforeDiscovery {
     $PathToManifest = [System.IO.Path]::Combine('..', '..', $ModuleName, "$ModuleName.psd1")
     $manifestContent = Test-ModuleManifest -Path $PathToManifest
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'moduleExported', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $moduleExported = Get-Command -Module $ModuleName | Select-Object -ExpandProperty Name
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manifestExported', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'manifestExported', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
     $manifestExported = ($manifestContent.ExportedFunctions).Keys
 }
 Describe $ModuleName {
@@ -73,13 +73,13 @@ Describe $ModuleName {
     Context 'Command Help' -Fixture {
         Context '<_>' -ForEach $moduleExported {
             BeforeEach {
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'help', Justification = "This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.")]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'help', Justification = "This variable is used within script blocks that PSScriptAnalyzer has no visibility of.")]
                 $help = Get-Help -Name $_ -Full
 
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'command', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'command', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
                 $command = Get-Command -Name $_
 
-                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'outputTypes', Justification = 'This variable is used within scriptblocks that PSScriptAnalyzer has no visibility of.')]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'outputTypes', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
                 $outputTypes = $command.OutputType | & { process { return $_.Type } }
             }
 
