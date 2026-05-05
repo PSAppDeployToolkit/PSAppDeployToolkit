@@ -11,8 +11,14 @@ function Private:Invoke-ADTServiceAndDependencyOperation
     param
     (
         [Parameter(Mandatory = $true)]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [System.String]$Name,
+        [ValidateScript({
+                if (!$_.ServiceName)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
+                }
+                return !!$_
+            })]
+        [System.ServiceProcess.ServiceController]$Service,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Start', 'Stop')]
@@ -59,9 +65,6 @@ function Private:Invoke-ADTServiceAndDependencyOperation
             }
         }
     }
-
-    # Get the service object before continuing.
-    $Service = Get-Service -Name $Name
 
     # Wait up to 60 seconds if service is in a pending state.
     if (($desiredStatus = @{ ContinuePending = [System.ServiceProcess.ServiceControllerStatus]::Running; PausePending = [System.ServiceProcess.ServiceControllerStatus]::Paused; StartPending = [System.ServiceProcess.ServiceControllerStatus]::Running; StopPending = [System.ServiceProcess.ServiceControllerStatus]::Stopped }[$Service.Status]))
