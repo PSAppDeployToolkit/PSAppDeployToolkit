@@ -203,7 +203,7 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyManager.RemediatePermissions(user);
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); AssemblyPermissions.Remediate(user);
                         using ProcessResult result = ClientServerUtilities.StartClientOperation(["/GetLastInputTime"], user).Task.GetAwaiter().GetResult();
                         idleTime = new(long.Parse(result.StdOut[0], CultureInfo.InvariantCulture));
                     }
