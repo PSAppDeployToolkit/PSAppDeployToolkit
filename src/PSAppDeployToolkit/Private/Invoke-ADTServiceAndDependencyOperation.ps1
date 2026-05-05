@@ -64,16 +64,16 @@ function Private:Invoke-ADTServiceAndDependencyOperation
     $Service = Get-Service -Name $Name
 
     # Wait up to 60 seconds if service is in a pending state.
-    if (($desiredStatus = @{ ContinuePending = 'Running'; PausePending = 'Paused'; StartPending = 'Running'; StopPending = 'Stopped' }[$Service.Status]))
+    if (($desiredStatus = @{ ContinuePending = [System.ServiceProcess.ServiceControllerStatus]::Running; PausePending = [System.ServiceProcess.ServiceControllerStatus]::Paused; StartPending = [System.ServiceProcess.ServiceControllerStatus]::Running; StopPending = [System.ServiceProcess.ServiceControllerStatus]::Stopped }[$Service.Status]))
     {
-        Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$([System.ServiceProcess.ServiceControllerStatus]$desiredStatus)]."
+        Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($Service.Status)] to reach desired status [$desiredStatus]."
         $Service.WaitForStatus($desiredStatus, $PendingStatusWait)
         $Service.Refresh()
     }
 
     # Discover if the service is currently running.
     Write-ADTLogEntry -Message "Service [$($Service.ServiceName)] with display name [$($Service.DisplayName)] has a status of [$($Service.Status)]."
-    if (($Operation -eq 'Stop') -and ($Service.Status -ne 'Stopped'))
+    if (($Operation -eq 'Stop') -and ($Service.Status -ne [System.ServiceProcess.ServiceControllerStatus]::Stopped))
     {
         # Process all dependent services.
         Invoke-ADTDependentServiceOperation
@@ -82,7 +82,7 @@ function Private:Invoke-ADTServiceAndDependencyOperation
         Write-ADTLogEntry -Message "Stopping parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
         $Service = $Service | Stop-Service -PassThru -WarningAction Ignore -Force
     }
-    elseif (($Operation -eq 'Start') -and ($Service.Status -ne 'Running'))
+    elseif (($Operation -eq 'Start') -and ($Service.Status -ne [System.ServiceProcess.ServiceControllerStatus]::Running))
     {
         # Start the parent service.
         Write-ADTLogEntry -Message "Starting parent service [$($Service.ServiceName)] with display name [$($Service.DisplayName)]."
