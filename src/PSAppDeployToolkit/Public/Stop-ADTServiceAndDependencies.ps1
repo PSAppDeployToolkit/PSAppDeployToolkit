@@ -14,13 +14,16 @@ function Stop-ADTServiceAndDependencies
         The `Stop-ADTServiceAndDependencies` function stops a specified Windows service and its dependencies. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
 
     .PARAMETER Name
-        Specify the name of the service.
+        Specifies the service names of services to be stopped. Wildcards are permitted.
+
+    .PARAMETER DisplayName
+        Specifies the display names of services to be stopped. Wildcards are permitted.
 
     .PARAMETER InputObject
-        A ServiceController object to stop.
+        Specifies ServiceController objects representing the services to be stopped.
 
     .PARAMETER SkipDependentServices
-        Choose to skip checking for and stopping dependent services.
+        Specifies whether to skip checking for and stopping dependent services.
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
@@ -29,9 +32,9 @@ function Stop-ADTServiceAndDependencies
         Return the System.ServiceProcess.ServiceController service object.
 
     .INPUTS
-        None
+        System.ServiceProcess.ServiceController
 
-        You cannot pipe objects to this function.
+        You can pipe a ServiceController object to this function.
 
     .OUTPUTS
         None
@@ -72,24 +75,36 @@ function Stop-ADTServiceAndDependencies
         https://psappdeploytoolkit.com/docs/reference/functions/Stop-ADTServiceAndDependencies
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisplayName', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PendingStatusWait', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PassThru', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.ServiceProcess.ServiceController])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
         [Alias('Service')]
-        [System.String]$Name,
+        [System.String[]]$Name,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'DisplayName')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
+        [System.String[]]$DisplayName,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
         [ValidateScript({
-                if (!$_.Name)
+                if (!$_.ServiceName)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
-        [System.ServiceProcess.ServiceController]$InputObject,
+        [System.ServiceProcess.ServiceController[]]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
@@ -105,10 +120,7 @@ function Stop-ADTServiceAndDependencies
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ($pipelining = $PSCmdlet.ParameterSetName.Equals('InputObject'))
-        {
-            $null = $PSBoundParameters.Remove('InputObject')
-        }
+        $iasadoParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude $PSCmdlet.ParameterSetName
     }
 
     process
@@ -117,14 +129,29 @@ function Stop-ADTServiceAndDependencies
         {
             try
             {
-                if ($pipelining)
+                $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                $services = Get-Service @gsParams
+
+                foreach ($service in $services)
                 {
-                    $PSBoundParameters.Name = $InputObject.Name
-                }
-                $serviceName = if ($pipelining) { $InputObject.Name } else { $Name }
-                if ($PSCmdlet.ShouldProcess($serviceName, 'Stop service and dependencies'))
-                {
-                    Invoke-ADTServiceAndDependencyOperation -Operation Stop @PSBoundParameters
+                    try
+                    {
+                        try
+                        {
+                            if ($PSCmdlet.ShouldProcess($service.ServiceName, "Stop service$(if (!$SkipDependentServices) { ' and dependencies' })"))
+                            {
+                                Invoke-ADTServiceAndDependencyOperation -Service $service -Operation Stop @iasadoParams
+                            }
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
+                        }
+                    }
+                    catch
+                    {
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to stop the service [$($service.ServiceName)] with display name [$($service.DisplayName)]." -ErrorAction SilentlyContinue
+                    }
                 }
             }
             catch
@@ -134,20 +161,7 @@ function Stop-ADTServiceAndDependencies
         }
         catch
         {
-            $iafehParams = @{
-                Cmdlet = $PSCmdlet
-                SessionState = $ExecutionContext.SessionState
-                ErrorRecord = $_
-            }
-            if ($pipelining)
-            {
-                $iafehParams.Add('LogMessage', "Failed to stop the service [$($InputObject.Name)].")
-            }
-            else
-            {
-                $iafehParams.Add('LogMessage', "Failed to stop the service [$($Name)].")
-            }
-            Invoke-ADTFunctionErrorHandler @iafehParams
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 

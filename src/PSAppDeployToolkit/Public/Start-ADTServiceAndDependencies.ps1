@@ -14,24 +14,27 @@ function Start-ADTServiceAndDependencies
         The `Start-ADTServiceAndDependencies` function starts a specified Windows service and its dependencies. It provides options to skip starting dependent services, wait for a service to get out of a pending state, and return the service object.
 
     .PARAMETER Name
-        Specify the name of the service.
+        Specifies the service names of services to be stopped. Wildcards are permitted.
+
+    .PARAMETER DisplayName
+        Specifies the display names of services to be stopped. Wildcards are permitted.
 
     .PARAMETER InputObject
-        A ServiceController object to start.
+        Specifies ServiceController objects representing the services to be started.
 
     .PARAMETER SkipDependentServices
-        Choose to skip checking for and starting dependent services.
+        Specifies whether to skip checking for and starting dependent services.
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
     .PARAMETER PassThru
-        Return the System.ServiceProcess.ServiceController service object.
+        Return the ServiceController service object.
 
     .INPUTS
-        None
+        System.ServiceProcess.ServiceController
 
-        You cannot pipe objects to this function.
+        You can pipe a ServiceController object to this function.
 
     .OUTPUTS
         None
@@ -72,24 +75,36 @@ function Start-ADTServiceAndDependencies
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTServiceAndDependencies
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisplayName', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PendingStatusWait', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PassThru', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.ServiceProcess.ServiceController])]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
         [Alias('Service')]
-        [System.String]$Name,
+        [System.String[]]$Name,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'DisplayName')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
+        [System.String[]]$DisplayName,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
         [ValidateScript({
-                if (!$_.Name)
+                if (!$_.ServiceName)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
-        [System.ServiceProcess.ServiceController]$InputObject,
+        [System.ServiceProcess.ServiceController[]]$InputObject,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
@@ -105,10 +120,7 @@ function Start-ADTServiceAndDependencies
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ($pipelining = $PSCmdlet.ParameterSetName.Equals('InputObject'))
-        {
-            $null = $PSBoundParameters.Remove('InputObject')
-        }
+        $iasadoParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude $PSCmdlet.ParameterSetName
     }
 
     process
@@ -117,14 +129,29 @@ function Start-ADTServiceAndDependencies
         {
             try
             {
-                if ($pipelining)
+                $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                $services = Get-Service @gsParams
+
+                foreach ($service in $services)
                 {
-                    $PSBoundParameters.Name = $InputObject.Name
-                }
-                $serviceName = if ($pipelining) { $InputObject.Name } else { $Name }
-                if ($PSCmdlet.ShouldProcess($serviceName, 'Start service and dependencies'))
-                {
-                    Invoke-ADTServiceAndDependencyOperation -Operation Start @PSBoundParameters
+                    try
+                    {
+                        try
+                        {
+                            if ($PSCmdlet.ShouldProcess($service.ServiceName, "Start service$(if (!$SkipDependentServices) { ' and dependencies' })"))
+                            {
+                                Invoke-ADTServiceAndDependencyOperation -Service $service -Operation Start @iasadoParams
+                            }
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
+                        }
+                    }
+                    catch
+                    {
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to start the service [$($service.ServiceName)] with display name [$($service.DisplayName)]." -ErrorAction SilentlyContinue
+                    }
                 }
             }
             catch
@@ -134,20 +161,7 @@ function Start-ADTServiceAndDependencies
         }
         catch
         {
-            $iafehParams = @{
-                Cmdlet = $PSCmdlet
-                SessionState = $ExecutionContext.SessionState
-                ErrorRecord = $_
-            }
-            if ($pipelining)
-            {
-                $iafehParams.Add('LogMessage', "Failed to start the service [$($InputObject.Name)].")
-            }
-            else
-            {
-                $iafehParams.Add('LogMessage', "Failed to start the service [$($Name)].")
-            }
-            Invoke-ADTFunctionErrorHandler @iafehParams
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
