@@ -38,10 +38,10 @@ function Private:Invoke-ADTServiceAndDependencyOperation
         }
 
         # Discover all dependent services.
-        Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$Service] which are not '$(($status = ('Stopped', 'Running')[$Operation -eq 'Start']))'."
-        if (!($dependentServices = Get-Service -Name $Service.ServiceName -DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
+        Write-ADTLogEntry -Message "Discovering all dependent service(s) for service [$($Service.ServiceName)] which are not '$(($status = ('Stopped', 'Running')[$Operation -eq 'Start']))'."
+        if (!($dependentServices = $Service.DependentServices | & { process { if ($_.Status -ne $status) { return $_ } } }))
         {
-            Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$Service]."
+            Write-ADTLogEntry -Message "Dependent service(s) were not discovered for service [$($Service.ServiceName)]."
             return
         }
 
