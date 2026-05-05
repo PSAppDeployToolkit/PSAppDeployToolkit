@@ -32,7 +32,7 @@ function Private:Invoke-ADTServiceAndDependencyOperation
     # Internal worker function.
     function Invoke-ADTDependentServiceOperation
     {
-        if (!$SkipDependentServices)
+        if ($SkipDependentServices)
         {
             return
         }
