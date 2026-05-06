@@ -1833,7 +1833,7 @@ function Test-PowerPoint
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-PowerPoint]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Test-ADTPowerPoint]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     try
     {
         Test-ADTPowerPoint
