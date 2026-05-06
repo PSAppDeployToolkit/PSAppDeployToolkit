@@ -4770,11 +4770,11 @@ function Get-PEFileArchitecture
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateScript({ Test-Path -LiteralPath $_ -PathType Leaf })]
-        [Systemn.IO.FileInfo[]]$FilePath,
+        [System.IO.FileInfo[]]$FilePath,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Nullable[Systemn.Boolean]]$ContinueOnError = $true,
+        [System.Nullable[System.Boolean]]$ContinueOnError = $true,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
