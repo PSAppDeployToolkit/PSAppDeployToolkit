@@ -13,21 +13,35 @@ function Set-ADTServiceStartMode
     .DESCRIPTION
         The `Set-ADTServiceStartMode` function sets the service startup mode. This function allows you to configure the startup mode of a specified service. The startup modes available are: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, and System.
 
-    .PARAMETER Service
-        Specify the name of the service.
+    .PARAMETER Name
+        Specifies the service names of the services to set the start mode for. Wildcards are permitted.
+
+    .PARAMETER DisplayName
+        Specifies the display names of services to set the start mode for. Wildcards are permitted.
+
+    .PARAMETER InputObject
+        Specifies ServiceController objects representing the services to be started.
 
     .PARAMETER StartMode
-        Specify startup mode for the service. Options: Automatic, Automatic (Delayed Start), Manual, Disabled, Boot, System.
+        Specify startup mode for the service. Valid values for this parameter are: `Automatic`, `Automatic (Delayed Start)`, `Manual`, `Disabled`, `Boot`, `System`
+
+    .PARAMETER PassThru
+        Returns the ServiceController service object.
 
     .INPUTS
-        None
+        System.ServiceProcess.ServiceController
 
-        You cannot pipe objects to this function.
+        You can pipe ServiceController objects to this function.
 
     .OUTPUTS
         None
 
-        This function does not return any output.
+        By default, this function does not return any output.
+
+    .OUTPUTS
+        System.ServiceProcess.ServiceController
+
+        When the `-PassThru` parameter is provided, this function returns a ServiceController object representing the service that was started.
 
     .EXAMPLE
         Set-ADTServiceStartMode -Service 'wuauserv' -StartMode 'Automatic (Delayed Start)'
@@ -49,21 +63,38 @@ function Set-ADTServiceStartMode
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([System.ServiceProcess.ServiceController])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
+        [System.String[]]$Name,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'DisplayName')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
+        [System.String[]]$DisplayName,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
         [ValidateScript({
-                if (!$_.Name)
+                if (!$_.ServiceName)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
-        [System.ServiceProcess.ServiceController]$Service,
+        [Alias('Service')]
+        [System.ServiceProcess.ServiceController[]]$InputObject,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Automatic', 'Automatic (Delayed Start)', 'Manual', 'Disabled', 'Boot', 'System')]
-        [System.String]$StartMode
+        [System.String]$StartMode,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PassThru
     )
 
     begin
@@ -81,33 +112,70 @@ function Set-ADTServiceStartMode
 
     process
     {
-        Write-ADTLogEntry -Message "$(($msg = "Setting service [$($Service.Name)] startup mode to [$StartMode]"))."
-        if (!$PSCmdlet.ShouldProcess($Service.Name, "Set service startup mode to [$StartMode]"))
-        {
-            return
-        }
         try
         {
             try
             {
-                # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
-                $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $Service.Name start= $StartMode 2>&1
-                if (!$Global:LASTEXITCODE)
-                {
-                    Write-ADTLogEntry -Message "Successfully set service [$($Service.Name)] startup mode to [$StartMode]."
-                    return
-                }
+                $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                $services = Get-Service @gsParams
 
-                # If we're here, we had a bad exit code.
-                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity Error
-                $naerParams = @{
-                    Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                    ErrorId = 'ScConfigFailure'
-                    TargetObject = $scResult
-                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                foreach ($service in $services)
+                {
+                    if ($service.StartType -in @('Manual', 'Disabled', 'Boot', 'System') -and $service.StartType -eq $PSBoundParameters.StartMode)
+                    {
+                        Write-ADTLogEntry -Message "The startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already set to [$($PSBoundParameters.StartMode)]."
+                        if ($PassThru)
+                        {
+                            $PSCmdlet.WriteObject($service)
+                        }
+                        continue
+                    }
+
+                    Write-ADTLogEntry -Message "$(($msg = "Setting service [$($service.ServiceName)] with display name [$($service.DisplayName)] startup mode to [$($PSBoundParameters.StartMode)]"))."
+                    if (!$PSCmdlet.ShouldProcess($service.ServiceName, "Set service startup mode to [$($PSBoundParameters.StartMode)]"))
+                    {
+                        continue
+                    }
+
+                    try
+                    {
+                        try
+                        {
+                            # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
+                            $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $service.ServiceName start= $StartMode 2>&1
+                            if (!$Global:LASTEXITCODE)
+                            {
+                                Write-ADTLogEntry -Message "Successfully set service [$($service.ServiceName)] with display name [$($service.DisplayName)] startup mode to [$($PSBoundParameters.StartMode)]."
+                                if ($PassThru)
+                                {
+                                    $service.Refresh()
+                                    $PSCmdlet.WriteObject($service)
+                                    continue
+                                }
+                                continue
+                            }
+
+                            # If we're here, we had a bad exit code.
+                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity Error
+                            $naerParams = @{
+                                Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
+                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                ErrorId = 'ScConfigFailure'
+                                TargetObject = $scResult
+                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                            }
+                            throw (New-ADTErrorRecord @naerParams)
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
+                        }
+                    }
+                    catch
+                    {
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -ErrorAction SilentlyContinue
+                    }
                 }
-                throw (New-ADTErrorRecord @naerParams)
             }
             catch
             {
