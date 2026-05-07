@@ -13,13 +13,19 @@ function Get-ADTServiceStartMode
     .DESCRIPTION
         The `Get-ADTServiceStartMode` function retrieves the startup mode of a specified service. This function checks the service's start type and adjusts the result if the service is set to 'Automatic (Delayed Start)'.
 
-    .PARAMETER Service
-        Specify the service object to retrieve the startup mode for.
+    .PARAMETER Name
+        Specifies the service name of the services to be retrieved the start mode for. Wildcards are permitted. When more than one service matches the wildcard pattern provided, only the service start mode of the first service is returned
+
+    .PARAMETER DisplayName
+        Specifies the display name of the service to retrieve the service start mode for. Wildcards are permitted. When more than one service matches the wildcard pattern provided, only the service start mode of the first service is returned
+
+    .PARAMETER InputObject
+        Specify the service object to retrieve the start mode for.
 
     .INPUTS
-        None
+        System.ServiceProcess.ServiceController
 
-        You cannot pipe objects to this function.
+        You can pipe ServiceController objects to this function.
 
     .OUTPUTS
         System.String
@@ -27,9 +33,18 @@ function Get-ADTServiceStartMode
         Returns the startup mode of the specified service.
 
     .EXAMPLE
-        Get-ADTServiceStartMode -Service (Get-Service -Name 'wuauserv')
+        Get-ADTServiceStartMode -InputObject (Get-Service -Name 'wuauserv')
 
         Retrieves the startup mode of the 'wuauserv' service.
+
+    .EXAMPLE
+        ```PowerShell
+        if ((($service = Test-ADTServiceExists -Name 'ScreenConnect*' -PassThru) | Get-ADTServiceStartMode) -ne 'Automatic') {
+            Set-ADTServiceStartMode -InputObject $service -StartMode 'Automatic'
+        }
+        ```
+
+        Sets the ScreenConnect service start mode to automatic, if it exists and has its start mode is not automatic.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -43,19 +58,34 @@ function Get-ADTServiceStartMode
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTServiceStartMode
     #>
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisplayName', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding()]
     [OutputType([System.String])]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
+        [System.String]$Name,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'DisplayName')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [SupportsWildcards()]
+        [System.String]$DisplayName,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
         [ValidateScript({
-                if (!$_.Name)
+                if (!$_.ServiceName)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Service -ProvidedValue $_ -ExceptionMessage 'The specified service does not exist.'))
                 }
                 return !!$_
             })]
-        [System.ServiceProcess.ServiceController]$Service
+        [Alias('Service')]
+        [System.ServiceProcess.ServiceController]$InputObject
     )
 
     begin
@@ -65,19 +95,23 @@ function Get-ADTServiceStartMode
 
     process
     {
-        Write-ADTLogEntry -Message "Getting the service [$($Service.Name)] startup mode."
         try
         {
             try
             {
+                $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                $service = Get-Service @gsParams | Select-Object -First 1
+
+                Write-ADTLogEntry -Message "Getting startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)]."
+
                 # Get the start mode and adjust it if the automatic type is delayed.
-                if ((($serviceStartMode = $Service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($Service.Name)" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
+                if ((($serviceStartMode = $service.StartType) -eq 'Automatic') -and ((Get-ItemProperty -LiteralPath "Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$($service.ServiceName)" -ErrorAction Ignore | Select-Object -ExpandProperty DelayedAutoStart -ErrorAction Ignore) -eq 1))
                 {
                     $serviceStartMode = 'Automatic (Delayed Start)'
                 }
 
                 # Return startup type to the caller.
-                Write-ADTLogEntry -Message "Service [$($Service.Name)] startup mode is set to [$serviceStartMode]."
+                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] startup mode is set to [$serviceStartMode]."
                 return $serviceStartMode.ToString()
             }
             catch
