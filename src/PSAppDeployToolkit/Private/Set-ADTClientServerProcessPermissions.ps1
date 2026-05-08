@@ -14,12 +14,6 @@ function Private:Set-ADTClientServerProcessPermissions
         [PSADT.Foundation.RunAsActiveUser]$User
     )
 
-    # If we're running under the active user's account, return early as the user already has access.
-    if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.Equals($User.SID))
-    {
-        return
-    }
-
     # Set required permissions on this module's library files.
     try
     {
