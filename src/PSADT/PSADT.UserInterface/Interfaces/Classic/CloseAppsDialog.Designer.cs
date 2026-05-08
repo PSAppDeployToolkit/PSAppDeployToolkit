@@ -174,11 +174,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // 
             // panelCloseProcesses
             // 
-            this.panelCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelCloseProcesses.BackColor = System.Drawing.SystemColors.ControlDark;
             this.panelCloseProcesses.Controls.Add(this.richTextBoxCloseProcesses);
             this.panelCloseProcesses.Location = new System.Drawing.Point(0, 69);
             this.panelCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.panelCloseProcesses.Name = "panelCloseProcesses";
+            this.panelCloseProcesses.Padding = new System.Windows.Forms.Padding(1);
             this.panelCloseProcesses.Size = new System.Drawing.Size(478, 109);
             this.panelCloseProcesses.TabIndex = 1;
             // 
