@@ -1110,12 +1110,9 @@ namespace PSADT.ClientServer
         /// returns the HResult of the exception.</returns>
         private static int InvokeMainErrorHandler(Exception exception, string message, ClientExitCode? exitCode = null)
         {
-            using (Process? parentProcess = ProcessUtilities.GetParentProcess())
+            if (ClientServerUtilities.CallerIsClientServerClientLauncher)
             {
-                if (parentProcess?.ProcessName is string parentProcessName && parentProcessName.StartsWith("PSADT.ClientServer") && parentProcessName.Contains(".Launcher"))
-                {
-                    Environment.FailFast($"{message.TrimEnd('.')}.{Environment.NewLine}Exception Info: {exception}", exception);
-                }
+                Environment.FailFast($"{message.TrimEnd('.')}.{Environment.NewLine}Exception Info: {exception}", exception);
             }
             try
             {
