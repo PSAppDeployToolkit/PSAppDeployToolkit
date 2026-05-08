@@ -29,10 +29,17 @@ namespace PSADT.Foundation
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
         internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
-            // Get the primary token for the user if they have a valid session ID, then proceed to check and remediate file system permissions.
-            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType) : null;
+            // Get the primary token for the user if they have a valid session ID, otherwise we'll just use their SID.
+            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
+                ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType)
+                : null;
+            Func<FileInfo, bool> testEffectiveAccess = hPrimaryToken is null
+                ? (path) => FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions)
+                : (path) => FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions);
+
+            // Test each individual file and remediate ACLs as required, using the miminum read/execute we require.
             FileSystemAccessRule fileSystemAccessRule = new(runAsActiveUser.SID, _requiredPermissions, InheritanceFlags.None, PropagationFlags.None, AccessControlType.Allow);
-            foreach (FileInfo path in _assemblies.Concat(extraPaths ?? []))
+            foreach (FileInfo path in extraPaths?.Count > 0 ? _assemblies.Concat(extraPaths) : _assemblies)
             {
                 if (!Path.IsPathFullyQualified(path.FullName))
                 {
@@ -44,7 +51,7 @@ namespace PSADT.Foundation
                 }
                 try
                 {
-                    if (hPrimaryToken is not null ? FileSystemUtilities.TestEffectiveAccess(path, hPrimaryToken, _requiredPermissions) : FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions))
+                    if (testEffectiveAccess(path))
                     {
                         continue;
                     }
