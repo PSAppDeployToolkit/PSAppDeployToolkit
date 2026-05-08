@@ -308,8 +308,7 @@ namespace PSADT.FileSystem
         public static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SecurityIdentifier sid, FileSystemRights desiredAccessMask)
         {
             ArgumentNullException.ThrowIfNull(sid);
-            byte[] sidBytes = new byte[sid.BinaryLength]; sid.GetBinaryForm(sidBytes, 0);
-            using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sidBytes);
+            using SafePinnedGCHandle pSID = SafePinnedGCHandle.Alloc(sid.GetBinaryForm());
             return GetEffectiveAccess(path, pSID, desiredAccessMask, NativeMethods.AuthzInitializeContextFromSid);
         }
 
