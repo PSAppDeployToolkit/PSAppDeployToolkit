@@ -126,19 +126,12 @@ namespace PSAppDeployToolkit.Logging
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Join(logFileDirectory!, logFileName!), true, LogEncoding);
-                if (logStyle.Value == LogStyle.CMTrace)
+                Func<LogEntry, string> getLogLine = logStyle.Value == LogStyle.CMTrace
+                    ? static logEntry => logEntry.CMTraceLogLine
+                    : static logEntry => logEntry.LegacyLogLine;
+                foreach (LogEntry logEntry in logEntries)
                 {
-                    foreach (LogEntry logEntry in logEntries)
-                    {
-                        logFileWriter.WriteLine(logEntry.CMTraceLogLine);
-                    }
-                }
-                else
-                {
-                    foreach (LogEntry logEntry in logEntries)
-                    {
-                        logFileWriter.WriteLine(logEntry.LegacyLogLine);
-                    }
+                    logFileWriter.WriteLine(getLogLine(logEntry));
                 }
             }
 
@@ -154,19 +147,12 @@ namespace PSAppDeployToolkit.Logging
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                     }
-                    if (severity == LogSeverity.Error)
+                    TextWriter stdStream = severity == LogSeverity.Error
+                        ? Console.Error
+                        : Console.Out;
+                    foreach (LogEntry logEntry in logEntries)
                     {
-                        foreach (LogEntry logEntry in logEntries)
-                        {
-                            Console.Error.WriteLine(logEntry.LegacyLogLine);
-                        }
-                    }
-                    else
-                    {
-                        foreach (LogEntry logEntry in logEntries)
-                        {
-                            Console.WriteLine(logEntry.LegacyLogLine);
-                        }
+                        stdStream.WriteLine(logEntry.LegacyLogLine);
                     }
                     if (colouredOutput)
                     {
