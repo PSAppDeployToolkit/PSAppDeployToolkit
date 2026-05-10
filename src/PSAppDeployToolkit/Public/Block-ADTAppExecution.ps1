@@ -84,7 +84,6 @@ function Block-ADTAppExecution
 
         # Initialise function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $taskName = $adtEnv.InvalidScheduledTaskNameCharsRegExPattern.Replace("$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps", [System.String]::Empty)
         $adtEnv = Get-ADTEnvironmentTable
         $adtConfig = Get-ADTConfig
 
@@ -115,7 +114,7 @@ function Block-ADTAppExecution
             try
             {
                 # Clean up any previous state that might be lingering.
-                if ($task = Get-ScheduledTask -TaskName $taskName -ErrorAction Ignore)
+                if ($task = Get-ScheduledTask -TaskName ($taskName = $adtEnv.InvalidScheduledTaskNameCharsRegExPattern.Replace("$($adtEnv.appDeployToolkitName)_$($adtSession.InstallName)_BlockedApps", [System.String]::Empty)) -ErrorAction Ignore)
                 {
                     Write-ADTLogEntry -Message "Scheduled task [$taskName] already exists, running [Unblock-ADTAppExecution] to clean up previous state."
                     Unblock-ADTAppExecution -Tasks $task
