@@ -51,13 +51,22 @@ function Private:Invoke-ADTServiceAndDependencyOperation
             return
         }
 
+        $serviceParams = @{
+            WarningAction = [System.Management.Automation.ActionPreference]::Ignore
+        }
+
+        if ($Operation -eq 'Stop')
+        {
+            $serviceParams.Add('Force', $true)
+        }
+
         # Action each found dependent service.
         foreach ($dependent in $dependentServices)
         {
             Write-ADTLogEntry -Message "$(('Stopping', 'Starting')[$Operation -eq 'Start']) dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
             try
             {
-                $dependent | & "$($Operation)-Service" -Force -WarningAction Ignore
+                & "$($Operation)-Service" -InputObject $dependent @serviceParams
             }
             catch
             {
