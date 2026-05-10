@@ -47,40 +47,89 @@ Describe 'Get-ADTServiceStartMode' {
         It 'Should return the service start mode' {
             if ($bootService)
             {
-                Get-ADTServiceStartMode -Service $bootService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
+                Get-ADTServiceStartMode -InputObject $bootService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
             }
             if ($systemService)
             {
-                Get-ADTServiceStartMode -Service $systemService | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
+                Get-ADTServiceStartMode -InputObject $systemService | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
             }
             if ($automaticService)
             {
-                Get-ADTServiceStartMode -Service $automaticService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
+                Get-ADTServiceStartMode -InputObject $automaticService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
             }
             if ($delayedAutomaticService)
             {
-                Get-ADTServiceStartMode -Service $delayedAutomaticService | Should -Be 'Automatic (Delayed Start)'
+                Get-ADTServiceStartMode -InputObject $delayedAutomaticService | Should -Be 'Automatic (Delayed Start)'
             }
             if ($manualService)
             {
-                Get-ADTServiceStartMode -Service $manualService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
+                Get-ADTServiceStartMode -InputObject $manualService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
             }
             if ($disabledService)
             {
-                Get-ADTServiceStartMode -Service $disabledService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
+                Get-ADTServiceStartMode -InputObject $disabledService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
             }
+        }
+        It 'Should accept ServiceController objects through the pipeline' {
+            if ($bootService)
+            {
+                $bootService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
+            }
+            if ($systemService)
+            {
+                $systemService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
+            }
+            if ($automaticService)
+            {
+                $automaticService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
+            }
+            if ($delayedAutomaticService)
+            {
+                $delayedAutomaticService | Get-ADTServiceStartMode | Should -Be 'Automatic (Delayed Start)'
+            }
+            if ($manualService)
+            {
+                $manualService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
+            }
+            if ($disabledService)
+            {
+                $disabledService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
+            }
+        }
+        It 'Should return the start mode of one service at a time' {
+            Get-ADTServiceStartMode -Name * | Should -HaveCount 1
         }
     }
 
     Context 'Input Validation' {
-        It 'Should verify that Service is not null, empty or whitespace' {
+        It 'Should verify that -Name is not null, empty or whitespace' {
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
+            }
+            { Get-ADTServiceStartMode -Name $null } | Should @shouldParams
+            { Get-ADTServiceStartMode -Name '' } | Should @shouldParams
+            { Get-ADTServiceStartMode -Name " `f`n`r`t`v" } | Should @shouldParams
+        }
+        It 'Should verify that -DisplayName is not null, empty or whitespace' {
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
+            }
+            { Get-ADTServiceStartMode -DisplayName $null } | Should @shouldParams
+            { Get-ADTServiceStartMode -DisplayName '' } | Should @shouldParams
+            { Get-ADTServiceStartMode -DisplayName " `f`n`r`t`v" } | Should @shouldParams
+        }
+        It 'Should verify that -InputObject is not null, empty or whitespace' {
             $shouldParams = @{
                 Throw = $true
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
             }
-            { Get-ADTServiceStartMode -Service $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
-            { Get-ADTServiceStartMode -Service '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Get-ADTServiceStartMode'
-            { Get-ADTServiceStartMode -Service " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -InputObject $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -InputObject '' } | Should @shouldParams -ErrorId 'ParameterArgumentTransformationError,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -InputObject " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Get-ADTServiceStartMode'
         }
     }
 }

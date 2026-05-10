@@ -51,14 +51,25 @@ Describe 'Test-ADTServiceExists' {
     }
 
     Context 'Input Validation' {
-        It 'Should verify that Name is not null, empty or whitespace' {
+        It 'Should verify that -Name is not null, empty or whitespace' {
             $shouldParams = @{
                 Throw = $true
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Test-ADTServiceExists'
             }
-            { Test-ADTServiceExists -Name $null } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
-            { Test-ADTServiceExists -Name '' } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
-            { Test-ADTServiceExists -Name " `f`n`r`t`v" } | Should @shouldParams -ErrorId 'ParameterArgumentValidationError,Test-ADTServiceExists'
+            { Test-ADTServiceExists -Name $null } | Should @shouldParams
+            { Test-ADTServiceExists -Name '' } | Should @shouldParams
+            { Test-ADTServiceExists -Name " `f`n`r`t`v" } | Should @shouldParams
+        }
+        It 'Should verify that -DisplayName is not null, empty or whitespace' {
+            $shouldParams = @{
+                Throw = $true
+                ExceptionType = [System.Management.Automation.ParameterBindingException]
+                ErrorId = 'ParameterArgumentValidationError,Test-ADTServiceExists'
+            }
+            { Test-ADTServiceExists -DisplayName $null } | Should @shouldParams
+            { Test-ADTServiceExists -DisplayName '' } | Should @shouldParams
+            { Test-ADTServiceExists -DisplayName " `f`n`r`t`v" } | Should @shouldParams
         }
     }
 }
