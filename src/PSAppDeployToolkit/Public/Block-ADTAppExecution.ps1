@@ -174,7 +174,7 @@ function Block-ADTAppExecution
                 $blockExecDbgPath = "`"$([PSADT.Foundation.ClientServerUtilities]::ClientLauncherCompatiblePath)`" /smd -ArgV $($blockExecRegPath.Split('::', [System.StringSplitOptions]::RemoveEmptyEntries)[1])\$blockExecRegName"
 
                 # If the IFEO path is > 255 characters, warn about it and bomb out.
-                if ($blockExecDbgPath -gt 255)
+                if ($blockExecDbgPath.Length -gt 255)
                 {
                     Write-ADTLogEntry -Message "The generated block execution command of [$blockExecDbgPath] exceeds the maximum allowable length of 255 characters; unable to block execution." -Severity Warning
                     return
