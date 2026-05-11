@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelCloseApps = new System.Windows.Forms.FlowLayoutPanel();
             this.labelCloseProcessesMessage = new System.Windows.Forms.Label();
             this.panelCloseProcesses = new System.Windows.Forms.Panel();
-            this.richTextBoxCloseProcesses = new System.Windows.Forms.RichTextBox();
+            this.listBoxCloseProcesses = new System.Windows.Forms.ListBox();
             this.flowLayoutPanelDeferral = new System.Windows.Forms.FlowLayoutPanel();
             this.labelDeferralExpiryMessage = new System.Windows.Forms.Label();
             this.labelDeferDeadline = new System.Windows.Forms.Label();
@@ -174,28 +174,29 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // 
             // panelCloseProcesses
             // 
-            this.panelCloseProcesses.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.panelCloseProcesses.Controls.Add(this.richTextBoxCloseProcesses);
+            this.panelCloseProcesses.Controls.Add(this.listBoxCloseProcesses);
             this.panelCloseProcesses.Location = new System.Drawing.Point(0, 69);
             this.panelCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.panelCloseProcesses.Name = "panelCloseProcesses";
-            this.panelCloseProcesses.Padding = new System.Windows.Forms.Padding(1);
             this.panelCloseProcesses.Size = new System.Drawing.Size(480, 109);
             this.panelCloseProcesses.TabIndex = 1;
             // 
-            // richTextBoxCloseProcesses
+            // listBoxCloseProcesses
             // 
-            this.richTextBoxCloseProcesses.BackColor = System.Drawing.Color.White;
-            this.richTextBoxCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.richTextBoxCloseProcesses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBoxCloseProcesses.Location = new System.Drawing.Point(1, 1);
-            this.richTextBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
-            this.richTextBoxCloseProcesses.Name = "richTextBoxCloseProcesses";
-            this.richTextBoxCloseProcesses.ReadOnly = true;
-            this.richTextBoxCloseProcesses.Size = new System.Drawing.Size(478, 107);
-            this.richTextBoxCloseProcesses.TabIndex = 0;
-            this.richTextBoxCloseProcesses.Text = "Adobe Acrobat\nMicrosoft Word\nMicrosoft Excel";
-            this.richTextBoxCloseProcesses.WordWrap = false;
+            this.listBoxCloseProcesses.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listBoxCloseProcesses.FormattingEnabled = true;
+            this.listBoxCloseProcesses.IntegralHeight = false;
+            this.listBoxCloseProcesses.ItemHeight = 15;
+            this.listBoxCloseProcesses.Items.AddRange(new object[] {
+            "Adobe Acrobat",
+            "Microsoft Excel",
+            "Microsoft Word"});
+            this.listBoxCloseProcesses.Location = new System.Drawing.Point(0, 0);
+            this.listBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
+            this.listBoxCloseProcesses.Name = "listBoxCloseProcesses";
+            this.listBoxCloseProcesses.Size = new System.Drawing.Size(480, 109);
+            this.listBoxCloseProcesses.Sorted = true;
+            this.listBoxCloseProcesses.TabIndex = 0;
             // 
             // flowLayoutPanelDeferral
             // 
@@ -458,6 +459,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private PictureBox pictureBanner;
         private FlowLayoutPanel flowLayoutPanelBase;
         private Panel panelCloseProcesses;
-        private RichTextBox richTextBoxCloseProcesses;
+        private ListBox listBoxCloseProcesses;
     }
 }
