@@ -54,7 +54,10 @@ namespace PSAppDeployToolkit.Attributes
             {
                 throw new ArgumentException("The argument is null, empty, or white space. Provide an argument that is not null, empty, or white space, and then try running the command again.");
             }
-            string fileExtension = Path.GetExtension(str);
+            if (Path.GetExtension(str) is not string fileExtension || string.IsNullOrWhiteSpace(fileExtension))
+            {
+                throw new ArgumentException($"The path argument '{str}' does not have a valid extension. Provide a path argument with a valid extension.");
+            }
             if (ExtensionNames.FirstOrDefault(e => e.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) is null)
             {
                 throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", ExtensionNames)}. Provide a path argument with an approved extension.");
