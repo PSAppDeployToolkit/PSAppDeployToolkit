@@ -63,8 +63,7 @@ namespace PSAppDeployToolkit.Foundation
             CurrentUILanguage = UICulture.TwoLetterISOLanguageName.ToUpperInvariant();
 
             // Environment variables.
-            EnvHost = cmdlet.Host;
-            EnvHostVersion = EnvHost.Version;
+            EnvHostVersion = (EnvHost = cmdlet.Host).Version;
             EnvSystemDrive = new(EnvSystem32Directory.Root.FullName);
 
             // Domain membership.
@@ -112,7 +111,7 @@ namespace PSAppDeployToolkit.Foundation
             else
             {
                 EnvMachineWorkgroup = domainStatus.DomainOrWorkgroupName?.ToUpperInvariant();
-                EnvComputerNameFQDN = Dns.GetHostName();
+                EnvComputerNameFQDN = EnvComputerName;
             }
 
             // Normalised paths that vary based on process architecture.
@@ -144,14 +143,6 @@ namespace PSAppDeployToolkit.Foundation
                 EnvSysNativeDirectory = EnvSystem32Directory;
                 EnvSystemProfile = EnvSysNativeDirectory is not null ? new(Path.Join(EnvSysNativeDirectory.FullName, "Config", "systemprofile")) : null;
             }
-
-            // Operating system information.
-            OperatingSystemInfo osInfo = OperatingSystemInfo.Current;
-            EnvOSName = osInfo.Name;
-            EnvOSVersion = osInfo.Version;
-            EnvOSProductType = (int)osInfo.ProductType;
-            IsTerminalServer = osInfo.IsTerminalServer;
-            IsMultiSessionOS = osInfo.IsWorkstationEnterpriseMultiSessionOS;
 
             // Office C2R information.
             using (RegistryKey? officeC2RKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Office\ClickToRun\Configuration"))
@@ -191,26 +182,7 @@ namespace PSAppDeployToolkit.Foundation
                 };
             }
 
-            // Hardware information.
-            if (HardwareInfo.SystemInformation.Manufacturer is string manufacturer && HardwareInfo.SystemInformation.SerialNumber is string serialNumber && HardwareInfo.SystemInformation.ProductName is string productName && HardwareInfo.SystemInformation.Version is string version)
-            {
-                EnvHardwareType = version.Contains("VRTUAL") || (manufacturer.Contains("Microsoft") && !productName.Contains("Surface"))
-                    ? "Virtual:Hyper-V"
-                    : version.Contains("A M I")
-                    ? "Virtual:Virtual PC"
-                    : version.Contains("Xen")
-                    ? "Virtual:Xen"
-                    : serialNumber.Contains("VMware") || manufacturer.Contains("VMware")
-                    ? "Virtual:VMware"
-                    : serialNumber.Contains("Parallels") || manufacturer.Contains("Parallels")
-                    ? "Virtual:Parallels"
-                    : productName.Contains("Virtual")
-                    ? "Virtual"
-                    : "Physical";
-            }
-
             // PowerShell version information.
-            EnvPSProcessPath = AssemblyManager.CallingProcessPath;
             if (psVersionTable["CLRVersion"] is Version clrVersion)
             {
                 EnvCLRVersion = clrVersion;
@@ -232,9 +204,6 @@ namespace PSAppDeployToolkit.Foundation
                     UserProfileName = RunAsUserProfile?.Name;
                 }
             }
-
-            // Miscellaneous environment information.
-            InvalidFileNameCharsRegexPattern = new($"[{Regex.Escape(new(Path.GetInvalidFileNameChars()))}]", RegexOptions.Compiled);
         }
 
         /// <summary>
@@ -672,7 +641,8 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property is useful for determining process architecture, which can affect
         /// compatibility with certain libraries and APIs.</remarks>
-        public bool Is64BitProcess { get; } = Environment.Is64BitProcess;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool Is64BitProcess => Environment.Is64BitProcess;
 
         /// <summary>
         /// Gets the architecture of the process running the application.
@@ -747,14 +717,16 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the name of the operating system environment.
         /// </summary>
-        public string EnvOSName { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public string EnvOSName => OperatingSystemInfo.Current.Name;
 
         /// <summary>
         /// Gets the version of the operating system environment.
         /// </summary>
         /// <remarks>This property provides the OS version information, which can be useful for
         /// determining compatibility or specific features available in the current environment.</remarks>
-        public Version EnvOSVersion { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public Version EnvOSVersion => OperatingSystemInfo.Current.Version;
 
         /// <summary>
         /// Gets the major version number of the operating system environment.
@@ -789,7 +761,8 @@ namespace PSAppDeployToolkit.Foundation
         /// system, such as workstation, domain controller, or server. The value corresponds to the underlying operating
         /// system's product type identifier, which may be useful for environment-specific logic or
         /// configuration.</remarks>
-        public int EnvOSProductType { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public int EnvOSProductType => (int)OperatingSystemInfo.Current.ProductType;
 
         /// <summary>
         /// Gets a value indicating whether the current operating system is a server edition.
@@ -820,14 +793,16 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>Use this property to determine if the application is running in a terminal server
         /// environment, which may affect certain functionalities or configurations.</remarks>
-        public bool IsTerminalServer { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsTerminalServer => OperatingSystemInfo.Current.IsTerminalServer;
 
         /// <summary>
         /// Gets a value indicating whether the operating system supports multiple user sessions.
         /// </summary>
         /// <remarks>This property is useful for determining if the application can leverage multi-session
         /// capabilities, such as in terminal services or remote desktop scenarios.</remarks>
-        public bool IsMultiSessionOS { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsMultiSessionOS => OperatingSystemInfo.Current.IsWorkstationEnterpriseMultiSessionOS;
 
         /// <summary>
         /// Gets the name of the operating system product type for the current environment.
@@ -886,7 +861,8 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property provides information about the hardware configuration, which can be
         /// useful for diagnostics and performance tuning.</remarks>
-        public string? EnvHardwareType { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public string? EnvHardwareType => _envHardwareType;
 
         /// <summary>
         /// Gets the environment PowerShell version information as a hashtable.
@@ -901,7 +877,8 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property provides the full path to the PowerShell executable being used in the current environment.
         /// It is useful for scenarios where the exact location of the PowerShell process is required.</remarks>
-        public FileInfo EnvPSProcessPath { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public FileInfo EnvPSProcessPath => AssemblyManager.CallingProcessPath;
 
         /// <summary>
         /// Gets the version of the PowerShell environment currently in use.
@@ -977,14 +954,16 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the SID for the current process, which can be used for
         /// security-related operations, such as access control and auditing. The SID is retrieved from the caller's
         /// security context.</remarks>
-        public SecurityIdentifier CurrentProcessSID { get; } = AccountUtilities.CallerSid;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public SecurityIdentifier CurrentProcessSID => AccountUtilities.CallerSid;
 
         /// <summary>
         /// Gets the NT account representing the user identity under which the current process is running.
         /// </summary>
         /// <remarks>This property can be used for auditing, access control, or logging scenarios where
         /// the process's user context is relevant.</remarks>
-        public NTAccount ProcessNTAccount { get; } = AccountUtilities.CallerUsername;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public NTAccount ProcessNTAccount => AccountUtilities.CallerUsername;
 
         /// <summary>
         /// Gets a value indicating whether the current user has administrative privileges.
@@ -992,7 +971,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>Use this property to determine if the caller has the necessary permissions to perform
         /// actions that require elevated rights. This is useful for enabling or restricting access to features that are
         /// limited to administrators.</remarks>
-        public bool IsAdmin { get; } = AccountUtilities.CallerIsAdmin;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsAdmin => AccountUtilities.CallerIsAdmin;
 
         /// <summary>
         /// Gets a value indicating whether the current account is the local system account.
@@ -1001,7 +981,8 @@ namespace PSAppDeployToolkit.Foundation
         /// local system account; otherwise, it returns <see langword="false"/>. This can be useful for determining the
         /// security context of the application, especially when performing operations that require elevated privileges
         /// or when making security-related decisions.</remarks>
-        public bool IsLocalSystemAccount { get; } = AccountUtilities.CallerIsLocalSystem;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsLocalSystemAccount => AccountUtilities.CallerIsLocalSystem;
 
         /// <summary>
         /// Gets a value indicating whether the current account is a local service account.
@@ -1009,7 +990,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>Use this property to determine if the application is running under the built-in Local
         /// Service account. This can be useful for adjusting behavior or permissions based on the account
         /// context.</remarks>
-        public bool IsLocalServiceAccount { get; } = AccountUtilities.CallerIsLocalService;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsLocalServiceAccount => AccountUtilities.CallerIsLocalService;
 
         /// <summary>
         /// Gets a value indicating whether the current account is the network service account.
@@ -1017,7 +999,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for determining the context in which the application is
         /// running, particularly in scenarios where specific permissions or behaviors are associated with the network
         /// service account.</remarks>
-        public bool IsNetworkServiceAccount { get; } = AccountUtilities.CallerIsNetworkService;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsNetworkServiceAccount => AccountUtilities.CallerIsNetworkService;
 
         /// <summary>
         /// Gets a value indicating whether the current account is a service account.
@@ -1025,7 +1008,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>A service account typically has different permissions and behaviors compared to
         /// standard user accounts. Use this property to determine if the current context is running under a service
         /// account, which may affect access control and operational logic.</remarks>
-        public bool IsServiceAccount { get; } = AccountUtilities.CallerIsServiceAccount;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsServiceAccount => AccountUtilities.CallerIsServiceAccount;
 
         /// <summary>
         /// Gets a value indicating whether the current process is running in a user-interactive environment.
@@ -1034,7 +1018,8 @@ namespace PSAppDeployToolkit.Foundation
         /// environment that supports user interaction, such as a desktop session, and <see langword="false"/> if it is
         /// running in a non-interactive context, such as a service or background process. This can be useful for
         /// determining whether to display user interface elements or prompt the user for input.</remarks>
-        public bool IsProcessUserInteractive { get; } = Environment.UserInteractive;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public bool IsProcessUserInteractive => AccountUtilities.CallerIsInteractive;
 
         /// <summary>
         /// Gets the NT account representation of the local system account.
@@ -1147,12 +1132,34 @@ namespace PSAppDeployToolkit.Foundation
         public DirectoryInfo? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", null) is string defaultProfilePath && !string.IsNullOrWhiteSpace(defaultProfilePath) ? new(defaultProfilePath) : null;
 
         /// <summary>
+        /// Gets the type of hardware used in the current environment.
+        /// </summary>
+        /// <remarks>This property provides information about the hardware configuration, which can be
+        /// useful for diagnostics and performance tuning.</remarks>
+        private static readonly string? _envHardwareType = HardwareInfo.SystemInformation.Manufacturer is string manufacturer && HardwareInfo.SystemInformation.SerialNumber is string serialNumber && HardwareInfo.SystemInformation.ProductName is string productName && HardwareInfo.SystemInformation.Version is string version
+            ? version.Contains("VRTUAL") || (manufacturer.Contains("Microsoft") && !productName.Contains("Surface"))
+                ? "Virtual:Hyper-V"
+                : version.Contains("A M I")
+                ? "Virtual:Virtual PC"
+                : version.Contains("Xen")
+                ? "Virtual:Xen"
+                : serialNumber.Contains("VMware") || manufacturer.Contains("VMware")
+                ? "Virtual:VMware"
+                : serialNumber.Contains("Parallels") || manufacturer.Contains("Parallels")
+                ? "Virtual:Parallels"
+                : productName.Contains("Virtual")
+                ? "Virtual"
+                : "Physical"
+            : null;
+
+        /// <summary>
         /// Gets a read-only collection of characters that are invalid in file names.
         /// </summary>
         /// <remarks>This collection is derived from the system-defined invalid file name characters,
         /// which may vary by operating system. It is useful for validating file names before attempting to create or
         /// manipulate files.</remarks>
-        public IReadOnlyList<char> InvalidFileNameChars { get; } = new ReadOnlyCollection<char>(Path.GetInvalidFileNameChars());
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public IReadOnlyList<char> InvalidFileNameChars => new ReadOnlyCollection<char>(_invalidFileNameChars);
 
         /// <summary>
         /// Gets the regular expression pattern used to identify invalid characters in file names.
@@ -1160,7 +1167,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides a compiled regular expression that can be used to validate
         /// file names against a set of invalid characters. It is useful for ensuring that file names conform to system
         /// requirements and do not contain characters that are not allowed.</remarks>
-        public Regex InvalidFileNameCharsRegexPattern { get; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public Regex InvalidFileNameCharsRegexPattern => _invalidFileNameCharsRegexPattern;
 
         /// <summary>
         /// Gets the regular expression used to validate Windows Installer product codes in GUID format.
@@ -1169,7 +1177,8 @@ namespace PSAppDeployToolkit.Foundation
         /// product code conforms to the standard format required by Windows Installer. This property can be used to
         /// verify whether a given string is a valid product code before performing installation-related
         /// operations.</remarks>
-        public Regex MsiProductCodeRegexPattern { get; } = new(@"^\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}$", RegexOptions.Compiled);
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public Regex MsiProductCodeRegexPattern => _msiProductCodeRegexPattern;
 
         /// <summary>
         /// Gets a regular expression that matches characters not allowed in scheduled task names.
@@ -1177,7 +1186,40 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>Use this pattern to validate or sanitize scheduled task names by identifying invalid
         /// characters, such as backslashes, slashes, colons, asterisks, question marks, double quotes, angle brackets,
         /// and vertical bars. This regular expression is compiled for performance.</remarks>
-        public Regex InvalidScheduledTaskNameCharsRegexPattern { get; } = new(@"[\\\/\:\*\?\""\<\>\|]", RegexOptions.Compiled);
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        public Regex InvalidScheduledTaskNameCharsRegexPattern => _invalidScheduledTaskNameCharsRegexPattern;
+
+        /// <summary>
+        /// Represents a read-only collection of characters that are not allowed in file names on the current platform.
+        /// </summary>
+        /// <remarks>This collection is initialized using the set of invalid file name characters provided
+        /// by the underlying operating system. It can be used to validate or sanitize file names to ensure
+        /// compatibility across different environments.</remarks>
+        private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+        /// <summary>
+        /// Represents a compiled regular expression that matches any character considered invalid in a file name.
+        /// </summary>
+        /// <remarks>This regular expression is constructed using the set of invalid file name characters
+        /// and is intended for efficient repeated use when validating or sanitizing file names.</remarks>
+        private static readonly Regex _invalidFileNameCharsRegexPattern = new($"[{Regex.Escape(new(_invalidFileNameChars))}]", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Represents a compiled regular expression used to validate strings as MSI product codes in GUID format.
+        /// </summary>
+        /// <remarks>The pattern matches strings that conform to the standard MSI product code format,
+        /// which is a GUID enclosed in braces. This field is intended for use when verifying or extracting MSI product
+        /// codes from text.</remarks>
+        private static readonly Regex _msiProductCodeRegexPattern = new(@"^\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Represents a compiled regular expression that matches invalid characters for Windows scheduled task names.
+        /// </summary>
+        /// <remarks>The regular expression pattern matches any character that is not allowed in scheduled
+        /// task names, including backslash (\), forward slash (/), colon (:), asterisk (*), question mark (?), double
+        /// quote ("), less than (&lt;), greater than (&gt;), and vertical bar (|). This can be used to validate or sanitize
+        /// task names before creating or managing scheduled tasks.</remarks>
+        private static readonly Regex _invalidScheduledTaskNameCharsRegexPattern = new(@"[\\\/\:\*\?\""\<\>\|]", RegexOptions.Compiled);
 
         /// <summary>
         /// Retrieves the directory information for the specified special folder in the current environment.
