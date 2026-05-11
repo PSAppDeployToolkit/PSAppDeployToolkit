@@ -68,10 +68,11 @@ namespace PSADT.AccountManagement
             WellKnownSidLookupTable = new(wellKnownSids);
 
             // Determine if the caller is the local system account.
+            CallerIsInteractive = Environment.UserInteractive;
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
             CallerIsLocalService = CallerSid.IsWellKnown(WellKnownSidType.LocalServiceSid);
             CallerIsNetworkService = CallerSid.IsWellKnown(WellKnownSidType.NetworkServiceSid);
-            CallerIsSystemInteractive = CallerIsLocalSystem && Environment.UserInteractive;
+            CallerIsSystemInteractive = CallerIsLocalSystem && CallerIsInteractive;
             CallerUsingServiceUI = ProcessUtilities.GetParentProcesses().Any(static p => !ProcessUtilities.HasProcessExited(p) && p.ProcessName.Equals("ServiceUI", StringComparison.OrdinalIgnoreCase));
 
             // Generate a RunAsActiveUser object for the current user.
@@ -145,6 +146,14 @@ namespace PSADT.AccountManagement
         /// Session Id of the current user running this library.
         /// </summary>
         public static readonly uint CallerSessionId;
+
+        /// <summary>
+        /// Indicates whether the current caller is running in an interactive user context.
+        /// </summary>
+        /// <remarks>This value can be used to determine if the code is executing in an environment where
+        /// user interaction is possible, such as a desktop session, as opposed to a background service or automated
+        /// process.</remarks>
+        public static readonly bool CallerIsInteractive;
 
         /// <summary>
         /// Indicates whether the caller is the local system account.
