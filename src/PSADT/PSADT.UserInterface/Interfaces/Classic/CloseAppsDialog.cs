@@ -96,15 +96,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
 
                 // Set up the process service.
-                richTextBoxCloseProcesses.Lines = null;
+                listBoxCloseProcesses.Items.Clear();
                 if (state.RunningProcessService is not null)
                 {
                     // Get the current running apps and amend the form accordingly.
-                    string[] runningApps = [.. (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
+                    object[] runningApps = [.. (runningProcessService = state.RunningProcessService).ProcessesToClose.Select(static p => p.Description)];
                     if (runningApps.Length > 0)
                     {
                         toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
-                        richTextBoxCloseProcesses.Lines = runningApps;
+                        listBoxCloseProcesses.Items.AddRange(runningApps);
                         if (hideCloseButton)
                         {
                             buttonCloseProcesses.Enabled = false;
@@ -161,7 +161,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                     countdownStopwatch = state.CountdownStopwatch;
-                    labelCountdownMessage.Text = richTextBoxCloseProcesses.Lines?.Length > 0 ? forcedCountdown ? countdownDefer : countdownClose : countdownDefer;
+                    labelCountdownMessage.Text = listBoxCloseProcesses.Items.Count > 0 ? forcedCountdown ? countdownDefer : countdownClose : countdownDefer;
                 }
                 else
                 {
@@ -304,7 +304,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 Invoke(() =>
                 {
-                    if (forcedCountdown && (runningProcessService is null || (richTextBoxCloseProcesses.Lines.Length == 0 && !hideCloseButton)))
+                    if (forcedCountdown && (runningProcessService is null || (listBoxCloseProcesses.Items.Count == 0 && !hideCloseButton)))
                     {
                         buttonContinue.PerformClick();
                     }
@@ -339,13 +339,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         {
             Invoke(() =>
             {
-                richTextBoxCloseProcesses.Lines = null;
+                listBoxCloseProcesses.Items.Clear();
                 if (e.ProcessesToClose.Count > 0)
                 {
-                    string[] runningApps = [.. e.ProcessesToClose.Select(static p => $"{(char)0x200A}{p.Description}")];
+                    object[] runningApps = [.. e.ProcessesToClose.Select(static p => p.Description)];
                     logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...", LogSeverity.Info);
                     toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
-                    richTextBoxCloseProcesses.Lines = runningApps;
+                    listBoxCloseProcesses.Items.AddRange(runningApps);
                     labelCountdownMessage.Text = countdownClose;
                     flowLayoutPanelCloseApps.Visible = true;
                     buttonCloseProcesses.Enabled = true;
