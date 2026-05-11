@@ -96,7 +96,7 @@ function Block-ADTAppExecution
         {
             $sessionState = $PSCmdlet.SessionState
         }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
+        $adtStrings = Get-ADTStringTable -SessionState $sessionState
     }
 
     process
