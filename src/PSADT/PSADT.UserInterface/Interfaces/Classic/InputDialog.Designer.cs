@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(506, 117);
+            this.ClientSize = new System.Drawing.Size(512, 117);
             this.Name = "InputDialog";
             this.ResumeLayout(false);
             this.PerformLayout();
