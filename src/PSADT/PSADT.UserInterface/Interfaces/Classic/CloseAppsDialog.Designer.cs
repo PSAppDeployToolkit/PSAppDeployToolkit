@@ -194,6 +194,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.listBoxCloseProcesses.Location = new System.Drawing.Point(0, 0);
             this.listBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.listBoxCloseProcesses.Name = "listBoxCloseProcesses";
+            this.listBoxCloseProcesses.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.listBoxCloseProcesses.Size = new System.Drawing.Size(480, 109);
             this.listBoxCloseProcesses.Sorted = true;
             this.listBoxCloseProcesses.TabIndex = 0;
