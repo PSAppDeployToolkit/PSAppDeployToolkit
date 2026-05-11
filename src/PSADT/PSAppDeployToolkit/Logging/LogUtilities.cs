@@ -61,7 +61,7 @@ namespace PSAppDeployToolkit.Logging
             // Perform early return checks before wasting time.
             DateTime dateNow = DateTime.Now;
             bool canLogToDisk = !string.IsNullOrWhiteSpace(logFileDirectory) && !string.IsNullOrWhiteSpace(logFileName);
-            IDictionary? configToolkit = ModuleDatabase.IsInitialized() ? (IDictionary)ModuleDatabase.GetConfig()["Toolkit"]! : null;
+            IDictionary? configToolkit = ModuleDatabase.IsInitialized() ? (IDictionary?)ModuleDatabase.GetConfig()["Toolkit"] : null;
             if (debugMessage && configToolkit?["LogDebugMessage"] is not true)
             {
                 return new ReadOnlyCollection<LogEntry>([]);
@@ -69,18 +69,19 @@ namespace PSAppDeployToolkit.Logging
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            StackFrame[] stackFrames = [.. new StackTrace(true).GetFrames().Skip(1)]; string? callerFileName, callerSource;
+            StackFrame[] stackFrames = [.. new StackTrace(true).GetFrames().Skip(1)]; string callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
-                StackFrame invoker = stackFrames.First(static f => !f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
+                StackFrame invoker = stackFrames.First(static f => !f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
                 if (invoker.GetFileName() is null)
                 {
-                    invoker = stackFrames.Last(static f => f.GetMethod()!.DeclaringType!.FullName!.StartsWith("PSADT", StringComparison.Ordinal));
+                    invoker = stackFrames.Last(static f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
                 }
-                MethodBase method = invoker.GetMethod()!;
                 callerFileName = invoker.GetFileName() ?? "<Unavailable>";
-                callerSource = $"{method.DeclaringType!.FullName}.{method.Name}()";
+                callerSource = invoker.GetMethod() is MethodBase method && method.DeclaringType is Type declaringType
+                    ? $"{declaringType.FullName}.{method.Name}()"
+                    : string.Empty;
             }
             else
             {
@@ -105,7 +106,7 @@ namespace PSAppDeployToolkit.Logging
             {
                 logStyle = configToolkit?["LogStyle"] is string styleString && Enum.TryParse(styleString, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
             }
-            if (string.IsNullOrWhiteSpace(source))
+            if (source is null || string.IsNullOrWhiteSpace(source))
             {
                 source = callerSource;
             }
@@ -116,7 +117,7 @@ namespace PSAppDeployToolkit.Logging
             severity ??= LogSeverity.Info;
 
             // Build out the log entries and confirm whether there's anything to log.
-            ReadOnlyCollection<LogEntry> logEntries = new([.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source!, scriptSection, debugMessage, callerFileName, callerSource))]);
+            ReadOnlyCollection<LogEntry> logEntries = new([.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source, scriptSection, debugMessage, callerFileName, callerSource))]);
             if (logEntries.Count == 0)
             {
                 throw new InvalidOperationException("No valid log messages were provided to log.");
@@ -125,7 +126,7 @@ namespace PSAppDeployToolkit.Logging
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
-                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory!, logFileName!), true, LogEncoding);
+                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), true, LogEncoding);
                 Func<LogEntry, string> getLogLine = logStyle.Value == LogStyle.CMTrace
                     ? static logEntry => logEntry.CMTraceLogLine
                     : static logEntry => logEntry.LegacyLogLine;
