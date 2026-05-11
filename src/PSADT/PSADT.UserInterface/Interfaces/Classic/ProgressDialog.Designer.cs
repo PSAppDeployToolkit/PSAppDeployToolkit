@@ -60,7 +60,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(512, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(16, 11, 16, 15);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(512, 111);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(512, 113);
             this.flowLayoutPanelDialog.TabIndex = 2;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -132,14 +132,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
-            this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 111);
+            this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 113);
             this.flowLayoutPanelBase.TabIndex = 3;
             // 
             // ProgressDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(512, 111);
+            this.ClientSize = new System.Drawing.Size(512, 113);
             this.Controls.Add(this.flowLayoutPanelBase);
             this.Name = "ProgressDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);

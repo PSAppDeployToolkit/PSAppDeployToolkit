@@ -86,7 +86,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(512, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(16, 11, 16, 15);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(512, 486);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(512, 488);
             this.flowLayoutPanelDialog.TabIndex = 3;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -188,7 +188,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.richTextBoxCloseProcesses.BackColor = System.Drawing.Color.White;
             this.richTextBoxCloseProcesses.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBoxCloseProcesses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBoxCloseProcesses.Location = new System.Drawing.Point(0, 0);
+            this.richTextBoxCloseProcesses.Location = new System.Drawing.Point(1, 1);
             this.richTextBoxCloseProcesses.Margin = new System.Windows.Forms.Padding(0);
             this.richTextBoxCloseProcesses.Name = "richTextBoxCloseProcesses";
             this.richTextBoxCloseProcesses.ReadOnly = true;
@@ -350,7 +350,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // buttonDefer
             // 
             this.buttonDefer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.buttonDefer.Location = new System.Drawing.Point(163, 0);
+            this.buttonDefer.Location = new System.Drawing.Point(164, 0);
             this.buttonDefer.Margin = new System.Windows.Forms.Padding(0);
             this.buttonDefer.MaximumSize = new System.Drawing.Size(152, 25);
             this.buttonDefer.MinimumSize = new System.Drawing.Size(152, 25);
@@ -364,7 +364,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // buttonContinue
             // 
             this.buttonContinue.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonContinue.Location = new System.Drawing.Point(326, 0);
+            this.buttonContinue.Location = new System.Drawing.Point(328, 0);
             this.buttonContinue.Margin = new System.Windows.Forms.Padding(0);
             this.buttonContinue.MaximumSize = new System.Drawing.Size(152, 25);
             this.buttonContinue.MinimumSize = new System.Drawing.Size(152, 25);
@@ -406,14 +406,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
-            this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 486);
+            this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 488);
             this.flowLayoutPanelBase.TabIndex = 4;
             // 
             // CloseAppsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(512, 486);
+            this.ClientSize = new System.Drawing.Size(512, 488);
             this.Controls.Add(this.flowLayoutPanelBase);
             this.Name = "CloseAppsDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);

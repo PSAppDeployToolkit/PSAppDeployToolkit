@@ -69,7 +69,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelDialog.MinimumSize = new System.Drawing.Size(512, 0);
             this.flowLayoutPanelDialog.Name = "flowLayoutPanelDialog";
             this.flowLayoutPanelDialog.Padding = new System.Windows.Forms.Padding(16, 11, 16, 15);
-            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(512, 230);
+            this.flowLayoutPanelDialog.Size = new System.Drawing.Size(512, 232);
             this.flowLayoutPanelDialog.TabIndex = 2;
             this.flowLayoutPanelDialog.WrapContents = false;
             // 
@@ -193,7 +193,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // buttonMinimize
             // 
             this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonMinimize.Location = new System.Drawing.Point(245, 0);
+            this.buttonMinimize.Location = new System.Drawing.Point(247, 0);
             this.buttonMinimize.Margin = new System.Windows.Forms.Padding(0);
             this.buttonMinimize.MaximumSize = new System.Drawing.Size(233, 25);
             this.buttonMinimize.MinimumSize = new System.Drawing.Size(233, 25);
@@ -241,14 +241,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanelBase.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanelBase.Name = "flowLayoutPanelBase";
-            this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 230);
+            this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 232);
             this.flowLayoutPanelBase.TabIndex = 3;
             // 
             // RestartDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(512, 230);
+            this.ClientSize = new System.Drawing.Size(512, 232);
             this.Controls.Add(this.flowLayoutPanelBase);
             this.Name = "RestartDialog";
             this.Controls.SetChildIndex(this.flowLayoutPanelBase, 0);
