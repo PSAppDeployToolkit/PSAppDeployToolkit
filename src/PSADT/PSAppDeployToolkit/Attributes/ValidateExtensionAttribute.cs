@@ -23,6 +23,7 @@ namespace PSAppDeployToolkit.Attributes
         public ValidateExtensionAttribute(params string[] extensionNames)
         {
             ArgumentNullException.ThrowIfNull(extensionNames);
+            ArgumentOutOfRangeException.ThrowIfZero(extensionNames.Length);
             if (extensionNames.FirstOrDefault(static e => !e.StartsWith(".") || e.Length <= 1) is string extension)
             {
                 throw new ArgumentOutOfRangeException(nameof(extensionNames), extension, $"The provided argument '{extension}' is not a valid extension. Valid extensions must start with a period and be followed by one or more valid filename characters.");
