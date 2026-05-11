@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
@@ -45,27 +46,19 @@ namespace PSAppDeployToolkit.Attributes
             {
                 throw new ArgumentNullException(null, "The argument is null. Provide a valid value for the argument, and then try running the command again.");
             }
-
             if (element is not string str)
             {
                 throw new ArgumentException("The argument is not a string. Provide an argument that is a string and then try running the command again.");
             }
-
             if (string.IsNullOrWhiteSpace(str))
             {
                 throw new ArgumentException("The argument is null, empty, or white space. Provide an argument that is not null, empty, or white space, and then try running the command again.");
             }
-
             string fileExtension = Path.GetExtension(str);
-            foreach (string extension in ExtensionNames)
+            if (ExtensionNames.FirstOrDefault(e => e.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) is null)
             {
-                if (extension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    return;
-                }
+                throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", ExtensionNames)}. Provide a path argument with an approved extension.");
             }
-
-            throw new ArgumentException($"The path argument '{str}' with extension '{fileExtension}' does not belong to the set of approved extensions: {string.Join(", ", ExtensionNames)}. Provide a path argument with an approved extension.");
         }
 
         /// <summary>
