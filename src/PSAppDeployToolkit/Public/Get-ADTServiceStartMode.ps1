@@ -39,7 +39,8 @@ function Get-ADTServiceStartMode
 
     .EXAMPLE
         ```PowerShell
-        if ((($service = Test-ADTServiceExists -Name 'ScreenConnect*' -PassThru) | Get-ADTServiceStartMode) -ne 'Automatic') {
+        if ((($service = Test-ADTServiceExists -Name 'ScreenConnect*' -PassThru) | Get-ADTServiceStartMode) -ne 'Automatic')
+        {
             Set-ADTServiceStartMode -InputObject $service -StartMode 'Automatic'
         }
         ```
