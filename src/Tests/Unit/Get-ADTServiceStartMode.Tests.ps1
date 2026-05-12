@@ -96,8 +96,13 @@ Describe 'Get-ADTServiceStartMode' {
                 $disabledService | Get-ADTServiceStartMode | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
             }
         }
-        It 'Should return the start mode of one service at a time' {
-            Get-ADTServiceStartMode -Name * | Should -HaveCount 1
+        It "Should thow when the name provided doesn't exist" {
+            $shouldParams = @{
+                Throw = $true
+                Exception = [System.ArgumentException]
+            }
+            { Get-ADTServiceStartMode -Name * } | Should @shouldParams -ErrorId 'InvalidNameParameterValue,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -DisplayName * } | Should @shouldParams -ErrorId 'InvalidDisplayNameParameterValue,Get-ADTServiceStartMode'
         }
     }
 
