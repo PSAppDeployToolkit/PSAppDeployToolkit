@@ -14,10 +14,10 @@ function Get-ADTServiceStartMode
         The `Get-ADTServiceStartMode` function retrieves the startup mode of a specified service. This function checks the service's start type and adjusts the result if the service is set to 'Automatic (Delayed Start)'.
 
     .PARAMETER Name
-        Specifies the service name of the services to be retrieved the start mode for. Wildcards are permitted. When more than one service matches the wildcard pattern provided, only the service start mode of the first service is returned
+        Specifies the service name of the service to retrieve the start mode for.
 
     .PARAMETER DisplayName
-        Specifies the display name of the service to retrieve the service start mode for. Wildcards are permitted. When more than one service matches the wildcard pattern provided, only the service start mode of the first service is returned
+        Specifies the display name of the service to retrieve the start mode for.
 
     .PARAMETER InputObject
         Specify the `ServiceController` object to retrieve the start mode for.
@@ -67,14 +67,10 @@ function Get-ADTServiceStartMode
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Name')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [SupportsWildcards()]
         [System.String]$Name,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'DisplayName')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [SupportsWildcards()]
         [System.String]$DisplayName,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
@@ -100,8 +96,19 @@ function Get-ADTServiceStartMode
         {
             try
             {
-                $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
-                $service = Get-Service @gsParams | Select-Object -First 1
+                if ($PSCmdlet.ParameterSetName -eq 'InputObject')
+                {
+                    $InputObject.Refresh()
+                    $service = $InputObject
+                }
+                else
+                {
+                    $serviceName = $PSBoundParameters.($PSCmdlet.ParameterSetName)
+                    if (!($service = Get-Service | & { process { if ($_.($PSCmdlet.ParameterSetName) -eq $serviceName) { return $_ } } }))
+                    {
+                        $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName $PSCmdlet.ParameterSetName -ProvidedValue $PSBoundParameters.($PSCmdlet.ParameterSetName) -ExceptionMessage 'The specified service does not exist.'))
+                    }
+                }
 
                 Write-ADTLogEntry -Message "Getting startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)]."
 
