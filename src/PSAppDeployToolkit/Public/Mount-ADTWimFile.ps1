@@ -114,7 +114,7 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path has a pre-existing WIM mounted.'))
                 }
-                if (Get-ChildItem -LiteralPath $_ -ErrorAction Ignore)
+                if (Get-ChildItem -LiteralPath $_ -Force)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path is not empty.'))
                 }
@@ -175,7 +175,7 @@ function Mount-ADTWimFile
                 }
 
                 # If we're using the force, forcibly remove the existing directory.
-                if ((Test-Path -LiteralPath $Path -PathType Container) -and (Get-ChildItem -LiteralPath $Path -ErrorAction Ignore))
+                if ((Test-Path -LiteralPath $Path -PathType Container) -and (Get-ChildItem -LiteralPath $Path -Force))
                 {
                     if (!$Force)
                     {
