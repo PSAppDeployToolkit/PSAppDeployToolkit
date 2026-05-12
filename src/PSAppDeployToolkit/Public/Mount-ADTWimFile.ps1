@@ -175,24 +175,21 @@ function Mount-ADTWimFile
                 }
 
                 # If we're using the force, forcibly remove the existing directory.
-                if (Test-Path -LiteralPath $Path -PathType Container)
+                if ((Test-Path -LiteralPath $Path -PathType Container) -and (Get-ChildItem -LiteralPath $Path -ErrorAction Ignore))
                 {
-                    if (Get-ChildItem -LiteralPath $Path -ErrorAction Ignore)
+                    if (!$Force)
                     {
-                        if (!$Force)
-                        {
-                            $naerParams = @{
-                                Exception = [System.IO.IOException]::new("The specified mount path is not empty.")
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                                ErrorId = 'NonEmptyMountPathError'
-                                TargetObject = $Path
-                                RecommendedAction = "Please specify a path where a new folder can be created, or a path to an existing empty folder."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
+                        $naerParams = @{
+                            Exception = [System.IO.IOException]::new("The specified mount path is not empty.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                            ErrorId = 'NonEmptyMountPathError'
+                            TargetObject = $Path
+                            RecommendedAction = "Please specify a path where a new folder can be created, or a path to an existing empty folder."
                         }
-                        Write-ADTLogEntry -Message "Removing pre-existing path [$Path] as [-Force] was provided."
-                        Remove-Item -LiteralPath $Path -Force -Confirm:$false
+                        throw (New-ADTErrorRecord @naerParams)
                     }
+                    Write-ADTLogEntry -Message "Removing pre-existing path [$Path] as [-Force] was provided."
+                    Remove-Item -LiteralPath $Path -Force -Confirm:$false
                 }
 
                 # If the path doesn't exist, create it.
