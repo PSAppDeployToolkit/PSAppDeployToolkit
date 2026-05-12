@@ -129,8 +129,16 @@ function Start-ADTServiceAndDependencies
         {
             try
             {
-                $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
-                $services = Get-Service @gsParams
+                $services = if ($PSCmdlet.ParameterSetName -eq 'InputObject')
+                {
+                    $InputObject.Refresh()
+                    $InputObject
+                }
+                else
+                {
+                    $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                    Get-Service @gsParams
+                }
 
                 foreach ($service in $services)
                 {
