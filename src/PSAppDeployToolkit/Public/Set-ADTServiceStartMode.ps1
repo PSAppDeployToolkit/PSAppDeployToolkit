@@ -118,6 +118,14 @@ function Set-ADTServiceStartMode
                 'Manual' { 'Demand'; break }
                 default { $_; break }
             })
+
+        # All the start types except for 'Automatic' since we aren't validating whether 'Automatic' means 'Automatic' or 'Automatic (Delayed Start)'
+        $startTypes = @(
+            [System.ServiceProcess.ServiceStartMode]::Boot,
+            [System.ServiceProcess.ServiceStartMode]::Disabled,
+            [System.ServiceProcess.ServiceStartMode]::Manual,
+            [System.ServiceProcess.ServiceStartMode]::Disabled
+        )
     }
 
     process
@@ -139,7 +147,7 @@ function Set-ADTServiceStartMode
 
                 foreach ($service in $services)
                 {
-                    if ($service.StartType -in @('Manual', 'Disabled', 'Boot', 'System') -and $service.StartType -eq $PSBoundParameters.StartMode)
+                    if (($service.StartType -in $startTypes) -and ($service.StartType -eq $PSBoundParameters.StartMode))
                     {
                         Write-ADTLogEntry -Message "The startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already set to [$($PSBoundParameters.StartMode)]."
                         if ($PassThru)
