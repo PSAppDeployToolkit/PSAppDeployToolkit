@@ -11,7 +11,7 @@ function Test-ADTServiceExists
         Check to see if a service exists.
 
     .DESCRIPTION
-        The `Test-ADTServiceExists` function checks to see if a service exists. The `-UseCIM` switch can be used in conjunction with `-PassThru` to return WMI objects for PSADT v3.x compatibility, however, this method fails in Windows Sandbox.
+        The `Test-ADTServiceExists` function checks to see if a service exists.
 
     .PARAMETER Name
         Specify the name of the service. When `-UseCIM` is not specified, this parameter supports wildcards.
@@ -22,7 +22,7 @@ function Test-ADTServiceExists
         Specifies the display name of the service to test the existence of. This parameter supports wildcards. This parameter is not compaitble with `-UseCIM`.
 
     .PARAMETER UseCIM
-        Use CIM/WMI to check for the service. This is useful for compatibility with PSADT v3.x.
+        Use CIM/WMI to check for the service. This parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER PassThru
         Returns the service object, if one exists. By default, the service object returned is a `ServiceController`. When the `-UseCIM` parameter is provided, a Win32_Service or Win32_ServiceBase `CimInstance` is returned.
@@ -109,6 +109,8 @@ function Test-ADTServiceExists
                 # Access via CIM/WMI if specifically asked.
                 if ($UseCIM)
                 {
+                    Write-ADTLogEntry -Message 'The parameter [-UseCIM] is deprected and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
+
                     # If nothing is returned from Win32_Service, check Win32_BaseService.
                     if (!($ServiceObject = Get-CimInstance -ClassName Win32_Service -Filter "Name = '$Name'"))
                     {
