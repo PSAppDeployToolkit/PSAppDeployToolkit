@@ -20,7 +20,7 @@ function Start-ADTServiceAndDependencies
         Specifies the display names of services to be stopped. Wildcards are permitted.
 
     .PARAMETER InputObject
-        Specifies ServiceController objects representing the services to be started.
+        Specifies `ServiceController` object(s) representing the services to be started.
 
     .PARAMETER SkipDependentServices
         Specifies whether to skip checking for and starting dependent services.
@@ -29,12 +29,12 @@ function Start-ADTServiceAndDependencies
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
     .PARAMETER PassThru
-        Return the ServiceController service object.
+        Return the `ServiceController` service object.
 
     .INPUTS
         System.ServiceProcess.ServiceController
 
-        You can pipe a ServiceController object to this function.
+        You can pipe `ServiceController` objects to this function.
 
     .OUTPUTS
         None

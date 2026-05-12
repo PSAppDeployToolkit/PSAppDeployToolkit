@@ -20,18 +20,18 @@ function Set-ADTServiceStartMode
         Specifies the display names of services to set the start mode for. Wildcards are permitted.
 
     .PARAMETER InputObject
-        Specifies ServiceController objects representing the services to be started.
+        Specifies `ServiceController` object(s) representing the services to be started.
 
     .PARAMETER StartMode
         Specify startup mode for the service. Valid values for this parameter are: `Automatic`, `Automatic (Delayed Start)`, `Manual`, `Disabled`, `Boot`, `System`
 
     .PARAMETER PassThru
-        Returns the ServiceController service object.
+        Returns the `ServiceController` service object.
 
     .INPUTS
         System.ServiceProcess.ServiceController
 
-        You can pipe ServiceController objects to this function.
+        You can pipe `ServiceController` objects to this function.
 
     .OUTPUTS
         None
@@ -41,7 +41,7 @@ function Set-ADTServiceStartMode
     .OUTPUTS
         System.ServiceProcess.ServiceController
 
-        When the `-PassThru` parameter is provided, this function returns a ServiceController object representing the service that was started.
+        When the `-PassThru` parameter is provided, this function returns a `ServiceController` object representing the service that was started.
 
     .EXAMPLE
         Set-ADTServiceStartMode -Service 'wuauserv' -StartMode 'Automatic (Delayed Start)'

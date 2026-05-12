@@ -20,12 +20,12 @@ function Get-ADTServiceStartMode
         Specifies the display name of the service to retrieve the service start mode for. Wildcards are permitted. When more than one service matches the wildcard pattern provided, only the service start mode of the first service is returned
 
     .PARAMETER InputObject
-        Specify the service object to retrieve the start mode for.
+        Specify the `ServiceController` object to retrieve the start mode for.
 
     .INPUTS
         System.ServiceProcess.ServiceController
 
-        You can pipe ServiceController objects to this function.
+        You can pipe `ServiceController` objects to this function.
 
     .OUTPUTS
         System.String
