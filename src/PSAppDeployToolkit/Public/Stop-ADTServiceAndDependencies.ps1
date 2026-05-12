@@ -20,7 +20,7 @@ function Stop-ADTServiceAndDependencies
         Specifies the display names of services to be stopped. Wildcards are permitted.
 
     .PARAMETER InputObject
-        Specifies ServiceController objects representing the services to be stopped.
+        Specifies `ServiceController` object(s) representing the services to be stopped.
 
     .PARAMETER SkipDependentServices
         Specifies whether to skip checking for and stopping dependent services.
@@ -29,12 +29,12 @@ function Stop-ADTServiceAndDependencies
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
     .PARAMETER PassThru
-        Return the System.ServiceProcess.ServiceController service object.
+        Return the `ServiceController` service object.
 
     .INPUTS
         System.ServiceProcess.ServiceController
 
-        You can pipe a ServiceController object to this function.
+        You can pipe `ServiceController` objects to this function.
 
     .OUTPUTS
         None
@@ -44,7 +44,7 @@ function Stop-ADTServiceAndDependencies
     .OUTPUTS
         System.ServiceProcess.ServiceController
 
-        When the `-PassThru` parameter is provided, this function returns a ServiceController object representing the service that was stopped.
+        When the `-PassThru` parameter is provided, this function returns a `ServiceController` object representing the service that was stopped.
 
     .EXAMPLE
         Stop-ADTServiceAndDependencies -Name 'wuauserv'

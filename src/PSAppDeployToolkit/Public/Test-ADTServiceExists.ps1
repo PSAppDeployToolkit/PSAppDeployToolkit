@@ -25,7 +25,7 @@ function Test-ADTServiceExists
         Use CIM/WMI to check for the service. This is useful for compatibility with PSADT v3.x.
 
     .PARAMETER PassThru
-        Returns the service object, if one exists. By default, the service object returned is a ServiceController. When the `-UseCIM` parameter is provided, a Win32_Service or Win32_ServiceBase CimInstance is returned.
+        Returns the service object, if one exists. By default, the service object returned is a `ServiceController`. When the `-UseCIM` parameter is provided, a Win32_Service or Win32_ServiceBase `CimInstance` is returned.
 
     .INPUTS
         None
@@ -40,12 +40,12 @@ function Test-ADTServiceExists
     .OUTPUTS
         System.ServiceProcess.ServiceController
 
-        When the `-PassThru` parameter is provided and the service specified exists, a ServiceController object representing the service is returned, otherwise `$null`.
+        When the `-PassThru` parameter is provided and the service specified exists, a `ServiceController` object representing the service is returned, otherwise `$null`.
 
     .OUTPUTS
         Microsoft.Management.Infrastructure.CimInstance
 
-        When the `-PassThru` and `-UseCIM` parameters are provided and the service specified exists, a Win32_Service or Win32_BaseService CimInstance object representing the service is returned, otherwise `$null`.
+        When the `-PassThru` and `-UseCIM` parameters are provided and the service specified exists, a Win32_Service or Win32_BaseService `CimInstance` object representing the service is returned, otherwise `$null`.
 
     .EXAMPLE
         Test-ADTServiceExists -Name 'wuauserv'
