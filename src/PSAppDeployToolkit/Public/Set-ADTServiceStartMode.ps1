@@ -48,6 +48,16 @@ function Set-ADTServiceStartMode
 
         Sets the 'wuauserv' service to start automatically with a delayed start.
 
+    .EXAMPLE
+        ```PowerShell
+        if ((($service = Test-ADTServiceExists -Name 'ScreenConnect*' -PassThru) | Get-ADTServiceStartMode) -ne 'Automatic')
+        {
+            Set-ADTServiceStartMode -InputObject $service -StartMode 'Automatic'
+        }
+        ```
+
+        Sets the ScreenConnect service start mode to automatic, if it exists and has its start mode is not automatic.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
