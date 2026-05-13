@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.Win32.SafeHandles;
+using PSADT.AccountManagement;
 using PSADT.FileSystem;
 using PSADT.Security;
 
@@ -30,8 +32,11 @@ namespace PSADT.Foundation
         internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
             // Get the primary token for the user if they have a valid session ID, otherwise we'll just use their SID.
+            using WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
             using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
+                ? runAsActiveUser != AccountUtilities.CallerRunAsActiveUser || AccountUtilities.CallerIsAdmin
                 ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType)
+                : new(currentUser.Token, false)
                 : null;
             Func<FileInfo, bool> testEffectiveAccess = hPrimaryToken is null
                 ? (path) => FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions)
