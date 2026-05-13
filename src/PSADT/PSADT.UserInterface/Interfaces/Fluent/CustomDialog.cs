@@ -61,7 +61,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// interference.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
@@ -80,7 +80,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// before this method is called.</remarks>
         /// <param name="sender">The source of the event, typically the middle button that was clicked.</param>
         /// <param name="e">The event data associated with the button click.</param>
-        private protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
@@ -99,7 +99,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// before this method is called.</remarks>
         /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
         /// <param name="e">The event data associated with the button click.</param>
-        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))

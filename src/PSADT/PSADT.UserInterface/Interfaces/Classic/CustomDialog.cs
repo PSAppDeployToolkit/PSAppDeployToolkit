@@ -143,7 +143,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// the left button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the left button that was clicked.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
-        private protected override void ButtonLeft_Click(object sender, EventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new CustomDialogResult(buttonLeft.Text);
@@ -159,7 +159,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the middle button that was clicked.</param>
         /// <param name="e">An object that contains the event data associated with the click event.</param>
-        private protected override void ButtonMiddle_Click(object sender, EventArgs e)
+        private protected override void ButtonMiddle_Click(object? sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new CustomDialogResult(buttonMiddle.Text);
@@ -174,7 +174,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// before calling the base class implementation to ensure proper handling of the dialog's closure.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonRight_Click(object sender, EventArgs e)
+        private protected override void ButtonRight_Click(object? sender, EventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new CustomDialogResult(buttonRight.Text);

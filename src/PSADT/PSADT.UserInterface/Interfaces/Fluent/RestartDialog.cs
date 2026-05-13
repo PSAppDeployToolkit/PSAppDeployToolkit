@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// unsaved work.</remarks>
         /// <param name="sender">The source of the event, typically the control that raised the event.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
             DeviceUtilities.RestartComputer();
@@ -72,7 +72,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }

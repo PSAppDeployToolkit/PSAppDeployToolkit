@@ -151,7 +151,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="sender">The source of the event, typically the left button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected virtual void ButtonLeft_Click(object sender, EventArgs e)
+        private protected virtual void ButtonLeft_Click(object? sender, EventArgs e)
         {
             CloseDialog();
         }
@@ -164,7 +164,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected virtual void ButtonMiddle_Click(object sender, EventArgs e)
+        private protected virtual void ButtonMiddle_Click(object? sender, EventArgs e)
         {
             CloseDialog();
         }
@@ -177,7 +177,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected virtual void ButtonRight_Click(object sender, EventArgs e)
+        private protected virtual void ButtonRight_Click(object? sender, EventArgs e)
         {
             CloseDialog();
         }
