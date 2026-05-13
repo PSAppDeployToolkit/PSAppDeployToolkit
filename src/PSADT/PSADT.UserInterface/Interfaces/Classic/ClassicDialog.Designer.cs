@@ -72,6 +72,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "ClassicDialog";
             this.TopMost = true;
+            this.Shown += new System.EventHandler(this.ClassicDialog_Shown);
             this.ResumeLayout(false);
 
         }

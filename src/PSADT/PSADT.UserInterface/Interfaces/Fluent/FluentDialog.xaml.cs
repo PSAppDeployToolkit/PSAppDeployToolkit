@@ -24,6 +24,8 @@ using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
+using PSADT.WindowManagement;
+using Windows.Win32.Foundation;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Controls.Primitives;
@@ -346,6 +348,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Set the NoWait success flag as the caller may be waiting for it.
             ClientServerUtilities.SetOperationSuccessFlag();
+            try
+            {
+                WindowTools.BringWindowToFront((HWND)new WindowInteropHelper(this).Handle);
+            }
+            catch
+            {
+                return;
+                throw;
+            }
         }
 
         /// <summary>
