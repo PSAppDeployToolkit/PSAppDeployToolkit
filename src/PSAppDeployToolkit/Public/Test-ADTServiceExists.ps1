@@ -98,6 +98,7 @@ function Test-ADTServiceExists
         [System.String]$DisplayName,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Name')]
+        [System.Obsolete('This parameter will be removed in PSAppDeployToolkit 4.3.0.')]
         [Alias('UseWMI')]
         [System.Management.Automation.SwitchParameter]$UseCIM,
 
