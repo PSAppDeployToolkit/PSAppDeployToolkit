@@ -204,7 +204,7 @@ function Show-ADTInstallationProgress
         $progressOpen = Invoke-ADTClientServerOperation -ProgressDialogOpen -User $runAsActiveUser
 
         # Notify user that the software installation has started.
-        if ($adtSession -and !$progressOpen)
+        if ($adtSession -and !$progressOpen -and ($adtConfig.UI.DialogStyle -eq 'Classic'))
         {
             try
             {
