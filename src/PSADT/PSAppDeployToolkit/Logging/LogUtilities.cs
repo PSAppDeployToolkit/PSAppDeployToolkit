@@ -127,12 +127,19 @@ namespace PSAppDeployToolkit.Logging
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), true, LogEncoding);
-                Func<LogEntry, string> getLogLine = logStyle.Value == LogStyle.CMTrace
-                    ? static logEntry => logEntry.CMTraceLogLine
-                    : static logEntry => logEntry.LegacyLogLine;
-                foreach (LogEntry logEntry in logEntries)
+                if (logStyle.Value == LogStyle.CMTrace)
                 {
-                    logFileWriter.WriteLine(getLogLine(logEntry));
+                    foreach (LogEntry logEntry in logEntries)
+                    {
+                        logFileWriter.WriteLine(logEntry.CMTraceLogLine);
+                    }
+                }
+                else
+                {
+                    foreach (LogEntry logEntry in logEntries)
+                    {
+                        logFileWriter.WriteLine(logEntry.LegacyLogLine);
+                    }
                 }
             }
 
