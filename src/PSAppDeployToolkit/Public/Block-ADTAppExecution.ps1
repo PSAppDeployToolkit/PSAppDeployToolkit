@@ -152,7 +152,11 @@ function Block-ADTAppExecution
                     ButtonRightText = [PSADT.UserInterface.BlockExecution]::ButtonText
                     Icon = [PSADT.UserInterface.DialogSystemIcon]::Warning
                 }
-                if ($PSBoundParameters.ContainsKey('WindowLocation'))
+                if (!$PSBoundParameters.ContainsKey('WindowLocation'))
+                {
+                    $dialogOptions.Add('DialogPosition', ([PSADT.UserInterface.DialogPosition]::BottomRight, [PSADT.UserInterface.DialogPosition]::Center)[$adtConfig.UI.DialogStyle -eq 'Fluent'])
+                }
+                else
                 {
                     $dialogOptions.Add('DialogPosition', $WindowLocation)
                 }
