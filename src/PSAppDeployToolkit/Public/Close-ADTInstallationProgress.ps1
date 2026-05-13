@@ -111,22 +111,25 @@ function Close-ADTInstallationProgress
                 }
 
                 # Send out the final toast notification.
-                switch ($adtSession.GetDeploymentStatus())
+                if ((Get-ADTConfig).UI.DialogStyle -eq 'Classic')
                 {
-                    ([PSAppDeployToolkit.Foundation.DeploymentStatus]::FastRetry)
+                    switch ($adtSession.GetDeploymentStatus())
                     {
-                        Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
-                        break
-                    }
-                    ([PSAppDeployToolkit.Foundation.DeploymentStatus]::Error)
-                    {
-                        Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
-                        break
-                    }
-                    default
-                    {
-                        Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
-                        break
+                        ([PSAppDeployToolkit.Foundation.DeploymentStatus]::FastRetry)
+                        {
+                            Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
+                            break
+                        }
+                        ([PSAppDeployToolkit.Foundation.DeploymentStatus]::Error)
+                        {
+                            Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
+                            break
+                        }
+                        default
+                        {
+                            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
+                            break
+                        }
                     }
                 }
             }
