@@ -248,7 +248,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// the base implementation.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private protected override void ButtonLeft_Click(object sender, EventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, EventArgs e)
         {
             DialogResult = CloseAppsDialogResult.Close;
             base.ButtonLeft_Click(sender, e);
@@ -263,7 +263,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private protected override void ButtonMiddle_Click(object sender, EventArgs e)
+        private protected override void ButtonMiddle_Click(object? sender, EventArgs e)
         {
             DialogResult = CloseAppsDialogResult.Defer;
             base.ButtonMiddle_Click(sender, e);
@@ -277,7 +277,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// implementation of the click event.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
-        private protected override void ButtonRight_Click(object sender, EventArgs e)
+        private protected override void ButtonRight_Click(object? sender, EventArgs e)
         {
             DialogResult = CloseAppsDialogResult.Continue;
             base.ButtonRight_Click(sender, e);

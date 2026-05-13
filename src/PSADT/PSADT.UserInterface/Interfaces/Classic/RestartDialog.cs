@@ -155,7 +155,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// confirmation.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private protected override void ButtonLeft_Click(object sender, EventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.
             DeviceUtilities.RestartComputer();
@@ -169,7 +169,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// minimize and timer reset logic is executed when the right button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private protected override void ButtonRight_Click(object sender, EventArgs e)
+        private protected override void ButtonRight_Click(object? sender, EventArgs e)
         {
             // Minimize the window and restart the persistence timer.
             // Note that we deliberately do not call the base handler!

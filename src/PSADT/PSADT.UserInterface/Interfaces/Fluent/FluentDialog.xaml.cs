@@ -240,7 +240,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected virtual void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected virtual void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
@@ -253,7 +253,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected virtual void ButtonMiddle_Click(object sender, RoutedEventArgs e)
+        private protected virtual void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
@@ -267,7 +267,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, usually the right button that was clicked.</param>
         /// <param name="e">The event data associated with the button click.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private protected virtual void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected virtual void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             CloseDialog();
         }
@@ -312,7 +312,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// customize dialog initialization behavior when the dialog is loaded.</remarks>
         /// <param name="sender">The source of the event, typically the dialog instance that is being loaded.</param>
         /// <param name="e">A RoutedEventArgs object that contains the event data.</param>
-        private protected virtual void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        private protected virtual void FluentDialog_Loaded(object? sender, RoutedEventArgs e)
         {
             // Force software rendering.
             ((HwndSource)PresentationSource.FromVisual(this)).CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
@@ -368,7 +368,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// established.</remarks>
         /// <param name="sender">The source of the event, typically the FluentDialog instance whose size has changed.</param>
         /// <param name="e">An object that contains the event data, including information about the new size of the window.</param>
-        private void FluentDialog_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void FluentDialog_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
             // Only reposition window - no animations
             PositionWindow();
@@ -419,7 +419,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data associated with the theme change.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ThemeManager_ActualThemeChanged(object sender, RoutedEventArgs e)
+        private void ThemeManager_ActualThemeChanged(object? sender, RoutedEventArgs e)
         {
             SetDialogIcon();
         }
@@ -445,7 +445,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// by other handlers.</remarks>
         /// <param name="sender">The source of the event, typically the hyperlink that was clicked.</param>
         /// <param name="e">The event data containing information about the navigation request, including the target URI.</param>
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        private void Hyperlink_RequestNavigate(object? sender, RequestNavigateEventArgs e)
         {
             // Use ShellExecute to open the URL in the default browser/handler
             using Process? process = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });

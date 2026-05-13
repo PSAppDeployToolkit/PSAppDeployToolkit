@@ -62,7 +62,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// the base class implementation to handle the window closure.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new ListSelectionDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null), (string)ListSelectionComboBox.SelectedItem);
@@ -78,7 +78,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// implementation to handle any additional processing required for closing the dialog.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new ListSelectionDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null), (string)ListSelectionComboBox.SelectedItem);
@@ -94,7 +94,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// implementation to handle the window closure.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new ListSelectionDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null), (string)ListSelectionComboBox.SelectedItem);

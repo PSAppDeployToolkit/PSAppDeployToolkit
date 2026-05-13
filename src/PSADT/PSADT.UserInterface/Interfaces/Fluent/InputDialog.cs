@@ -53,7 +53,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// dialog result before calling the base method to handle window closure.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new InputDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null), CurrentInputValue);
@@ -68,7 +68,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// setting the dialog result. It also calls the base class implementation to handle window closure.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonMiddle_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new InputDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null), CurrentInputValue);
@@ -84,7 +84,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// closure behavior.</remarks>
         /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
         /// <param name="e">The event data associated with the button click.</param>
-        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = new InputDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null), CurrentInputValue);

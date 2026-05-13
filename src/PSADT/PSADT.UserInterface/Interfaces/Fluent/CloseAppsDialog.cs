@@ -333,7 +333,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// the dialog's loading sequence and should not be invoked directly.</remarks>
         /// <param name="sender">The source of the Loaded event, typically the FluentDialog instance being initialized.</param>
         /// <param name="e">The event data associated with the Loaded event.</param>
-        private protected override void FluentDialog_Loaded(object sender, RoutedEventArgs e)
+        private protected override void FluentDialog_Loaded(object? sender, RoutedEventArgs e)
         {
             // Call the base method to ensure proper loading.
             base.FluentDialog_Loaded(sender, e);
@@ -350,7 +350,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// button's name before invoking the base class's click handler.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonLeft_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = AutomationProperties.GetName(ButtonLeft) == _buttonLeftText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
@@ -366,7 +366,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// current operation.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonRight_Click(object sender, RoutedEventArgs e)
+        private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
             DialogResult = CloseAppsDialogResult.Defer;
