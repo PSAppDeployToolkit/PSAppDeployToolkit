@@ -547,7 +547,7 @@ function Private:Invoke-ADTClientServerOperation
                 {
                     (Get-Variable -Name arkArgsParams).Value = $arkBaseParams.Clone(); $arkArgsParams.Add('Name', (Get-Random))
                     Set-ADTRegistryKey @arkArgsParams -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$dict))
-                    "/$($PSCmdlet.ParameterSetName)"; "-ArgumentsDictionary"; "$($arkArgsParams.LiteralPath)\$($arkArgsParams.Name)"
+                    return "/$($PSCmdlet.ParameterSetName)", "-ArgumentsDictionary", "$($arkArgsParams.LiteralPath)\$($arkArgsParams.Name)"
                 }
             }
         }
