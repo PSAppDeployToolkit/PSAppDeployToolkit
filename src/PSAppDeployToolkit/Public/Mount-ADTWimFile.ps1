@@ -91,7 +91,7 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be found.'))
                 }
-                if ([System.Uri]::new($_).IsUnc)
+                if ([System.Uri]::new($_.FullName).IsUnc)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ImagePath -ProvidedValue $_ -ExceptionMessage 'The specified image path cannot be a network share.'))
                 }
@@ -106,7 +106,7 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified input is null.'))
                 }
-                if ([System.Uri]::new($_).IsUnc)
+                if ([System.Uri]::new($_.FullName).IsUnc)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path cannot be a network share.'))
                 }
