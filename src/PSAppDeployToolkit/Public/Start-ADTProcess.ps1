@@ -623,27 +623,6 @@ function Start-ADTProcess
             $cancellationTokenSource.Token
         }
 
-        # Set up the elevation type to use for the new process.
-        $elevatedTokenType = if ($RunAsActiveUser)
-        {
-            if ($UseLinkedAdminToken)
-            {
-                [PSADT.Security.ElevatedTokenType]::HighestMandatory
-            }
-            elseif ($UseHighestAvailableToken)
-            {
-                [PSADT.Security.ElevatedTokenType]::HighestAvailable
-            }
-            elseif ($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser)
-            {
-                [PSADT.Security.ElevatedTokenType]::None
-            }
-        }
-        elseif ($UseUnelevatedToken)
-        {
-            [PSADT.Security.ElevatedTokenType]::None
-        }
-
         # Internal worker function to set the session exit code.
         function Set-ADTSessionExitCode
         {
@@ -796,6 +775,26 @@ function Start-ADTProcess
                 # Set up the process start flags.
                 $launchData = if (!($RunAsActiveUser -and $UseShellExecute))
                 {
+                    # Set up the elevation type to use for the new process.
+                    $elevatedTokenType = if ($RunAsActiveUser)
+                    {
+                        if ($UseLinkedAdminToken)
+                        {
+                            [PSADT.Security.ElevatedTokenType]::HighestMandatory
+                        }
+                        elseif ($UseHighestAvailableToken)
+                        {
+                            [PSADT.Security.ElevatedTokenType]::HighestAvailable
+                        }
+                        elseif ($RunAsActiveUser -eq [PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser)
+                        {
+                            [PSADT.Security.ElevatedTokenType]::None
+                        }
+                    }
+                    elseif ($UseUnelevatedToken)
+                    {
+                        [PSADT.Security.ElevatedTokenType]::None
+                    }
                     [PSADT.ProcessManagement.ProcessLaunchInfo]::new(
                         $FilePath,
                         $ArgumentList,
