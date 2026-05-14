@@ -508,6 +508,20 @@ function Private:Invoke-ADTClientServerOperation
             }
         }
 
+        # Define base parameters used for all registry operations. We've got a few here.
+        $arkBaseParams = @{
+            InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+            WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+            LiteralPath = [PSADT.Foundation.ClientServerUtilities]::UserRegistryPath
+            SID = $User.SID
+        }
+
+        # Ensure any ShellExecute actions happen with no elevation specified.
+        $elevatedTokenType = if ($PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess'))
+        {
+            [PSADT.Security.ElevatedTokenType]::None
+        }
+
         # Sanitise $PSBoundParameters, we'll use it to generate our arguments.
         $null = $PSBoundParameters.Remove($PSCmdlet.ParameterSetName)
         $null = $PSBoundParameters.Remove('NoWait')
@@ -517,72 +531,76 @@ function Private:Invoke-ADTClientServerOperation
             $PSBoundParameters.Options = [PSADT.ClientServer.DataSerialization]::SerializeToString($Options)
         }
 
-        # Build out parameters to store in the user's registry. When using Base64 logos, the path length can easily by exceeded.
-        $csoArguments = if ($PSBoundParameters.Count -gt 0)
+        # Build out parameters to store in the user's registry if we have any. When using Base64 logos, the path length can easily by exceeded.
+        $arkArgsParams = $null; [System.String[]]$argumentList = if ($PSBoundParameters.Count -gt 0)
         {
-            # Copy everything into a new dictionary as Newtonsoft won't handle a PSBoundParametersDictionary properly.
-            $csArgsDictionary = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
             $PSBoundParameters.GetEnumerator() | & {
+                begin
+                {
+                    $dict = [System.Collections.Generic.Dictionary[System.String, System.String]]::new()
+                }
                 process
                 {
-                    $csArgsDictionary.Add($_.Key, $_.Value)
+                    $dict.Add($_.Key, $_.Value)
+                }
+                end
+                {
+                    (Get-Variable -Name arkArgsParams).Value = $arkBaseParams.Clone(); $arkArgsParams.Add('Name', (Get-Random))
+                    Set-ADTRegistryKey @arkArgsParams -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$dict))
+                    "/$($PSCmdlet.ParameterSetName)"; "-ArgumentsDictionary"; "$($arkArgsParams.LiteralPath)\$($arkArgsParams.Name)"
                 }
             }
-            Set-ADTRegistryKey -LiteralPath ([PSADT.Foundation.ClientServerUtilities]::UserRegistryPath) -Name ($csArgsRegValue = Get-Random) -Value ([PSADT.ClientServer.DataSerialization]::SerializeToString([System.Collections.ObjectModel.ReadOnlyDictionary[System.String, System.String]]$csArgsDictionary)) -SID $User.SID -InformationAction SilentlyContinue
-            @{
-                ArgumentsDictionary = "$([PSADT.Foundation.ClientServerUtilities]::UserRegistryPath)\$csArgsRegValue"
-                RemoveArgumentsDictionaryStorage = $true
-            }
         }
-
-        # Set up the parameters for the client/server client.
-        [System.String[]]$argumentList = $("/$($PSCmdlet.ParameterSetName)"; if ($csoArguments) { $csoArguments.GetEnumerator() | & { process { "-$($_.Key)"; $_.Value } } })
-        $elevatedTokenType = if ($PSCmdlet.ParameterSetName.Equals('ShellExecuteProcess'))
+        else
         {
-            [PSADT.Security.ElevatedTokenType]::None
+            "/$($PSCmdlet.ParameterSetName)"
         }
 
         # For -NoWait operations, we want to ensure the operation was successful before continuing.
         # Some platforms clean up the local cache before a dialog can appears, causing breaks.
-        $return = if ($NoWait)
+        $return = try
         {
-            # Remove any previous success flags before starting the process.
-            $arkParams = @{
-                InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                WarningAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                LiteralPath = [PSADT.Foundation.ClientServerUtilities]::UserRegistryPath
-                Name = [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty
-                SID = $User.SID
-            }
-            Remove-ADTRegistryKey @arkParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation($argumentList, $User, $elevatedTokenType)
-
-            # Wait for the success flag. When found, remove it to clean up house and break to continue.
-            $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
-            while ($true)
+            if ($NoWait)
             {
-                if ((Get-ADTRegistryKey @arkParams) -eq 1)
+                # Remove any previous success flags before starting the process.
+                $arkSuccessParams = $arkBaseParams.Clone(); $arkSuccessParams.Add('Name', [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty)
+                Remove-ADTRegistryKey @arkSuccessParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientLauncherOperation($argumentList, $User, $elevatedTokenType)
+
+                # Wait for the success flag. When found, remove it to clean up house and break to continue.
+                $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
+                while ($true)
                 {
-                    Remove-ADTRegistryKey @arkParams
-                    break
-                }
-                if ($noWaitTimer.Elapsed -ge [PSADT.Foundation.ClientServerUtilities]::ClientOperationTimeout)
-                {
-                    $naerParams = @{
-                        Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'ClientServerNoWaitTimeoutExceeded'
-                        TargetObject = $sapResult
-                        RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                    if ((Get-ADTRegistryKey @arkSuccessParams) -eq 1)
+                    {
+                        Remove-ADTRegistryKey @arkSuccessParams
+                        break
                     }
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    if ($noWaitTimer.Elapsed -ge [PSADT.Foundation.ClientServerUtilities]::ClientOperationTimeout)
+                    {
+                        $naerParams = @{
+                            Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ClientServerNoWaitTimeoutExceeded'
+                            TargetObject = $sapResult
+                            RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                        }
+                        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    }
+                    [System.Threading.Thread]::Sleep(1)
                 }
-                [System.Threading.Thread]::Sleep(1)
+                return
             }
-            return
+            else
+            {
+                [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).Task.GetAwaiter().GetResult()
+            }
         }
-        else
+        finally
         {
-            [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).Task.GetAwaiter().GetResult()
+            if ($arkArgsParams)
+            {
+                Remove-ADTRegistryKey @arkArgsParams
+            }
         }
 
         # Confirm we were successful in our operation.
