@@ -140,6 +140,7 @@ function Mount-ADTWimFile
         # Attempt to get specified WIM image before initialising.
         $null = try
         {
+            $PSBoundParameters.ImagePath = $PSBoundParameters.ImagePath.FullName
             $PSBoundParameters.Remove('PassThru')
             $PSBoundParameters.Remove('Force')
             $PSBoundParameters.Remove('Path')
@@ -196,7 +197,7 @@ function Mount-ADTWimFile
                 }
 
                 # Mount the WIM file.
-                $res = Mount-WindowsImage @PSBoundParameters -Path $Path -ReadOnly -CheckIntegrity
+                $res = Mount-WindowsImage @PSBoundParameters -Path $Path.FullName -ReadOnly -CheckIntegrity
                 Write-ADTLogEntry -Message "Successfully mounted WIM file [$ImagePath]."
 
                 # Store the result within the user's ADTSession if there's an active one.
