@@ -141,7 +141,7 @@ namespace PSADT.ProcessManagement
             // Expand out environment variables for FilePath/ArgumentList as required.
             if (ExpandEnvironmentVariables = expandEnvironmentVariables)
             {
-                if (RunAsActiveUser is not null && RunAsActiveUser != AccountUtilities.CallerRunAsActiveUser)
+                if (RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
                 {
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(RunAsActiveUser.SessionId);
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, InheritEnvironmentVariables);
