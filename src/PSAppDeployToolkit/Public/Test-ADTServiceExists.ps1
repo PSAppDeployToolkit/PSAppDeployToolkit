@@ -53,6 +53,11 @@ function Test-ADTServiceExists
         Checks if the service 'wuauserv' exists.
 
     .EXAMPLE
+        Test-ADTServiceExists -DisplayName 'Windows Update'
+
+        Checks if the Windows Update service exists.
+
+    .EXAMPLE
         Test-ADTServiceExists -Name testservice -UseCIM -PassThru | Invoke-CimMethod -MethodName Delete
 
         Checks if a service exists and then deletes it by using the `-PassThru` parameter.

@@ -44,9 +44,14 @@ function Set-ADTServiceStartMode
         When the `-PassThru` parameter is provided, this function returns a `ServiceController` object representing the service that was started.
 
     .EXAMPLE
-        Set-ADTServiceStartMode -Service 'wuauserv' -StartMode 'Automatic (Delayed Start)'
+        Set-ADTServiceStartMode -Name 'wuauserv' -StartMode 'Automatic (Delayed Start)'
 
         Sets the 'wuauserv' service to start automatically with a delayed start.
+
+    .EXAMPLE
+        Set-ADTServiceStartMode -DisplayName 'Windows Update' -StartMode 'Manual'
+
+        Sets the Windows Update service to start manually.
 
     .EXAMPLE
         ```PowerShell
