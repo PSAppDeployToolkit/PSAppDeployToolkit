@@ -270,7 +270,7 @@ namespace PSAppDeployToolkit.Foundation
                     FileInfo wimFile = new(wimFiles[0].FullName);
                     WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                     DirectoryInfo mountPath = new(Path.Join(DirFiles.FullName, Path.GetRandomFileName()));
-                    _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath.FullName);
+                    _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
                     AddMountedWimFile(wimFile); DirFiles = mountPath;
                     WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
 
