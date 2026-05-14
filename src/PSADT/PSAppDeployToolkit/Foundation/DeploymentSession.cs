@@ -279,7 +279,7 @@ namespace PSAppDeployToolkit.Foundation
                     if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is DriveInfo availLetter)
                     {
                         WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
-                        _ = NativeMethods.DefineDosDevice(0, availLetter.Name.Trim('\\'), DirFiles.FullName);
+                        _ = NativeMethods.DefineDosDevice(0, availLetter.Name.TrimEnd('\\'), DirFiles.FullName);
                         DirFiles = availLetter.RootDirectory; DirFilesSubstDrive = availLetter;
                     }
                     WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
