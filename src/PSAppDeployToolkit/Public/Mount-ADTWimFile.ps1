@@ -114,10 +114,6 @@ function Mount-ADTWimFile
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path has a pre-existing WIM mounted.'))
                 }
-                if (Get-ChildItem -LiteralPath $_ -Force)
-                {
-                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Path -ProvidedValue $_ -ExceptionMessage 'The specified mount path is not empty.'))
-                }
                 return !!$_
             })]
         [System.IO.DirectoryInfo]$Path,
