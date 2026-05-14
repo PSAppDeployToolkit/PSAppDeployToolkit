@@ -33,6 +33,16 @@ function Get-ADTServiceStartMode
         Returns the startup mode of the specified service.
 
     .EXAMPLE
+        Get-ADTServiceStartMode -Name 'wuauserv'
+
+        Retrieves the startup mode of the 'wuauserv' service.
+
+    .EXAMPLE
+        Get-ADTServiceStartMode -DisplayName 'Windows Update'
+
+        Retrieves the startup mode of the Windows Update service.
+
+    .EXAMPLE
         Get-ADTServiceStartMode -InputObject (Get-Service -Name 'wuauserv')
 
         Retrieves the startup mode of the 'wuauserv' service.

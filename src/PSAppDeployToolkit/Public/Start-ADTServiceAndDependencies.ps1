@@ -52,6 +52,11 @@ function Start-ADTServiceAndDependencies
         Starts the Windows Update service and its dependencies.
 
     .EXAMPLE
+        Start-ADTServiceAndDependencies -DisplayName 'Windows Update'
+
+        Starts the Windows Update service and its dependencies.
+
+    .EXAMPLE
         Start-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00
 
         Starts the Windows Update service and its dependencies, waiting 1 minute for the serivce to start.
