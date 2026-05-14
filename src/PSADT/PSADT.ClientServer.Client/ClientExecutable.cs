@@ -966,27 +966,15 @@ namespace PSADT.ClientServer
                 {
                     // Provided value is a registry key path.
                     int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
-                    string valueName = argvDictValue.Substring(lastBackslashIndex + 1);
-                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex), true);
-                    if (registryKey.GetValue(valueName, null) is not string argvDictContent)
-                    {
-                        throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments);
-                    }
-                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && bool.Parse(removeStorage))
-                    {
-                        registryKey.DeleteValue(valueName);
-                    }
-                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
+                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex));
+                    return registryKey.GetValue(argvDictValue.Substring(lastBackslashIndex + 1), null) is not string argvDictContent
+                        ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
+                        : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }
                 else if (File.Exists(argvDictValue))
                 {
                     // Provided value is a file path.
-                    string argvDictContent = File.ReadAllText(argvDictValue);
-                    if (arguments.TryGetValue("RemoveArgumentsDictionaryStorage", out string? removeStorage) && bool.Parse(removeStorage))
-                    {
-                        File.Delete(argvDictValue);
-                    }
-                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
+                    return DeserializeString<ReadOnlyDictionary<string, string>>(File.ReadAllText(argvDictValue));
                 }
                 else
                 {

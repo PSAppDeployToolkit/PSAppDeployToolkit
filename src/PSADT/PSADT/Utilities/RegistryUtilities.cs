@@ -56,7 +56,7 @@ namespace PSADT.Utilities
         /// <returns>A read-only <see cref="RegistryKey"/> object representing the specified registry key.</returns>
         /// <exception cref="FormatException">Thrown if <paramref name="keyPath"/> is null, empty, not in a valid format, specifies an unrecognized hive,
         /// or if the specified registry key does not exist.</exception>
-        internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable)
+        internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable = false)
         {
             keyPath = keyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null);
             int firstBackslashIndex = keyPath.IndexOf('\\');
