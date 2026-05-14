@@ -279,7 +279,7 @@ namespace PSAppDeployToolkit.Foundation
                     if (DriveLetters.FirstOrDefault(l => !usedLetters.Contains(l)) is DriveInfo availLetter)
                     {
                         WriteLogEntry($"Creating substitution drive [{availLetter}] for [{DirFiles}].");
-                        _ = NativeMethods.DefineDosDevice(0, availLetter.Name.TrimEnd('\\'), DirFiles.FullName);
+                        _ = NativeMethods.DefineDosDevice(0, availLetter.Name, DirFiles.FullName);
                         DirFiles = availLetter.RootDirectory; DirFilesSubstDrive = availLetter;
                     }
                     WriteLogEntry($"Using [{DirFiles}] as the base DirFiles directory.");
@@ -1459,7 +1459,7 @@ namespace PSAppDeployToolkit.Foundation
                 return;
             }
             WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive.Name.TrimEnd('\\'), null);
+            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive.Name, null);
         }
 
         /// <summary>

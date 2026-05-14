@@ -2291,7 +2291,7 @@ namespace PSADT.Interop
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(lpTargetPath);
             }
-            BOOL res = PInvoke.DefineDosDevice(dwFlags, lpDeviceName, lpTargetPath);
+            BOOL res = PInvoke.DefineDosDevice(dwFlags, lpDeviceName.TrimEnd('\\'), lpTargetPath);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
