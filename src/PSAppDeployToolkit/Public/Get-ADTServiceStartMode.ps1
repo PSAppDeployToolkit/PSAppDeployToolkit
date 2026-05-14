@@ -110,18 +110,15 @@ function Get-ADTServiceStartMode
         {
             try
             {
-                if ($PSCmdlet.ParameterSetName -eq 'InputObject')
+                $service = if ($PSCmdlet.ParameterSetName -ne 'InputObject')
                 {
-                    $InputObject.Refresh()
-                    $service = $InputObject
+                    $gsParams = @{ $PSCmdlet.ParameterSetName = [System.Management.Automation.WildcardPattern]::Escape($PSBoundParameters.($PSCmdlet.ParameterSetName)) }
+                    Get-Service @gsParams
                 }
                 else
                 {
-                    $serviceName = $PSBoundParameters.($PSCmdlet.ParameterSetName)
-                    if (!($service = Get-Service | & { process { if ($_.($PSCmdlet.ParameterSetName) -eq $serviceName) { return $_ } } }))
-                    {
-                        $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName $PSCmdlet.ParameterSetName -ProvidedValue $PSBoundParameters.($PSCmdlet.ParameterSetName) -ExceptionMessage 'The specified service does not exist.'))
-                    }
+                    $InputObject.Refresh()
+                    $InputObject
                 }
 
                 Write-ADTLogEntry -Message "Getting startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)]."

@@ -99,10 +99,10 @@ Describe 'Get-ADTServiceStartMode' {
         It "Should thow when the name provided doesn't exist" {
             $shouldParams = @{
                 Throw = $true
-                Exception = [System.ArgumentException]
+                Exception = [Microsoft.PowerShell.Commands.ServiceCommandException]
             }
-            { Get-ADTServiceStartMode -Name * } | Should @shouldParams -ErrorId 'InvalidNameParameterValue,Get-ADTServiceStartMode'
-            { Get-ADTServiceStartMode -DisplayName * } | Should @shouldParams -ErrorId 'InvalidDisplayNameParameterValue,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -Name * } | Should @shouldParams -ErrorId 'NoServiceFoundForGivenName,Get-ADTServiceStartMode'
+            { Get-ADTServiceStartMode -DisplayName * } | Should @shouldParams -ErrorId 'NoServiceFoundForGivenDisplayName,Get-ADTServiceStartMode'
         }
     }
 
