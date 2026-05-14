@@ -173,28 +173,26 @@ function Set-ADTServiceStartMode
                         {
                             # Set the start up mode using sc.exe. Note: we found that the ChangeStartMode method in the Win32_Service WMI class set services to 'Automatic (Delayed Start)' even when you specified 'Automatic' on Win7, Win8, and Win10.
                             $scResult = & "$([System.Environment]::SystemDirectory)\sc.exe" config $service.ServiceName start= $StartMode 2>&1
-                            if (!$Global:LASTEXITCODE)
+                            if ($Global:LASTEXITCODE)
                             {
-                                Write-ADTLogEntry -Message "Successfully set service [$($service.ServiceName)] with display name [$($service.DisplayName)] startup mode to [$($PSBoundParameters.StartMode)]."
-                                if ($PassThru)
-                                {
-                                    $service.Refresh()
-                                    $PSCmdlet.WriteObject($service)
-                                    continue
+                                # If we're here, we had a bad exit code.
+                                Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity Error
+                                $naerParams = @{
+                                    Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                    ErrorId = 'ScConfigFailure'
+                                    TargetObject = $scResult
+                                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
                                 }
-                                continue
+                                throw (New-ADTErrorRecord @naerParams)
                             }
 
-                            # If we're here, we had a bad exit code.
-                            Write-ADTLogEntry -Message ($msg = "$msg failed with exit code [$Global:LASTEXITCODE]: $scResult") -Severity Error
-                            $naerParams = @{
-                                Exception = [System.Runtime.InteropServices.ExternalException]::new($msg, $Global:LASTEXITCODE)
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                ErrorId = 'ScConfigFailure'
-                                TargetObject = $scResult
-                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                            Write-ADTLogEntry -Message "Successfully set service [$($service.ServiceName)] with display name [$($service.DisplayName)] startup mode to [$($PSBoundParameters.StartMode)]."
+                            if ($PassThru)
+                            {
+                                $service.Refresh()
+                                $PSCmdlet.WriteObject($service)
                             }
-                            throw (New-ADTErrorRecord @naerParams)
                         }
                         catch
                         {
