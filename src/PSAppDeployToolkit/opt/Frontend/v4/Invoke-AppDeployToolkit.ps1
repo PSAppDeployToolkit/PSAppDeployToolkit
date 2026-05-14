@@ -46,7 +46,7 @@ param
     # Default is 'Auto'. Don't hard-code this unless required.
     [Parameter(Mandatory = $false)]
     [ValidateSet('Auto', 'Interactive', 'NonInteractive', 'Silent')]
-    [System.String]$DeployMode,
+    [System.String]$DeployMode = 'Interactive',
 
     [Parameter(Mandatory = $false)]
     [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
@@ -69,7 +69,7 @@ $adtSession = @{
     AppSuccessExitCodes = @(0)
     AppRebootExitCodes = @(1641, 3010)
     AppProcessesToClose = @() # Example: @('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })
-    RequireAdmin = $true
+    RequireAdmin = $false
 
     AppScriptVersion = '1.0.0'
     AppScriptDate = '2000-12-31'
