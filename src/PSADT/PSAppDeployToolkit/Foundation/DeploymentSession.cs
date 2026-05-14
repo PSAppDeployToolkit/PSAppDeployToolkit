@@ -263,10 +263,11 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // If the default frontend hasn't been modified, and there's not already a mounted WIM file, check for WIM files and modify the install accordingly.
-                if ((string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection)) && MountedWimFiles.Count == 0 && DirFiles?.GetFiles("*", SearchOption.TopDirectoryOnly).FirstOrDefault(static f => f.Extension.EndsWith(".wim", StringComparison.OrdinalIgnoreCase)) is FileInfo wimFile)
+                if ((string.IsNullOrWhiteSpace(AppName) || Settings.HasFlag(DeploymentSettings.ForceWimDetection)) && MountedWimFiles.Count == 0 && DirFiles?.GetFiles("*.wim") is { Length: > 0 } wimFiles)
                 {
                     // Mount the WIM file and reset DirFiles to the mount point.
                     WriteInitialDivider(ref writtenDivider);
+                    FileInfo wimFile = new(wimFiles[0].FullName);
                     WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                     DirectoryInfo mountPath = new(Path.Join(DirFiles.FullName, Path.GetRandomFileName()));
                     _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath.FullName);
