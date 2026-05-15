@@ -1561,7 +1561,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets a value indicating whether administrative privileges are required.
         /// </summary>
-        public bool RequireAdmin => GetFlagValue(DeploymentSettings.RequireAdmin);
+        public bool RequireAdmin => Settings.HasFlag(DeploymentSettings.RequireAdmin);
 
         /// <summary>
         /// Gets the deployment session's application vendor.
@@ -1596,17 +1596,17 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a successful deployment.
         /// </summary>
-        public IReadOnlyList<int> AppSuccessExitCodes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = new ReadOnlyCollection<int>([0]);
+        public IReadOnlyList<int> AppSuccessExitCodes { get; } = new ReadOnlyCollection<int>([0]);
 
         /// <summary>
         /// Gets the deployment session's exit code(s) to indicate a reboot is required.
         /// </summary>
-        public IReadOnlyList<int> AppRebootExitCodes { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = new ReadOnlyCollection<int>([1641, 3010]);
+        public IReadOnlyList<int> AppRebootExitCodes { get; } = new ReadOnlyCollection<int>([1641, 3010]);
 
         /// <summary>
         /// Gets the list of application processes that should be closed.
         /// </summary>
-        public IReadOnlyList<ProcessDefinition> AppProcessesToClose { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = new ReadOnlyCollection<ProcessDefinition>([]);
+        public IReadOnlyList<ProcessDefinition> AppProcessesToClose { get; } = new ReadOnlyCollection<ProcessDefinition>([]);
 
         /// <summary>
         /// Gets the deployment session's application package version.
@@ -1691,7 +1691,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's log path.
         /// </summary>
-        public DirectoryInfo LogPath => GetPropertyValue(in field);
+        public DirectoryInfo LogPath { get; }
 
         /// <summary>
         /// Gets the deployment session's log filename.
