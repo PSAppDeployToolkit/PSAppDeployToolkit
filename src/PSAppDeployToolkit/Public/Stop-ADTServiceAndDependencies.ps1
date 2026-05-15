@@ -8,10 +8,10 @@ function Stop-ADTServiceAndDependencies
 {
     <#
     .SYNOPSIS
-        Stop a Windows service and its dependencies.
+        Stop a Windows service and any service(s) that depend on it.
 
     .DESCRIPTION
-        The `Stop-ADTServiceAndDependencies` function stops a specified Windows service and its dependencies. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
+        The `Stop-ADTServiceAndDependencies` function stops a specified Windows service and any service(s) that depend on it. It provides options to skip stopping dependent services, wait for a service to get out of a pending state, and return the service object.
 
     .PARAMETER Name
         Specifies the service name(s) of services to be stopped. Wildcards are permitted.
@@ -52,22 +52,22 @@ function Stop-ADTServiceAndDependencies
     .EXAMPLE
         Stop-ADTServiceAndDependencies -Name 'wuauserv' -Force
 
-        Stops the Windows Update service and its dependencies.
+        Stops the Windows Update service and any service(s) that depend on it.
 
     .EXAMPLE
         Stop-ADTServiceAndDependencies -DisplayName 'Windows Update' -Force
 
-        Stops the Windows Update service and its dependencies.
+        Stops the Windows Update service and any service(s) that depend on it.
 
     .EXAMPLE
         Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00 -Force
 
-        Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
+        Stops the Windows Update service and any service(s) that depend on it, waiting 1 minute for the service to stop.
 
     .EXAMPLE
         Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait (New-TimeSpan -Minutes 1) -Force
 
-        Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
+        Stops the Windows Update service and any service(s) that depend on it, waiting 1 minute for the service to stop.
 
     .NOTES
         An active ADT session is NOT required to use this function.
