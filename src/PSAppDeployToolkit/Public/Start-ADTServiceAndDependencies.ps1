@@ -82,8 +82,6 @@ function Start-ADTServiceAndDependencies
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisplayName', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PendingStatusWait', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PassThru', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.ServiceProcess.ServiceController])]
     param
@@ -129,7 +127,12 @@ function Start-ADTServiceAndDependencies
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $iasadoParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude $PSCmdlet.ParameterSetName
+        $desiredStatusLookupTable = @{
+            ContinuePending = [System.ServiceProcess.ServiceControllerStatus]::Running
+            PausePending = [System.ServiceProcess.ServiceControllerStatus]::Paused
+            StartPending = [System.ServiceProcess.ServiceControllerStatus]::Running
+            StopPending = [System.ServiceProcess.ServiceControllerStatus]::Stopped
+        }
     }
 
     process
@@ -155,9 +158,57 @@ function Start-ADTServiceAndDependencies
                     {
                         try
                         {
-                            if ($PSCmdlet.ShouldProcess($service.ServiceName, "Start service$(if (!$SkipDependentServices) { ' and dependencies' })"))
+                            if (($desiredStatus = $desiredStatusLookupTable[$service.Status]))
                             {
-                                Invoke-ADTServiceAndDependencyOperation -Service $service -Operation Start @iasadoParams
+                                Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($service.Status)] to reach desired status [$desiredStatus]."
+                                $service.WaitForStatus($desiredStatus, $PendingStatusWait)
+                                $service.Refresh()
+                            }
+
+                            if (!$SkipDependentServices)
+                            {
+                                $dependentServices = $service.DependentServices | & { process { if (!$_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_ } } }
+                            }
+
+                            if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
+                            {
+                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already running."
+                                if (!$dependentServices)
+                                {
+                                    if ($PassThru)
+                                    {
+                                        $PSCmdlet.WriteObject($service)
+                                    }
+                                    continue
+                                }
+                            }
+
+                            if (!$PSCmdlet.ShouldProcess($service.ServiceName, "Start service$(if (!$SkipDependentServices) { ' and dependencies' })"))
+                            {
+                                continue
+                            }
+
+                            if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
+                            {
+                                Write-ADTLogEntry -Message "Starting parent service [$($service.ServiceName)] with display name [$($service.DisplayName)]."
+                                Start-Service -InputObject $service -PassThru:$PassThru -WarningAction Ignore
+                            }
+
+                            foreach ($dependent in $dependentServices)
+                            {
+                                Write-ADTLogEntry -Message "Starting dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]."
+                                try
+                                {
+                                    Start-Service -InputObject $dependent -WarningAction Ignore
+                                }
+                                catch
+                                {
+                                    Write-ADTLogEntry -Message "Failed to start dependent service [$($dependent.ServiceName)] with display name [$($dependent.DisplayName)] and a status of [$($dependent.Status)]. Continue..." -Severity Warning
+                                }
                             }
                         }
                         catch
