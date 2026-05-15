@@ -11,7 +11,7 @@ The type of deployment to perform, Install, Uninstall, or Repair. Default is Ins
 .PARAMETER DeployMode
 Specifies whether the installation should be run in Interactive (shows dialogs), Silent (no dialogs), NonInteractive (dialogs without prompts) mode, or Auto (shows dialogs if a user is logged on, device is not in the OOBE, and there's no running apps to close).
 
-Silent mode is automatically set if it is detected that the process is not user interactive, no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
+Silent mode is automatically set if no users are logged on, the device is in Autopilot mode, or there's specified processes to close that are currently running.
 
 .PARAMETER SuppressRebootPassThru
 Prevents the toolkit from exiting with a defined reboot exit code (e.g. 3010), returning 0 instead.
