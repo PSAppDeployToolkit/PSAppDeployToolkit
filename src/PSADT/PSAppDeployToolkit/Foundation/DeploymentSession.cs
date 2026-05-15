@@ -88,11 +88,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Set up other variable values based on incoming dictionary.
                 if (parameters?.Count > 0)
                 {
-                    if (parameters.TryGetValue("DeployAppScriptSessionState", out object? paramValue) && (paramValue is not null))
-                    {
-                        DeployAppScriptSessionState = (SessionState)paramValue;
-                    }
-                    if (parameters.TryGetValue("DeploymentType", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeploymentType", out object? paramValue) && (paramValue is not null))
                     {
                         DeploymentType = (DeploymentType)paramValue;
                     }
@@ -136,6 +132,18 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         AppRevision = (string)paramValue;
                     }
+                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
+                    {
+                        AppSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
+                    }
+                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
+                    {
+                        AppRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
+                    }
+                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
+                    {
+                        AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>((ProcessDefinition[])paramValue);
+                    }
                     if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (paramValue is not null))
                     {
                         AppScriptVersion = (Version)paramValue;
@@ -147,18 +155,6 @@ namespace PSAppDeployToolkit.Foundation
                     if (parameters.TryGetValue("AppScriptAuthor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
                         AppScriptAuthor = (string)paramValue;
-                    }
-                    if (parameters.TryGetValue("RequireAdmin", out paramValue) && (SwitchParameter)paramValue)
-                    {
-                        Settings |= DeploymentSettings.RequireAdmin;
-                    }
-                    if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
-                    {
-                        InstallName = (string)paramValue;
-                    }
-                    if (parameters.TryGetValue("InstallTitle", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
-                    {
-                        InstallTitle = (string)paramValue;
                     }
                     if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
                     {
@@ -172,17 +168,9 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         DeployAppScriptParameters = new ReadOnlyDictionary<string, object>((Dictionary<string, object>)paramValue);
                     }
-                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeployAppScriptSessionState", out paramValue) && (paramValue is not null))
                     {
-                        AppSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
-                    }
-                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
-                    {
-                        AppRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
-                    }
-                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
-                    {
-                        AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>((ProcessDefinition[])paramValue);
+                        DeployAppScriptSessionState = (SessionState)paramValue;
                     }
                     if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
                     {
@@ -228,18 +216,6 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         Settings |= DeploymentSettings.NoOobeDetection;
                     }
-                    if (parameters.TryGetValue("ExitWithMsiCodes", out paramValue) && (SwitchParameter)paramValue)
-                    {
-                        Settings |= DeploymentSettings.ExitWithMsiCodes;
-                    }
-                    if (parameters.TryGetValue("AllowWowProcess", out paramValue) && (SwitchParameter)paramValue)
-                    {
-                        Settings |= DeploymentSettings.AllowWowProcess;
-                    }
-                    if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
-                    {
-                        LogName = (string)paramValue;
-                    }
                     if (parameters.TryGetValue("NoProcessDetection", out paramValue))
                     {
                         if ((SwitchParameter)paramValue)
@@ -250,6 +226,30 @@ namespace PSAppDeployToolkit.Foundation
                         {
                             forceProcessDetection = true;
                         }
+                    }
+                    if (parameters.TryGetValue("ExitWithMsiCodes", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.ExitWithMsiCodes;
+                    }
+                    if (parameters.TryGetValue("AllowWowProcess", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.AllowWowProcess;
+                    }
+                    if (parameters.TryGetValue("RequireAdmin", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.RequireAdmin;
+                    }
+                    if (parameters.TryGetValue("InstallTitle", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    {
+                        InstallTitle = (string)paramValue;
+                    }
+                    if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    {
+                        InstallName = (string)paramValue;
+                    }
+                    if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    {
+                        LogName = (string)paramValue;
                     }
                 }
                 if (noExitOnClose == true)

@@ -13,9 +13,6 @@ function Open-ADTSession
     .DESCRIPTION
         The `Open-ADTSession` function initializes and opens a new ADT session with the specified parameters. It handles the setup of the session environment and processes any callbacks defined for the session. If the session fails to open, it handles the error and closes the session if necessary.
 
-    .PARAMETER SessionState
-        Defaults to `$PSCmdlet.SessionState` to get the caller's SessionState, so only required if you need to override this.
-
     .PARAMETER DeploymentType
         Specifies the type of deployment.
 
@@ -49,6 +46,15 @@ function Open-ADTSession
     .PARAMETER AppRevision
         Specifies the application revision.
 
+    .PARAMETER AppSuccessExitCodes
+        Specifies the application exit codes.
+
+    .PARAMETER AppRebootExitCodes
+        Specifies the application reboot codes.
+
+    .PARAMETER AppProcessesToClose
+        Specifies one or more processes that require closing to ensure a successful deployment.
+
     .PARAMETER AppScriptVersion
         Specifies the application script version.
 
@@ -57,12 +63,6 @@ function Open-ADTSession
 
     .PARAMETER AppScriptAuthor
         Specifies the application script author.
-
-    .PARAMETER InstallName
-        Specifies the install name.
-
-    .PARAMETER InstallTitle
-        Specifies the install title.
 
     .PARAMETER DeployAppScriptFriendlyName
         Specifies the friendly name of the deploy application script.
@@ -73,17 +73,8 @@ function Open-ADTSession
     .PARAMETER DeployAppScriptParameters
         Specifies the parameters for the deploy application script.
 
-    .PARAMETER AppSuccessExitCodes
-        Specifies the application exit codes.
-
-    .PARAMETER AppRebootExitCodes
-        Specifies the application reboot codes.
-
-    .PARAMETER AppProcessesToClose
-        Specifies one or more processes that require closing to ensure a successful deployment.
-
-    .PARAMETER RequireAdmin
-        Specifies that this deployment requires administrative permissions.
+    .PARAMETER DeployAppScriptSessionState
+        Defaults to `$PSCmdlet.SessionState` to get the caller's SessionState, so only required if you need to override this.
 
     .PARAMETER ScriptDirectory
         Specifies the base path for Files and SupportFiles.
@@ -127,8 +118,17 @@ function Open-ADTSession
     .PARAMETER AllowWowProcess
         When specified, allows the session to initialize within a Windows on Windows (WOW) process, such as a 32-bit PowerShell instance on a 64-bit operating system.
 
+    .PARAMETER RequireAdmin
+        Specifies that this deployment requires administrative permissions.
+
     .PARAMETER PassThru
         Passes the session object through the pipeline.
+
+    .PARAMETER InstallTitle
+        Specifies an override for the default-generated install title.
+
+    .PARAMETER InstallName
+        Specifies an override for the default-generated install name.
 
     .PARAMETER LogName
         Specifies an override for the default-generated log file name.
@@ -178,10 +178,6 @@ function Open-ADTSession
     [OutputType([PSAppDeployToolkit.Foundation.DeploymentSession])]
     param
     (
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Management.Automation.SessionState]$SessionState,
-
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Parameter')]
         [ValidateNotNullOrEmpty()]
         [PSAppDeployToolkit.Foundation.DeploymentType]$DeploymentType,
@@ -223,6 +219,19 @@ function Open-ADTSession
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppRevision,
 
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$AppSuccessExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.Int32[]]$AppRebootExitCodes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [PSAppDeployToolkit.Attributes.ValidateUnique()]
+        [PSADT.ProcessManagement.ProcessDefinition[]]$AppProcessesToClose,
+
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [ValidateNotNullOrEmpty()]
         [System.Version]$AppScriptVersion,
@@ -234,14 +243,6 @@ function Open-ADTSession
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$AppScriptAuthor,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [System.String]$InstallName,
-
-        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
-        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [System.String]$InstallTitle,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
@@ -257,19 +258,8 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$AppSuccessExitCodes,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [System.Int32[]]$AppRebootExitCodes,
-
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [PSADT.ProcessManagement.ProcessDefinition[]]$AppProcessesToClose,
-
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$RequireAdmin,
+        [Alias('SessionState')]
+        [System.Management.Automation.SessionState]$DeployAppScriptSessionState,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
@@ -352,7 +342,18 @@ function Open-ADTSession
         [System.Management.Automation.SwitchParameter]$AllowWowProcess,
 
         [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$RequireAdmin,
+
+        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$InstallTitle,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'Frontend Variable')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$InstallName,
 
         [Parameter(Mandatory = $false)]
         [ValidateScript({
