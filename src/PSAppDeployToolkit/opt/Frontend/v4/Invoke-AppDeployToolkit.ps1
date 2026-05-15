@@ -71,10 +71,6 @@ $adtSession = @{
     AppScriptDate = '2000-12-31'
     AppScriptAuthor = '<author name>'
 
-    # Install Titles (Only set here to override defaults set by the toolkit).
-    InstallName = ''
-    InstallTitle = ''
-
     DeployAppScriptFriendlyName = $MyInvocation.MyCommand.Name
     DeployAppScriptParameters = $PSBoundParameters
     DeployAppScriptVersion = '4.2.0'
