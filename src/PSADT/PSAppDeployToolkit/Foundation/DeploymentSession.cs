@@ -51,10 +51,6 @@ namespace PSAppDeployToolkit.Foundation
                 #region Initialization
 
 
-                // Establish start date/time first so we can accurately mark the start of execution.
-                CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
-                CurrentTime = CurrentDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
-
                 // Establish initial variable values.
                 PSObject adtData = ModuleDatabase.Get();
                 EnvironmentTable adtEnv = ModuleDatabase.GetEnvironment();
@@ -76,21 +72,25 @@ namespace PSAppDeployToolkit.Foundation
                 bool isAdmin = adtEnv.IsAdmin;
 
                 // Set up constant values for the lifetime of the deployment session.
-                DefaultExitCode = (int)configUI["DefaultExitCode"]!;
-                DeferExitCode = (int)configUI["DeferExitCode"]!;
-                CompressLogs = (bool)configToolkit["CompressLogs"]!;
                 ConfigLogPath = new((string)configToolkit["LogPath"]!);
-                LogMaxHistory = (int)configToolkit["LogMaxHistory"]!;
                 LogStyle = (LogStyle)Enum.Parse(typeof(LogStyle), (string)configToolkit["LogStyle"]!);
+                LogMaxHistory = (int)configToolkit["LogMaxHistory"]!;
+                CompressLogs = (bool)configToolkit["CompressLogs"]!;
                 LogWriteToHost = (bool)configToolkit["LogWriteToHost"]!;
                 LogHostOutputToStdStreams = (bool)configToolkit["LogHostOutputToStdStreams"]!;
+                DefaultExitCode = (int)configUI["DefaultExitCode"]!;
+                DeferExitCode = (int)configUI["DeferExitCode"]!;
+
+                // Set up date and time backwards compatibility variables for the deployment session.
+                CurrentDate = CurrentDateTime.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture);
+                CurrentTime = CurrentDateTime.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
                 // Set up other variable values based on incoming dictionary.
                 if (parameters?.Count > 0)
                 {
-                    if (parameters.TryGetValue("SessionState", out object? paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeployAppScriptSessionState", out object? paramValue) && (paramValue is not null))
                     {
-                        SessionState = (SessionState)paramValue;
+                        DeployAppScriptSessionState = (SessionState)paramValue;
                     }
                     if (parameters.TryGetValue("DeploymentType", out paramValue) && (paramValue is not null))
                     {
@@ -967,17 +967,17 @@ namespace PSAppDeployToolkit.Foundation
                 // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
                 if (compatibilityMode == true)
                 {
-                    if (SessionState is null)
+                    if (DeployAppScriptSessionState is not SessionState sessionState)
                     {
                         throw new InvalidOperationException("SessionState is not available to set compatibility mode variables.");
                     }
                     foreach (PropertyInfo property in typeof(DeploymentSession).GetProperties())
                     {
-                        SessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
+                        sessionState.PSVariable.Set(new(property.Name, property.GetValue(this)));
                     }
                     foreach (FieldInfo field in typeof(DeploymentSession).GetFields())
                     {
-                        SessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
+                        sessionState.PSVariable.Set(new(field.Name, field.GetValue(this)));
                     }
                     Settings |= DeploymentSettings.CompatibilityMode;
                 }
@@ -997,7 +997,7 @@ namespace PSAppDeployToolkit.Foundation
 
 
         #endregion
-        #region Methods.
+        #region Public methods.
 
 
         /// <summary>
@@ -1388,6 +1388,11 @@ namespace PSAppDeployToolkit.Foundation
             MountedWimFiles.Add(wimFile);
         }
 
+
+        #endregion
+        #region Private methods.
+
+
         /// <summary>
         /// Writes a log divider.
         /// </summary>
@@ -1487,8 +1492,8 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool GetFlagValue(DeploymentSettings flag, [CallerMemberName] string propertyName = null!)
         {
-            return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null
-                ? (bool)SessionState.PSVariable.GetValue(propertyName)
+            return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState
+                ? (bool)sessionState.PSVariable.GetValue(propertyName)
                 : Settings.HasFlag(flag);
         }
 
@@ -1502,8 +1507,8 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T GetPropertyValue<T>(ref readonly T backingField, [CallerMemberName] string propertyName = null!)
         {
-            return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null
-                ? (T)SessionState.PSVariable.GetValue(propertyName)
+            return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState
+                ? (T)sessionState.PSVariable.GetValue(propertyName)
                 : backingField;
         }
 
@@ -1516,106 +1521,16 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         private void SetPropertyValue<T>(ref T backingField, T value, [CallerMemberName] string propertyName = null!)
         {
-            if (Settings.HasFlag(DeploymentSettings.CompatibilityMode) && SessionState is not null)
+            if (Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState)
             {
-                SessionState.PSVariable.Set(new(propertyName, value));
+                sessionState.PSVariable.Set(new(propertyName, value));
             }
             backingField = value;
         }
 
 
         #endregion
-        #region Internal variables.
-
-
-        /// <summary>
-        /// Array of all possible drive letters in reverse order.
-        /// </summary>
-        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new(@"Z:"), new(@"Y:"), new(@"X:"), new(@"W:"), new(@"V:"), new(@"U:"), new(@"T:"), new(@"S:"), new(@"R:"), new(@"Q:"), new(@"P:"), new(@"O:"), new(@"N:"), new(@"M:"), new(@"L:"), new(@"K:"), new(@"J:"), new(@"I:"), new(@"H:"), new(@"G:"), new(@"F:"), new(@"E:"), new(@"D:"), new(@"C:"), new(@"B:"), new(@"A:")]);
-
-        /// <summary>
-        /// The default exit code to exit out with in the event of an error.
-        /// </summary>
-        private readonly int DefaultExitCode;
-
-        /// <summary>
-        /// The default exit code used when the user defers a deployment.
-        /// </summary>
-        private readonly int DeferExitCode;
-
-        /// <summary>
-        /// Indicates whether log files should be compressed upon session closure.
-        /// </summary>
-        private readonly bool CompressLogs;
-
-        /// <summary>
-        /// The log path as specified in the configuration.
-        /// </summary>
-        private readonly DirectoryInfo ConfigLogPath;
-
-        /// <summary>
-        /// Specifies the maximum number of log entries to retain in history.
-        /// </summary>
-        private readonly int LogMaxHistory;
-
-        /// <summary>
-        /// Specifies the style to use for log output.
-        /// </summary>
-        private readonly LogStyle LogStyle;
-
-        /// <summary>
-        /// Specifies whether to write log entries to the host.
-        /// </summary>
-        private readonly bool LogWriteToHost;
-
-        /// <summary>
-        /// Specifies whether to write log entries to the standard streams.
-        /// </summary>
-        private readonly bool LogHostOutputToStdStreams;
-
-        /// <summary>
-        /// Buffer for log entries.
-        /// </summary>
-        private readonly List<LogEntry> LogBuffer = [];
-
-        /// <summary>
-        /// Gets the mounted WIM files within this session.
-        /// </summary>
-        private readonly List<FileInfo> MountedWimFiles = [];
-
-        /// <summary>
-        /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
-        /// </summary>
-        private readonly DriveInfo? DirFilesSubstDrive;
-
-        /// <summary>
-        /// Gets the base registry path used for getting/setting deferral information.
-        /// </summary>
-        private readonly string RegKeyDeferBase;
-
-        /// <summary>
-        /// Gets the registry path used for getting/setting deferral information.
-        /// </summary>
-        private readonly string RegKeyDeferHistory;
-
-        /// <summary>
-        /// Gets the default log file name, used when no override is specified.
-        /// </summary>
-        private readonly string DefaultLogName;
-
-        /// <summary>
-        /// Bitfield with settings for this deployment.
-        /// </summary>
-        private DeploymentSettings Settings;
-
-        /// <summary>
-        /// Gets the deployment session's closing exit code.
-        /// </summary>
-        private int ExitCode;
-
-
-        #endregion
-        #region Frontend parameters.
+        #region Public properties.
 
 
         /// <summary>
@@ -1643,10 +1558,10 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         public bool DisableLogging => GetFlagValue(DeploymentSettings.DisableLogging);
 
-
-        #endregion
-        #region Frontend variables.
-
+        /// <summary>
+        /// Gets a value indicating whether administrative privileges are required.
+        /// </summary>
+        public bool RequireAdmin => GetFlagValue(DeploymentSettings.RequireAdmin);
 
         /// <summary>
         /// Gets the deployment session's application vendor.
@@ -1709,16 +1624,6 @@ namespace PSAppDeployToolkit.Foundation
         public string? AppScriptAuthor => GetPropertyValue(in field);
 
         /// <summary>
-        /// Gets an override to the deployment session's installation name.
-        /// </summary>
-        public string InstallName => GetPropertyValue(in field);
-
-        /// <summary>
-        /// Gets an override to the deployment session's installation title.
-        /// </summary>
-        public string InstallTitle => GetPropertyValue(in field);
-
-        /// <summary>
         /// Gets the deployment session's frontend script name.
         /// </summary>
         public string? DeployAppScriptFriendlyName => GetPropertyValue(in field);
@@ -1734,19 +1639,14 @@ namespace PSAppDeployToolkit.Foundation
         public IReadOnlyDictionary<string, object>? DeployAppScriptParameters => GetPropertyValue(in field);
 
         /// <summary>
-        /// Gets/sets the deployment session's installation phase.
+        /// Gets the caller's SessionState from value that was supplied during object instantiation.
         /// </summary>
-        public string InstallPhase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); } = "Initialization";
-
-
-        #endregion
-        #region Other public variables.
-
+        public SessionState? DeployAppScriptSessionState { get; }
 
         /// <summary>
         /// Gets the deployment session's starting date and time.
         /// </summary>
-        public DateTime CurrentDateTime { get; } = DateTime.Now;
+        public DateTime CurrentDateTime { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = DateTime.Now;
 
         /// <summary>
         /// Gets the deployment session's starting date as a string.
@@ -1761,7 +1661,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
         /// </summary>
-        public TimeSpan CurrentTimeZoneBias { get; } = TimeZoneInfo.Local.BaseUtcOffset;
+        public TimeSpan CurrentTimeZoneBias { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = TimeZoneInfo.Local.BaseUtcOffset;
 
         /// <summary>
         /// Gets the script directory of the caller.
@@ -1777,6 +1677,26 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
         public DirectoryInfo? DirSupportFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
+
+        /// <summary>
+        /// Gets an override to the deployment session's installation title.
+        /// </summary>
+        public string InstallTitle => GetPropertyValue(in field);
+
+        /// <summary>
+        /// Gets an override to the deployment session's installation name.
+        /// </summary>
+        public string InstallName => GetPropertyValue(in field);
+
+        /// <summary>
+        /// Gets the deployment session's log path.
+        /// </summary>
+        public DirectoryInfo LogPath => GetPropertyValue(in field);
+
+        /// <summary>
+        /// Gets the deployment session's log filename.
+        /// </summary>
+        public string LogName => GetPropertyValue(in field);
 
         /// <summary>
         /// Gets the deployment session's Zero-Config MSI file path.
@@ -1799,24 +1719,99 @@ namespace PSAppDeployToolkit.Foundation
         public bool UseDefaultMsi => GetFlagValue(DeploymentSettings.UseDefaultMsi);
 
         /// <summary>
-        /// Gets the deployment session's log path.
+        /// Gets/sets the deployment session's installation phase.
         /// </summary>
-        public DirectoryInfo LogPath => GetPropertyValue(in field);
+        public string InstallPhase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); } = "Initialization";
+
+
+        #endregion
+        #region Private fields.
+
 
         /// <summary>
-        /// Gets the deployment session's log filename.
+        /// Bitfield with settings for this deployment.
         /// </summary>
-        public string LogName => GetPropertyValue(in field);
+        private DeploymentSettings Settings;
 
         /// <summary>
-        /// Gets a value indicating whether administrative privileges are required.
+        /// Gets the deployment session's closing exit code.
         /// </summary>
-        public bool RequireAdmin => GetFlagValue(DeploymentSettings.RequireAdmin);
+        private int ExitCode;
 
         /// <summary>
-        /// Gets the caller's SessionState from value that was supplied during object instantiation.
+        /// The log path as specified in the configuration.
         /// </summary>
-        public SessionState? SessionState { get; }
+        private readonly DirectoryInfo ConfigLogPath;
+
+        /// <summary>
+        /// Gets the default log file name, used when no override is specified.
+        /// </summary>
+        private readonly string DefaultLogName;
+
+        /// <summary>
+        /// Specifies the style to use for log output.
+        /// </summary>
+        private readonly LogStyle LogStyle;
+
+        /// <summary>
+        /// Specifies the maximum number of log entries to retain in history.
+        /// </summary>
+        private readonly int LogMaxHistory;
+
+        /// <summary>
+        /// Indicates whether log files should be compressed upon session closure.
+        /// </summary>
+        private readonly bool CompressLogs;
+
+        /// <summary>
+        /// Specifies whether to write log entries to the host.
+        /// </summary>
+        private readonly bool LogWriteToHost;
+
+        /// <summary>
+        /// Specifies whether to write log entries to the standard streams.
+        /// </summary>
+        private readonly bool LogHostOutputToStdStreams;
+
+        /// <summary>
+        /// Buffer for log entries.
+        /// </summary>
+        private readonly List<LogEntry> LogBuffer = [];
+
+        /// <summary>
+        /// Gets the mounted WIM files within this session.
+        /// </summary>
+        private readonly List<FileInfo> MountedWimFiles = [];
+
+        /// <summary>
+        /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
+        /// </summary>
+        private readonly DriveInfo? DirFilesSubstDrive;
+
+        /// <summary>
+        /// Gets the base registry path used for getting/setting deferral information.
+        /// </summary>
+        private readonly string RegKeyDeferBase;
+
+        /// <summary>
+        /// Gets the registry path used for getting/setting deferral information.
+        /// </summary>
+        private readonly string RegKeyDeferHistory;
+
+        /// <summary>
+        /// The default exit code to exit out with in the event of an error.
+        /// </summary>
+        private readonly int DefaultExitCode;
+
+        /// <summary>
+        /// The default exit code used when the user defers a deployment.
+        /// </summary>
+        private readonly int DeferExitCode;
+
+        /// <summary>
+        /// Array of all possible drive letters in reverse order.
+        /// </summary>
+        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new(@"Z:"), new(@"Y:"), new(@"X:"), new(@"W:"), new(@"V:"), new(@"U:"), new(@"T:"), new(@"S:"), new(@"R:"), new(@"Q:"), new(@"P:"), new(@"O:"), new(@"N:"), new(@"M:"), new(@"L:"), new(@"K:"), new(@"J:"), new(@"I:"), new(@"H:"), new(@"G:"), new(@"F:"), new(@"E:"), new(@"D:"), new(@"C:"), new(@"B:"), new(@"A:")]);
 
 
         #endregion
