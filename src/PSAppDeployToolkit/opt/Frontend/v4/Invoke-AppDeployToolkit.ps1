@@ -29,7 +29,6 @@ Invokes this script via our supplied executable.
 
 #>
 
-[CmdletBinding()]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PreInstall', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Install', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PostInstall', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
@@ -39,6 +38,7 @@ Invokes this script via our supplied executable.
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PreRepair', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Repair', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'PostRepair', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
+[CmdletBinding()]
 param
 (
     # Default is 'Install'.
