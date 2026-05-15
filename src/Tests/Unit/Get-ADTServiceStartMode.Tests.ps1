@@ -70,6 +70,58 @@ Describe 'Get-ADTServiceStartMode' {
                 Get-ADTServiceStartMode -InputObject $disabledService | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
             }
         }
+        It 'Should return the service start mode by service name' {
+            if ($bootService)
+            {
+                Get-ADTServiceStartMode -Name $bootService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
+            }
+            if ($systemService)
+            {
+                Get-ADTServiceStartMode -Name $systemService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
+            }
+            if ($automaticService)
+            {
+                Get-ADTServiceStartMode -Name $automaticService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
+            }
+            if ($delayedAutomaticService)
+            {
+                Get-ADTServiceStartMode -Name $delayedAutomaticService.ServiceName | Should -Be 'Automatic (Delayed Start)'
+            }
+            if ($manualService)
+            {
+                Get-ADTServiceStartMode -Name $manualService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
+            }
+            if ($disabledService)
+            {
+                Get-ADTServiceStartMode -Name $disabledService.ServiceName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
+            }
+        }
+        It 'Should return the service start mode by display name' {
+            if ($bootService)
+            {
+                Get-ADTServiceStartMode -DisplayName $bootService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Boot)
+            }
+            if ($systemService)
+            {
+                Get-ADTServiceStartMode -DisplayName $systemService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::System)
+            }
+            if ($automaticService)
+            {
+                Get-ADTServiceStartMode -DisplayName $automaticService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Automatic)
+            }
+            if ($delayedAutomaticService)
+            {
+                Get-ADTServiceStartMode -DisplayName $delayedAutomaticService.DisplayName | Should -Be 'Automatic (Delayed Start)'
+            }
+            if ($manualService)
+            {
+                Get-ADTServiceStartMode -DisplayName $manualService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Manual)
+            }
+            if ($disabledService)
+            {
+                Get-ADTServiceStartMode -DisplayName $disabledService.DisplayName | Should -Be ([System.ServiceProcess.ServiceStartMode]::Disabled)
+            }
+        }
         It 'Should accept ServiceController objects through the pipeline' {
             if ($bootService)
             {
