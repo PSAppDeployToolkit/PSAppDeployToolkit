@@ -65,6 +65,7 @@ namespace PSAppDeployToolkit.Foundation
                 string appDeployMainScriptVersion = adtEnv.AppDeployMainScriptVersion.ToString();
                 bool IsProcessUserInteractive = adtEnv.IsProcessUserInteractive;
                 IReadOnlyList<NTAccount>? usersLoggedOn = adtEnv.UsersLoggedOn;
+                Regex invalidChars = adtEnv.InvalidFileNameCharsRegexPattern;
                 RunAsActiveUser? RunAsActiveUser = adtEnv.RunAsActiveUser;
                 string currentLanguage = adtEnv.CurrentLanguage;
                 Architecture envOSArchitecture = adtEnv.EnvOSArchitecture;
@@ -434,7 +435,6 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     InstallName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor}_" : null)}{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
                 }
-                Regex invalidChars = adtEnv.InvalidFileNameCharsRegexPattern;
                 InstallName = invalidChars.Replace(Regex.Replace(InstallName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
 
                 // Set the Defer History registry path.
@@ -447,7 +447,7 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 // Generate log paths from our installation properties.
-                if ((bool)configToolkit["CompressLogs"]!)
+                if (CompressLogs)
                 {
                     // If the temp log folder already exists from a previous ZIP operation, then delete all files in it to avoid issues.
                     DirectoryInfo logTempFolder = new(Path.Join(adtEnv.EnvTemp.FullName, $"{InstallName}_{DeploymentType}"));
@@ -504,7 +504,6 @@ namespace PSAppDeployToolkit.Foundation
                         string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Join(LogPath.FullName, archiveLogFileName);
-                        int logMaxHistory = (int)configToolkit["LogMaxHistory"]!;
 
                         // Log message about archiving the log file.
                         if (logFileSizeExceeded)
@@ -526,9 +525,9 @@ namespace PSAppDeployToolkit.Foundation
                         int logFilesCount = logFiles.Length;
 
                         // Keep only the max number of log files.
-                        if (logFilesCount > logMaxHistory)
+                        if (logFilesCount > LogMaxHistory)
                         {
-                            foreach (FileInfo file in logFiles.Take(logFilesCount - logMaxHistory))
+                            foreach (FileInfo file in logFiles.Take(logFilesCount - LogMaxHistory))
                             {
                                 file.Delete();
                             }
