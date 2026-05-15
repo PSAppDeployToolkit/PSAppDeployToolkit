@@ -19,9 +19,6 @@ Prevents the toolkit from exiting with a defined reboot exit code (e.g. 3010), r
 .PARAMETER TerminalServerMode
 Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
 
-.PARAMETER DisableLogging
-Disables logging to file for the script.
-
 .EXAMPLE
 Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
 #>
@@ -52,10 +49,7 @@ param
     [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
 
     [Parameter(Mandatory = $false)]
-    [System.Management.Automation.SwitchParameter]$TerminalServerMode,
-
-    [Parameter(Mandatory = $false)]
-    [System.Management.Automation.SwitchParameter]$DisableLogging
+    [System.Management.Automation.SwitchParameter]$TerminalServerMode
 )
 
 ## MARK: Variables
