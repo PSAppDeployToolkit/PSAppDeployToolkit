@@ -18,7 +18,14 @@ Silent mode is automatically set if no users are logged on, the device is in Aut
 Prevents the toolkit from exiting with a defined reboot exit code (e.g. 3010), returning 0 instead.
 
 .EXAMPLE
+& Invoke-AppDeployToolkit.ps1 -DeploymentType Install -DeployMode Silent
+
+Invokes this script directly within PowerShell.
+
+.EXAMPLE
 Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
+
+Invokes this script via our supplied executable.
 
 #>
 
