@@ -274,7 +274,7 @@ namespace PSADT.ProcessManagement
                                 }
                                 _ = NativeMethods.TerminateJobObject(JobObject, timeoutExitCode);
                             }
-                            else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && !LaunchInfo.WaitForChildProcesses && (uint)lpOverlapped == ProcessId) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                            else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && (uint)lpOverlapped == ProcessId && !LaunchInfo.WaitForChildProcesses) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
                             {
                                 _ = NativeMethods.GetExitCodeProcess(ProcessSafeHandle, out uint lpExitCode);
                                 exitCode = unchecked((int)lpExitCode);
