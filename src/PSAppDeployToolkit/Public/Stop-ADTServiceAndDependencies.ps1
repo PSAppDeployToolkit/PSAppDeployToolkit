@@ -28,6 +28,9 @@ function Stop-ADTServiceAndDependencies
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
+    .PARAMETER Force
+        Forces the function to stop a service even if that service has dependent services which are running.
+
     .PARAMETER PassThru
         Return the `ServiceController` service object.
 
@@ -47,22 +50,22 @@ function Stop-ADTServiceAndDependencies
         When the `-PassThru` parameter is provided, this function returns a `ServiceController` object representing the service that was stopped.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Name 'wuauserv'
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -Force
 
         Stops the Windows Update service and its dependencies.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -DisplayName 'Windows Update'
+        Stop-ADTServiceAndDependencies -DisplayName 'Windows Update' -Force
 
         Stops the Windows Update service and its dependencies.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00 -Force
 
         Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait (New-TimeSpan -Minutes 1)
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait (New-TimeSpan -Minutes 1) -Force
 
         Stops the Windows Update service and its dependencies, waiting 1 minute for the service to stop.
 
@@ -82,8 +85,6 @@ function Stop-ADTServiceAndDependencies
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'DisplayName', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PendingStatusWait', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'PassThru', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([System.ServiceProcess.ServiceController])]
     param
@@ -116,11 +117,15 @@ function Stop-ADTServiceAndDependencies
         [System.ServiceProcess.ServiceController[]]$InputObject,
 
         [Parameter(Mandatory = $false)]
+        [System.Obsolete("This parameter is no longer required to prevent dependent services from being stopped.")]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$PendingStatusWait,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$Force,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
@@ -129,7 +134,22 @@ function Stop-ADTServiceAndDependencies
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $iasadoParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude $PSCmdlet.ParameterSetName
+        $desiredStatusLookupTable = @{
+            ContinuePending = [System.ServiceProcess.ServiceControllerStatus]::Running
+            PausePending = [System.ServiceProcess.ServiceControllerStatus]::Paused
+            StartPending = [System.ServiceProcess.ServiceControllerStatus]::Running
+            StopPending = [System.ServiceProcess.ServiceControllerStatus]::Stopped
+        }
+
+        if ($SkipDependentServices)
+        {
+            Write-ADTLogEntry -Message 'The [-SkipDependentServices] parameter is no longer required and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
+        }
+
+        if (!$Force)
+        {
+            Write-ADTLogEntry -Message 'Starting in PSAppDeployToolkit 4.3.0, the [-Force] parameter will be required to stop services when services that depend on it are running.' -Severity Warning
+        }
     }
 
     process
@@ -155,10 +175,39 @@ function Stop-ADTServiceAndDependencies
                     {
                         try
                         {
-                            if ($PSCmdlet.ShouldProcess($service.ServiceName, "Stop service$(if (!$SkipDependentServices) { ' and dependencies' })"))
+                            if (($desiredStatus = $desiredStatusLookupTable[$service.Status]))
                             {
-                                Invoke-ADTServiceAndDependencyOperation -Service $service -Operation Stop @iasadoParams
+                                Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($service.Status)] to reach desired status [$desiredStatus]."
+                                $service.WaitForStatus($desiredStatus, $PendingStatusWait)
+                                $service.Refresh()
                             }
+
+                            if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Stopped))
+                            {
+                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already stopped."
+                                if ($PassThru)
+                                {
+                                    $PSCmdlet.WriteObject($service)
+                                }
+                                continue
+                            }
+
+                            if (!$PSCmdlet.ShouldProcess($service.ServiceName, "Stop service$(if (!$SkipDependentServices) { ' and dependencies' })"))
+                            {
+                                continue
+                            }
+
+                            Write-ADTLogEntry -Message "Stopping parent service [$($service.ServiceName)] with display name [$($service.DisplayName)]."
+                            if ($dependentServiceNames = $service.DependentServices | & { process { if ($_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_.ServiceName } } })
+                            {
+                                Write-ADTLogEntry -Message "The following dependent service(s) [$($dependentServiceNames -join ', ')] will be stopped by this operation."
+                            }
+
+                            Stop-Service -InputObject $service -Force -PassThru:$PassThru -WarningAction Ignore
                         }
                         catch
                         {
