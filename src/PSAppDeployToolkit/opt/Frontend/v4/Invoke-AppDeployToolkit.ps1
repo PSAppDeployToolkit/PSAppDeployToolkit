@@ -16,9 +16,6 @@ Silent mode is automatically set if no users are logged on, the device is in Aut
 .PARAMETER SuppressRebootPassThru
 Prevents the toolkit from exiting with a defined reboot exit code (e.g. 3010), returning 0 instead.
 
-.PARAMETER TerminalServerMode
-Changes to "user install mode" and back to "user execute mode" for installing/uninstalling applications for Remote Desktop Session Hosts/Citrix servers.
-
 .EXAMPLE
 Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
 #>
@@ -46,10 +43,7 @@ param
     [System.String]$DeployMode = 'Interactive',
 
     [Parameter(Mandatory = $false)]
-    [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru,
-
-    [Parameter(Mandatory = $false)]
-    [System.Management.Automation.SwitchParameter]$TerminalServerMode
+    [System.Management.Automation.SwitchParameter]$SuppressRebootPassThru
 )
 
 ## MARK: Variables
