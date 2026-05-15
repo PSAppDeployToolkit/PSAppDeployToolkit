@@ -1,4 +1,5 @@
 ﻿<#
+
 .SYNOPSIS
 This script invokes a PSAppDeployToolkit deployment.
 
@@ -18,6 +19,7 @@ Prevents the toolkit from exiting with a defined reboot exit code (e.g. 3010), r
 
 .EXAMPLE
 Invoke-AppDeployToolkit.exe -DeploymentType Install -DeployMode Silent
+
 #>
 
 [CmdletBinding()]
