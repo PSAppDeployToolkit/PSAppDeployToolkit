@@ -630,7 +630,7 @@ function New-ADTTemplate
                     # then apply them in a single pass from end to start to preserve earlier offsets.
                     $scriptReplacements = [System.Collections.Generic.List[PSCustomObject]]::new()
                     $hasSessionProperties = $PSBoundParameters.ContainsKey('SessionProperties') -and $SessionProperties.Count -gt 0
-                    $sectionsToProcess = @('PostRepair', 'Repair', 'PreRepair', 'PostUninstall', 'Uninstall', 'PreUninstall', 'PostInstall', 'Install', 'PreInstall' ).Where({ $PSBoundParameters.ContainsKey($_ + 'ScriptBlock') })
+                    $sectionsToProcess = @('Post-Repair', 'Repair', 'Pre-Repair', 'Post-Uninstall', 'Uninstall', 'Pre-Uninstall', 'Post-Install', 'Install', 'Pre-Install' ).Where({ $PSBoundParameters.ContainsKey($_.Replace('-', [System.Management.Automation.Language.NullString]::Value) + 'ScriptBlock') })
                     $scriptAst = [System.Management.Automation.Language.Parser]::ParseInput($scriptContent, [ref]$null, [ref]$null)
 
                     # Strip all SuppressMessageAttribute decorations from the generated script.
@@ -652,7 +652,7 @@ function New-ADTTemplate
                     {
                         foreach ($section in $sectionsToProcess)
                         {
-                            $sbParamName = $section + 'ScriptBlock'
+                            $sbParamName = $section.Replace('-', [System.Management.Automation.Language.NullString]::Value) + 'ScriptBlock'
 
                             # Find the variable assignment in the AST (e.g. $PreInstall = { ... }).
                             $sbAssignment = $scriptAst.Find({

@@ -252,42 +252,42 @@ Describe 'New-ADTTemplate' {
             }
 
             It 'Replaces the Pre-Install phase content' {
-                $content | Should -Match '\$PreInstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-install''\r?\n\}'
+                $content | Should -Match '\$\{Pre-Install\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-install''\r?\n\}'
                 $content | Should -Not -Match 'Show-ADTInstallationWelcome @saiwParams'
             }
 
             It 'Replaces the Install phase content' {
-                $content | Should -Match '\$Install = \{\r?\n    Write-ADTLogEntry -Message ''TEST-install''\r?\n\}'
+                $content | Should -Match '\$\{Install\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-install''\r?\n\}'
                 $content | Should -Not -Match 'UseDefaultMsi'
             }
 
             It 'Replaces the Post-Install phase content' {
-                $content | Should -Match '\$PostInstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-install''\r?\n\}'
+                $content | Should -Match '\$\{Post-Install\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-install''\r?\n\}'
             }
 
             It 'Replaces the Pre-Uninstall phase content' {
-                $content | Should -Match '\$PreUninstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-uninstall''\r?\n\}'
+                $content | Should -Match '\$\{Pre-Uninstall\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-uninstall''\r?\n\}'
                 $content | Should -Not -Match 'CloseProcessesCountdown 60'
             }
 
             It 'Replaces the Uninstall phase content' {
-                $content | Should -Match '\$Uninstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-uninstall''\r?\n\}'
+                $content | Should -Match '\$\{Uninstall\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-uninstall''\r?\n\}'
             }
 
             It 'Replaces the Post-Uninstall phase content' {
-                $content | Should -Match '\$PostUninstall = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-uninstall''\r?\n\}'
+                $content | Should -Match '\$\{Post-Uninstall\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-uninstall''\r?\n\}'
             }
 
             It 'Replaces the Pre-Repair phase content' {
-                $content | Should -Match '\$PreRepair = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-repair''\r?\n\}'
+                $content | Should -Match '\$\{Pre-Repair\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-pre-repair''\r?\n\}'
             }
 
             It 'Replaces the Repair phase content' {
-                $content | Should -Match '\$Repair = \{\r?\n    Write-ADTLogEntry -Message ''TEST-repair''\r?\n\}'
+                $content | Should -Match '\$\{Repair\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-repair''\r?\n\}'
             }
 
             It 'Replaces the Post-Repair phase content' {
-                $content | Should -Match '\$PostRepair = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-repair''\r?\n\}'
+                $content | Should -Match '\$\{Post-Repair\} = \{\r?\n    Write-ADTLogEntry -Message ''TEST-post-repair''\r?\n\}'
             }
         }
 
@@ -320,15 +320,15 @@ Describe 'New-ADTTemplate' {
                 }
 
                 It 'Injects zero-config MSI logic into the Install phase' {
-                    $content | Should -Match '\$Install = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                    $content | Should -Match '\$\{Install\} = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
                 }
 
                 It 'Injects zero-config MSI logic into the Uninstall phase' {
-                    $content | Should -Match '\$Uninstall = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                    $content | Should -Match '\$\{Uninstall\} = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
                 }
 
                 It 'Injects zero-config MSI logic into the Repair phase' {
-                    $content | Should -Match '\$Repair = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
+                    $content | Should -Match '\$\{Repair\} = \{\r?\n    ## Handle Zero-Config MSI actions\.\r?\n    if \(\$adtSession\.UseDefaultMsi\)'
                 }
             }
 
@@ -344,15 +344,15 @@ Describe 'New-ADTTemplate' {
                 }
 
                 It 'Zero-config content precedes user Install scriptblock content' {
-                    $content | Should -Match '(?s)\$Install = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-install'''
+                    $content | Should -Match '(?s)\$\{Install\} = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-install'''
                 }
 
                 It 'Zero-config content precedes user Uninstall scriptblock content' {
-                    $content | Should -Match '(?s)\$Uninstall = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-uninstall'''
+                    $content | Should -Match '(?s)\$\{Uninstall\} = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-uninstall'''
                 }
 
                 It 'Zero-config content precedes user Repair scriptblock content' {
-                    $content | Should -Match '(?s)\$Repair = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-repair'''
+                    $content | Should -Match '(?s)\$\{Repair\} = \{.*## Handle Zero-Config MSI actions\..*Write-ADTLogEntry -Message ''USER-repair'''
                 }
             }
         }
