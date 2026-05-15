@@ -154,6 +154,7 @@ try
     $iadtParams = Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation
     $adtSession = Remove-ADTHashtableNullOrEmptyValues -Hashtable $adtSession
     $adtSession = Open-ADTSession @adtSession @iadtParams -PassThru
+    Remove-Variable -Name iadtParams -Force -Confirm:$false
 }
 catch
 {
