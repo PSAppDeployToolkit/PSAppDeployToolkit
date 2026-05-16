@@ -32,6 +32,46 @@ namespace PSADT.FileSystem
     public static class FileSystemUtilities
     {
         /// <summary>
+        /// Gets the security descriptor for the specified file.
+        /// </summary>
+        /// <param name="fileInfo">The file to get the security descriptor for.</param>
+        /// <returns>The security descriptor for the file.</returns>
+        public static FileSecurity GetAccessControl(FileInfo fileInfo)
+        {
+            return FileSystemAclExtensions.GetAccessControl(fileInfo);
+        }
+
+        /// <summary>
+        /// Gets the access control security for a directory.
+        /// </summary>
+        /// <param name="directoryInfo">The directory to get security information for.</param>
+        /// <returns>The security descriptor for the specified directory.</returns>
+        public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo)
+        {
+            return FileSystemAclExtensions.GetAccessControl(directoryInfo);
+        }
+
+        /// <summary>
+        /// Sets the security access control for a file.
+        /// </summary>
+        /// <param name="fileInfo">The file to modify.</param>
+        /// <param name="fileSecurity">The security access control to apply.</param>
+        public static void SetAccessControl(FileInfo fileInfo, FileSecurity fileSecurity)
+        {
+            FileSystemAclExtensions.SetAccessControl(fileInfo, fileSecurity);
+        }
+
+        /// <summary>
+        /// Sets access control information for the specified directory.
+        /// </summary>
+        /// <param name="directoryInfo">The directory for which to set access control information.</param>
+        /// <param name="directorySecurity">The access control information to apply to the directory.</param>
+        public static void SetAccessControl(DirectoryInfo directoryInfo, DirectorySecurity directorySecurity)
+        {
+            FileSystemAclExtensions.SetAccessControl(directoryInfo, directorySecurity);
+        }
+
+        /// <summary>
         /// Determines whether the specified file path is valid.
         /// </summary>
         /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
