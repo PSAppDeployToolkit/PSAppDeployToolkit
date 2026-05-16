@@ -4777,6 +4777,13 @@ try
             'Debug' = 'DebugPreference'
         }).AsReadOnly()
 
+    New-Variable -Name ServiceStatusTable -Option Constant -Value ([ordered]@{
+            ContinuePending = [System.ServiceProcess.ServiceControllerStatus]::Running
+            PausePending = [System.ServiceProcess.ServiceControllerStatus]::Paused
+            StartPending = [System.ServiceProcess.ServiceControllerStatus]::Running
+            StopPending = [System.ServiceProcess.ServiceControllerStatus]::Stopped
+        }).AsReadOnly()
+
     # Send the module's database into the C# code for internal access.
     [PSAppDeployToolkit.Foundation.ModuleDatabase]::Init($ADT)
 }

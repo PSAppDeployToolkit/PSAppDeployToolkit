@@ -128,13 +128,6 @@ function Stop-ADTServiceAndDependencies
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $desiredStatusLookupTable = @{
-            ContinuePending = [System.ServiceProcess.ServiceControllerStatus]::Running
-            PausePending = [System.ServiceProcess.ServiceControllerStatus]::Paused
-            StartPending = [System.ServiceProcess.ServiceControllerStatus]::Running
-            StopPending = [System.ServiceProcess.ServiceControllerStatus]::Stopped
-        }
-
         if ($SkipDependentServices)
         {
             Write-ADTLogEntry -Message 'The [-SkipDependentServices] parameter is no longer required and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
@@ -164,7 +157,7 @@ function Stop-ADTServiceAndDependencies
                     {
                         try
                         {
-                            if (($desiredStatus = $desiredStatusLookupTable[$service.Status]))
+                            if (($desiredStatus = $Script:ServiceStatusTable[$service.Status]))
                             {
                                 Write-ADTLogEntry -Message "Waiting for up to [$($PendingStatusWait.TotalSeconds)] seconds to allow service pending status [$($service.Status)] to reach desired status [$desiredStatus]."
                                 $service.WaitForStatus($desiredStatus, $PendingStatusWait)
