@@ -228,6 +228,10 @@ namespace PSAppDeployToolkit.Foundation
                             forceProcessDetection = true;
                         }
                     }
+                    if (parameters.TryGetValue("ProcessInteractivityDetection", out paramValue) && (SwitchParameter)paramValue)
+                    {
+                        Settings |= DeploymentSettings.ProcessInteractivityDetection;
+                    }
                     if (parameters.TryGetValue("ExitWithMsiCodes", out paramValue) && (SwitchParameter)paramValue)
                     {
                         Settings |= DeploymentSettings.ExitWithMsiCodes;
@@ -807,7 +811,12 @@ namespace PSAppDeployToolkit.Foundation
                     else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
                         // If the process is not able to display a UI, enable silent mode.
-                        if (runAsActiveUser is null)
+                        if (Settings.HasFlag(DeploymentSettings.ProcessInteractivityDetection) && !isProcessUserInteractive)
+                        {
+                            WriteLogEntry($"Session 0 detected, process not running in user interactive mode; deployment mode set to [{DeployMode = DeployMode.Silent}].");
+                            deployModeChanged = true;
+                        }
+                        else if (runAsActiveUser is null)
                         {
                             // If there's no users logged on but we're interactive anyway, don't change the DeployMode.
                             if (!isProcessUserInteractive)
