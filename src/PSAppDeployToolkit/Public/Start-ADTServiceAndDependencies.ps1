@@ -164,11 +164,7 @@ function Start-ADTServiceAndDependencies
                                 $service.DependentServices | & { process { if (!$_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_ } } }
                             }
 
-                            if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
-                            {
-                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
-                            }
-                            else
+                            if ($service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
                             {
                                 Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already running."
                                 if (!$dependentServices)
@@ -179,6 +175,10 @@ function Start-ADTServiceAndDependencies
                                     }
                                     continue
                                 }
+                            }
+                            else
+                            {
+                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
                             }
 
                             if (!$PSCmdlet.ShouldProcess($service.ServiceName, "Start service$(if (!$SkipDependentServices) { ' and dependencies' })"))
