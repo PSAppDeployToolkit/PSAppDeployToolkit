@@ -210,24 +210,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's closing event, allowing for cancellation of the close operation and performing necessary
-        /// cleanup before the form is closed.
+        /// Handles the FormClosed event by disposing the countdown timer and unhooking event handlers.
         /// </summary>
-        /// <remarks>This method checks whether the form can be closed and performs cleanup tasks such as
-        /// disposing of resources and detaching event handlers before invoking the base implementation. If the form
-        /// cannot be closed, the closing event is canceled.</remarks>
-        /// <param name="sender">The source of the event, typically the form that is being closed.</param>
-        /// <param name="e">A FormClosingEventArgs that contains the event data, including the ability to cancel the closing operation.</param>
+        /// <remarks>Disposes managed resources that must be released before the designer-generated
+        /// Dispose method runs.</remarks>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must release the countdown timer before the generated disposal runs.")]
-        private protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        private protected override void Form_FormClosed(object? sender, FormClosedEventArgs e)
         {
-            // Cancel the event if we can't close (i.e. user has closed from the taskbar)
-            if (!CanClose())
-            {
-                e.Cancel = true;
-                return;
-            }
-
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
             countdownTimer?.Dispose();
@@ -237,7 +228,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             runningProcessService?.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
 
             // Call through to the base method to ensure it's processed also.
-            base.Form_FormClosing(sender, e);
+            base.Form_FormClosed(sender, e);
         }
 
         /// <summary>

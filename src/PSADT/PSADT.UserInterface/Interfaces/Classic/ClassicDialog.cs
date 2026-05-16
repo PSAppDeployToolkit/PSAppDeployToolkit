@@ -61,6 +61,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 TopMost = options.DialogTopMost;
                 ActiveControl = buttonDefault;
                 FormClosing += Form_FormClosing;
+                FormClosed += Form_FormClosed;
                 Load += Form_Load;
                 ResumeLayout();
 
@@ -269,22 +270,28 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Handles the form's closing event, allowing for cleanup operations and the option to cancel the closing
         /// process.
         /// </summary>
-        /// <remarks>This method unsubscribes from system events and disposes of timers before the form is
-        /// closed. If the form cannot be closed, the closing operation can be canceled by setting <paramref
+        /// <remarks>If the form cannot be closed, the closing operation can be canceled by setting <paramref
         /// name="e"/>.Cancel to <see langword="true"/>.</remarks>
         /// <param name="sender">The source of the event, typically the form that is being closed.</param>
         /// <param name="e">A FormClosingEventArgs that contains data related to the closing event, including the ability to cancel the
         /// operation.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must stop and release timers before the generated disposal runs.")]
-        private protected virtual void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        private void Form_FormClosing(object? sender, FormClosingEventArgs e)
         {
             // Cancel the event if we can't close (i.e. user has closed from the taskbar)
             if (!CanClose())
             {
                 e.Cancel = true;
-                return;
             }
+        }
 
+        /// <summary>
+        /// Handles the FormClosed event by unsubscribing from system events and disposing of timers.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must stop and release timers before the generated disposal runs.")]
+        private protected virtual void Form_FormClosed(object? sender, FormClosedEventArgs e)
+        {
             // Unsubscribe from system events.
             SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
