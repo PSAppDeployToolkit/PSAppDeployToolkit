@@ -164,11 +164,7 @@ function Stop-ADTServiceAndDependencies
                                 $service.Refresh()
                             }
 
-                            if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Stopped))
-                            {
-                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
-                            }
-                            else
+                            if ($service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Stopped))
                             {
                                 Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already stopped."
                                 if ($PassThru)
@@ -177,6 +173,8 @@ function Stop-ADTServiceAndDependencies
                                 }
                                 continue
                             }
+
+                            Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
 
                             if (!$PSCmdlet.ShouldProcess($service.ServiceName, "Stop service$(if (!$SkipDependentServices) { ' and dependencies' })"))
                             {
