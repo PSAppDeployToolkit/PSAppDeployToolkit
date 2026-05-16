@@ -63,10 +63,10 @@ namespace PSAppDeployToolkit.Foundation
                 // Pre-cache reused environment variables.
                 string appDeployToolkitName = adtEnv.AppDeployToolkitName;
                 string appDeployMainScriptVersion = adtEnv.AppDeployMainScriptVersion.ToString();
-                bool IsProcessUserInteractive = adtEnv.IsProcessUserInteractive;
+                bool isProcessUserInteractive = adtEnv.IsProcessUserInteractive;
                 IReadOnlyList<NTAccount>? usersLoggedOn = adtEnv.UsersLoggedOn;
                 Regex invalidChars = adtEnv.InvalidFileNameCharsRegexPattern;
-                RunAsActiveUser? RunAsActiveUser = adtEnv.RunAsActiveUser;
+                RunAsActiveUser? runAsActiveUser = adtEnv.RunAsActiveUser;
                 string currentLanguage = adtEnv.CurrentLanguage;
                 Architecture envOSArchitecture = adtEnv.EnvOSArchitecture;
                 NTAccount processNtAccount = adtEnv.ProcessNTAccount;
@@ -670,9 +670,9 @@ namespace PSAppDeployToolkit.Foundation
                     }
 
                     // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
-                    if (RunAsActiveUser is not null)
+                    if (runAsActiveUser is not null)
                     {
-                        WriteLogEntry($"The active logged on user who will receive UI elements is [{RunAsActiveUser.NTAccount}].");
+                        WriteLogEntry($"The active logged on user who will receive UI elements is [{runAsActiveUser.NTAccount}].");
                     }
                 }
                 else
@@ -741,9 +741,9 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     // If WWAHost is running, the device might be within the User ESP stage. But first, confirm whether the device is in Autopilot.
                     WriteLogEntry("The WWAHost process is running, checking ESP User Account setup phase.");
-                    if (RunAsActiveUser?.SID is SecurityIdentifier userSid)
+                    if (runAsActiveUser?.SID is SecurityIdentifier userSid)
                     {
-                        if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == RunAsActiveUser.SessionId) is not null)
+                        if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == runAsActiveUser.SessionId) is not null)
                         {
                             PSObject? fsRegData = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                             if (fsRegData is not null)
@@ -807,10 +807,10 @@ namespace PSAppDeployToolkit.Foundation
                     else if (!Settings.HasFlag(DeploymentSettings.NoSessionDetection))
                     {
                         // If the process is not able to display a UI, enable silent mode.
-                        if (RunAsActiveUser is null)
+                        if (runAsActiveUser is null)
                         {
                             // If there's no users logged on but we're interactive anyway, don't change the DeployMode.
-                            if (!IsProcessUserInteractive)
+                            if (!isProcessUserInteractive)
                             {
                                 WriteLogEntry($"Session 0 detected, no users logged on and process not running in user interactive mode; deployment mode set to [{DeployMode = DeployMode.Silent}].");
                                 deployModeChanged = true;
@@ -934,7 +934,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Check if the caller explicitly wants interactivity but we can't do it.
-                if (DeployMode != DeployMode.Silent && RunAsActiveUser is null && !IsProcessUserInteractive)
+                if (DeployMode != DeployMode.Silent && runAsActiveUser is null && !isProcessUserInteractive)
                 {
                     throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
