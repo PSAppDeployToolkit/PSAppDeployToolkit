@@ -9,12 +9,10 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using PSADT.DeviceManagement;
-using PSADT.Foundation;
 using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
-using PSADT.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -225,9 +223,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // Start the persist timer if it's available.
             persistTimer?.Start();
             expiryTimer?.Start();
-
-            // Set the NoWait success flag as the caller may be waiting for it.
-            ClientServerUtilities.SetOperationSuccessFlag();
         }
 
         /// <summary>
@@ -309,24 +304,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 expiryTimer.Stop();
                 expiryTimer.Dispose();
                 expiryTimer = null;
-            }
-        }
-
-        /// <summary>
-        /// Handles the Shown event by bringing the dialog window to the front.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
-        private void ClassicDialog_Shown(object? sender, EventArgs e)
-        {
-            try
-            {
-                WindowTools.BringWindowToFront((HWND)Handle);
-            }
-            catch
-            {
-                return;
-                throw;
             }
         }
 

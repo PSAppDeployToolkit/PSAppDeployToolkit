@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using PSADT.Foundation;
 using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Interfaces.Classic
@@ -59,9 +58,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     comboBox.SelectedIndex = 0;
                 }
             }
-
-            // Set the NoWait success flag as the caller may be waiting for it.
-            Load += (sender, e) => ClientServerUtilities.SetOperationSuccessFlag();
         }
     }
 }
