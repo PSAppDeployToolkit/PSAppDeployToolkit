@@ -747,18 +747,28 @@ function Start-ADTProcess
                     }
                 }
 
-                # Set the working directory when running in a session if the caller hasn't specified one.
-                # For non-msiexec situations, use the process's path for backwards compat, otherwise use $adtSession.DirFiles if defined.
-                # We don't do this when a session isn't running so `Start-ADTProcess` works the way one should expect (i.e. like `Start-Process`).
-                if ($adtSession -and !$PSBoundParameters.ContainsKey('WorkingDirectory'))
+                # Provide some extra management for the caller when a session is active.
+                if ($adtSession)
                 {
-                    if ([System.IO.Path]::HasExtension($FilePath) -and [PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($FilePath) -and ($FilePath -notmatch 'msiexec'))
+                    # Set the working directory when running in a session if the caller hasn't specified one.
+                    # For non-msiexec situations, use the process's path for backwards compat, otherwise use $adtSession.DirFiles if defined.
+                    # We don't do this when a session isn't running so `Start-ADTProcess` works the way one should expect (i.e. like `Start-Process`).
+                    if (!$PSBoundParameters.ContainsKey('WorkingDirectory'))
                     {
-                        $PSBoundParameters.WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
+                        if ([System.IO.Path]::HasExtension($FilePath) -and [PSADT.FileSystem.FileSystemUtilities]::IsPathFullyQualified($FilePath) -and ($FilePath -notmatch 'msiexec'))
+                        {
+                            $PSBoundParameters.WorkingDirectory = [System.IO.Path]::GetDirectoryName($FilePath)
+                        }
+                        elseif ($null -ne $adtSession.DirFiles)
+                        {
+                            $PSBoundParameters.WorkingDirectory = $adtSession.DirFiles.FullName
+                        }
                     }
-                    elseif (![System.String]::IsNullOrWhiteSpace($adtSession.DirFiles))
+
+                    # Grant RunAsActiveUser permissions to DirFiles/DirSupportFiles if required.
+                    if ($RunAsActiveUser -and ($PSBoundParameters['WorkingDirectory'] -eq $adtSession.DirFiles.FullName) -and ![PSADT.FileSystem.FileSystemUtilities]::TestEffectiveAccess($adtSession.DirFiles, $RunAsActiveUser.SID, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute))
                     {
-                        $PSBoundParameters.WorkingDirectory = $adtSession.DirFiles
+                        Set-ADTItemPermission -LiteralPath $adtSession.DirFiles.FullName -Permission ReadAndExecute -PermissionType Allow -Inheritance ObjectInherit, ContainerInherit -Method AddAccessRule -User "*$($RunAsActiveUser.SID)"
                     }
                 }
 
