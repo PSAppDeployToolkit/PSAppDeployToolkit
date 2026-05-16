@@ -122,29 +122,19 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
-        /// Handles the form's closing event, allowing for cleanup operations and the option to cancel the closing
-        /// process based on application logic.
+        /// Handles the FormClosed event by disposing managed resources and invoking the base implementation.
         /// </summary>
-        /// <remarks>If the form cannot be closed, the closing event is canceled. Performs necessary
-        /// resource cleanup before delegating to the base implementation.</remarks>
-        /// <param name="sender">The source of the event, typically the form instance that is being closed.</param>
-        /// <param name="e">A FormClosingEventArgs that contains the event data, including the ability to cancel the closing operation.</param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">A <see cref="FormClosedEventArgs"/> containing the event data.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must release the countdown timer before the generated disposal runs.")]
-        private protected override void Form_FormClosing(object? sender, FormClosingEventArgs e)
+        private protected override void Form_FormClosed(object? sender, FormClosedEventArgs e)
         {
-            // Cancel the event if we can't close (i.e. user has closed from the taskbar)
-            if (!CanClose())
-            {
-                e.Cancel = true;
-                return;
-            }
-
             // We're actually closing. Perform certain disposals here
             // since we can't mess with the designer's Dispose override.
             countdownTimer?.Dispose();
 
             // Call through to the base method to ensure it's processed also.
-            base.Form_FormClosing(sender, e);
+            base.Form_FormClosed(sender, e);
         }
 
         /// <summary>
