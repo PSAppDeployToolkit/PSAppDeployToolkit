@@ -44,7 +44,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the dialog's appearance and behavior. Must not be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, used to determine the outcome when the dialog
         /// is closed.</param>
-        internal ClassicDialog(BaseDialogOptions options, IDialogResult dialogResult)
+        private protected ClassicDialog(BaseDialogOptions options, IDialogResult dialogResult)
         {
             // Initialise the underlying form as set up by the designer.
             InitializeComponent();
