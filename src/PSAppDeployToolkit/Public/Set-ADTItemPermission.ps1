@@ -197,7 +197,7 @@ function Set-ADTItemPermission
                     {
                         return
                     }
-                    [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $AccessControlList)
+                    [PSADT.FileSystem.FileSystemUtilities]::SetAccessControl($pathInfo, $AccessControlList)
                     return
                 }
 
@@ -222,7 +222,7 @@ function Set-ADTItemPermission
                             }
                         }
                     }
-                    [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
+                    [PSADT.FileSystem.FileSystemUtilities]::SetAccessControl($pathInfo, $Acl)
                     return
                 }
 
@@ -241,7 +241,7 @@ function Set-ADTItemPermission
                     {
                         return
                     }
-                    $Acl.SetAccessRuleProtection($true, $true); [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
+                    $Acl.SetAccessRuleProtection($true, $true); [PSADT.FileSystem.FileSystemUtilities]::SetAccessControl($pathInfo, $Acl)
                     $Acl = Get-Acl -LiteralPath $pathInfo.FullName
                 }
 
@@ -270,7 +270,7 @@ function Set-ADTItemPermission
                 }
 
                 # Use the prepared ACL.
-                [System.IO.FileSystemAclExtensions]::SetAccessControl($pathInfo, $Acl)
+                [PSADT.FileSystem.FileSystemUtilities]::SetAccessControl($pathInfo, $Acl)
             }
             catch
             {

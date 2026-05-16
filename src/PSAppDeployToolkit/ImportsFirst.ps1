@@ -147,22 +147,6 @@ try
                 Add-Type -LiteralPath $_
             }
         }
-
-        end
-        {
-            # Load in a number of assemblies if they're not available (i.e. Windows PowerShell).
-            if (!('System.IO.FileSystemAclExtensions' -as [System.Type]))
-            {
-                if ($isNetworkLocation)
-                {
-                    [System.Reflection.Assembly]::UnsafeLoadFrom("$PSScriptRoot\lib\System.IO.FileSystem.AccessControl.dll")
-                }
-                else
-                {
-                    Add-Type -LiteralPath $PSScriptRoot\lib\System.IO.FileSystem.AccessControl.dll
-                }
-            }
-        }
     }
 
     # Remove any previous functions that may have been defined.
