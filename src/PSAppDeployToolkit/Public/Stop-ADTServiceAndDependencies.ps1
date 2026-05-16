@@ -23,7 +23,7 @@ function Stop-ADTServiceAndDependencies
         Specifies `ServiceController` object(s) representing the services to be stopped.
 
     .PARAMETER SkipDependentServices
-        Specifies whether to skip checking for and stopping dependent services.
+        Specifies whether to skip checking for and stopping dependent services. This parameter is not supported and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
@@ -114,7 +114,7 @@ function Stop-ADTServiceAndDependencies
         [System.ServiceProcess.ServiceController[]]$InputObject,
 
         [Parameter(Mandatory = $false)]
-        [System.Obsolete("This parameter is no longer required to prevent dependent services from being stopped.")]
+        [System.Obsolete("This parameter is not supported and will be removed in PSAppDeployToolkit 4.3.0.")]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
 
         [Parameter(Mandatory = $false)]
@@ -130,7 +130,7 @@ function Stop-ADTServiceAndDependencies
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         if ($SkipDependentServices)
         {
-            Write-ADTLogEntry -Message 'The [-SkipDependentServices] parameter is no longer required and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
+            Write-ADTLogEntry -Message 'The [-SkipDependentServices] parameter is not supported and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
         }
     }
 
