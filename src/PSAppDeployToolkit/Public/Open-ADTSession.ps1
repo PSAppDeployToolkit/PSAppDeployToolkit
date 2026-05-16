@@ -112,6 +112,9 @@ function Open-ADTSession
     .PARAMETER NoProcessDetection
         When DeployMode is not specified or is Auto, bypasses DeployMode adjustment when there's no processes to close in the specified `-AppProcessesToClose` list.
 
+    .PARAMETER ProcessInteractivityDetection
+        When DeployMode is not specified or is Auto, tests whether the process running this session is interactive or not and uses that as part of the DeployMode determination. This is mostly for ConfigMgr users who want silent deployments during Task Sequences, but interactive at other times.
+
     .PARAMETER ExitWithMsiCodes
         When specified, the session will always exit with 0 upon success and 3010 upon reboot required so Intune/ConfigMgr requires no specific adjustment.
 
@@ -174,7 +177,7 @@ function Open-ADTSession
         https://psappdeploytoolkit.com/docs/reference/functions/Open-ADTSession
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'None')]
     [OutputType([PSAppDeployToolkit.Foundation.DeploymentSession])]
     param
     (
@@ -326,7 +329,7 @@ function Open-ADTSession
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ForceWimDetection,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'NoSessionDetection')]
         [System.Management.Automation.SwitchParameter]$NoSessionDetection,
 
         [Parameter(Mandatory = $false)]
@@ -334,6 +337,9 @@ function Open-ADTSession
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoProcessDetection,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ProcessInteractivityDetection')]
+        [System.Management.Automation.SwitchParameter]$ProcessInteractivityDetection,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$ExitWithMsiCodes,
