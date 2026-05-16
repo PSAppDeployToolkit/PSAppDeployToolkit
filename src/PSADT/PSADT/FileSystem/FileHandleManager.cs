@@ -294,23 +294,21 @@ namespace PSADT.FileSystem
                         }
                     }
 
-                    // If the duplicated handle isn't a disk handle, skip to the next iteration.
-                    try
-                    {
-                        if (NativeMethods.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
-                        {
-                            return;
-                        }
-                    }
-                    catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_INVALID_HANDLE) or ((int)WIN32_ERROR.ERROR_INVALID_FUNCTION))
-                    {
-                        return;
-                    }
-
-                    // Get the handle's name to check if it's a hard drive path.
+                    // Get the handle's name to check if it's a disk handle and a hard drive path.
                     string objectName;
                     using (fileDupHandle)
                     {
+                        try
+                        {
+                            if (NativeMethods.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
+                            {
+                                return;
+                            }
+                        }
+                        catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_INVALID_HANDLE) or ((int)WIN32_ERROR.ERROR_INVALID_FUNCTION))
+                        {
+                            return;
+                        }
                         (SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer) = threadBuffers.Value;
                         bool fileDupHandleAddRef = false; bool objectBufferAddRef = false;
                         try
