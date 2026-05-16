@@ -159,9 +159,9 @@ function Start-ADTServiceAndDependencies
                                 $service.Refresh()
                             }
 
-                            if (!$SkipDependentServices)
+                            $dependentServices = if (!$SkipDependentServices)
                             {
-                                $dependentServices = $service.DependentServices | & { process { if (!$_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_ } } }
+                                $service.DependentServices | & { process { if (!$_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_ } } }
                             }
 
                             if (!$service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
