@@ -151,7 +151,7 @@ function Set-ADTServiceStartMode
                     # Early return if the desired start mode is already set. Exclude automatic start modes since we aren't validating whether 'Automatic' means'Automatic' or 'Automatic (Delayed Start)'
                     if ((!$service.StartType.Equals([System.ServiceProcess.ServiceStartMode]::Automatic)) -and ($service.StartType -eq $PSBoundParameters.StartMode))
                     {
-                        Write-ADTLogEntry -Message "The startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already set to [$($PSBoundParameters.StartMode)]."
+                        Write-ADTLogEntry -Message "The startup mode for the service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already set to [$($service.StartType)]."
                         if ($PassThru)
                         {
                             $PSCmdlet.WriteObject($service)
