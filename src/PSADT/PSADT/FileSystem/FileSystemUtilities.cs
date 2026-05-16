@@ -492,7 +492,25 @@ namespace PSADT.FileSystem
             }
 
             // Retrieve the security descriptor for the file.
-            _ = NativeMethods.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out SafeNoReleaseHandle? ppsidOwner, out SafeNoReleaseHandle? ppsidGroup, out LocalFreeSafeHandle? ppDacl, out LocalFreeSafeHandle? ppSacl, out LocalFreeSafeHandle ppSecurityDescriptor);
+            LocalFreeSafeHandle? ppSecurityDescriptor = null;
+            SafeNoReleaseHandle? ppsidOwner = null;
+            SafeNoReleaseHandle? ppsidGroup = null;
+            LocalFreeSafeHandle? ppDacl = null;
+            LocalFreeSafeHandle? ppSacl = null;
+            try
+            {
+                _ = NativeMethods.GetNamedSecurityInfo(path.FullName, SE_OBJECT_TYPE.SE_FILE_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.GROUP_SECURITY_INFORMATION, out ppsidOwner, out ppsidGroup, out ppDacl, out ppSacl, out ppSecurityDescriptor);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ppSecurityDescriptor?.Dispose();
+                ppsidOwner?.Dispose();
+                ppsidGroup?.Dispose();
+                ppDacl?.Dispose();
+                ppSacl?.Dispose();
+                return 0;
+                throw;
+            }
             using (ppSecurityDescriptor)
             using (ppsidOwner)
             using (ppsidGroup)
