@@ -28,9 +28,6 @@ function Stop-ADTServiceAndDependencies
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
 
-    .PARAMETER Force
-        Forces the function to stop a service even if that service has dependent services which are running.
-
     .PARAMETER PassThru
         Return the `ServiceController` service object.
 
@@ -50,22 +47,22 @@ function Stop-ADTServiceAndDependencies
         When the `-PassThru` parameter is provided, this function returns a `ServiceController` object representing the service that was stopped.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Name 'wuauserv' -Force
+        Stop-ADTServiceAndDependencies -Name 'wuauserv'
 
         Stops the Windows Update service and any service(s) that depend on it.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -DisplayName 'Windows Update' -Force
+        Stop-ADTServiceAndDependencies -DisplayName 'Windows Update'
 
         Stops the Windows Update service and any service(s) that depend on it.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00 -Force
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait 00:01:00
 
         Stops the Windows Update service and any service(s) that depend on it, waiting 1 minute for the service to stop.
 
     .EXAMPLE
-        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait (New-TimeSpan -Minutes 1) -Force
+        Stop-ADTServiceAndDependencies -Name 'wuauserv' -PendingStatusWait (New-TimeSpan -Minutes 1)
 
         Stops the Windows Update service and any service(s) that depend on it, waiting 1 minute for the service to stop.
 
@@ -125,9 +122,6 @@ function Stop-ADTServiceAndDependencies
         [System.TimeSpan]$PendingStatusWait,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$Force,
-
-        [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
 
@@ -144,11 +138,6 @@ function Stop-ADTServiceAndDependencies
         if ($SkipDependentServices)
         {
             Write-ADTLogEntry -Message 'The [-SkipDependentServices] parameter is no longer required and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
-        }
-
-        if (!$Force)
-        {
-            Write-ADTLogEntry -Message 'Starting in PSAppDeployToolkit 4.3.0, the [-Force] parameter will be required to stop services when services that depend on it are running.' -Severity Warning
         }
     }
 
