@@ -142,7 +142,7 @@ function Stop-ADTServiceAndDependencies
             {
                 $services = if ($PSCmdlet.ParameterSetName -ne 'InputObject')
                 {
-                    $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                    $gsParams = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters.($PSCmdlet.ParameterSetName) }
                     Get-Service @gsParams
                 }
                 else
