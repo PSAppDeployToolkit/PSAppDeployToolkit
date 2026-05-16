@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using PSADT.Foundation;
 using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.UserInterface.Interfaces.Classic
@@ -52,11 +53,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     richTextBox.Clear(); richTextBox.Text = options.ModuleHelpMap[(string)(comboBox.SelectedItem ?? throw new InvalidOperationException("The selected combobox item was null."))][(string)(listBox.SelectedItem ?? throw new InvalidOperationException("The selected listbox item was null."))];
                 };
 
-                // Lastly, set the initial selected index of the ComboBox to the first item, if available.
+                // Set the initial selected index of the ComboBox to the first item, if available.
                 if (comboBox.Items.Count > 0)
                 {
                     comboBox.SelectedIndex = 0;
                 }
+
+                // Lastly, set the icon for the form to that of the PSADT main application.
+                Icon = System.Drawing.Icon.ExtractAssociatedIcon(AssemblyManager.CallingProcessPath.FullName);
             }
         }
     }
