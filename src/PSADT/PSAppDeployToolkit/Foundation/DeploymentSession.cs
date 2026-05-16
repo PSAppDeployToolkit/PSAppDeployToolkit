@@ -682,23 +682,6 @@ namespace PSAppDeployToolkit.Foundation
 
 
                 #endregion
-                #region TestSessionViability
-
-
-                // Check current permissions and exit if not running with Administrator rights.
-                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
-                {
-                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
-                }
-
-                // Throw if the process is 32-bit on a 64-bit OS.
-                if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture && !Settings.HasFlag(DeploymentSettings.AllowWowProcess))
-                {
-                    throw new InvalidOperationException("The current PowerShell process is 32-bit on a 64-bit operating system. Please run the deployment script in a 64-bit PowerShell process.");
-                }
-
-
-                #endregion
                 #region LogLanguageInfo
 
 
@@ -937,6 +920,18 @@ namespace PSAppDeployToolkit.Foundation
                 #endregion
                 #region TestSessionViability
 
+
+                // Check current permissions and exit if not running with Administrator rights.
+                if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
+                {
+                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
+                }
+
+                // Throw if the process is 32-bit on a 64-bit OS.
+                if (RuntimeInformation.ProcessArchitecture != RuntimeInformation.OSArchitecture && !Settings.HasFlag(DeploymentSettings.AllowWowProcess))
+                {
+                    throw new InvalidOperationException("The current PowerShell process is 32-bit on a 64-bit operating system. Please run the deployment script in a 64-bit PowerShell process.");
+                }
 
                 // Check if the caller explicitly wants interactivity but we can't do it.
                 if (DeployMode != DeployMode.Silent && RunAsActiveUser is null && !IsProcessUserInteractive)
