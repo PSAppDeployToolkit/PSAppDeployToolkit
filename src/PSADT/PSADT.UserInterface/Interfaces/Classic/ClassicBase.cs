@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using PSADT.Foundation;
+using PSADT.WindowManagement;
+using Windows.Win32.Foundation;
 
 namespace PSADT.UserInterface.Interfaces.Classic
 {
@@ -25,6 +28,37 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClassicBase"/> class.
+        /// </summary>
+        private protected ClassicBase()
+        {
+            // Apply extras to the form if we have any (i.e. not in the designer).
+            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            {
+                Shown += ClassicBase_Shown;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Shown event by setting the operation success flag and bringing the window to the front.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void ClassicBase_Shown(object? sender, EventArgs e)
+        {
+            ClientServerUtilities.SetOperationSuccessFlag();
+            try
+            {
+                WindowTools.BringWindowToFront((HWND)Handle);
+            }
+            catch
+            {
+                return;
+                throw;
             }
         }
     }
