@@ -167,12 +167,12 @@ function Start-ADTServiceAndDependencies
                             if ($service.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running))
                             {
                                 Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] is already running."
+                                if ($PassThru)
+                                {
+                                    $PSCmdlet.WriteObject($service)
+                                }
                                 if (!$dependentServices)
                                 {
-                                    if ($PassThru)
-                                    {
-                                        $PSCmdlet.WriteObject($service)
-                                    }
                                     continue
                                 }
                             }
