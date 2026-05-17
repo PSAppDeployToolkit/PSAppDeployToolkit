@@ -50,6 +50,10 @@ Describe 'Stop-ADTServiceAndDependencies' {
             Stop-ADTServiceAndDependencies -InputObject $serviceWithMultipleRunningDependentServices
             Should -Invoke -CommandName Stop-Service -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
+        It 'Should not attempt to stop services with running dependents when -SkipDependentServices is provided' {
+            Stop-ADTServiceAndDependencies -InputObject $serviceWithMultipleRunningDependentServices -SkipDependentServices
+            Should -Not -Invoke -CommandName Stop-Service -ModuleName PSAppDeployToolkit
+        }
         It 'Should accept ServiceController objects through the pipeline' {
             { $serviceWithMultipleRunningDependentServices | Stop-ADTServiceAndDependencies } | Should -Not -Throw
             #$serviceWithMultipleRunningDependentServices | Stop-ADTServiceAndDependencies

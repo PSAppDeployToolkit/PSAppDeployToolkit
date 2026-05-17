@@ -23,7 +23,7 @@ function Stop-ADTServiceAndDependencies
         Specifies `ServiceController` object(s) representing the services to be stopped.
 
     .PARAMETER SkipDependentServices
-        Specifies whether to skip checking for and stopping dependent services. This parameter is not supported and will be removed in PSAppDeployToolkit 4.3.0.
+        Specifies whether a service will be stopped if services that depend on it are running.
 
     .PARAMETER PendingStatusWait
         The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
@@ -114,7 +114,6 @@ function Stop-ADTServiceAndDependencies
         [System.ServiceProcess.ServiceController[]]$InputObject,
 
         [Parameter(Mandatory = $false)]
-        [System.Obsolete("This parameter is not supported and will be removed in PSAppDeployToolkit 4.3.0.")]
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
 
         [Parameter(Mandatory = $false)]
@@ -176,13 +175,19 @@ function Stop-ADTServiceAndDependencies
 
                             Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] has a status of [$($service.Status)]."
 
+                            if (($dependentServiceNames = $service.DependentServices | & { process { if ($_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_.ServiceName } } }) -and $SkipDependentServices)
+                            {
+                                Write-ADTLogEntry -Message "Service [$($service.ServiceName)] with display name [$($service.DisplayName)] cannot be stopped because the following dependent service(s) are running: [$($dependentServiceNames -join ', ')]" -Severity Warning
+                                continue
+                            }
+
                             if (!$PSCmdlet.ShouldProcess($service.ServiceName, "Stop service$(if (!$SkipDependentServices) { ' and dependencies' })"))
                             {
                                 continue
                             }
 
                             Write-ADTLogEntry -Message "Stopping parent service [$($service.ServiceName)] with display name [$($service.DisplayName)]."
-                            if ($dependentServiceNames = $service.DependentServices | & { process { if ($_.Status.Equals([System.ServiceProcess.ServiceControllerStatus]::Running)) { return $_.ServiceName } } })
+                            if ($dependentServiceNames)
                             {
                                 Write-ADTLogEntry -Message "The following dependent service(s) [$($dependentServiceNames -join ', ')] will be stopped by this operation."
                             }
