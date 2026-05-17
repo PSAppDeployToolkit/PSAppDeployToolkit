@@ -40,12 +40,6 @@ function Show-ADTHelpConsole
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTHelpConsole
     #>
 
-    # Attempt to disable PowerShell from asking whether to update help or not. It's essential as we can't answer the question in the runspace.
-    if (Test-ADTCallerIsAdmin)
-    {
-        [Microsoft.Win32.Registry]::SetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PowerShell', 'DisablePromptToUpdateHelp', 1, [Microsoft.Win32.RegistryValueKind]::DWord)
-    }
-
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.
     Invoke-ADTClientServerOperation -ShowModalDialog -User (Get-ADTClientServerUser -AllowSystemFallback) -DialogType HelpConsole -DialogStyle Classic -NoWait -Options ([PSADT.UserInterface.DialogOptions.HelpConsoleOptions]@{
             ModuleHelpMap = Get-Module -Name "$($MyInvocation.MyCommand.Module.Name)*" | & {
