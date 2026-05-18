@@ -19,7 +19,7 @@ function Test-ADTServiceExists
         Note: Service name can be found by executing `Get-Service | Format-Table -AutoSize -Wrap` or by using the properties screen of a service in services.msc.
 
     .PARAMETER DisplayName
-        Specifies the display name of the service to test the existence of. This parameter supports wildcards. This parameter is not compaitble with `-UseCIM`.
+        Specifies the display name of the service to test the existence of. This parameter supports wildcards. This parameter is not compatible with `-UseCIM`.
 
     .PARAMETER UseCIM
         Use CIM/WMI to check for the service. This parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
@@ -70,7 +70,7 @@ function Test-ADTServiceExists
         }
         ```
 
-        Sets the ScreenConnect service start mode to automatic, if it exists and has its start mode is not automatic.
+        Sets the ScreenConnect service start mode to automatic, if it exists and its start mode is not automatic.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -125,7 +125,7 @@ function Test-ADTServiceExists
                 # Access via CIM/WMI if specifically asked.
                 if ($UseCIM)
                 {
-                    Write-ADTLogEntry -Message 'The parameter [-UseCIM] is deprected and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
+                    Write-ADTLogEntry -Message 'The parameter [-UseCIM] is deprecated and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
 
                     # If nothing is returned from Win32_Service, check Win32_BaseService.
                     if (!($ServiceObject = Get-CimInstance -ClassName Win32_Service -Filter "Name = '$Name'"))

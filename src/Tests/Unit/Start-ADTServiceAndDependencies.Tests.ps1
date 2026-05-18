@@ -46,11 +46,11 @@ Describe 'Start-ADTServiceAndDependencies' {
     }
 
     Context 'Functionality' {
-        It 'Should stop all dependent services' {
+        It 'Should start all dependent services' {
             Start-ADTServiceAndDependencies -InputObject $serviceWithMultipleStoppedDependentServices
             Should -Invoke -CommandName Start-Service -ModuleName PSAppDeployToolkit -Times ($dependentServices.Count + 1) -Exactly
         }
-        It 'Should not stop depedent services when -SkipDependentServices is provided' {
+        It 'Should not start dependent services when -SkipDependentServices is provided' {
             Start-ADTServiceAndDependencies -InputObject $serviceWithMultipleStoppedDependentServices -SkipDependentServices
             Should -Invoke -CommandName Start-Service -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
