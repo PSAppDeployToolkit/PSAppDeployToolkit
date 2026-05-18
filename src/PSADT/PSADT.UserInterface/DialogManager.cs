@@ -436,7 +436,11 @@ namespace PSADT.UserInterface
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static MESSAGEBOX_RESULT ShowDialogBox(string Title, string Prompt, MESSAGEBOX_STYLE Options, uint Timeout = 0)
         {
-            return InvokeDialogAction(() => NativeMethods.MessageBoxTimeout(Prompt, Title, Options, Timeout));
+            return InvokeDialogAction(() =>
+            {
+                ClientServerUtilities.SetOperationSuccessFlag();
+                return NativeMethods.MessageBoxTimeout(Prompt, Title, Options, Timeout);
+            });
         }
 
         /// <summary>
@@ -453,7 +457,11 @@ namespace PSADT.UserInterface
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static MESSAGEBOX_RESULT ShowTaskBox(string Title, string Subtitle, string Prompt, TASKDIALOG_COMMON_BUTTON_FLAGS Buttons, TASKDIALOG_ICON Icon)
         {
-            return InvokeDialogAction(() => NativeMethods.TaskDialog(Title, Subtitle, Prompt, Buttons, Icon));
+            return InvokeDialogAction(() =>
+            {
+                ClientServerUtilities.SetOperationSuccessFlag();
+                return NativeMethods.TaskDialog(Title, Subtitle, Prompt, Buttons, Icon);
+            });
         }
 
         /// <summary>
