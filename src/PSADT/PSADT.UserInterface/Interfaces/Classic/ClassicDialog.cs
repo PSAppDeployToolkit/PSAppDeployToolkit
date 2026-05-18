@@ -66,15 +66,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // Set the expiry timer if specified.
                 if (options.DialogExpiryDuration > TimeSpan.Zero)
                 {
-                    expiryTimer = new() { Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds };
-                    expiryTimer.Tick += (s, e) => CloseDialog();
+                    expiryTimer.Interval = (int)options.DialogExpiryDuration.Value.TotalMilliseconds;
                 }
 
                 // PersistPrompt timer code.
                 if (options.DialogPersistInterval > TimeSpan.Zero)
                 {
-                    persistTimer = new() { Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds };
-                    persistTimer.Tick += PersistTimer_Tick;
+                    persistTimer.Interval = (int)options.DialogPersistInterval.Value.TotalMilliseconds;
                 }
 
                 // Set the optional dialog position.
@@ -221,8 +219,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
             PositionForm();
 
             // Start the persist timer if it's available.
-            persistTimer?.Start();
-            expiryTimer?.Start();
+            if (persistTimer.Interval != int.MaxValue)
+            {
+                persistTimer.Start();
+            }
+            if (expiryTimer.Interval != int.MaxValue)
+            {
+                expiryTimer.Start();
+            }
         }
 
         /// <summary>
@@ -284,27 +288,12 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must stop and release timers before the generated disposal runs.")]
         private protected virtual void Form_FormClosed(object? sender, FormClosedEventArgs e)
         {
-            // Unsubscribe from system events.
             SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
-
-            // We're actually closing. Perform certain disposals here
-            // since we can't mess with the designer's Dispose override.
-            if (persistTimer is not null)
-            {
-                persistTimer.Stop();
-                persistTimer.Dispose();
-                persistTimer = null;
-            }
-            if (expiryTimer is not null)
-            {
-                expiryTimer.Stop();
-                expiryTimer.Dispose();
-                expiryTimer = null;
-            }
+            persistTimer.Stop();
+            expiryTimer.Stop();
         }
 
         /// <summary>
@@ -336,7 +325,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected void ResetPersistTimer()
         {
             // Reset the persist timer to its initial state.
-            if (persistTimer is not null)
+            if (persistTimer.Enabled)
             {
                 persistTimer.Stop();
                 persistTimer.Start();
@@ -491,6 +480,16 @@ namespace PSADT.UserInterface.Interfaces.Classic
         }
 
         /// <summary>
+        /// Closes the dialog when the expiry timer elapses.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void ExpiryTimer_Tick(object? sender, EventArgs e)
+        {
+            CloseDialog();
+        }
+
+        /// <summary>
         /// Retrieves an icon from the specified file path, using a cached version if available.
         /// </summary>
         /// <remarks>If the specified path does not refer to an icon file, the image is converted to icon
@@ -556,18 +555,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Flag to indicate if the dialog can be closed.
         /// </summary>
         private bool canClose;
-
-        /// <summary>
-        /// A timer used to restore the dialog's position on the screen at a configured interval.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
-        private Timer? persistTimer;
-
-        /// <summary>
-        /// A timer used to close the dialog at a configured interval after no user response.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
-        private Timer? expiryTimer;
 
         /// <summary>
         /// Represents the position of the dialog within its container.

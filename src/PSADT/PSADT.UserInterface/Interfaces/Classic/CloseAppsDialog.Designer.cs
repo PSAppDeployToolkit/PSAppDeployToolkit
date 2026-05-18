@@ -56,6 +56,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.toolTipButtonContinue = new System.Windows.Forms.ToolTip(this.components);
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
+            this.countdownTimer = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCloseApps.SuspendLayout();
             this.panelCloseProcesses.SuspendLayout();
@@ -411,6 +412,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 488);
             this.flowLayoutPanelBase.TabIndex = 4;
             // 
+            // countdownTimer
+            // 
+            this.countdownTimer.Interval = 2147483647;
+            this.countdownTimer.Tick += new System.EventHandler(this.CountdownTimer_Tick);
+            // 
             // CloseAppsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -461,5 +467,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private FlowLayoutPanel flowLayoutPanelBase;
         private Panel panelCloseProcesses;
         private ListBox listBoxCloseProcesses;
+        private Timer countdownTimer;
     }
 }

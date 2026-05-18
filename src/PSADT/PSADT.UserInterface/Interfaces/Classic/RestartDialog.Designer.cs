@@ -7,10 +7,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// </summary>
     partial class RestartDialog
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private readonly System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -33,6 +29,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.flowLayoutPanelDialog = new System.Windows.Forms.FlowLayoutPanel();
             this.labelMessage = new System.Windows.Forms.Label();
             this.labelCustomMessage = new System.Windows.Forms.Label();
@@ -45,6 +42,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.buttonRestartNow = new System.Windows.Forms.Button();
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
+            this.countdownTimer = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanelDialog.SuspendLayout();
             this.flowLayoutPanelCountdown.SuspendLayout();
             this.tableLayoutPanelButton.SuspendLayout();
@@ -244,6 +242,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.flowLayoutPanelBase.Size = new System.Drawing.Size(512, 232);
             this.flowLayoutPanelBase.TabIndex = 3;
             // 
+            // countdownTimer
+            // 
+            this.countdownTimer.Interval = 2147483647;
+            this.countdownTimer.Tick += new System.EventHandler(this.CountdownTimer_Tick);
+            // 
             // RestartDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -279,5 +282,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private Label labelCustomMessage;
         private PictureBox pictureBanner;
         private FlowLayoutPanel flowLayoutPanelBase;
+        private Timer countdownTimer;
+        private System.ComponentModel.IContainer components;
     }
 }

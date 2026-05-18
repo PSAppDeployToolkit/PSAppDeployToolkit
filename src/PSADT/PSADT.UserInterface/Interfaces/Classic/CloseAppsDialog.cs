@@ -159,7 +159,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // Set the countdown timer.
                 if (countdownDuration is not null)
                 {
-                    countdownTimer = new(CountdownTimer_Tick, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    countdownTimer.Interval = 1000;
                     countdownStopwatch = state.CountdownStopwatch;
                     labelCountdownMessage.Text = listBoxCloseProcesses.Items.Count > 0 ? forcedCountdown ? countdownDefer : countdownClose : countdownDefer;
                 }
@@ -199,13 +199,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
             runningProcessService?.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
 
             // Start the counterdown timer if we have one.
-            if (countdownTimer is not null)
+            if (countdownStopwatch is not null)
             {
-                if (!countdownStopwatch!.IsRunning)
+                if (!countdownStopwatch.IsRunning)
                 {
                     countdownStopwatch.Start();
                 }
-                _ = countdownTimer.Change(0, 1000);
+                countdownTimer.Start();
             }
         }
 
@@ -216,16 +216,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Dispose method runs.</remarks>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2952:Move this 'Dispose' call into this class' own 'Dispose' method", Justification = "WinForms designer code owns Dispose(bool); this close-path cleanup must release the countdown timer before the generated disposal runs.")]
         private protected override void Form_FormClosed(object? sender, FormClosedEventArgs e)
         {
-            // We're actually closing. Perform certain disposals here
-            // since we can't mess with the designer's Dispose override.
-            countdownTimer?.Dispose();
-            countdownTimer = null;
-
             // Unhook the event handlers.
             runningProcessService?.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
+
+            // Stop our timer so it can be disposed of properly by the form.
+            countdownTimer.Stop();
 
             // Call through to the base method to ensure it's processed also.
             base.Form_FormClosed(sender, e);
@@ -281,11 +278,20 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <remarks>This method ensures that the countdown label is updated on the UI thread and triggers
         /// the correct action based on the countdown's completion and dialog state. It is intended for use with a timer
         /// that periodically updates the countdown in a user interface.</remarks>
-        /// <param name="state">An optional state object associated with the timer event. This parameter is not used by the method.</param>
+        /// <param name="sender">The source of the event, typically the timer that triggered the tick event.</param>
+        /// <param name="e">An EventArgs object that contains the event data.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
-        private void CountdownTimer_Tick(object? state)
+        private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
-            TimeSpan remaining = countdownDuration!.Value - countdownStopwatch!.Elapsed;
+            if (countdownDuration is null)
+            {
+                throw new InvalidProgramException("Countdown timer ticked but no duration was set. This should never happen.");
+            }
+            if (countdownStopwatch is null)
+            {
+                throw new InvalidProgramException("Countdown timer ticked but no stopwatch was set. This should never happen.");
+            }
+            TimeSpan remaining = countdownDuration.Value - countdownStopwatch.Elapsed;
             if (remaining < TimeSpan.Zero)
             {
                 remaining = TimeSpan.Zero;
@@ -378,12 +384,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Indicates whether the continue button should be implied when all processes have closed.
         /// </summary>
         private readonly bool continueOnProcessClosure;
-
-        /// <summary>
-        /// A restart countdown timer to perform an automatic reboot.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We can't override the designer's Dispose() implementation.")]
-        private System.Threading.Timer? countdownTimer;
 
         /// <summary>
         /// The stopwatch to keep track of the elapsed time.

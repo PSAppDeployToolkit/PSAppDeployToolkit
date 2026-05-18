@@ -7,10 +7,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// </summary>
     partial class ClassicDialog
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private readonly System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -33,7 +29,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.buttonDefault = new System.Windows.Forms.Button();
+            this.persistTimer = new System.Windows.Forms.Timer(this.components);
+            this.expiryTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // buttonDefault
@@ -52,6 +51,16 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.buttonDefault.TabIndex = 1;
             this.buttonDefault.TabStop = false;
             this.buttonDefault.UseVisualStyleBackColor = true;
+            // 
+            // persistTimer
+            // 
+            this.persistTimer.Interval = 2147483647;
+            this.persistTimer.Tick += new System.EventHandler(this.PersistTimer_Tick);
+            // 
+            // expiryTimer
+            // 
+            this.expiryTimer.Interval = 2147483647;
+            this.expiryTimer.Tick += new System.EventHandler(this.ExpiryTimer_Tick);
             // 
             // ClassicDialog
             // 
@@ -78,5 +87,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
 
         #endregion
         private Button buttonDefault;
+        private Timer persistTimer;
+        private System.ComponentModel.IContainer components;
+        private Timer expiryTimer;
     }
 }
