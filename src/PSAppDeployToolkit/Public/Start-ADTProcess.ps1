@@ -766,9 +766,26 @@ function Start-ADTProcess
                     }
 
                     # Grant RunAsActiveUser permissions to DirFiles/DirSupportFiles if required.
-                    if ($RunAsActiveUser -and ($PSBoundParameters['WorkingDirectory'] -eq $adtSession.DirFiles.FullName) -and ![PSADT.FileSystem.FileSystemUtilities]::TestEffectiveAccess($adtSession.DirFiles, $RunAsActiveUser.SID, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute))
+                    if ($RunAsActiveUser)
                     {
-                        Set-ADTItemPermission -LiteralPath $adtSession.DirFiles.FullName -Permission ReadAndExecute -PermissionType Allow -Inheritance ObjectInherit, ContainerInherit -Method AddAccessRule -User "*$($RunAsActiveUser.SID)"
+                        $adtSession.DirFiles, $adtSession.DirSupportFiles | & {
+                            process
+                            {
+                                if ($null -eq $_)
+                                {
+                                    return
+                                }
+                                if (!($PSBoundParameters['WorkingDirectory'] -eq $_.FullName) -and !$FilePath.StartsWith($_.FullName, 'OrdinalIgnoreCase') -and !($ArgumentList -match [regex]::Escape($_.FullName)))
+                                {
+                                    return
+                                }
+                                if ([PSADT.FileSystem.FileSystemUtilities]::TestEffectiveAccess($_, $RunAsActiveUser.SID, [System.Security.AccessControl.FileSystemRights]::ReadAndExecute))
+                                {
+                                    return
+                                }
+                                Set-ADTItemPermission -LiteralPath $_.FullName -Permission ReadAndExecute -PermissionType Allow -Inheritance ObjectInherit, ContainerInherit -Method AddAccessRule -User "*$($RunAsActiveUser.SID)"
+                            }
+                        }
                     }
                 }
 
