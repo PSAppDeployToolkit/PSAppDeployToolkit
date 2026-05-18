@@ -23,7 +23,7 @@
 			<string id="LogPath_MSI_Display">LogPath</string>
 			<string id="LogPath_MSI_Explain">Log path used for MSI logging.</string>
 			<string id="LogPathNoAdminRights_MSI_Display">LogPathNoAdminRights</string>
-			<string id="LogPathNoAdminRights_MSI_Explain">Log path used for MSI logging when RequireAdmin is False.</string>
+			<string id="LogPathNoAdminRights_MSI_Explain">Log path used for MSI logging when the caller is not an admin.</string>
 			<string id="MutexWaitTime_Display">MutexWaitTime</string>
 			<string id="MutexWaitTime_Explain">The length of time in seconds to wait for the MSI installer service to become available.</string>
 			<string id="SilentParams_Display">SilentParams</string>
@@ -52,7 +52,7 @@
 			<string id="LogPath_Display">LogPath</string>
 			<string id="LogPath_Explain">Log path used for Toolkit logging.</string>
 			<string id="LogPathNoAdminRights_Display">LogPathNoAdminRights</string>
-			<string id="LogPathNoAdminRights_Explain">Same as LogPath but used when RequireAdmin is False.</string>
+			<string id="LogPathNoAdminRights_Explain">Same as LogPath but used when the caller is not an admin.</string>
 			<string id="LogToHierarchy_Display">LogToHierarchy</string>
 			<string id="LogToHierarchy_Explain">Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precident over "LogToSubfolder" if both are set.</string>
 			<string id="LogToSubfolder_Display">LogToSubfolder</string>
@@ -68,11 +68,11 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="RegPath_Display">RegPath</string>
 			<string id="RegPath_Explain">Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.</string>
 			<string id="RegPathNoAdminRights_Display">RegPathNoAdminRights</string>
-			<string id="RegPathNoAdminRights_Explain">Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.</string>
+			<string id="RegPathNoAdminRights_Explain">Same as RegPath but used when the caller is not an admin. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.</string>
 			<string id="TempPath_Display">TempPath</string>
 			<string id="TempPath_Explain">Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability.</string>
 			<string id="TempPathNoAdminRights_Display">TempPathNoAdminRights</string>
-			<string id="TempPathNoAdminRights_Explain">Same as TempPath but used when RequireAdmin is False.</string>
+			<string id="TempPathNoAdminRights_Explain">Same as TempPath but used when the caller is not an admin.</string>
 			<string id="UI_Category">UI</string>
 			<string id="BalloonNotifications_Display">BalloonNotifications</string>
 			<string id="BalloonNotifications_Explain">Used to turn automatic balloon notifications on or off.</string>

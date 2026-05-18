@@ -42,7 +42,7 @@ try
                                         # Log path used for MSI logging. Uses the same path as Toolkit when null or empty.
                                         LogPath = $null
 
-                                        # Log path used for MSI logging when RequireAdmin is False. Uses the same path as Toolkit when null or empty.
+                                        # Log path used for MSI logging when the caller is not an admin. Uses the same path as Toolkit when null or empty.
                                         LogPathNoAdminRights = $null
 
                                         # The length of time in seconds to wait for the MSI installer service to become available. Default is 600 seconds (10 minutes).
@@ -86,7 +86,7 @@ try
                                         # Log path used for Toolkit logging.
                                         LogPath = '$env:SystemRoot\Logs\Software'
 
-                                        # Same as LogPath but used when RequireAdmin is False.
+                                        # Same as LogPath but used when the caller is not an admin.
                                         LogPathNoAdminRights = '$env:ProgramData\Logs\Software'
 
                                         # Specifies that logging should be to a hierarchical structure of AppVendor\AppName\AppVersion. Takes precident over "LogToSubfolder" if both are set.
@@ -108,13 +108,13 @@ try
                                         # Registry key used to store toolkit information (with PSAppDeployToolkit as child registry key), e.g. deferral history.
                                         RegPath = 'HKLM:\SOFTWARE'
 
-                                        # Same as RegPath but used when RequireAdmin is False. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.
+                                        # Same as RegPath but used when the caller is not an admin. Bear in mind that since this Registry Key should be writable without admin permission, regular users can modify it also.
                                         RegPathNoAdminRights = 'HKCU:\SOFTWARE'
 
                                         # Path used to store temporary Toolkit files (with PSAppDeployToolkit as subdirectory), e.g. cache toolkit for cleaning up blocked apps. Normally you don't want this set to a path that is writable by regular users, this might lead to a security vulnerability. The default Temp variable for the LocalSystem account is C:\Windows\Temp.
                                         TempPath = '$env:Temp'
 
-                                        # Same as TempPath but used when RequireAdmin is False.
+                                        # Same as TempPath but used when the caller is not an admin.
                                         TempPathNoAdminRights = '$env:Temp'
                                     }
 
