@@ -302,9 +302,9 @@ Describe 'New-ADTTemplate' {
             }
 
             It 'Preserves unspecified scriptblocks when only one scriptblock is modified' {
-                foreach ($phase in 'PreInstall', 'PostInstall', 'PreUninstall', 'Uninstall', 'PostUninstall', 'PreRepair', 'Repair', 'PostRepair')
+                foreach ($phase in 'Pre-Install', 'Post-Install', 'Pre-Uninstall', 'Uninstall', 'Post-Uninstall', 'Pre-Repair', 'Repair', 'Post-Repair')
                 {
-                    $pattern = '(?s)\$' + $phase + ' = \{.*?\r?\n\}'
+                    $pattern = '(?s)\$' + "\{$phase\}" + ' = \{.*?\r?\n\}'
                     $originalMatch = [regex]::Match($originalContent, $pattern).Value
                     $customMatch = [regex]::Match($content, $pattern).Value
                     $customMatch | Should -Be $originalMatch -Because "$phase should be unchanged"
