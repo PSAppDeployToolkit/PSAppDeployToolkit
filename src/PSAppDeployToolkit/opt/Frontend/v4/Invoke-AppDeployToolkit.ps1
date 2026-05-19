@@ -18,7 +18,7 @@ Silent mode is automatically set if no users are logged on, the device is in Aut
 Prevents the toolkit from exiting with a defined reboot exit code (e.g. 3010), returning 0 instead.
 
 .NOTES
-For more details on all available properties you can add to `$adtSession`, please visit https://psappdeploytoolkit.com/docs/4.1.x/reference/adtsession-object.
+For more details on all available properties you can add to `$adtSession`, please visit https://psappdeploytoolkit.com/docs/reference/adtsession-object.
 
 .EXAMPLE
 & .\Invoke-AppDeployToolkit.ps1 -DeploymentType Install -DeployMode Silent
