@@ -25,7 +25,7 @@ function Test-ADTServiceExists
         Use CIM/WMI to check for the service. This parameter is deprecated and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER PassThru
-        Returns the service object, if one exists. By default, the service object returned is a `ServiceController`. When the `-UseCIM` parameter is provided, a Win32_Service or Win32_ServiceBase `CimInstance` is returned.
+        Returns the service object, if one exists. By default, the service object returned is a `ServiceController`. When the `-UseCIM` parameter is provided, a Win32_Service or Win32_BaseService `CimInstance` is returned.
 
     .INPUTS
         None
