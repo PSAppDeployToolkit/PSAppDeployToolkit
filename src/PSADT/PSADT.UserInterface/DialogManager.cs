@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
@@ -17,6 +16,7 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
+using PSADT.UserInterface.Extensions;
 using PSADT.Utilities;
 using PSAppDeployToolkit.Logging;
 using Windows.Win32.UI.Controls;
@@ -57,6 +57,14 @@ namespace PSADT.UserInterface
                         // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
                         _ = appLocal.Dispatcher.BeginInvoke(DispatcherPriority.Normal, dispatcherRunning.Set);
+                    };
+                    appLocal.Exit += (_, _) =>
+                    {
+                        // Clean up our disposable objects when the app exits to ensure they don't outlive the dispatcher thread and cause exceptions.
+                        progressDialog?.Dispose();
+                        progressDialog = null;
+                        notifyIcon?.Dispose();
+                        notifyIcon = null;
                     };
                     _ = appLocal.Run();
                 }
@@ -333,6 +341,104 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
+        /// Displays a notify icon in the system tray with the specified icon and tooltip text.
+        /// </summary>
+        /// <param name="options">The configuration options for the notify icon, including title, icon, and tooltip text.</param>
+        /// <exception cref="InvalidOperationException">A notify icon is already displayed.</exception>
+        internal static void ShowNotifyIcon(NotifyIconOptions options)
+        {
+            // Ensure there's not already a notify icon open.
+            if (notifyIcon is not null)
+            {
+                throw new InvalidOperationException("Cannot show a notify icon while one is already open.");
+            }
+            InvokeDialogAction(() =>
+            {
+                // Set the AUMID for this process so the Windows 10 toast has the correct title.
+                _ = NativeMethods.SetCurrentProcessExplicitAppUserModelID(options.AppTitle);
+
+                // Correct the registry data for the AUMID. This can reference stale info from a previous run.
+                string appIconPath = options.AppTaskbarIconImage ?? options.AppIconImage;
+                System.Drawing.Icon iconObj = Interfaces.Classic.ClassicDialog.GetIcon(appIconPath);
+                string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
+                Registry.SetValue(regKey, "DisplayName", options.AppTitle, RegistryValueKind.String);
+                if (MiscUtilities.GetBase64StringBytes(appIconPath) is not null)
+                {
+                    string tempIcon = Path.Join(Path.GetTempPath(), "PSADT.UserInterface.TrayIcon.ico");
+                    using FileStream fs = new(tempIcon, FileMode.Create, FileAccess.Write, FileShare.None);
+                    iconObj.Save(fs); Registry.SetValue(regKey, "IconUri", tempIcon, RegistryValueKind.ExpandString);
+                }
+                else
+                {
+                    Registry.SetValue(regKey, "IconUri", appIconPath, RegistryValueKind.ExpandString);
+                }
+                notifyIcon = new() { Icon = iconObj, Text = options.MessageText, Visible = true, };
+                notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetOperationSuccessFlag();
+            });
+        }
+
+        /// <summary>
+        /// Determines whether the notify icon is open.
+        /// </summary>
+        /// <returns><see langword="true"/> if the notify icon is open; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool NotifyIconOpen()
+        {
+            return notifyIcon is not null;
+        }
+
+        /// <summary>
+        /// Updates the text displayed in the notification area icon.
+        /// </summary>
+        /// <param name="messageText">The message text to display in the notification area icon.</param>
+        /// <exception cref="InvalidOperationException">Thrown when no notify icon is currently open.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="messageText"/> is null or whitespace.</exception>
+        internal static void UpdateNotifyIcon(string messageText)
+        {
+            if (notifyIcon is null)
+            {
+                throw new InvalidOperationException("Cannot update a notify icon while one is not open.");
+            }
+            if (string.IsNullOrWhiteSpace(messageText))
+            {
+                throw new ArgumentException("Message text cannot be null or whitespace.", nameof(messageText));
+            }
+            InvokeDialogAction(() => { notifyIcon.Text = messageText; });
+        }
+
+        /// <summary>
+        /// Displays a balloon tip notification using the current notify icon.
+        /// </summary>
+        /// <param name="options">The configuration options for the balloon tip, including title, text, and icon.</param>
+        /// <exception cref="InvalidOperationException">Thrown when no notify icon is currently open.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the notify icon becomes null during balloon tip cleanup.</exception>
+        internal static void ShowBalloonTip(BalloonTipOptions options)
+        {
+            if (notifyIcon is null)
+            {
+                throw new InvalidOperationException("Cannot show a balloon tip while no notify icon is open.");
+            }
+            notifyIcon.ShowBalloonTip(options);
+        }
+
+        /// <summary>
+        /// Closes and disposes the currently open notify icon.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when no notify icon is currently open.</exception>
+        internal static void CloseNotifyIcon()
+        {
+            if (notifyIcon is null)
+            {
+                throw new InvalidOperationException("Cannot close a notify icon while one is not open.");
+            }
+            InvokeDialogAction(() =>
+            {
+                notifyIcon.Dispose();
+                notifyIcon = null;
+            });
+        }
+
+        /// <summary>
         /// Displays a modal dialog of the specified type and style, and returns the result of the dialog interaction.
         /// </summary>
         /// <typeparam name="TResult">The type of the result returned by the modal dialog.</typeparam>
@@ -356,43 +462,6 @@ namespace PSADT.UserInterface
                 using IModalDialog dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;
             });
-        }
-
-        /// <summary>
-        /// Displays a balloon tip notification in the system tray with the specified title, text, and icon.
-        /// </summary>
-        /// <remarks>This method sets the AppUserModelID for the current process to ensure compatibility with Windows 10 toast notifications. It also updates the registry with the provided application title and icon to correct stale information from previous runs. The balloon tip is displayed for a default duration of 7 seconds or until the user closes it.</remarks>
-        /// <param name="options">The configuration options for the balloon tip, including title, text, icon, and other settings.</param>
-        /// <returns>A <see cref="Task"/> that represents the asynchronous operation. The task completes when the balloon tip is closed.</returns>
-        internal static void ShowBalloonTip(BalloonTipOptions options)
-        {
-            // Set the AUMID for this process so the Windows 10 toast has the correct title.
-            _ = NativeMethods.SetCurrentProcessExplicitAppUserModelID(options.TrayTitle);
-
-            // Correct the registry data for the AUMID. This can reference stale info from a previous run.
-            using System.Drawing.Icon icon = Interfaces.Classic.ClassicDialog.GetIcon(options.TrayIcon);
-            string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.TrayTitle}";
-            Registry.SetValue(regKey, "DisplayName", options.TrayTitle, RegistryValueKind.String);
-            if (MiscUtilities.GetBase64StringBytes(options.TrayIcon) is not null)
-            {
-                string trayIcon = Path.Join(Path.GetTempPath(), "PSADT.UserInterface.TrayIcon.ico");
-                using FileStream fs = new(trayIcon, FileMode.Create, FileAccess.Write, FileShare.None);
-                icon.Save(fs); Registry.SetValue(regKey, "IconUri", trayIcon, RegistryValueKind.ExpandString);
-            }
-            else
-            {
-                Registry.SetValue(regKey, "IconUri", options.TrayIcon, RegistryValueKind.ExpandString);
-            }
-
-            // Don't let this dispose until the balloon tip closes. If it disposes too early, Windows won't show the BalloonTipIcon properly.
-            // It's worth noting that while a timeout can be specified, Windows doesn't necessarily honour it and will likely show for ~7 seconds only.
-            using System.Windows.Forms.NotifyIcon notifyIcon = new() { Icon = icon, Visible = true, };
-            using ManualResetEventSlim balloonTipClosed = new();
-            notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetOperationSuccessFlag();
-            notifyIcon.BalloonTipClosed += (_, _) => balloonTipClosed.Set();
-            notifyIcon.BalloonTipClicked += (_, _) => balloonTipClosed.Set();
-            notifyIcon.ShowBalloonTip((int)options.BalloonTipTime, options.BalloonTipTitle, options.BalloonTipText, options.BalloonTipIcon);
-            balloonTipClosed.Wait();
         }
 
         /// <summary>
@@ -504,6 +573,11 @@ namespace PSADT.UserInterface
         /// The currently open Progress dialog, if any. Null if no dialog is open.
         /// </summary>
         private static IProgressDialog? progressDialog;
+
+        /// <summary>
+        /// The currently active NotifyIcon for balloon tips.
+        /// </summary>
+        private static System.Windows.Forms.NotifyIcon? notifyIcon;
 
         /// <summary>
         /// Application instance for the WPF dialog.

@@ -201,7 +201,7 @@ try
                                             Uninstall = 'Uninstallation complete.'
                                         }
 
-                                        # Text displayed in the balloon tip for successful completion of a deployment type.
+                                        # Text displayed in the balloon tip for successful deployment requiring a restart.
                                         RestartRequired = @{
                                             Install = 'Installation complete. A reboot is required.'
                                             Repair = 'Repair complete. A reboot is required.'

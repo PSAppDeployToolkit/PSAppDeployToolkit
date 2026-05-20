@@ -47,6 +47,17 @@ function Private:Exit-ADTInvocation
                 $_
             }
         }
+        if ($Script:ADT.ClientServerProcess.NotifyIconOpen())
+        {
+            try
+            {
+                Close-ADTNotifyIcon
+            }
+            catch
+            {
+                $_
+            }
+        }
         try
         {
             Close-ADTClientServerProcess

@@ -359,6 +359,7 @@ namespace PSADT.ClientServer
                 typeof(UserInterface.DialogOptions.InputDialogOptions),
                 typeof(UserInterface.DialogOptions.ListSelectionDialogOptions),
                 typeof(UserInterface.DialogOptions.ListSelectionDialogOptions.ListSelectionDialogStrings),
+                typeof(UserInterface.DialogOptions.NotifyIconOptions),
                 typeof(UserInterface.DialogOptions.ProgressDialogOptions),
                 typeof(UserInterface.DialogOptions.RestartDialogOptions),
                 typeof(UserInterface.DialogOptions.RestartDialogOptions.RestartDialogStrings),

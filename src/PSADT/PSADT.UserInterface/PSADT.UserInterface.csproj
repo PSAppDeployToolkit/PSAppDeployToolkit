@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="DialogOptions\NotifyIconOptions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Interfaces\Classic\ClassicBase.cs">
       <SubType>Form</SubType>
     </Compile>

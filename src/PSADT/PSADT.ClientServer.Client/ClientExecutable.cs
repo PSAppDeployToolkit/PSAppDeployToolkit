@@ -340,10 +340,37 @@ namespace PSADT.ClientServer
                                                 break;
                                             }
 
+                                        case PipeCommand.ShowNotifyIcon:
+                                            {
+                                                DialogManager.ShowNotifyIcon(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options);
+                                                WriteSuccess(true);
+                                                break;
+                                            }
+
+                                        case PipeCommand.NotifyIconOpen:
+                                            {
+                                                WriteSuccess(DialogManager.NotifyIconOpen());
+                                                break;
+                                            }
+
+                                        case PipeCommand.UpdateNotifyIcon:
+                                            {
+                                                DialogManager.UpdateNotifyIcon(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText);
+                                                WriteSuccess(true);
+                                                break;
+                                            }
+
                                         case PipeCommand.ShowBalloonTip:
                                             {
                                                 DialogManager.ShowBalloonTip(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options);
                                                 WriteSuccess(true);
+                                                break;
+                                            }
+
+                                        case PipeCommand.CloseNotifyIcon:
+                                            {
+                                                DialogManager.CloseNotifyIcon();
+                                                WriteSuccess(!DialogManager.NotifyIconOpen());
                                                 break;
                                             }
 
@@ -493,12 +520,6 @@ namespace PSADT.ClientServer
                 if (arg is "/ShowModalDialog" or "/smd")
                 {
                     Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), argv: argv));
-                    return (int)ClientExitCode.Success;
-                }
-                else if (arg is "/ShowBalloonTip" or "/sbt")
-                {
-                    DialogManager.ShowBalloonTip(DeserializeString<BalloonTipOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
-                    Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetProcessWindowInfo" or "/gpwi")

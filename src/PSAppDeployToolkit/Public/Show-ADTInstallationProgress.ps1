@@ -201,14 +201,14 @@ function Show-ADTInstallationProgress
         }
 
         # Determine if progress window is open before proceeding.
-        $progressOpen = Invoke-ADTClientServerOperation -ProgressDialogOpen -User $runAsActiveUser
+        $progressOpen = Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser
 
         # Notify user that the software installation has started.
         if ($adtSession -and !$progressOpen -and ($adtConfig.UI.DialogStyle -eq 'Classic'))
         {
             try
             {
-                Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.Start.$deploymentType -NoWait
+                Show-ADTBalloonTip -Icon Info -Text $adtStrings.BalloonTip.Start.$deploymentType
             }
             catch
             {

@@ -28,7 +28,6 @@ function Private:New-ADTDialogOptionsObject
         AppIconDarkImage = 'LogoDark'
         AppBannerImage = 'Banner'
         AppTaskbarIconImage = 'TaskbarIcon'
-        TrayIcon = 'Logo'
     }
 
     # Spin until this works.

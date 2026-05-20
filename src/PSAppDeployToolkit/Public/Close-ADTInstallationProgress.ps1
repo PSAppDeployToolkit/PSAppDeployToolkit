@@ -86,7 +86,7 @@ function Close-ADTInstallationProgress
                     }
 
                     # Return early if there's no progress dialog open at all.
-                    if (!(Invoke-ADTClientServerOperation -ProgressDialogOpen -User $runAsActiveUser))
+                    if (!(Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser))
                     {
                         Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no progress dialog open."
                         return
@@ -103,7 +103,7 @@ function Close-ADTInstallationProgress
                 }
 
                 # We only send balloon tips when a session is active.
-                if (!$adtSession)
+                if (!$adtSession -and !(Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser))
                 {
                     # Close the client/server process when we're running sessionless.
                     Close-ADTClientServerProcess
@@ -117,17 +117,17 @@ function Close-ADTInstallationProgress
                     {
                         ([PSAppDeployToolkit.Foundation.DeploymentStatus]::FastRetry)
                         {
-                            Show-ADTBalloonTip -BalloonTipIcon Warning -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
+                            Show-ADTBalloonTip -Icon Warning -Text $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString())
                             break
                         }
                         ([PSAppDeployToolkit.Foundation.DeploymentStatus]::Error)
                         {
-                            Show-ADTBalloonTip -BalloonTipIcon Error -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
+                            Show-ADTBalloonTip -Icon Error -Text $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString())
                             break
                         }
                         default
                         {
-                            Show-ADTBalloonTip -BalloonTipIcon Info -BalloonTipText $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString()) -NoWait
+                            Show-ADTBalloonTip -Icon Info -Text $adtStrings.BalloonTip.($_.ToString()).($adtSession.DeploymentType.ToString())
                             break
                         }
                     }

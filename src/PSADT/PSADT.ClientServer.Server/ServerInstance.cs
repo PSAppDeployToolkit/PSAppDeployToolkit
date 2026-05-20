@@ -306,6 +306,41 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Displays a notification icon in the system tray with the specified options.
+        /// </summary>
+        /// <param name="options">The configuration options for the notification icon.</param>
+        /// <returns><see langword="true"/> if the notification icon was successfully displayed; otherwise, <see
+        /// langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ShowNotifyIcon(NotifyIconOptions options)
+        {
+            return Invoke<ShowNotifyIconPayload, bool>(PipeCommand.ShowNotifyIcon, new(options));
+        }
+
+        /// <summary>
+        /// Determines whether the progress dialog is currently open.
+        /// </summary>
+        /// <remarks>This method checks the state of the progress dialog and returns a boolean value
+        /// indicating whether it is currently displayed to the user.</remarks>
+        /// <returns><see langword="true"/> if the notification icon is open; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool NotifyIconOpen()
+        {
+            return Invoke<bool>(PipeCommand.NotifyIconOpen);
+        }
+
+        /// <summary>
+        /// Updates the notify icon with the specified message text.
+        /// </summary>
+        /// <param name="messageText">The message text to display.</param>
+        /// <returns><see langword="true"/> if the notify icon was updated successfully; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool UpdateNotifyIcon(string messageText)
+        {
+            return Invoke<UpdateNotifyIconPayload, bool>(PipeCommand.UpdateNotifyIcon, new(messageText));
+        }
+
+        /// <summary>
         /// Displays a balloon tip notification in the system tray with the specified title, text, and icon.
         /// </summary>
         /// <remarks>This method sends a request to display a balloon tip notification in the system tray.
@@ -319,6 +354,16 @@ namespace PSADT.ClientServer
         public bool ShowBalloonTip(BalloonTipOptions options)
         {
             return Invoke<ShowBalloonTipPayload, bool>(PipeCommand.ShowBalloonTip, new(options));
+        }
+
+        /// <summary>
+        /// Closes the notification icon.
+        /// </summary>
+        /// <returns><see langword="true"/> if the notification icon was successfully closed; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CloseNotifyIcon()
+        {
+            return Invoke<bool>(PipeCommand.CloseNotifyIcon);
         }
 
         /// <summary>

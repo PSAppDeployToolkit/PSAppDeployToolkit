@@ -15,17 +15,17 @@ function Show-ADTBalloonTip
 
         For Windows 10 and above, balloon tips automatically get translated by the system into toast notifications.
 
-    .PARAMETER BalloonTipText
+    .PARAMETER Text
         Text of the balloon tip.
 
-    .PARAMETER BalloonTipIcon
+    .PARAMETER Icon
         Icon to be used. Valid values for this parameter are: `Error`, `Info`, `None`, `Warning`.
 
-    .PARAMETER BalloonTipTime
-        Time in milliseconds to display the balloon tip. Default: 10000.
+    .PARAMETER Timeout
+        This parameter has had no effect since Windows Vista and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER NoWait
-        Creates the balloon tip asynchronously.
+        This parameter has had no effect since Windows Vista and will be removed in PSAppDeployToolkit 4.3.0.
 
     .PARAMETER Force
         Creates the balloon tip irrespective of whether running silently or not.
@@ -41,12 +41,12 @@ function Show-ADTBalloonTip
         This function does not return any output.
 
     .EXAMPLE
-        Show-ADTBalloonTip -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
+        Show-ADTBalloonTip -Text 'Installation Started' -Title 'Application Name'
 
         Displays a balloon tip with the text 'Installation Started' and the title 'Application Name'.
 
     .EXAMPLE
-        Show-ADTBalloonTip -BalloonTipIcon 'Info' -BalloonTipText 'Installation Started' -BalloonTipTitle 'Application Name'
+        Show-ADTBalloonTip -Icon 'Info' -Text 'Installation Started' -Title 'Application Name'
 
         Displays a balloon tip with the info icon, the text 'Installation Started', and the title 'Application Name'
 
@@ -62,21 +62,24 @@ function Show-ADTBalloonTip
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTBalloonTip
     #>
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'BalloonTipIcon', Justification = "This parameter is used via the function's PSBoundParameters dictionary, which is not something PSScriptAnalyzer understands. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Icon', Justification = "This parameter is used via the function's PSBoundParameters dictionary, which is not something PSScriptAnalyzer understands. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]
     [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true, Position = 0)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
-        [System.String]$BalloonTipText,
+        [Alias('BalloonTipText')]
+        [System.String]$Text,
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info,
+        [Alias('BalloonTipIcon')]
+        [System.Windows.Forms.ToolTipIcon]$Icon = [System.Windows.Forms.ToolTipIcon]::Info,
 
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.UInt32]$BalloonTipTime = 10000,
+        [Alias('BalloonTipTime')]
+        [System.UInt32]$Timeout,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
@@ -94,10 +97,11 @@ function Show-ADTBalloonTip
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
         # Add in parameters we need as mandatory when there's no active ADTSession.
-        $paramDictionary.Add('BalloonTipTitle', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'BalloonTipTitle', [System.String], $(
+        $paramDictionary.Add('Title', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                'Title', [System.String], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = !$adtSession; HelpMessage = 'Title of the balloon tip.' }
                     [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpaceAttribute]::new()
+                    [System.Management.Automation.AliasAttribute]::new('BalloonTipTitle')
                 )
             ))
 
@@ -112,77 +116,80 @@ function Show-ADTBalloonTip
         $adtConfig = Get-ADTConfig
         $forced = $false
 
+        # Log the deprecation of -WaitSeconds to the log.
+        if ($Timeout -gt 0)
+        {
+            Write-ADTLogEntry -Message "The parameter [BalloonTipTime] has had no effect since Windows Vista and will be removed in PSAppDeployToolkit 4.3.0." -Severity 2
+        }
+        if ($NoWait)
+        {
+            Write-ADTLogEntry -Message "The parameter [NoWait] has had no effect since Windows Vista and will be removed in PSAppDeployToolkit 4.3.0." -Severity 2
+        }
+
         # Set up defaults if not specified.
-        $BalloonTipTitle = if (!$PSBoundParameters.ContainsKey('BalloonTipTitle'))
+        $Title = if (!$PSBoundParameters.ContainsKey('Title'))
         {
             $adtSession.InstallTitle
         }
         else
         {
-            $PSBoundParameters.BalloonTipTitle
+            $PSBoundParameters.Title
         }
     }
 
     process
     {
+        # Skip balloon if disabled in the config, we're in the ESP, or there's no logged on user.
+        if (!$adtConfig.UI.BalloonNotifications)
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. Text: $Text"
+            return
+        }
+        if (Test-ADTEspActive -InformationAction SilentlyContinue)
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is an active Enrollment Status Page (ESP) on the system."
+            return
+        }
+        if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return
+        }
+
+        # Determine if a notification icon is open before testing the session.
+        # We'll allow updating of a notification icon in silent mode without
+        # the -Force parameter if an existing notification icon is already open
+        if ($adtSession -and $adtSession.IsSilent() -and !(Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser))
+        {
+            if (!$Force)
+            {
+                Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. Text: $Text"
+                return
+            }
+            $forced = $true
+        }
+
+        # Call the underlying function to show a balloon tip.
         try
         {
             try
             {
-                # Skip balloon if in silent mode, disabled in the config, a presentation is detected, or there's no logged on user.
-                if (!$adtConfig.UI.BalloonNotifications)
-                {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Config Show Balloon Notifications: $($adtConfig.UI.BalloonNotifications)]. BalloonTipText: $BalloonTipText"
-                    return
-                }
-                if (Test-ADTEspActive -InformationAction SilentlyContinue)
-                {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is an active Enrollment Status Page (ESP) on the system."
-                    return
-                }
-                if ($adtSession -and $adtSession.IsSilent())
-                {
-                    if (!$Force)
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]. BalloonTipText: $BalloonTipText"
-                        return
-                    }
-                    $forced = $true
-                }
-                if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
-                {
-                    Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
-                    return
-                }
-                if (Test-ADTUserIsBusy)
-                {
-                    if (!$Force)
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Presentation/Microphone in Use Detected: $true]. BalloonTipText: $BalloonTipText"
-                        return
-                    }
-                    $forced = $true
-                }
+                # Set up/update the notification icon before proceeding.
+                Show-ADTNotifyIcon -ToolTipText "$($Title) - $($Text)" -Force:$Force
 
-                # Establish options class for displaying the balloon tip.
-                $options = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.BalloonTipOptions]) -Data @{
-                    TrayTitle = $adtConfig.Toolkit.CompanyName
-                    TrayIcon = $adtConfig.Assets.Logo
-                    BalloonTipTitle = $BalloonTipTitle
-                    BalloonTipText = $BalloonTipText
-                    BalloonTipIcon = $BalloonTipIcon
-                    BalloonTipTime = $BalloonTipTime
-                }
+                # Establish options object and display the balloon tip.
+                Write-ADTLogEntry -Message "$(("Displaying", "Forcibly displaying")[$forced]) balloon tip notification with message [$Text]."
+                Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options (New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.BalloonTipOptions]) -Data @{
+                        Title = $Title
+                        Text = $Text
+                        Icon = $Icon
+                    })
 
-                # Display the balloon tip via our client/server process.
-                if ($NoWait)
+                # If we're here without a session, close out notification icon.
+                if (!$adtSession)
                 {
-                    Write-ADTLogEntry -Message "$(("Displaying", "Forcibly displaying")[$forced]) balloon tip notification asynchronously with message [$BalloonTipText]."
-                    Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options -NoWait
-                    return
+                    Close-ADTNotifyIcon
                 }
-                Write-ADTLogEntry -Message "$(("Displaying", "Forcibly displaying")[$forced]) balloon tip notification with message [$BalloonTipText]."
-                Invoke-ADTClientServerOperation -ShowBalloonTip -User $runAsActiveUser -Options $options
             }
             catch
             {

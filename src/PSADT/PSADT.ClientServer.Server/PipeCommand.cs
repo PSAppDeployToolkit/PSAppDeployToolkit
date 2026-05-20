@@ -51,9 +51,29 @@
         CloseProgressDialog,
 
         /// <summary>
+        /// Creates a new notification icon.
+        /// </summary>
+        ShowNotifyIcon,
+
+        /// <summary>
+        /// Checks if a notification icon is currently open.
+        /// </summary>
+        NotifyIconOpen,
+
+        /// <summary>
+        /// Updates an existing notification icon.
+        /// </summary>
+        UpdateNotifyIcon,
+
+        /// <summary>
         /// Displays a balloon tip notification.
         /// </summary>
         ShowBalloonTip,
+
+        /// <summary>
+        /// Closes the active notification icon.
+        /// </summary>
+        CloseNotifyIcon,
 
         /// <summary>
         /// Minimizes all windows on the desktop.
