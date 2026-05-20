@@ -58,14 +58,6 @@ namespace PSADT.UserInterface
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
                         _ = appLocal.Dispatcher.BeginInvoke(DispatcherPriority.Normal, dispatcherRunning.Set);
                     };
-                    appLocal.Exit += (_, _) =>
-                    {
-                        // Clean up our disposable objects when the app exits to ensure they don't outlive the dispatcher thread and cause exceptions.
-                        progressDialog?.Dispose();
-                        progressDialog = null;
-                        notifyIcon?.Dispose();
-                        notifyIcon = null;
-                    };
                     _ = appLocal.Run();
                 }
                 catch (Exception exception) when (exception.Message is not null)
