@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -175,7 +176,7 @@ namespace PSADT.ClientServer
             DataContractResolver = new DictionaryDataContractResolver(),
             PreserveObjectReferences = false,
             SerializeReadOnlyTypes = true,
-            KnownTypes =
+            KnownTypes = new ReadOnlyCollection<Type>(
             [
                 // Exception types - System namespace (core)
                 typeof(Exception),
@@ -386,21 +387,21 @@ namespace PSADT.ClientServer
                 // * ProcessManagement.ProcessResult
                 // * WindowManagement.WindowInfoOptions
                 // * UserInterface.DialogOptions.ListSelectionDialogOptions
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<string>),
+                typeof(ReadOnlyCollection<string>),
 
                 // Used within WindowManagement.WindowInfoOptions class.
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<ulong>),
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<long>),
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<uint>),
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<int>),
+                typeof(ReadOnlyCollection<ulong>),
+                typeof(ReadOnlyCollection<long>),
+                typeof(ReadOnlyCollection<uint>),
+                typeof(ReadOnlyCollection<int>),
 
                 // Used within Payloads.InitCloseAppsDialogPayload class.
-                typeof(System.Collections.ObjectModel.ReadOnlyCollection<ProcessManagement.ProcessDefinition>),
+                typeof(ReadOnlyCollection<ProcessManagement.ProcessDefinition>),
 
                 // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
-                typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyDictionary<string, string>>),
-                typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>),
-            ]
+                typeof(ReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyDictionary<string, string>>),
+                typeof(ReadOnlyDictionary<string, string>),
+            ])
         };
 
         /// <summary>
