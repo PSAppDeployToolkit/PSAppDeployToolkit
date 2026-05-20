@@ -9,8 +9,8 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <WarningLevel>9999</WarningLevel>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -45,7 +45,7 @@
 
   <!-- ARM64 preference for .NET Framework -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PreferNativeArm64>True</PreferNativeArm64>
+    <PreferNativeArm64>true</PreferNativeArm64>
   </PropertyGroup>
 
   <!-- Banned API analyzer -->
