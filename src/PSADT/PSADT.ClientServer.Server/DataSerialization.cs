@@ -438,16 +438,13 @@ namespace PSADT.ClientServer
             /// <summary>
             /// Maps a data contract name back to a type during deserialization.
             /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
             {
                 // When deserializing the dictionary contract, return Hashtable (more general and public).
-                if (typeName == DictionaryTypeName && typeNamespace == ArraysNamespace)
-                {
-                    return typeof(System.Collections.Hashtable);
-                }
-
-                // For other types, defer to the known type resolver.
-                return knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, NullContractResolver);
+                return typeName != DictionaryTypeName || typeNamespace != ArraysNamespace
+                    ? knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, NullContractResolver)
+                    : typeof(System.Collections.Hashtable);
             }
 
             /// <summary>
