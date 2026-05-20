@@ -142,7 +142,6 @@ function Show-ADTInstallationProgress
     {
         # Initialize function.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        $errRecord = $null
 
         # Initialise the string table.
         $sessionState = if ($adtSession)
@@ -216,7 +215,7 @@ function Show-ADTInstallationProgress
             }
         }
 
-        # Call the underlying function to open the progress window.
+        # Call the underlying function to open/update the progress window.
         try
         {
             try
@@ -302,14 +301,7 @@ function Show-ADTInstallationProgress
         }
         catch
         {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord ($errRecord = $_)
-        }
-        finally
-        {
-            if ($errRecord)
-            {
-                Close-ADTInstallationProgress
-            }
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
