@@ -50,6 +50,83 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
+        /// Initializes the <see cref="ClientExecutable"/> class by eagerly loading all referenced assemblies located in
+        /// the application directory.
+        /// </summary>
+        /// <remarks>Performs a breadth-first traversal of all assembly references, loading only those
+        /// assemblies that exist in the same directory as the current assembly. Dynamic assemblies and Windows Runtime
+        /// assemblies are skipped.</remarks>
+        /// <exception cref="InvalidOperationException">The application directory cannot be determined from the assembly location.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This is a guard exception that should never fire.")]
+        static ClientExecutable()
+        {
+            string applicationDirectory = Path.GetDirectoryName(AssemblyInfo.Location) ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(applicationDirectory))
+            {
+                throw new InvalidOperationException("Failed to determine the application directory from the assembly location.");
+            }
+            HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+            Queue<Assembly> queue = new();
+            EnqueueIfNeeded(AssemblyInfo);
+            while (queue.Count > 0)
+            {
+                foreach (AssemblyName referencedAssemblyName in queue.Dequeue().GetReferencedAssemblies())
+                {
+                    // Skip over any invalid or already seen assembly names.
+                    if (referencedAssemblyName.ContentType == AssemblyContentType.WindowsRuntime)
+                    {
+                        continue;
+                    }
+                    if (referencedAssemblyName.Name is not string simpleName)
+                    {
+                        continue;
+                    }
+                    if (referencedAssemblyName.FullName is not string requestedFullName)
+                    {
+                        continue;
+                    }
+                    if (!seen.Add(requestedFullName))
+                    {
+                        continue;
+                    }
+
+                    // Skip over loading any assembly not adjacent to this binary.
+                    string dllPath = Path.Join(applicationDirectory, simpleName + ".dll");
+                    string exePath = Path.Join(applicationDirectory, simpleName + ".exe");
+                    if (!File.Exists(dllPath) && !File.Exists(exePath))
+                    {
+                        continue;
+                    }
+
+                    // Load the assembly and enqueue it for processing.
+                    Assembly referencedAssembly = Assembly.Load(referencedAssemblyName);
+                    if (referencedAssembly.FullName is string actualFullName)
+                    {
+                        _ = seen.Add(actualFullName);
+                    }
+                    EnqueueIfNeeded(referencedAssembly);
+                }
+            }
+
+            // Local function to enqueue assemblies if they haven't been seen before.
+            void EnqueueIfNeeded(Assembly assembly)
+            {
+                if (assembly.IsDynamic)
+                {
+                    return;
+                }
+                if (assembly.FullName is not string fullName)
+                {
+                    return;
+                }
+                if (seen.Add(fullName))
+                {
+                    queue.Enqueue(assembly);
+                }
+            }
+        }
+
+        /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
@@ -61,14 +138,13 @@ namespace PSADT.ClientServer
                 // Determine the mode of operation based on the provided arguments.
                 if (!(argv?.Length > 0))
                 {
-                    Assembly assemblyInfo = typeof(ClientExecutable).Assembly;
-                    string productVersion = assemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
-                    string helpTitle = $"{assemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
+                    string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
+                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
                         string.Empty,
-                        assemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? throw new ClientException("Failed to retrieve assembly copyright information.", ClientExitCode.Unknown),
+                        AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? throw new ClientException("Failed to retrieve assembly copyright information.", ClientExitCode.Unknown),
                         string.Empty,
                         "This application is designed to be used with the PSAppDeployToolkit PowerShell module and should not be directly invoked.",
                         string.Empty,
@@ -1133,5 +1209,10 @@ namespace PSADT.ClientServer
             }
             return (int?)exitCode ?? exception.HResult;
         }
+
+        /// <summary>
+        /// The <see cref="Assembly"/> containing the <see cref="ClientExecutable"/> type.
+        /// </summary>
+        private static readonly Assembly AssemblyInfo = typeof(ClientExecutable).Assembly;
     }
 }
