@@ -65,53 +65,53 @@ function Close-ADTInstallationProgress
 
     process
     {
+        # Perform pre-requisite checks before closing the dialog.
+        if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
+            return
+        }
+        if (!(Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser))
+        {
+            Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no progress dialog open."
+            return
+        }
         try
         {
             try
             {
+                # Call the underlying function to close the progress window.
+                Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
+                Invoke-ADTClientServerOperation -CloseProgressDialog -User $runAsActiveUser
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
+        catch
+        {
+            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+        }
+        finally
+        {
+            # Remove any callback that might be lingering in the backing buffer.
+            Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
+        }
+
+        # Close the client/server process when we're running sessionless.
+        if (!$adtSession -and !(Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser))
+        {
+            Close-ADTClientServerProcess
+            return
+        }
+
+        # Send out the final toast notification.
+        if ((Get-ADTConfig).UI.DialogStyle -eq 'Classic')
+        {
+            try
+            {
                 try
-                {
-                    # Return early if we're silent, a window wouldn't have ever opened.
-                    if ($adtSession -and $adtSession.IsSilent())
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) [Mode: $($adtSession.DeployMode)]"
-                        return
-                    }
-
-                    # Bypass if no one's logged on to answer the dialog.
-                    if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no active user logged onto the system."
-                        return
-                    }
-
-                    # Return early if there's no progress dialog open at all.
-                    if (!(Test-ADTInstallationProgressOpen -RunAsActiveUser $runAsActiveUser))
-                    {
-                        Write-ADTLogEntry -Message "Bypassing $($MyInvocation.MyCommand.Name) as there is no progress dialog open."
-                        return
-                    }
-
-                    # Call the underlying function to close the progress window.
-                    Write-ADTLogEntry -Message 'Closing the installation progress dialog.'
-                    Invoke-ADTClientServerOperation -CloseProgressDialog -User $runAsActiveUser
-                }
-                finally
-                {
-                    # Remove any callback that might be lingering in the backing buffer.
-                    Remove-ADTModuleCallback -Hookpoint OnFinish -Callback $Script:CommandTable.($MyInvocation.MyCommand.Name)
-                }
-
-                # We only send balloon tips when a session is active.
-                if (!$adtSession -and !(Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser))
-                {
-                    # Close the client/server process when we're running sessionless.
-                    Close-ADTClientServerProcess
-                    return
-                }
-
-                # Send out the final toast notification.
-                if ((Get-ADTConfig).UI.DialogStyle -eq 'Classic')
                 {
                     switch ($adtSession.GetDeploymentStatus())
                     {
@@ -132,15 +132,15 @@ function Close-ADTInstallationProgress
                         }
                     }
                 }
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
             }
             catch
             {
-                Write-Error -ErrorRecord $_
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -Silent
             }
-        }
-        catch
-        {
-            Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
         }
     }
 
