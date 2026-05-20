@@ -457,7 +457,7 @@ namespace PSADT.ClientServer
             /// <remarks>This field is initialized using reflection to avoid a direct dependency on
             /// the internal ListDictionary type. The value will be null if the type cannot be found in the current
             /// runtime environment.</remarks>
-            private static readonly Type? ListDictionaryInternalType = Type.GetType("System.Collections.ListDictionaryInternal");
+            private static readonly Type ListDictionaryInternalType = Type.GetType("System.Collections.ListDictionaryInternal") ?? throw new InvalidOperationException("Failed to initialize ListDictionaryInternalType.");
 
             /// <summary>
             /// Represents a null instance of the DataContractResolver used as a default value.
