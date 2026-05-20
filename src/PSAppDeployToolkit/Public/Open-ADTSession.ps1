@@ -161,7 +161,7 @@ function Open-ADTSession
         This function returns the session object if `-PassThru` is specified.
 
     .EXAMPLE
-        Open-ADTSession -SessionState $ExecutionContext.SessionState -DeploymentType "Install" -DeployMode "Interactive"
+        Open-ADTSession -DeploymentType "Install" -DeployMode "Interactive"
 
         Opens a new ADT session with the specified parameters.
 
@@ -410,9 +410,9 @@ function Open-ADTSession
         $noExitOnClose = $callerInvocation -and !$callerInvocation.MyCommand.CommandType.Equals([System.Management.Automation.CommandTypes]::ExternalScript) -and !([System.Environment]::GetCommandLineArgs() -eq '-NonInteractive')
 
         # Set up the SessionState if one wasn't provided.
-        if (!$PSBoundParameters.ContainsKey('SessionState'))
+        if (!$PSBoundParameters.ContainsKey('DeployAppScriptSessionState'))
         {
-            $PSBoundParameters.SessionState = $SessionState = $PSCmdlet.SessionState
+            $PSBoundParameters.DeployAppScriptSessionState = $DeployAppScriptSessionState = $PSCmdlet.SessionState
         }
 
         # Set up the ScriptDirectory if one wasn't provided.
@@ -420,7 +420,7 @@ function Open-ADTSession
         {
             [System.String[]]$PSBoundParameters.ScriptDirectory = $ScriptDirectory = if (!$Script:ADT.Initialized -or !$Script:ADT.Directories.Script)
             {
-                if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $SessionState.PSVariable.GetValue('PSScriptRoot', $null))))
+                if (![System.String]::IsNullOrWhiteSpace(($scriptRoot = $DeployAppScriptSessionState.PSVariable.GetValue('PSScriptRoot', $null))))
                 {
                     if ($compatibilityMode)
                     {
@@ -614,7 +614,7 @@ function Open-ADTSession
                 # Export the environment table to variables within the caller's scope.
                 if ($firstSession)
                 {
-                    Export-ADTEnvironmentTableToSessionState -SessionState $SessionState
+                    Export-ADTEnvironmentTableToSessionState -SessionState $DeployAppScriptSessionState
                 }
 
                 # Change the install phase and return the most recent session if passing through.
