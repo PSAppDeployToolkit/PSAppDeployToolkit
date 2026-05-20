@@ -208,47 +208,48 @@ function Show-ADTInstallationRestartPrompt
 
     process
     {
+        # Check if we are already displaying a restart prompt.
+        if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
+        {
+            Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity Warning
+            return
+        }
+
+        # If in non-interactive mode.
+        if ($adtSession -and $adtSession.IsSilent())
+        {
+            if ($SilentRestart)
+            {
+                Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
+                $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
+            }
+            else
+            {
+                Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
+            }
+            return
+        }
+
+        # Just restart the computer if no one's logged on to answer the dialog.
+        if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
+        {
+            Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
+            if ($adtSession)
+            {
+                $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
+            }
+            else
+            {
+                Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $SilentCountdownSeconds -NoWait
+            }
+            return
+        }
+
+        # Build out and present the restart dialog.
         try
         {
             try
             {
-                # Check if we are already displaying a restart prompt.
-                if (Get-Process | & { process { if ($_.MainWindowTitle -match $adtStrings.RestartPrompt.Title) { return $_ } } } | Select-Object -First 1)
-                {
-                    Write-ADTLogEntry -Message "$($MyInvocation.MyCommand.Name) was invoked, but an existing restart prompt was detected. Cancelling restart prompt." -Severity Warning
-                    return
-                }
-
-                # If in non-interactive mode.
-                if ($adtSession -and $adtSession.IsSilent())
-                {
-                    if ($SilentRestart)
-                    {
-                        Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
-                        $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
-                    }
-                    else
-                    {
-                        Write-ADTLogEntry -Message "Skipping restart because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] was not specified."
-                    }
-                    return
-                }
-
-                # Just restart the computer if no one's logged on to answer the dialog.
-                if (!($runAsActiveUser = Get-ADTClientServerUser -AllowSystemFallback))
-                {
-                    Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
-                    if ($adtSession)
-                    {
-                        $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
-                    }
-                    else
-                    {
-                        Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $SilentCountdownSeconds -NoWait
-                    }
-                    return
-                }
-
                 # Build out hashtable of parameters needed to construct the dialog.
                 $dialogOptions = @{
                     AppTitle = $PSBoundParameters.Title
