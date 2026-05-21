@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Windows.Forms;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
@@ -366,6 +367,17 @@ namespace PSADT.UserInterface
                 }
                 notifyIcon = new() { Icon = iconObj, Text = options.MessageText, Visible = true, };
                 notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetOperationSuccessFlag();
+                notifyIcon.Click += static (sender, e) =>
+                {
+                    if (sender is not NotifyIcon icon)
+                    {
+                        throw new InvalidProgramException("Unexpected event sender type. Expected NotifyIcon.");
+                    }
+                    if (lastBalloonTip is not null)
+                    {
+                        icon.ShowBalloonTip(lastBalloonTip);
+                    }
+                };
             });
         }
 
@@ -411,6 +423,7 @@ namespace PSADT.UserInterface
                 throw new InvalidOperationException("Cannot show a balloon tip while no notify icon is open.");
             }
             notifyIcon.ShowBalloonTip(options);
+            lastBalloonTip = options;
         }
 
         /// <summary>
@@ -425,6 +438,7 @@ namespace PSADT.UserInterface
             }
             InvokeDialogAction(() =>
             {
+                lastBalloonTip = null;
                 notifyIcon.Dispose();
                 notifyIcon = null;
             });
@@ -570,6 +584,11 @@ namespace PSADT.UserInterface
         /// The currently active NotifyIcon for balloon tips.
         /// </summary>
         private static System.Windows.Forms.NotifyIcon? notifyIcon;
+
+        /// <summary>
+        /// A cached value of the last balloon tip options used.
+        /// </summary>
+        private static BalloonTipOptions? lastBalloonTip;
 
         /// <summary>
         /// Application instance for the WPF dialog.
