@@ -610,8 +610,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Announce session instantiation mode.
                 if (compatibilityMode == true)
                 {
-                    WriteLogEntry($"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", LogSeverity.Warning);
-                    WriteLogEntry("Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/].", LogSeverity.Warning);
+                    WriteLogEntry([$"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", "Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/]."], LogSeverity.Warning);
                 }
                 else
                 {
@@ -1148,6 +1147,17 @@ namespace PSAppDeployToolkit.Foundation
         }
 
         /// <summary>
+        /// Writes a log entry with a message array.
+        /// </summary>
+        /// <param name="message">The log message array.</param>
+        /// <param name="severity">The severity level.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteLogEntry(IReadOnlyList<string> message, LogSeverity severity)
+        {
+            _ = WriteLogEntry(message, false, severity);
+        }
+
+        /// <summary>
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
@@ -1166,17 +1176,6 @@ namespace PSAppDeployToolkit.Foundation
         public void WriteLogEntry(string message, LogSeverity severity)
         {
             _ = WriteLogEntry([message], false, severity);
-        }
-
-        /// <summary>
-        /// Writes a log entry with a single message and source.
-        /// </summary>
-        /// <param name="message">The log message.</param>
-        /// <param name="source">The source of the message.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteLogEntry(string message, string source)
-        {
-            _ = WriteLogEntry([message], false, source: source);
         }
 
         /// <summary>
