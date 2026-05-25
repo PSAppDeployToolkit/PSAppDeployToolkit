@@ -652,7 +652,7 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
                     WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, adtEnv.LoggedOnUserSessions.Select(static s => $"{s}{Environment.NewLine}{Environment.NewLine}")).TrimEnd()}", false);
 
-                    // Check if the current process is running in the context of one of the logged on users
+                    // Check if the current process is running in the context of one of the logged on users.
                     if (adtEnv.CurrentLoggedOnUserSession is SessionInfo CurrentLoggedOnUserSession)
                     {
                         WriteLogEntry($"Current process is running with user account [{processNtAccount}] under logged on user session for [{CurrentLoggedOnUserSession.NTAccount}].");
@@ -662,7 +662,7 @@ namespace PSAppDeployToolkit.Foundation
                         WriteLogEntry($"Current process is running under a system account [{processNtAccount}].");
                     }
 
-                    // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse)
+                    // Display account and session details for the account running as the console user (user with control of the physical monitor, keyboard, and mouse).
                     if (adtEnv.CurrentConsoleUserSession is SessionInfo CurrentConsoleUserSession)
                     {
                         WriteLogEntry($"The following user is the console user [{CurrentConsoleUserSession.NTAccount}] (user with control of physical monitor, keyboard, and mouse).");
@@ -672,7 +672,7 @@ namespace PSAppDeployToolkit.Foundation
                         WriteLogEntry("There is no console user logged on (user with control of physical monitor, keyboard, and mouse).");
                     }
 
-                    // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account
+                    // Display the account that will be used to execute commands in the user session when toolkit is running under the SYSTEM account.
                     if (runAsActiveUser is not null)
                     {
                         WriteLogEntry($"The active logged on user who will receive UI elements is [{runAsActiveUser.NTAccount}].");
@@ -965,8 +965,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                 }
 
-                // Export session's public variables to the user's scope. For these, we can't capture the Set-Variable
-                // PassThru data as syntax like `$var = 'val'` constructs a new PSVariable every time.
+                // Export session's public variables to the user's scope.
                 if (compatibilityMode == true)
                 {
                     if (DeployAppScriptSessionState is not SessionState sessionState)
@@ -1079,7 +1078,7 @@ namespace PSAppDeployToolkit.Foundation
                     FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
                     destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
 
-                    // Keep only the max number of archive files
+                    // Keep only the max number of archive files.
                     int archiveFilesCount = archiveFiles.Length;
                     if (archiveFilesCount > LogMaxHistory)
                     {
