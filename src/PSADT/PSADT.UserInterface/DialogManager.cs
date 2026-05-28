@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Windows.Forms;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
@@ -369,7 +368,7 @@ namespace PSADT.UserInterface
                 notifyIcon.BalloonTipShown += static (_, _) => ClientServerUtilities.SetOperationSuccessFlag();
                 notifyIcon.Click += static (sender, e) =>
                 {
-                    if (sender is not NotifyIcon icon)
+                    if (sender is not System.Windows.Forms.NotifyIcon icon)
                     {
                         throw new InvalidProgramException("Unexpected event sender type. Expected NotifyIcon.");
                     }
