@@ -381,7 +381,7 @@ namespace PSADT.ClientServer
                                                         closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
                                                         if (!process.HasExited)
                                                         {
-                                                            process.Kill(); await process.WaitForExitAsync();
+                                                            process.Kill(); await process.WaitForExitAsync().ConfigureAwait(false);
                                                         }
                                                     }
                                                 }
@@ -785,7 +785,7 @@ namespace PSADT.ClientServer
                 }
 
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                using (ProcessResult result = await handle)
+                using (ProcessResult result = await handle.ConfigureAwait(false))
                 {
                     Environment.Exit(result.ExitCode);
                 }
@@ -992,7 +992,7 @@ namespace PSADT.ClientServer
             );
             return ProcessManager.LaunchAsync(launchInfo) is not ProcessHandle handle
                 ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
-                : await handle;
+                : await handle.ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1009,7 +1009,7 @@ namespace PSADT.ClientServer
             {
                 return new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
             }
-            return await handle;
+            return await handle.ConfigureAwait(false);
         }
 
         /// <summary>
