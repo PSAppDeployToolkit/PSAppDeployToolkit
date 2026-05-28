@@ -112,7 +112,7 @@ namespace PSADT.DeviceManagement
         [DoesNotReturn]
         internal static async Task RestartComputer()
         {
-            using (ProcessResult result = await (ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true)) ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.")))
+            using (ProcessResult result = await (ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true)) ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.")).ConfigureAwait(false))
             {
                 if (result.ExitCode != 0)
                 {

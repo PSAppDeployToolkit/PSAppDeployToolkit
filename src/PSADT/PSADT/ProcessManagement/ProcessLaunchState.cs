@@ -302,6 +302,19 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Configures an awaiter used to await this task.
+        /// </summary>
+        /// <param name="continueOnCapturedContext"><see langword="true"/> to attempt to marshal the continuation back to the original context captured;
+        /// otherwise, <see langword="false"/>.</param>
+        /// <returns>An object used to await this task.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
+        {
+            return ProcessResultTask.ConfigureAwait(continueOnCapturedContext);
+        }
+
+        /// <summary>
         /// Represents the underlying process associated with this instance.
         /// </summary>
         internal readonly Process Process;

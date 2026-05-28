@@ -26,7 +26,7 @@ namespace PSADT.ProcessManagement
             {
                 using (launchState)
                 {
-                    return await launchState;
+                    return await launchState.ConfigureAwait(false);
                 }
             }
             Process = launchState.Process;
@@ -71,5 +71,19 @@ namespace PSADT.ProcessManagement
             return Task.GetAwaiter();
         }
 
+        /// <summary>
+        /// Configures an awaiter used to await this process handle.
+        /// </summary>
+        /// <param name="continueOnCapturedContext">
+        /// <see langword="true"/> to attempt to marshal the continuation back to the original context captured;
+        /// otherwise, <see langword="false"/>.
+        /// </param>
+        /// <returns>A configured task awaitable.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
+        {
+            return Task.ConfigureAwait(continueOnCapturedContext);
+        }
     }
 }
