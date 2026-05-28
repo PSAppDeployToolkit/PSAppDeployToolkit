@@ -47,7 +47,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="psVersionTable">A hashtable containing version information for the PowerShell environment. This parameter cannot be null.</param>
         /// <param name="psVersion">The version of PowerShell being used, represented as a Version object.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cmdlet"/> or <paramref name="psVersionTable"/> is null.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "There's no async support during construction.")]
         public EnvironmentTable(PSCmdlet cmdlet, Hashtable psVersionTable, Version psVersion)
         {
             // Toolkit info.
@@ -192,12 +191,12 @@ namespace PSAppDeployToolkit.Foundation
             EnvPSVersion = psVersion;
 
             // Logged on user information.
-            if ((LoggedOnUserSessions = SessionInfo.GetAsync().GetAwaiter().GetResult()).Count > 0)
+            if (LoggedOnUserSessions.Count > 0)
             {
                 UsersLoggedOn = new ReadOnlyCollection<NTAccount>([.. LoggedOnUserSessions.Select(static s => s.NTAccount)]);
                 CurrentLoggedOnUserSession = LoggedOnUserSessions.FirstOrDefault(static s => s.IsCurrentSession);
                 CurrentConsoleUserSession = LoggedOnUserSessions.FirstOrDefault(static s => s.IsConsoleSession);
-                RunAsActiveUser = RunAsActiveUser.GetAsync(LoggedOnUserSessions).GetAwaiter().GetResult();
+                RunAsActiveUser = RunAsActiveUser.Get(LoggedOnUserSessions);
                 if (RunAsActiveUser is not null)
                 {
                     RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName && !string.IsNullOrWhiteSpace(localeName) ? new(localeName) : null;
@@ -1060,7 +1059,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property retrieves information about all user sessions on the system, which can be useful for
         /// managing user interactions and session-specific operations.</remarks>
-        public IReadOnlyList<SessionInfo> LoggedOnUserSessions { get; }
+        public IReadOnlyList<SessionInfo> LoggedOnUserSessions { get; } = SessionInfo.Get();
 
         /// <summary>
         /// Gets a read-only list of users currently logged on to the system.

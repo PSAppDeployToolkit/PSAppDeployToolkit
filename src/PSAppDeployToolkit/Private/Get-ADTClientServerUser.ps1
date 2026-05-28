@@ -53,7 +53,7 @@ function Private:Get-ADTClientServerUser
     }
     else
     {
-        [PSADT.Foundation.RunAsActiveUser]::GetAsync().GetAwaiter().GetResult()
+        [PSADT.Foundation.RunAsActiveUser]::Get()
     }
 
     # Return the calculated RunAsActiveUser if we have one.

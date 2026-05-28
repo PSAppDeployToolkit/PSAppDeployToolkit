@@ -162,7 +162,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             const string inputDialogButtonRightText = "Cancel";
 
             // Set up options for the dialogs
-            await using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
+            using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
             Hashtable closeAppsDialogOptions = new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },

@@ -27,9 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.8" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
 
