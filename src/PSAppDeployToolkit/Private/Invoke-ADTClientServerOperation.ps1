@@ -249,7 +249,7 @@ function Private:Invoke-ADTClientServerOperation
             $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User)
             try
             {
-                $null = $Script:ADT.ClientServerProcess.OpenAsync().GetAwaiter().GetResult()
+                $Script:ADT.ClientServerProcess.Open()
             }
             catch
             {
@@ -269,13 +269,13 @@ function Private:Invoke-ADTClientServerOperation
                         ErrorId = 'ClientServerProcessOpenFailure'
                         TargetObject = $clientServerClientProcessResult
                     }
-                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
+                    $Script:ADT.ClientServerProcess.Dispose()
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
                 else
                 {
-                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
+                    $Script:ADT.ClientServerProcess.Dispose()
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError($_)
                 }

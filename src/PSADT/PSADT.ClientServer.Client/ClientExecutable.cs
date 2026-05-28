@@ -300,10 +300,7 @@ namespace PSADT.ClientServer
                                             {
                                                 // We have the suppression here as the analyser can't handle our setup with IAsyncDisposable.
                                                 // It is correct though and under no circumstances is any memory leaked out of our setup.
-                                                if (closeAppsDialogState is not null)
-                                                {
-                                                    await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
-                                                }
+                                                closeAppsDialogState?.Dispose();
                                                 #pragma warning disable format
                                                 #pragma warning disable CA2000 
                                                 closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
@@ -575,11 +572,8 @@ namespace PSADT.ClientServer
                     }
                     finally
                     {
-                        if (closeAppsDialogState is not null)
-                        {
-                            await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
-                            closeAppsDialogState = null;
-                        }
+                        closeAppsDialogState?.Dispose();
+                        closeAppsDialogState = null;
                     }
                     return (int)ClientExitCode.Success;
                 }

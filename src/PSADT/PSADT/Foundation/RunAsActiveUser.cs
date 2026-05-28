@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using PSADT.AccountManagement;
 using PSADT.TerminalServices;
 
@@ -30,11 +29,11 @@ namespace PSADT.Foundation
         /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
         /// session is found.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null)
+        public static RunAsActiveUser? Get(IReadOnlyList<SessionInfo>? sessionInfo = null)
         {
             // Determine the account that will be used to execute client/server commands in the user's context.
             // Favour the caller's session if it's found and is currently an active user session on the device.
-            return (sessionInfo ??= await SessionInfo.GetAsync()).FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession) is not SessionInfo callerSession
+            return (sessionInfo ??= SessionInfo.Get()).FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession) is not SessionInfo callerSession
                 ? sessionInfo.Where(static s => s.IsActiveUserSession).OrderBy(static s => (s.IdleTime ?? TimeSpan.MaxValue).Ticks / TimeSpan.TicksPerSecond).ThenByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser()
                 : callerSession.ToRunAsActiveUser();
         }

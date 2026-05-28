@@ -171,7 +171,7 @@ namespace PSADT.UserInterface
                 {
                     throw new InvalidProgramException("Unexpected null RunningProcessService. This should never happen.");
                 }
-                await state.RunningProcessService.StopAsync();
+                state.RunningProcessService.Stop();
             }
             return result;
         }
