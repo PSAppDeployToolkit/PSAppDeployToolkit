@@ -105,8 +105,8 @@ try
                     SourceRoot = [System.IO.Directory]::GetParent($PSScriptRoot).FullName
                     ModuleSource = $PSScriptRoot -replace '\.Build$'
                     AdmxTemplate = [System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'opt', 'ADMX', 'PSAppDeployToolkit.admx')
-                    UnitTests = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Tests', 'Unit')
-                    IntegrationTests = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Tests', 'Integration')
+                    UnitTests = [System.IO.Path]::Combine($PSScriptRoot, 'Tests', 'Unit')
+                    IntegrationTests = [System.IO.Path]::Combine($PSScriptRoot, 'Tests', 'Integration')
                     BuildOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts')
                     ModuleOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'ModuleOnly', 'PSAppDeployToolkit')
                     TestOutput = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'Artifacts', 'TestOutput')

@@ -1,0 +1,174 @@
+﻿BeforeAll {
+    Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
+    Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
+}
+
+Describe 'Remove-ADTHashtableNullOrEmptyValues' {
+    BeforeAll {
+        function Compare-ADTHashtable
+        {
+            [CmdletBinding()]
+            [OutputType([System.Boolean])]
+            param
+            (
+                [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+                [AllowEmptyCollection()]
+                [System.Collections.Hashtable]$Left,
+
+                [Parameter(Mandatory = $true, Position = 1)]
+                [AllowEmptyCollection()]
+                [System.Collections.Hashtable]$Right
+            )
+
+            process
+            {
+                if ($Left.Keys.Count -eq 0)
+                {
+                    if ($Right.Keys.Count -eq 0)
+                    {
+                        return $true
+                    }
+
+                    return $false
+                }
+
+                foreach ($section in $Left.GetEnumerator())
+                {
+                    if (-not $Right.ContainsKey($section.Key))
+                    {
+                        return $false
+                    }
+
+                    if ($section.Value -is [System.Collections.Hashtable])
+                    {
+                        # If the corresponding value on the right is not a hashtable, structures differ
+                        if (-not ($Right.($section.Key) -is [System.Collections.Hashtable]))
+                        {
+                            return $false
+                        }
+
+                        # Both sides are hashtables; compare them recursively
+                        if (-not (& $MyInvocation.MyCommand -Left $section.Value -Right $Right.($section.Key)))
+                        {
+                            return $false
+                        }
+
+                        continue
+                    }
+
+                    if ($section.Value -ne $Right.($section.Key))
+                    {
+                        return $false
+                    }
+                }
+                return $true
+            }
+        }
+
+        function Copy-ADTHashtable
+        {
+            [CmdletBinding()]
+            [OutputType([System.Collections.Hashtable])]
+            param
+            (
+                [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+                [AllowEmptyCollection()]
+                [System.Collections.Hashtable]$Hashtable
+            )
+
+            process
+            {
+                $obj = @{}; foreach ($section in $Hashtable.GetEnumerator())
+                {
+                    if ($section.Value -is [System.Collections.Hashtable])
+                    {
+                        $section.Value = & $MyInvocation.MyCommand -Hashtable $section.Value
+                    }
+
+                    $obj.Add($section.Key, $section.Value)
+                }
+                return $obj
+            }
+        }
+
+        $TestData = @{
+            Empty = ''
+            EmptyCollection = @()
+            Null = $null
+            NullString = [System.Management.Automation.Language.NullString]::Value
+            Whitespace = " `f`n`r`t`v"
+
+            Layer1 = @{
+                Empty = ''
+                EmptyCollection = @()
+                Null = $null
+                NullString = [System.Management.Automation.Language.NullString]::Value
+                Whitespace = " `f`n`r`t`v"
+
+                Layer2 = @{
+                    Layer3 = @{
+                        RealData = @{
+                            Key1 = 'Val1'
+                        }
+
+                        Layer4 = @{
+                            Empty = ''
+                            EmptyCollection = @()
+                            Null = $null
+                            NullString = [System.Management.Automation.Language.NullString]::Value
+                            Whitespace = " `f`n`r`t`v"
+
+                            Layer5 = @{
+                                Empty = ''
+                                EmptyCollection = @()
+                                Null = $null
+                                NullString = [System.Management.Automation.Language.NullString]::Value
+                                Whitespace = " `f`n`r`t`v"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $NoRecurse = Copy-ADTHashtable -Hashtable $TestData
+        $NoRecurse.Remove('Empty')
+        $NoRecurse.Remove('EmptyCollection')
+        $NoRecurse.Remove('Null')
+        $NoRecurse.Remove('NullString')
+        $NoRecurse.Remove('Whitespace')
+
+        $Recurse5 = Copy-ADTHashtable -Hashtable $NoRecurse
+        $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Empty')
+        $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('EmptyCollection')
+        $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Null')
+        $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('NullString')
+        $Recurse5.Layer1.Layer2.Layer3.Layer4.Remove('Whitespace')
+
+        $Recurse6 = Copy-ADTHashtable -Hashtable $Recurse5
+        $Recurse6.Layer1.Layer2.Layer3.Layer4.Remove('Layer5')
+
+        # Removing null/whitespace values on this hashtable causes it to flatten down to an empty hashtable.
+        $Empty = Copy-ADTHashtable -Hashtable $TestData
+        $Empty.Layer1.Layer2.Layer3.Remove('RealData')
+    }
+
+    Context 'Functionality' {
+        It 'Should remove null values' {
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData | Compare-ADTHashtable -Right $NoRecurse | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 1 | Compare-ADTHashtable -Right $NoRecurse | Should -BeTrue
+        }
+        It 'Should remove null values recursively' {
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 5 | Compare-ADTHashtable -Right $Recurse5 | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $TestData -Recurse -Depth 6 | Compare-ADTHashtable -Right $Recurse6 | Should -BeTrue
+            Remove-ADTHashtableNullOrEmptyValues -Hashtable $Empty -Recurse -Depth 6 | Compare-ADTHashtable -Right @{ } | Should -BeTrue
+        }
+    }
+
+    Context 'Input Validation' {
+        It 'Should verify that Depth is a positive UInt32' {
+            { Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ } -Recurse -Depth -1 } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentTransformationError,Remove-ADTHashtableNullOrEmptyValues'
+            { Remove-ADTHashtableNullOrEmptyValues -Hashtable @{ } -Recurse -Depth ([System.UInt32]::MaxValue + 1) } | Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentTransformationError,Remove-ADTHashtableNullOrEmptyValues'
+        }
+    }
+}
