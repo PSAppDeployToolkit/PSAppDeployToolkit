@@ -10,7 +10,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    internal sealed record RunningProcessService : IDisposable
+    internal sealed record RunningProcessService : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the RunningProcessService class with the specified process definitions.
@@ -51,9 +51,7 @@ namespace PSADT.ProcessManagement
         /// not thread-safe and should not be called concurrently with other operations that start or stop
         /// polling.</remarks>
         /// <exception cref="InvalidOperationException">Thrown if the polling task is not currently running.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "We can't support IAsyncEnumerable while using net472 DLL files with PowerShell 7, so this remains synchronous for now.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD107:Await Task within using expression", Justification = "We can't support IAsyncEnumerable while using net472 DLL files with PowerShell 7, so this remains synchronous for now.")]
-        internal void Stop()
+        internal async Task StopAsync()
         {
             // We can't stop the polling task if it's not running.
             if (_pollingTask is null || _cancellationTokenSource is null)
@@ -64,19 +62,15 @@ namespace PSADT.ProcessManagement
             // Cancel the task and wait for it to complete.
             try
             {
-                _cancellationTokenSource.Cancel();
-                _pollingTask.ConfigureAwait(false).GetAwaiter().GetResult();
+                await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+                await _pollingTask.ConfigureAwait(false);
             }
             finally
             {
-                using (_pollingTask)
-                {
-                    _pollingTask = null;
-                }
-                using (_cancellationTokenSource)
-                {
-                    _cancellationTokenSource = null;
-                }
+                _pollingTask.Dispose();
+                _pollingTask = null;
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
             }
         }
 
@@ -198,7 +192,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
         /// </summary>
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (_disposed)
             {
@@ -206,10 +200,8 @@ namespace PSADT.ProcessManagement
             }
             if (IsRunning)
             {
-                Stop();
+                await StopAsync().ConfigureAwait(false);
             }
-            _cancellationTokenSource?.Dispose();
-            _pollingTask?.Dispose();
             _mutex.Dispose();
             _disposed = true;
         }

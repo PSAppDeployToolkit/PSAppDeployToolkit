@@ -24,8 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.5" />
     <PackageReference Include="System.IO.Packaging" Version="10.0.5" />
     <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.5" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.5" />
   </ItemGroup>
 
