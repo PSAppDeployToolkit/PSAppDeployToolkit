@@ -4794,6 +4794,10 @@ catch
 
 # Ensure that the client/server process is closed on module remove.
 $ModuleInfo.OnRemove = {
+    if ($PSEdition.Equals('Desktop'))
+    {
+        [PSAppDeployToolkit.Foundation.AssemblyResolver]::Unregister()
+    }
     if ($Script:ADT.ClientServerProcess)
     {
         Close-ADTClientServerProcess
