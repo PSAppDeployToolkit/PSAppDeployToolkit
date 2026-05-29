@@ -34,9 +34,9 @@ namespace PSADT.TerminalServices
         /// of the call. Subsequent changes to session state are not reflected in the returned list.</remarks>
         /// <returns>A read-only list of <see cref="SessionInfo"/> objects, each representing the details of an active session.
         /// The list is empty if no active sessions are found.</returns>
-        public static IReadOnlyList<SessionInfo> Get()
+        public static async Task<IReadOnlyList<SessionInfo>> GetAsync()
         {
-            return new ReadOnlyCollection<SessionInfo>([.. GetAll()]);
+            return new ReadOnlyCollection<SessionInfo>(await GetAllAsync().ToListAsync().ConfigureAwait(false));
         }
 
         /// <summary>
@@ -45,9 +45,9 @@ namespace PSADT.TerminalServices
         /// <param name="sessionId">The identifier of the session to retrieve information for.</param>
         /// <returns>A <see cref="SessionInfo"/> object containing details about the session if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public static SessionInfo? Get(uint sessionId)
+        public static async Task<SessionInfo?> GetAsync(uint sessionId)
         {
-            return GetAll(sessionId).FirstOrDefault();
+            return await GetAllAsync(sessionId).FirstOrDefaultAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -55,8 +55,7 @@ namespace PSADT.TerminalServices
         /// session.
         /// </summary>
         /// <returns>An enumerable sequence of managed session snapshots created from the native session buffer.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "We can't support IAsyncEnumerable while using net472 DLL files with PowerShell 7, so this remains synchronous for now.")]
-        private static IEnumerable<SessionInfo> GetAll(uint? sessionId = null)
+        private static async IAsyncEnumerable<SessionInfo> GetAllAsync(uint? sessionId = null)
         {
             // Enumerate the sessions and process each session in the returned buffer.
             _ = NativeMethods.WTSEnumerateSessionsEx(out SafeWtsExHandle pSessionInfo);
@@ -72,7 +71,7 @@ namespace PSADT.TerminalServices
                     for (int i = 0; i < objCount; i++)
                     {
                         ref readonly WTS_SESSION_INFO_1W wtsSessionInfo = ref pSessionInfoPtr.AsReadOnlyStructure<WTS_SESSION_INFO_1W>(objLength * i);
-                        if (sessionId?.Equals(wtsSessionInfo.SessionId) != false && GetAsync(wtsSessionInfo).ConfigureAwait(false).GetAwaiter().GetResult() is SessionInfo sessionInfo)
+                        if (sessionId?.Equals(wtsSessionInfo.SessionId) != false && await GetAsync(wtsSessionInfo).ConfigureAwait(false) is SessionInfo sessionInfo)
                         {
                             yield return sessionInfo;
                         }
