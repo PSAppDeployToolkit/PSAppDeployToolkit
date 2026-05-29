@@ -257,7 +257,7 @@ namespace PSADT.ClientServer
             }
 
             // Decrypt the shared secret using our RSA private key
-            byte[] sharedSecret = _rsa.Decrypt(encryptedSharedSecret, RSAEncryptionPadding.OaepSHA256);
+            byte[] sharedSecret = _rsa.Decrypt(encryptedSharedSecret, RSAEncryptionPadding.OaepSHA1);
 
             // Derive encryption and MAC keys using HKDF, binding to both public keys
             byte[] keyMaterial = DeriveKeyMaterial(sharedSecret, AesKeySize + MacKeySize, localPublicKey, remotePublicKey);
@@ -301,7 +301,7 @@ namespace PSADT.ClientServer
             using (RSA remoteRsa = RSA.Create())
             {
                 remoteRsa.FromXmlString(DefaultEncoding.Value.GetString(remotePublicKey));
-                encryptedSecret = remoteRsa.Encrypt(sharedSecret, RSAEncryptionPadding.OaepSHA256);
+                encryptedSecret = remoteRsa.Encrypt(sharedSecret, RSAEncryptionPadding.OaepSHA1);
             }
 
             // Derive encryption and MAC keys using HKDF, binding to both public keys
