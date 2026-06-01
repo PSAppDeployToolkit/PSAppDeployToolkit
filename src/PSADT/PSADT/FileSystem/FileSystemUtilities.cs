@@ -42,6 +42,17 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
+        /// Gets the security descriptor for the specified file.
+        /// </summary>
+        /// <param name="fileInfo">The file to get the security descriptor for.</param>
+        /// <param name="includeSections">Specifies which sections of the security descriptor to include.</param>
+        /// <returns>The security descriptor for the file.</returns>
+        public static FileSecurity GetAccessControl(FileInfo fileInfo, AccessControlSections includeSections)
+        {
+            return FileSystemAclExtensions.GetAccessControl(fileInfo, includeSections);
+        }
+
+        /// <summary>
         /// Gets the access control security for a directory.
         /// </summary>
         /// <param name="directoryInfo">The directory to get security information for.</param>
@@ -49,6 +60,17 @@ namespace PSADT.FileSystem
         public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo)
         {
             return FileSystemAclExtensions.GetAccessControl(directoryInfo);
+        }
+
+        /// <summary>
+        /// Gets the access control security for a directory.
+        /// </summary>
+        /// <param name="directoryInfo">The directory to get security information for.</param>
+        /// <param name="includeSections">Specifies which sections of the security descriptor to include.</param>
+        /// <returns>The security descriptor for the specified directory.</returns>
+        public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo, AccessControlSections includeSections)
+        {
+            return FileSystemAclExtensions.GetAccessControl(directoryInfo, includeSections);
         }
 
         /// <summary>
