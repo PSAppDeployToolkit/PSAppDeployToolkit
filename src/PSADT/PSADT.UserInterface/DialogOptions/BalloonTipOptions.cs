@@ -2,7 +2,6 @@
 using System.Collections;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Windows.Forms;
 
 namespace PSADT.UserInterface.DialogOptions
 {
@@ -27,7 +26,7 @@ namespace PSADT.UserInterface.DialogOptions
         public BalloonTipOptions(IDictionary options) : this(
             (options ?? throw new ArgumentNullException(nameof(options)))["Title"] as string ?? null!,
             options["Text"] as string ?? null!,
-            options["Icon"] as ToolTipIcon? ?? (ToolTipIcon)(-1))
+            options["Icon"] as BalloonTipIcon? ?? (BalloonTipIcon)(-1))
         {
         }
 
@@ -41,7 +40,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="icon">The icon to display in the balloon tip notification.</param>
         /// <exception cref="ArgumentNullException">Thrown if any required parameter is null, empty, or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified tray icon file does not exist.</exception>
-        private BalloonTipOptions(string title, string text, ToolTipIcon icon)
+        private BalloonTipOptions(string title, string text, BalloonTipIcon icon)
         {
             // Set initial string properties.
             ArgumentException.ThrowIfNullOrWhiteSpace(title);
@@ -76,6 +75,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
-        public readonly ToolTipIcon Icon;
+        public readonly BalloonTipIcon Icon;
     }
 }

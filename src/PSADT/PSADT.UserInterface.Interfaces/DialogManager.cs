@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
 using PSADT.Foundation;
@@ -17,13 +16,14 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
-using PSADT.UserInterface.Extensions;
 using PSADT.Utilities;
+using PSADT.WindowManagement;
 using PSAppDeployToolkit.Logging;
+using Windows.Win32.Foundation;
 using Windows.Win32.UI.Controls;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace PSADT.UserInterface
+namespace PSADT.UserInterface.Interfaces
 {
     /// <summary>
     /// Static class to manage WPF dialogs within a console application.
@@ -64,7 +64,7 @@ namespace PSADT.UserInterface
                     {
                         // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
                         System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-                        _ = appLocal.Dispatcher.BeginInvoke(DispatcherPriority.Normal, dispatcherRunning.Set);
+                        _ = appLocal.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, dispatcherRunning.Set);
                     };
                     _ = appLocal.Run();
                 }
@@ -99,7 +99,7 @@ namespace PSADT.UserInterface
             app = appLocal;
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-            _ = app.Dispatcher.BeginInvoke(DispatcherPriority.Send, ShellUtilities.RefreshDesktop);
+            _ = app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, ShellUtilities.RefreshDesktop);
         }
 
         /// <summary>
@@ -363,7 +363,7 @@ namespace PSADT.UserInterface
 
                 // Correct the registry data for the AUMID. This can reference stale info from a previous run.
                 string appIconPath = options.AppTaskbarIconImage ?? options.AppIconImage;
-                System.Drawing.Icon iconObj = Interfaces.Classic.ClassicDialog.GetIcon(appIconPath);
+                System.Drawing.Icon iconObj = Classic.ClassicDialog.GetIcon(appIconPath);
                 string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
                 Registry.SetValue(regKey, "DisplayName", options.AppTitle, RegistryValueKind.String);
                 if (MiscUtilities.GetBase64StringBytes(appIconPath) is not null)
@@ -386,7 +386,7 @@ namespace PSADT.UserInterface
                     }
                     if (lastBalloonTip is not null)
                     {
-                        icon.ShowBalloonTip(lastBalloonTip);
+                        icon.ShowBalloonTip(0, lastBalloonTip.Title, lastBalloonTip.Text, (System.Windows.Forms.ToolTipIcon)lastBalloonTip.Icon);
                     }
                 };
             });
@@ -433,7 +433,7 @@ namespace PSADT.UserInterface
             {
                 throw new InvalidOperationException("Cannot show a balloon tip while no notify icon is open.");
             }
-            await InvokeDialogActionAsync(() => { notifyIcon.ShowBalloonTip(options); lastBalloonTip = options; });
+            await InvokeDialogActionAsync(() => { notifyIcon.ShowBalloonTip(0, options.Title, options.Text, (System.Windows.Forms.ToolTipIcon)options.Icon); lastBalloonTip = options; });
         }
 
         /// <summary>
@@ -555,15 +555,34 @@ namespace PSADT.UserInterface
         /// <remarks>This method invokes the Help Console dialog using the provided <paramref
         /// name="options"/> to customize its appearance and functionality.</remarks>
         /// <param name="options">The configuration options for the Help Console dialog, including display settings and behavior.</param>
-        /// <returns>A <see cref="System.Windows.Forms.DialogResult"/> value indicating the result of the dialog interaction. For
-        /// example, <see cref="System.Windows.Forms.DialogResult.OK"/> if the user confirmed, or <see
-        /// cref="System.Windows.Forms.DialogResult.Cancel"/> if the user canceled.</returns>
-        internal static async Task<System.Windows.Forms.DialogResult> ShowHelpConsoleAsync(HelpConsoleOptions options)
+        /// <returns>A <see cref="DialogBoxResult"/> value indicating the result of the dialog interaction.</returns>
+        internal static async Task<DialogBoxResult> ShowHelpConsoleAsync(HelpConsoleOptions options)
         {
             return await InvokeDialogActionAsync(() =>
             {
-                using Interfaces.Classic.HelpConsole helpConsole = new(options);
-                return helpConsole.ShowDialog();
+                using Classic.HelpConsole helpConsole = new(options);
+                _ = helpConsole.ShowDialog();
+                return DialogBoxResult.OK;
+            });
+        }
+
+        /// <summary>
+        /// Sends keystrokes to the specified window asynchronously.
+        /// </summary>
+        /// <param name="options">Options specifying the target window handle and the keys to send.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        /// <exception cref="InvalidOperationException">The target window is disabled, possibly due to a modal dialog being displayed.</exception>
+        internal static async Task SendKeysAsync(SendKeysOptions options)
+        {
+            await InvokeDialogActionAsync(() =>
+            {
+                HWND hwnd = (HWND)options.WindowHandle;
+                WindowTools.BringWindowToFront(hwnd);
+                if (!NativeMethods.IsWindowEnabled(hwnd))
+                {
+                    throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
+                }
+                System.Windows.Forms.SendKeys.SendWait(options.Keys);
             });
         }
 
@@ -573,7 +592,7 @@ namespace PSADT.UserInterface
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Task InvokeDialogActionAsync(Action callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, DispatcherPriority.Normal).Task;
+            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal).Task;
         }
 
         /// <summary>
@@ -582,7 +601,7 @@ namespace PSADT.UserInterface
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Task<TResult> InvokeDialogActionAsync<TResult>(Func<TResult> callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, DispatcherPriority.Normal).Task;
+            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal).Task;
         }
 
         /// <summary>
@@ -617,21 +636,21 @@ namespace PSADT.UserInterface
         {
             { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
-                { DialogType.CustomDialog, static (options, state) => new Interfaces.Classic.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, state) => new Interfaces.Classic.InputDialog((InputDialogOptions)options) },
-                { DialogType.ListSelectionDialog, static (options, state) => new Interfaces.Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, state) => new Interfaces.Classic.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, state) => new Interfaces.Classic.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
+                { DialogType.CustomDialog, static (options, state) => new Classic.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, state) => new Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, static (options, state) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, state) => new Classic.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, state) => new Classic.RestartDialog((RestartDialogOptions)options) },
             })},
             { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Interfaces.Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
-                { DialogType.CustomDialog, static (options, state) => new Interfaces.Fluent.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, state) => new Interfaces.Fluent.InputDialog((InputDialogOptions)options) },
-                { DialogType.ListSelectionDialog, static (options, state) => new Interfaces.Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, state) => new Interfaces.Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, state) => new Interfaces.Fluent.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
+                { DialogType.CustomDialog, static (options, state) => new Fluent.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, state) => new Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, static (options, state) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, state) => new Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, state) => new Fluent.RestartDialog((RestartDialogOptions)options) },
             })},
         });
     }

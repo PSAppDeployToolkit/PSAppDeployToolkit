@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
-namespace PSADT.UserInterface.Utilities
+namespace PSADT.UserInterface.Interfaces
 {
     /// <summary>
     /// An ObservableCollection that allows for resettings its items while only firing a single OnCollectionChanged event.

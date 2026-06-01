@@ -1516,7 +1516,7 @@ function Show-BalloonTip
 
         [Parameter(Mandatory = $false, Position = 2)]
         [ValidateSet('Error', 'Info', 'None', 'Warning')]
-        [System.Windows.Forms.ToolTipIcon]$BalloonTipIcon,
+        [PSADT.UserInterface.BalloonTipIcon]$BalloonTipIcon,
 
         [Parameter(Mandatory = $false, Position = 3)]
         [ValidateNotNullOrEmpty()]

@@ -15,7 +15,6 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
-using PSADT.UserInterface.Utilities;
 using PSAppDeployToolkit.Logging;
 using Windows.Win32;
 

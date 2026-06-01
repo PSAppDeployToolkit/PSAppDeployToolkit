@@ -11,7 +11,6 @@ using Microsoft.Win32;
 using PSADT.DeviceManagement;
 using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 using Windows.Win32;
 using Windows.Win32.Foundation;

@@ -13,6 +13,7 @@ using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
+using PSADT.UserInterface.Interfaces;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.TestHarness

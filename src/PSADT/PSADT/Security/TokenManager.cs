@@ -335,7 +335,6 @@ namespace PSADT.Security
         /// connections.</returns>
         private static NamedPipeServerStream CreateNamedPipeServerStream(string pipeName, PipeDirection direction, int maxNumberOfServerInstances, PipeTransmissionMode transmissionMode, PipeOptions options, int inBufferSize, int outBufferSize, PipeSecurity pipeSecurity)
         {
-#if NETFRAMEWORK
             if (typeof(NamedPipeServerStream).GetConstructor([typeof(string), typeof(PipeDirection), typeof(int), typeof(PipeTransmissionMode), typeof(PipeOptions), typeof(int), typeof(int), typeof(PipeSecurity)]) is System.Reflection.ConstructorInfo ctor)
             {
                 return ctor.Invoke([pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity]) is not object stream
@@ -356,9 +355,6 @@ namespace PSADT.Security
             return createMethod.Invoke(null, invokeArgs) is not object aclStream
                 ? throw new InvalidProgramException("Failed to create named pipe server stream.")
                 : (NamedPipeServerStream)aclStream;
-#else
-            return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
-#endif
         }
     }
 }

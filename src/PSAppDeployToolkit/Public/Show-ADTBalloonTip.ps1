@@ -74,7 +74,7 @@ function Show-ADTBalloonTip
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias('BalloonTipIcon')]
-        [System.Windows.Forms.ToolTipIcon]$Icon = [System.Windows.Forms.ToolTipIcon]::Info,
+        [PSADT.UserInterface.BalloonTipIcon]$Icon = [PSADT.UserInterface.BalloonTipIcon]::Info,
 
         [Parameter(Mandatory = $false)]
         [System.Obsolete('This parameter will be removed in PSAppDeployToolkit 4.3.0.')]

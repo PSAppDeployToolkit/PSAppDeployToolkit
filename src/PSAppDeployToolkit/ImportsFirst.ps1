@@ -104,7 +104,6 @@ try
             # Add in system assemblies.
             Add-Type -AssemblyName @(
                 'System.ServiceProcess'
-                'System.Windows.Forms'
             )
         }
 
