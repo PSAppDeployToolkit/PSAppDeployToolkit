@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
-using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -22,7 +21,6 @@ namespace PSADT.UserInterface.DialogOptions
     [KnownType(typeof(ListSelectionDialogOptions))]
     [KnownType(typeof(ProgressDialogOptions))]
     [KnownType(typeof(RestartDialogOptions))]
-    [KnownType(typeof(BalloonTipOptions))]
     public abstract record BaseDialogOptions : IDialogOptions
     {
         /// <summary>

@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>PSADT.UserInterface</RootNamespace>
     <AssemblyName>PSADT.UserInterface</AssemblyName>
     <Product>PSAppDeployToolkit User Interface Library</Product>
@@ -13,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\lib\Fluence.Wpf\Fluence.Wpf\Fluence.Wpf.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
     <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
@@ -24,46 +21,12 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="DialogOptions\NotifyIconOptions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Interfaces\Classic\ClassicBase.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\ClassicDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\CloseAppsDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\CustomDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\HelpConsole.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\InputDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\ProgressDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Interfaces\Classic\RestartDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.8" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>

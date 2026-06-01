@@ -44,7 +44,7 @@
   </PropertyGroup>
 
   <!-- ARM64 preference for .NET Framework -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+  <PropertyGroup>
     <PreferNativeArm64>true</PreferNativeArm64>
   </PropertyGroup>
 

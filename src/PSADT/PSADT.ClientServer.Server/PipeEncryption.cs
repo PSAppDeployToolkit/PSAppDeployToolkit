@@ -7,17 +7,17 @@ using System.Security.Cryptography;
 namespace PSADT.ClientServer
 {
     /// <summary>
-    /// Provides secure, authenticated encryption and key exchange for inter-process communication using Elliptic Curve
-    /// Diffie-Hellman (ECDH) and AES-256-GCM.
+    /// Provides secure, authenticated encryption and key exchange for inter-process communication using RSA
+    /// key transport and AES-256-CBC with HMAC-SHA256 (Encrypt-then-MAC).
     /// </summary>
     /// <remarks>
     /// <para>
     /// PipeEncryption manages the full lifecycle of key exchange and message encryption for secure communication
-    /// channels. It uses ECDH to derive a shared secret and then expands it into encryption keys using HKDF.
+    /// channels. It uses RSA to transport a shared secret and then expands it into encryption and MAC keys using HKDF.
     /// </para>
     /// <para>
-    /// Messages are encrypted using AES-256-GCM which provides authenticated encryption with associated data (AEAD),
-    /// ensuring both confidentiality and integrity in a single cryptographic operation.
+    /// Messages are encrypted using AES-256-CBC and authenticated using HMAC-SHA256 in an Encrypt-then-MAC
+    /// construction, ensuring both confidentiality and integrity.
     /// </para>
     /// <para>
     /// Instances must complete the key exchange via <see cref="PerformKeyExchange"/>
@@ -126,10 +126,10 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Encrypts raw bytes using AES-256-GCM authenticated encryption.
+        /// Encrypts raw bytes using AES-256-CBC with HMAC-SHA256 authentication (Encrypt-then-MAC).
         /// </summary>
         /// <param name="plaintext">The plaintext bytes to encrypt.</param>
-        /// <returns>A byte array containing the nonce, ciphertext, and authentication tag.</returns>
+        /// <returns>A byte array containing the IV, ciphertext, and HMAC tag.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="plaintext"/> is null.</exception>
         private protected byte[] Encrypt(byte[] plaintext)
         {
@@ -137,35 +137,48 @@ namespace PSADT.ClientServer
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
             ArgumentNullException.ThrowIfNull(plaintext);
 
-            // Generate a unique nonce for this encryption operation.
-            byte[] nonce = new byte[NonceSize];
+            // Generate a unique IV for this encryption operation.
+            byte[] iv = new byte[IvSize];
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
-                rng.GetBytes(nonce);
+                rng.GetBytes(iv);
             }
 
-            // Allocate output buffer: Nonce (12) + Ciphertext (same as plaintext) + Tag (16)
-            byte[] result = new byte[NonceSize + plaintext.Length + TagSize];
-            byte[] ciphertext = new byte[plaintext.Length];
-            byte[] tag = new byte[TagSize];
-
-            // Encrypt using AES-GCM
-            using (AesGcm aesGcm = new(_encryptionKey!, TagSize))
+            // Encrypt using AES-CBC
+            byte[] ciphertext;
+            using Aes aes = Aes.Create();
+            aes.Key = _encryptionKey;
+            aes.IV = iv;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            using (ICryptoTransform encryptor = aes.CreateEncryptor())
             {
-                aesGcm.Encrypt(nonce, plaintext, ciphertext, tag);
+                ciphertext = encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
             }
 
-            // Combine: Nonce (12) + Ciphertext (variable) + Tag (16)
-            Buffer.BlockCopy(nonce, 0, result, 0, NonceSize);
-            Buffer.BlockCopy(ciphertext, 0, result, NonceSize, ciphertext.Length);
-            Buffer.BlockCopy(tag, 0, result, NonceSize + ciphertext.Length, TagSize);
+            // Combine: IV (16) + Ciphertext (variable)
+            byte[] ivAndCiphertext = new byte[IvSize + ciphertext.Length];
+            Buffer.BlockCopy(iv, 0, ivAndCiphertext, 0, IvSize);
+            Buffer.BlockCopy(ciphertext, 0, ivAndCiphertext, IvSize, ciphertext.Length);
+
+            // Compute HMAC over IV + ciphertext (Encrypt-then-MAC)
+            byte[] mac;
+            using (HMACSHA256 hmac = new(_macKey))
+            {
+                mac = hmac.ComputeHash(ivAndCiphertext);
+            }
+
+            // Result: IV (16) + Ciphertext (variable) + MAC (32)
+            byte[] result = new byte[ivAndCiphertext.Length + MacSize];
+            Buffer.BlockCopy(ivAndCiphertext, 0, result, 0, ivAndCiphertext.Length);
+            Buffer.BlockCopy(mac, 0, result, ivAndCiphertext.Length, MacSize);
             return result;
         }
 
         /// <summary>
-        /// Decrypts raw bytes using AES-256-GCM authenticated encryption.
+        /// Decrypts raw bytes using AES-256-CBC with HMAC-SHA256 authentication (Encrypt-then-MAC).
         /// </summary>
-        /// <param name="encryptedData">The encrypted data containing nonce, ciphertext, and authentication tag.</param>
+        /// <param name="encryptedData">The encrypted data containing IV, ciphertext, and HMAC tag.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
         /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
@@ -175,51 +188,98 @@ namespace PSADT.ClientServer
             ThrowIfDisposed(); ThrowIfKeyExchangeNotComplete();
             ArgumentNullException.ThrowIfNull(encryptedData);
 
-            // Validate minimum input length: Nonce (12) + Tag (16) + at least 1 byte of ciphertext
-            if (encryptedData.Length < NonceSize + TagSize + 1)
+            // Validate minimum input length: IV (16) + MAC (32) + at least 1 block of ciphertext (16)
+            if (encryptedData.Length < IvSize + MacSize + AesBlockSize)
             {
                 throw new ArgumentOutOfRangeException(nameof(encryptedData), encryptedData.Length, "Encrypted data is too short.");
             }
 
-            // Extract nonce, ciphertext, and tag
-            int ciphertextLength = encryptedData.Length - NonceSize - TagSize;
-            byte[] nonce = new byte[NonceSize];
-            byte[] ciphertext = new byte[ciphertextLength];
-            byte[] tag = new byte[TagSize];
-            byte[] plaintext = new byte[ciphertextLength];
-            Buffer.BlockCopy(encryptedData, 0, nonce, 0, NonceSize);
-            Buffer.BlockCopy(encryptedData, NonceSize, ciphertext, 0, ciphertextLength);
-            Buffer.BlockCopy(encryptedData, NonceSize + ciphertextLength, tag, 0, TagSize);
+            // Split: IV + Ciphertext | MAC
+            int ivAndCiphertextLength = encryptedData.Length - MacSize;
+            byte[] receivedMac = new byte[MacSize];
+            Buffer.BlockCopy(encryptedData, ivAndCiphertextLength, receivedMac, 0, MacSize);
 
-            // Decrypt and verify authentication tag
-            using (AesGcm aesGcm = new(_encryptionKey!, TagSize))
+            // Verify MAC first (Encrypt-then-MAC: verify before decrypting)
+            byte[] computedMac;
+            using (HMACSHA256 hmac = new(_macKey))
             {
-                aesGcm.Decrypt(nonce, ciphertext, tag, plaintext);
+                computedMac = hmac.ComputeHash(encryptedData, 0, ivAndCiphertextLength);
             }
-            return plaintext;
+            if (!ConstantTimeEquals(receivedMac, computedMac))
+            {
+                throw new CryptographicException("Message authentication failed: HMAC mismatch.");
+            }
+
+            // Extract IV and ciphertext
+            byte[] iv = new byte[IvSize];
+            int ciphertextLength = ivAndCiphertextLength - IvSize;
+            byte[] ciphertext = new byte[ciphertextLength];
+            Buffer.BlockCopy(encryptedData, 0, iv, 0, IvSize);
+            Buffer.BlockCopy(encryptedData, IvSize, ciphertext, 0, ciphertextLength);
+
+            // Decrypt
+            using Aes aesDecrypt = Aes.Create();
+            aesDecrypt.Key = _encryptionKey;
+            aesDecrypt.IV = iv;
+            aesDecrypt.Mode = CipherMode.CBC;
+            aesDecrypt.Padding = PaddingMode.PKCS7;
+            using ICryptoTransform decryptor = aesDecrypt.CreateDecryptor();
+            return decryptor.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
         }
 
         /// <summary>
-        /// Gets the local public key for transmission to the remote party.
+        /// Gets the local RSA public key for transmission to the remote party.
         /// </summary>
-        /// <returns>A byte array containing the exported public key.</returns>
+        /// <returns>A byte array containing the exported RSA public key as a UTF-8 encoded XML string.</returns>
         private protected byte[] GetPublicKey()
         {
             ThrowIfDisposed();
-#if NET8_0_OR_GREATER
-            return _ecdh.PublicKey.ExportSubjectPublicKeyInfo();
-#else
-            return _ecdh.PublicKey.ToByteArray();
-#endif
+            string xml = _rsa.ToXmlString(false);
+            return DefaultEncoding.Value.GetBytes(xml);
         }
 
         /// <summary>
-        /// Completes the key exchange by deriving a shared secret from the remote party's public key.
+        /// Completes the key exchange by decrypting the shared secret sent by the initiating party.
         /// </summary>
-        /// <param name="remotePublicKey">The remote party's public key bytes.</param>
+        /// <param name="encryptedSharedSecret">The RSA-encrypted shared secret from the remote party.</param>
+        /// <param name="localPublicKey">The local party's public key bytes as sent during key exchange.</param>
+        /// <param name="remotePublicKey">The remote party's public key bytes as received during key exchange.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedSharedSecret"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
+        private protected void DeriveSharedKey(byte[] encryptedSharedSecret, byte[] localPublicKey, byte[] remotePublicKey)
+        {
+            // Verify parameters and state.
+            ThrowIfDisposed();
+            ArgumentNullException.ThrowIfNull(encryptedSharedSecret);
+            if (_encryptionKey is not null)
+            {
+                throw new InvalidOperationException("Key exchange has already been completed.");
+            }
+
+            // Decrypt the shared secret using our RSA private key
+            byte[] sharedSecret = _rsa.Decrypt(encryptedSharedSecret, RSAEncryptionPadding.OaepSHA256);
+
+            // Derive encryption and MAC keys using HKDF, binding to both public keys
+            byte[] keyMaterial = DeriveKeyMaterial(sharedSecret, AesKeySize + MacKeySize, localPublicKey, remotePublicKey);
+            _encryptionKey = new byte[AesKeySize];
+            _macKey = new byte[MacKeySize];
+            Buffer.BlockCopy(keyMaterial, 0, _encryptionKey, 0, AesKeySize);
+            Buffer.BlockCopy(keyMaterial, AesKeySize, _macKey, 0, MacKeySize);
+
+            // Clear sensitive data
+            SecureZeroMemory(sharedSecret);
+            SecureZeroMemory(keyMaterial);
+        }
+
+        /// <summary>
+        /// Generates a shared secret and encrypts it with the remote party's RSA public key.
+        /// </summary>
+        /// <param name="localPublicKey">The local party's public key bytes as sent during key exchange.</param>
+        /// <param name="remotePublicKey">The remote party's RSA public key bytes.</param>
+        /// <returns>The RSA-encrypted shared secret to send to the remote party.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="remotePublicKey"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the key exchange has already been completed.</exception>
-        private protected void DeriveSharedKey(byte[] remotePublicKey)
+        private protected byte[] GenerateAndEncryptSharedSecret(byte[] localPublicKey, byte[] remotePublicKey)
         {
             // Verify parameters and state.
             ThrowIfDisposed();
@@ -229,21 +289,32 @@ namespace PSADT.ClientServer
                 throw new InvalidOperationException("Key exchange has already been completed.");
             }
 
-            // Import the remote public key and derive shared secret
-#if NET8_0_OR_GREATER
-            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create();
-            remoteEcdh.ImportSubjectPublicKeyInfo(remotePublicKey, out _);
-            byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remoteEcdh.PublicKey);
-#else
-            ECDiffieHellmanPublicKey remotePubKey = ECDiffieHellmanCngPublicKey.FromByteArray(remotePublicKey, CngKeyBlobFormat.EccPublicBlob);
-            byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remotePubKey);
-#endif
+            // Generate a random shared secret
+            byte[] sharedSecret = new byte[SharedSecretSize];
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(sharedSecret);
+            }
 
-            // Derive encryption key using HKDF (only need encryption key for GCM, no separate MAC key)
-            _encryptionKey = DeriveKeyMaterial(sharedSecret, AesKeySize);
+            // Encrypt the shared secret with the remote party's public key
+            byte[] encryptedSecret;
+            using (RSA remoteRsa = RSA.Create())
+            {
+                remoteRsa.FromXmlString(DefaultEncoding.Value.GetString(remotePublicKey));
+                encryptedSecret = remoteRsa.Encrypt(sharedSecret, RSAEncryptionPadding.OaepSHA256);
+            }
+
+            // Derive encryption and MAC keys using HKDF, binding to both public keys
+            byte[] keyMaterial = DeriveKeyMaterial(sharedSecret, AesKeySize + MacKeySize, localPublicKey, remotePublicKey);
+            _encryptionKey = new byte[AesKeySize];
+            _macKey = new byte[MacKeySize];
+            Buffer.BlockCopy(keyMaterial, 0, _encryptionKey, 0, AesKeySize);
+            Buffer.BlockCopy(keyMaterial, AesKeySize, _macKey, 0, MacKeySize);
 
             // Clear sensitive data
             SecureZeroMemory(sharedSecret);
+            SecureZeroMemory(keyMaterial);
+            return encryptedSecret;
         }
 
         /// <summary>
@@ -265,6 +336,27 @@ namespace PSADT.ClientServer
                 result |= a[i] ^ b[i];
             }
             return result == 0;
+        }
+
+        /// <summary>
+        /// Compares two byte arrays lexicographically.
+        /// </summary>
+        /// <param name="a">The first byte array.</param>
+        /// <param name="b">The second byte array.</param>
+        /// <returns>A negative value if <paramref name="a"/> is less than <paramref name="b"/>, zero if equal,
+        /// or a positive value if <paramref name="a"/> is greater than <paramref name="b"/>.</returns>
+        private static int CompareBytes(byte[] a, byte[] b)
+        {
+            int minLength = Math.Min(a.Length, b.Length);
+            for (int i = 0; i < minLength; i++)
+            {
+                int cmp = a[i].CompareTo(b[i]);
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+            }
+            return a.Length.CompareTo(b.Length);
         }
 
         /// <summary>
@@ -291,15 +383,47 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Derives key material from a shared secret using HKDF with SHA-256.
+        /// Derives key material from a shared secret using HKDF with SHA-256, binding the derived keys
+        /// to both parties' public keys to prevent man-in-the-middle key substitution.
         /// </summary>
-        /// <param name="sharedSecret">The raw shared secret from ECDH key agreement.</param>
+        /// <param name="sharedSecret">The raw shared secret.</param>
         /// <param name="outputLength">The desired output length in bytes.</param>
+        /// <param name="localPublicKey">The local party's public key bytes.</param>
+        /// <param name="remotePublicKey">The remote party's public key bytes.</param>
         /// <returns>The derived key material.</returns>
-        private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength)
+        private static byte[] DeriveKeyMaterial(byte[] sharedSecret, int outputLength, byte[] localPublicKey, byte[] remotePublicKey)
         {
-            // Use proper HKDF with a context-specific info parameter
-            byte[] info = DefaultEncoding.Value.GetBytes("PSADT-Pipe-Encryption-v2-GCM");
+            // Build the HKDF info parameter: protocol identifier + SHA-256 hash of both public keys.
+            // This binds the derived keys to the specific key exchange transcript.
+            // Use a canonical (sorted) order so both sides produce the same hash regardless of role.
+            byte[] protocolInfo = DefaultEncoding.Value.GetBytes("PSADT-Pipe-Encryption-v2-CBC-HMAC");
+            byte[] transcriptHash;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                // Sort keys lexicographically to ensure both sides use the same order.
+                byte[] first, second;
+                if (CompareBytes(localPublicKey, remotePublicKey) <= 0)
+                {
+                    first = localPublicKey;
+                    second = remotePublicKey;
+                }
+                else
+                {
+                    first = remotePublicKey;
+                    second = localPublicKey;
+                }
+
+                byte[] transcript = new byte[first.Length + second.Length];
+                Buffer.BlockCopy(first, 0, transcript, 0, first.Length);
+                Buffer.BlockCopy(second, 0, transcript, first.Length, second.Length);
+                transcriptHash = sha256.ComputeHash(transcript);
+            }
+
+            // Combine: protocolInfo || transcriptHash
+            byte[] info = new byte[protocolInfo.Length + transcriptHash.Length];
+            Buffer.BlockCopy(protocolInfo, 0, info, 0, protocolInfo.Length);
+            Buffer.BlockCopy(transcriptHash, 0, info, protocolInfo.Length, transcriptHash.Length);
+
             byte[] salt = new byte[32]; // Zero salt is acceptable per RFC 5869
 
             // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
@@ -363,19 +487,29 @@ namespace PSADT.ClientServer
             {
                 return;
             }
-            _ecdh.Dispose();
+            _rsa.Dispose();
             if (_encryptionKey is not null)
             {
                 SecureZeroMemory(_encryptionKey);
                 _encryptionKey = null;
             }
+            if (_macKey is not null)
+            {
+                SecureZeroMemory(_macKey);
+                _macKey = null;
+            }
             _disposed = true;
         }
 
         /// <summary>
-        /// The AES-256 encryption key used for AES-GCM authenticated encryption.
+        /// The AES-256 encryption key used for AES-CBC encryption.
         /// </summary>
         private byte[]? _encryptionKey;
+
+        /// <summary>
+        /// The HMAC-SHA256 key used for message authentication.
+        /// </summary>
+        private byte[]? _macKey;
 
         /// <summary>
         /// Specifies whether the instance has been disposed.
@@ -383,22 +517,19 @@ namespace PSADT.ClientServer
         private bool _disposed;
 
         /// <summary>
-        /// Provides the Elliptic Curve Diffie-Hellman (ECDH) cryptographic implementation used for key agreement
-        /// operations.
+        /// Provides the RSA cryptographic implementation used for key exchange operations.
         /// </summary>
-        /// <remarks>This field holds the platform-specific ECDH implementation. On .NET 8.0 or later, it
-        /// uses <see cref="ECDiffieHellman"/>; on earlier versions, it uses <see
-        /// cref="ECDiffieHellmanCng"/>. The specific implementation may affect
-        /// compatibility and available features.</remarks>
-#if NET8_0_OR_GREATER
-        private readonly ECDiffieHellman _ecdh = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
-#else
-        private readonly ECDiffieHellmanCng _ecdh = new(256)
+        private readonly RSA _rsa = CreateRsaKey();
+
+        /// <summary>
+        /// Creates an RSA key of the configured size.
+        /// </summary>
+        private static RSA CreateRsaKey()
         {
-            KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
-            HashAlgorithm = CngAlgorithm.Sha256
-        };
-#endif
+            RSA rsa = RSA.Create();
+            rsa.KeySize = RsaKeySize;
+            return rsa;
+        }
 
         /// <summary>
         /// Specifies the size, in bytes, of the challenge used in mutual authentication.
@@ -415,22 +546,34 @@ namespace PSADT.ClientServer
         private const int AesKeySize = 32;
 
         /// <summary>
-        /// Specifies the size, in bytes, of the GCM nonce (also known as IV).
+        /// Specifies the size, in bytes, of the HMAC-SHA256 key.
         /// </summary>
-        /// <remarks>
-        /// The recommended nonce size for AES-GCM is 12 bytes (96 bits). This is the most efficient
-        /// size and provides optimal security characteristics when using a random nonce.
-        /// </remarks>
-        private const int NonceSize = 12;
+        private const int MacKeySize = 32;
 
         /// <summary>
-        /// Specifies the size, in bytes, of the GCM authentication tag.
+        /// Specifies the size, in bytes, of the AES-CBC IV.
         /// </summary>
-        /// <remarks>
-        /// Using the maximum tag size of 16 bytes (128 bits) provides the highest level of
-        /// authentication security.
-        /// </remarks>
-        private const int TagSize = 16;
+        private const int IvSize = 16;
+
+        /// <summary>
+        /// Specifies the AES block size in bytes.
+        /// </summary>
+        private const int AesBlockSize = 16;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of the HMAC-SHA256 authentication tag.
+        /// </summary>
+        private const int MacSize = 32;
+
+        /// <summary>
+        /// Specifies the RSA key size in bits.
+        /// </summary>
+        private const int RsaKeySize = 2048;
+
+        /// <summary>
+        /// Specifies the size, in bytes, of the shared secret used for key derivation.
+        /// </summary>
+        private const int SharedSecretSize = 32;
 
         /// <summary>
         /// Maximum allowed message size to prevent denial-of-service attacks via memory exhaustion.

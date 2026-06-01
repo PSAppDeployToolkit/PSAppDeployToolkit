@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 
-namespace PSADT.UserInterface.Utilities
+namespace PSADT.UserInterface.Interfaces
 {
     /// <summary>
     /// Converts an integer value to a Visibility enum value.

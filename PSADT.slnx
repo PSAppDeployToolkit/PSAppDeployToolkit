@@ -7,7 +7,8 @@
   <Project Path="src/PSADT/PSADT.ClientServer.Server/PSADT.ClientServer.Server.csproj" Id="e6c50d7a-561d-4e51-8f05-f9ecdd0f53aa" />
   <Project Path="src/PSADT/PSADT.Interop/PSADT.Interop.csproj" />
   <Project Path="src/PSADT/PSADT.Tests/PSADT.Tests.csproj" Id="1cc82c62-79c1-42b2-88d9-d257cba18348" />
-  <Project Path="src/PSADT/PSADT.UserInterface.TestHarness/PSADT.UserInterface.TestHarness.csproj" />
+  <Project Path="src/PSADT/PSADT.UserInterface.Interfaces.TestHarness/PSADT.UserInterface.Interfaces.TestHarness.csproj" />
+  <Project Path="src/PSADT/PSADT.UserInterface.Interfaces/PSADT.UserInterface.Interfaces.csproj" />
   <Project Path="src/PSADT/PSADT.UserInterface/PSADT.UserInterface.csproj" />
   <Project Path="src/PSADT/PSADT/PSADT.csproj" />
   <Project Path="src/PSADT/PSAppDeployToolkit/PSAppDeployToolkit.csproj" />

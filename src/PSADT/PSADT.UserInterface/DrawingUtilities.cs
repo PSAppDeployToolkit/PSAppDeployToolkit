@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 
-namespace PSADT.UserInterface.Utilities
+namespace PSADT.UserInterface
 {
     /// <summary>
     /// A collection of utility methods for drawing and bitmap manipulation.

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>PSADT</RootNamespace>
     <AssemblyName>PSADT</AssemblyName>
@@ -19,19 +19,13 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.Tests" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Packaging" Version="10.0.8" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <Reference Include="System.ServiceProcess" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+    <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.8" />
   </ItemGroup>
 

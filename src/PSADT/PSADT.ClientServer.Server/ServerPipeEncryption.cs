@@ -20,9 +20,9 @@ namespace PSADT.ClientServer
         /// <remarks>
         /// <para>The server key exchange protocol:</para>
         /// <list type="number">
-        /// <item><description>Server sends its ECDH public key</description></item>
-        /// <item><description>Server receives client's ECDH public key</description></item>
-        /// <item><description>Both derive shared secret via ECDH</description></item>
+        /// <item><description>Server sends its RSA public key</description></item>
+        /// <item><description>Server receives client's RSA public key</description></item>
+        /// <item><description>Server generates a shared secret, encrypts it with client's public key, and sends it</description></item>
         /// <item><description>Server sends random challenge</description></item>
         /// <item><description>Client returns encrypted {server_challenge || client_challenge}</description></item>
         /// <item><description>Server verifies its challenge and returns encrypted client_challenge</description></item>
@@ -35,15 +35,16 @@ namespace PSADT.ClientServer
             ArgumentNullException.ThrowIfNull(outputStream);
             ArgumentNullException.ThrowIfNull(inputStream);
 
-            // Server sends public key first.
+            // Server sends its RSA public key first.
             byte[] publicKey = GetPublicKey();
             WriteLengthPrefixedBytes(outputStream, publicKey);
 
-            // Server receives client's public key.
+            // Server receives client's RSA public key.
             byte[] clientPublicKey = ReadLengthPrefixedBytes(inputStream);
 
-            // Derive the shared key.
-            DeriveSharedKey(clientPublicKey);
+            // Server generates a shared secret, encrypts it with client's public key, and sends it.
+            byte[] encryptedSecret = GenerateAndEncryptSharedSecret(publicKey, clientPublicKey);
+            WriteLengthPrefixedBytes(outputStream, encryptedSecret);
 
             // Mutual authentication.
             PerformMutualAuthentication(outputStream, inputStream);

@@ -409,7 +409,7 @@ function Private:Invoke-ADTClientServerOperation
                     }
                     HelpConsole
                     {
-                        [System.Int32]
+                        [PSADT.UserInterface.DialogResults.DialogBoxResult]
                         break
                     }
                     InputDialog

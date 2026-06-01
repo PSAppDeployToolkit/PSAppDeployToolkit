@@ -5,7 +5,7 @@
     xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=PresentationFramework"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:psconv="clr-namespace:PSADT.UserInterface.Utilities"
+    xmlns:psconv="clr-namespace:PSADT.UserInterface.Interfaces"
     xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
     xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
     MinHeight="0"

@@ -20,7 +20,6 @@ using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.Foundation;
 using PSADT.UserInterface.DialogOptions;
-using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 using Fluence.Wpf;
 using Fluence.Wpf.Controls;

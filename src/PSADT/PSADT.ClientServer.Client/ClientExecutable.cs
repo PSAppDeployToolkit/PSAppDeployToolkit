@@ -21,6 +21,7 @@ using PSADT.Security;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogState;
+using PSADT.UserInterface.Interfaces;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
 using PSAppDeployToolkit.Logging;
@@ -475,7 +476,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.SendKeys:
                                             {
-                                                SendKeys(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options);
+                                                await DialogManager.SendKeysAsync(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -642,7 +643,7 @@ namespace PSADT.ClientServer
                 }
                 else if (arg is "/SendKeys" or "/sk")
                 {
-                    SendKeys(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
+                    await DialogManager.SendKeysAsync(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
@@ -861,26 +862,6 @@ namespace PSADT.ClientServer
                 DialogType.RestartDialog => options is RestartDialogOptions restartDialogOptions ? await DialogManager.ShowRestartDialogAsync(dialogStyle, restartDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
                 DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
             };
-        }
-
-        /// <summary>
-        /// Sends a sequence of keystrokes to the specified window using the provided options.
-        /// </summary>
-        /// <remarks>This method brings the target window to the foreground before sending the keystrokes.
-        /// The keystrokes are sent synchronously and may not be processed if the window is not ready to receive
-        /// input.</remarks>
-        /// <param name="options">An object that specifies the target window handle and the keys to send. The window must be enabled to
-        /// receive input.</param>
-        /// <exception cref="ClientException">Thrown if the target window is disabled, such as when a modal dialog is shown.</exception>
-        private static void SendKeys(SendKeysOptions options)
-        {
-            HWND hwnd = (HWND)options.WindowHandle;
-            WindowTools.BringWindowToFront(hwnd);
-            if (!NativeMethods.IsWindowEnabled(hwnd))
-            {
-                throw new ClientException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.", ClientExitCode.SendKeysWindowNotEnabled);
-            }
-            System.Windows.Forms.SendKeys.SendWait(options.Keys);
         }
 
         /// <summary>
