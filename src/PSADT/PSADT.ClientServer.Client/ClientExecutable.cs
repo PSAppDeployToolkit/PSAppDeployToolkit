@@ -845,13 +845,13 @@ namespace PSADT.ClientServer
         {
             return dialogType switch
             {
-                DialogType.CloseAppsDialog => DialogManager.ShowCloseAppsDialog(dialogStyle, (CloseAppsDialogOptions)options, (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)),
-                DialogType.DialogBox => DialogManager.ShowDialogBox((DialogBoxOptions)options),
-                DialogType.HelpConsole => DialogManager.ShowHelpConsole((HelpConsoleOptions)options),
-                DialogType.InputDialog => DialogManager.ShowInputDialog(dialogStyle, (InputDialogOptions)options),
-                DialogType.CustomDialog => DialogManager.ShowCustomDialog(dialogStyle, (CustomDialogOptions)options),
-                DialogType.ListSelectionDialog => DialogManager.ShowListSelectionDialog(dialogStyle, (ListSelectionDialogOptions)options),
-                DialogType.RestartDialog => DialogManager.ShowRestartDialog(dialogStyle, (RestartDialogOptions)options),
+                DialogType.CloseAppsDialog => options is CloseAppsDialogOptions closeAppsOptions ? DialogManager.ShowCloseAppsDialog(dialogStyle, closeAppsOptions, (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.DialogBox => options is DialogBoxOptions dialogBoxOptions ? DialogManager.ShowDialogBox(dialogBoxOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.HelpConsole => options is HelpConsoleOptions helpConsoleOptions ? DialogManager.ShowHelpConsole(helpConsoleOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.InputDialog => options is InputDialogOptions inputDialogOptions ? DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.CustomDialog => options is CustomDialogOptions customDialogOptions ? DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.ListSelectionDialog => options is ListSelectionDialogOptions listSelectionDialogOptions ? DialogManager.ShowListSelectionDialog(dialogStyle, listSelectionDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.RestartDialog => options is RestartDialogOptions restartDialogOptions ? DialogManager.ShowRestartDialog(dialogStyle, restartDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
                 DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
             };
         }
