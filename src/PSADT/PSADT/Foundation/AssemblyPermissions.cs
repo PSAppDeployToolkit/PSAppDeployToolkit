@@ -66,11 +66,11 @@ namespace PSADT.Foundation
                 {
                     throw new FileNotFoundException($"The Win32 API call could not find file [{path.FullName}] as it does not exist.", path.FullName, ex);
                 }
-                FileSecurity fileSecurity = path.GetAccessControl(AccessControlSections.Access);
+                FileSecurity fileSecurity = FileSystemUtilities.GetAccessControl(path, AccessControlSections.Access);
                 fileSecurity.AddAccessRule(fileSystemAccessRule);
                 try
                 {
-                    path.SetAccessControl(fileSecurity);
+                    FileSystemUtilities.SetAccessControl(path, fileSecurity);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
