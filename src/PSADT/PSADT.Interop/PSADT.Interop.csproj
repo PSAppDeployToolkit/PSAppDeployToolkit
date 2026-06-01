@@ -44,6 +44,7 @@
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <CsWinRTEnabled>true</CsWinRTEnabled>
+    <CsWinRTEmbedded>true</CsWinRTEmbedded>
     <CsWinRTWindowsMetadata>10.0.26100.0</CsWinRTWindowsMetadata>
       <CsWinRTIncludes>
         Windows.Foundation.FoundationContract
