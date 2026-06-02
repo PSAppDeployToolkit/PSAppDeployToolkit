@@ -19,7 +19,7 @@ function Get-ADTUserToastNotificationMode
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        PSADT.Interop.ToastNotificationMode
+        Windows.UI.Notifications.ToastNotificationMode
 
         Returns the determined mode.
 
@@ -41,7 +41,7 @@ function Get-ADTUserToastNotificationMode
     #>
 
     [CmdletBinding()]
-    [OutputType([PSADT.Interop.ToastNotificationMode])]
+    [OutputType([Windows.UI.Notifications.ToastNotificationMode])]
     param
     (
     )
@@ -68,8 +68,8 @@ function Get-ADTUserToastNotificationMode
             {
                 if (($userToastNotificationMode = Invoke-ADTClientServerOperation -GetUserToastNotificationMode -User $runAsActiveUser) -ge 0)
                 {
-                    Write-ADTLogEntry -Message "The user's toast notification mode is [$userToastNotificationMode]."
-                    return $userToastNotificationMode
+                    Write-ADTLogEntry -Message "The user's toast notification mode is [$([Windows.UI.Notifications.ToastNotificationMode]$userToastNotificationMode)]."
+                    return [Windows.UI.Notifications.ToastNotificationMode]$userToastNotificationMode
                 }
                 Write-ADTLogEntry -Message "Unable to query the user's toast notification mode."
             }

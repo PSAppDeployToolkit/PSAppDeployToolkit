@@ -507,7 +507,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             GetUserToastNotificationMode
             {
-                [PSADT.Interop.ToastNotificationMode]
+                [System.Int32]
                 break
             }
             SilentRestart

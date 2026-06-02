@@ -547,11 +547,11 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets the current toast notification mode for the user session.
         /// </summary>
-        /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
+        /// <returns>A value of the <see cref="int"/> enumeration that indicates the user's toast notification
         /// mode.</returns>
-        public ToastNotificationMode GetUserToastNotificationMode()
+        public int GetUserToastNotificationMode()
         {
-            return Invoke<ToastNotificationMode>(PipeCommand.GetUserToastNotificationMode);
+            return Invoke<int>(PipeCommand.GetUserToastNotificationMode);
         }
 
         /// <summary>

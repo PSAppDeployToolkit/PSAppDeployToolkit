@@ -238,7 +238,7 @@ namespace PSADT.Utilities
             }
 
             // Refresh environment variables in the current process.
-            ShellUtilities.RefreshEnvironmentVariables();
+            DesktopUtilities.RefreshEnvironmentVariables();
         }
 
         /// <summary>
