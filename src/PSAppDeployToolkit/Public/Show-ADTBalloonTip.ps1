@@ -77,11 +77,13 @@ function Show-ADTBalloonTip
         [System.Windows.Forms.ToolTipIcon]$Icon = [System.Windows.Forms.ToolTipIcon]::Info,
 
         [Parameter(Mandatory = $false)]
+        [System.Obsolete('This parameter will be removed in PSAppDeployToolkit 4.3.0.')]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [Alias('BalloonTipTime')]
         [System.UInt32]$Timeout,
 
         [Parameter(Mandatory = $false)]
+        [System.Obsolete('This parameter will be removed in PSAppDeployToolkit 4.3.0.')]
         [System.Management.Automation.SwitchParameter]$NoWait,
 
         [Parameter(Mandatory = $false)]
