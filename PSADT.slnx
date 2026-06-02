@@ -10,6 +10,8 @@
   <Project Path="src/PSADT/PSADT.UserInterface.Interfaces.TestHarness/PSADT.UserInterface.Interfaces.TestHarness.csproj" />
   <Project Path="src/PSADT/PSADT.UserInterface.Interfaces/PSADT.UserInterface.Interfaces.csproj" />
   <Project Path="src/PSADT/PSADT.UserInterface/PSADT.UserInterface.csproj" />
+  <Project Path="src/PSADT/PSADT.WindowsRuntime.TrimHarness/PSADT.WindowsRuntime.TrimHarness.csproj" />
+  <Project Path="src/PSADT/PSADT.WindowsRuntime/PSADT.WindowsRuntime.csproj" />
   <Project Path="src/PSADT/PSADT/PSADT.csproj" />
   <Project Path="src/PSADT/PSAppDeployToolkit/PSAppDeployToolkit.csproj" />
 </Solution>

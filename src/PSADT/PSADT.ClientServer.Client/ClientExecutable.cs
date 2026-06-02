@@ -24,7 +24,10 @@ using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Interfaces;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
+using PSADT.WindowsRuntime.UI.Notifications;
+using PSADT.WindowsRuntime.UI.Shell;
 using PSAppDeployToolkit.Logging;
+using Windows.UI.Notifications;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 
@@ -465,14 +468,14 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.MinimizeAllWindows:
                                             {
-                                                ShellUtilities.MinimizeAllWindows();
+                                                DesktopUtilities.MinimizeAllWindows();
                                                 WriteSuccess(true);
                                                 break;
                                             }
 
                                         case PipeCommand.RestoreAllWindows:
                                             {
-                                                ShellUtilities.RestoreAllWindows();
+                                                DesktopUtilities.RestoreAllWindows();
                                                 WriteSuccess(true);
                                                 break;
                                             }
@@ -492,20 +495,20 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.RefreshDesktopAndEnvironmentVariables:
                                             {
-                                                ShellUtilities.RefreshDesktopAndEnvironmentVariables();
+                                                DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
                                                 WriteSuccess(true);
                                                 break;
                                             }
 
                                         case PipeCommand.GetUserNotificationState:
                                             {
-                                                WriteSuccess(ShellUtilities.GetUserNotificationState());
+                                                WriteSuccess(DesktopUtilities.GetUserNotificationState());
                                                 break;
                                             }
 
                                         case PipeCommand.GetForegroundWindowProcessId:
                                             {
-                                                WriteSuccess(ShellUtilities.GetForegroundWindowProcessId());
+                                                WriteSuccess(DesktopUtilities.GetForegroundWindowProcessId());
                                                 break;
                                             }
 
@@ -621,29 +624,29 @@ namespace PSADT.ClientServer
                 }
                 else if (arg is "/GetUserNotificationState" or "/guns")
                 {
-                    Console.WriteLine(SerializeToString(ShellUtilities.GetUserNotificationState()));
+                    Console.WriteLine(SerializeToString(DesktopUtilities.GetUserNotificationState()));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
                 {
-                    Console.WriteLine(SerializeToString(ShellUtilities.GetForegroundWindowProcessId()));
+                    Console.WriteLine(SerializeToString(DesktopUtilities.GetForegroundWindowProcessId()));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
                 {
-                    ShellUtilities.RefreshDesktopAndEnvironmentVariables();
+                    DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
                     Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/MinimizeAllWindows" or "/maw")
                 {
-                    ShellUtilities.MinimizeAllWindows();
+                    DesktopUtilities.MinimizeAllWindows();
                     Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/RestoreAllWindows" or "/raw")
                 {
-                    ShellUtilities.RestoreAllWindows();
+                    DesktopUtilities.RestoreAllWindows();
                     Console.WriteLine(SerializeToString(true));
                     return (int)ClientExitCode.Success;
                 }
@@ -712,7 +715,7 @@ namespace PSADT.ClientServer
                 }
                 else if (arg is "/GetLastInputTime" or "/glit")
                 {
-                    Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
+                    Console.WriteLine(DesktopUtilities.GetLastInputTime().Ticks);
                     return (int)ClientExitCode.Success;
                 }
                 else if (arg is "/TokenBroker" or "/tb")
@@ -1008,7 +1011,7 @@ namespace PSADT.ClientServer
         /// <returns>1 if focus mode is active; 0 if focus mode is inactive; -1 if the focus mode state could not be determined.</returns>
         private static int GetUserFocusModeState()
         {
-            return new();
+            return !ShellUtilities.TryGetFocusSessionActive(out bool? active) || !active.HasValue ? -1 : active.Value ? 1 : 0;
         }
 
         /// <summary>
@@ -1018,9 +1021,9 @@ namespace PSADT.ClientServer
         /// retrieved. Callers should check for this value to handle such cases appropriately.</remarks>
         /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
         /// mode. Returns a value of -1 if the mode cannot be determined.</returns>
-        private static ToastNotificationMode GetUserToastNotificationMode()
+        private static int GetUserToastNotificationMode()
         {
-            return ToastNotificationMode.PriorityOnly;
+            return !NotificationsUtilities.TryGetNotificationMode(out ToastNotificationMode mode) ? -1 : (int)mode;
         }
 
         /// <summary>

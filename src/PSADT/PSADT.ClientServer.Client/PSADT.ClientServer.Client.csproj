@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
     <ProjectReference Include="..\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
+    <ProjectReference Include="..\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
   </ItemGroup>
 </Project>

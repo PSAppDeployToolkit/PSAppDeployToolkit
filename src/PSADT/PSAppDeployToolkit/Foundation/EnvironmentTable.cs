@@ -1122,7 +1122,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the location typically used for storing user-specific data
         /// and settings. The returned value may be null if the user profiles directory cannot be determined on the
         /// current system.</remarks>
-        public DirectoryInfo DirUserProfile { get; } = ShellUtilities.GetUserProfilesDirectory();
+        public DirectoryInfo DirUserProfile { get; } = DesktopUtilities.GetUserProfilesDirectory();
 
         /// <summary>
         /// Gets the default user profile path configured on the system.

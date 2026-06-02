@@ -179,7 +179,7 @@ namespace PSADT.TerminalServices
             {
                 if (isCurrentSession)
                 {
-                    idleTime = ShellUtilities.GetLastInputTime();
+                    idleTime = DesktopUtilities.GetLastInputTime();
                 }
                 else if (AccountUtilities.CallerIsAdmin && isValidUserSession)
                 {

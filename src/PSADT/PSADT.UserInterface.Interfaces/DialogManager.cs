@@ -99,7 +99,7 @@ namespace PSADT.UserInterface.Interfaces
             app = appLocal;
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-            _ = app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, ShellUtilities.RefreshDesktop);
+            _ = app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, DesktopUtilities.RefreshDesktop);
         }
 
         /// <summary>
@@ -187,12 +187,12 @@ namespace PSADT.UserInterface.Interfaces
         {
             if (options.MinimizeWindows)
             {
-                ShellUtilities.MinimizeAllWindows();
+                DesktopUtilities.MinimizeAllWindows();
             }
             CustomDialogResult res = await ShowModalDialogAsync<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
-                ShellUtilities.RestoreAllWindows();
+                DesktopUtilities.RestoreAllWindows();
             }
             return res;
         }
@@ -209,12 +209,12 @@ namespace PSADT.UserInterface.Interfaces
         {
             if (options.MinimizeWindows)
             {
-                ShellUtilities.MinimizeAllWindows();
+                DesktopUtilities.MinimizeAllWindows();
             }
             ListSelectionDialogResult res = await ShowModalDialogAsync<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
-                ShellUtilities.RestoreAllWindows();
+                DesktopUtilities.RestoreAllWindows();
             }
             return res;
         }
@@ -234,12 +234,12 @@ namespace PSADT.UserInterface.Interfaces
             }
             if (options.MinimizeWindows)
             {
-                ShellUtilities.MinimizeAllWindows();
+                DesktopUtilities.MinimizeAllWindows();
             }
             InputDialogResult res = await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
             if (options.MinimizeWindows)
             {
-                ShellUtilities.RestoreAllWindows();
+                DesktopUtilities.RestoreAllWindows();
             }
             return res;
         }

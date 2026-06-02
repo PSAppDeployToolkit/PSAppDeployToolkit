@@ -16,7 +16,7 @@ namespace PSADT.Utilities
     /// <summary>
     /// Provides methods for interacting with the Windows Explorer.
     /// </summary>
-    internal static class ShellUtilities
+    internal static class DesktopUtilities
     {
         /// <summary>
         /// Notifies the system that file associations have changed and refreshes the desktop environment.
