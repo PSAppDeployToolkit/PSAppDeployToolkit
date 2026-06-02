@@ -111,8 +111,7 @@ function Show-ADTNotifyIcon
         # Determine if a notification icon is open before testing the session.
         # We'll allow updating of a notification icon in silent mode without
         # the -Force parameter if an existing notification icon is already open
-        $notifyIconOpen = Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser
-        if ($adtSession -and $adtSession.IsSilent() -and !$notifyIconOpen)
+        if (!($notifyIconOpen = Test-ADTNotifyIconOpen -RunAsActiveUser $runAsActiveUser) -and $adtSession -and $adtSession.IsSilent())
         {
             if (!$Force)
             {
