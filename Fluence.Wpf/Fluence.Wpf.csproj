@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Fluence.Wpf</RootNamespace>
+    <AssemblyName>Fluence.Wpf</AssemblyName>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);SYSLIB1045;IDE0330;S1244;VSTHRD001</NoWarn>
+    <DocumentationFile Condition="'$(TargetFramework)' != ''">bin/$(Configuration)/$(TargetFramework)/Fluence.Wpf.xml</DocumentationFile>
+    <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2 and .NET 10)</Description>
+    <Product>Fluence.Wpf</Product>
+    <Title>Fluence.Wpf</Title>
+    <PackageId>Fluence.Wpf</PackageId>
+    <VersionPrefix>0.7.0</VersionPrefix>
+    <VersionSuffix>preview</VersionSuffix>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/sintaxasn/Fluence.Wpf</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sintaxasn/Fluence.Wpf</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>wpf;fluent;fluent-design;windows11;controls;theme</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>fluence-wpf-nuget-icon-128.png</PackageIcon>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Page Update="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup Label="NuGet package content">
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\assets\fluence-wpf-nuget-icon-128.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+
+</Project>

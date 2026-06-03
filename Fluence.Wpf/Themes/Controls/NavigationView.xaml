@@ -1,0 +1,1002 @@
+﻿<!--
+    Copyright 2026 Dan Cunningham
+    
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+    
+    1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+    3. Neither the name of the copyright holder nor the names of its contributors
+    may be used to endorse or promote products derived from this software
+    without specific prior written permission.
+    
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+    THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf">
+
+    <!--  NavigationViewItemHeader  -->
+    <Style TargetType="{x:Type controls:NavigationViewItemHeader}">
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Padding" Value="12,8,12,4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:NavigationViewItemHeader}">
+                    <Border Padding="{TemplateBinding Padding}">
+                        <ContentPresenter
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            TextElement.FontFamily="{TemplateBinding FontFamily}"
+                            TextElement.FontSize="{TemplateBinding FontSize}"
+                            TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Style.Triggers>
+            <!--  Left mode + pane closed: 48-px compact strip has no room for text headers  -->
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="False" />
+                    <Condition Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.Left}" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Visibility" Value="Collapsed" />
+            </MultiDataTrigger>
+            <!--  LeftCompact mode: always compact (48-px pane, no text headers ever)  -->
+            <DataTrigger Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.LeftCompact}">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+            <!--  Top mode: inline horizontal items leave no room for section headers  -->
+            <DataTrigger Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.Top}">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--  NavigationViewItemSeparator  -->
+    <Style TargetType="{x:Type controls:NavigationViewItemSeparator}">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Margin" Value="12,4,0,4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:NavigationViewItemSeparator}">
+                    <Border Height="{TemplateBinding Height}" Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <!--  Focus visual shared by NavigationViewItem  -->
+    <Style x:Key="NavigationViewItemFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Grid>
+                        <Border
+                            Margin="0"
+                            BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
+                            BorderThickness="2"
+                            CornerRadius="{DynamicResource ControlCornerRadius}" />
+                        <Border
+                            Margin="2"
+                            BorderBrush="{DynamicResource FocusStrokeColorInnerBrush}"
+                            BorderThickness="1"
+                            CornerRadius="3" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--  NavigationViewItem - single adaptive layout, no per-item indicator  -->
+    <Style TargetType="{x:Type controls:NavigationViewItem}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource NavigationViewItemFocusVisual}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:NavigationViewItem}">
+                    <ControlTemplate.Resources>
+                        <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                            <Setter Property="TextWrapping" Value="NoWrap" />
+                        </Style>
+                    </ControlTemplate.Resources>
+                    <Border
+                        x:Name="OuterBorder"
+                        Margin="4,2,4,2"
+                        Background="{TemplateBinding Background}"
+                        BorderThickness="2"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <Grid MinHeight="32">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition x:Name="IconColumn" Width="40" />
+                                <ColumnDefinition x:Name="GapColumn" Width="12" />
+                                <ColumnDefinition x:Name="ContentColumn" Width="*" />
+                                <ColumnDefinition x:Name="InfoBadgeColumn" Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <!--  Selection indicator removed - pane-level PART_SelectionIndicator (Left/LeftCompact/Top pane templates) owns the selection visual.  -->
+                            <ContentPresenter
+                                x:Name="IconPresenter"
+                                Grid.Column="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Content="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}"
+                                ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                RecognizesAccessKey="True"
+                                TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                TextElement.FontSize="{TemplateBinding FontSize}"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <ContentPresenter
+                                x:Name="InfoBadgePresenter"
+                                Grid.Column="3"
+                                Height="32"
+                                MinWidth="34"
+                                Margin="4,0,8,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Content="{Binding InfoBadge, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!--  Top mode: keep icon and text visible while tightening horizontal spacing.  -->
+                        <DataTrigger Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.Top}">
+                            <Setter TargetName="OuterBorder" Property="BorderThickness" Value="0" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                            <Setter TargetName="OuterBorder" Property="Margin" Value="2,4,2,4" />
+                            <Setter TargetName="IconPresenter" Property="Margin" Value="4,0,2,0" />
+                            <Setter TargetName="ContentPresenter" Property="Margin" Value="2,0" />
+                            <Setter Property="MinWidth" Value="0" />
+                            <Setter TargetName="OuterBorder" Property="Padding" Value="4,0,6,0" />
+                            <Setter TargetName="IconColumn" Property="Width" Value="Auto" />
+                            <Setter TargetName="GapColumn" Property="Width" Value="0" />
+                            <Setter TargetName="ContentColumn" Property="Width" Value="Auto" />
+                        </DataTrigger>
+                        <!--  Footer items (e.g. Settings) render gear-only: hide the label and collapse its column, leaving just the icon. Only the Top pane template sets NavigationView.IsFooterItem on its footer host, and it inherits onto the footer items, so this rule is scoped to Top mode. The pane-level indicator re-centres under the narrowed item via the item's ActualWidth.  -->
+                        <Trigger Property="controls:NavigationView.IsFooterItem" Value="True">
+                            <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="ContentColumn" Property="Width" Value="0" />
+                            <Setter TargetName="GapColumn" Property="Width" Value="0" />
+                        </Trigger>
+                        <Trigger SourceName="InfoBadgePresenter" Property="Content" Value="{x:Null}">
+                            <Setter TargetName="InfoBadgePresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  Left + pane closed: hide label and center icon in 48px pane  -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="False" />
+                                <Condition Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.Left}" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="InfoBadgePresenter" Property="Visibility" Value="Collapsed" />
+                            <!--  IconColumn held at fixed 40 px so the icon center stays at x=24 (4px margin + 40/2) during pane-width animation. Making it * would re-centre in the intermediate item width and slide laterally.  -->
+                            <Setter TargetName="GapColumn" Property="Width" Value="0" />
+                            <Setter TargetName="ContentColumn" Property="Width" Value="0" />
+                            <Setter TargetName="InfoBadgeColumn" Property="Width" Value="0" />
+                        </MultiDataTrigger>
+                        <!--  LeftCompact + pane closed: hide label and center icon in 48px pane  -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="False" />
+                                <Condition Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.LeftCompact}" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="InfoBadgePresenter" Property="Visibility" Value="Collapsed" />
+                            <!--  IconColumn held at fixed 40 px so the icon center stays at x=24 (4px margin + 40/2) during pane-width animation. Making it * would re-centre in the intermediate item width and slide laterally.  -->
+                            <Setter TargetName="GapColumn" Property="Width" Value="0" />
+                            <Setter TargetName="ContentColumn" Property="Width" Value="0" />
+                            <Setter TargetName="InfoBadgeColumn" Property="Width" Value="0" />
+                        </MultiDataTrigger>
+                        <!--  Selected  -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <!--  Hover (not selected)  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsSelected" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </MultiTrigger>
+                        <!--  Hover + selected  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsSelected" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </MultiTrigger>
+                        <!--  Pressed (not selected)  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsPressed" Value="True" />
+                                <Condition Property="IsSelected" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </MultiTrigger>
+                        <!--  Pressed + selected  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsPressed" Value="True" />
+                                <Condition Property="IsSelected" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </MultiTrigger>
+                        <!--  Disabled  -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding PaneDisplayMode, RelativeSource={RelativeSource AncestorType=controls:NavigationView}}" Value="{x:Static uicore:NavigationViewPaneDisplayMode.Top}">
+                <Setter Property="Margin" Value="0,0,4,0" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--  NavigationViewBackButton: shared chrome  -->
+    <ControlTemplate x:Key="NavigationViewBackButtonTemplate" TargetType="Button">
+        <Border
+            x:Name="BackBorder"
+            Background="Transparent"
+            CornerRadius="{DynamicResource ControlCornerRadius}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="BackBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="BackBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--  Left pane template  -->
+    <ControlTemplate x:Key="NavigationViewLeftPaneTemplate" TargetType="{x:Type controls:NavigationView}">
+        <Border Background="{TemplateBinding Background}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="PaneColumn" Width="48" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Pane background: AcrylicInAppFillColorDefaultBrush per WinUI 3 NavigationViewDefaultPaneBackground.  -->
+                <Border
+                    x:Name="PaneBorder"
+                    Grid.Column="0"
+                    Background="{DynamicResource AcrylicInAppFillColorDefaultBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel
+                            x:Name="PaneChrome"
+                            Grid.Row="0"
+                            Height="48"
+                            MinWidth="48"
+                            Margin="0"
+                            HorizontalAlignment="Left"
+                            Orientation="Horizontal">
+                            <Button
+                                x:Name="PART_BackButton"
+                                Width="48"
+                                Height="40"
+                                Margin="0"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Focusable="True"
+                                Template="{StaticResource NavigationViewBackButtonTemplate}"
+                                Visibility="Collapsed">
+                                <controls:FontIcon
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Glyph="&#xE72B;"
+                                    IconFontSize="16" />
+                            </Button>
+                            <Button
+                                x:Name="PART_PaneToggleButton"
+                                Width="48"
+                                Height="40"
+                                Margin="0"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Focusable="True"
+                                Template="{StaticResource NavigationViewBackButtonTemplate}">
+                                <controls:FontIcon
+                                    x:Name="PaneToggleGlyph"
+                                    Margin="2,0,0,0"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Glyph="&#xE700;"
+                                    IconFontSize="16" />
+                            </Button>
+                        </StackPanel>
+
+                        <!--  Extra horizontal padding keeps keyboard focus visuals inside the pane viewport.  -->
+                        <controls:SmoothScrollViewer
+                            x:Name="PART_PaneItemsScrollViewer"
+                            Grid.Row="1"
+                            Padding="0,4,8,4"
+                            Focusable="False"
+                            HorizontalScrollBarVisibility="Disabled"
+                            Style="{DynamicResource ScrollViewerStyle}"
+                            VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <ItemsPresenter />
+                                <Border
+                                    x:Name="PART_SelectionIndicator"
+                                    Width="3"
+                                    Height="16"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="1.5"
+                                    IsHitTestVisible="False"
+                                    Opacity="0"
+                                    RenderTransformOrigin="0.5,0.5">
+                                    <Border.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform />
+                                            <TranslateTransform />
+                                        </TransformGroup>
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Grid>
+                        </controls:SmoothScrollViewer>
+
+                        <Border
+                            x:Name="PaneFooterHost"
+                            Grid.Row="2"
+                            Padding="0,0,8,8">
+                            <StackPanel Orientation="Vertical">
+                                <!--  FooterMenuItems: pinned, selectable navigation entries that stretch to the pane width (full-width hover/selection) and share the single-selection model with the main list.  -->
+                                <Grid>
+                                    <ItemsControl
+                                        x:Name="PART_FooterItemsHost"
+                                        Focusable="False"
+                                        ItemsSource="{Binding FooterMenuItems, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    <Border
+                                        x:Name="PART_FooterSelectionIndicator"
+                                        Width="3"
+                                        Height="16"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="1.5"
+                                        IsHitTestVisible="False"
+                                        Opacity="0"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform />
+                                                <TranslateTransform />
+                                            </TransformGroup>
+                                        </Border.RenderTransform>
+                                    </Border>
+                                </Grid>
+                                <!--  Legacy free-form PaneFooter content. HorizontalAlignment=Left anchors it to the pane's left edge: a ContentPresenter arranges its child at the child's desired size (it does not force-stretch like the menu items' StackPanel), so without this an icon-only collapsed footer item (~48px) is centered in the pane and slides laterally as the pane width animates between open and compact. Left keeps the footer icon column fixed at the same x as the menu item icons.  -->
+                                <ContentPresenter
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Left"
+                                    Content="{TemplateBinding PaneFooter}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition x:Name="HeaderRow" Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ContentPresenter
+                        Grid.Row="0"
+                        Margin="24,0,24,0"
+                        VerticalAlignment="Center"
+                        Content="{TemplateBinding Header}"
+                        ContentTemplate="{TemplateBinding HeaderTemplate}">
+                        <ContentPresenter.Style>
+                            <Style TargetType="ContentPresenter">
+                                <Style.Triggers>
+                                    <Trigger Property="Content" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentPresenter.Style>
+                    </ContentPresenter>
+                    <Grid Grid.Row="1">
+                        <!--
+                            Rounded content background and the 1 px stroke are split so
+                            PART_ContentPresenter sits flush with the pane column edge.
+                            Regression guard: wrapping the presenter in a BorderThickness=1
+                            Border adds layout-rounding drift at 150% DPI.
+                        -->
+                        <Border
+                            Background="{TemplateBinding ContentBackground}"
+                            ClipToBounds="True"
+                            CornerRadius="8,0,0,0">
+                            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
+                        </Border>
+                        <Border
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1,1,0,0"
+                            CornerRadius="8,0,0,0"
+                            IsHitTestVisible="False" />
+                    </Grid>
+                </Grid>
+            </Grid>
+            <!--  WI-3 B15: BackButtonStates VSM group - WinUI NavigationView canonical  -->
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="BackButtonStates">
+                    <VisualState x:Name="BackButtonVisible">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BackButton" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="BackButtonCollapsed">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BackButton" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Header" Value="{x:Null}">
+                <Setter TargetName="HeaderRow" Property="Height" Value="42" />
+            </Trigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}" />
+                    <Condition Binding="{Binding ExtendsContentIntoTitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="HeaderRow" Property="Height" Value="48" />
+            </MultiDataTrigger>
+            <DataTrigger Binding="{Binding ExtendsContentIntoTitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}}" Value="True">
+                <Setter TargetName="PaneChrome" Property="Height" Value="48" />
+            </DataTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsBackButtonVisible" Value="True" />
+                    <Condition Property="IsBackEnabled" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter TargetName="PART_BackButton" Property="Visibility" Value="Visible" />
+            </MultiTrigger>
+            <Trigger Property="IsPaneToggleButtonVisible" Value="False">
+                <Setter TargetName="PART_PaneToggleButton" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ExtendsContentIntoTitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}}" Value="True" />
+                    <Condition Binding="{Binding TitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}, Converter={x:Static controls:FluenceWindow.IsNotNullConverter}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="PART_BackButton" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="PART_PaneToggleButton" Property="Visibility" Value="Collapsed" />
+            </MultiDataTrigger>
+            <Trigger Property="IsPaneOpen" Value="False">
+                <Setter TargetName="PART_PaneItemsScrollViewer" Property="Padding" Value="0,4,0,4" />
+                <Setter TargetName="PaneFooterHost" Property="Padding" Value="0,0,0,8" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--  Left-compact pane template  -->
+    <ControlTemplate x:Key="NavigationViewLeftCompactPaneTemplate" TargetType="{x:Type controls:NavigationView}">
+        <Border>
+            <!--
+                Two-column inline layout: pane resizes between 48 and 280 and pushes content.
+                This mirrors WinUI 3 NavigationView / .NET 10 WPF NavigationView compact-left
+                behavior while transition code temporarily expands content during Top mode changes.
+            -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="PaneColumn" Width="48" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Pane background: AcrylicInAppFillColorDefaultBrush per WinUI 3 NavigationViewDefaultPaneBackground.  -->
+                <Border
+                    x:Name="CompactPane"
+                    Grid.Column="0"
+                    Background="{DynamicResource AcrylicInAppFillColorDefaultBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel
+                            x:Name="PaneChrome"
+                            Grid.Row="0"
+                            Height="42"
+                            MinWidth="48"
+                            Margin="0"
+                            HorizontalAlignment="Left"
+                            Orientation="Horizontal">
+                            <Button
+                                x:Name="PART_BackButton"
+                                Width="48"
+                                Height="40"
+                                Margin="0"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Focusable="True"
+                                Template="{StaticResource NavigationViewBackButtonTemplate}"
+                                Visibility="Collapsed">
+                                <controls:FontIcon
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Glyph="&#xE72B;"
+                                    IconFontSize="16" />
+                            </Button>
+                            <Button
+                                x:Name="PART_PaneToggleButton"
+                                Width="48"
+                                Height="40"
+                                Margin="0"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Focusable="True"
+                                Template="{StaticResource NavigationViewBackButtonTemplate}">
+                                <controls:FontIcon
+                                    x:Name="PaneToggleGlyph"
+                                    Margin="2,0,0,0"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Glyph="&#xE700;"
+                                    IconFontSize="16" />
+                            </Button>
+                        </StackPanel>
+
+                        <!--  Extra horizontal padding keeps keyboard focus visuals inside the pane viewport.  -->
+                        <controls:SmoothScrollViewer
+                            x:Name="PART_PaneItemsScrollViewer"
+                            Grid.Row="1"
+                            Padding="0,4,0,4"
+                            Focusable="False"
+                            HorizontalScrollBarVisibility="Disabled"
+                            Style="{DynamicResource ScrollViewerStyle}"
+                            VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <ItemsPresenter />
+                                <Border
+                                    x:Name="PART_SelectionIndicator"
+                                    Width="3"
+                                    Height="16"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="1.5"
+                                    IsHitTestVisible="False"
+                                    Opacity="0"
+                                    RenderTransformOrigin="0.5,0.5">
+                                    <Border.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform />
+                                            <TranslateTransform />
+                                        </TransformGroup>
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Grid>
+                        </controls:SmoothScrollViewer>
+
+                        <Border
+                            x:Name="PaneFooterHost"
+                            Grid.Row="2"
+                            Padding="0,0,0,8">
+                            <StackPanel Orientation="Vertical">
+                                <!--  FooterMenuItems: pinned, selectable navigation entries that stretch to the pane width (full-width hover/selection) and share the single-selection model with the main list.  -->
+                                <Grid>
+                                    <ItemsControl
+                                        x:Name="PART_FooterItemsHost"
+                                        Focusable="False"
+                                        ItemsSource="{Binding FooterMenuItems, RelativeSource={RelativeSource TemplatedParent}}" />
+                                    <Border
+                                        x:Name="PART_FooterSelectionIndicator"
+                                        Width="3"
+                                        Height="16"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="1.5"
+                                        IsHitTestVisible="False"
+                                        Opacity="0"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform />
+                                                <TranslateTransform />
+                                            </TransformGroup>
+                                        </Border.RenderTransform>
+                                    </Border>
+                                </Grid>
+                                <!--  Legacy free-form PaneFooter content. HorizontalAlignment=Left anchors it to the pane's left edge: a ContentPresenter arranges its child at the child's desired size (it does not force-stretch like the menu items' StackPanel), so without this an icon-only collapsed footer item (~48px) is centered in the pane and slides laterally as the pane width animates between open and compact. Left keeps the footer icon column fixed at the same x as the menu item icons.  -->
+                                <ContentPresenter
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Left"
+                                    Content="{TemplateBinding PaneFooter}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition x:Name="HeaderRow" Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ContentPresenter
+                        Grid.Row="0"
+                        Margin="24,0,24,0"
+                        VerticalAlignment="Center"
+                        Content="{TemplateBinding Header}"
+                        ContentTemplate="{TemplateBinding HeaderTemplate}">
+                        <ContentPresenter.Style>
+                            <Style TargetType="ContentPresenter">
+                                <Style.Triggers>
+                                    <Trigger Property="Content" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentPresenter.Style>
+                    </ContentPresenter>
+                    <Grid Grid.Row="1">
+                        <!--
+                            Rounded content background and the 1 px stroke are split so
+                            PART_ContentPresenter sits flush with the pane column edge.
+                            Regression guard: wrapping the presenter in a BorderThickness=1
+                            Border adds layout-rounding drift at 150% DPI.
+                        -->
+                        <Border
+                            Background="{TemplateBinding ContentBackground}"
+                            ClipToBounds="True"
+                            CornerRadius="8,0,0,0">
+                            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
+                        </Border>
+                        <Border
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1,1,0,0"
+                            CornerRadius="8,0,0,0"
+                            IsHitTestVisible="False" />
+                    </Grid>
+                </Grid>
+            </Grid>
+            <!--  WI-3 B15: BackButtonStates VSM group - WinUI NavigationView canonical  -->
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="BackButtonStates">
+                    <VisualState x:Name="BackButtonVisible">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BackButton" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="BackButtonCollapsed">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BackButton" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Header" Value="{x:Null}">
+                <Setter TargetName="HeaderRow" Property="Height" Value="42" />
+            </Trigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}" />
+                    <Condition Binding="{Binding ExtendsContentIntoTitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="HeaderRow" Property="Height" Value="42" />
+            </MultiDataTrigger>
+            <DataTrigger Binding="{Binding ExtendsContentIntoTitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}}" Value="True">
+                <Setter TargetName="PaneChrome" Property="Height" Value="42" />
+            </DataTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsBackButtonVisible" Value="True" />
+                    <Condition Property="IsBackEnabled" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter TargetName="PART_BackButton" Property="Visibility" Value="Visible" />
+            </MultiTrigger>
+            <Trigger Property="IsPaneToggleButtonVisible" Value="False">
+                <Setter TargetName="PART_PaneToggleButton" Property="Visibility" Value="Collapsed" />
+            </Trigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding ExtendsContentIntoTitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}}" Value="True" />
+                    <Condition Binding="{Binding TitleBar, RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}, Converter={x:Static controls:FluenceWindow.IsNotNullConverter}}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="PART_BackButton" Property="Visibility" Value="Collapsed" />
+                <Setter TargetName="PART_PaneToggleButton" Property="Visibility" Value="Collapsed" />
+            </MultiDataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--  Top pane template  -->
+    <ControlTemplate x:Key="NavigationViewTopPaneTemplate" TargetType="{x:Type controls:NavigationView}">
+        <Border
+            Background="{TemplateBinding Background}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            ClipToBounds="True"
+            CornerRadius="{DynamicResource OverlayCornerRadius}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <!--  Pane background: AcrylicInAppFillColorDefaultBrush per WinUI 3 NavigationViewDefaultPaneBackground.  -->
+                <Border
+                    x:Name="PaneHeaderBorder"
+                    Grid.Row="0"
+                    Padding="4,0,8,0"
+                    Background="{DynamicResource AcrylicInAppFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            x:Name="PART_BackButton"
+                            Grid.Column="0"
+                            Margin="24,0,4,0"
+                            Padding="6"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Focusable="True"
+                            Template="{StaticResource NavigationViewBackButtonTemplate}"
+                            Visibility="Collapsed">
+                            <controls:FontIcon
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Glyph="&#xE72B;"
+                                IconFontSize="20" />
+                        </Button>
+                        <ContentPresenter
+                            Grid.Column="1"
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding PaneHeader}" />
+                        <Grid
+                            x:Name="PART_TopItemsHost"
+                            Grid.Column="2"
+                            VerticalAlignment="Stretch"
+                            ClipToBounds="True">
+                            <ItemsPresenter VerticalAlignment="Center" />
+                            <controls:Button
+                                x:Name="PART_TopOverflowButton"
+                                Width="40"
+                                Height="36"
+                                MinWidth="40"
+                                MinHeight="36"
+                                Margin="0"
+                                Padding="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Panel.ZIndex="2"
+                                Appearance="{x:Static uicore:ControlAppearance.Subtle}"
+                                Visibility="Collapsed">
+                                <controls:FontIcon
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Glyph="&#xE712;"
+                                    IconFontSize="16" />
+                            </controls:Button>
+                            <Border
+                                x:Name="PART_SelectionIndicator"
+                                Width="16"
+                                Height="3"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                CornerRadius="1.5"
+                                IsHitTestVisible="False"
+                                Opacity="0"
+                                RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform />
+                                        <TranslateTransform />
+                                    </TransformGroup>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
+                        <StackPanel
+                            Grid.Column="3"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Stretch"
+                            Orientation="Horizontal">
+                            <!--  FooterMenuItems: right-docked, selectable footer entries. Not part of the main top overflow.  -->
+                            <Grid VerticalAlignment="Stretch">
+                                <ItemsControl
+                                    x:Name="PART_FooterItemsHost"
+                                    VerticalAlignment="Center"
+                                    controls:NavigationView.IsFooterItem="True"
+                                    Focusable="False"
+                                    ItemsSource="{Binding FooterMenuItems, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Focusable="False" Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                                <!--  Canvas reports zero desired size, so the indicator overlays the footer items without widening column 3 (which would steal width from the top overflow calculation). The Canvas fills the footer Grid cell at its origin, so canvas-space coordinates equal footer-Grid coordinates; CalculateIndicatorPosition transforms the selected item into the footer Grid (the indicator host) to centre the indicator under it.  -->
+                                <Canvas>
+                                    <Border
+                                        x:Name="PART_FooterSelectionIndicator"
+                                        Canvas.Left="0"
+                                        Canvas.Bottom="0"
+                                        Width="16"
+                                        Height="3"
+                                        Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="1.5"
+                                        IsHitTestVisible="False"
+                                        Opacity="0"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform />
+                                                <TranslateTransform />
+                                            </TransformGroup>
+                                        </Border.RenderTransform>
+                                    </Border>
+                                </Canvas>
+                            </Grid>
+                            <ContentPresenter VerticalAlignment="Center" Content="{TemplateBinding PaneFooter}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Grid.Row="1" Background="{TemplateBinding ContentBackground}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
+                </Border>
+            </Grid>
+            <!--  WI-3 B15: BackButtonStates VSM group - WinUI NavigationView canonical  -->
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="BackButtonStates">
+                    <VisualState x:Name="BackButtonVisible">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BackButton" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="BackButtonCollapsed">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BackButton" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Border>
+        <ControlTemplate.Triggers>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsBackButtonVisible" Value="True" />
+                    <Condition Property="IsBackEnabled" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter TargetName="PART_BackButton" Property="Visibility" Value="Visible" />
+            </MultiTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--  NavigationView default style  -->
+    <Style TargetType="{x:Type controls:NavigationView}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ContentBackground" Value="{DynamicResource NavigationViewContentBackgroundBrush}" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Focusable="False" Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template" Value="{StaticResource NavigationViewLeftPaneTemplate}" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Style.Triggers>
+            <Trigger Property="PaneDisplayMode" Value="{x:Static uicore:NavigationViewPaneDisplayMode.Top}">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <StackPanel Focusable="False" Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Template" Value="{StaticResource NavigationViewTopPaneTemplate}" />
+            </Trigger>
+            <Trigger Property="PaneDisplayMode" Value="{x:Static uicore:NavigationViewPaneDisplayMode.LeftCompact}">
+                <Setter Property="Template" Value="{StaticResource NavigationViewLeftCompactPaneTemplate}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

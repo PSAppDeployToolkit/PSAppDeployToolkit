@@ -1,0 +1,321 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <StreamGeometry x:Key="ChromeClose11">F1 M 10 11.416016 L 1.708984 19.707031 C 1.513672 19.902344 1.279297 20 1.005859 20 C 0.719401 20 0.480143 19.903971 0.288086 19.711914 C 0.096029 19.519857 0 19.2806 0 18.994141 C 0 18.720703 0.097656 18.486328 0.292969 18.291016 L 8.583984 10 L 0.292969 1.708984 C 0.097656 1.513672 0 1.276043 0 0.996094 C 0 0.859375 0.026042 0.729168 0.078125 0.605469 C 0.130208 0.481771 0.201823 0.375977 0.292969 0.288086 C 0.384115 0.200195 0.491536 0.130209 0.615234 0.078125 C 0.738932 0.026043 0.869141 0 1.005859 0 C 1.279297 0 1.513672 0.097656 1.708984 0.292969 L 10 8.583984 L 18.291016 0.292969 C 18.486328 0.097656 18.723957 0 19.003906 0 C 19.140625 0 19.269205 0.026043 19.389648 0.078125 C 19.51009 0.130209 19.615885 0.201824 19.707031 0.292969 C 19.798176 0.384115 19.869791 0.48991 19.921875 0.610352 C 19.973957 0.730795 20 0.859375 20 0.996094 C 20 1.276043 19.902344 1.513672 19.707031 1.708984 L 11.416016 10 L 19.707031 18.291016 C 19.902344 18.486328 20 18.720703 20 18.994141 C 20 19.130859 19.973957 19.261068 19.921875 19.384766 C 19.869791 19.508465 19.798176 19.615885 19.707031 19.707031 C 19.615885 19.798178 19.51009 19.869792 19.389648 19.921875 C 19.269205 19.973959 19.140625 20 19.003906 20 C 18.723957 20 18.486328 19.902344 18.291016 19.707031 Z</StreamGeometry>
+    <StreamGeometry x:Key="ChromeMinimize11">F1 M 0.996094 10 C 0.859375 10 0.730794 9.973959 0.610352 9.921875 C 0.489909 9.869792 0.384115 9.798178 0.292969 9.707031 C 0.201823 9.615886 0.130208 9.510092 0.078125 9.389648 C 0.026042 9.269206 0 9.140625 0 9.003906 C 0 8.867188 0.026042 8.738607 0.078125 8.618164 C 0.130208 8.497722 0.201823 8.3903 0.292969 8.295898 C 0.384115 8.201498 0.489909 8.128256 0.610352 8.076172 C 0.730794 8.024089 0.859375 7.998047 0.996094 7.998047 L 19.003906 7.998047 C 19.140625 7.998047 19.269205 8.024089 19.389648 8.076172 C 19.51009 8.128256 19.615885 8.201498 19.707031 8.295898 C 19.798176 8.3903 19.869791 8.497722 19.921875 8.618164 C 19.973957 8.738607 20 8.867188 20 9.003906 C 20 9.140625 19.973957 9.269206 19.921875 9.389648 C 19.869791 9.510092 19.798176 9.615886 19.707031 9.707031 C 19.615885 9.798178 19.51009 9.869792 19.389648 9.921875 C 19.269205 9.973959 19.140625 10 19.003906 10 Z</StreamGeometry>
+    <StreamGeometry x:Key="ChromeMaximize11">F1 M 2.949219 20 C 2.558594 20 2.184245 19.920248 1.826172 19.760742 C 1.468099 19.601236 1.153971 19.386393 0.883789 19.116211 C 0.613607 18.846029 0.398763 18.5319 0.239258 18.173828 C 0.079753 17.815756 0 17.441406 0 17.050781 L 0 2.949219 C 0 2.558594 0.079753 2.184246 0.239258 1.826172 C 0.398763 1.4681 0.613607 1.153973 0.883789 0.883789 C 1.153971 0.613607 1.468099 0.398764 1.826172 0.239258 C 2.184245 0.079754 2.558594 0 2.949219 0 L 17.050781 0 C 17.441406 0 17.815754 0.079754 18.173828 0.239258 C 18.5319 0.398764 18.846027 0.613607 19.116211 0.883789 C 19.386393 1.153973 19.601236 1.4681 19.760742 1.826172 C 19.920246 2.184246 20 2.558594 20 2.949219 L 20 17.050781 C 20 17.441406 19.920246 17.815756 19.760742 18.173828 C 19.601236 18.5319 19.386393 18.846029 19.116211 19.116211 C 18.846027 19.386393 18.5319 19.601236 18.173828 19.760742 C 17.815754 19.920248 17.441406 20 17.050781 20 Z M 17.001953 17.998047 C 17.274088 17.998047 17.52962 17.946613 17.768555 17.84375 C 18.007486 17.740887 18.216144 17.601563 18.394531 17.425781 C 18.572916 17.25 18.713541 17.042969 18.816406 16.804688 C 18.919271 16.566406 18.970703 16.311198 18.970703 16.039063 L 18.970703 3.960938 C 18.970703 3.688802 18.919271 3.433594 18.816406 3.195313 C 18.713541 2.957031 18.572916 2.75 18.394531 2.574219 C 18.216144 2.398438 18.007486 2.259115 17.768555 2.15625 C 17.52962 2.053385 17.274088 2.001953 17.001953 2.001953 L 2.998047 2.001953 C 2.725911 2.001953 2.470378 2.053385 2.231445 2.15625 C 1.992512 2.259115 1.783854 2.398438 1.605469 2.574219 C 1.427083 2.75 1.286459 2.957031 1.183594 3.195313 C 1.080728 3.433594 1.029297 3.688802 1.029297 3.960938 L 1.029297 16.039063 C 1.029297 16.311198 1.080728 16.566406 1.183594 16.804688 C 1.286459 17.042969 1.427083 17.25 1.605469 17.425781 C 1.783854 17.601563 1.992512 17.740887 2.231445 17.84375 C 2.470378 17.946613 2.725911 17.998047 2.998047 17.998047 Z</StreamGeometry>
+    <StreamGeometry x:Key="ChromeRestore11">F1 M 17.998047 5.927734 C 17.998047 5.387371 17.890625 4.877931 17.675781 4.399414 C 17.460938 3.920898 17.169596 3.504232 16.801758 3.149414 C 16.433918 2.794598 16.007486 2.514648 15.522461 2.30957 C 15.037434 2.104492 14.527994 2.001953 13.994141 2.001953 L 4.169922 2.001953 C 4.274088 1.702475 4.420573 1.429037 4.609375 1.181641 C 4.798177 0.934246 5.016276 0.722656 5.263672 0.546875 C 5.511067 0.371094 5.782877 0.236004 6.079102 0.141602 C 6.375325 0.047201 6.682942 0 7.001953 0 L 13.994141 0 C 14.820963 0 15.598957 0.157879 16.328125 0.473633 C 17.057291 0.789389 17.693684 1.217449 18.237305 1.757812 C 18.780924 2.298178 19.210611 2.932943 19.526367 3.662109 C 19.842121 4.391276 20 5.169271 20 5.996094 L 20 12.998047 C 20 13.317058 19.952799 13.624675 19.858398 13.920898 C 19.763996 14.217123 19.628906 14.488933 19.453125 14.736328 C 19.277344 14.983725 19.065754 15.201823 18.818359 15.390625 C 18.570963 15.579428 18.297525 15.725912 17.998047 15.830078 Z M 14.033203 19.990234 C 13.492838 19.990234 12.983398 19.882812 12.504883 19.667969 C 12.026367 19.453125 11.6097 19.161783 11.254883 18.793945 C 10.900066 18.426105 10.620117 17.999674 10.415039 17.514648 C 10.209961 17.029621 10.107422 16.520182 10.107422 15.986328 L 10.107422 7.001953 C 10.107422 6.4681 10.209961 5.958659 10.415039 5.473633 C 10.620117 4.988608 10.900066 4.562176 11.254883 4.194336 C 11.6097 3.826498 12.026367 3.535156 12.504883 3.320312 C 12.983398 3.105469 13.492838 2.998047 14.033203 2.998047 L 15.986328 2.998047 C 16.526693 2.998047 17.036133 3.105469 17.514648 3.320312 C 17.993164 3.535156 18.409832 3.826498 18.764648 4.194336 C 19.119465 4.562176 19.399414 4.988608 19.604492 5.473633 C 19.80957 5.958659 19.912109 6.4681 19.912109 7.001953 L 19.912109 15.986328 C 19.912109 16.520182 19.80957 17.029621 19.604492 17.514648 C 19.399414 17.999674 19.119465 18.426105 18.764648 18.793945 C 18.409832 19.161783 17.993164 19.453125 17.514648 19.667969 C 17.036133 19.882812 16.526693 19.990234 15.986328 19.990234 Z M 14.082031 18.007812 L 15.9375 18.007812 C 16.209635 18.007812 16.464518 17.95638 16.702148 17.853516 C 16.939778 17.750651 17.146809 17.611328 17.323242 17.435547 C 17.499674 17.259766 17.639648 17.052735 17.743164 16.814453 C 17.846679 16.576172 17.898438 16.320964 17.898438 16.048828 L 17.898438 7.011719 C 17.898438 6.739584 17.846679 6.4847 17.743164 6.24707 C 17.639648 6.00944 17.499674 5.802409 17.323242 5.625977 C 17.146809 5.449544 16.939778 5.30957 16.702148 5.206055 C 16.464518 5.10254 16.209635 5.050781 15.9375 5.050781 L 14.082031 5.050781 C 13.809896 5.050781 13.554687 5.10254 13.316406 5.206055 C 13.078124 5.30957 12.871093 5.449544 12.695312 5.625977 C 12.51953 5.802409 12.380208 6.00944 12.277344 6.24707 C 12.174479 6.4847 12.123047 6.739584 12.123047 7.011719 L 12.123047 16.048828 C 12.123047 16.320964 12.174479 16.576172 12.277344 16.814453 C 12.380208 17.052735 12.51953 17.259766 12.695312 17.435547 C 12.871093 17.611328 13.078124 17.750651 13.316406 17.853516 C 13.554687 17.95638 13.809896 18.007812 14.082031 18.007812 Z</StreamGeometry>
+
+    <!--  Caption button style (minimize, maximize, restore)  -->
+    <Style x:Key="WindowButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                        <ContentPresenter
+                            x:Name="contentPresenter"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}, Path=IsActive}" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </DataTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="contentPresenter" Property="Opacity" Value=".5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="46" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+    </Style>
+
+    <!--  Close button style - hover/pressed colors driven by caption-specific tokens.  -->
+    <Style x:Key="WindowCloseButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                        <ContentPresenter
+                            x:Name="contentPresenter"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=controls:FluenceWindow}, Path=IsActive}" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </DataTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource WindowCloseButtonBackgroundPointerOverBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource WindowCloseButtonForegroundPointerOverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource WindowCloseButtonBackgroundPressedBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource WindowCloseButtonForegroundPointerOverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="contentPresenter" Property="Opacity" Value=".5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="46" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+    </Style>
+
+    <!--  BooleanToVisibilityConverter for ShowIcon/ShowTitle bindings  -->
+    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+    <Style TargetType="{x:Type controls:FluenceWindow}">
+        <Setter Property="Background" Value="{DynamicResource ApplicationBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultSolidBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <!--
+            RenderOptions.ClearTypeHint is intentionally left at the WPF default (Auto). Forcing
+            Enabled at the window root forces ClearType subpixel rendering even over translucent
+            surfaces (Mica / Acrylic backdrops, the AccentFillBackdrop layer, etc.) where ClearType
+            cannot blend correctly against the DWM-composited result and falls back to a degraded
+            grayscale anti-aliasing that reads as "soft / fuzzy" at body and caption sizes. The
+            WPF default lets the renderer pick per-surface: ClearType on opaque, grayscale on
+            translucent. .NET 10 WPF Fluent theme also leaves this at the default.
+        -->
+        <Setter Property="ResizeMode" Value="CanResize" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:FluenceWindow}">
+                    <Border
+                        x:Name="WindowBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{DynamicResource OverlayCornerRadius}">
+                        <Grid Margin="{TemplateBinding MarginMaximized}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition x:Name="TitleBarRow" Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!--
+                                Title bar region.
+                                Panel.ZIndex=1 keeps the caption-button strip above client content
+                                when ExtendsContentIntoTitleBar=true. Without this, client content
+                                renders on top in document order and swallows min / max / close
+                                clicks even though the hit-test for NC buttons returns 0 correctly (WI-1 F4).
+                            -->
+                            <Grid
+                                x:Name="TitleBarGrid"
+                                Grid.Row="0"
+                                Height="{TemplateBinding TitleBarHeight}"
+                                Panel.ZIndex="1"
+                                Background="Transparent">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Icon  -->
+                                <Image
+                                    x:Name="WindowIcon"
+                                    Grid.Column="0"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="16,0,0,0"
+                                    VerticalAlignment="Center"
+                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                    Source="{TemplateBinding Icon}"
+                                    Visibility="Hidden" />
+
+                                <!--  Title text  -->
+                                <TextBlock
+                                    x:Name="TitleText"
+                                    Grid.Column="1"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Style="{DynamicResource CaptionTextBlockStyle}"
+                                    Text="{TemplateBinding Title}" />
+
+                                <!--  Custom title bar content area  -->
+                                <ContentPresenter
+                                    x:Name="TitleBarContent"
+                                    Grid.Column="2"
+                                    Margin="0,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Panel.ZIndex="1"
+                                    Content="{TemplateBinding TitleBar}" />
+
+                                <!--  Caption buttons  -->
+                                <Grid
+                                    x:Name="CaptionButtonPanel"
+                                    Grid.Column="3"
+                                    Width="138"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Stretch"
+                                    Panel.ZIndex="2"
+                                    WindowChrome.IsHitTestVisibleInChrome="True">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="46" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        x:Name="PART_MinimizeButton"
+                                        Grid.Column="0"
+                                        Command="{x:Static SystemCommands.MinimizeWindowCommand}"
+                                        Style="{StaticResource WindowButtonStyle}"
+                                        ToolTip="Minimize">
+                                        <Path
+                                            Width="10"
+                                            Height="10"
+                                            Data="{StaticResource ChromeMinimize11}"
+                                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                            Stretch="Uniform" />
+                                    </Button>
+                                    <Button
+                                        x:Name="PART_MaximizeButton"
+                                        Grid.Column="1"
+                                        Command="{x:Static SystemCommands.MaximizeWindowCommand}"
+                                        Style="{StaticResource WindowButtonStyle}"
+                                        ToolTip="Maximize">
+                                        <Path
+                                            Width="10"
+                                            Height="10"
+                                            Data="{StaticResource ChromeMaximize11}"
+                                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                            Stretch="Uniform" />
+                                    </Button>
+                                    <Button
+                                        x:Name="PART_RestoreButton"
+                                        Grid.Column="1"
+                                        Command="{x:Static SystemCommands.RestoreWindowCommand}"
+                                        Style="{StaticResource WindowButtonStyle}"
+                                        ToolTip="Restore"
+                                        Visibility="Collapsed">
+                                        <Path
+                                            Width="10"
+                                            Height="10"
+                                            Data="{StaticResource ChromeRestore11}"
+                                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                            Stretch="Uniform" />
+                                    </Button>
+                                    <Button
+                                        x:Name="PART_CloseButton"
+                                        Grid.Column="2"
+                                        Command="{x:Static SystemCommands.CloseWindowCommand}"
+                                        Style="{StaticResource WindowCloseButtonStyle}"
+                                        ToolTip="Close">
+                                        <Path
+                                            Width="10"
+                                            Height="10"
+                                            Data="{StaticResource ChromeClose11}"
+                                            Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                            Stretch="Uniform" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+
+                            <!--  Content area: normally in Row 1, overlaps Row 0 when extended  -->
+                            <AdornerDecorator x:Name="ContentArea" Grid.Row="1">
+                                <ContentPresenter />
+                            </AdornerDecorator>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!--  Maximized: remove corner radius and border  -->
+                        <Trigger Property="WindowState" Value="Maximized">
+                            <Setter TargetName="WindowBorder" Property="BorderThickness" Value="0" />
+                            <Setter TargetName="WindowBorder" Property="CornerRadius" Value="0" />
+                        </Trigger>
+
+                        <!--  Show icon when set and ShowIcon is true  -->
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Icon, RelativeSource={RelativeSource Self}, Converter={x:Static controls:FluenceWindow.IsNotNullConverter}}" Value="True" />
+                                <Condition Binding="{Binding ShowIcon, RelativeSource={RelativeSource Self}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="WindowIcon" Property="Visibility" Value="Visible" />
+                        </MultiDataTrigger>
+
+                        <Trigger Property="ShowIcon" Value="False">
+                            <Setter TargetName="WindowIcon" Property="Visibility" Value="Hidden" />
+                        </Trigger>
+
+                        <Trigger Property="ShowTitle" Value="False">
+                            <Setter TargetName="TitleText" Property="Visibility" Value="Hidden" />
+                        </Trigger>
+
+                        <DataTrigger Binding="{Binding TitleBar, RelativeSource={RelativeSource Self}, Converter={x:Static controls:FluenceWindow.IsNotNullConverter}}" Value="True">
+                            <Setter TargetName="TitleBarContent" Property="Grid.Column" Value="0" />
+                            <Setter TargetName="TitleBarContent" Property="Grid.ColumnSpan" Value="4" />
+                            <Setter TargetName="WindowIcon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="TitleText" Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+
+                        <!--  Inactive window: dim title text  -->
+                        <Trigger Property="IsActive" Value="False">
+                            <Setter TargetName="TitleText" Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+
+                        <!--
+                            ExtendsContentIntoTitleBar: content fills entire window, title bar overlays.
+                            Hide WindowIcon and TitleText - the app is responsible for branding in its own TitleBar content.
+                        -->
+                        <Trigger Property="ExtendsContentIntoTitleBar" Value="True">
+                            <Setter TargetName="TitleBarContent" Property="Grid.Column" Value="0" />
+                            <Setter TargetName="TitleBarContent" Property="Grid.ColumnSpan" Value="4" />
+                            <Setter TargetName="ContentArea" Property="Grid.Row" Value="0" />
+                            <Setter TargetName="ContentArea" Property="Grid.RowSpan" Value="2" />
+                            <Setter TargetName="WindowIcon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="TitleText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+</ResourceDictionary>

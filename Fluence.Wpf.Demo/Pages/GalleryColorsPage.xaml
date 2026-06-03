@@ -1,0 +1,56 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryColorsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="980"
+    mc:Ignorable="d">
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Colors" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Use Fluence theme brushes for text, fills, strokes, backgrounds, semantic states, and high contrast mappings." />
+
+            <ui:Border
+                x:Name="CodeSampleCard"
+                Margin="0,0,0,20"
+                Padding="16"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        x:Name="CodeSampleText"
+                        VerticalAlignment="Center"
+                        FontFamily="Cascadia Mono, Consolas"
+                        FontSize="13"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="&lt;TextBlock Foreground=&quot;{DynamicResource TextFillColorPrimaryBrush}&quot; /&gt;"
+                        TextWrapping="Wrap" />
+                    <ui:Button
+                        x:Name="CopyCodeSampleButton"
+                        Grid.Column="1"
+                        MinWidth="32"
+                        Margin="12,0,0,0"
+                        Padding="8,4"
+                        Appearance="Subtle"
+                        Click="CopyCodeSampleButton_Click"
+                        ToolTip="Copy sample">
+                        <ui:Button.Icon>
+                            <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="14" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </Grid>
+            </ui:Border>
+
+            <TabControl x:Name="ColorSectionTabs" Margin="0,12,0,0" />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

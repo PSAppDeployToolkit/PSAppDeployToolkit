@@ -1,0 +1,117 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <!--
+        Fluent PersonPicture style.
+        Authority: WinUI 3 PersonPicture.xaml + PersonPicture_themeresources.xaml.
+        Circular avatar: ControlAltFillColorQuarternaryBrush background, CardStrokeColorDefaultBrush 1px border.
+        CommonStates: Photo → PART_ImageEllipse Visible; Initials/NoPhotoOrInitials/Group → PART_InitialsText.
+        BadgeStates: NoBadge → PART_BadgeGrid Collapsed; BadgeWithoutImageSource → PART_BadgeGrid Visible.
+        VisualState transitions use ObjectAnimationUsingKeyFrames (WPF idiom).
+        Default size 40×40; override Width/Height for other sizes.
+    -->
+    <Style TargetType="{x:Type controls:PersonPicture}">
+        <Setter Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="MinWidth" Value="24" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PersonPicture}">
+                    <Grid x:Name="RootGrid">
+                        <!--  Background ellipse  -->
+                        <Ellipse
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="{Binding BorderThickness.Left, RelativeSource={RelativeSource TemplatedParent}}" />
+
+                        <!--  Initials / placeholder glyph - code updates Text and FontFamily.  -->
+                        <TextBlock
+                            x:Name="PART_InitialsText"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="14"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Text="&#xE77B;" />
+
+                        <!--  Photo ellipse - Fill set from code; Hidden by default.  -->
+                        <Ellipse x:Name="PART_ImageEllipse" Visibility="Hidden" />
+
+                        <!--  Badge: bottom-right corner, AccentFillColorDefaultBrush background.  -->
+                        <Grid
+                            x:Name="PART_BadgeGrid"
+                            Height="16"
+                            MinWidth="16"
+                            Margin="0,0,-2,-2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Visibility="Collapsed">
+                            <Border
+                                x:Name="PART_BadgeBackground"
+                                Height="16"
+                                MinWidth="16"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                BorderBrush="{TemplateBinding Background}"
+                                BorderThickness="2"
+                                CornerRadius="8" />
+                            <TextBlock
+                                x:Name="PART_BadgeText"
+                                Margin="4,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="10"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                Text="" />
+                        </Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <!--  Photo: image ellipse visible, initials hidden.  -->
+                                <VisualState x:Name="Photo">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_InitialsText" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Hidden}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ImageEllipse" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <!--  Initials/NoPhotoOrInitials/Group: code updates PART_InitialsText.Text.  -->
+                                <VisualState x:Name="Initials" />
+                                <VisualState x:Name="NoPhotoOrInitials" />
+                                <VisualState x:Name="Group" />
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="BadgeStates">
+                                <VisualState x:Name="NoBadge" />
+                                <!--  BadgeWithoutImageSource: make PART_BadgeGrid visible.  -->
+                                <VisualState x:Name="BadgeWithoutImageSource">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_BadgeGrid" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="40" />
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,123 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--
+        Windows 11 Fluent motion timing canonical values.
+        WPF Storyboard Duration attributes require literal values in XAML,
+        so these cannot be used directly in trigger-based animations.
+        Use from code-behind: (TimeSpan)FindResource("ControlFastAnimationDuration")
+    -->
+    <sys:TimeSpan x:Key="ControlFasterAnimationDuration">0:0:0.083</sys:TimeSpan>
+    <sys:TimeSpan x:Key="ControlFastAnimationDuration">0:0:0.167</sys:TimeSpan>
+    <sys:TimeSpan x:Key="ControlNormalAnimationDuration">0:0:0.250</sys:TimeSpan>
+    <sys:TimeSpan x:Key="ControlSlowAnimationDuration">0:0:0.333</sys:TimeSpan>
+    <!--  Canonical WinUI 3 / .NET 10 WPF decelerate curve: P1=(0,0), P2=(0,1).  -->
+    <KeySpline x:Key="ControlFastOutSlowInKeySpline">0.8,0,0,1</KeySpline>
+
+    <!--  Windows 11 Fluent - Typography layer  -->
+    <!--  Prefer Display typography for large/small optical sizes; fall back when not installed.  -->
+
+    <FontFamily x:Key="FluentFontFamily">Segoe UI Variable Display, Segoe UI Variable, Segoe UI</FontFamily>
+
+    <!--
+        Implicit default TextBlock style.
+        Sets the Fluent font defaults for every TextBlock in the application.
+        Does NOT set Foreground or LineHeight so template-inherited values are preserved.
+        Named styles below use BasedOn="{StaticResource {x:Type TextBlock}}" and only
+        override what differs from these defaults.
+    -->
+    <Style TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Regular" />
+    </Style>
+
+    <!--  Caption - 12 / Regular  -->
+    <Style
+        x:Key="CaptionTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Regular" />
+        <Setter Property="LineHeight" Value="16" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Body - 14 / Regular  -->
+    <Style
+        x:Key="BodyTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="Regular" />
+        <Setter Property="LineHeight" Value="20" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Body Strong - 14 / SemiBold  -->
+    <Style
+        x:Key="BodyStrongTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="20" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Body Large - 18 / Regular  -->
+    <Style
+        x:Key="BodyLargeTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="Regular" />
+        <Setter Property="LineHeight" Value="24" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Subtitle - 20 / SemiBold  -->
+    <Style
+        x:Key="SubtitleTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="28" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Title - 28 / SemiBold  -->
+    <Style
+        x:Key="TitleTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="36" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Title Large - 40 / SemiBold  -->
+    <Style
+        x:Key="TitleLargeTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="52" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <!--  Display - 68 / SemiBold  -->
+    <Style
+        x:Key="DisplayTextBlockStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="TextBlock">
+        <Setter Property="FontSize" Value="68" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LineHeight" Value="92" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+</ResourceDictionary>

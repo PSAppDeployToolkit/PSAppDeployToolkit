@@ -1,0 +1,169 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  Windows 11 High Contrast Theme - Color-only layer  -->
+    <!--  Static HC-Black fallback Color values; brushes are built in C# by SpecialBrushes.AddHighContrastBrushes  -->
+    <!--  and read live SystemColors so they track HC variant changes on re-Apply.  -->
+
+    <!--  Color keys (static HC-Black fallback values).  -->
+    <!--  These supply the Color token layer; brushes come from C# SpecialBrushes.  -->
+
+    <!--  Application Background  -->
+    <Color x:Key="ApplicationBackgroundColor">#FF000000</Color>
+
+    <!--  Keyboard Focus  -->
+    <Color x:Key="KeyboardFocusBorderColor">#FF1AEBFF</Color>
+
+    <!--  Text Fill Colors  -->
+    <Color x:Key="TextFillColorPrimary">#FFFFFFFF</Color>
+    <Color x:Key="TextFillColorSecondary">#FFFFFFFF</Color>
+    <Color x:Key="TextFillColorTertiary">#FF3FF23F</Color>
+    <Color x:Key="TextFillColorDisabled">#FF3FF23F</Color>
+    <Color x:Key="TextPlaceholderColor">#FF3FF23F</Color>
+    <Color x:Key="TextFillColorInverse">#FF000000</Color>
+
+    <!--  Control Fill Colors  -->
+    <Color x:Key="ControlFillColorDefault">#FF000000</Color>
+    <Color x:Key="ControlFillColorSecondary">#FF000000</Color>
+    <Color x:Key="ControlFillColorTertiary">#FF000000</Color>
+    <Color x:Key="ControlFillColorQuarternary">#FF000000</Color>
+    <Color x:Key="ControlFillColorDisabled">#FF000000</Color>
+    <Color x:Key="ControlFillColorTransparent">#00000000</Color>
+    <Color x:Key="ControlFillColorInputActive">#FF000000</Color>
+
+    <!--  Control Strong Fill Colors  -->
+    <Color x:Key="ControlStrongFillColorDefault">#FFFFFFFF</Color>
+    <Color x:Key="ControlStrongFillColorDisabled">#FF3FF23F</Color>
+
+    <!--  Control Solid Fill Colors  -->
+    <Color x:Key="ControlSolidFillColorDefault">#FF000000</Color>
+
+    <!--  Subtle Fill Colors  -->
+    <Color x:Key="SubtleFillColorTransparent">#00000000</Color>
+    <Color x:Key="SubtleFillColorSecondary">#FF000000</Color>
+    <Color x:Key="SubtleFillColorTertiary">#FF000000</Color>
+    <Color x:Key="SubtleFillColorDisabled">#00000000</Color>
+
+    <!--  Control Alt Fill Colors  -->
+    <Color x:Key="ControlAltFillColorTransparent">#00000000</Color>
+    <Color x:Key="ControlAltFillColorSecondary">#FF000000</Color>
+    <Color x:Key="ControlAltFillColorTertiary">#FF000000</Color>
+    <Color x:Key="ControlAltFillColorQuarternary">#FF000000</Color>
+    <Color x:Key="ControlAltFillColorDisabled">#00000000</Color>
+
+    <!--  Control On Image Fill Colors  -->
+    <Color x:Key="ControlOnImageFillColorDefault">#FF000000</Color>
+    <Color x:Key="ControlOnImageFillColorSecondary">#FF000000</Color>
+    <Color x:Key="ControlOnImageFillColorTertiary">#FF000000</Color>
+    <Color x:Key="ControlOnImageFillColorDisabled">#FF000000</Color>
+
+    <!--  Control Stroke Colors  -->
+    <Color x:Key="ControlStrokeColorDefault">#FF808080</Color>
+    <Color x:Key="ControlStrokeColorSecondary">#FF808080</Color>
+    <Color x:Key="ControlStrokeColorTertiary">#FFFFFFFF</Color>
+    <Color x:Key="ControlStrokeColorOnAccentDefault">#FF000000</Color>
+    <Color x:Key="ControlStrokeColorOnAccentSecondary">#FF000000</Color>
+    <Color x:Key="ControlStrokeColorOnAccentTertiary">#FF000000</Color>
+    <Color x:Key="ControlStrokeColorOnAccentDisabled">#FF3FF23F</Color>
+    <Color x:Key="ControlStrokeColorForStrongFillWhenOnImage">#FF808080</Color>
+
+    <!--  Card Stroke Colors  -->
+    <Color x:Key="CardStrokeColorDefault">#FF808080</Color>
+    <Color x:Key="CardStrokeColorDefaultSolid">#FF808080</Color>
+
+    <!--  Control Strong Stroke Colors  -->
+    <Color x:Key="ControlStrongStrokeColorDefault">#FFFFFFFF</Color>
+    <Color x:Key="ControlStrongStrokeColorDisabled">#FF3FF23F</Color>
+
+    <!--  Surface Stroke Colors  -->
+    <Color x:Key="SurfaceStrokeColorDefault">#FF808080</Color>
+    <Color x:Key="SurfaceStrokeColorFlyout">#FF808080</Color>
+    <Color x:Key="SurfaceStrokeColorInverse">#FFC0C0C0</Color>
+
+    <!--  Divider Stroke Color  -->
+    <Color x:Key="DividerStrokeColorDefault">#FF808080</Color>
+
+    <!--  Focus Stroke Colors  -->
+    <Color x:Key="FocusStrokeColorOuter">#FF1AEBFF</Color>
+    <Color x:Key="FocusStrokeColorInner">#FF000000</Color>
+
+    <!--  Card Background Fill Colors  -->
+    <Color x:Key="CardBackgroundFillColorDefault">#FF000000</Color>
+    <Color x:Key="CardBackgroundFillColorSecondary">#FF000000</Color>
+    <Color x:Key="CardBackgroundFillColorTertiary">#FF000000</Color>
+
+    <!--  Smoke Fill Color  -->
+    <Color x:Key="SmokeFillColorDefault">#FF000000</Color>
+
+    <!--  Layer Fill Colors  -->
+    <Color x:Key="LayerFillColorDefault">#FF000000</Color>
+    <Color x:Key="LayerFillColorAlt">#FF000000</Color>
+    <Color x:Key="LayerOnAcrylicFillColorDefault">#FF000000</Color>
+    <Color x:Key="LayerOnAccentAcrylicFillColorDefault">#FF1AEBFF</Color>
+
+    <!--  Layer On Mica Base Alt Fill Colors  -->
+    <Color x:Key="LayerOnMicaBaseAltFillColorDefault">#FF000000</Color>
+    <Color x:Key="LayerOnMicaBaseAltFillColorSecondary">#FF000000</Color>
+    <Color x:Key="LayerOnMicaBaseAltFillColorTertiary">#FF000000</Color>
+    <Color x:Key="LayerOnMicaBaseAltFillColorTransparent">#00000000</Color>
+
+    <!--  Solid Background Fill Colors  -->
+    <Color x:Key="SolidBackgroundFillColorBase">#FF000000</Color>
+    <Color x:Key="SolidBackgroundFillColorSecondary">#FF000000</Color>
+    <Color x:Key="SolidBackgroundFillColorTertiary">#FF000000</Color>
+    <Color x:Key="SolidBackgroundFillColorQuarternary">#FF000000</Color>
+    <Color x:Key="SolidBackgroundFillColorQuinary">#FF000000</Color>
+    <Color x:Key="SolidBackgroundFillColorSenary">#FF000000</Color>
+    <Color x:Key="SolidBackgroundFillColorTransparent">#00000000</Color>
+    <Color x:Key="SolidBackgroundFillColorBaseAlt">#FF000000</Color>
+
+    <!--  Acrylic Background Fill Colors  -->
+    <Color x:Key="AcrylicBackgroundFillColorDefault">#FF000000</Color>
+    <Color x:Key="AcrylicBackgroundFillColorBase">#FF000000</Color>
+
+    <!--  System Fill Colors  -->
+    <Color x:Key="SystemFillColorAttention">#FF1AEBFF</Color>
+    <Color x:Key="SystemFillColorInformational">#FFFFFFFF</Color>
+    <Color x:Key="SystemFillColorSuccess">#FFFFFFFF</Color>
+    <Color x:Key="SystemFillColorCaution">#FFFFFFFF</Color>
+    <Color x:Key="SystemFillColorCritical">#FFFFFFFF</Color>
+    <Color x:Key="SystemFillColorNeutral">#FFFFFFFF</Color>
+    <Color x:Key="SystemFillColorSolidNeutral">#FFFFFFFF</Color>
+    <Color x:Key="SystemFillColorAttentionBackground">#FF1AEBFF</Color>
+    <Color x:Key="SystemFillColorSuccessBackground">#FF000000</Color>
+    <Color x:Key="SystemFillColorCautionBackground">#FF000000</Color>
+    <Color x:Key="SystemFillColorCriticalBackground">#FF000000</Color>
+    <Color x:Key="SystemFillColorNeutralBackground">#FF000000</Color>
+    <Color x:Key="SystemFillColorSolidAttentionBackground">#FF1AEBFF</Color>
+    <Color x:Key="SystemFillColorSolidNeutralBackground">#FF000000</Color>
+
+    <!--  Window Chrome - Close Button (HC static fallbacks)  -->
+    <Color x:Key="WindowCloseFillColorHover">#FF1AEBFF</Color>
+    <Color x:Key="WindowCloseFillColorPressed">#FF1AEBFF</Color>
+    <Color x:Key="WindowCloseForegroundHover">#FF000000</Color>
+    <Color x:Key="WindowCloseForegroundPressed">#FF000000</Color>
+
+    <!--  Accent Color fallbacks (static HC defaults)  -->
+    <Color x:Key="SystemAccentColor">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorLight1">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorLight2">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorLight3">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorDark1">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorDark2">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorDark3">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorPrimary">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorSecondary">#FF1AEBFF</Color>
+    <Color x:Key="SystemAccentColorTertiary">#FF1AEBFF</Color>
+    <Color x:Key="AccentFillColorDefault">#FF1AEBFF</Color>
+    <Color x:Key="AccentFillColorSecondary">#FF1AEBFF</Color>
+    <Color x:Key="AccentFillColorTertiary">#FF1AEBFF</Color>
+    <Color x:Key="AccentFillColorDisabled">#FF3FF23F</Color>
+    <Color x:Key="AccentTextFillColorDisabled">#FF3FF23F</Color>
+    <Color x:Key="TextOnAccentFillColorSelectedText">#FF000000</Color>
+    <Color x:Key="TextOnAccentFillColorPrimary">#FF000000</Color>
+    <Color x:Key="TextOnAccentFillColorSecondary">#FF000000</Color>
+    <Color x:Key="TextOnAccentFillColorDisabled">#FF3FF23F</Color>
+
+    <!--  NavigationView content area (transparent - HC Window color via brush in C# SpecialBrushes)  -->
+    <Color x:Key="NavigationViewContentBackground">#FF000000</Color>
+
+</ResourceDictionary>

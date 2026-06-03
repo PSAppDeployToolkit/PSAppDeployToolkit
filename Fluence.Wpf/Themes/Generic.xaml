@@ -1,0 +1,48 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <!--  FluenceWindow  -->
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/FluenceWindow.xaml" />
+
+        <!--  Common Controls  -->
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ScrollBar.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TabControl.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TabView.xaml" />
+
+        <!--  Custom Controls  -->
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/FontIcon.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Button.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/HyperlinkButton.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TextBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PasswordBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ListView.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ListBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Card.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/CheckBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/RadioButton.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ToggleSwitch.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ComboBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ToggleButton.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/RepeatButton.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/DropDownButton.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/SplitButton.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Slider.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ProgressBar.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/InfoBar.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/NavigationView.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ProgressRing.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TitleBar.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TextBlock.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Expander.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/NumberBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/InfoBadge.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ToolTip.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ContextMenu.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Menu.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/Separator.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/RatingControl.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PersonPicture.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TreeView.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

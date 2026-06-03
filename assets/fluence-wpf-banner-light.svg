@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 256" width="820" height="256">
+  <rect x="0" y="0" width="820" height="256" fill="#FFFFFF"></rect>
+  <g>
+<defs>
+    <linearGradient id="flN-red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF6B6B"></stop><stop offset="100%" stop-color="#D63B3B"></stop>
+    </linearGradient>
+    <linearGradient id="flN-redA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#D63B3B" stop-opacity="0.55"></stop>
+    </linearGradient>
+<linearGradient id="flN-orange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF9550"></stop><stop offset="100%" stop-color="#E0561E"></stop>
+    </linearGradient>
+    <linearGradient id="flN-orangeA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#E0561E" stop-opacity="0.55"></stop>
+    </linearGradient>
+<linearGradient id="flN-yellow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE34A"></stop><stop offset="100%" stop-color="#F2B600"></stop>
+    </linearGradient>
+    <linearGradient id="flN-yellowA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#F2B600" stop-opacity="0.55"></stop>
+    </linearGradient>
+<linearGradient id="flN-green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7FD89A"></stop><stop offset="100%" stop-color="#3FA86A"></stop>
+    </linearGradient>
+    <linearGradient id="flN-greenA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#3FA86A" stop-opacity="0.55"></stop>
+    </linearGradient>
+<linearGradient id="flN-blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5FB6F2"></stop><stop offset="100%" stop-color="#1F7BC8"></stop>
+    </linearGradient>
+    <linearGradient id="flN-blueA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#1F7BC8" stop-opacity="0.55"></stop>
+    </linearGradient>
+<linearGradient id="flN-indigo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8A98FF"></stop><stop offset="100%" stop-color="#3A46C8"></stop>
+    </linearGradient>
+    <linearGradient id="flN-indigoA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#3A46C8" stop-opacity="0.55"></stop>
+    </linearGradient>
+<linearGradient id="flN-violet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C58BFF"></stop><stop offset="100%" stop-color="#7A2DC8"></stop>
+    </linearGradient>
+    <linearGradient id="flN-violetA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"></stop>
+      <stop offset="100%" stop-color="#7A2DC8" stop-opacity="0.55"></stop>
+    </linearGradient>
+    <radialGradient id="flN-glow" cx="32%" cy="22%" r="75%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.42"></stop>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="flN-sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"></stop>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="flN-sheenStrong" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.78"></stop>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.10"></stop>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"></stop>
+    </linearGradient>
+    <pattern id="flN-grain" x="0" y="0" width="3" height="3" patternUnits="userSpaceOnUse">
+      <circle cx="0.7" cy="0.7" r="0.3" fill="#FFFFFF" fill-opacity="0.18"></circle>
+      <circle cx="2.1" cy="1.9" r="0.25" fill="#FFFFFF" fill-opacity="0.12"></circle>
+    </pattern>
+    <filter id="flN-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"></feGaussianBlur>
+      <feOffset dx="0" dy="4"></feOffset>
+      <feComponentTransfer><feFuncA type="linear" slope="0.30"></feFuncA></feComponentTransfer>
+      <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+    <filter id="flN-pane" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.2"></feGaussianBlur>
+      <feOffset dx="0" dy="2"></feOffset>
+      <feComponentTransfer><feFuncA type="linear" slope="0.36"></feFuncA></feComponentTransfer>
+      <feMerge><feMergeNode></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+  </defs>
+
+<g filter="url(#flN-shadow)">
+<g transform="rotate(-42 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-red)"></rect><rect x="100" y="56" width="56" height="2" rx="10" fill="#FFFFFF" opacity="0.10"></rect></g>
+<g transform="rotate(-28 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-orange)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-glow)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-sheen)"></rect><rect x="100.5" y="56.5" width="55" height="147" rx="9.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="1"></rect></g>
+<g transform="rotate(-14 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-yellow)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-glow)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-sheen)"></rect><rect x="100.5" y="56.5" width="55" height="147" rx="9.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="1"></rect></g>
+<g transform="rotate(0 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-green)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-glow)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-sheen)"></rect><rect x="100.5" y="56.5" width="55" height="147" rx="9.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="1"></rect></g>
+<g transform="rotate(14 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-blue)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-glow)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-sheen)"></rect><rect x="100.5" y="56.5" width="55" height="147" rx="9.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="1"></rect></g>
+<g transform="rotate(28 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-indigoA)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-grain)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-sheenStrong)"></rect><rect x="100.75" y="56.75" width="54.5" height="146.5" rx="9.25" fill="none" stroke="#FFFFFF" stroke-opacity="0.78" stroke-width="1.25"></rect></g>
+<g transform="rotate(42 128 220)" filter="url(#flN-pane)"><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-violetA)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-grain)"></rect><rect x="100" y="56" width="56" height="148" rx="10" fill="url(#flN-sheenStrong)"></rect><rect x="100.75" y="56.75" width="54.5" height="146.5" rx="9.25" fill="none" stroke="#FFFFFF" stroke-opacity="0.78" stroke-width="1.25"></rect></g>
+</g>
+</g>
+  <g font-family="Segoe UI Variable Display, Segoe UI, Inter, system-ui, sans-serif" dominant-baseline="middle">
+    <text x="276" y="128" font-weight="600" font-size="92" fill="#0B0B0F" letter-spacing="-2">Fluence<tspan font-weight="500" font-size="46" fill="#0067C0" dx="2" letter-spacing="-0.5">.WPF</tspan></text>
+  </g>
+</svg>

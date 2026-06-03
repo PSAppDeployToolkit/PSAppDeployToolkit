@@ -1,0 +1,205 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GallerySelectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Selection" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Selection controls let people choose one or more options, switch settings on or off, or pick a value from a compact list." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="16">
+                    <WrapPanel>
+                        <ui:CheckBox
+                            x:Name="TwoStateCheckBox"
+                            Margin="{DynamicResource DemoControlGroupItemMargin}"
+                            Content="Two-state checkbox"
+                            IsChecked="True" />
+                        <ui:CheckBox
+                            x:Name="ThreeStateCheckBox"
+                            Margin="{DynamicResource DemoControlGroupItemMargin}"
+                            Content="Three-state checkbox"
+                            IsChecked="{x:Null}"
+                            IsThreeState="True" />
+                        <ui:CheckBox
+                            Margin="{DynamicResource DemoControlGroupItemMargin}"
+                            Content="Disabled"
+                            IsChecked="True"
+                            IsEnabled="False" />
+                    </WrapPanel>
+                    <StackPanel>
+                        <ui:CheckBox
+                            x:Name="SelectAllCheckBox"
+                            Margin="{DynamicResource DemoCompactStackSpacingMargin}"
+                            Checked="SelectAllCheckBox_Changed"
+                            Content="Select all"
+                            Indeterminate="SelectAllCheckBox_Changed"
+                            IsThreeState="True"
+                            Unchecked="SelectAllCheckBox_Changed" />
+                        <ui:CheckBox
+                            x:Name="OptionOneCheckBox"
+                            Margin="{DynamicResource DemoIndentedOptionMargin}"
+                            Checked="OptionCheckBox_Changed"
+                            Content="Option 1"
+                            Unchecked="OptionCheckBox_Changed" />
+                        <ui:CheckBox
+                            x:Name="OptionTwoCheckBox"
+                            Margin="{DynamicResource DemoIndentedOptionMargin}"
+                            Checked="OptionCheckBox_Changed"
+                            Content="Option 2"
+                            Unchecked="OptionCheckBox_Changed" />
+                        <ui:CheckBox
+                            x:Name="OptionThreeCheckBox"
+                            Margin="{DynamicResource DemoIndentedOptionMargin}"
+                            Checked="OptionCheckBox_Changed"
+                            Content="Option 3"
+                            Unchecked="OptionCheckBox_Changed" />
+                    </StackPanel>
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use check boxes for independent options. Add three-state only when an indeterminate value has meaning." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="12">
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="Basic group" />
+                    <StackPanel Orientation="Horizontal">
+                        <ui:RadioButton
+                            Margin="{DynamicResource DemoInlineControlTrailingGapMargin}"
+                            Content="Option A"
+                            GroupName="BasicGroup"
+                            IsChecked="True" />
+                        <ui:RadioButton
+                            Margin="{DynamicResource DemoInlineControlTrailingGapMargin}"
+                            Content="Option B"
+                            GroupName="BasicGroup" />
+                        <ui:RadioButton Content="Option C" GroupName="BasicGroup" />
+                    </StackPanel>
+                    <TextBlock
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="With descriptions" />
+                    <ui:RadioButton
+                        Content="Standard"
+                        Description="Uses default application settings"
+                        GroupName="DescGroup"
+                        IsChecked="True" />
+                    <ui:RadioButton
+                        Content="Custom"
+                        Description="Allows manual configuration"
+                        GroupName="DescGroup" />
+                    <ui:RadioButton
+                        Content="Advanced"
+                        Description="Expert-level options"
+                        GroupName="DescGroup" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use radio buttons when people must choose exactly one option from a visible group." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="8">
+                    <TextBlock
+                        x:Name="WorkToggleHeaderText"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="Toggle work" />
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch
+                            x:Name="WorkToggleSwitch"
+                            Margin="{DynamicResource DemoInlineControlGapMargin}"
+                            VerticalAlignment="Center"
+                            IsChecked="True" />
+                        <TextBlock
+                            x:Name="WorkToggleStateText"
+                            Margin="{DynamicResource DemoInlineControlGapMargin}"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                            Text="On" />
+                        <ui:ProgressRing
+                            x:Name="WorkToggleProgressRing"
+                            Width="36"
+                            Height="36"
+                            Margin="{DynamicResource DemoWorkToggleProgressRingMargin}"
+                            VerticalAlignment="Center"
+                            IsActive="{Binding IsChecked, ElementName=WorkToggleSwitch}"
+                            IsIndeterminate="True" />
+                    </StackPanel>
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use toggle switches for settings that take effect immediately." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="14">
+                    <ui:RatingControl
+                        x:Name="RatingSample"
+                        Caption="Rate the experience"
+                        MaxRating="5"
+                        Value="3" />
+                    <ui:RatingControl
+                        x:Name="ReadOnlyRatingSample"
+                        Caption="Read-only rating"
+                        IsReadOnly="True"
+                        MaxRating="5"
+                        Value="4" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use rating when a compact ordered preference is more natural than a numeric input." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="20">
+                    <ui:ComboBox
+                        x:Name="SelectionDemoCombo"
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        PlaceholderText="Choose an option..."
+                        SelectedIndex="-1"
+                        SelectionChanged="SelectionDemoCombo_SelectionChanged">
+                        <ComboBoxItem Content="First item" />
+                        <ComboBoxItem Content="Second item" />
+                        <ComboBoxItem Content="Third item" />
+                    </ui:ComboBox>
+                    <ui:ComboBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        PlaceholderText="With icon"
+                        SelectedIndex="-1">
+                        <ui:ComboBox.Icon>
+                            <ui:FontIcon
+                                Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xE721;"
+                                IconFontSize="14" />
+                        </ui:ComboBox.Icon>
+                        <ComboBoxItem Content="Alpha" />
+                        <ComboBoxItem Content="Beta" />
+                        <ComboBoxItem Content="Gamma" />
+                    </ui:ComboBox>
+                    <ui:ComboBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        IsEnabled="False"
+                        PlaceholderText="Disabled" />
+                </ui:StackPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot05OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="ComboStateLabel"
+                    Style="{StaticResource StateLabelStyle}"
+                    Text="Selected: none" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use a combo box when the choices are useful but do not need to stay visible." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

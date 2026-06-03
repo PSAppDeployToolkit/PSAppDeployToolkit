@@ -1,0 +1,168 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryIconsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <Grid x:Name="PageRoot" Style="{StaticResource GalleryPageRootStyle}">
+        <Grid x:Name="PageContent" Style="{StaticResource GalleryPageContentGridStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Icons" />
+            <TextBlock
+                Grid.Row="1"
+                Style="{StaticResource SectionDescriptionStyle}"
+                Text="FontIcon uses glyph codes to render icons from the 'Segoe Fluent Icons' font." />
+
+            <Grid
+                x:Name="FontIconSampleContent"
+                Grid.Row="2"
+                MinHeight="48"
+                VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="56" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="96" />
+                </Grid.ColumnDefinitions>
+
+                <ui:FontIcon
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Glyph="&#xE713;"
+                    IconFontSize="24" />
+                <TextBlock
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="Settings" />
+                <TextBlock
+                    Grid.Column="2"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontFamily="Consolas"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="U+E713" />
+            </Grid>
+
+            <StackPanel Grid.Row="3">
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Installed icon catalog" />
+                <TextBlock
+                    x:Name="IconCatalogCountText"
+                    Margin="0,0,0,24"
+                    Style="{StaticResource SectionDescriptionStyle}" />
+            </StackPanel>
+
+            <Border
+                x:Name="IconCatalogCard"
+                Grid.Row="4"
+                Padding="{DynamicResource DemoSampleCardPadding}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <ui:ListView
+                    x:Name="IconCatalogList"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ScrollViewer.CanContentScroll="True"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    VirtualizingPanel.ScrollUnit="Pixel"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ui:ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                        <ContentPresenter
+                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            Content="{TemplateBinding Content}"
+                                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ui:ListView.ItemContainerStyle>
+                    <ui:ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ui:ListView.ItemsPanel>
+                    <ui:ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ItemsControl Margin="0,4" ItemsSource="{Binding Items}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ui:Border
+                                            Width="176"
+                                            Height="112"
+                                            MinHeight="104"
+                                            Margin="6"
+                                            CornerRadius="8"
+                                            Style="{StaticResource IconGalleryCardStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock
+                                                    Margin="0,8,0,2"
+                                                    HorizontalAlignment="Center"
+                                                    FontFamily="Segoe Fluent Icons"
+                                                    FontSize="28"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Glyph}"
+                                                    TextAlignment="Center" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Margin="8,6,8,2"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                    Text="{Binding Name}"
+                                                    TextAlignment="Center"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Margin="0,0,0,8"
+                                                    HorizontalAlignment="Center"
+                                                    FontFamily="Consolas"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    Text="{Binding DisplayCode}" />
+                                            </Grid>
+                                        </ui:Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DataTemplate>
+                    </ui:ListView.ItemTemplate>
+                </ui:ListView>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

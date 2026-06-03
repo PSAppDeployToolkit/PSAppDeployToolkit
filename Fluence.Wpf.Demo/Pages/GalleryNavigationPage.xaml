@@ -1,0 +1,169 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryNavigationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Navigation" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="NavigationView organizes top-level destinations and can place the pane on the left, across the top, or in compact left mode." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <Border Height="320">
+                    <ui:NavigationView
+                        x:Name="LeftNavigationDemo"
+                        ItemInvoked="NavigationDemo_ItemInvoked"
+                        PaneDisplayMode="Left">
+                        <ui:NavigationView.PaneHeader>
+                            <TextBlock
+                                Margin="{DynamicResource DemoNavigationHeaderMargin}"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="Navigation" />
+                        </ui:NavigationView.PaneHeader>
+                        <ui:NavigationViewItem
+                            x:Name="LeftNavigationHomeItem"
+                            Content="Home"
+                            IsSelected="True">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE80F;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Files">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE8B7;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Reports">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE9D9;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationView>
+                </Border>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use a left pane when the app has several persistent destinations and enough horizontal space." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <Border Height="240">
+                    <ui:NavigationView
+                        x:Name="TopNavigationDemo"
+                        Header="Insights"
+                        ItemInvoked="NavigationDemo_ItemInvoked"
+                        PaneDisplayMode="Top">
+                        <ui:NavigationViewItem
+                            x:Name="TopNavigationOverviewItem"
+                            Content="Overview"
+                            IsSelected="True">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE9D2;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Activity">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE7F4;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Settings">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE713;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationView>
+                </Border>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use top navigation for a small set of peer destinations that should leave the full width for content." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <Border
+                    Height="300"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="{DynamicResource DemoSingleBorderThickness}">
+                    <ui:NavigationView
+                        x:Name="CompactNavigationDemo"
+                        IsBackButtonVisible="True"
+                        IsBackEnabled="{Binding IsChecked, Source={x:Reference BackEnabledToggle}}"
+                        IsPaneOpen="False"
+                        IsPaneToggleButtonVisible="True"
+                        ItemInvoked="NavigationDemo_ItemInvoked"
+                        PaneDisplayMode="LeftCompact">
+                        <ui:NavigationView.PaneFooter>
+                            <ui:NavigationViewItem x:Name="CompactNavigationFooterItem" Content="Settings">
+                                <ui:NavigationViewItem.Icon>
+                                    <ui:FontIcon Glyph="&#xE713;" IconFontSize="16" />
+                                </ui:NavigationViewItem.Icon>
+                            </ui:NavigationViewItem>
+                        </ui:NavigationView.PaneFooter>
+                        <ui:NavigationViewItem
+                            x:Name="CompactNavigationDashboardItem"
+                            Content="Dashboard"
+                            IsSelected="True">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE80F;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Messages">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE8BD;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationView>
+                </Border>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot03RightRailContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <ui:CheckBox
+                        x:Name="BackEnabledToggle"
+                        Content="Back enabled"
+                        IsChecked="True" />
+                </StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use compact mode to preserve space, and enable the back button when the current view can navigate backward." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <Border Height="260">
+                    <ui:NavigationView
+                        Header="Inbox"
+                        IsPaneOpen="True"
+                        PaneDisplayMode="Left">
+                        <ui:NavigationViewItem Content="Inbox" IsSelected="True">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE715;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                            <ui:NavigationViewItem.InfoBadge>
+                                <ui:InfoBadge Value="12" />
+                            </ui:NavigationViewItem.InfoBadge>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Approvals">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE73E;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                            <ui:NavigationViewItem.InfoBadge>
+                                <ui:InfoBadge BadgeStyle="{x:Static uicore:InfoBadgeStyle.Caution}" />
+                            </ui:NavigationViewItem.InfoBadge>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem Content="Alerts">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Glyph="&#xE7BA;" IconFontSize="16" />
+                            </ui:NavigationViewItem.Icon>
+                            <ui:NavigationViewItem.InfoBadge>
+                                <ui:InfoBadge BadgeStyle="{x:Static uicore:InfoBadgeStyle.Critical}" Value="2" />
+                            </ui:NavigationViewItem.InfoBadge>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationView>
+                </Border>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use InfoBadge in NavigationViewItem to call attention to item state without changing the item label." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

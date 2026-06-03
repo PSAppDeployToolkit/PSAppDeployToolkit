@@ -1,0 +1,501 @@
+﻿<!--
+    Copyright (C) 2026 Dan Cunningham. All rights reserved.
+    
+    Shared demo gallery styles (merged by App.xaml and test host).
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf">
+
+    <!--  **** Demo App Layout ****  -->
+
+    <Thickness x:Key="DemoPageContentMargin">36,24,36,48</Thickness>
+    <Thickness x:Key="DemoPageTitleMargin">0,0,0,8</Thickness>
+    <Thickness x:Key="DemoPageDescriptionMargin">0,0,0,24</Thickness>
+    <Thickness x:Key="DemoCompactStackSpacingMargin">0,0,0,8</Thickness>
+    <Thickness x:Key="DemoTextTopGapMargin">0,6,0,0</Thickness>
+    <!--  Vertical margin is split top/bottom (6+6) rather than bottom-only (0+12) so a control group centered in a demo sample card sits equidistant from the card's top and bottom. Total spacing is unchanged: 12px between wrapped rows, 12px between items horizontally, flush-left.  -->
+    <Thickness x:Key="DemoControlGroupItemMargin">0,6,12,6</Thickness>
+    <Thickness x:Key="DemoInlineControlGapMargin">16,0,0,0</Thickness>
+    <Thickness x:Key="DemoInlineControlTrailingGapMargin">0,0,16,0</Thickness>
+    <Thickness x:Key="DemoSmallInlineControlGapMargin">6,0,8,8</Thickness>
+    <Thickness x:Key="DemoWorkToggleProgressRingMargin">24,0,0,0</Thickness>
+    <Thickness x:Key="DemoControlBottomGapMargin">0,0,0,12</Thickness>
+    <Thickness x:Key="DemoSmallBottomGapMargin">0,0,0,8</Thickness>
+    <Thickness x:Key="DemoMediumTopGapMargin">0,12,0,0</Thickness>
+    <Thickness x:Key="DemoLargeTopGapMargin">0,16,0,0</Thickness>
+    <Thickness x:Key="DemoOutputTopGapMargin">0,8,0,0</Thickness>
+    <Thickness x:Key="DemoProgressBarMargin">8,16,16,16</Thickness>
+    <Thickness x:Key="DemoProgressBarLabelMargin">6,0,16,8</Thickness>
+    <Thickness x:Key="DemoIndentedOptionMargin">24,0,0,8</Thickness>
+    <Thickness x:Key="DemoSampleInnerCardPadding">12</Thickness>
+    <Thickness x:Key="DemoTabContentMargin">20</Thickness>
+    <Thickness x:Key="DemoListItemMargin">0,4</Thickness>
+    <Thickness x:Key="DemoNavigationHeaderMargin">12,8</Thickness>
+    <Thickness x:Key="DemoNavigationContentMargin">20</Thickness>
+    <Thickness x:Key="DemoNavigationDescriptionMargin">0,6,0,0</Thickness>
+    <Thickness x:Key="DemoFlyoutPanelMargin">4</Thickness>
+    <Thickness x:Key="DemoSingleBorderThickness">1</Thickness>
+    <Thickness x:Key="DemoDataBindingSecondaryTextMargin">32,0,0,0</Thickness>
+    <sys:Double x:Key="DemoPlacementTabHeaderWidth">112</sys:Double>
+
+    <!--  **** Demo Sample Control ***  -->
+
+    <Thickness x:Key="DemoSampleBlockMargin">0,0,0,24</Thickness>
+    <Thickness x:Key="DemoSampleDescriptionMargin">0,0,0,8</Thickness>
+    <Thickness x:Key="DemoSampleCardPadding">16</Thickness>
+    <Thickness x:Key="DemoSampleOutputMargin">16,0,0,0</Thickness>
+    <Thickness x:Key="DemoSampleOutputPadding">16</Thickness>
+    <Thickness x:Key="DemoSampleRightRailPadding">24,20</Thickness>
+    <Thickness x:Key="DemoSampleSourceHeaderPadding">24,14</Thickness>
+    <Thickness x:Key="DemoSampleSourceTabMargin">16,8,16,16</Thickness>
+    <Thickness x:Key="DemoSourceCodeDocumentPadding">12</Thickness>
+    <Thickness x:Key="DemoSourceCopyButtonHostMargin">0,8,8,0</Thickness>
+    <Thickness x:Key="DemoSourceCopyButtonPadding">8,4</Thickness>
+    <Thickness x:Key="DemoSourceChevronMargin">8,0,0,0</Thickness>
+    <sys:Double x:Key="DemoSampleOutputMinWidth">220</sys:Double>
+    <sys:Double x:Key="DemoSampleRightRailMinWidth">220</sys:Double>
+
+    <!--  **** Demo Styles *** Settings \ Accent Color  -->
+
+    <Style x:Key="AccentSwatchStyle" TargetType="{x:Type ui:Button}">
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorSecondaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect
+                    BlurRadius="6"
+                    Direction="270"
+                    Opacity="0.25"
+                    ShadowDepth="3"
+                    Color="Black" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Height" Value="42" />
+        <Setter Property="Margin" Value="0,0,10,0" />
+        <Setter Property="MinHeight" Value="42" />
+        <Setter Property="MinWidth" Value="42" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <!--
+            Custom template: paint Background directly without any VSM hover overrides.
+            The default ui:Button template re-colours the background on PointerOver via
+            VisualStateManager, washing out the swatch colour to ControlFillColorSecondaryBrush
+            (grey). This template bypasses VSM entirely - hover feedback comes only from the
+            border-colour + scale triggers below.
+        -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:Button}">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        UseLayoutRounding="True" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Width" Value="42" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                To="1.08"
+                                Duration="0:0:0.12" />
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                To="1.08"
+                                Duration="0:0:0.12" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                To="1"
+                                Duration="0:0:0.12" />
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                To="1"
+                                Duration="0:0:0.12" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <!--  **** Demo Styles *** Navigation \ Title-Bear Search  -->
+
+    <!--
+        Title-bar search box: transparent box, bottom-only underline.
+        Grey (ControlStrokeColorDefaultBrush) at rest; accent on focus.
+        Matches WinUI 3 AutoSuggestBox title-bar treatment.
+    -->
+    <Style x:Key="TitleBarSearchBoxStyle" TargetType="{x:Type ui:TextBox}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CaretBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Padding" Value="10,2,6,2" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ui:TextBox}">
+                    <Border
+                        x:Name="MainBorder"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="2" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <ScrollViewer
+                                    x:Name="PART_ContentHost"
+                                    Padding="{TemplateBinding Padding}"
+                                    Focusable="False"
+                                    HorizontalScrollBarVisibility="Hidden"
+                                    VerticalScrollBarVisibility="Hidden" />
+                                <TextBlock
+                                    x:Name="PlaceholderTextBlock"
+                                    Margin="13,0,0,0"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    FontFamily="{TemplateBinding FontFamily}"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    IsHitTestVisible="False"
+                                    Text="{TemplateBinding PlaceholderText}"
+                                    Visibility="Collapsed" />
+                            </Grid>
+
+                            <!--  Rest underline: grey stroke  -->
+                            <Border
+                                x:Name="RestLine"
+                                Grid.Row="1"
+                                HorizontalAlignment="Stretch"
+                                Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
+
+                            <!--  Focus underline: accent colour, overlays rest line when focused  -->
+                            <Border
+                                x:Name="FocusLine"
+                                Grid.Row="1"
+                                HorizontalAlignment="Stretch"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Opacity="0" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="PlaceholderEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
+                            <Setter TargetName="FocusLine" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!--  **** Demo Styles *** Shared General  -->
+
+    <Style
+        x:Key="PageTitleStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Margin" Value="{DynamicResource DemoPageTitleMargin}" />
+    </Style>
+
+    <!--  **** Demo Styles *** Gallery Page Shared  -->
+
+    <Style x:Key="GalleryPageRootStyle" TargetType="{x:Type Grid}">
+        <Setter Property="ClipToBounds" Value="False" />
+    </Style>
+
+    <Style
+        x:Key="GalleryPageScrollViewerStyle"
+        BasedOn="{StaticResource ScrollViewerStyle}"
+        TargetType="{x:Type ui:SmoothScrollViewer}">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style x:Key="GalleryPageContentStackStyle" TargetType="{x:Type StackPanel}">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="{DynamicResource DemoPageContentMargin}" />
+    </Style>
+
+    <Style x:Key="GalleryPageContentGridStyle" TargetType="{x:Type Grid}">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="{DynamicResource DemoPageContentMargin}" />
+    </Style>
+
+    <!--  **** Demo Styles *** Settings  -->
+
+    <Style
+        x:Key="SettingsSectionHeaderStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Margin" Value="1,30,0,12" />
+    </Style>
+
+    <!--
+        Settings-row card uses the translucent CardBackgroundFillColorDefaultBrush so the
+        Mica/Acrylic backdrop tint shows through (WinUI Gallery aesthetic). Accent fidelity
+        for hover/pressed control states is preserved by an internal opaque sub-layer added
+        inside each affected control template (see Themes/Controls/ToggleSwitch.xaml's
+        ToggleSwitchTrackBaseBrush layer); the accent composites against that internal
+        layer rather than the visible card surface, so eyedrop readings match Notepad /
+        WinUI 3 references regardless of card translucency.
+    -->
+    <Style x:Key="SettingsRowCardStyle" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+        <Setter Property="MinHeight" Value="76" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <Style x:Key="SettingsRowIconStyle" TargetType="{x:Type ui:FontIcon}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="IconFontSize" Value="20" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Width" Value="36" />
+    </Style>
+
+    <Style
+        x:Key="SettingsRowTitleStyle"
+        BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style
+        x:Key="SettingsRowDescriptionStyle"
+        BasedOn="{StaticResource CaptionTextBlockStyle}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+
+    <Style
+        x:Key="FieldLabelStyle"
+        BasedOn="{StaticResource CaptionTextBlockStyle}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+
+    <Style
+        x:Key="SectionHeaderStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <Style
+        x:Key="SectionDescriptionStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Margin" Value="{DynamicResource DemoPageDescriptionMargin}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style
+        x:Key="StateLabelStyle"
+        BasedOn="{StaticResource {x:Type TextBlock}}"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+        <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+
+    <!--  Icon cell hover: accent foreground + scale-up on hover  -->
+    <Style x:Key="IconCellStyle" TargetType="{x:Type StackPanel}">
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                To="1.15"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                To="1.15"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                To="1"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                To="1"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--  **** Design \ Iconography  -->
+
+    <Style x:Key="IconGalleryCardStyle" TargetType="{x:Type ui:Border}">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Height" Value="80" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="Variant" Value="{x:Static uicore:BorderVariant.Subtle}" />
+        <Setter Property="Width" Value="100" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                To="1.12"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                To="1.12"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                To="1"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                To="1"
+                                Duration="0:0:0.100">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

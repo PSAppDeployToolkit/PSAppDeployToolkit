@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <!--
+        TitleBarGlyphButtonStyle
+        WinUI-canonical back / pane-toggle glyph buttons:
+        - 40 px wide (WinUI TitleBar back/pane button width)
+        - Rounded hover/press background via CornerRadius={DynamicResource ControlCornerRadius} (= 4)
+        - SubtleFill tokens for hover/press/disabled states
+        - 16 pt Segoe Fluent Icons glyph
+    -->
+    <Style x:Key="TitleBarGlyphButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="ButtonRoot"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <TextBlock
+                            x:Name="Glyph"
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            Foreground="{TemplateBinding Foreground}"
+                            LineHeight="16"
+                            LineStackingStrategy="BlockLineHeight"
+                            Text="{TemplateBinding Content}"
+                            TextAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonRoot" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonRoot" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ButtonRoot" Property="Background" Value="{DynamicResource SubtleFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <!--  40 px: WinUI-canonical back / pane-toggle button width (rounded, not rectangular caption buttons)  -->
+        <Setter Property="Width" Value="40" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+    </Style>
+
+    <!--
+        Default implicit style for TitleBar : ContentControl.
+        Height: 48 px (default) / 32 px (IsCompact=True). WinUI canonical expanded/compact title-bar heights.
+        Layout root is a multi-column Grid (PART_LayoutRoot) whose column order is:
+        [0] LeftPaddingColumn (2 px)
+        [1] PART_BackButton (Auto, 40 px when visible)
+        [2] PART_PaneToggleButton (Auto, 40 px when visible)
+        [3] PART_LeftHeaderPresenter (Auto)
+        [4] LeftHeaderPaddingColumn (14 px, collapses to 0 when LeftHeader is null)
+        [5] PART_IconPresenter (Auto, max 20x20)
+        [6] PART_TitleText (Auto)
+        [7] PART_SubtitleText (Auto)
+        [8] * (stretch, centering anchor for PART_ContentPresenter)
+        [9] PART_RightHeaderPresenter (Auto)
+        [10] 48 px right padding column (reserved for caption buttons)
+        [11] RightPaddingColumn (0 px)
+        PART_ContentPresenter spans columns 0-10 at ZIndex=1 and is horizontally centred.
+        Triggers collapse icon/title/subtitle/left-right headers on null/empty and drive compact height.
+    -->
+    <Style TargetType="{x:Type controls:TitleBar}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorTransparentBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Height" Value="48" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:TitleBar}">
+                    <Grid
+                        x:Name="PART_LayoutRoot"
+                        Height="{TemplateBinding Height}"
+                        Background="{TemplateBinding Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="2" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition x:Name="LeftHeaderPaddingColumn" Width="14" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  PART_ContentPresenter: spans the full row, centred, ZIndex=1 so it floats above the column-placed parts  -->
+                        <ContentPresenter
+                            x:Name="PART_ContentPresenter"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="11"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Panel.ZIndex="1"
+                            Content="{TemplateBinding Content}"
+                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+
+                        <!--
+                            PART_BackButton: back navigation glyph (&#xE72B;)
+                            Collapsed by default; made Visible by IsBackButtonVisible=True trigger.
+                            Width=36 px matches the compact navigation rail slot; the containing style
+                            (TitleBarGlyphButtonStyle) sets the outer hit-area to 40 px.
+                        -->
+                        <Button
+                            x:Name="PART_BackButton"
+                            Grid.Column="1"
+                            Width="36"
+                            Height="32"
+                            Margin="6,0,0,0"
+                            Content="&#xE72B;"
+                            Style="{StaticResource TitleBarGlyphButtonStyle}"
+                            ToolTip="Back"
+                            Visibility="Collapsed" />
+
+                        <!--
+                            PART_PaneToggleButton: navigation-pane hamburger glyph (&#xE700;)
+                            Collapsed by default; made Visible by IsPaneToggleButtonVisible=True trigger.
+                        -->
+                        <Button
+                            x:Name="PART_PaneToggleButton"
+                            Grid.Column="2"
+                            Margin="4,0,0,0"
+                            Content="&#xE700;"
+                            Style="{StaticResource TitleBarGlyphButtonStyle}"
+                            ToolTip="Navigation"
+                            Visibility="Collapsed" />
+
+                        <!--  PART_LeftHeaderPresenter: arbitrary left-of-icon content  -->
+                        <ContentPresenter
+                            x:Name="PART_LeftHeaderPresenter"
+                            Grid.Column="3"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding LeftHeader}" />
+
+                        <!--  PART_IconPresenter: 20x20 app icon  -->
+                        <ContentPresenter
+                            x:Name="PART_IconPresenter"
+                            Grid.Column="5"
+                            MaxWidth="20"
+                            MaxHeight="20"
+                            Margin="8,0,12,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Icon}" />
+
+                        <!--  PART_TitleText: primary app title at BodyTextBlockStyle (14 pt)  -->
+                        <TextBlock
+                            x:Name="PART_TitleText"
+                            Grid.Column="6"
+                            MinWidth="0"
+                            Margin="0,0,8,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="{TemplateBinding Foreground}"
+                            Style="{DynamicResource BodyTextBlockStyle}"
+                            Text="{TemplateBinding Title}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+
+                        <!--  PART_SubtitleText: secondary subtitle at CaptionTextBlockStyle (12 pt)  -->
+                        <TextBlock
+                            x:Name="PART_SubtitleText"
+                            Grid.Column="7"
+                            MinWidth="0"
+                            Margin="0,0,16,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Style="{DynamicResource CaptionTextBlockStyle}"
+                            Text="{TemplateBinding Subtitle}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+
+                        <!--  PART_RightHeaderPresenter: arbitrary right-of-stretch content  -->
+                        <ContentPresenter
+                            x:Name="PART_RightHeaderPresenter"
+                            Grid.Column="9"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding RightHeader}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!--  Navigation button visibility  -->
+                        <Trigger Property="IsBackButtonVisible" Value="True">
+                            <Setter TargetName="PART_BackButton" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsPaneToggleButtonVisible" Value="True">
+                            <Setter TargetName="PART_PaneToggleButton" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <!--  Icon: collapse when null  -->
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="PART_IconPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  Title: collapse when null or empty  -->
+                        <Trigger Property="Title" Value="{x:Null}">
+                            <Setter TargetName="PART_TitleText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Title" Value="">
+                            <Setter TargetName="PART_TitleText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  Subtitle: collapse when null or empty  -->
+                        <Trigger Property="Subtitle" Value="{x:Null}">
+                            <Setter TargetName="PART_SubtitleText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Subtitle" Value="">
+                            <Setter TargetName="PART_SubtitleText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  LeftHeader: collapse presenter and remove padding when null  -->
+                        <Trigger Property="LeftHeader" Value="{x:Null}">
+                            <Setter TargetName="PART_LeftHeaderPresenter" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="LeftHeaderPaddingColumn" Property="Width" Value="0" />
+                        </Trigger>
+                        <!--  RightHeader: collapse presenter when null  -->
+                        <Trigger Property="RightHeader" Value="{x:Null}">
+                            <Setter TargetName="PART_RightHeaderPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  Compact height: 32 px (WinUI canonical compact title-bar height)  -->
+                        <Trigger Property="IsCompact" Value="True">
+                            <Setter Property="Height" Value="32" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+
+</ResourceDictionary>

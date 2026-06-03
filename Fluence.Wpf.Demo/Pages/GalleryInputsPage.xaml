@@ -1,0 +1,198 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryInputsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Inputs" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Input controls collect freeform text, protected text, numbers, and ranged values." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="20">
+                    <ui:TextBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        PlaceholderText="Basic text box..." />
+                    <ui:TextBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        PlaceholderText="Search">
+                        <ui:TextBox.Icon>
+                            <ui:FontIcon
+                                Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xE721;"
+                                IconFontSize="14" />
+                        </ui:TextBox.Icon>
+                    </ui:TextBox>
+                    <ui:TextBox
+                        x:Name="CharCountTextBox"
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        MaxLength="40"
+                        PlaceholderText="Limited to 40 characters..." />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use text boxes for short text entry. Add icons, clear buttons, and limits when they clarify the expected input." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="20">
+                    <ui:TextBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        HelperText="Helper text can explain format before validation."
+                        PlaceholderText="With helper text" />
+                    <ui:TextBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        Text="Valid input"
+                        ValidationMessage="Looks good."
+                        ValidationState="{x:Static uicore:ValidationState.Success}" />
+                    <ui:TextBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        Text="Check this value"
+                        ValidationMessage="Review this before continuing."
+                        ValidationState="{x:Static uicore:ValidationState.Warning}" />
+                    <ui:TextBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        Text="Bad value"
+                        ValidationMessage="Please fix this field."
+                        ValidationState="{x:Static uicore:ValidationState.Error}" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Show helper text for guidance and validation states for committed feedback." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="20">
+                    <ui:PasswordBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        PlaceholderText="Enter password..."
+                        RevealButtonEnabled="True" />
+                    <ui:PasswordBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        Password="CorrectHorse7!"
+                        RevealButtonEnabled="True" />
+                    <ui:PasswordBox
+                        Width="480"
+                        HorizontalAlignment="Left"
+                        IsEnabled="False"
+                        PlaceholderText="Disabled" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use password boxes for protected text entry, with reveal and strength affordances when appropriate." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="20">
+                    <ui:NumberBox
+                        Width="260"
+                        Header="Inline"
+                        Maximum="100"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Inline"
+                        Value="5" />
+                    <ui:NumberBox
+                        Width="260"
+                        Header="Compact"
+                        Maximum="100"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Compact"
+                        Value="25" />
+                    <ui:NumberBox
+                        Width="260"
+                        Header="Keyboard only"
+                        Maximum="100"
+                        Minimum="0"
+                        SpinButtonPlacementMode="Hidden"
+                        Value="50" />
+                    <ui:NumberBox
+                        Width="260"
+                        Header="Disabled"
+                        IsEnabled="False"
+                        Value="42" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use number boxes for numeric entry with optional spin buttons, bounds, and supporting descriptions." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="20">
+                    <ui:StackPanel Spacing="8">
+                        <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="Default" />
+                        <ui:Slider
+                            Maximum="100"
+                            Minimum="0"
+                            Value="35" />
+                    </ui:StackPanel>
+                    <ui:StackPanel Spacing="8">
+                        <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="Snapped to ticks" />
+                        <ui:Slider
+                            x:Name="HorizontalTickSlider"
+                            IsSnapToTickEnabled="True"
+                            Maximum="10"
+                            Minimum="0"
+                            TickFrequency="1"
+                            TickPlacement="BottomRight"
+                            Value="4" />
+                    </ui:StackPanel>
+                    <Grid MaxWidth="292" HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:StackPanel
+                            Grid.Column="0"
+                            HorizontalAlignment="Center"
+                            Spacing="8">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="Vertical" />
+                            <ui:Slider
+                                x:Name="VerticalTickSlider"
+                                Height="210"
+                                Maximum="100"
+                                Minimum="0"
+                                Orientation="Vertical"
+                                TickFrequency="10"
+                                TickPlacement="BottomRight"
+                                Value="40" />
+                        </ui:StackPanel>
+                        <ui:StackPanel
+                            Grid.Column="2"
+                            HorizontalAlignment="Center"
+                            Spacing="8">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Text="Disabled" />
+                            <ui:Slider
+                                Height="210"
+                                IsEnabled="False"
+                                Maximum="100"
+                                Minimum="0"
+                                Orientation="Vertical"
+                                Value="25" />
+                        </ui:StackPanel>
+                    </Grid>
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use sliders when a relative value is easier to choose visually than typing a precise number." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

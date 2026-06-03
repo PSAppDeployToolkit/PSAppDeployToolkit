@@ -1,0 +1,230 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:fluence="clr-namespace:Fluence.Wpf">
+
+    <!--
+        Fluent TreeViewItem style.
+        Authority: WinUI 3 TreeView_themeresources.xaml + TreeViewItem.xaml.
+        Brush states: SubtleFillColorSecondaryBrush (hover/selected), SubtleFillColorTertiaryBrush (selected+hover).
+        Chevron: Segoe Fluent Icons U+E76C (ChevronRight), animated 0°→90° on expand via ControlFastOutSlowIn easing.
+        MinHeight=32 per WinUI 3 TreeViewItemMinHeight=28 + WPF padding adjustment.
+    -->
+    <Style TargetType="{x:Type controls:TreeViewItem}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultCollectionFocusVisualStyle}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="4,0,8,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:TreeViewItem}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Item header row - full-width hover/selection highlight  -->
+                        <Border
+                            x:Name="ItemBorder"
+                            Grid.Row="0"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            Background="Transparent"
+                            CornerRadius="{DynamicResource ControlCornerRadius}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="28" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!--  Expand/collapse toggle; Visibility driven by HasItems trigger  -->
+                                <ToggleButton
+                                    x:Name="Expander"
+                                    Grid.Column="0"
+                                    Width="28"
+                                    ClickMode="Press"
+                                    Focusable="False"
+                                    IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                    Visibility="Collapsed">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Grid Background="Transparent">
+                                                <!--  WI-5B.2: ChevronRight glyph, rotates 0°→90° on expand.  -->
+                                                <TextBlock
+                                                    x:Name="ChevronGlyph"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    FontFamily="Segoe Fluent Icons"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Text="&#xE76C;">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform x:Name="ChevronRotate" Angle="0" />
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <!--  Expand: animate chevron 0°→90° with ControlFastOutSlowIn easing (167ms).  -->
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotate" Storyboard.TargetProperty="Angle">
+                                                                    <SplineDoubleKeyFrame
+                                                                        KeySpline="0.8,0,0,1"
+                                                                        KeyTime="0:0:0.167"
+                                                                        Value="90" />
+                                                                </DoubleAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ChevronRotate" Storyboard.TargetProperty="Angle">
+                                                                    <SplineDoubleKeyFrame
+                                                                        KeySpline="0.8,0,0,1"
+                                                                        KeyTime="0:0:0.167"
+                                                                        Value="0" />
+                                                                </DoubleAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+
+                                <controls:CheckBox
+                                    x:Name="SelectionCheckBox"
+                                    Grid.Column="1"
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsChecked="{Binding IsSelectionChecked, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                    IsThreeState="True"
+                                    Visibility="Collapsed" />
+
+                                <!--  PART_Header: item label / content  -->
+                                <ContentPresenter
+                                    x:Name="PART_Header"
+                                    Grid.Column="2"
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    ContentSource="Header"
+                                    TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                    TextElement.FontSize="{TemplateBinding FontSize}"
+                                    TextElement.Foreground="{TemplateBinding Foreground}" />
+                            </Grid>
+                        </Border>
+
+                        <!--  Children - indented 20 px per tree level (standard WPF tree indent)  -->
+                        <ItemsPresenter
+                            x:Name="ItemsHost"
+                            Grid.Row="1"
+                            Margin="20,0,0,0"
+                            Visibility="Collapsed" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="Expander" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger SourceName="ItemBorder" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelectionChecked" Value="True">
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <DataTrigger Binding="{Binding SelectionMode, RelativeSource={RelativeSource AncestorType={x:Type controls:TreeView}}}" Value="{x:Static fluence:TreeViewSelectionMode.Multiple}">
+                            <Setter TargetName="SelectionCheckBox" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition SourceName="ItemBorder" Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelectionChecked" Value="True" />
+                                <Condition SourceName="ItemBorder" Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="ItemBorder" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!--
+        Fluent TreeView style.
+        Transparent background, no border, SmoothScrollViewer integration.
+        ItemContainerStyle is NOT set here so that the default style lookup targets controls:TreeViewItem.
+    -->
+    <Style TargetType="{x:Type controls:TreeView}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:TreeView}">
+                    <Border
+                        x:Name="OuterBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        ClipToBounds="True"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <controls:SmoothScrollViewer
+                            x:Name="PART_ScrollViewer"
+                            CanContentScroll="False"
+                            Focusable="False"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            PanningMode="{TemplateBinding ScrollViewer.PanningMode}"
+                            Style="{DynamicResource ScrollViewerStyle}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                            <ItemsPresenter />
+                        </controls:SmoothScrollViewer>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+</ResourceDictionary>
