@@ -75,13 +75,13 @@ try
                         BasePath = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib')
                         PathMap = @{
                             "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Client.Launcher.Compatible\bin\Debug\net472')))\*" = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net472')
-                            "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime\bin\Debug\net8.0-windows10.0.22621.0')))\*" = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0')
-                            "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Server\bin\Debug\net10.0')))\*" = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0')
+                            "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime\bin\Debug\net8.0-windows10.0.22621.0')))\*" = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0')
+                            "$([System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.ClientServer.Server\bin\Debug\net8.0')))\*" = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0')
                         }
                         PublishItems = @{
                             ([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime.TrimHarness\PSADT.WindowsRuntime.TrimHarness.csproj')) = @{
-                                ([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\Microsoft.Windows.SDK.NET.dll')) = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0')
-                                ([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\WinRT.Runtime.dll')) = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0')
+                                ([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\Microsoft.Windows.SDK.NET.dll')) = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0')
+                                ([System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSADT\PSADT.WindowsRuntime.TrimHarness\bin\Release\net8.0-windows10.0.22621.0\win-x64\publish\WinRT.Runtime.dll')) = [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0')
                             }
                         }
                         OutputFile = ([System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(
@@ -96,12 +96,12 @@ try
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net472\PSADT.WindowsRuntime.dll')
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net472\PSADT.dll')
                                 [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net472\PSAppDeployToolkit.dll')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0\PSADT.ClientServer.Server.dll')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0\PSADT.Interop.dll')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0\PSADT.UserInterface.dll')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0\PSADT.WindowsRuntime.dll')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0\PSADT.dll')
-                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net10.0\PSAppDeployToolkit.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0\PSADT.ClientServer.Server.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0\PSADT.Interop.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0\PSADT.UserInterface.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0\PSADT.WindowsRuntime.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0\PSADT.dll')
+                                [System.IO.Path]::Combine([System.IO.Directory]::GetParent($PSScriptRoot).FullName, 'PSAppDeployToolkit\lib\net8.0\PSAppDeployToolkit.dll')
                             ))
                     }).AsReadOnly()
                     ([ordered]@{

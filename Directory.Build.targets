@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <!-- Silence incompatibility warnings since we're not targeting Windows directly -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 </Project>
