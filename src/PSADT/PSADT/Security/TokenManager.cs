@@ -92,59 +92,69 @@ namespace PSADT.Security
                                         IPrincipal principal = taskDefinition.Principal;
                                         try
                                         {
-                                            using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
-                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(ClientServerUtilities.ClientLauncherCompatiblePath.FullName);
-                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
-                                            bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
+                                            ITaskSettings settings = taskDefinition.Settings;
                                             try
                                             {
-                                                // Register and start the task, then delete it. It'll keep running until it exits.
-                                                using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
-                                                userId.DangerousAddRef(ref userIdAddRef);
-                                                path.DangerousAddRef(ref pathAddRef);
-                                                args.DangerousAddRef(ref argsAddRef);
-                                                principal.UserId = (BSTR)userId.DangerousGetHandle();
-                                                principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
-                                                principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
-                                                execAction.Path = (BSTR)path.DangerousGetHandle();
-                                                execAction.Arguments = (BSTR)args.DangerousGetHandle();
-                                                rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
+                                                using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
+                                                using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(ClientServerUtilities.ClientLauncherCompatiblePath.FullName);
+                                                using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
+                                                bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                                 try
                                                 {
-                                                    // Wait for the token broker to connect while task is in scope for error reporting.
-                                                    // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
-                                                    task.Run(null, out IRunningTask runningTask);
-                                                    _ = Marshal.FinalReleaseComObject(runningTask);
+                                                    // Register and start the task, then delete it. It'll keep running until it exits.
+                                                    using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
+                                                    userId.DangerousAddRef(ref userIdAddRef);
+                                                    path.DangerousAddRef(ref pathAddRef);
+                                                    args.DangerousAddRef(ref argsAddRef);
+                                                    settings.StopIfGoingOnBatteries = false;
+                                                    settings.DisallowStartIfOnBatteries = false;
+                                                    principal.UserId = (BSTR)userId.DangerousGetHandle();
+                                                    principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                                                    principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
+                                                    execAction.Path = (BSTR)path.DangerousGetHandle();
+                                                    execAction.Arguments = (BSTR)args.DangerousGetHandle();
+                                                    rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
                                                     try
                                                     {
-                                                        using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
-                                                        await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
+                                                        // Wait for the token broker to connect while task is in scope for error reporting.
+                                                        // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
+                                                        task.Run(null, out IRunningTask runningTask);
+                                                        _ = Marshal.FinalReleaseComObject(runningTask);
+                                                        try
+                                                        {
+                                                            using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
+                                                            await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
+                                                        }
+                                                        catch (OperationCanceledException)
+                                                        {
+                                                            throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                        }
                                                     }
-                                                    catch (OperationCanceledException)
+                                                    finally
                                                     {
-                                                        throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                        rootFolder.DeleteTask(taskName, 0);
+                                                        _ = Marshal.FinalReleaseComObject(task);
                                                     }
                                                 }
                                                 finally
                                                 {
-                                                    rootFolder.DeleteTask(taskName, 0);
-                                                    _ = Marshal.FinalReleaseComObject(task);
+                                                    if (userIdAddRef)
+                                                    {
+                                                        userId.DangerousRelease();
+                                                    }
+                                                    if (pathAddRef)
+                                                    {
+                                                        path.DangerousRelease();
+                                                    }
+                                                    if (argsAddRef)
+                                                    {
+                                                        args.DangerousRelease();
+                                                    }
                                                 }
                                             }
                                             finally
                                             {
-                                                if (userIdAddRef)
-                                                {
-                                                    userId.DangerousRelease();
-                                                }
-                                                if (pathAddRef)
-                                                {
-                                                    path.DangerousRelease();
-                                                }
-                                                if (argsAddRef)
-                                                {
-                                                    args.DangerousRelease();
-                                                }
+                                                _ = Marshal.FinalReleaseComObject(settings);
                                             }
                                         }
                                         finally
@@ -335,10 +345,10 @@ namespace PSADT.Security
         /// connections.</returns>
         private static NamedPipeServerStream CreateNamedPipeServerStream(string pipeName, PipeDirection direction, int maxNumberOfServerInstances, PipeTransmissionMode transmissionMode, PipeOptions options, int inBufferSize, int outBufferSize, PipeSecurity pipeSecurity)
         {
-#if NETFRAMEWORK
-            return new(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
-#else
+#if !NETFRAMEWORK
             return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
+#else
+            return new(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
 #endif
         }
     }
