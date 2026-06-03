@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\lib\iNKORE.UI.WPF.Modern\source\iNKORE.UI.WPF.Modern.Controls\iNKORE.UI.WPF.Modern.Controls.csproj" />
-    <ProjectReference Include="..\..\..\lib\iNKORE.UI.WPF.Modern\source\iNKORE.UI.WPF.Modern\iNKORE.UI.WPF.Modern.csproj" />
+    <ProjectReference Include="..\..\..\lib\Fluence.Wpf\Fluence.Wpf\Fluence.Wpf.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
     <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
   </ItemGroup>
@@ -65,5 +64,12 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Properties\DesignTimeResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
   </ItemGroup>
 </Project>

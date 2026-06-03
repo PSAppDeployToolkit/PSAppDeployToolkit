@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
@@ -28,6 +30,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 InputBoxText.Visibility = Visibility.Collapsed;
                 InputBoxPassword.Visibility = Visibility.Visible;
+                DependencyPropertyDescriptor.FromProperty(Fluence.Wpf.Controls.PasswordBox.PasswordProperty, typeof(Fluence.Wpf.Controls.PasswordBox))?.AddValueChanged(InputBoxPassword, OnInputChanged);
                 _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
                 {
                     _ = InputBoxPassword.Focus();
@@ -37,12 +40,42 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             else
             {
                 InputBoxText.Text = options.InitialInputText;
+                InputBoxText.TextChanged += OnTextInputChanged;
                 _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
                 {
                     _ = InputBoxText.Focus();
                     InputBoxText.SelectAll();
                 });
             }
+            UpdateContinueButtonState();
+        }
+
+        /// <summary>
+        /// Event handler for changes in the text input, triggered when the user modifies the text in the input box. This method updates the state of the continue button based on the current input value, enabling it only when the input is not null, empty, or whitespace.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the input control that was modified.</param>
+        /// <param name="e">The event data associated with the text change event.</param>
+        private void OnTextInputChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateContinueButtonState();
+        }
+
+        /// <summary>
+        /// Event handler for changes in the input value, triggered when the user modifies the text in the input box. This method updates the state of the continue button based on the current input value, enabling it only when the input is not null, empty, or whitespace.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the input control that was modified.</param>
+        /// <param name="e">The event data associated with the input change event.</param>
+        private void OnInputChanged(object? sender, EventArgs e)
+        {
+            UpdateContinueButtonState();
+        }
+
+        /// <summary>
+        /// Enables or disables the continue button based on whether the current input value is null, empty, or consists solely of whitespace.
+        /// </summary>
+        private void UpdateContinueButtonState()
+        {
+            ButtonLeft.IsEnabled = !string.IsNullOrWhiteSpace(CurrentInputValue);
         }
 
         /// <summary>

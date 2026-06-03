@@ -19,8 +19,6 @@ using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Utilities;
 using PSAppDeployToolkit.Logging;
 using Windows.Win32;
-using iNKORE.UI.WPF.Modern;
-using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -164,12 +162,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
-            // Allow the dialog to be minimized if specified.
-            if (options.DialogAllowMinimize)
-            {
-                SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
-            }
-
             // Set up/process optional values.
             if (state.RunningProcessService is not null)
             {
@@ -219,12 +211,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 // Update text color based on remaining deferrals
                 if (_deferralsRemaining == 0)
                 {
-                    DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCriticalBrushKey);
+                    DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCriticalBrush");
                     DeferRemainingValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
                 else if (_deferralsRemaining <= 1)
                 {
-                    DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCautionBrushKey);
+                    DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCautionBrush");
                     DeferRemainingValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
             }
@@ -242,13 +234,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     if (timeRemaining < TimeSpan.FromDays(1))
                     {
                         // Less than 1 day remaining - use caution color
-                        DeferDeadlineValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCautionBrushKey);
+                        DeferDeadlineValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCautionBrush");
                         DeferDeadlineValueTextBlock.FontWeight = FontWeights.ExtraBold;
                     }
                 }
                 else
                 {
-                    DeferDeadlineValueTextBlock.SetResourceReference(ForegroundProperty, ThemeKeys.SystemFillColorCriticalBrushKey);
+                    DeferDeadlineValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCriticalBrush");
                     DeferDeadlineValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
                 DeferDeadlineValueTextBlock.Text = displayText;

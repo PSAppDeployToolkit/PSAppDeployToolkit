@@ -39,7 +39,13 @@ namespace PSADT.UserInterface
             unhandledExceptionHandler = AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") as Action<Exception> ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
 
             // Register process exit handler to ensure WPF is properly shut down. This prevents ~2.5 second delays during shutdown.
-            AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.Invoke(app.Shutdown, DispatcherPriority.Send);
+            // Use Dispatcher.InvokeShutdown() instead of Application.Shutdown() to avoid a race with WPF's
+            // internal ManagedWndProcTracker, which has its own AppDomain shutdown listener that iterates
+            // tracked window handles. Application.Shutdown() destroys windows (invalidating HWNDs) before
+            // ManagedWndProcTracker runs, causing an unhandled Win32Exception ("Invalid window handle") in
+            // PostMessage. InvokeShutdown() stops the dispatcher pump without destroying windows, letting
+            // ManagedWndProcTracker clean them up safely.
+            AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.InvokeShutdown();
 
             // Create and start the WPF application thread.
             using ManualResetEvent dispatcherRunning = new(false);

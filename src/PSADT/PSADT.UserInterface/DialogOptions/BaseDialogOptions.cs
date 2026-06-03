@@ -46,6 +46,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["FluentAccentColor"] as int?,
             options["DialogPosition"] as DialogPosition?,
             options["DialogAllowMove"] as bool?,
+            options["DialogAllowMinimize"] as bool?,
             options["DialogExpiryDuration"] as TimeSpan?,
             options["DialogPersistInterval"] as TimeSpan?)
         {
@@ -68,11 +69,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="fluentAccentColor">The accent color for Fluent design elements in the dialog. If null, the default accent color is used.</param>
         /// <param name="dialogPosition">The position of the dialog on the screen. If null, the default position is used.</param>
         /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If null, the default behavior is used.</param>
+        /// <param name="dialogAllowMinimize">Indicates whether the dialog exposes a minimize button in its caption area. If null or false, the minimize button remains hidden (default behavior). Only explicit <see langword="true"/> opts the dialog into minimize support.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires. If null, the dialog does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
+        private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             // Set initial string properties.
             ArgumentNullException.ThrowIfNull(language);
@@ -103,6 +105,7 @@ namespace PSADT.UserInterface.DialogOptions
             FluentAccentColor = fluentAccentColor;
             DialogPosition = dialogPosition;
             DialogAllowMove = dialogAllowMove;
+            DialogAllowMinimize = dialogAllowMinimize;
             DialogExpiryDuration = dialogExpiryDuration;
             DialogPersistInterval = dialogPersistInterval;
         }
@@ -182,6 +185,15 @@ namespace PSADT.UserInterface.DialogOptions
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool? DialogAllowMove;
+
+        /// <summary>
+        /// Indicates whether the dialog should expose a minimize button in its caption area.
+        /// A value of <see langword="null"/> or <see langword="false"/> keeps the default behavior
+        /// (minimize hidden). Only explicit <see langword="true"/> opts the dialog into minimize support.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
+        [DataMember]
+        public readonly bool? DialogAllowMinimize;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.

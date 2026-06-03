@@ -30,18 +30,16 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _ = ListSelectionComboBox.Items.Add(item);
             }
 
-            // Disable all buttons until an item is selected.
+            // Disable all except the cancel button until an item is selected.
             if (!options.SelectedIndex.HasValue)
             {
                 ListSelectionComboBox.SelectionChanged += (sender, e) =>
                 {
                     ButtonLeft.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
                     ButtonMiddle.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
-                    ButtonRight.IsEnabled = ListSelectionComboBox.SelectedIndex >= 0;
                 };
                 ButtonLeft.IsEnabled = false;
                 ButtonMiddle.IsEnabled = false;
-                ButtonRight.IsEnabled = false;
             }
             else
             {

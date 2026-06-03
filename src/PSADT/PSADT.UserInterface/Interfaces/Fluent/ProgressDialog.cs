@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
-using iNKORE.UI.WPF.Modern.Controls.Primitives;
+using Fluence.Wpf;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -25,7 +22,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage);
             if (_dialogPosition != DialogPosition.Oobe || (!DeviceUtilities.IsOOBEComplete() && !_dialogAllowMove))
             {
-                SetMinimizeButtonAvailability(TitleBarButtonAvailability.Enabled);
+                IsMinimizeButtonVisible = Visibility.Visible;
             }
             ProgressStackPanel.Visibility = Visibility.Visible;
         }
@@ -58,36 +55,31 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="percentComplete">Optional progress percentage (0-100). If provided, the progress bar becomes determinate and animates.</param>
         private void UpdateProgressImpl(string? progressMessage = null, string? progressMessageDetail = null, double? percentComplete = null)
         {
-            if (!string.IsNullOrWhiteSpace(progressMessage))
+            if (progressMessage is not null && !string.IsNullOrWhiteSpace(progressMessage))
             {
-                FormatMessageWithHyperlinks(MessageTextBlock, progressMessage!);
-                AutomationProperties.SetName(MessageTextBlock, progressMessage!);
+                FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
+                AutomationProperties.SetName(MessageTextBlock, progressMessage);
             }
 
-            if (!string.IsNullOrWhiteSpace(progressMessageDetail))
+            if (progressMessageDetail is not null && !string.IsNullOrWhiteSpace(progressMessageDetail))
             {
-                FormatMessageWithHyperlinks(ProgressMessageDetailTextBlock, progressMessageDetail!);
-                AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessage);
+                FormatMessageWithHyperlinks(ProgressMessageDetailTextBlock, progressMessageDetail);
+                AutomationProperties.SetName(ProgressMessageDetailTextBlock, progressMessageDetail);
             }
 
-            if (!(ProgressBar.IsIndeterminate = percentComplete is null))
+            if (percentComplete is not null)
             {
-                // Create a smooth animation for the progress value
-                DoubleAnimation animation = new()
-                {
-                    To = percentComplete!.Value,
-                    Duration = TimeSpan.FromMilliseconds(300),
-                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
-                };
-
-                // Begin the animation
-                ProgressBar.BeginAnimation(RangeBase.ValueProperty, animation);
-
-                // Update the property as well to maintain state
+                // Update the properties as well to maintain state
+                ProgressBar.ProgressMode = ProgressBarMode.StepProgress;
                 ProgressBar.Value = percentComplete.Value;
 
                 // Update accessibility properties
                 AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete:F0}%");
+            }
+            else
+            {
+                // Update the properties as well to maintain state
+                ProgressBar.ProgressMode = ProgressBarMode.Indeterminate;
             }
         }
     }

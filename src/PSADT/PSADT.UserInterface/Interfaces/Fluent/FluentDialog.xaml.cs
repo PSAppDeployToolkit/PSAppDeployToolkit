@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,31 +20,25 @@ using System.Windows.Threading;
 using PSADT.AccountManagement;
 using PSADT.DeviceManagement;
 using PSADT.Foundation;
-using PSADT.Interop;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
+using Fluence.Wpf;
+using Fluence.Wpf.Controls;
+using Button = Fluence.Wpf.Controls.Button;
 using PSADT.WindowManagement;
 using Windows.Win32.Foundation;
-using iNKORE.UI.WPF.Modern;
-using iNKORE.UI.WPF.Modern.Controls;
-using iNKORE.UI.WPF.Modern.Controls.Primitives;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
     /// <summary>
     /// Unified dialog for PSAppDeployToolkit that consolidates all dialog types into one
     /// </summary>
-    internal abstract partial class FluentDialog : Window, IBaseDialog
+    internal abstract partial class FluentDialog : FluenceWindow, IBaseDialog
     {
         /// <summary>
         /// Static constructor to set up the theme and resources for the dialog.
         /// </summary>
-        static FluentDialog()
-        {
-            Application.Current.Resources.MergedDictionaries.Add(new ThemeResources());
-            Application.Current.Resources.MergedDictionaries.Add(new XamlControlsResources());
-        }
 
         /// <summary>
         /// Initializes a new instance of the FluentDialog class with the specified dialog options, result, and optional
@@ -73,14 +67,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 ArgumentException.ThrowIfNullOrWhiteSpace(customMessageText);
             }
 
-            // Initialize the window
-            InitializeComponent();
+            // Initialize the theme and accent color for the dialog based on the provided options, defaulting to automatic theming and accent if not specified.
+            ApplicationThemeManager.Apply(ApplicationTheme.Auto);
 
             // If the accent color is passed through, update via ThemeManager
             if (options.FluentAccentColor is not null)
             {
-                ThemeManager.Current.AccentColor = IntToColor(options.FluentAccentColor.Value);
+                ApplicationAccentColorManager.ApplyCustomAccent(IntToColor(options.FluentAccentColor.Value));
             }
+
+            // Initialize the window
+            InitializeComponent();
 
             // Set the language and flow direction for the dialog.
             Language = System.Windows.Markup.XmlLanguage.GetLanguage(options.Language.IetfLanguageTag);
@@ -104,11 +101,21 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 _dialogAllowMove = options.DialogAllowMove.Value;
             }
-            if (_dialogAllowMove)
+            IsMoveable = _dialogAllowMove;
+            if (options.DialogAllowMinimize is not null)
             {
-                MouseLeftButtonDown += (sender, e) => DragMove();
+                _dialogMinimizeVisible = options.DialogAllowMinimize.Value;
             }
+            IsMinimizeButtonVisible = _dialogMinimizeVisible ? Visibility.Visible : Visibility.Collapsed;
+
             WindowStartupLocation = WindowStartupLocation.Manual;
+            // Park the window far off every monitor before any layout or show. SizeToContent,
+            // FluentDialog_SizeChanged, FD.Loaded, and PositionWindow calls will all no-op or
+            // operate on this off-screen position until OnContentRendered clears _firstShowPending
+            // and places the window on-screen in one step. The FluenceWindow cloak (belt-and-braces)
+            // will have already hidden the window by the time it is moved on-screen.
+            Left = OffscreenCoordinate;
+            Top = OffscreenCoordinate;
             Topmost = options.DialogTopMost;
 
             // Set supplemental options also
@@ -153,7 +160,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
                 { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage ?? options.AppIconImage) },
+                { ApplicationTheme.HighContrast, GetIcon(options.AppIconImage) },
+                { ApplicationTheme.Auto, GetIcon(options.AppIconImage) },
+
             });
+            ApplicationThemeManager.Changed += ThemeManager_ActualThemeChanged;
             SetDialogIcon();
 
             // Set the expiry timer if specified.
@@ -205,31 +216,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             _persistTimer?.Stop();
             _expiryTimer?.Stop();
             Dispatcher.Invoke(Close);
-        }
-
-        /// <summary>
-        /// Processes Windows messages for the associated window and allows for custom handling of specific messages.
-        /// </summary>
-        /// <remarks>Override this method to implement custom message handling logic for the window. If
-        /// <paramref name="handled"/> is set to <see langword="true"/>, the message will not be passed to the default
-        /// window procedure.</remarks>
-        /// <param name="hwnd">The handle to the window that received the message.</param>
-        /// <param name="msg">The message identifier that specifies the type of message being sent.</param>
-        /// <param name="wParam">Additional message-specific information. The meaning depends on the value of the <paramref name="msg"/>
-        /// parameter.</param>
-        /// <param name="lParam">Additional message-specific information. The meaning depends on the value of the <paramref name="msg"/>
-        /// parameter.</param>
-        /// <param name="handled">When set to <see langword="true"/>, indicates that the message has been handled and should not be processed
-        /// further.</param>
-        /// <returns>A value that indicates the result of the message processing. Typically, this is a default value indicating
-        /// no specific result.</returns>
-        private nint WndProc(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
-        {
-            if (msg == (uint)WINDOW_MESSAGE.WM_SYSCOMMAND && ((int)wParam & 0xFFF0) == (uint)WM_SYSCOMMAND.SC_MOVE && !_dialogAllowMove)
-            {
-                handled = true;
-            }
-            return default;
         }
 
         /// <summary>
@@ -302,51 +288,77 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             Dispose();
         }
 
+        /// <inheritdoc />
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            // FluenceWindow.OnSourceInitialized applies the window shell (chrome, opaque/backdrop
+            // background, frame) before the first paint.
+            base.OnSourceInitialized(e);
+
+            // Configure all content-dependent layout and position the window BEFORE the first paint
+            // so the first composed frame is already settled - no visible jump from a default
+            // position, and no pre-arrangement flash of the buttons / content rows. This runs after
+            // the full object graph is constructed (base plus subclass constructors, which set each
+            // dialog's button visibility and content) but before the window renders. Forcing one
+            // layout pass here gives PositionWindow the final ActualWidth / ActualHeight; the wired
+            // SizeChanged handler still repositions if the content size changes later (e.g. the
+            // CloseApps list updating).
+            AutomationProperties.SetName(this, Title);
+            UpdateButtonLayout();
+            UpdateRowDefinition();
+            UpdateLayout();
+            // PositionWindow is suppressed while _firstShowPending=true; the window stays
+            // off-screen at OffscreenCoordinate. _startingLeft/_startingTop will be set to
+            // the on-screen coords by the reveal-time PositionWindow call in OnContentRendered.
+            PositionWindow();
+
+            // Pre-populate the countdown display so the first rendered frame shows the real
+            // remaining time (full duration) rather than the XAML-default "00:00:00". The
+            // _countdownStopwatch has not started yet at this point (InitializeCountdown starts
+            // it at Loaded), so Elapsed == 0 and remaining == full duration -- the correct value.
+            // UpdateCountdownDisplay guards against null _countdownDuration internally. This
+            // does NOT start the timer; it only sets the text block once for the first frame.
+            // InitializeCountdown (called from Loaded) still owns timer start and the tick loop.
+            UpdateCountdownDisplay();
+        }
+
+        /// <inheritdoc />
+        protected override void OnContentRendered(EventArgs e)
+        {
+            // First-show reveal: clear the off-screen hold, position the window on-screen, then
+            // let the base (FluenceWindow.OnContentRendered -> RevealAfterFirstPaint) uncloak or
+            // un-alpha the window. The ordering is deliberate:
+            //   1. Clear _firstShowPending so PositionWindow computes the real on-screen coords.
+            //   2. Call PositionWindow -- moves the HWND to its final position while the
+            //      FluenceWindow cloak still holds the window invisible (belt-and-braces).
+            //   3. base.OnContentRendered -> RevealAfterFirstPaint -> uncloak.
+            //   Result: the window appears fully-formed at its final position in one step.
+            //
+            // _startingLeft/_startingTop are set inside PositionWindow (Left = _startingLeft = left)
+            // so RestoreWindow will correctly restore to the on-screen position, not OffscreenCoordinate.
+            if (_firstShowPending)
+            {
+                _firstShowPending = false;
+                PositionWindow();
+            }
+            base.OnContentRendered(e);
+        }
+
         /// <summary>
-        /// Handles the Loaded event for the dialog, performing initialization and layout updates required for correct
-        /// display and interaction.
+        /// Handles the Loaded event for the dialog. Layout, button arrangement, and window
+        /// positioning now run in <see cref="OnSourceInitialized"/> (before the first paint) so the
+        /// first composed frame is already settled; only genuine post-show concerns remain here.
         /// </summary>
-        /// <remarks>This method ensures the dialog uses software rendering, updates its layout and button
-        /// arrangement, initializes any countdown display, and positions the window appropriately. It also starts any
-        /// configured timers and signals operation success for client-server scenarios. Override this method to
-        /// customize dialog initialization behavior when the dialog is loaded.</remarks>
-        /// <param name="sender">The source of the event, typically the dialog instance that is being loaded.</param>
+        /// <param name="sender">The source of the event, typically the dialog instance being loaded.</param>
         /// <param name="e">A RoutedEventArgs object that contains the event data.</param>
         private protected virtual void FluentDialog_Loaded(object? sender, RoutedEventArgs e)
         {
-            // Force software rendering.
-            ((HwndSource)PresentationSource.FromVisual(this)).CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
-
-            // Finish registration that must occur after construction has completed.
-            AutomationProperties.SetName(this, Title);
-            if (!_themeChangeHandlerRegistered)
-            {
-                ThemeManager.AddActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
-                _themeChangeHandlerRegistered = true;
-            }
-
-            // Update dialog layout
-            UpdateButtonLayout();
-            UpdateLayout();
-
-            // Initialize countdown display if needed
+            // Post-show concerns only: start the countdown and persist/expiry timers, signal the
+            // client-server success flag the caller may be awaiting, and bring the realised window
+            // to the front.
             InitializeCountdown();
-
-            // Update row definitions based on current content
-            UpdateRowDefinition();
-
-            // Position the window
-            PositionWindow();
-
-            // Record the starting point for the window.
-            _startingLeft = Left;
-            _startingTop = Top;
-
-            // Start the timers if specified
             _persistTimer?.Start();
             _expiryTimer?.Start();
-
-            // Set the NoWait success flag as the caller may be waiting for it.
             ClientServerUtilities.SetOperationSuccessFlag();
             try
             {
@@ -354,32 +366,22 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             catch
             {
+                // Best-effort: failing to raise the window must never abort dialog display.
                 return;
                 throw;
             }
         }
 
         /// <summary>
-        /// Handles the SizeChanged event for the FluentDialog window, repositioning the window as needed and ensuring
-        /// window movement is restricted appropriately.
+        /// Handles the SizeChanged event for the FluentDialog window, repositioning the window as needed.
         /// </summary>
-        /// <remarks>This method repositions the window without animations and sets up a window procedure
-        /// hook to prevent the window from being moved by the user if the hook has not already been
-        /// established.</remarks>
+        /// <remarks>This method repositions the window without animations.</remarks>
         /// <param name="sender">The source of the event, typically the FluentDialog instance whose size has changed.</param>
         /// <param name="e">An object that contains the event data, including information about the new size of the window.</param>
         private void FluentDialog_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
             // Only reposition window - no animations
             PositionWindow();
-
-            // Add hook to prevent window movement
-            if (_hwndSource is null)
-            {
-                WindowInteropHelper helper = new(this);
-                _hwndSource = HwndSource.FromHwnd(helper.Handle);
-                _hwndSource.AddHook(WndProc);
-            }
         }
 
         /// <summary>
@@ -419,7 +421,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data associated with the theme change.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ThemeManager_ActualThemeChanged(object? sender, RoutedEventArgs e)
+        private void ThemeManager_ActualThemeChanged(object? sender, ThemeChangedEventArgs e)
         {
             SetDialogIcon();
         }
@@ -463,7 +465,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// content is added.</param>
         /// <param name="message">The message string containing text and formatting tags to be processed. If the message is null or consists
         /// only of whitespace, no formatting is applied.</param>
-        private protected void FormatMessageWithHyperlinks(TextBlock textBlock, string message)
+        private protected void FormatMessageWithHyperlinks(System.Windows.Controls.TextBlock textBlock, string message)
         {
             // Don't waste time on an empty string.
             textBlock.Inlines.Clear();
@@ -504,7 +506,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="textBlock">The TextBlock to add content to.</param>
         /// <param name="match">The regex match to process.</param>
         /// <param name="formattingStack">The current formatting context stack.</param>
-        private void ProcessFormattingTag(TextBlock textBlock, Match match, Stack<FormattingContext> formattingStack)
+        private void ProcessFormattingTag(System.Windows.Controls.TextBlock textBlock, Match match, Stack<FormattingContext> formattingStack)
         {
             if (match.Groups["UrlLinkSimple"].Success)
             {
@@ -577,7 +579,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="textBlock">The TextBlock to add text to.</param>
         /// <param name="text">The text content to add.</param>
         /// <param name="formattingStack">The current formatting context stack.</param>
-        private static void AddFormattedText(TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
+        private static void AddFormattedText(System.Windows.Controls.TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
         {
             // Check for null only, not whitespace - we need to preserve whitespace-only
             // content (including line breaks) between formatting tags.
@@ -604,7 +606,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 {
                     run.FontWeight = FontWeights.Bold;
                 }
-                run.SetResourceReference(ForegroundProperty, ThemeKeys.AccentTextFillColorPrimaryBrushKey);
+                run.SetResourceReference(ForegroundProperty, "AccentTextFillColorPrimaryBrush");
             }
 
             textBlock.Inlines.Add(run);
@@ -617,7 +619,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="textBlock">The TextBlock to add the hyperlink to.</param>
         /// <param name="url">The URL to navigate to when clicked.</param>
         /// <param name="displayText">The text to display for the hyperlink.</param>
-        private void ProcessUrlLink(TextBlock textBlock, string url, string displayText)
+        private void ProcessUrlLink(System.Windows.Controls.TextBlock textBlock, string url, string displayText)
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
@@ -634,6 +636,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     NavigateUri = uri,
                     ToolTip = $"Open link: {url}"
                 };
+                link.SetResourceReference(ForegroundProperty, "AccentTextFillColorPrimaryBrush");
                 link.RequestNavigate += Hyperlink_RequestNavigate;
                 textBlock.Inlines.Add(link);
             }
@@ -652,7 +655,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="button">The button to which the accent style will be applied. This parameter must not be null.</param>
         private protected static void SetAccentButton(Button button)
         {
-            button.SetResourceReference(StyleProperty, ThemeKeys.AccentButtonStyleKey);
+            button.Appearance = ControlAppearance.Accent;
         }
 
         /// <summary>
@@ -765,7 +768,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// displaying the application icon.</remarks>
         private void SetDialogIcon()
         {
-            AppIconImage.Source = _dialogBitmapCache[ThemeManager.Current.ActualApplicationTheme];
+            AppIconImage.Source = _dialogBitmapCache[ApplicationThemeManager.CurrentTheme];
             if (_appTaskbarIcon is null)
             {
                 Icon = AppIconImage.Source;
@@ -773,10 +776,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Positions the window on the screen based on the specified dialog position.
+        /// Positions the window on the screen based on the specified dialog position. Suppressed
+        /// while <see cref="_firstShowPending"/> is <see langword="true"/> so the window stays at
+        /// <see cref="OffscreenCoordinate"/> until the first-show reveal in
+        /// <see cref="OnContentRendered"/>.
         /// </summary>
         private void PositionWindow()
         {
+            if (_firstShowPending)
+            {
+                return;
+            }
+
             // Get the working area in DIPs.
             Rect workingArea = SystemParameters.WorkArea;
 
@@ -876,15 +887,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             WindowState = WindowState.Normal;
             Left = _startingLeft;
             Top = _startingTop;
-        }
-
-        /// <summary>
-        /// Sets the minimize button availability based on specific conditions.
-        /// </summary>
-        /// <param name="availability">The desired button availability state.</param>
-        private protected void SetMinimizeButtonAvailability(TitleBarButtonAvailability availability)
-        {
-            TitleBar.SetMinimizeButtonAvailability(this, availability);
         }
 
         /// <summary>
@@ -992,11 +994,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Update text color based on remaining time using style application
             if (_countdownRemainingTime.TotalSeconds <= 60)
             {
-                CountdownValueTextBlock.Style = (Style)FindResource("CriticalTextBlockStyle");
+                CountdownValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCriticalBrush");
+                CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
+
             }
             else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
-                CountdownValueTextBlock.Style = (Style)FindResource("CautionTextBlockStyle");
+                CountdownValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCautionBrush");
+                CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
             }
         }
 
@@ -1031,11 +1036,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private bool _canClose;
 
         /// <summary>
-        /// Whether the theme-changed handler has been registered for this window instance.
-        /// </summary>
-        private bool _themeChangeHandlerRegistered;
-
-        /// <summary>
         /// The specified position of the dialog.
         /// </summary>
         private protected readonly DialogPosition _dialogPosition = DialogPosition.BottomRight;
@@ -1044,6 +1044,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Whether the dialog is allowed to be moved.
         /// </summary>
         private protected readonly bool _dialogAllowMove;
+
+        /// <summary>
+        /// Whether the dialog's minimize control is visible.
+        /// </summary>
+        private protected readonly bool _dialogMinimizeVisible;
 
         /// <summary>
         /// The countdown duration for the dialog.
@@ -1091,12 +1096,23 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private double _startingLeft;
 
         /// <summary>
-        /// Represents the underlying window handle source for a WPF application.
+        /// A coordinate guaranteed to be off every monitor regardless of DPI or multi-monitor
+        /// arrangement. The window is parked here from construction until the first
+        /// <see cref="OnContentRendered"/> reveal so that <see cref="SizeToContent"/> growth,
+        /// <see cref="PositionWindow"/> calls from <see cref="FluentDialog_SizeChanged"/>, and
+        /// the <c>Loaded</c> event all occur while the window is invisible and off-screen.
         /// </summary>
-        /// <remarks>This field is used to manage the interoperation between WPF and Win32 by providing
-        /// access to the window handle source. It is typically used in scenarios involving advanced window management
-        /// or interoperation with native code.</remarks>
-        private HwndSource? _hwndSource;
+        private const double OffscreenCoordinate = -32000;
+
+        /// <summary>
+        /// Guards the off-screen first-show hold. <see langword="true"/> from construction until
+        /// <see cref="OnContentRendered"/> fires and the window is placed on-screen for the first
+        /// time. While <see langword="true"/>, <see cref="PositionWindow"/> is suppressed so the
+        /// window stays at <see cref="OffscreenCoordinate"/> regardless of <see cref="SizeToContent"/>
+        /// growth or event-driven repositions. Cleared exactly once by
+        /// <see cref="OnContentRendered"/>.
+        /// </summary>
+        private bool _firstShowPending = true;
 
         /// <summary>
         /// The application tray icon bitmap source, if AppTaskbarIconImage was specified.
@@ -1157,13 +1173,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 }
 
                 // Clean up resources.
-                if (_themeChangeHandlerRegistered)
-                {
-                    ThemeManager.RemoveActualThemeChangedHandler(this, ThemeManager_ActualThemeChanged);
-                    _themeChangeHandlerRegistered = false;
-                }
-                _hwndSource?.RemoveHook(WndProc);
-                _hwndSource?.Dispose();
+                ApplicationThemeManager.Changed -= ThemeManager_ActualThemeChanged;
                 _countdownTimer?.Dispose();
             }
             Disposed = true;
@@ -1188,6 +1198,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     IsItalic = IsItalic
                 };
             }
+        }
+
+        private void CloseAppsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Selection changes in the close-apps list view require no additional action.
         }
     }
 }

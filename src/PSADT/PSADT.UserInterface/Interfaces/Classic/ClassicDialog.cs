@@ -90,6 +90,22 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     dialogAllowMove = options.DialogAllowMove.Value;
                 }
+
+                // Minimize caption-button support is off by default; callers (and PSAppDeployToolkit's
+                // -AllowMinimize) must explicitly opt in by setting DialogAllowMinimize=true in
+                // BaseDialogOptions. When enabled, re-enable the form's ControlBox and minimize box,
+                // restore a resizable-style border frame so Windows actually renders the minimize
+                // glyph, and expose the form in the taskbar so the user can restore a minimized
+                // dialog. This replaces the per-dialog wiring previously duplicated in
+                // CloseAppsDialog so every Classic dialog honors the same contract.
+                if (options.DialogAllowMinimize == true)
+                {
+                    FormBorderStyle = FormBorderStyle.FixedSingle;
+                    ControlBox = true;
+                    MinimizeBox = true;
+                    MaximizeBox = false;
+                    ShowInTaskbar = true;
+                }
             }
 
             // Set the dialog result.

@@ -35,6 +35,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["FluentAccentColor"] as int?,
             options["DialogPosition"] as DialogPosition?,
             options["DialogAllowMove"] as bool?,
+            options["DialogAllowMinimize"] as bool?,
             options["DialogExpiryDuration"] as TimeSpan?,
             options["DialogPersistInterval"] as TimeSpan?,
             options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings, deploymentType) : null!,
@@ -45,7 +46,6 @@ namespace PSADT.UserInterface.DialogOptions
             options["CountdownDuration"] as TimeSpan?,
             options["ForcedCountdown"] as bool? ?? false,
             options["HideCloseButton"] as bool? ?? false,
-            options["DialogAllowMinimize"] as bool? ?? false,
             options["CustomMessageText"] as string is { Length: > 0 } customMessageText ? customMessageText : null)
         {
         }
@@ -71,6 +71,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPosition">The position of the dialog on the screen. If <see langword="null"/>, the default position is used.</param>
         /// <param name="dialogAllowMove">Indicates whether the dialog can be moved by the user. If <see langword="null"/>, the default behavior is
         /// used.</param>
+        /// <param name="dialogAllowMinimize">Indicates whether the dialog exposes a minimize button in its caption area. If <see langword="null"/> or
+        /// <see langword="false"/>, the minimize button remains hidden.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog expires and closes automatically. If <see langword="null"/>, the dialog
         /// does not expire.</param>
         /// <param name="dialogPersistInterval">The interval at which the dialog persists its state. If <see langword="null"/>, persistence is disabled.</param>
@@ -83,9 +85,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// displayed.</param>
         /// <param name="forcedCountdown">A value indicating whether the countdown timer is mandatory and cannot be skipped.</param>
         /// <param name="hideCloseButton">A value indicating whether the close button is hidden in the dialog.</param>
-        /// <param name="dialogAllowMinimize">A value indicating whether the dialog can be minimized by the user.</param>
         /// <param name="customMessageText">Custom text displayed in the dialog. If <see langword="null"/>, no custom message is shown.</param>
-        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, bool dialogAllowMinimize, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogExpiryDuration, dialogPersistInterval)
+        private CloseAppsDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, CloseAppsDialogStrings strings, uint? deferralsRemaining, DateTime? deferralDeadline, bool unlimitedDeferrals, bool continueOnProcessClosure, TimeSpan? countdownDuration, bool forcedCountdown, bool hideCloseButton, string? customMessageText) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
         {
             if (customMessageText is not null)
             {
@@ -100,7 +101,6 @@ namespace PSADT.UserInterface.DialogOptions
             CountdownDuration = countdownDuration;
             ForcedCountdown = forcedCountdown;
             HideCloseButton = hideCloseButton;
-            DialogAllowMinimize = dialogAllowMinimize;
             CustomMessageText = customMessageText;
         }
 
@@ -160,13 +160,6 @@ namespace PSADT.UserInterface.DialogOptions
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool HideCloseButton;
-
-        /// <summary>
-        /// Indicates whether the dialog allows minimizing.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
-        [DataMember]
-        public readonly bool DialogAllowMinimize;
 
         /// <summary>
         /// Represents a custom message text that can be optionally provided.
