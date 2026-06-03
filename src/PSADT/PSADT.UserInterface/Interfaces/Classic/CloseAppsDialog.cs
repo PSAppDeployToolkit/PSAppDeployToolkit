@@ -270,7 +270,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// that periodically updates the countdown in a user interface.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the tick event.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             if (countdownDuration is null)
@@ -286,28 +285,25 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 remaining = TimeSpan.Zero;
             }
-            _ = Invoke(() => labelCountdown.Text = FormatTime(remaining));
+            labelCountdown.Text = FormatTime(remaining);
             if (remaining <= TimeSpan.Zero)
             {
-                Invoke(() =>
+                if (forcedCountdown && (runningProcessService is null || (listBoxCloseProcesses.Items.Count == 0 && !hideCloseButton)))
                 {
-                    if (forcedCountdown && (runningProcessService is null || (listBoxCloseProcesses.Items.Count == 0 && !hideCloseButton)))
-                    {
-                        buttonContinue.PerformClick();
-                    }
-                    else if (forcedCountdown && buttonDefer.Enabled)
-                    {
-                        buttonDefer.PerformClick();
-                    }
-                    else if (buttonCloseProcesses.CanFocus)
-                    {
-                        buttonCloseProcesses.PerformClick();
-                    }
-                    else
-                    {
-                        buttonContinue.PerformClick();
-                    }
-                });
+                    buttonContinue.PerformClick();
+                }
+                else if (forcedCountdown && buttonDefer.Enabled)
+                {
+                    buttonDefer.PerformClick();
+                }
+                else if (buttonCloseProcesses.CanFocus)
+                {
+                    buttonCloseProcesses.PerformClick();
+                }
+                else
+                {
+                    buttonContinue.PerformClick();
+                }
             }
         }
 

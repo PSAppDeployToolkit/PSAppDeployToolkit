@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
@@ -80,6 +81,87 @@ namespace PSADT.ProcessManagement
         /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
         internal ProcessLaunchState(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges)
         {
+            // Internal function to complete the process result asynchronously, waiting for the process to exit and gathering output as needed.
+            async Task<ProcessResult> CompleteProcessResultAsync()
+            {
+                CancellationToken cancellationToken = LaunchInfo.CancellationToken ?? CancellationToken.None;
+                const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
+                int exitCode = ProcessManager.TimeoutExitCode;
+                bool processFinished = false;
+                if (ProcessAssignedToJobObject)
+                {
+                    if (IoCompletionPort is null)
+                    {
+                        throw new InvalidProgramException("The IO completion port is not initialized.");
+                    }
+                    if (JobObject is null)
+                    {
+                        throw new InvalidProgramException("The job object is not initialized.");
+                    }
+                    await Task.Run(() =>
+                    {
+                        using CancellationTokenRegistration? ctr = cancellationToken.CanBeCanceled ? cancellationToken.Register(() => NativeMethods.PostQueuedCompletionStatus(IoCompletionPort, timeoutExitCode, default)) : null;
+                        while (true)
+                        {
+                            _ = NativeMethods.GetQueuedCompletionStatus(IoCompletionPort, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
+                            if (lpCompletionCode == timeoutExitCode)
+                            {
+                                if (LaunchInfo.NoTerminateOnTimeout)
+                                {
+                                    // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
+                                    // Disposing the job would terminate the process we're supposed to let run, so we intentionally
+                                    // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
+                                    if (LaunchInfo.KillChildProcessesWithParent)
+                                    {
+                                        CanDisposeJobObject = false;
+                                    }
+                                    break;
+                                }
+                                _ = NativeMethods.TerminateJobObject(JobObject, timeoutExitCode);
+                            }
+                            else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && (uint)lpOverlapped == ProcessId && !LaunchInfo.WaitForChildProcesses) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                            {
+                                _ = NativeMethods.GetExitCodeProcess(ProcessSafeHandle, out uint lpExitCode);
+                                exitCode = unchecked((int)lpExitCode);
+                                processFinished = true;
+                                break;
+                            }
+                        }
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    try
+                    {
+                        await Process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                        processFinished = true;
+                        exitCode = Process.ExitCode;
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.CanBeCanceled && cancellationToken.IsCancellationRequested)
+                    {
+                        if (!LaunchInfo.NoTerminateOnTimeout)
+                        {
+                            try
+                            {
+                                Process.Kill();
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // Already exited.
+                            }
+                            await Process.WaitForExitAsync().ConfigureAwait(false);
+                            processFinished = true;
+                        }
+                        exitCode = ProcessManager.TimeoutExitCode;
+                    }
+                }
+                if (processFinished)
+                {
+                    await Task.WhenAll(StdOut?.Task ?? Task.CompletedTask, StdErr?.Task ?? Task.CompletedTask, StdIn?.Task ?? Task.CompletedTask).WaitAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
+                }
+                return new(Process, LaunchInfo, CommandLine, exitCode, StdOut?.Buffer, StdErr?.Buffer, InterleavedBuffer);
+            }
+
             // Confirm all inputs are valid.
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
             ArgumentNullException.ThrowIfNull(processHandle);
@@ -207,6 +289,16 @@ namespace PSADT.ProcessManagement
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
+            ProcessResultTask = CompleteProcessResultAsync();
+        }
+
+        /// <summary>
+        /// Gets an awaiter for the process completion task.
+        /// </summary>
+        /// <returns>An awaiter for the process result.</returns>
+        internal TaskAwaiter<ProcessResult> GetAwaiter()
+        {
+            return ProcessResultTask.GetAwaiter();
         }
 
         /// <summary>
@@ -230,104 +322,9 @@ namespace PSADT.ProcessManagement
         internal readonly string CommandLine;
 
         /// <summary>
-        /// Asynchronously gets the result of the associated process execution.
+        /// Represents the task for the shared process result.
         /// </summary>
-        /// <returns>A task that resolves to the process execution result.</returns>
-        internal Task<ProcessResult> GetProcessResultAsync()
-        {
-            // Internal implementation of the process result retrieval logic.
-            async Task<ProcessResult> GetProcessResultAsyncImpl()
-            {
-                CancellationToken cancellationToken = LaunchInfo.CancellationToken ?? CancellationToken.None;
-                const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
-                int exitCode = ProcessManager.TimeoutExitCode;
-                bool processFinished = false;
-                if (ProcessAssignedToJobObject)
-                {
-                    if (IoCompletionPort is null)
-                    {
-                        throw new InvalidProgramException("The IO completion port is not initialized.");
-                    }
-                    if (JobObject is null)
-                    {
-                        throw new InvalidProgramException("The job object is not initialized.");
-                    }
-                    await Task.Run(() =>
-                    {
-                        using CancellationTokenRegistration? ctr = cancellationToken.CanBeCanceled ? cancellationToken.Register(() => NativeMethods.PostQueuedCompletionStatus(IoCompletionPort, timeoutExitCode, default)) : null;
-                        while (true)
-                        {
-                            _ = NativeMethods.GetQueuedCompletionStatus(IoCompletionPort, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
-                            if (lpCompletionCode == timeoutExitCode)
-                            {
-                                if (LaunchInfo.NoTerminateOnTimeout)
-                                {
-                                    // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
-                                    // Disposing the job would terminate the process we're supposed to let run, so we intentionally
-                                    // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
-                                    if (LaunchInfo.KillChildProcessesWithParent)
-                                    {
-                                        CanDisposeJobObject = false;
-                                    }
-                                    exitCode = ProcessManager.TimeoutExitCode;
-                                    break;
-                                }
-                                _ = NativeMethods.TerminateJobObject(JobObject, timeoutExitCode);
-                            }
-                            else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && (uint)lpOverlapped == ProcessId && !LaunchInfo.WaitForChildProcesses) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
-                            {
-                                _ = NativeMethods.GetExitCodeProcess(ProcessSafeHandle, out uint lpExitCode);
-                                exitCode = unchecked((int)lpExitCode);
-                                processFinished = true;
-                                break;
-                            }
-                        }
-                    }).ConfigureAwait(false);
-                }
-                else
-                {
-                    try
-                    {
-                        await Process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-                        processFinished = true; exitCode = Process.ExitCode;
-                    }
-                    catch (OperationCanceledException) when (cancellationToken.CanBeCanceled && cancellationToken.IsCancellationRequested)
-                    {
-                        if (!LaunchInfo.NoTerminateOnTimeout)
-                        {
-                            try
-                            {
-                                Process.Kill();
-                            }
-                            catch (InvalidOperationException)
-                            {
-                                // Already exited.
-                            }
-                            await Process.WaitForExitAsync().ConfigureAwait(false);
-                            processFinished = true;
-                        }
-                        exitCode = ProcessManager.TimeoutExitCode;
-                    }
-                }
-                if (processFinished)
-                {
-                    await Task.WhenAll(StdOut?.Task ?? Task.CompletedTask, StdErr?.Task ?? Task.CompletedTask, StdIn?.Task ?? Task.CompletedTask).WaitAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
-                }
-                return new(Process, LaunchInfo, CommandLine, exitCode, StdOut?.Buffer, StdErr?.Buffer, InterleavedBuffer);
-            }
-
-            // Ensure the object hasn't been disposed and return the cached task if it exists.
-            lock (ProcessResultSyncRoot)
-            {
-                ObjectDisposedException.ThrowIf(Disposed != 0, this);
-                return ProcessResultTask ??= GetProcessResultAsyncImpl();
-            }
-        }
-
-        /// <summary>
-        /// Represents the cached task for obtaining process results.
-        /// </summary>
-        private Task<ProcessResult>? ProcessResultTask;
+        private readonly Task<ProcessResult> ProcessResultTask;
 
         /// <summary>
         /// Indicates whether the job can be disposed.
@@ -389,11 +386,6 @@ namespace PSADT.ProcessManagement
         private readonly bool CanDisposeProcessHandle = true;
 
         /// <summary>
-        /// Synchronizes task initialization for process result retrieval.
-        /// </summary>
-        private readonly Lock ProcessResultSyncRoot = new();
-
-        /// <summary>
         /// Releases all resources used by the current instance of the class.
         /// </summary>
         /// <remarks>Call this method when you are finished using the object to free unmanaged resources
@@ -446,7 +438,7 @@ namespace PSADT.ProcessManagement
 
             // Dispose of the task if it's completed. If it's not complete, we're not transferring
             // ownership of the Process object to a ProcessResult object, so we handle that here too.
-            if (ProcessResultTask?.IsCompleted == true)
+            if (ProcessResultTask.IsCompleted)
             {
                 ProcessResultTask.Dispose();
             }

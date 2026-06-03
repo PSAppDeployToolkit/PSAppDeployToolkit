@@ -33,7 +33,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// selection. The initial selected index of the ComboBox is set to the first item if available.</remarks>
         /// <param name="options">The options used to configure the HelpConsole, including a mapping of modules to their help content. This
         /// parameter cannot be null.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Code Smell", "S3220:Method calls should not resolve ambiguously to overloads with 'params'", Justification = "WinForms ObjectCollection.AddRange intentionally uses the params object[] overload with collection expressions here; adding LINQ casts only to satisfy the analyzer would add unnecessary noise.")]
         internal HelpConsole(HelpConsoleOptions options)
         {
             // Initialise the underlying form as set up by the designer.
@@ -46,7 +45,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 comboBox.Items.Clear(); comboBox.Items.AddRange([.. options.ModuleHelpMap.Keys]);
                 comboBox.SelectedIndexChanged += (sender, e) =>
                 {
-                    listBox.Items.Clear(); listBox.Items.AddRange([.. options.ModuleHelpMap[(string)(comboBox.SelectedItem ?? throw new InvalidOperationException("The selected combobox item was null."))].Keys]);
+                    listBox.Items.Clear(); object[] functions = [.. options.ModuleHelpMap[(string)(comboBox.SelectedItem ?? throw new InvalidOperationException("The selected combobox item was null."))].Keys]; listBox.Items.AddRange(functions);
                 };
                 listBox.SelectedIndexChanged += (sender, e) =>
                 {

@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Microsoft.Win32.SafeHandles;
+using System.Threading.Tasks;
 using PSADT.AccountManagement;
 using PSADT.FileSystem;
 using PSADT.Security;
@@ -29,14 +30,14 @@ namespace PSADT.Foundation
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
-        internal static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
+        internal static async Task Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
             // Get the primary token for the user if they have a valid session ID, otherwise we'll just use their SID.
             using WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
-            using SafeFileHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
+            using SafeHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
                 ? runAsActiveUser != AccountUtilities.CallerRunAsActiveUser || AccountUtilities.CallerIsAdmin
-                ? TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType)
-                : new(currentUser.Token, false)
+                ? await TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType).ConfigureAwait(false)
+                : currentUser.AccessToken
                 : null;
             Func<FileInfo, bool> testEffectiveAccess = hPrimaryToken is null
                 ? (path) => FileSystemUtilities.TestEffectiveAccess(path, runAsActiveUser.SID, _requiredPermissions)

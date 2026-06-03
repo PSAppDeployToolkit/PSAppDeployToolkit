@@ -17,7 +17,7 @@ function Private:Set-ADTClientServerProcessPermissions
     # Set required permissions on this module's library files.
     try
     {
-        [PSADT.ClientServer.ClientPermissions]::Remediate($User, [System.IO.FileInfo[]]$(
+        $null = [PSADT.ClientServer.ClientPermissions]::Remediate($User, [System.IO.FileInfo[]]$(
                 if (Test-ADTModuleInitialized)
                 {
                     (Get-ADTConfig).Assets.Values.GetEnumerator() | & {
@@ -29,7 +29,7 @@ function Private:Set-ADTClientServerProcessPermissions
                             }
                         }
                     }
-                }))
+                })).GetAwaiter().GetResult()
     }
     catch
     {

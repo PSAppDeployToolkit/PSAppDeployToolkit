@@ -10,7 +10,6 @@ using System.Windows.Automation;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using PSADT.Interop;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -257,6 +256,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// information.</remarks>
         /// <param name="sender">The source of the event, typically the service that monitors running processes.</param>
         /// <param name="e">An object containing event data, including the updated list of processes to close.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD001:Avoid legacy thread switching APIs", Justification = "Standalone WPF STA thread; JoinableTaskFactory not applicable.")]
         private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {
             Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(static p => new AppToClose(p))));
@@ -380,17 +380,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                Dispatcher.Invoke(() =>
-                {
-                    DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText && !_hideCloseButton))
-                        ? CloseAppsDialogResult.Continue
-                        : _forcedCountdown && DeferralsAvailable()
-                        ? CloseAppsDialogResult.Defer
-                        : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText
-                        ? CloseAppsDialogResult.Close
-                        : CloseAppsDialogResult.Continue;
-                    CloseDialog();
-                });
+                DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText && !_hideCloseButton))
+                    ? CloseAppsDialogResult.Continue
+                    : _forcedCountdown && DeferralsAvailable()
+                    ? CloseAppsDialogResult.Defer
+                    : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText
+                    ? CloseAppsDialogResult.Close
+                    : CloseAppsDialogResult.Continue;
+                CloseDialog();
             }
         }
 

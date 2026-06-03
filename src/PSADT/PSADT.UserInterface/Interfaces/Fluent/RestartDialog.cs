@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Threading;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
 
@@ -56,10 +55,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// unsaved work.</remarks>
         /// <param name="sender">The source of the event, typically the control that raised the event.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
-            DeviceUtilities.RestartComputer();
+            await DeviceUtilities.RestartComputer();
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -85,22 +85,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// restored to alert the user. This method overrides the base timer tick behavior to provide custom countdown
         /// handling.</remarks>
         /// <param name="state">An optional state object that can be used to pass additional information to the timer event handler.</param>
-        private protected override void CountdownTimer_Tick(object? state)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        private protected override async void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                DeviceUtilities.RestartComputer();
+                await DeviceUtilities.RestartComputer();
             }
             else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
-                Dispatcher.Invoke(() =>
-                {
-                    IsMinimizeButtonVisible = Visibility.Collapsed;
-                    ButtonRight.IsEnabled = false;
-                    RestoreWindow();
-                });
+                IsMinimizeButtonVisible = Visibility.Collapsed;
+                ButtonRight.IsEnabled = false;
+                RestoreWindow();
             }
         }
     }

@@ -70,7 +70,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="progressPercentage">The percentage of progress completed, as a value between 0 and 100. If null, the progress percentage is not
         /// updated.</param>
         /// <param name="messageAlignment">Specifies the alignment of the progress message. If null, the default alignment is used.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         public void UpdateProgress(string? progressMessage = null, string? progressMessageDetail = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (progressMessage is not null)
@@ -81,7 +80,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
             }
-            Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment));
+            UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage, messageAlignment);
         }
 
         /// <summary>

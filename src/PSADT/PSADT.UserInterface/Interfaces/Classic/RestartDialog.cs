@@ -139,10 +139,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// confirmation.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private protected override void ButtonLeft_Click(object? sender, EventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.
-            DeviceUtilities.RestartComputer();
+            await DeviceUtilities.RestartComputer();
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -170,7 +171,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// the window to ensure user attention.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the tick event.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             if (countdownDuration is null)
@@ -186,18 +186,15 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 remaining = TimeSpan.Zero;
             }
-            _ = Invoke(() => labelCountdown.Text = FormatTime(remaining));
+            labelCountdown.Text = FormatTime(remaining);
             if (remaining <= TimeSpan.Zero)
             {
-                Invoke(buttonRestartNow.PerformClick);
+                buttonRestartNow.PerformClick();
             }
             else if ((minimizeDuration is not null) && (remaining <= minimizeDuration))
             {
-                Invoke(() =>
-                {
-                    buttonMinimize.Enabled = false;
-                    RestoreWindow();
-                });
+                buttonMinimize.Enabled = false;
+                RestoreWindow();
             }
         }
 

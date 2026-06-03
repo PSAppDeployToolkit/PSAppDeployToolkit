@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -184,7 +183,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Initialize countdown if specified
             if (_countdownDuration is not null)
             {
-                _countdownTimer = new(CountdownTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
+                _countdownTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+                _countdownTimer.Tick += (s, e) => CountdownTimer_Tick(null);
                 CountdownStackPanel.Visibility = Visibility.Visible;
                 CountdownDeferPanelSeparator.Visibility = Visibility.Visible;
             }
@@ -215,7 +215,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             _canClose = true;
             _persistTimer?.Stop();
             _expiryTimer?.Stop();
-            Dispatcher.Invoke(Close);
+            Close();
         }
 
         /// <summary>
@@ -964,10 +964,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 _countdownStopwatch.Start();
             }
-            if (!_countdownTimer.Change(0, 1000))
-            {
-                throw new InvalidProgramException("Failed to start countdown timer.");
-            }
+            _countdownTimer.Start();
         }
 
         /// <summary>
@@ -1011,7 +1008,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="state">Timer state object (not used).</param>
         private protected virtual void CountdownTimer_Tick(object? state)
         {
-            Dispatcher.Invoke(UpdateCountdownDisplay);
+            UpdateCountdownDisplay();
         }
 
         /// <summary>
@@ -1053,7 +1050,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// The countdown duration for the dialog.
         /// </summary>
-        private readonly Timer? _countdownTimer;
+        private readonly DispatcherTimer? _countdownTimer;
 
         /// <summary>
         /// An optional countdown to zero to commence a preferred action.
@@ -1174,7 +1171,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
                 // Clean up resources.
                 ApplicationThemeManager.Changed -= ThemeManager_ActualThemeChanged;
-                _countdownTimer?.Dispose();
+                _countdownTimer?.Stop();
             }
             Disposed = true;
         }

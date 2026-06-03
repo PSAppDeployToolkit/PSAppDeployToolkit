@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace PSADT.ProcessManagement
@@ -25,7 +26,7 @@ namespace PSADT.ProcessManagement
             {
                 using (launchState)
                 {
-                    return await launchState.GetProcessResultAsync().ConfigureAwait(false);
+                    return await launchState;
                 }
             }
             Process = launchState.Process;
@@ -59,5 +60,16 @@ namespace PSADT.ProcessManagement
         /// result of a process. The task is read-only and should be awaited to retrieve the <see
         /// cref="ProcessResult"/>.</remarks>
         public Task<ProcessResult> Task { get; }
+
+        /// <summary>
+        /// Gets an awaiter for the process completion task.
+        /// </summary>
+        /// <returns>An awaiter for the process result.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TaskAwaiter<ProcessResult> GetAwaiter()
+        {
+            return Task.GetAwaiter();
+        }
+
     }
 }

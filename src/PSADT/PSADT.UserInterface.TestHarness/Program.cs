@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Threading;
 using PSADT.ProcessManagement;
 using PSADT.Utilities;
@@ -33,7 +34,7 @@ namespace PSADT.UserInterface.TestHarness
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main()
+        private static async Task Main()
         {
             // What dialog style are we running with?
             const DialogStyle dialogStyle = DialogStyle.Fluent; // or DialogStyle.Classic
@@ -161,7 +162,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             const string inputDialogButtonRightText = "Cancel";
 
             // Set up options for the dialogs
-            using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
+            await using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
             Hashtable closeAppsDialogOptions = new()
             {
                 { "DialogExpiryDuration", dialogExpiryDuration },
@@ -311,7 +312,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Show CloseApps Dialog
 
-            CloseAppsDialogResult closeAppsResult = DialogManager.ShowCloseAppsDialog(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
+            CloseAppsDialogResult closeAppsResult = await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState); // Pass the service as optional parameter
 
             if (closeAppsResult.Equals(CloseAppsDialogResult.Defer))
             {
@@ -322,7 +323,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Show Progress Dialog
 
-            DialogManager.ShowProgressDialog(dialogStyle, progressDialogOptions);
+            await DialogManager.ShowProgressDialogAsync(dialogStyle, progressDialogOptions);
 
             Thread.Sleep(3000); // Simulate some work being done
 
@@ -330,18 +331,18 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             for (int i = 0; i <= 100; i += 10)
             {
                 // Update progress
-                DialogManager.UpdateProgressDialog($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
+                await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i}%", $"Step {i / 10} of 10", i);
                 Thread.Sleep(250);  // Simulate work being done
             }
 
             // Close Progress Dialog
-            DialogManager.CloseProgressDialog();
+            await DialogManager.CloseProgressDialogAsync();
 
             // #################################################################################
 
             // Show Custom Dialog
 
-            string customResult = DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions);
+            string customResult = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialogOptions);
 
             if (customResult == customDialogButtonRightText)
             {
@@ -352,7 +353,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Show Custom2 Dialog
 
-            string custom2Result = DialogManager.ShowCustomDialog(dialogStyle, customDialog2Options);
+            string custom2Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog2Options);
 
             if (customResult == customDialogButtonRightText)
             {
@@ -363,7 +364,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Show Custom3 Dialog
 
-            string custom3Result = DialogManager.ShowCustomDialog(dialogStyle, customDialog3Options);
+            string custom3Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog3Options);
 
             // This dialog only has one button, so we don't need to bother checking the result.
 
@@ -371,7 +372,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Show List Selection Dialog
 
-            ListSelectionDialogResult listSelectionResult = DialogManager.ShowListSelectionDialog(dialogStyle, listSelectionDialogOptions);
+            ListSelectionDialogResult listSelectionResult = await DialogManager.ShowListSelectionDialogAsync(dialogStyle, listSelectionDialogOptions);
 
             if (listSelectionResult.Result == listDialogButtonRightText)
             {
@@ -384,7 +385,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             // Show Input Dialog
 
-            InputDialogResult inputResult = DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions);
+            InputDialogResult inputResult = await DialogManager.ShowInputDialogAsync(dialogStyle, inputDialogOptions);
 
             if (inputResult.Result == inputDialogButtonRightText)
             {
@@ -396,7 +397,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             // #################################################################################
 
             // Show Restart Dialog
-            _ = DialogManager.ShowRestartDialog(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
+            _ = await DialogManager.ShowRestartDialogAsync(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
 
             // No need to check the result of the Restart Dialog
         }
