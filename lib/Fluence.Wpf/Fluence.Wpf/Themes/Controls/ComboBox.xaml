@@ -1,0 +1,327 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <Style x:Key="ComboBoxToggleStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border Background="Transparent" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="ComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border
+                        x:Name="OuterBorder"
+                        Background="Transparent"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <Grid>
+                            <ContentPresenter
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                TextElement.FontSize="{TemplateBinding FontSize}"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <Border
+                                x:Name="SelectionIndicator"
+                                Width="3.5"
+                                Height="16"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                CornerRadius="2"
+                                Opacity="0" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsHighlighted" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True" />
+                                <Condition Property="IsEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="0.4" />
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="ComboBoxFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Grid>
+                        <Border
+                            Margin="-3"
+                            BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
+                            BorderThickness="2"
+                            CornerRadius="{DynamicResource ControlCornerRadius}" />
+                        <Border
+                            Margin="-2"
+                            BorderBrush="{DynamicResource FocusStrokeColorInnerBrush}"
+                            BorderThickness="1"
+                            CornerRadius="3" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type controls:ComboBox}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="DropdownCornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource ComboBoxFocusVisual}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ComboBoxItemStyle}" />
+        <Setter Property="MaxDropDownHeight" Value="480" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="10,5,6,6" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:ComboBox}">
+                    <Grid x:Name="TemplateRoot">
+                        <Grid>
+                            <Border
+                                x:Name="MainBorder"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid>
+                                    <Grid
+                                        x:Name="ContentLayer"
+                                        Margin="{TemplateBinding Padding}"
+                                        IsHitTestVisible="False">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <ContentPresenter
+                                            x:Name="LeftIcon"
+                                            Grid.Column="0"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Content="{TemplateBinding Icon}"
+                                            Visibility="Visible" />
+                                        <Grid Grid.Column="1" VerticalAlignment="Center">
+                                            <ContentPresenter
+                                                x:Name="contentPresenter"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                Content="{TemplateBinding SelectionBoxItem}"
+                                                ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                IsHitTestVisible="False"
+                                                TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                                TextElement.FontSize="{TemplateBinding FontSize}"
+                                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                                            <TextBlock
+                                                x:Name="PlaceholderTextBlock"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                FontFamily="{TemplateBinding FontFamily}"
+                                                FontSize="{TemplateBinding FontSize}"
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                Text="{TemplateBinding PlaceholderText}"
+                                                Visibility="Collapsed" />
+                                        </Grid>
+                                        <controls:FontIcon
+                                            x:Name="ChevronGlyph"
+                                            Grid.Column="2"
+                                            Margin="8,0,4,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Glyph="&#xE70D;"
+                                            IconFontSize="12" />
+                                    </Grid>
+                                    <ToggleButton
+                                        x:Name="ToggleButton"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"
+                                        IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Style="{StaticResource ComboBoxToggleStyle}" />
+                                </Grid>
+                            </Border>
+                            <Border
+                                x:Name="FocusAccentLine"
+                                Height="2"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                CornerRadius="0,0,4,4"
+                                Opacity="0"
+                                Visibility="Collapsed" />
+                        </Grid>
+                        <Popup
+                            x:Name="PART_Popup"
+                            AllowsTransparency="True"
+                            Focusable="False"
+                            IsOpen="{TemplateBinding IsDropDownOpen}"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding ElementName=MainBorder}"
+                            PopupAnimation="None">
+                            <Border
+                                x:Name="PART_DropdownBorder"
+                                MinWidth="{Binding ActualWidth, ElementName=MainBorder}"
+                                MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                Margin="0,4,0,0"
+                                Background="{DynamicResource AcrylicBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                RenderTransformOrigin="0.5,0">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="DropdownScale" ScaleX="1" ScaleY="1" />
+                                </Border.RenderTransform>
+                                <!--
+                                    No DropShadowEffect: WPF bitmap effects on a Border with CornerRadius
+                                    always bleed into the transparent corner nooks, producing darker
+                                    squared-off artifacts at the rounded corners regardless of ShadowDepth.
+                                    Real WinUI 3 uses DWM-managed compositor shadows (not WPF effects).
+                                    The SurfaceStrokeColorFlyoutBrush border + background contrast is
+                                    sufficient for visual separation without the rendering artifact.
+                                -->
+                                <Grid>
+                                    <!--  The noise overlay fills the rounded popup shape. Its CornerRadius  -->
+                                    <!--  MUST track the outer PART_DropdownBorder.CornerRadius so that when  -->
+                                    <!--  the popup opens upward (IsDropDownOpenedUpward=True) the outer goes  -->
+                                    <!--  flat at the bottom and the noise does the same - otherwise the noise  -->
+                                    <!--  paints rounded bottom corners that no longer match the outer flat  -->
+                                    <!--  edge, which reads as "bottom corners not properly rounded".  -->
+                                    <Border
+                                        x:Name="NoiseOverlay"
+                                        Background="{DynamicResource AcrylicNoiseBrush}"
+                                        CornerRadius="{TemplateBinding DropdownCornerRadius}"
+                                        Opacity="0.04" />
+                                    <ScrollViewer
+                                        Margin="4"
+                                        CanContentScroll="True"
+                                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                        Style="{DynamicResource ScrollViewerStyle}"
+                                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                        </Popup>
+                        <!--
+                            WI-3 C18: FocusedStates + EditableFocusedStates VSM groups.
+                            Authority: WinUI 3 ComboBox_DynamicResources.xaml.
+                            Fluence intentionally suppresses the ComboBox focus underline; selected
+                            dropdown items retain their left selection indicator.
+                            EditableFocusedStates mirrors FocusedStates for future IsEditable support.
+                        -->
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="FocusedStates">
+                                <VisualState x:Name="Focused" />
+                                <VisualState x:Name="Unfocused" />
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="EditableFocusedStates">
+                                <VisualState x:Name="EditableFocused" />
+                                <VisualState x:Name="EditableUnfocused" />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="DropdownScale" Storyboard.TargetProperty="ScaleY">
+                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="0" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="LeftIcon" Property="Margin" Value="0" />
+                            <Setter TargetName="LeftIcon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="SelectedItem" Value="{x:Null}">
+                            <Setter TargetName="contentPresenter" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            <!--  Focus underline intentionally suppressed; dropdown items own selection visuals.  -->
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpenedUpward" Value="True">
+                            <Setter TargetName="PART_DropdownBorder" Property="CornerRadius" Value="8,8,0,0" />
+                            <!--  Track the outer border's runtime shape - see NoiseOverlay comment above.  -->
+                            <Setter TargetName="NoiseOverlay" Property="CornerRadius" Value="8,8,0,0" />
+                            <Setter TargetName="PART_DropdownBorder" Property="Margin" Value="0,0,0,4" />
+                            <Setter TargetName="PART_DropdownBorder" Property="RenderTransformOrigin" Value="0.5,1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderThickness" Value="1" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="ChevronGlyph" Property="Opacity" Value="0.4" />
+                            <Setter TargetName="LeftIcon" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+</ResourceDictionary>

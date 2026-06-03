@@ -1,0 +1,361 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <Style x:Key="SliderThumbStyle" TargetType="{x:Type Thumb}">
+        <Setter Property="Height" Value="20" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Grid RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="ThumbScale" ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+                        <!--
+                            Opaque sub-layer under the thumb fill so the hover/drag accent
+                            brushes (AccentFillColorSecondary 0.9 / Tertiary 0.8 / Disabled)
+                            composite against a surface-matched solid rather than the
+                            translucent card or Mica beneath the slider. Always visible
+                            because the thumb is always rendered.
+                        -->
+                        <Ellipse
+                            x:Name="ThumbAccentBackdrop"
+                            Width="20"
+                            Height="20"
+                            Fill="{DynamicResource AccentFillBackdropBrush}" />
+                        <Ellipse
+                            x:Name="ThumbEllipse"
+                            Width="20"
+                            Height="20"
+                            Fill="{DynamicResource AccentFillColorDefaultBrush}"
+                            Stroke="{DynamicResource AccentControlElevationBorderBrush}"
+                            StrokeThickness="1" />
+                        <Ellipse
+                            x:Name="ThumbInnerDot"
+                            Width="8"
+                            Height="8"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!--  WI-3 B11: WinUI canonical thumb scale - hover 1.167, pressed 0.86, ControlFastOutSlowIn (0.8,0,0,1)  -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AccentFillColorSecondaryBrush}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1.167" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1.167" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="0.86" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="0.86" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1.167" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleY">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1.167" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="ThumbEllipse" Property="Stroke" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="20" />
+    </Style>
+
+    <Style x:Key="SliderTrackSegmentStyle" TargetType="{x:Type RepeatButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Grid VerticalAlignment="Stretch" Background="Transparent">
+                        <Border
+                            Height="4"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="2" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="SliderVerticalTrackSegmentStyle" TargetType="{x:Type RepeatButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Grid
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="Transparent">
+                        <Border
+                            Width="4"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Stretch"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="2" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:Slider}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:Slider}">
+                    <Grid
+                        x:Name="Root"
+                        Margin="6,0"
+                        ClipToBounds="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid
+                            x:Name="TrackHost"
+                            Grid.Row="0"
+                            Height="32"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            ClipToBounds="False">
+
+                            <TickBar
+                                x:Name="TopTick"
+                                Height="4"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top"
+                                Fill="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                                IsSelectionRangeEnabled="{TemplateBinding IsSelectionRangeEnabled}"
+                                Maximum="{TemplateBinding Maximum}"
+                                Minimum="{TemplateBinding Minimum}"
+                                Placement="Top"
+                                ReservedSpace="20"
+                                SelectionEnd="{TemplateBinding SelectionEnd}"
+                                SelectionStart="{TemplateBinding SelectionStart}"
+                                TickFrequency="{TemplateBinding TickFrequency}"
+                                Ticks="{TemplateBinding Ticks}"
+                                Visibility="Collapsed" />
+
+                            <TickBar
+                                x:Name="BottomTick"
+                                Height="4"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom"
+                                Fill="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                                IsSelectionRangeEnabled="{TemplateBinding IsSelectionRangeEnabled}"
+                                Maximum="{TemplateBinding Maximum}"
+                                Minimum="{TemplateBinding Minimum}"
+                                Placement="Bottom"
+                                ReservedSpace="20"
+                                SelectionEnd="{TemplateBinding SelectionEnd}"
+                                SelectionStart="{TemplateBinding SelectionStart}"
+                                TickFrequency="{TemplateBinding TickFrequency}"
+                                Ticks="{TemplateBinding Ticks}"
+                                Visibility="Collapsed" />
+
+                            <Border
+                                x:Name="TrackBackground"
+                                Height="4"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="2" />
+
+                            <Track
+                                x:Name="PART_Track"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                Focusable="False"
+                                IsDirectionReversed="{TemplateBinding IsDirectionReversed}"
+                                Maximum="{TemplateBinding Maximum}"
+                                Minimum="{TemplateBinding Minimum}"
+                                Orientation="{TemplateBinding Orientation}"
+                                Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Value, Mode=TwoWay}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton
+                                        x:Name="DecreaseButton"
+                                        Background="{TemplateBinding Foreground}"
+                                        Command="Slider.DecreaseLarge"
+                                        Style="{StaticResource SliderTrackSegmentStyle}" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb x:Name="Thumb" Style="{StaticResource SliderThumbStyle}" />
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton
+                                        x:Name="IncreaseButton"
+                                        Background="{TemplateBinding Background}"
+                                        Command="Slider.IncreaseLarge"
+                                        Style="{StaticResource SliderTrackSegmentStyle}" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="TrackHost" Property="Height" Value="{x:Static sys:Double.NaN}" />
+                            <Setter TargetName="TrackBackground" Property="Height" Value="{x:Static sys:Double.NaN}" />
+                            <Setter TargetName="TopTick" Property="Height" Value="{x:Static sys:Double.NaN}" />
+                            <Setter TargetName="BottomTick" Property="Height" Value="{x:Static sys:Double.NaN}" />
+                            <Setter TargetName="TrackHost" Property="HorizontalAlignment" Value="Center" />
+                            <Setter TargetName="TrackBackground" Property="HorizontalAlignment" Value="Center" />
+                            <Setter TargetName="PART_Track" Property="HorizontalAlignment" Value="Center" />
+                            <Setter TargetName="TopTick" Property="HorizontalAlignment" Value="Left" />
+                            <Setter TargetName="BottomTick" Property="HorizontalAlignment" Value="Right" />
+                            <Setter TargetName="Root" Property="Margin" Value="0,6" />
+                            <Setter TargetName="Root" Property="MinHeight" Value="0" />
+                            <Setter TargetName="Root" Property="MinWidth" Value="40" />
+                            <Setter TargetName="TopTick" Property="Placement" Value="Left" />
+                            <Setter TargetName="BottomTick" Property="Placement" Value="Right" />
+                            <Setter TargetName="DecreaseButton" Property="Style" Value="{StaticResource SliderVerticalTrackSegmentStyle}" />
+                            <Setter TargetName="IncreaseButton" Property="Style" Value="{StaticResource SliderVerticalTrackSegmentStyle}" />
+                            <Setter TargetName="TrackHost" Property="VerticalAlignment" Value="Stretch" />
+                            <Setter TargetName="TrackBackground" Property="VerticalAlignment" Value="Stretch" />
+                            <Setter TargetName="PART_Track" Property="VerticalAlignment" Value="Stretch" />
+                            <Setter TargetName="TopTick" Property="VerticalAlignment" Value="Stretch" />
+                            <Setter TargetName="BottomTick" Property="VerticalAlignment" Value="Stretch" />
+                            <Setter TargetName="TrackHost" Property="Width" Value="32" />
+                            <Setter TargetName="TrackBackground" Property="Width" Value="4" />
+                            <Setter TargetName="PART_Track" Property="Width" Value="32" />
+                            <Setter TargetName="TopTick" Property="Width" Value="4" />
+                            <Setter TargetName="BottomTick" Property="Width" Value="4" />
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="Thumb"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="TrackBackground" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter TargetName="DecreaseButton" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter TargetName="TrackBackground" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                            <Setter Property="Opacity" Value="0.8" />
+                        </Trigger>
+
+                        <Trigger Property="TickPlacement" Value="TopLeft">
+                            <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="TickPlacement" Value="BottomRight">
+                            <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="TickPlacement" Value="Both">
+                            <Setter TargetName="TopTick" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="BottomTick" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="MinWidth" Value="40" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

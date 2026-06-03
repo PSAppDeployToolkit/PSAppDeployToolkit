@@ -1,0 +1,401 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GallerySettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:demo="clr-namespace:Fluence.Wpf.Demo"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf">
+
+    <Grid Style="{StaticResource GalleryPageRootStyle}">
+        <ui:SmoothScrollViewer
+            x:Name="SettingsScrollViewer"
+            SizeChanged="SettingsScrollViewer_SizeChanged"
+            Style="{StaticResource GalleryPageScrollViewerStyle}">
+            <StackPanel x:Name="PageContent" Style="{StaticResource GalleryPageContentStackStyle}">
+                <TextBlock Style="{StaticResource PageTitleStyle}" Text="Settings" />
+
+                <TextBlock
+                    Margin="1,0,0,12"
+                    Style="{StaticResource SettingsSectionHeaderStyle}"
+                    Text="Appearance and behavior" />
+
+                <Border x:Name="AppThemeSettingsCard" Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE790;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="App theme" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Select which app theme to display" />
+                            <TextBlock
+                                x:Name="ThemeStateLabel"
+                                Style="{StaticResource SettingsRowDescriptionStyle}"
+                                Text="Current: Auto" />
+                        </StackPanel>
+                        <ui:ComboBox
+                            x:Name="AppThemeComboBox"
+                            Grid.Column="2"
+                            Width="240"
+                            VerticalAlignment="Center"
+                            SelectionChanged="AppThemeComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Use system setting" Tag="{x:Static demo:SettingsThemeOption.System}" />
+                            <ComboBoxItem Content="Light" Tag="{x:Static demo:SettingsThemeOption.Light}" />
+                            <ComboBoxItem Content="Dark" Tag="{x:Static demo:SettingsThemeOption.Dark}" />
+                            <ComboBoxItem Content="High Contrast" Tag="{x:Static demo:SettingsThemeOption.HighContrast}" />
+                        </ui:ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="ThemeWatcherSettingsCard" Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE8EF;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="System theme watcher" />
+                            <TextBlock
+                                x:Name="SystemThemeLabel"
+                                Style="{StaticResource SettingsRowDescriptionStyle}"
+                                Text="Watching: Yes" />
+                        </StackPanel>
+                        <ui:ToggleSwitch
+                            x:Name="ThemeWatcherToggle"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Checked="ThemeWatcherToggle_Toggled"
+                            IsChecked="True"
+                            Unchecked="ThemeWatcherToggle_Toggled" />
+                    </Grid>
+                </Border>
+
+                <Border x:Name="NavigationSettingsCard" Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE700;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Navigation style" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Choose how the gallery navigation is arranged" />
+                        </StackPanel>
+                        <ui:ComboBox
+                            x:Name="NavigationStyleComboBox"
+                            Grid.Column="2"
+                            Width="240"
+                            VerticalAlignment="Center"
+                            SelectionChanged="NavigationStyleComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Top" Tag="{x:Static demo:SettingsNavigationOption.Top}" />
+                            <ComboBoxItem Content="Left" Tag="{x:Static demo:SettingsNavigationOption.Left}" />
+                            <ComboBoxItem Content="Left compact" Tag="{x:Static demo:SettingsNavigationOption.LeftCompact}" />
+                        </ui:ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="BackdropSettingsCard" Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE771;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Backdrop" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Select the window backdrop used by the demo shell" />
+                        </StackPanel>
+                        <ui:ComboBox
+                            x:Name="BackdropComboBox"
+                            Grid.Column="2"
+                            Width="240"
+                            VerticalAlignment="Center"
+                            SelectionChanged="BackdropComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Auto" Tag="{x:Static demo:SettingsBackdropOption.Auto}" />
+                            <ComboBoxItem Content="Mica" Tag="{x:Static demo:SettingsBackdropOption.Mica}" />
+                            <ComboBoxItem Content="Acrylic" Tag="{x:Static demo:SettingsBackdropOption.Acrylic}" />
+                            <ComboBoxItem Content="Tabbed" Tag="{x:Static demo:SettingsBackdropOption.Tabbed}" />
+                            <ComboBoxItem Content="None" Tag="{x:Static demo:SettingsBackdropOption.None}" />
+                        </ui:ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="ColorsSettingsCard" Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE790;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Colors" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Choose the demo accent color" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="AccentPickerPanel"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <UniformGrid
+                                x:Name="AccentSwatchRow"
+                                Margin="0,0,12,0"
+                                Columns="7"
+                                Rows="1">
+                                <ui:Button
+                                    Background="#E80000"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#E80000" />
+                                <ui:Button
+                                    Background="#F58809"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#F58809" />
+                                <ui:Button
+                                    Background="#F5E70C"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#F5E70C" />
+                                <ui:Button
+                                    Background="#2BDE11"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#2BDE11" />
+                                <ui:Button
+                                    Background="#09C4DE"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#09C4DE" />
+                                <ui:Button
+                                    Background="#AA04DE"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#AA04DE" />
+                                <ui:Button
+                                    Background="#FF00E8"
+                                    Click="AccentSwatch_Click"
+                                    Style="{StaticResource AccentSwatchStyle}"
+                                    Tag="#FF00E8" />
+                            </UniformGrid>
+                            <ui:Button
+                                x:Name="SystemAccentButton"
+                                MinWidth="84"
+                                VerticalAlignment="Center"
+                                Click="SystemAccentButton_Click"
+                                Content="System" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="Window controls" />
+
+                <Border Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE921;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Minimize button" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Control whether the minimize caption button is available" />
+                        </StackPanel>
+                        <ui:ComboBox
+                            x:Name="MinimizeVisibilityCombo"
+                            Grid.Column="2"
+                            Width="160"
+                            VerticalAlignment="Center"
+                            SelectionChanged="CaptionVisibilityCombo_SelectionChanged">
+                            <ComboBoxItem Content="Default" IsSelected="True" />
+                            <ComboBoxItem Content="Enable" />
+                            <ComboBoxItem Content="Disable" />
+                            <ComboBoxItem Content="Hidden" />
+                            <ComboBoxItem Content="Collapsed" />
+                        </ui:ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE922;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Maximize button" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Control whether the maximize caption button is available" />
+                        </StackPanel>
+                        <ui:ComboBox
+                            x:Name="MaximizeVisibilityCombo"
+                            Grid.Column="2"
+                            Width="160"
+                            VerticalAlignment="Center"
+                            SelectionChanged="CaptionVisibilityCombo_SelectionChanged">
+                            <ComboBoxItem Content="Default" IsSelected="True" />
+                            <ComboBoxItem Content="Enable" />
+                            <ComboBoxItem Content="Disable" />
+                            <ComboBoxItem Content="Hidden" />
+                            <ComboBoxItem Content="Collapsed" />
+                        </ui:ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE8BB;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Close button" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Control whether the close caption button is available" />
+                        </StackPanel>
+                        <ui:ComboBox
+                            x:Name="CloseVisibilityCombo"
+                            Grid.Column="2"
+                            Width="160"
+                            VerticalAlignment="Center"
+                            SelectionChanged="CaptionVisibilityCombo_SelectionChanged">
+                            <ComboBoxItem Content="Default" IsSelected="True" />
+                            <ComboBoxItem Content="Enable" />
+                            <ComboBoxItem Content="Disable" />
+                            <ComboBoxItem Content="Hidden" />
+                            <ComboBoxItem Content="Collapsed" />
+                        </ui:ComboBox>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE8A9;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Show app icon" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Display the Fluence icon in the title bar" />
+                        </StackPanel>
+                        <ui:ToggleSwitch
+                            x:Name="ShowWindowIconToggle"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Checked="WindowChromeToggle_Changed"
+                            IsChecked="True"
+                            Unchecked="WindowChromeToggle_Changed" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE8D2;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Show app title" />
+                            <TextBlock Style="{StaticResource SettingsRowDescriptionStyle}" Text="Display the Fluence.Wpf Demo title in the title bar" />
+                        </StackPanel>
+                        <ui:ToggleSwitch
+                            x:Name="ShowWindowTitleToggle"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Checked="WindowChromeToggle_Changed"
+                            IsChecked="True"
+                            Unchecked="WindowChromeToggle_Changed" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderStyle}" Text="About" />
+
+                <Border Style="{StaticResource SettingsRowCardStyle}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ui:FontIcon
+                            Grid.Column="0"
+                            Glyph="&#xE946;"
+                            Style="{StaticResource SettingsRowIconStyle}" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource SettingsRowTitleStyle}" Text="Fluence.Wpf Demo" />
+                            <TextBlock x:Name="VersionTextBlock" Style="{StaticResource SettingsRowDescriptionStyle}" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="RepositoryActionsPanel"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <ui:Button
+                                x:Name="CopyRepositoryButton"
+                                Margin="0,0,8,0"
+                                Click="CopyRepositoryButton_Click"
+                                Content="Copy repository"
+                                IconPlacement="Left">
+                                <ui:Button.Icon>
+                                    <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="14" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button
+                                x:Name="OpenRepositoryButton"
+                                Appearance="Accent"
+                                Click="OpenRepositoryButton_Click"
+                                Content="Repository"
+                                IconPlacement="Left">
+                                <ui:Button.Icon>
+                                    <ui:FontIcon Glyph="&#xE774;" IconFontSize="14" />
+                                </ui:Button.Icon>
+                            </ui:Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ui:SmoothScrollViewer>
+    </Grid>
+</UserControl>

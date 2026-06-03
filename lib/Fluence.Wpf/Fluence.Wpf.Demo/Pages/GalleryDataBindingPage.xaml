@@ -1,0 +1,195 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryDataBindingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <!--
+        Data binding gallery page. Pattern used by most pages:
+        * A SmoothScrollViewer over a StackPanel of DemoSampleControl "cards".
+        * Live controls for each card live in hidden ContentControl slots named
+        DemoSampleSlotNN...Host; the code-behind constructor calls
+        DemoSamplePageWiring.Apply(...) to move them into the cards and attach source.
+        See Fluence.Wpf.Demo/README.md and Pages/DemoSamplePageWiring.cs.
+    -->
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Data Binding" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="These examples keep the demo in code-behind while showing common WPF binding patterns used by Fluence.Wpf controls." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <ui:ListView
+                    x:Name="BoundListView"
+                    Height="220"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    SelectionMode="Single">
+                    <ui:ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ui:FontIcon
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                    Glyph="&#xE8A5;"
+                                    IconFontSize="16" />
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Style="{StaticResource BodyTextBlockStyle}"
+                                        Text="{Binding Name}" />
+                                    <TextBlock
+                                        Margin="{DynamicResource DemoDataBindingSecondaryTextMargin}"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{Binding AddedAt}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ui:ListView.ItemTemplate>
+                </ui:ListView>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot01RightRailContentHost" Visibility="Collapsed">
+                <StackPanel MinWidth="320">
+                    <ui:TextBox
+                        x:Name="NewItemBox"
+                        Width="320"
+                        Margin="{DynamicResource DemoControlBottomGapMargin}"
+                        KeyDown="NewItemBox_KeyDown"
+                        PlaceholderText="New item name..." />
+                    <ui:Button
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        HorizontalAlignment="Stretch"
+                        Appearance="Accent"
+                        Click="AddItem_Click"
+                        Content="Add" />
+                    <ui:Button
+                        HorizontalAlignment="Stretch"
+                        Click="RemoveItem_Click"
+                        Content="Remove selected" />
+                </StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Add or remove items at runtime. The list updates through INotifyCollectionChanged." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <ui:ListView
+                    x:Name="SelectionModeListView"
+                    Height="200"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    SelectionChanged="SelectionModeListView_SelectionChanged"
+                    SelectionMode="Single">
+                    <ListViewItem Content="Alpha" />
+                    <ListViewItem Content="Bravo" />
+                    <ListViewItem Content="Charlie" />
+                    <ListViewItem Content="Delta" />
+                    <ListViewItem Content="Echo" />
+                    <ListViewItem Content="Foxtrot" />
+                    <ListViewItem Content="Golf" />
+                    <ListViewItem Content="Hotel" />
+                </ui:ListView>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot02OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="SelectionCountLabel"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Selected: none" />
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot02RightRailContentHost" Visibility="Collapsed">
+                <StackPanel x:Name="SelectionModeRail" VerticalAlignment="Center">
+                    <ui:RadioButton
+                        x:Name="SingleModeRadio"
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        Checked="SelectionMode_Changed"
+                        Content="Single"
+                        GroupName="SelectionModeGroup"
+                        IsChecked="True" />
+                    <ui:RadioButton
+                        x:Name="MultipleModeRadio"
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        Checked="SelectionMode_Changed"
+                        Content="Multiple"
+                        GroupName="SelectionModeGroup" />
+                    <ui:RadioButton
+                        x:Name="ExtendedModeRadio"
+                        Checked="SelectionMode_Changed"
+                        Content="Extended (Shift+Click)"
+                        GroupName="SelectionModeGroup" />
+                </StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Switch between Single, Multiple, and Extended selection modes." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <ui:ListView
+                    x:Name="DataTemplateListView"
+                    Height="180"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    SelectionMode="Single">
+                    <ui:ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="{DynamicResource DemoListItemMargin}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ui:FontIcon
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                    Glyph="&#xE8A5;"
+                                    IconFontSize="16" />
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Style="{StaticResource BodyTextBlockStyle}"
+                                        Text="{Binding Name}" />
+                                    <TextBlock
+                                        Margin="{DynamicResource DemoInlineControlGapMargin}"
+                                        VerticalAlignment="Bottom"
+                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{Binding AddedAt}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ui:ListView.ItemTemplate>
+                </ui:ListView>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot03OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Name and AddedAt are simple properties on each bound item." />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use an inline DataTemplate when every item shares the same row shape." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

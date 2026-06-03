@@ -1,0 +1,93 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:fluence="clr-namespace:Fluence.Wpf">
+
+    <Style TargetType="{x:Type controls:InfoBadge}">
+        <Setter Property="Background" Value="{DynamicResource SystemFillColorAttentionBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorInverseBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="MaxHeight" Value="24" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="MinWidth" Value="34" />
+        <Setter Property="Padding" Value="0,2,0,2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:InfoBadge}">
+                    <Grid>
+                        <Border
+                            x:Name="BadgeBorder"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            MaxHeight="{TemplateBinding MaxHeight}"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="12">
+                            <ContentPresenter
+                                x:Name="ContentArea"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding Content}"
+                                TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                TextElement.FontSize="{TemplateBinding FontSize}"
+                                TextElement.FontWeight="{TemplateBinding FontWeight}"
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
+                        </Border>
+                        <!--  Dot mode: 8x8 circle when no content  -->
+                        <Ellipse
+                            x:Name="DotIndicator"
+                            Width="8"
+                            Height="8"
+                            Fill="{TemplateBinding Background}"
+                            Visibility="Collapsed" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="DisplayKindStates">
+                                <!--  Dot: no value, no icon - show small circle, hide pill  -->
+                                <VisualState x:Name="Dot">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BadgeBorder" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Collapsed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DotIndicator" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <!--  Icon / FontIcon / Value: show pill badge  -->
+                                <VisualState x:Name="Icon" />
+                                <VisualState x:Name="FontIcon" />
+                                <VisualState x:Name="Value" />
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!--  Severity colors  -->
+                        <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Informational}">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorSolidNeutralBrush}" />
+                            <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorSolidNeutralBrush}" />
+                        </Trigger>
+                        <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Success}">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                            <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                        </Trigger>
+                        <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Critical}">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                            <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                        </Trigger>
+                        <Trigger Property="BadgeStyle" Value="{x:Static fluence:InfoBadgeStyle.Caution}">
+                            <Setter TargetName="BadgeBorder" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                            <Setter TargetName="DotIndicator" Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

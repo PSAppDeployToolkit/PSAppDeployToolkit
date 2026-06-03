@@ -1,0 +1,45 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <Style TargetType="{x:Type controls:FontIcon}">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:FontIcon}">
+                    <Grid RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="PART_Mirror" ScaleX="1" ScaleY="1" />
+                                <RotateTransform x:Name="PART_Rotate" Angle="0" />
+                            </TransformGroup>
+                        </Grid.RenderTransform>
+                        <TextBlock
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            FontFamily="{TemplateBinding IconFontFamily}"
+                            FontSize="{TemplateBinding IconFontSize}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Text="{TemplateBinding Glyph}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EnableTransitions, RelativeSource={RelativeSource AncestorType=controls:FontIcon}}" Value="True">
+                                            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

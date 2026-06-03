@@ -1,0 +1,90 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryLayoutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Layout" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Layout primitives arrange content, group related surfaces, and separate regions without adding page-specific infrastructure." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <ui:Border
+                    Padding="{DynamicResource DemoSampleInnerCardPadding}"
+                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource OverlayCornerRadius}">
+                    <ui:StackPanel Spacing="10">
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Settings group" />
+                        <TextBlock
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="StackPanel spacing keeps rows readable while Border frames the group."
+                            TextWrapping="Wrap" />
+                        <ui:Separator />
+                        <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="Separator divides related rows." />
+                    </ui:StackPanel>
+                </ui:Border>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use Border to frame a region, StackPanel spacing for readable rows, and Separator to divide related content." />
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <DockPanel LastChildFill="True">
+                    <ui:Button
+                        Appearance="Accent"
+                        Content="Apply"
+                        DockPanel.Dock="Right" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                        Text="DockPanel keeps the command aligned to the edge." />
+                </DockPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use DockPanel when one element should pin to an edge while the remaining content fills the available space." />
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <ui:Expander x:Name="AdvancedOptionsExpander" Header="Advanced options">
+                    <TextBlock
+                        Margin="{DynamicResource DemoLargeTopGapMargin}"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="Expander shows secondary settings only when they are useful."
+                        TextWrapping="Wrap" />
+                </ui:Expander>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use Expander for secondary settings that should start collapsed until needed." />
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <ui:Expander x:Name="DockPanelOptionsExpander">
+                    <ui:Expander.Header>
+                        <DockPanel LastChildFill="True">
+                            <ui:Button Content="Edit" DockPanel.Dock="Right" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                Text="Delivery options" />
+                        </DockPanel>
+                    </ui:Expander.Header>
+                    <DockPanel Margin="0,16,0,0" LastChildFill="True">
+                        <ui:ToggleSwitch
+                            DockPanel.Dock="Right"
+                            OffContent="Off"
+                            OnContent="On" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="Notify me when the package ships."
+                            TextWrapping="Wrap" />
+                    </DockPanel>
+                </ui:Expander>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use DockPanel inside Expander headers and content when the summary and secondary action need edge alignment." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

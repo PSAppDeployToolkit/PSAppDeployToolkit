@@ -1,0 +1,306 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:ui="clr-namespace:Fluence.Wpf">
+
+    <!--  Clear button glyph  -->
+    <StreamGeometry x:Key="ClearGlyph">M 10,0 L 12,2 L 7,7 L 12,12 L 10,14 L 5,9 L 0,14 L -2,12 L 3,7 L -2,2 L 0,0 L 5,5 Z</StreamGeometry>
+
+    <Style TargetType="{x:Type controls:TextBox}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CaretBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="10,5,6,6" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:TextBox}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border
+                            x:Name="MainBorder"
+                            Grid.Row="0"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <ContentPresenter
+                                        x:Name="LeftIcon"
+                                        Grid.Column="0"
+                                        Margin="10,0,8,0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Icon}"
+                                        Visibility="Collapsed" />
+
+                                    <Grid Grid.Column="1">
+                                        <ScrollViewer
+                                            x:Name="PART_ContentHost"
+                                            Margin="{TemplateBinding BorderThickness}"
+                                            Padding="{TemplateBinding Padding}"
+                                            Focusable="False"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollBarVisibility="Hidden" />
+
+                                        <TextBlock
+                                            x:Name="PlaceholderTextBlock"
+                                            Margin="13,0,0,0"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                            FontFamily="{TemplateBinding FontFamily}"
+                                            FontSize="{TemplateBinding FontSize}"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                            IsHitTestVisible="False"
+                                            Text="{TemplateBinding PlaceholderText}"
+                                            Visibility="Collapsed" />
+
+                                        <TextBlock
+                                            x:Name="PART_CharacterCounter"
+                                            Margin="0,0,12,6"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Bottom"
+                                            FontFamily="{TemplateBinding FontFamily}"
+                                            FontSize="12"
+                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                            IsHitTestVisible="False"
+                                            Visibility="Collapsed" />
+                                    </Grid>
+
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        VerticalAlignment="Stretch"
+                                        Orientation="Horizontal">
+                                        <ContentPresenter
+                                            x:Name="RightIcon"
+                                            Margin="0,0,6,0"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Content="{TemplateBinding Icon}"
+                                            Visibility="Collapsed" />
+                                        <Button
+                                            x:Name="PART_ClearButton"
+                                            Width="30"
+                                            Margin="0"
+                                            Padding="0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Cursor="Arrow"
+                                            Focusable="False"
+                                            Visibility="Collapsed">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid
+                                                        x:Name="ButtonLayoutGrid"
+                                                        Margin="0,4,4,4"
+                                                        Background="Transparent">
+                                                        <Border
+                                                            x:Name="ButtonBackground"
+                                                            Background="Transparent"
+                                                            CornerRadius="{DynamicResource ControlCornerRadius}" />
+                                                        <Path
+                                                            x:Name="GlyphPath"
+                                                            Width="10"
+                                                            Height="10"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Data="{StaticResource ClearGlyph}"
+                                                            Fill="{DynamicResource TextFillColorSecondaryBrush}"
+                                                            Stretch="Uniform" />
+                                                    </Grid>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ButtonBackground" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsPressed" Value="True">
+                                                            <Setter TargetName="ButtonBackground" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                                            <Setter TargetName="GlyphPath" Property="Fill" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter TargetName="ButtonLayoutGrid" Property="Opacity" Value="0" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border
+                                    x:Name="PART_ValidationLine"
+                                    Grid.Row="1"
+                                    Height="2"
+                                    Margin="0,-1,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    Background="Transparent"
+                                    CornerRadius="0,0,3,3"
+                                    Opacity="0" />
+                            </Grid>
+                        </Border>
+
+                        <Border
+                            x:Name="FocusAccentLine"
+                            Grid.Row="0"
+                            Height="2"
+                            VerticalAlignment="Bottom"
+                            Background="{DynamicResource AccentFillColorDefaultBrush}"
+                            CornerRadius="0,0,4,4"
+                            Opacity="0" />
+
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="12,7,12,0"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                x:Name="PART_ValidationIcon"
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center"
+                                FontFamily="Segoe Fluent Icons"
+                                FontSize="12"
+                                Visibility="Collapsed" />
+                            <TextBlock
+                                x:Name="PART_HelperText"
+                                VerticalAlignment="Center"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="12"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value="" />
+                                <Condition Property="PlaceholderEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
+
+                        <Trigger Property="IconPlacement" Value="Left">
+                            <Setter TargetName="LeftIcon" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="RightIcon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+
+                        <Trigger Property="IconPlacement" Value="Right">
+                            <Setter TargetName="LeftIcon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="RightIcon" Property="Visibility" Value="Visible" />
+                        </Trigger>
+
+                        <Trigger Property="Icon" Value="{x:Null}">
+                            <Setter TargetName="LeftIcon" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="RightIcon" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ClearButtonEnabled" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_ClearButton" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="PART_ClearButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
+                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="1" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
+                        </MultiTrigger>
+
+                        <!--  Validation states use PART_ValidationLine; hide accent focus line so states do not stack  -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Success}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="0" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Warning}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="0" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Error}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="FocusAccentLine" Property="Opacity" Value="0" />
+                        </MultiTrigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Success}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_ValidationLine" Property="Background" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                            <Setter TargetName="PART_ValidationLine" Property="Opacity" Value="1" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Warning}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_ValidationLine" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                            <Setter TargetName="PART_ValidationLine" Property="Opacity" Value="1" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsKeyboardFocused" Value="True" />
+                                <Condition Property="ValidationState" Value="{x:Static ui:ValidationState.Error}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_ValidationLine" Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                            <Setter TargetName="PART_ValidationLine" Property="Opacity" Value="1" />
+                        </MultiTrigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

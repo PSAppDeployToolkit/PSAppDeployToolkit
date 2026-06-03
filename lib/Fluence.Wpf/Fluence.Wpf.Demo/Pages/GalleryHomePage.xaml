@@ -1,0 +1,318 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryHomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
+    d:DesignHeight="800"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <!--
+        Home page structure. This page does NOT use the DemoSampleControl slot pattern.
+        Instead it contains:
+        * A hero banner image (BrandBannerImage) that swaps between a light and dark
+        PNG asset when the theme changes. The swap is driven by UpdateBrandBanner()
+        in the code-behind, which subscribes to ApplicationThemeManager.Changed.
+        * Two action Card tiles (Theming, Shell) that route to the Settings page via
+        Card_Click, which calls host.NavigateTo(tag).
+        * A UniformGrid of nine featured-control Card tiles; each Card carries a Tag
+        string matching a gallery page route, and Card_Click resolves the navigation
+        through the same host.NavigateTo(tag) helper on MainWindow.
+        See GalleryHomePage.xaml.cs for the banner-update and card-click handlers.
+    -->
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <!--  Hero brand graphic  -->
+            <StackPanel Margin="0,8,0,28" HorizontalAlignment="Center">
+                <Image
+                    x:Name="BrandBannerImage"
+                    Height="224"
+                    MaxWidth="760"
+                    HorizontalAlignment="Stretch"
+                    RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="Windows 11 Fluent Design controls for WPF" />
+                <TextBlock
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                    Style="{StaticResource BodyTextBlockStyle}">
+                    <Hyperlink NavigateUri="https://github.com/sintaxasn/fluence.wpf" RequestNavigate="GitHubLink_RequestNavigate">
+                        <Run Text="https://github.com/sintaxasn/fluence.wpf" />
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+
+            <!--  Action cards: use the standard Card.Header / Card.Icon contract (same pattern as GalleryDataPage's Card.Variant samples).  -->
+            <UniformGrid Margin="0,8,0,16" Columns="2">
+                <ui:Card
+                    Margin="0,0,10,10"
+                    Padding="20"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="settings"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE790;"
+                            IconFontSize="24" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Theming" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="Light, Dark, High Contrast, and Auto - follows the OS accent. Brushes map to WinUI 3 themeresource key names."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="10,0,0,10"
+                    Padding="20"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="settings"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE737;"
+                            IconFontSize="24" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Shell" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="Mica, Acrylic, and Tabbed DWM backdrops. Rounded corners, caption extension, and icon + title bar controls on FluenceWindow."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+            </UniformGrid>
+
+            <!--  Featured controls  -->
+            <TextBlock
+                Margin="0,8,0,12"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Text="Featured controls" />
+
+            <UniformGrid x:Name="FeaturedControlsGrid" Columns="3">
+                <ui:Card
+                    Margin="0,0,6,12"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="buttons"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE8E5;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Buttons" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Primary, secondary, accent, hyperlink."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="6,0,6,12"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="selection"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE73E;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Selection" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Checkbox, radio, toggle switch."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="6,0,0,12"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="inputs"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE70F;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Inputs" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Text, password, combo, slider, number."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="0,0,6,12"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="status"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE916;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Status" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="InfoBar, progress ring, progress bar."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="6,0,6,12"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="data"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE80A;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Collections" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="List views, cards, layout panels."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="6,0,0,12"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="navigation"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE700;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Navigation" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Pane layouts, selection, header."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="0,0,6,0"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="tabs"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE748;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Tabs" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="TabView, tab strip, close buttons."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="6,0,6,0"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="buttons"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE712;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Menus" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="ContextMenu, MenuItem, flyout."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+
+                <ui:Card
+                    Margin="6,0,0,0"
+                    Padding="16"
+                    Click="Card_Click"
+                    IsClickable="True"
+                    Tag="data"
+                    Variant="{x:Static uicore:CardVariant.Default}">
+                    <ui:Card.Icon>
+                        <ui:FontIcon
+                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE71C;"
+                            IconFontSize="20" />
+                    </ui:Card.Icon>
+                    <ui:Card.Header>
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Trees" />
+                    </ui:Card.Header>
+                    <TextBlock
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="TreeView, expand, indent, chevron."
+                        TextWrapping="Wrap" />
+                </ui:Card>
+            </UniformGrid>
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

@@ -1,0 +1,61 @@
+﻿{
+  "permissions": {
+    "allow": [
+      "Agent(winui-parity-reviewer)",
+      "Agent(theme-slot-auditor)",
+      "Agent(net472-feasibility-checker)"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Write(.env*)",
+      "Edit(.env*)",
+      "Read(*.pem)",
+      "Write(*.pem)",
+      "Edit(*.pem)",
+      "Read(*.key)",
+      "Write(*.key)",
+      "Edit(*.key)",
+      "Read(*.pfx)",
+      "Write(*.pfx)",
+      "Edit(*.pfx)",
+      "Read(*.p12)",
+      "Write(*.p12)",
+      "Edit(*.p12)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $project = $env:CLAUDE_PROJECT_DIR; if (-not $project) { $project = (Get-Location).Path }; & (Join-Path $project '.claude/hooks/pre-tool-theme-slot.ps1') }\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $project = $env:CLAUDE_PROJECT_DIR; if (-not $project) { $project = (Get-Location).Path }; & (Join-Path $project '.claude/hooks/post-tool-format-xaml.ps1') }\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $project = $env:CLAUDE_PROJECT_DIR; if (-not $project) { $project = (Get-Location).Path }; & (Join-Path $project '.claude/hooks/post-tool-util.ps1') }\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "defaultMode": "default",
+  "enabledPlugins": {
+    "microsoft-docs@claude-plugins-official": true
+  }
+}

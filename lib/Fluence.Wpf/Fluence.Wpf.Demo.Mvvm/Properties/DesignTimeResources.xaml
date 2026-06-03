@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Design-time-only resources for the XAML designer / Blend (never merged at runtime;
+        App.xaml.cs calls ApplicationThemeManager.Apply at startup for the running app).
+        This demo previews in DARK by default to match its intended look. Slot order mirrors
+        the runtime model:
+        [0] DesignTime.Dark.xaml - complete computed Dark colors + brushes (default #0078D4 accent)
+        [1] Typography.xaml
+        [2] Generic.xaml
+    -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Properties/DesignTime.Dark.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Themes/Typography/Typography.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Themes/Generic.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

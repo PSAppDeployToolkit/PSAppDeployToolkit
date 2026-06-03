@@ -1,0 +1,62 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# Top-most EditorConfig file
+root = true
+
+[*]
+# Sane defaults for all files.
+charset = utf-8-bom
+indent_size = 4
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+# Harden the compiler as far as it'll go.
+dotnet_analyzer_diagnostic.category-Design.severity = error
+dotnet_analyzer_diagnostic.category-Documentation.severity = error
+dotnet_analyzer_diagnostic.category-Globalization.severity = error
+dotnet_analyzer_diagnostic.category-Interoperability.severity = error
+dotnet_analyzer_diagnostic.category-Maintainability.severity = error
+dotnet_analyzer_diagnostic.category-Naming.severity = error
+dotnet_analyzer_diagnostic.category-Performance.severity = error
+dotnet_analyzer_diagnostic.category-SingleFile.severity = error
+dotnet_analyzer_diagnostic.category-Reliability.severity = error
+dotnet_analyzer_diagnostic.category-Security.severity = error
+dotnet_analyzer_diagnostic.category-Style.severity = error
+dotnet_analyzer_diagnostic.category-Usage.severity = error
+
+# Enforce BannedApiAnalyzers symbol blocking.
+dotnet_diagnostic.RS0030.severity = error
+
+# Disable severities we can't address while dual-targeting.
+dotnet_diagnostic.IDE0056.severity = none
+dotnet_diagnostic.IDE0057.severity = none
+dotnet_diagnostic.CA1307.severity = none
+dotnet_diagnostic.CA1310.severity = none
+dotnet_diagnostic.CA1847.severity = none
+dotnet_diagnostic.CA1866.severity = none
+
+# Explicitly enable what `latest-all` doesn't enable.
+dotnet_diagnostic.CA1017.severity = error
+dotnet_diagnostic.CA1045.severity = error
+dotnet_diagnostic.CA1005.severity = error
+dotnet_diagnostic.CA1014.severity = error
+dotnet_diagnostic.CA1060.severity = error
+dotnet_diagnostic.CA1021.severity = error
+dotnet_diagnostic.CA1501.severity = error
+dotnet_diagnostic.CA1509.severity = error
+
+# Disable Microsoft.Extensions.StaticAnalysis rules we don't want to deal with.
+dotnet_diagnostic.S103.severity = none
+dotnet_diagnostic.S104.severity = none
+dotnet_diagnostic.S107.severity = none
+dotnet_diagnostic.S109.severity = none
+dotnet_diagnostic.S1067.severity = none
+dotnet_diagnostic.S1121.severity = none
+dotnet_diagnostic.S1449.severity = none
+dotnet_diagnostic.S1659.severity = none
+dotnet_diagnostic.S3358.severity = none
+dotnet_diagnostic.S3458.severity = none
+dotnet_diagnostic.S3532.severity = none
+dotnet_diagnostic.S3869.severity = none

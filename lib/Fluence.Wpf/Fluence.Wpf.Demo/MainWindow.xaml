@@ -1,0 +1,67 @@
+﻿<ui:FluenceWindow
+    x:Class="Fluence.Wpf.Demo.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    Title="Fluence.Wpf - Control Gallery"
+    Width="1200"
+    Height="1000"
+    MinWidth="698"
+    MinHeight="520"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    CornerStyle="Round"
+    ExtendsContentIntoTitleBar="False"
+    Icon="Resources/fluence-wpf-appicon-256.ico"
+    RenderOptions.BitmapScalingMode="HighQuality"
+    SystemBackdropType="Mica"
+    TitleBarHeight="42"
+    UseLayoutRounding="True">
+
+    <ui:FluenceWindow.TitleBar>
+        <ui:TitleBar
+            x:Name="ShellTitleBar"
+            Height="{Binding TitleBarHeight, RelativeSource={RelativeSource AncestorType=ui:FluenceWindow}}"
+            BackRequested="ShellTitleBar_BackRequested"
+            PaneToggleRequested="ShellTitleBar_PaneToggleRequested"
+            SizeChanged="TitleBarLayout_SizeChanged">
+            <ui:TextBox
+                x:Name="NavSearchBox"
+                Width="230"
+                MinWidth="230"
+                MaxWidth="475"
+                Margin="0,4,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                PlaceholderText="Search"
+                PreviewKeyDown="NavSearchBox_PreviewKeyDown"
+                Style="{StaticResource TitleBarSearchBoxStyle}"
+                TextChanged="NavSearchBox_TextChanged"
+                WindowChrome.IsHitTestVisibleInChrome="True" />
+        </ui:TitleBar>
+    </ui:FluenceWindow.TitleBar>
+
+    <Grid x:Name="ShellRoot" ClipToBounds="True">
+        <ui:NavigationView
+            x:Name="DemoNav"
+            Background="Transparent"
+            IsBackButtonVisible="True"
+            IsBackEnabled="True"
+            IsPaneOpen="True"
+            IsPaneToggleButtonVisible="True"
+            PaneDisplayMode="Left"
+            SelectedIndex="0">
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem
+                    x:Name="SettingsNavigationItem"
+                    AutomationProperties.Name="Settings"
+                    Content="Settings"
+                    Tag="settings"
+                    ToolTip="Settings">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Glyph="&#xE713;" IconFontSize="16" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
+    </Grid>
+</ui:FluenceWindow>

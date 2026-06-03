@@ -1,0 +1,84 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <Style TargetType="{x:Type controls:ProgressBar}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Height" Value="Auto" />
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="MinHeight" Value="1" />
+        <Setter Property="Minimum" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:ProgressBar}">
+                    <Grid>
+                        <Border
+                            x:Name="PART_Track"
+                            Height="{TemplateBinding TrackHeight}"
+                            VerticalAlignment="Center"
+                            Background="{DynamicResource ControlStrongStrokeColorDefaultBrush}"
+                            ClipToBounds="True"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid>
+                                <Border
+                                    x:Name="PART_Fill"
+                                    Width="0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Stretch"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
+                                <Border
+                                    x:Name="PART_IndeterminateBar"
+                                    Width="0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Stretch"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Visibility="Collapsed">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="PART_IndeterminateTranslate" X="0" />
+                                    </Border.RenderTransform>
+                                </Border>
+                                <Border
+                                    x:Name="PART_IndeterminateBar2"
+                                    Width="0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Stretch"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0.9"
+                                    Visibility="Collapsed">
+                                    <Border.RenderTransform>
+                                        <TranslateTransform x:Name="PART_IndeterminateTranslate2" X="0" />
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ProgressMode" Value="Paused">
+                            <Setter TargetName="PART_Fill" Property="Background" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                        </Trigger>
+
+                        <Trigger Property="ProgressMode" Value="Error">
+                            <Setter TargetName="PART_Fill" Property="Background" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="PART_Track" Property="Background" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
+                            <Setter TargetName="PART_Fill" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="TrackHeight" Value="4" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Value" Value="0" />
+    </Style>
+</ResourceDictionary>

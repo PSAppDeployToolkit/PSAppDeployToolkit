@@ -1,0 +1,312 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryStatusPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Status" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Status controls communicate progress, busy work, and contextual outcomes without interrupting the current task." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <ui:ProgressBar
+                        x:Name="StandardProgressBar"
+                        Height="8"
+                        Margin="{DynamicResource DemoProgressBarMargin}"
+                        HorizontalAlignment="Stretch"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="{Binding Value, Source={x:Reference ProgressValueNumberBox}}" />
+                    <Grid Margin="{DynamicResource DemoControlBottomGapMargin}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock
+                                Margin="{DynamicResource DemoProgressBarLabelMargin}"
+                                Style="{StaticResource StateLabelStyle}"
+                                Text="Paused" />
+                            <ui:ProgressBar
+                                Height="8"
+                                Margin="{DynamicResource DemoProgressBarLabelMargin}"
+                                HorizontalAlignment="Stretch"
+                                Maximum="100"
+                                Minimum="0"
+                                ProgressMode="Paused"
+                                Value="80" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock
+                                Margin="{DynamicResource DemoProgressBarLabelMargin}"
+                                Style="{StaticResource StateLabelStyle}"
+                                Text="Failure" />
+                            <ui:ProgressBar
+                                Height="8"
+                                Margin="{DynamicResource DemoProgressBarLabelMargin}"
+                                HorizontalAlignment="Stretch"
+                                Maximum="100"
+                                Minimum="0"
+                                ProgressMode="Error"
+                                Value="80" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot01RightRailContentHost" Visibility="Collapsed">
+                <ui:NumberBox
+                    x:Name="ProgressValueNumberBox"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Description="Controls the Progress Bar Value"
+                    Header="% Complete"
+                    Maximum="100"
+                    Minimum="0"
+                    SmallChange="1"
+                    SpinButtonPlacementMode="{x:Static uicore:SpinButtonPlacementMode.Inline}"
+                    Value="50" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ProgressBar for measurable work where the current value can be reported." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <ui:ProgressBar
+                    x:Name="IndeterminateProgressBar"
+                    Height="8"
+                    Margin="{DynamicResource DemoProgressBarMargin}"
+                    HorizontalAlignment="Stretch"
+                    ProgressMode="Indeterminate" />
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot02RightRailContentHost" Visibility="Collapsed">
+                <ui:ToggleSwitch
+                    x:Name="IndeterminateToggle"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Checked="IndeterminateToggle_Toggled"
+                    IsChecked="True"
+                    OffContent="On / Off"
+                    OnContent="On / Off"
+                    Unchecked="IndeterminateToggle_Toggled" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use indeterminate mode when work is active but no reliable percentage is available." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <ui:ProgressBar
+                    x:Name="StepProgressBar"
+                    Height="8"
+                    Margin="{DynamicResource DemoProgressBarMargin}"
+                    HorizontalAlignment="Stretch"
+                    CurrentStep="1"
+                    ProgressMode="StepProgress"
+                    Steps="10" />
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot03OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="StepLabel"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="Step 1 of 10" />
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot03RightRailContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <ui:Button
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        HorizontalAlignment="Stretch"
+                        Click="ProgressStep_Click"
+                        Content="Back"
+                        Tag="Back" />
+                    <ui:Button
+                        HorizontalAlignment="Stretch"
+                        Appearance="Accent"
+                        Click="ProgressStep_Click"
+                        Content="Next"
+                        Tag="Next" />
+                </StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use step progress for ordered tasks where users understand the current milestone." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <Grid HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ui:ProgressRing
+                        x:Name="IndeterminateProgressRing"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Width="48"
+                        Height="48"
+                        Margin="0,8,0,8"
+                        HorizontalAlignment="Center"
+                        IsActive="True"
+                        IsIndeterminate="True" />
+                    <ui:ToggleSwitch
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Margin="{DynamicResource DemoMediumTopGapMargin}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding IsActive, ElementName=IndeterminateProgressRing, Mode=TwoWay}"
+                        OffContent="On / Off"
+                        OnContent="On / Off" />
+                    <TextBlock
+                        x:Name="IndeterminateProgressRingLabel"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="{DynamicResource DemoOutputTopGapMargin}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource StateLabelStyle}"
+                        Text="Indeterminate" />
+
+                    <ui:ProgressRing
+                        x:Name="DeterminateProgressRing"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Width="48"
+                        Height="48"
+                        HorizontalAlignment="Center"
+                        IsActive="True"
+                        IsIndeterminate="False"
+                        Maximum="100"
+                        Minimum="0"
+                        Value="50" />
+                    <ui:NumberBox
+                        x:Name="ProgressRingValueBox"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Width="132"
+                        Margin="{DynamicResource DemoMediumTopGapMargin}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Maximum="100"
+                        Minimum="1"
+                        SmallChange="1"
+                        SpinButtonPlacementMode="{x:Static uicore:SpinButtonPlacementMode.Inline}"
+                        Value="{Binding Value, ElementName=DeterminateProgressRing, Mode=TwoWay}" />
+                    <TextBlock
+                        x:Name="DeterminateProgressRingLabel"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="{DynamicResource DemoOutputTopGapMargin}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource StateLabelStyle}"
+                        Text="Determinate" />
+
+                    <ui:ProgressRing
+                        x:Name="PausedProgressRing"
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Width="48"
+                        Height="48"
+                        HorizontalAlignment="Center"
+                        IsActive="True"
+                        IsIndeterminate="False"
+                        Maximum="100"
+                        Minimum="0"
+                        ProgressState="{x:Static uicore:ProgressRingState.Paused}"
+                        Value="80" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Margin="{DynamicResource DemoOutputTopGapMargin}"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource StateLabelStyle}"
+                        Text="Paused" />
+
+                    <ui:ProgressRing
+                        x:Name="ErrorProgressRing"
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        Width="48"
+                        Height="48"
+                        HorizontalAlignment="Center"
+                        IsActive="True"
+                        IsIndeterminate="False"
+                        Maximum="100"
+                        Minimum="0"
+                        ProgressState="{x:Static uicore:ProgressRingState.Error}"
+                        Value="80" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        Margin="{DynamicResource DemoOutputTopGapMargin}"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource StateLabelStyle}"
+                        Text="Error" />
+                </Grid>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ProgressRing when space is tight or when progress belongs next to compact content." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <ui:InfoBar
+                        x:Name="InfoBarInformational"
+                        Title="Informational"
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        HorizontalAlignment="Stretch"
+                        IsOpen="True"
+                        Message="This is a general information message."
+                        Severity="Informational" />
+                    <ui:InfoBar
+                        x:Name="InfoBarSuccess"
+                        Title="Success"
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        HorizontalAlignment="Stretch"
+                        IsOpen="True"
+                        Message="The operation completed successfully."
+                        Severity="Success" />
+                    <ui:InfoBar
+                        x:Name="InfoBarWarning"
+                        Title="Warning"
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        HorizontalAlignment="Stretch"
+                        IsOpen="True"
+                        Message="Proceed with caution."
+                        Severity="Warning" />
+                    <ui:InfoBar
+                        x:Name="InfoBarError"
+                        Title="Error"
+                        Margin="{DynamicResource DemoSmallBottomGapMargin}"
+                        HorizontalAlignment="Stretch"
+                        IsOpen="True"
+                        Message="Something went wrong."
+                        Severity="Error">
+                        <ui:InfoBar.ActionButton>
+                            <ui:Button Appearance="Accent" Content="Retry" />
+                        </ui:InfoBar.ActionButton>
+                    </ui:InfoBar>
+                </StackPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot05RightRailContentHost" Visibility="Collapsed">
+                <ui:Button
+                    HorizontalAlignment="Stretch"
+                    Click="ResetInfoBars_Click"
+                    Content="Reset All InfoBars" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use InfoBar for inline messages that explain status, validation, or recoverable outcomes." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

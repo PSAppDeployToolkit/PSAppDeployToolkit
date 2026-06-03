@@ -1,0 +1,118 @@
+name: Bug report
+description: Report a reproducible Fluence.Wpf defect.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Include the smallest reproduction you can provide. For visual bugs, attach screenshots for Light, Dark, or High Contrast when relevant.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: NuGet/package version, tag, or commit SHA.
+      placeholder: "0.7.0-pre"
+    validations:
+      required: true
+  - type: dropdown
+    id: target-framework
+    attributes:
+      label: Target framework
+      options:
+        - net472
+        - net10.0-windows10.0.26100.0
+        - Both
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version and build
+      description: Mica / Acrylic / rounded corners light up only on Windows 11; the immersive dark-mode and auto-hide-taskbar paths branch on the exact build.
+      placeholder: "Windows 11 24H2 (build 26100), Windows 10 22H2 (build 19045)"
+    validations:
+      required: true
+  - type: input
+    id: affected-control
+    attributes:
+      label: Affected control or surface
+      description: Which control, theme resource, or window surface is involved.
+      placeholder: "FluenceWindow, NavigationView, ToggleSwitch, TabView, ApplicationThemeManager, ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme
+      description: Which theme(s) reproduce the issue.
+      multiple: true
+      options:
+        - Light
+        - Dark
+        - High Contrast
+        - Auto (follow Windows)
+        - All / not theme-specific
+    validations:
+      required: true
+  - type: dropdown
+    id: backdrop
+    attributes:
+      label: Backdrop
+      description: Active FluenceWindow backdrop, if relevant.
+      options:
+        - Mica
+        - Acrylic
+        - Tabbed (Mica Alt)
+        - None
+        - Auto
+        - Not applicable
+    validations:
+      required: false
+  - type: input
+    id: accent
+    attributes:
+      label: Accent
+      description: System accent, an app-defined accent, or a custom accent ramp.
+      placeholder: "System accent, or custom #0078D4"
+    validations:
+      required: false
+  - type: dropdown
+    id: gallery-repro
+    attributes:
+      label: Reproduces in the gallery demo?
+      description: Does it reproduce in Fluence.Wpf.Demo, or only in your own app?
+      options:
+        - "Yes - reproduces in Fluence.Wpf.Demo"
+        - "No - only in my own app"
+        - "Not tried / not applicable"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Steps, XAML/C# snippet, or a small sample project link.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, logs, or stack traces
+      render: text
+    validations:
+      required: false

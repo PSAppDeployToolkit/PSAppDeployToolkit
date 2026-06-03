@@ -1,0 +1,110 @@
+﻿name: Build & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/cache@v5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore Fluence.Wpf.sln
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Check XAML formatting
+        run: pwsh eng/Format-Xaml.ps1 -Check
+
+      - name: Build solution (Release)
+        run: dotnet build Fluence.Wpf.sln -c Release --no-restore -v minimal
+
+      # Screenshots-category tests are PNG regenerators (no pass/fail assertion beyond
+      # "rendered without throwing"); they run in full local test runs to refresh
+      # docs/screenshots but are skipped here to keep CI fast.
+      - name: Test (.NET Framework 4.7.2)
+        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net472 --no-build --verbosity normal --filter "TestCategory!=Screenshots" --logger "trx;LogFileName=net472.trx" --results-directory TestResults/net472
+
+      - name: Test (.NET 10)
+        run: dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net10.0-windows10.0.26100.0 --no-build --verbosity normal --filter "TestCategory!=Screenshots" --logger "trx;LogFileName=net10.trx" --results-directory TestResults/net10
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-wpf-test-results
+          path: TestResults/
+          retention-days: 14
+
+      # - name: Generate SBOM (.NET 10.x)
+      #   uses: anchore/sbom-action@v0
+      #   with:
+      #     path: Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/
+
+      # - name: Generate SBOM (.NET Framework 4.7.2)
+      #   uses: anchore/sbom-action@v0
+      #   with:
+      #     path: Fluence.Wpf/bin/Release/net472/
+
+      - name: Upload library artifacts (.NET 10.x)
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-wpf-release-dotnet10
+          path: |
+            Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/Fluence.Wpf.dll
+            Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/Fluence.Wpf.pdb
+            Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/Fluence.Wpf.xml
+            Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/Microsoft.Windows.SDK.NET.dll
+            Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/WinRT.Runtime.dll
+          retention-days: 30
+
+      - name: Upload library artifacts (.NET Framework 4.7.2)
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-wpf-release-dotnet472
+          path: |
+            Fluence.Wpf/bin/Release/net472/Fluence.Wpf.dll
+            Fluence.Wpf/bin/Release/net472/Fluence.Wpf.pdb
+            Fluence.Wpf/bin/Release/net472/Fluence.Wpf.xml
+          retention-days: 30
+
+      - name: Upload demo application
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-wpf-demo
+          path: Fluence.Wpf.Demo/bin/Release/net472/
+          retention-days: 30
+
+      - name: Pack NuGet
+        run: dotnet pack Fluence.Wpf/Fluence.Wpf.csproj -c Release --no-build -o nupkg/
+
+      - name: Upload NuGet package
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-wpf-nupkg
+          path: nupkg/*.nupkg
+          retention-days: 30
+
+      # Publishing remains a manual release decision until the NuGet API key
+      # and first public version are intentionally configured.
+      # - name: Publish to NuGet (tagged releases only)
+      #   if: startsWith(github.ref, 'refs/tags/v')
+      #   run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

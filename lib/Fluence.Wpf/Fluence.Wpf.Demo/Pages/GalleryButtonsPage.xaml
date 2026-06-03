@@ -1,0 +1,229 @@
+﻿<UserControl
+    x:Class="Fluence.Wpf.Demo.Pages.GalleryButtonsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Fluence.Wpf.Demo.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    d:DesignHeight="900"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+    <!--
+        Buttons gallery page. Pattern used by most pages:
+        * A SmoothScrollViewer over a StackPanel of DemoSampleControl "cards".
+        * Live controls for each card live in hidden ContentControl slots named
+        DemoSampleSlotNN...Host; the code-behind constructor calls
+        DemoSamplePageWiring.Apply(...) to move them into the cards and attach source.
+        See Fluence.Wpf.Demo/README.md and Pages/DemoSamplePageWiring.cs.
+    -->
+    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+        <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Buttons" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Buttons initiate actions, open menus, navigate as links, or hold a checked state." />
+
+
+            <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:Button
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Standard"
+                        IsEnabled="{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}" />
+                    <ui:Button
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Appearance="Accent"
+                        Content="Accent"
+                        IsEnabled="{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}" />
+                    <ui:Button
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Appearance="Subtle"
+                        Content="Subtle"
+                        IsEnabled="{Binding IsChecked, Source={x:Reference ButtonEnableCheckBox}}" />
+                </WrapPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot01RightRailContentHost" Visibility="Collapsed">
+                <ui:CheckBox
+                    x:Name="ButtonEnableCheckBox"
+                    Content="Enable buttons"
+                    IsChecked="True" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use Standard for normal actions, Accent for the primary action, and Subtle for low-emphasis commands." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:Button Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Icon Left">
+                        <ui:Button.Icon>
+                            <ui:FontIcon Glyph="&#xE774;" IconFontSize="14" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Icon Right"
+                        IconPlacement="Right">
+                        <ui:Button.Icon>
+                            <ui:FontIcon Glyph="&#xE8D6;" IconFontSize="14" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Appearance="Subtle"
+                        Content="Refresh">
+                        <ui:Button.Icon>
+                            <ui:FontIcon Glyph="&#xE72C;" IconFontSize="14" />
+                        </ui:Button.Icon>
+                    </ui:Button>
+                </WrapPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Place icons before or after text when the symbol helps the action scan faster." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:HyperlinkButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Documentation"
+                        NavigateUri="https://github.com/sintaxasn/Fluence.Wpf" />
+                    <ui:HyperlinkButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Release notes"
+                        NavigateUri="https://github.com/sintaxasn/Fluence.Wpf/releases" />
+                    <ui:HyperlinkButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="With icon"
+                        NavigateUri="https://github.com/sintaxasn/Fluence.Wpf">
+                        <ui:HyperlinkButton.Icon>
+                            <ui:FontIcon Glyph="&#xE71B;" IconFontSize="14" />
+                        </ui:HyperlinkButton.Icon>
+                    </ui:HyperlinkButton>
+                    <ui:HyperlinkButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled"
+                        IsEnabled="False" />
+                </WrapPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use HyperlinkButton for lightweight navigation and related secondary actions." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="New">
+                        <ui:DropDownButton.Flyout>
+                            <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Document" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Spreadsheet" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Folder" />
+                            </StackPanel>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
+                    <ui:DropDownButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Details">
+                        <ui:DropDownButton.Flyout>
+                            <StackPanel MaxWidth="260" Margin="{DynamicResource DemoSampleInnerCardPadding}">
+                                <TextBlock Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="Project status" />
+                                <TextBlock
+                                    Margin="{DynamicResource DemoTextTopGapMargin}"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="Flyout content can be any WPF content."
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
+                    <ui:DropDownButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled"
+                        IsEnabled="False">
+                        <ui:DropDownButton.Flyout>
+                            <TextBlock Margin="{DynamicResource DemoSampleInnerCardPadding}" Text="Unavailable" />
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
+                </WrapPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use DropDownButton when all available actions live in the flyout." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:SplitButton Margin="{DynamicResource DemoControlGroupItemMargin}" Content="Save">
+                        <ui:SplitButton.Flyout>
+                            <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Save as" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Save a copy" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Export" />
+                            </StackPanel>
+                        </ui:SplitButton.Flyout>
+                    </ui:SplitButton>
+                    <ui:SplitButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Appearance="Accent"
+                        Content="Publish">
+                        <ui:SplitButton.Flyout>
+                            <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Publish draft" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Content="Schedule publish" />
+                            </StackPanel>
+                        </ui:SplitButton.Flyout>
+                    </ui:SplitButton>
+                    <ui:SplitButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled"
+                        IsEnabled="False">
+                        <ui:SplitButton.Flyout>
+                            <TextBlock Margin="{DynamicResource DemoSampleInnerCardPadding}" Text="Unavailable" />
+                        </ui:SplitButton.Flyout>
+                    </ui:SplitButton>
+                </WrapPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use SplitButton when there is one default action plus alternate actions in the flyout." />
+
+
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:RepeatButton
+                        x:Name="RepeatCounterButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Click="RepeatCounterButton_Click"
+                        Content="Hold to repeat" />
+                </WrapPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot06OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="RepeatButtonCountText"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="Clicks: 0" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use RepeatButton when holding the pointer should raise Click repeatedly." />
+        </StackPanel>
+    </ui:SmoothScrollViewer>
+</UserControl>

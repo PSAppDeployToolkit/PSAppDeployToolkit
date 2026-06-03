@@ -1,0 +1,295 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <Style TargetType="{x:Type controls:CheckBox}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:CheckBox}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Border
+                            x:Name="IndicatorHost"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Width="18"
+                            Height="18"
+                            Margin="0,2,0,0"
+                            VerticalAlignment="Top"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1" />
+                            </Border.RenderTransform>
+                            <Grid>
+                                <!--
+                                    Opaque sub-layer under the IndicatorChecked stack so accent
+                                    hover/press fills (AccentFillColorSecondary 0.9 / Tertiary 0.8
+                                    / Disabled) composite against a surface-matched solid rather
+                                    than whatever translucent form / card / Mica sits beneath
+                                    the checkbox. Visible only when IsChecked is True or null
+                                    (indeterminate).
+                                -->
+                                <Border
+                                    x:Name="IndicatorAccentBackdrop"
+                                    Background="{DynamicResource AccentFillBackdropBrush}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0" />
+                                <Border
+                                    x:Name="IndicatorFill"
+                                    Background="{DynamicResource ControlAltFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource ControlStrongStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
+                                <Border
+                                    x:Name="IndicatorHover"
+                                    Background="{DynamicResource ControlAltFillColorTertiaryBrush}"
+                                    BorderBrush="{DynamicResource ControlStrongStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0" />
+                                <Border
+                                    x:Name="IndicatorPressed"
+                                    Background="{DynamicResource ControlAltFillColorQuarternaryBrush}"
+                                    BorderBrush="{DynamicResource ControlStrongStrokeColorDisabledBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0" />
+                                <Border
+                                    x:Name="IndicatorChecked"
+                                    Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0" />
+                                <Border
+                                    x:Name="IndicatorCheckedHover"
+                                    Background="{DynamicResource AccentFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource AccentFillColorSecondaryBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0" />
+                                <Border
+                                    x:Name="IndicatorCheckedPressed"
+                                    Background="{DynamicResource AccentFillColorTertiaryBrush}"
+                                    BorderBrush="{DynamicResource AccentFillColorTertiaryBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Opacity="0" />
+                                <Path
+                                    x:Name="CheckGlyph"
+                                    Width="12"
+                                    Height="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M 1,5 L 4.5,8.5 L 11,1.5"
+                                    Fill="{x:Null}"
+                                    Opacity="0"
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Stretch="Uniform"
+                                    Stroke="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                    StrokeEndLineCap="Round"
+                                    StrokeLineJoin="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="2">
+                                    <Path.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </Path.RenderTransform>
+                                </Path>
+                                <Border
+                                    x:Name="IndeterminateDash"
+                                    Width="10"
+                                    Height="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                                    CornerRadius="1"
+                                    Opacity="0" />
+                            </Grid>
+                        </Border>
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            RecognizesAccessKey="True"
+                            TextElement.FontFamily="{TemplateBinding FontFamily}"
+                            TextElement.FontSize="{TemplateBinding FontSize}"
+                            TextElement.Foreground="{TemplateBinding Foreground}" />
+                        <TextBlock
+                            x:Name="DescriptionText"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Margin="26,4,0,0"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="12"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            Text="{TemplateBinding Description}"
+                            TextWrapping="Wrap"
+                            Visibility="Visible" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Description" Value="{x:Null}">
+                            <Setter TargetName="DescriptionText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Description" Value="">
+                            <Setter TargetName="DescriptionText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="HasContent" Value="False">
+                            <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsChecked" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorHover" Property="Opacity" Value="1" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsChecked" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
+                        </MultiTrigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsPressed" Value="True" />
+                                <Condition Property="IsChecked" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorPressed" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndicatorHost" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.9" ScaleY="0.9" />
+                                </Setter.Value>
+                            </Setter>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsPressed" Value="True" />
+                                <Condition Property="IsChecked" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorCheckedPressed" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorHost" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.9" ScaleY="0.9" />
+                                </Setter.Value>
+                            </Setter>
+                        </MultiTrigger>
+
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="IndicatorFill" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorHover" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorPressed" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorChecked" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="1" />
+                            <Setter TargetName="CheckGlyph" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndeterminateDash" Property="Opacity" Value="0" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsPressed" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="1" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsPressed" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorChecked" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorCheckedPressed" Property="Opacity" Value="1" />
+                            <Setter TargetName="CheckGlyph" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.9" ScaleY="0.9" />
+                                </Setter.Value>
+                            </Setter>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsPressed" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorCheckedPressed" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndicatorCheckedHover" Property="Opacity" Value="0" />
+                        </MultiTrigger>
+
+                        <Trigger Property="IsChecked" Value="{x:Null}">
+                            <Setter TargetName="IndicatorFill" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorHover" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorPressed" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndicatorChecked" Property="Opacity" Value="1" />
+                            <Setter TargetName="IndicatorAccentBackdrop" Property="Opacity" Value="1" />
+                            <Setter TargetName="CheckGlyph" Property="Opacity" Value="0" />
+                            <Setter TargetName="IndeterminateDash" Property="Opacity" Value="1" />
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True" />
+                                <Condition Property="IsEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorChecked" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorCheckedHover" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorCheckedPressed" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorChecked" Property="BorderBrush" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="CheckGlyph" Property="Stroke" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="{x:Null}" />
+                                <Condition Property="IsEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorChecked" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorCheckedHover" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorCheckedPressed" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndeterminateDash" Property="Background" Value="{DynamicResource TextOnAccentFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorChecked" Property="BorderBrush" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="False" />
+                                <Condition Property="IsEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="IndicatorFill" Property="Background" Value="{DynamicResource ControlAltFillColorDisabledBrush}" />
+                            <Setter TargetName="IndicatorFill" Property="BorderBrush" Value="{DynamicResource ControlStrongStrokeColorDisabledBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+</ResourceDictionary>
