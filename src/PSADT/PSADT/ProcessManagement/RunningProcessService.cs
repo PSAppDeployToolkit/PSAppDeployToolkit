@@ -10,7 +10,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
-    internal sealed record RunningProcessService : IDisposable
+    internal sealed record RunningProcessService : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the RunningProcessService class with the specified process definitions.
@@ -33,6 +33,7 @@ namespace PSADT.ProcessManagement
         internal void Start()
         {
             // We can't restart the polling task if it's already running.
+            ObjectDisposedException.ThrowIf(_disposed, this);
             if (IsRunning)
             {
                 throw new InvalidOperationException("The polling task is already running.");
@@ -50,9 +51,7 @@ namespace PSADT.ProcessManagement
         /// not thread-safe and should not be called concurrently with other operations that start or stop
         /// polling.</remarks>
         /// <exception cref="InvalidOperationException">Thrown if the polling task is not currently running.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Bug", "S2952:Classes should \"Dispose\" of members from the classes' own \"Dispose\" methods", Justification = "This class releases its resources when the polling is stopped.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
-        internal void Stop()
+        internal async Task StopAsync()
         {
             // We can't stop the polling task if it's not running.
             if (_pollingTask is null || _cancellationTokenSource is null)
@@ -61,14 +60,18 @@ namespace PSADT.ProcessManagement
             }
 
             // Cancel the task and wait for it to complete.
-            _cancellationTokenSource.Cancel();
-            _pollingTask.GetAwaiter().GetResult();
-            _pollingTask.Dispose();
-            _pollingTask = null;
-
-            // Dispose of the cancellation token as once they're cancelled, they're not usable.
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
+            try
+            {
+                await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+                await _pollingTask.ConfigureAwait(false);
+            }
+            finally
+            {
+                _pollingTask.Dispose();
+                _pollingTask = null;
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
+            }
         }
 
         /// <summary>
@@ -81,7 +84,11 @@ namespace PSADT.ProcessManagement
         /// <returns>A task that represents the asynchronous polling operation.</returns>
         private async Task PollRunningProcesses()
         {
-            CancellationToken token = _cancellationTokenSource!.Token;
+            if (_cancellationTokenSource is null)
+            {
+                throw new InvalidOperationException("Cancellation token source is not initialized.");
+            }
+            CancellationToken token = _cancellationTokenSource.Token;
             while (!token.IsCancellationRequested)
             {
                 // Update the list of running processes.
@@ -183,36 +190,20 @@ namespace PSADT.ProcessManagement
         internal bool IsRunning => _pollingTask is not null;
 
         /// <summary>
-        /// Releases the resources used by the object, optionally stopping any running processes and disposing managed
-        /// resources.
+        /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
         /// </summary>
-        /// <remarks>This method implements the standard dispose pattern. When disposing is set to true,
-        /// managed resources are released in addition to unmanaged resources. This method can be called multiple times
-        /// without throwing an exception.</remarks>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        private void Dispose(bool disposing)
+        public async ValueTask DisposeAsync()
         {
             if (_disposed)
             {
                 return;
             }
-            if (disposing)
+            if (IsRunning)
             {
-                if (IsRunning)
-                {
-                    Stop();
-                }
-                _mutex.Dispose();
+                await StopAsync().ConfigureAwait(false);
             }
+            _mutex.Dispose();
             _disposed = true;
-        }
-
-        /// <summary>
-        /// Disposes of the resources used by the <see cref="RunningProcessService"/> class.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
         }
 
         /// <summary>

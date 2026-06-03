@@ -934,7 +934,7 @@ function Start-ADTProcess
                 }
                 $result = if ($execution -is [PSADT.ProcessManagement.ProcessHandle])
                 {
-                    $execution.Task.GetAwaiter().GetResult()
+                    $execution.GetAwaiter().GetResult()
                 }
                 else
                 {

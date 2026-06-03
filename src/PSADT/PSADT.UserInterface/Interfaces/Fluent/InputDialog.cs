@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 
@@ -31,21 +30,29 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 InputBoxText.Visibility = Visibility.Collapsed;
                 InputBoxPassword.Visibility = Visibility.Visible;
                 DependencyPropertyDescriptor.FromProperty(Fluence.Wpf.Controls.PasswordBox.PasswordProperty, typeof(Fluence.Wpf.Controls.PasswordBox))?.AddValueChanged(InputBoxPassword, OnInputChanged);
-                _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+                Loaded += static (sender, __) =>
                 {
-                    _ = InputBoxPassword.Focus();
-                    InputBoxPassword.SelectAll();
-                });
+                    if (sender is not InputDialog dialog)
+                    {
+                        throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
+                    }
+                    _ = dialog.InputBoxPassword.Focus();
+                    dialog.InputBoxPassword.SelectAll();
+                };
             }
             else
             {
                 InputBoxText.Text = options.InitialInputText;
                 InputBoxText.TextChanged += OnTextInputChanged;
-                _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+                Loaded += static (sender, __) =>
                 {
-                    _ = InputBoxText.Focus();
-                    InputBoxText.SelectAll();
-                });
+                    if (sender is not InputDialog dialog)
+                    {
+                        throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
+                    }
+                    _ = dialog.InputBoxText.Focus();
+                    dialog.InputBoxText.SelectAll();
+                };
             }
             UpdateContinueButtonState();
         }

@@ -24,11 +24,11 @@ namespace PSADT.ClientServer
     /// <remarks>The <see cref="ServerInstance"/> class facilitates communication between a server and a client
     /// process through anonymous pipes. It manages the lifecycle of the client process, handles input and output
     /// streams, and provides methods to send commands and retrieve responses. This class implements <see
-    /// cref="IDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
-    /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to start the client-server communication, and
+    /// cref="IAsyncDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
+    /// of <see cref="ServerInstance"/>, calling <see cref="OpenAsync"/> to start the client-server communication, and
     /// using a number of predefined methods to send commands to the client. Once the communication is
-    /// complete, the <see cref="Dispose()"/> method should be called to release resources. </para></remarks>
-    public sealed record ServerInstance : IDisposable
+    /// complete, the <see cref="DisposeAsync()"/> method should be called to release resources. </para></remarks>
+    public sealed record ServerInstance : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication
@@ -36,7 +36,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This constructor creates the instance with the specified user session information.
         /// All communication infrastructure (pipes, encryption, cancellation tokens) is initialized inline.
-        /// Call <see cref="Open"/> to start the client process and begin communication.</remarks>
+        /// Call <see cref="OpenAsync"/> to start the client process and begin communication.</remarks>
         public ServerInstance(RunAsActiveUser runAsActiveUser)
         {
             ArgumentNullException.ThrowIfNull(runAsActiveUser);
@@ -51,7 +51,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ObjectDisposedException">Thrown if the instance has been disposed.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the server instance already has an associated client process.</exception>
         /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
-        public void Open()
+        public async Task OpenAsync()
         {
             // Don't re-open if there's already a client process associated with this instance.
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -101,7 +101,7 @@ namespace PSADT.ClientServer
             {
                 if (opened is null || !opened.Value)
                 {
-                    Dispose();
+                    await DisposeAsync().ConfigureAwait(false);
                 }
             }
 
@@ -574,8 +574,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method gracefully closes the client process if it is running, waits for
         /// the log writer task to complete, and disposes all pipes, encryption objects, and cancellation
         /// token sources. Once disposed, the instance should not be used further.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code needs to operate synchronously and wait for things to close in the appropriate order.")]
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             // Check we're not already done.
             if (_disposed)
@@ -598,7 +597,7 @@ namespace PSADT.ClientServer
                         // Failed to gracefully close the process, so cancel it.
                         if (!_clientProcessCts.IsCancellationRequested)
                         {
-                            _clientProcessCts.Cancel();
+                            await _clientProcessCts.CancelAsync();
                         }
                     }
                 }
@@ -606,42 +605,33 @@ namespace PSADT.ClientServer
                 // We either closed or cancelled the process. Wait for that to occur.
                 try
                 {
-                    _clientProcess.Task.GetAwaiter().GetResult().Dispose();
+                    (await _clientProcess).Dispose();
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
                     // Expected when the process faulted before disposal.
-                }
-
-                // Wait for the task to fully complete, then dispose its resources.
-                while (!_clientProcess.Task.IsCompleted)
-                {
-                    Thread.Sleep(1);
                 }
                 _clientProcess.Task.Dispose();
                 _clientProcess = null;
             }
 
             // Cancel the log writer and wait for it to finish.
-            _logWriterTaskCts.Cancel();
-            try
+            await _logWriterTaskCts.CancelAsync();
+            if (_logWriterTask is not null)
             {
-                _logWriterTask?.GetAwaiter().GetResult();
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected when disposing the server instance.
+                await _logWriterTask.ConfigureAwait(false);
+                _logWriterTask.Dispose();
+                _logWriterTask = null;
             }
 
             // Dispose all infrastructure.
-            _logWriterTask?.Dispose();
             _clientProcessCts.Dispose();
             _logWriterTaskCts.Dispose();
             _logEncryption.Dispose();
             _ioEncryption.Dispose();
-            _logServer.Dispose();
-            _inputServer.Dispose();
-            _outputServer.Dispose();
+            _logServer.Close();
+            _inputServer.Close();
+            _outputServer.Close();
 
             // Unregister the process exit handler and mark as disposed.
             AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
@@ -798,11 +788,12 @@ namespace PSADT.ClientServer
         /// directly.</remarks>
         /// <param name="sender">The source of the event, typically the current application domain.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private void ProcessExit_Handler(object? sender, EventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is necessary here.")]
+        private async void ProcessExit_Handler(object? sender, EventArgs e)
         {
             if (!_disposed)
             {
-                Dispose();
+                await DisposeAsync().ConfigureAwait(false);
             }
         }
 
@@ -831,7 +822,7 @@ namespace PSADT.ClientServer
         /// Represents an asynchronous operation that retrieves the result of a client process.
         /// </summary>
         /// <remarks>The task encapsulates the execution of a client process and provides access to its
-        /// result, which may be null if the process does not produce a result or if <see cref="Open"/> has not
+        /// result, which may be null if the process does not produce a result or if <see cref="OpenAsync"/> has not
         /// been called yet.</remarks>
         private ProcessHandle? _clientProcess;
 
@@ -839,7 +830,7 @@ namespace PSADT.ClientServer
         /// Represents the task responsible for writing log entries asynchronously.
         /// </summary>
         /// <remarks>This field holds a reference to the current logging task, if one is active. It may
-        /// be null if <see cref="Open"/> has not been called yet.</remarks>
+        /// be null if <see cref="OpenAsync"/> has not been called yet.</remarks>
         private Task? _logWriterTask;
 
         /// <summary>

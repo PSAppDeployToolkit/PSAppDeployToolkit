@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Automation;
-using System.Windows.Threading;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
 using Fluence.Wpf;
@@ -44,7 +43,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressMessageDetail);
             }
-            Dispatcher.Invoke(() => UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage));
+            UpdateProgressImpl(progressMessage, progressMessageDetail, progressPercentage);
         }
 
         /// <summary>

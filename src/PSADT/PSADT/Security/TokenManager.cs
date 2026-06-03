@@ -44,8 +44,7 @@ namespace PSADT.Security
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
-        internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        internal static async System.Threading.Tasks.Task<SafeFileHandle> GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
         {
             // Confirm that the caller is an administrator.
             if (!AccountUtilities.CallerIsAdmin)
@@ -119,7 +118,7 @@ namespace PSADT.Security
                                                     try
                                                     {
                                                         using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
-                                                        pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
+                                                        await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
                                                     }
                                                     catch (OperationCanceledException)
                                                     {
@@ -196,7 +195,7 @@ namespace PSADT.Security
 
                 // Read the token from the pipe.
                 byte[] tokenBuf = new byte[tokenLength];
-                if (pipe.Read(tokenBuf, 0, tokenLength) != tokenLength)
+                if (await pipe.ReadAsync(tokenBuf, 0, tokenLength).ConfigureAwait(false) != tokenLength)
                 {
                     throw new InvalidProgramException("Invalid token received from the token broker.");
                 }
