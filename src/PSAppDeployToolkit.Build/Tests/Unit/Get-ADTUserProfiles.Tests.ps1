@@ -28,9 +28,9 @@ Describe 'Get-ADTUserProfiles' {
             $result.Count | Should -BeGreaterThan 0
         }
 
-        It 'Each result is of type PSADT.Types.UserProfileInfo' {
+        It 'Each result is of type PSADT.AccountManagement.UserProfileInfo' {
             $result = @(Get-ADTUserProfiles)
-            $result[0] | Should -BeOfType ([PSADT.Types.UserProfileInfo])
+            $result[0] | Should -BeOfType ([PSADT.AccountManagement.UserProfileInfo])
         }
 
         It 'Each result has a non-null SID' {
