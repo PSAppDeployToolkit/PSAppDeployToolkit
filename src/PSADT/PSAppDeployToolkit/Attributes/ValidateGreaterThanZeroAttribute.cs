@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
@@ -13,7 +14,8 @@ namespace PSAppDeployToolkit.Attributes
     /// <remarks>
     /// This attribute validates comparable value types against their default value (for example, numeric types against
     /// 0 and <see cref="TimeSpan"/> against <see cref="TimeSpan.Zero"/>). For non-value types, it validates values
-    /// that expose a public static <c>Zero</c> property and implement <see cref="IComparable"/>.
+    /// that expose a public static <c>Zero</c> property and implement <see cref="IComparable"/>. For collections, each
+    /// element is validated individually.
     /// </remarks>
     public sealed class ValidateGreaterThanZeroAttribute : ValidateArgumentsAttribute
     {
@@ -28,22 +30,69 @@ namespace PSAppDeployToolkit.Attributes
         /// </exception>
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
-            while (arguments is PSObject psObject)
-            {
-                arguments = psObject.BaseObject;
-            }
+            arguments = GetBaseObject(arguments);
             if (IsNull(arguments))
             {
                 throw new ArgumentNullException(null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
             }
-            if (!TryIsGreaterThanZero(arguments, out bool isGreaterThanZero))
+            if (arguments is not string && LanguagePrimitives.GetEnumerator(arguments) is IEnumerator enumerator)
             {
-                throw new ArgumentException($"The argument type '{arguments.GetType().FullName}' does not support greater-than-zero validation.");
+                ValidateElements(enumerator);
+                return;
+            }
+            ValidateValue(arguments);
+        }
+
+        /// <summary>
+        /// Validates that each element in the specified collection is greater than zero.
+        /// </summary>
+        /// <param name="enumerator">The enumerator for the collection to validate.</param>
+        private static void ValidateElements(IEnumerator enumerator)
+        {
+            while (enumerator.MoveNext())
+            {
+                object element = GetBaseObject(enumerator.Current);
+                if (IsNull(element))
+                {
+                    throw new ArgumentNullException(null, "The argument collection contains a null element. Provide a collection whose elements are greater than zero, and then try running the command again.");
+                }
+                ValidateValue(element);
+            }
+        }
+
+        /// <summary>
+        /// Validates that the specified argument is greater than zero.
+        /// </summary>
+        /// <param name="value">The argument value to validate.</param>
+        private static void ValidateValue(object value)
+        {
+            value = GetBaseObject(value);
+            if (IsNull(value))
+            {
+                throw new ArgumentNullException(null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
+            }
+            if (!TryIsGreaterThanZero(value, out bool isGreaterThanZero))
+            {
+                throw new ArgumentException($"The argument type '{value.GetType().FullName}' does not support greater-than-zero validation.");
             }
             if (!isGreaterThanZero)
             {
-                throw new ArgumentOutOfRangeException(null, arguments, "The argument is less than or equal to zero. Provide an argument that is greater than zero, and then try running the command again.");
+                throw new ArgumentOutOfRangeException(null, value, "The argument is less than or equal to zero. Provide an argument that is greater than zero, and then try running the command again.");
             }
+        }
+
+        /// <summary>
+        /// Returns the underlying base object by recursively unwrapping any enclosing PSObject instances.
+        /// </summary>
+        /// <param name="value">The object to unwrap. May be a PSObject or any other type; can be null.</param>
+        /// <returns>The innermost object contained within the input, or null if the input is null.</returns>
+        private static object GetBaseObject(object value)
+        {
+            while (value is PSObject psObject)
+            {
+                value = psObject.BaseObject;
+            }
+            return value;
         }
 
         /// <summary>
