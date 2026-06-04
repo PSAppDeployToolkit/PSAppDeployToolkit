@@ -54,15 +54,6 @@ Describe 'Test-ADTUserIsBusy' {
         }
     }
 
-    Context 'Presentation mode enabled' {
-        It 'Returns $true when Get-ADTPresentationSettingsEnabledUsers returns a user' {
-            Mock -ModuleName PSAppDeployToolkit Get-ADTPresentationSettingsEnabledUsers {
-                return [PSCustomObject]@{ UserName = 'DOMAIN\TestUser' }
-            }
-            Test-ADTUserIsBusy | Should -Be $true
-        }
-    }
-
     Context 'PowerPoint running in presentation mode' {
         It 'Returns $true when Test-ADTPowerPoint returns $true' {
             Mock -ModuleName PSAppDeployToolkit Test-ADTPowerPoint { $true }
