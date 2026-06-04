@@ -28,7 +28,7 @@ Describe 'Get-ADTLoggedOnUser' {
             $result = Get-ADTLoggedOnUser
             if ($null -ne $result)
             {
-                $result.Count | Should -BeGreaterOrEqual 0
+                ($result | Measure-Object).Count | Should -BeGreaterOrEqual 0
             }
         }
     }
@@ -42,7 +42,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Each element has a UserName string property' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
@@ -54,7 +54,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Each element has a SessionId property' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
@@ -66,7 +66,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Each element has a non-null NTAccount property' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
@@ -78,7 +78,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Each element has an IsCurrentSession bool property' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
@@ -90,7 +90,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Each element is of type PSADT.TerminalServices.SessionInfo' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
@@ -102,7 +102,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'At most one session has IsCurrentSession set to true' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
@@ -112,7 +112,7 @@ Describe 'Get-ADTLoggedOnUser' {
         }
 
         It 'Each element has a DomainName property' {
-            if ($null -eq $script:Sessions -or $script:Sessions.Count -eq 0)
+            if (!$script:Sessions)
             {
                 Set-ItResult -Skipped -Because 'No user sessions are active on this machine'
                 return
