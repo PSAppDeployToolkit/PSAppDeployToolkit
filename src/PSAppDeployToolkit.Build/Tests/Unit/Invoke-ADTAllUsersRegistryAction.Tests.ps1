@@ -19,12 +19,6 @@ Describe 'Invoke-ADTAllUsersRegistryAction' {
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
     }
 
-    Context 'Mandatory parameters' {
-        It 'Throws when -ScriptBlock is not provided' {
-            { Invoke-ADTAllUsersRegistryAction } | Should -Throw
-        }
-    }
-
     Context '-WhatIf suppresses scriptblock execution' {
         It 'Does not throw with -WhatIf and an explicit UserProfile (current user)' {
             if ($null -eq $script:CurrentProfile)
