@@ -15,14 +15,14 @@ Describe 'Invoke-ADTRegSvr32' {
     }
 
     Context 'ValidateScript — .dll extension bypasses existence check' {
-        It 'Does not throw for a non-existent path that has a .dll extension (Register, WhatIf)' {
+        It 'Throws for a non-existent path that has a .dll extension (Register, WhatIf)' {
             $fakeDll = "C:\NonExistent_$([System.Guid]::NewGuid().ToString('N')).dll"
-            { Invoke-ADTRegSvr32 -FilePath $fakeDll -Action 'Register' -WhatIf } | Should -Not -Throw
+            { Invoke-ADTRegSvr32 -FilePath $fakeDll -Action 'Register' -WhatIf } | Should -Throw
         }
 
-        It 'Does not throw for a non-existent path that has a .dll extension (Unregister, WhatIf)' {
+        It 'Throws for a non-existent path that has a .dll extension (Unregister, WhatIf)' {
             $fakeDll = "C:\NonExistent_$([System.Guid]::NewGuid().ToString('N')).dll"
-            { Invoke-ADTRegSvr32 -FilePath $fakeDll -Action 'Unregister' -WhatIf } | Should -Not -Throw
+            { Invoke-ADTRegSvr32 -FilePath $fakeDll -Action 'Unregister' -WhatIf } | Should -Throw
         }
     }
 
