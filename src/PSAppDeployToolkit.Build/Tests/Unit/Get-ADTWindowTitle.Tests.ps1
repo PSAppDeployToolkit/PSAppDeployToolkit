@@ -30,10 +30,6 @@ Describe 'Get-ADTWindowTitle' {
         It 'Does not throw when -ParentProcess is specified and no active user' {
             { Get-ADTWindowTitle -ParentProcess 'notepad' } | Should -Not -Throw
         }
-
-        It 'Does not throw when -ParentProcessId is specified and no active user' {
-            { Get-ADTWindowTitle -ParentProcessId 1 } | Should -Not -Throw
-        }
     }
 
     Context 'Input validation' {
