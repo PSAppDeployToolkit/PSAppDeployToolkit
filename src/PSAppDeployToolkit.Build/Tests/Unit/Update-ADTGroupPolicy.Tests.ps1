@@ -11,10 +11,10 @@ Describe 'Update-ADTGroupPolicy' {
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
 
         # Start-ADTProcess must return ExitCode = 0 to avoid the non-zero exit code error path.
-        Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { return [PSCustomObject]@{ ExitCode = 0 } }
+        Mock -ModuleName PSAppDeployToolkit Start-ADTProcess { return [PSADT.ProcessManagement.ProcessResult]::new(0) }
 
         # Invoke-ADTClientServerOperation must return ExitCode = 0 likewise.
-        Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { return [PSCustomObject]@{ ExitCode = 0 } }
+        Mock -ModuleName PSAppDeployToolkit Invoke-ADTClientServerOperation { return [PSADT.ProcessManagement.ProcessResult]::new(0) }
 
         # Return a RunAsActiveUser object so the User target does not take the bypass path.
         # Pester's mock wrapper enforces the original parameter types, so we must return the correct type.
