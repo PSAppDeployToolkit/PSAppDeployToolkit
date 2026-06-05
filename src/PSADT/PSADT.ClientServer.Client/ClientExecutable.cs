@@ -70,7 +70,8 @@ namespace PSADT.ClientServer
             {
                 throw new InvalidOperationException("Failed to determine the application directory from the assembly location.");
             }
-            HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> attemptedReferences = new(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> queuedAssemblies = new(StringComparer.OrdinalIgnoreCase);
             Queue<Assembly> queue = new();
             EnqueueIfNeeded(AssemblyInfo);
             while (queue.Count > 0)
@@ -90,7 +91,7 @@ namespace PSADT.ClientServer
                     {
                         continue;
                     }
-                    if (!seen.Add(requestedFullName))
+                    if (!attemptedReferences.Add(requestedFullName))
                     {
                         continue;
                     }
@@ -105,10 +106,6 @@ namespace PSADT.ClientServer
 
                     // Load the assembly and enqueue it for processing.
                     Assembly referencedAssembly = Assembly.Load(referencedAssemblyName);
-                    if (referencedAssembly.FullName is string actualFullName)
-                    {
-                        _ = seen.Add(actualFullName);
-                    }
                     EnqueueIfNeeded(referencedAssembly);
                 }
             }
@@ -124,7 +121,7 @@ namespace PSADT.ClientServer
                 {
                     return;
                 }
-                if (seen.Add(fullName))
+                if (queuedAssemblies.Add(fullName))
                 {
                     queue.Enqueue(assembly);
                 }
