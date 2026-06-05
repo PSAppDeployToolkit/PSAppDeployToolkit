@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -195,7 +196,7 @@ namespace PSADT.FileSystem
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString());
                 ptrOffset += objectTypeSize + (int)NativeMethods.ALIGN_UP_POINTER<nint>(typeInfo.TypeName.MaximumLength);
             }
-            ObjectTypeLookupTable = new(typeTable);
+            ObjectTypeLookupTable = FrozenDictionary.ToFrozenDictionary(typeTable);
         }
 
         /// <summary>
@@ -467,7 +468,7 @@ namespace PSADT.FileSystem
         /// <summary>
         /// The lookup table of object types.
         /// </summary>
-        private static readonly ReadOnlyDictionary<ushort, string> ObjectTypeLookupTable;
+        private static readonly FrozenDictionary<ushort, string> ObjectTypeLookupTable;
 
         /// <summary>
         /// The pre-built StartRoutine template.

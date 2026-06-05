@@ -15,10 +15,10 @@ if (!$Module.Compiled)
 {
     try
     {
-        New-Variable -Name ModuleFiles -Option Constant -Value ([System.Collections.ObjectModel.ReadOnlyCollection[System.IO.FileInfo]]::new([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Private)); [System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Public)))))
+        New-Variable -Name ModuleFiles -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet([System.IO.FileInfo[]]$([System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Private)); [System.IO.Directory]::GetFiles((Join-Path -Path $PSScriptRoot -ChildPath Public))), $null))
         $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
-        $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
-        $ModuleFiles | & {
+        $PrivateFuncs = [System.Collections.Generic.HashSet[System.String]]::new()
+        $null = $ModuleFiles | & {
             process
             {
                 if ([System.IO.Path]::GetDirectoryName($_.FullName).EndsWith('Private'))
@@ -29,7 +29,7 @@ if (!$Module.Compiled)
             }
         }
         New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
-        New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
+        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, $null)) -Force
         Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
         $ModuleFiles.FullName | . { process { . $_ } }
     }

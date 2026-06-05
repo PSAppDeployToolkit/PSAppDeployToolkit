@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Collections.Frozen;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -106,7 +106,7 @@ namespace PSADT.Interop.Exceptions
         /// of the NTSTATUS enumeration, allowing for efficient lookup of the string representation of NTSTATUS values.
         /// This can be useful for debugging, logging, or displaying human-readable status codes.</remarks>
         [SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The non-public static fields of the NTSTATUS enumeration are accessed to create a mapping of NTSTATUS values to their names.")]
-        private static readonly ReadOnlyDictionary<NTSTATUS, string> NtStatusValueNameMap = new(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name));
+        private static readonly FrozenDictionary<NTSTATUS, string> NtStatusValueNameMap = FrozenDictionary.ToFrozenDictionary(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name));
 
         /// <summary>
         /// Defines the options for formatting messages retrieved from the system or a specified module.

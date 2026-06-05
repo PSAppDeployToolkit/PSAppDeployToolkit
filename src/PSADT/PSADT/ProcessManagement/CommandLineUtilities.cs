@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -848,6 +849,6 @@ namespace PSADT.ProcessManagement
         /// <remarks>This collection includes extensions such as ".exe", ".msi", ".bat", ".cmd", ".com",
         /// and ".scr". It can be used to identify files that are typically considered executable by the operating
         /// system.</remarks>
-        private static readonly ReadOnlyCollection<string> CommonExecutableExtensions = new([".exe", ".msi", ".bat", ".cmd", ".com", ".scr"]);
+        private static readonly FrozenSet<string> CommonExecutableExtensions = FrozenSet.ToFrozenSet([".exe", ".msi", ".bat", ".cmd", ".com", ".scr"]);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -154,7 +154,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
 
             // Set up everything related to the dialog icon.
-            _dialogBitmapCache = new(new Dictionary<ApplicationTheme, BitmapSource>
+            _dialogBitmapCache = FrozenDictionary.ToFrozenDictionary(new Dictionary<ApplicationTheme, BitmapSource>
             {
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
                 { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage ?? options.AppIconImage) },
@@ -1121,7 +1121,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <remarks>This dictionary maps <see cref="ApplicationTheme"/> values to their corresponding
         /// <see cref="BitmapSource"/> icons. It is intended to optimize access to preloaded icons for dialogs, ensuring
         /// consistent and efficient retrieval.</remarks>
-        private readonly ReadOnlyDictionary<ApplicationTheme, BitmapSource> _dialogBitmapCache;
+        private readonly FrozenDictionary<ApplicationTheme, BitmapSource> _dialogBitmapCache;
 
         /// <summary>
         /// Dialog icon cache for improved performance

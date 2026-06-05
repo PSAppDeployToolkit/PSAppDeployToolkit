@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -632,9 +632,9 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = new(new Dictionary<DialogStyle, ReadOnlyDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>
+        private static readonly FrozenDictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>
         {
-            { DialogStyle.Classic, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
+            { DialogStyle.Classic, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
                 { DialogType.CustomDialog, static (options, state) => new Classic.CustomDialog((CustomDialogOptions)options) },
@@ -643,7 +643,7 @@ namespace PSADT.UserInterface.Interfaces
                 { DialogType.ProgressDialog, static (options, state) => new Classic.ProgressDialog((ProgressDialogOptions)options) },
                 { DialogType.RestartDialog, static (options, state) => new Classic.RestartDialog((RestartDialogOptions)options) },
             })},
-            { DialogStyle.Fluent, new(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
+            { DialogStyle.Fluent, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
                 { DialogType.CustomDialog, static (options, state) => new Fluent.CustomDialog((CustomDialogOptions)options) },

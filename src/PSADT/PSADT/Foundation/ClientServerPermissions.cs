@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -85,7 +85,7 @@ namespace PSADT.Foundation
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly ReadOnlyCollection<FileInfo> _assemblies = new(ClientServerUtilities.ClientServerDirectory.GetFiles("*", SearchOption.AllDirectories));
+        private static readonly FrozenSet<FileInfo> _assemblies = FrozenSet.ToFrozenSet(ClientServerUtilities.ClientServerDirectory.GetFiles("*", SearchOption.AllDirectories));
 
         /// <summary>
         /// Represents the required file system permissions for the operation.

@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -4318,7 +4318,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = new(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
+        internal static readonly FrozenDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
         {
             { SYSTEM_INFORMATION_CLASS.SystemExtendedHandleInformation, Unsafe.SizeOf<SYSTEM_HANDLE_INFORMATION_EX>() + Unsafe.SizeOf<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>() },
             { SYSTEM_INFORMATION_CLASS.SystemProcessIdInformation, Unsafe.SizeOf<SYSTEM_PROCESS_ID_INFORMATION>() },
@@ -4327,7 +4327,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for object information class struct sizes.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = new(new Dictionary<OBJECT_INFORMATION_CLASS, int>
+        internal static readonly FrozenDictionary<OBJECT_INFORMATION_CLASS, int> ObjectInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<OBJECT_INFORMATION_CLASS, int>
         {
             { OBJECT_INFORMATION_CLASS.ObjectBasicInformation, Unsafe.SizeOf<PUBLIC_OBJECT_BASIC_INFORMATION>() },
             { OBJECT_INFORMATION_CLASS.ObjectNameInformation, Unsafe.SizeOf<OBJECT_NAME_INFORMATION>() },
@@ -4338,7 +4338,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Lookup table for policy information class struct sizes.
         /// </summary>
-        internal static readonly ReadOnlyDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = new(new Dictionary<POLICY_INFORMATION_CLASS, int>
+        internal static readonly FrozenDictionary<POLICY_INFORMATION_CLASS, int> PolicyInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<POLICY_INFORMATION_CLASS, int>
         {
             { POLICY_INFORMATION_CLASS.PolicyAuditLogInformation, Unsafe.SizeOf<POLICY_AUDIT_LOG_INFO>() },
             { POLICY_INFORMATION_CLASS.PolicyAuditEventsInformation, Unsafe.SizeOf<POLICY_AUDIT_EVENTS_INFO>() },
