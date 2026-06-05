@@ -777,25 +777,9 @@ namespace PSADT.ClientServer
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
-                // Set up the required variables.
-                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0];
-                const string ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
-                string fileName = Path.GetFileName(filePath); string ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
-
-                // Rename the IFEO subkey, start the process asynchronously, and then rename it back.
-                RegistryUtilities.RenameRegistryKey(ifeoPath, fileName, ifeoName);
-                ProcessHandle handle;
-                try
-                {
-                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory)) ?? throw new InvalidOperationException("Failed to launch the process.");
-                }
-                finally
-                {
-                    RegistryUtilities.RenameRegistryKey(ifeoPath, ifeoName, fileName);
-                }
-
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                using (ProcessResult result = await handle.ConfigureAwait(false))
+                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0]; IEnumerable<string>? argumentList = command.Length > 1 ? command.Skip(1) : null;
+                using (ProcessResult result = await (ProcessManager.LaunchAsync(new(filePath, argumentList, Environment.CurrentDirectory, bypassIfeo: true)) ?? throw new InvalidOperationException("Failed to launch the process.")).ConfigureAwait(false))
                 {
                     Environment.Exit(result.ExitCode);
                 }

@@ -59,7 +59,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3254:Default parameter values should not be passed as arguments", Justification = "This overload intentionally selects the internal constructor and must pass explicit defaults for the intermediate internal-only parameters.")]
-        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList, string? workingDirectory, RunAsActiveUser? runAsActiveUser, bool inheritEnvironmentVariables, bool expandEnvironmentVariables, bool denyUserTermination, ElevatedTokenType? elevatedTokenType, IReadOnlyList<string>? standardInput, bool useShellExecute, string? verb, bool createNoWindow, bool waitForChildProcesses, bool killChildProcessesWithParent, Encoding? streamEncoding, ProcessWindowStyle? windowStyle, ProcessPriorityClass? priorityClass, CancellationToken? cancellationToken, bool noTerminateOnTimeout) : this(filePath, argumentList, workingDirectory, runAsActiveUser, inheritEnvironmentVariables, expandEnvironmentVariables, denyUserTermination, elevatedTokenType, runAsInvoker: false, uiAccess: false, standardInput, handlesToInherit: null, useShellExecute, verb, createNoWindow, waitForChildProcesses, killChildProcessesWithParent, streamEncoding, windowStyle, priorityClass, cancellationToken, noTerminateOnTimeout)
+        public ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList, string? workingDirectory, RunAsActiveUser? runAsActiveUser, bool inheritEnvironmentVariables, bool expandEnvironmentVariables, bool denyUserTermination, ElevatedTokenType? elevatedTokenType, IReadOnlyList<string>? standardInput, bool useShellExecute, string? verb, bool createNoWindow, bool waitForChildProcesses, bool killChildProcessesWithParent, Encoding? streamEncoding, ProcessWindowStyle? windowStyle, ProcessPriorityClass? priorityClass, CancellationToken? cancellationToken, bool noTerminateOnTimeout) : this(filePath, argumentList, workingDirectory, runAsActiveUser, inheritEnvironmentVariables, expandEnvironmentVariables, denyUserTermination, elevatedTokenType, runAsInvoker: false, uiAccess: false, bypassIfeo: false, standardInput, handlesToInherit: null, useShellExecute, verb, createNoWindow, waitForChildProcesses, killChildProcessesWithParent, streamEncoding, windowStyle, priorityClass, cancellationToken, noTerminateOnTimeout)
         {
         }
 
@@ -79,6 +79,7 @@ namespace PSADT.ProcessManagement
         /// <param name="elevatedTokenType">The type of elevated token to use when starting a process for another user. If null, no elevation is performed.</param>
         /// <param name="runAsInvoker">true to launch the process with the same token as the parent process; otherwise, false.</param>
         /// <param name="uiAccess">true to launch the process with UI access privileges; otherwise, false.</param>
+        /// <param name="bypassIfeo">true to append DEBUG_ONLY_THIS_PROCESS to the process creation flags so that any IFEO debuggers are bypassed and do not interfere with the launched process; otherwise, false.</param>
         /// <param name="standardInput">Optional string to write to the process's standard input stream. If null or empty, no data is written.
         /// The string is encoded using the specified <paramref name="streamEncoding"/> (or the default encoding if not specified).</param>
         /// <param name="handlesToInherit">An optional collection of handles to inherit by the new process. If null, no additional handles are
@@ -99,7 +100,7 @@ namespace PSADT.ProcessManagement
         /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if filePath is not a fully qualified path when required.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "There's no async support during construction.")]
-        internal ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, ElevatedTokenType? elevatedTokenType = null, bool runAsInvoker = false, bool uiAccess = false, IReadOnlyList<string>? standardInput = null, IReadOnlyList<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
+        internal ProcessLaunchInfo(string filePath, IEnumerable<string>? argumentList = null, string? workingDirectory = null, RunAsActiveUser? runAsActiveUser = null, bool inheritEnvironmentVariables = false, bool expandEnvironmentVariables = false, bool denyUserTermination = false, ElevatedTokenType? elevatedTokenType = null, bool runAsInvoker = false, bool uiAccess = false, bool bypassIfeo = false, IReadOnlyList<string>? standardInput = null, IReadOnlyList<nint>? handlesToInherit = null, bool useShellExecute = false, string? verb = null, bool createNoWindow = false, bool waitForChildProcesses = false, bool killChildProcessesWithParent = false, Encoding? streamEncoding = null, ProcessWindowStyle? windowStyle = null, ProcessPriorityClass? priorityClass = null, CancellationToken? cancellationToken = null, bool noTerminateOnTimeout = false)
         {
             // Validate all string parameters are properly set up.
             ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
@@ -124,6 +125,10 @@ namespace PSADT.ProcessManagement
                 {
                     throw new NotSupportedException("Cannot specify UseShellExecute while specifying RunAsInvoker.");
                 }
+                if (bypassIfeo)
+                {
+                    throw new NotSupportedException("Cannot specify UseShellExecute while specifying BypassIfeo.");
+                }
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
@@ -137,6 +142,7 @@ namespace PSADT.ProcessManagement
             }
             InheritEnvironmentVariables = inheritEnvironmentVariables;
             RunAsActiveUser = runAsActiveUser;
+            BypassIfeo = bypassIfeo;
             UIAccess = uiAccess;
 
             // Expand out environment variables for FilePath/ArgumentList as required.
@@ -332,6 +338,13 @@ namespace PSADT.ProcessManagement
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool UIAccess;
+
+        /// <summary>
+        /// Appends DEBUG_ONLY_THIS_PROCESS to the process creation flags so that any IFEO debuggers are bypassed and do not interfere with the launched process.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
+        [DataMember]
+        public readonly bool BypassIfeo;
 
         /// <summary>
         /// Gets the lines to write to the process's standard input stream.

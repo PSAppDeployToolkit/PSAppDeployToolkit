@@ -86,6 +86,7 @@ namespace PSADT.ProcessManagement
                     cb = (uint)Unsafe.SizeOf<STARTUPINFOW>(),
                 };
                 PROCESS_CREATION_FLAGS creationFlags = ((PROCESS_CREATION_FLAGS?)launchInfo.PriorityClass ?? 0) |
+                    (launchInfo.BypassIfeo ? PROCESS_CREATION_FLAGS.DEBUG_ONLY_THIS_PROCESS : 0) |
                     PROCESS_CREATION_FLAGS.CREATE_UNICODE_ENVIRONMENT |
                     PROCESS_CREATION_FLAGS.CREATE_NEW_PROCESS_GROUP |
                     PROCESS_CREATION_FLAGS.CREATE_SEPARATE_WOW_VDM |
