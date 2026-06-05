@@ -262,70 +262,60 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the file path of the process to launch.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string FilePath;
 
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? Arguments;
 
         /// <summary>
         /// Gets the arguments to pass to the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly IReadOnlyList<string> ArgumentList;
 
         /// <summary>
         /// Gets the working directory of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly DirectoryInfo? WorkingDirectory;
 
         /// <summary>
         /// Gets the username to use when starting the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly RunAsActiveUser? RunAsActiveUser;
 
         /// <summary>
         /// Gets a value indicating the token type to use when starting a process for another user.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly ElevatedTokenType? ElevatedTokenType;
 
         /// <summary>
         /// Gets a value indicating whether to inherit the environment variables of the current process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool InheritEnvironmentVariables;
 
         /// <summary>
         /// Indicates whether environment variables in the input should be expanded.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool ExpandEnvironmentVariables;
 
         /// <summary>
         /// Indicates whether user termination is denied.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool DenyUserTermination;
 
         /// <summary>
         /// Indicates whether an unelevated token should be used for operations.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool RunAsInvoker;
 
@@ -335,14 +325,12 @@ namespace PSADT.ProcessManagement
         /// <remarks>UI access allows the process to interact with higher-privileged windows, such as
         /// those running as administrator. This is typically required for accessibility tools or applications that need
         /// to interact with secure desktop elements.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool UIAccess;
 
         /// <summary>
         /// Appends DEBUG_ONLY_THIS_PROCESS to the process creation flags so that any IFEO debuggers are bypassed and do not interfere with the launched process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool BypassIfeo;
 
@@ -350,7 +338,6 @@ namespace PSADT.ProcessManagement
         /// Gets the lines to write to the process's standard input stream.
         /// </summary>
         /// <remarks>Each string in the collection is written as a separate line, encoded using <see cref="StreamEncoding"/>.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly IReadOnlyList<string> StandardInput;
 
@@ -364,35 +351,30 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets a value indicating whether to use the shell to execute the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool UseShellExecute;
 
         /// <summary>
         /// Gets the verb to use when starting the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? Verb;
 
         /// <summary>
         /// Gets a value indicating whether to create a new window for the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool CreateNoWindow;
 
         /// <summary>
         /// Gets a value indicating whether the process should wait for child processes to exit before completing.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool WaitForChildProcesses;
 
         /// <summary>
         /// Gets a value indicating whether any child processes spawned with the parent should terminate when the parent closes.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool KillChildProcessesWithParent;
 
@@ -405,35 +387,30 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the window style of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly ProcessWindowStyle? WindowStyle;
 
         /// <summary>
         /// Gets the priority class of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly ProcessPriorityClass? PriorityClass;
 
         /// <summary>
         /// Gets the cancellation token to cancel the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [IgnoreDataMember]
         public readonly CancellationToken? CancellationToken;
 
         /// <summary>
         /// Gets whether to not end the process upon CancellationToken expiring.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool NoTerminateOnTimeout;
 
         /// <summary>
         /// Gets the subsystem required to run the image.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly IMAGE_SUBSYSTEM ImageSubsystem;
 

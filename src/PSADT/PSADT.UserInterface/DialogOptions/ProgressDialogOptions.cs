@@ -87,28 +87,24 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The message to be displayed in the progress dialog, indicating the current status or action being performed.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string ProgressMessageText;
 
         /// <summary>
         /// The detailed message to be displayed in the progress dialog, providing more context or information about the current action.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string ProgressDetailMessageText;
 
         /// <summary>
         /// The percentage value to be displayed on the status bar, if available.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly double? ProgressPercentage;
 
         /// <summary>
         /// The alignment of the message text in the dialog.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly DialogMessageAlignment? MessageAlignment;
     }

@@ -63,28 +63,24 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Represents the title displayed on a toast notification..
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string AppTitle;
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string AppIconImage;
 
         /// <summary>
         /// Represents the file path or identifier for the tray icon used in the application.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? AppTaskbarIconImage;
 
         /// <summary>
         /// Represents the title displayed on the tray.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string MessageText;
     }

@@ -59,21 +59,18 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// Gets the title text displayed in the balloon tip of a notification.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string Title;
 
         /// <summary>
         /// Gets the text displayed in the balloon tip of a notification.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string Text;
 
         /// <summary>
         /// Gets the icon displayed in the balloon tip associated with the notification.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly BalloonTipIcon Icon;
     }

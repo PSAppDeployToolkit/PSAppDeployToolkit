@@ -38,5 +38,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
+    <ProjectReference Include="..\PSADT.CodeAnalysis\PSADT.CodeAnalysis.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
