@@ -96,47 +96,41 @@ namespace PSADT.ProcessManagement
         /// Represents the process associated with the current operation.
         /// </summary>
         [IgnoreDataMember]
-        public Process? Process { get; }
+        public readonly Process? Process;
 
         /// <summary>
         /// Gets the information required to launch a process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly ProcessLaunchInfo? LaunchInfo;
 
         /// <summary>
         /// Gets the command line string associated with the current process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? CommandLine;
 
         /// <summary>
         /// Gets the exit code of the process, if the process had exited.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly int ExitCode;
 
         /// <summary>
         /// Gets the standard output of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly IReadOnlyList<string> StdOut;
 
         /// <summary>
         /// Gets the standard error output of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly IReadOnlyList<string> StdErr;
 
         /// <summary>
         /// Gets the combined standard output and error of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly IReadOnlyList<string> Interleaved;
     }

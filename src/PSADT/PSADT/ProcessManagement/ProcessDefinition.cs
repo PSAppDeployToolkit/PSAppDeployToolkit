@@ -48,14 +48,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets the name of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string Name;
 
         /// <summary>
         /// Gets the description of the process.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? Description;
 
@@ -63,6 +61,6 @@ namespace PSADT.ProcessManagement
         /// Gets the filter script for the process.
         /// </summary>
         [IgnoreDataMember]
-        public Func<RunningProcessInfo, bool>? Filter { get; }
+        public readonly Func<RunningProcessInfo, bool>? Filter;
     }
 }
