@@ -67,7 +67,12 @@ Describe 'Update-ADTDesktop' {
     Context 'Error handling' {
         BeforeAll {
             Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser {
-                return [PSCustomObject]@{ UserName = 'DOMAIN\TestUser' }
+                return [PSADT.Foundation.RunAsActiveUser]::new(
+                    [System.Security.Principal.NTAccount]::new('DOMAIN\TestUser'),
+                    [System.Security.Principal.SecurityIdentifier]::new('S-1-5-21-000000000-0000000000-0000000000-0000'),
+                    [uint32]0,
+                    $null
+                )
             }
         }
 
