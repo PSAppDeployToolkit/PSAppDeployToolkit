@@ -33,11 +33,11 @@ Describe 'Get-ADTPresentationSettingsEnabledUsers' {
             }
         }
 
-        It 'Any returned objects are of type PSADT.Types.UserProfileInfo' {
+        It 'Any returned objects are of type PSADT.AccountManagement.UserProfileInfo' {
             $result = @(Get-ADTPresentationSettingsEnabledUsers)
             foreach ($item in $result)
             {
-                $item | Should -BeOfType ([PSADT.Types.UserProfileInfo])
+                $item | Should -BeOfType ([PSADT.AccountManagement.UserProfileInfo])
             }
         }
 
