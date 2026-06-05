@@ -3,17 +3,16 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Management.Automation.Language;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using PSADT.ProcessManagement;
-using PSADT.Utilities;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
 using PSADT.UserInterface.Interfaces;
+using PSADT.Utilities;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSADT.UserInterface.TestHarness
@@ -48,56 +47,8 @@ namespace PSADT.UserInterface.TestHarness
             }
 
             // Read out the hashtable
-            Hashtable stringTable = (Hashtable)stringsAst.Find(node =>
-                node is HashtableAst innerHt &&
-                innerHt.Parent is CommandExpressionAst ce1 &&
-                ce1.Parent is PipelineAst p1 &&
-                p1.Parent is NamedBlockAst nb &&
-                nb.Parent is ScriptBlockAst sb &&
-                sb.Parent is ScriptBlockExpressionAst sbe &&
-                sbe.Parent is CommandExpressionAst ce2 &&
-                ce2.Parent is PipelineAst p2 &&
-                p2.Parent is HashtableAst emptyStringHt &&
-                emptyStringHt.KeyValuePairs.Any(kvp =>
-                    kvp.Item1.Extent.Text == "[System.String]::Empty" &&
-                    kvp.Item2 == p2) &&
-                emptyStringHt.Parent is ConvertExpressionAst convert1 &&
-                convert1.Parent is CommandExpressionAst ce3 &&
-                ce3.Parent is PipelineAst p3 &&
-                p3.Parent is ParenExpressionAst paren1 &&
-                paren1.Parent is InvokeMemberExpressionAst invoke1 &&
-                invoke1.Parent is CommandExpressionAst ce4 &&
-                ce4.Parent is PipelineAst p4 &&
-                p4.Parent is HashtableAst stringsParentHt &&
-                stringsParentHt.KeyValuePairs.Any(kvp =>
-                    kvp.Item1.Extent.Text == "Strings" &&
-                    kvp.Item2 == p4),
-                true).SafeGetValue();
-            Hashtable configTable = (Hashtable)stringsAst.Find(node =>
-                node is HashtableAst innerHt &&
-                innerHt.Parent is CommandExpressionAst ce1 &&
-                ce1.Parent is PipelineAst p1 &&
-                p1.Parent is NamedBlockAst nb &&
-                nb.Parent is ScriptBlockAst sb &&
-                sb.Parent is ScriptBlockExpressionAst sbe &&
-                sbe.Parent is CommandExpressionAst ce2 &&
-                ce2.Parent is PipelineAst p2 &&
-                p2.Parent is HashtableAst emptyStringHt &&
-                emptyStringHt.KeyValuePairs.Any(kvp =>
-                    kvp.Item1.Extent.Text == "[System.String]::Empty" &&
-                    kvp.Item2 == p2) &&
-                emptyStringHt.Parent is ConvertExpressionAst convert1 &&
-                convert1.Parent is CommandExpressionAst ce3 &&
-                ce3.Parent is PipelineAst p3 &&
-                p3.Parent is ParenExpressionAst paren1 &&
-                paren1.Parent is InvokeMemberExpressionAst invoke1 &&
-                invoke1.Parent is CommandExpressionAst ce4 &&
-                ce4.Parent is PipelineAst p4 &&
-                p4.Parent is HashtableAst stringsParentHt &&
-                stringsParentHt.KeyValuePairs.Any(kvp =>
-                    kvp.Item1.Extent.Text == "Config" &&
-                    kvp.Item2 == p4),
-                true).SafeGetValue();
+            Hashtable stringTable = GetModuleDefaultTable(stringsAst, "Strings");
+            Hashtable configTable = GetModuleDefaultTable(stringsAst, "Config");
             Hashtable assetsTable = (Hashtable)configTable["Assets"]!;
 
             // Set up parameters for testing
@@ -401,6 +352,63 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             _ = await DialogManager.ShowRestartDialogAsync(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions));
 
             // No need to check the result of the Restart Dialog
+        }
+
+        /// <summary>
+        /// Retrieves the default hashtable from the requested ImportsLast.ps1 module defaults entry.
+        /// </summary>
+        /// <param name="importsAst">The parsed ImportsLast.ps1 AST.</param>
+        /// <param name="tableName">The module defaults table name.</param>
+        /// <returns>The default hashtable for the requested module defaults table.</returns>
+        private static Hashtable GetModuleDefaultTable(ScriptBlockAst importsAst, string tableName)
+        {
+            return (Hashtable)(importsAst.Find(node =>
+                node is HashtableAst hashtableAst &&
+                IsModuleDefaultHashtable(hashtableAst, tableName),
+                true)?.SafeGetValue() ?? throw new InvalidDataException($"Unable to locate the '{tableName}' defaults hashtable in ImportsLast.ps1."));
+        }
+
+        /// <summary>
+        /// Determines whether the hashtable is the default language/config hashtable in the requested module defaults entry.
+        /// </summary>
+        /// <param name="hashtableAst">The hashtable AST to inspect.</param>
+        /// <param name="tableName">The module defaults table name.</param>
+        /// <returns><see langword="true" /> when the hashtable belongs to the requested module defaults entry; otherwise, <see langword="false" />.</returns>
+        private static bool IsModuleDefaultHashtable(HashtableAst hashtableAst, string tableName)
+        {
+            return TryFindAncestor(hashtableAst.Parent, static invoke =>
+                invoke.Member.Extent.Text == "new" &&
+                invoke.Arguments.Count >= 2 &&
+                invoke.Arguments[0].Extent.Text == "[System.String]::Empty",
+                out InvokeMemberExpressionAst? defaultEntry) &&
+                defaultEntry != null &&
+                TryFindAncestor(defaultEntry.Parent, invoke =>
+                invoke.Member.Extent.Text == "new" &&
+                invoke.Arguments.Count >= 2 &&
+                invoke.Arguments[0].Extent.Text == $"'{tableName}'",
+                out _);
+        }
+
+        /// <summary>
+        /// Finds the first ancestor invoke member expression matching the specified predicate.
+        /// </summary>
+        /// <param name="ast">The AST to start from.</param>
+        /// <param name="predicate">The predicate used to match an invoke member expression.</param>
+        /// <param name="invokeMemberExpressionAst">The matching invoke member expression, if found.</param>
+        /// <returns><see langword="true" /> when a matching ancestor is found; otherwise, <see langword="false" />.</returns>
+        private static bool TryFindAncestor(Ast? ast, Func<InvokeMemberExpressionAst, bool> predicate, out InvokeMemberExpressionAst? invokeMemberExpressionAst)
+        {
+            for (Ast? current = ast; current != null; current = current.Parent)
+            {
+                if (current is InvokeMemberExpressionAst currentInvokeMemberExpressionAst && predicate(currentInvokeMemberExpressionAst))
+                {
+                    invokeMemberExpressionAst = currentInvokeMemberExpressionAst;
+                    return true;
+                }
+            }
+
+            invokeMemberExpressionAst = null;
+            return false;
         }
     }
 }

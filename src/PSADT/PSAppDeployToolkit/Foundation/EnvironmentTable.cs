@@ -205,6 +205,10 @@ namespace PSAppDeployToolkit.Foundation
                     UserProfileName = RunAsUserProfile?.Name;
                 }
             }
+            else
+            {
+                UsersLoggedOn = new ReadOnlyCollection<NTAccount>([]);
+            }
         }
 
         /// <summary>
@@ -1068,7 +1072,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>The returned collection is updated dynamically to reflect users as they log on and
         /// off. Each user is represented by an NTAccount object. The list is read-only and cannot be modified
         /// directly.</remarks>
-        public IReadOnlyList<NTAccount> UsersLoggedOn { get; } = [];
+        public IReadOnlyList<NTAccount> UsersLoggedOn { get; }
 
         /// <summary>
         /// Gets the current session information for the logged-on user.

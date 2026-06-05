@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -149,7 +150,7 @@ namespace PSAppDeployToolkit.Logging
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
-                    ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
+                    FrozenDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
                     bool colouredOutput = severity != LogSeverity.Info;
                     if (colouredOutput)
                     {
@@ -204,12 +205,12 @@ namespace PSAppDeployToolkit.Logging
         /// <summary>
         /// Gets the log severity colors.
         /// </summary>
-        private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
+        private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green } }),
-            new(new Dictionary<string, ConsoleColor> { }),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow } }),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red } }),
         ]);
 
         /// <summary>

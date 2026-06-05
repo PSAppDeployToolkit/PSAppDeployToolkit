@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -176,7 +177,7 @@ namespace PSADT.ClientServer
             DataContractResolver = new DictionaryDataContractResolver(),
             PreserveObjectReferences = false,
             SerializeReadOnlyTypes = true,
-            KnownTypes = new ReadOnlyCollection<Type>(
+            KnownTypes = FrozenSet.ToFrozenSet(
             [
                 // Exception types - System namespace (core)
                 typeof(Exception),
