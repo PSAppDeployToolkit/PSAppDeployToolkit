@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using PSADT.Extensions;
 
@@ -31,13 +30,5 @@ namespace PSADT.Foundation
         /// Gets the file path of the process that initiated the current execution context.
         /// </summary>
         internal static readonly FileInfo CallingProcessPath;
-
-        /// <summary>
-        /// Gets the directory path of this assembly.
-        /// </summary>
-        /// <remarks>This field can be used to locate files or resources relative to the assembly's
-        /// location at runtime. The returned path is determined by the assembly's current location, which may vary
-        /// depending on how the application is deployed or executed.</remarks>
-        internal static readonly DirectoryInfo AssemblyDirectory = new(Path.GetDirectoryName(typeof(AssemblyManager).Assembly.Location) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly."));
     }
 }

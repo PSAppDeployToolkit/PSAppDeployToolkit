@@ -7,8 +7,6 @@
     <Product>PSAppDeployToolkit Win32 Native Methods Library</Product>
     <AssemblyTitle>PSAppDeployToolkit Win32 Native Methods Library</AssemblyTitle>
     <AssemblyDescription>This assembly provides Win32 library access to all areas of PSAppDeployToolkit.</AssemblyDescription>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <NoWarn>SYSLIB1045;SYSLIB1054</NoWarn>
   </PropertyGroup>
 

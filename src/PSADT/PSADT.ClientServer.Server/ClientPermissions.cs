@@ -26,7 +26,7 @@ namespace PSADT.ClientServer
         /// and point to existing files.</param>
         public static async Task Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
         {
-            await AssemblyPermissions.Remediate(runAsActiveUser, extraPaths, ClientServerUtilities.DefaultElevationType).ConfigureAwait(false);
+            await ClientServerPermissions.Remediate(runAsActiveUser, extraPaths, ClientServerUtilities.DefaultElevationType).ConfigureAwait(false);
         }
     }
 }

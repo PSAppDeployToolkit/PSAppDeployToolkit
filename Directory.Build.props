@@ -17,10 +17,18 @@
     <AnalysisLevel>latest-all</AnalysisLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Platforms>AnyCPU</Platforms>
-    <DebugSymbols>true</DebugSymbols>
     <EmbedAllSources>false</EmbedAllSources>
     <EmbedUntrackedSources>false</EmbedUntrackedSources>
     <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
+  </PropertyGroup>
+
+  <!-- Debug symbol generation must be configured early so SDK targets derive symbol output/copy state correctly. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'PSADT.Interop'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'PSADT.Interop'">
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <!-- Common company/product metadata -->
@@ -40,24 +48,6 @@
   <!-- Release configuration -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Optimize>true</Optimize>
-  </PropertyGroup>
-
-  <!-- ARM64 preference for .NET Framework -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PreferNativeArm64>true</PreferNativeArm64>
-  </PropertyGroup>
-
-  <!-- Debugging symbol setup for .NET Framework -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net472' And '$(Configuration)' == 'Release'">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net472' And '$(Configuration)' == 'Debug'">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <!-- Debugging symbol setup for .NET Core -->
-  <PropertyGroup Condition="'$(TargetFramework)' != 'net472'">
-    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <!-- Banned API analyzer -->

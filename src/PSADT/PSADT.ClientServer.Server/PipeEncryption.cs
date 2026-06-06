@@ -207,7 +207,18 @@ namespace PSADT.ClientServer
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
-            return _ecdh.PublicKey.ExportSubjectPublicKeyInfo();
+            ECParameters ecParams = _ecdh.ExportParameters(false);
+            // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y
+            // Magic for ECDH P-256 public key: ECDH_PUBLIC_P256 = 0x314B4345
+            int keySize = ecParams.Q.X!.Length;
+            byte[] blob = new byte[8 + (keySize * 2)];
+            // ECDH_PUBLIC_P256 magic
+            blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
+            // Key length in bytes
+            blob[4] = (byte)keySize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
+            Buffer.BlockCopy(ecParams.Q.X, 0, blob, 8, keySize);
+            Buffer.BlockCopy(ecParams.Q.Y!, 0, blob, 8 + keySize, keySize);
+            return blob;
 #else
             return _ecdh.PublicKey.ToByteArray();
 #endif
@@ -231,8 +242,18 @@ namespace PSADT.ClientServer
 
             // Import the remote public key and derive shared secret
 #if NET8_0_OR_GREATER
-            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create();
-            remoteEcdh.ImportSubjectPublicKeyInfo(remotePublicKey, out _);
+            // Remote key is in CNG EccPublicBlob format: 8-byte header + X + Y
+            int keySize = BitConverter.ToInt32(remotePublicKey, 4);
+            byte[] x = new byte[keySize];
+            byte[] y = new byte[keySize];
+            Buffer.BlockCopy(remotePublicKey, 8, x, 0, keySize);
+            Buffer.BlockCopy(remotePublicKey, 8 + keySize, y, 0, keySize);
+            ECParameters remoteParams = new()
+            {
+                Curve = ECCurve.NamedCurves.nistP256,
+                Q = new ECPoint { X = x, Y = y }
+            };
+            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create(remoteParams);
             byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remoteEcdh.PublicKey);
 #else
             ECDiffieHellmanPublicKey remotePubKey = ECDiffieHellmanCngPublicKey.FromByteArray(remotePublicKey, CngKeyBlobFormat.EccPublicBlob);

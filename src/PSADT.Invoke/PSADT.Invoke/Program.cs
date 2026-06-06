@@ -32,7 +32,7 @@ namespace PSADT.Invoke
         /// Environment.FailFast. Exit codes 60010 and 60011 indicate specific failure scenarios during preparation or
         /// script launch, respectively.</remarks>
         /// <param name="argv">An array of command-line arguments to configure the deployment process and script invocation. Arguments may
-        /// include options such as debug mode or script paths.</param>
+        /// include options such as debug mode or script path.</param>
         /// <returns>An integer exit code indicating the result of the deployment operation. Returns 0 for success, or a nonzero
         /// value if an error occurs.</returns>
         private static int Main(string[] argv)
