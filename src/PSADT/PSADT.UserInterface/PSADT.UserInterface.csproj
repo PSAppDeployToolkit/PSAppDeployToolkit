@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net472;net10.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>PSADT.UserInterface</RootNamespace>
     <AssemblyName>PSADT.UserInterface</AssemblyName>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="10.0.5" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.16" />
   </ItemGroup>
 
   <ItemGroup>

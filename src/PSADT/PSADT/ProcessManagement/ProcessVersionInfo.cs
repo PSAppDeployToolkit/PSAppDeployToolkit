@@ -592,9 +592,10 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Represents a mask used to extract the relative virtual address (RVA) from an image resource.
         /// </summary>
-        /// <remarks>This constant is used in conjunction with the PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY
-        /// to isolate the RVA portion of an image resource entry. It is typically used in scenarios where
-        /// the directory flag needs to be cleared to obtain the actual RVA.</remarks>
+        /// <remarks>This constant is used in conjunction with the <see
+        /// cref="PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY"/> to isolate the RVA portion of an image resource entry. It
+        /// is typically used in scenarios where the directory flag needs to be cleared to obtain the actual
+        /// RVA.</remarks>
         private const uint IMAGE_RESOURCE_RVA_MASK = ~PInvoke.IMAGE_RESOURCE_DATA_IS_DIRECTORY;
     }
 }
