@@ -69,7 +69,7 @@ function Invoke-ADTModuleCompilation
                         }
 
                         # Throw if the CommandTable doesn't contain the command.
-                        if (!$Script:ModuleBuildState.CommandTable.ContainsKey($_.Text) -and !$_.Text.Equals('Import-ADTModuleAssembly'))
+                        if (!$Script:ModuleBuildState.CommandTable.ContainsKey($_.Text))
                         {
                             throw "Unable to find the command [$($_.Text)] from [$($file.Name)] within the module's CommandTable."
                         }

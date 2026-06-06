@@ -6,9 +6,6 @@ using System.Runtime.CompilerServices;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
-using Windows.Foundation.Metadata;
-using Windows.UI.Notifications;
-using Windows.UI.Shell;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
@@ -21,48 +18,6 @@ namespace PSADT.Utilities
     /// </summary>
     internal static class ShellUtilities
     {
-        /// <summary>
-        /// Attempts to determine whether a Windows Focus Session is currently active.
-        /// </summary>
-        /// <remarks>This method checks for the presence and support of the Windows Focus Session API
-        /// before attempting to retrieve the session state. If the API is unavailable or unsupported, <paramref
-        /// name="isActive"/> is set to <see langword="false"/> and the method returns <see
-        /// langword="false"/>.</remarks>
-        /// <param name="isActive">When this method returns, contains <see langword="true"/> if a Focus Session is active; otherwise, <see
-        /// langword="false"/>. This parameter is passed uninitialized.</param>
-        /// <returns><see langword="true"/> if the Focus Session state was successfully retrieved; otherwise, <see
-        /// langword="false"/>.</returns>
-        internal static bool TryGetFocusSessionActive(out bool isActive)
-        {
-            if (!ApiInformation.IsTypePresent("Windows.UI.Shell.FocusSessionManager") || !FocusSessionManager.IsSupported)
-            {
-                isActive = false;
-                return false;
-            }
-            isActive = FocusSessionManager.GetDefault().IsFocusActive;
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to retrieve the current toast notification mode for the user.
-        /// </summary>
-        /// <remarks>This method checks for the presence of required Windows Runtime APIs before
-        /// attempting to retrieve the notification mode. If the necessary APIs are not available, the method returns
-        /// false and the value of the mode parameter is undefined.</remarks>
-        /// <param name="mode">When this method returns, contains the current toast notification mode if the operation succeeds; otherwise,
-        /// contains an undefined value.</param>
-        /// <returns>true if the notification mode was successfully retrieved; otherwise, false.</returns>
-        internal static bool TryGetNotificationMode(out Interop.ToastNotificationMode mode)
-        {
-            if (!ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationManagerForUser") || !ApiInformation.IsTypePresent("Windows.UI.Notifications.ToastNotificationMode") || !ApiInformation.IsMethodPresent("Windows.UI.Notifications.ToastNotificationManager", "GetDefault") || !ApiInformation.IsPropertyPresent("Windows.UI.Notifications.ToastNotificationManagerForUser", "NotificationMode"))
-            {
-                mode = (Interop.ToastNotificationMode)(-1);
-                return false;
-            }
-            mode = (Interop.ToastNotificationMode)ToastNotificationManager.GetDefault().NotificationMode;
-            return true;
-        }
-
         /// <summary>
         /// Notifies the system that file associations have changed and refreshes the desktop environment.
         /// </summary>

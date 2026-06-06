@@ -20,10 +20,9 @@ namespace PSADT.ClientServer
         /// <remarks>
         /// <para>The client key exchange protocol:</para>
         /// <list type="number">
-        /// <item><description>Client receives server's RSA public key</description></item>
-        /// <item><description>Client sends its RSA public key</description></item>
-        /// <item><description>Client receives the encrypted shared secret from the server</description></item>
-        /// <item><description>Client decrypts the shared secret using its RSA private key</description></item>
+        /// <item><description>Client receives server's ECDH public key</description></item>
+        /// <item><description>Client sends its ECDH public key</description></item>
+        /// <item><description>Both derive shared secret via ECDH</description></item>
         /// <item><description>Client receives server's challenge</description></item>
         /// <item><description>Client generates its own challenge and returns encrypted {server_challenge || client_challenge}</description></item>
         /// <item><description>Client receives and verifies encrypted client_challenge from server</description></item>
@@ -36,16 +35,15 @@ namespace PSADT.ClientServer
             ArgumentNullException.ThrowIfNull(outputStream);
             ArgumentNullException.ThrowIfNull(inputStream);
 
-            // Client receives server's public key.
+            // Client receives server's public key first.
             byte[] serverPublicKey = ReadLengthPrefixedBytes(inputStream);
 
             // Client sends its public key.
             byte[] publicKey = GetPublicKey();
             WriteLengthPrefixedBytes(outputStream, publicKey);
 
-            // Client receives the encrypted shared secret from the server and derives keys.
-            byte[] encryptedSharedSecret = ReadLengthPrefixedBytes(inputStream);
-            DeriveSharedKey(encryptedSharedSecret, publicKey, serverPublicKey);
+            // Derive the shared key.
+            DeriveSharedKey(serverPublicKey);
 
             // Mutual authentication.
             PerformMutualAuthentication(outputStream, inputStream);

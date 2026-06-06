@@ -60,3 +60,7 @@ dotnet_diagnostic.S3358.severity = none
 dotnet_diagnostic.S3458.severity = none
 dotnet_diagnostic.S3869.severity = none
 dotnet_diagnostic.S4457.severity = none
+
+# Suppress warnings for CsWinRT-generated files.
+[src/PSADT/PSADT.Interop/obj/**/Generated Files/CsWinRT/**.cs]
+dotnet_diagnostic.CS1591.severity = none

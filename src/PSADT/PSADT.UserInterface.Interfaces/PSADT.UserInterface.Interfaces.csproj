@@ -55,7 +55,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Security.AccessControl" Version="6.0.1" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 </Project>

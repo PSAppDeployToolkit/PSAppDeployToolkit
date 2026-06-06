@@ -44,58 +44,6 @@ $ModuleImportStart = [System.DateTime]::Now
 # Rethrowing caught exceptions makes the error output from Import-Module look better.
 try
 {
-    # Helper function for importing module assemblies.
-    filter Private:Import-ADTModuleAssembly
-    {
-        [CmdletBinding()]
-        param
-        (
-            [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-            [ValidateNotNullOrEmpty()]
-            [System.String]$InputObject,
-
-            [Parameter(Mandatory = $false)]
-            [System.Management.Automation.SwitchParameter]$SkipChecks
-        )
-
-        # Test whether the assembly is already loaded.
-        if (($existingAssembly = $LoadedAssemblies | & { process { if ([System.IO.Path]::GetFileName($_.Location).Equals([System.IO.Path]::GetFileName($InputObject))) { return $_ } } } | Select-Object -First 1))
-        {
-            # Test the loaded assembly for SHA256 hash equality, returning early if the assembly is OK.
-            if (!$SkipChecks -and !(Get-FileHash -LiteralPath $existingAssembly.Location).Hash.Equals((Get-FileHash -LiteralPath $InputObject).Hash))
-            {
-                throw [System.Management.Automation.ErrorRecord]::new(
-                    [System.InvalidProgramException]::new("A PSAppDeployToolkit assembly of a different file hash is already loaded. Please restart PowerShell and try again."),
-                    'ConflictingModuleLoaded',
-                    [System.Management.Automation.ErrorCategory]::InvalidOperation,
-                    $existingAssembly
-                )
-            }
-            return
-        }
-
-        # If we're on a compiled build, confirm the DLLs are signed before proceeding.
-        if (!$SkipChecks -and $Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $InputObject).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
-        {
-            throw [System.Management.Automation.ErrorRecord]::new(
-                [System.Security.Cryptography.CryptographicException]::new("The assembly [$InputObject] has an invalid digital signature and cannot be loaded."),
-                'ADTAssemblyFileSignatureError',
-                [System.Management.Automation.ErrorCategory]::SecurityError,
-                $badFile
-            )
-        }
-
-        # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
-        if ($Module.Remote)
-        {
-            $null = [System.Reflection.Assembly]::UnsafeLoadFrom($InputObject)
-        }
-        else
-        {
-            Add-Type -LiteralPath $InputObject
-        }
-    }
-
     # Build out lookup table for all cmdlets used within module.
     $CommandTable = [System.Collections.Generic.Dictionary[System.String, System.Management.Automation.CommandInfo]]::new()
     $ExecutionContext.SessionState.InvokeCommand.GetCmdlets() | & { process { if ($_.PSSnapIn -and $_.PSSnapIn.Name.Equals('Microsoft.PowerShell.Core') -and $_.PSSnapIn.IsDefault) { $CommandTable.Add($_.Name, $_) } } }
@@ -138,30 +86,67 @@ try
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
-            Dependencies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]][System.IO.Directory]::GetFiles([System.IO.Path]::Combine($PSScriptRoot, 'lib'), '*.dll') | & { process { if (![System.IO.Path]::GetFileName($_).StartsWith('PSA')) { return $_ } } }
             Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]("$PSScriptRoot\lib\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\PSADT.dll", "$PSScriptRoot\lib\PSADT.UserInterface.dll", "$PSScriptRoot\lib\PSADT.ClientServer.Server.dll")
-            Remote = [System.Uri]::new($PSScriptRoot).IsUnc -or (($PSScriptRoot -match '^[A-Za-z]:\\') -and [System.IO.DriveInfo]::new($Matches.0).DriveType.Equals([System.IO.DriveType]::Network))
-            Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
             Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
+            Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
         }).AsReadOnly()
 
-    # Import our assemblies, starting with dependencies.
-    New-Variable -Name LoadedAssemblies -Option Constant -Value ([System.AppDomain]::CurrentDomain.GetAssemblies() | & { process { if (!$_.IsDynamic) { return $_ } } }) -Force
-    Add-Type -AssemblyName System.ServiceProcess
-    if ($PSEdition.Equals('Desktop'))
-    {
-        $Module.Dependencies | & (Get-Item -LiteralPath Microsoft.PowerShell.Core\Function::Import-ADTModuleAssembly) -SkipChecks
-    }
+    # Import our assemblies, factoring in whether they're on a network share or not.
+    $Module.Assemblies | & {
+        begin
+        {
+            # Cache loaded assemblies to test whether they're already loaded.
+            $domainAssemblies = [System.AppDomain]::CurrentDomain.GetAssemblies()
 
-    # Import PSAppDeployToolkit.dll first as it's got extra stuff we need to load in.
-    $Module.Assemblies | & { process { if ($_.EndsWith('\PSAppDeployToolkit.dll')) { return $_ } } } | & (Get-Item -LiteralPath Microsoft.PowerShell.Core\Function::Import-ADTModuleAssembly)
-    if ($PSEdition.Equals('Desktop'))
-    {
-        [PSAppDeployToolkit.Foundation.AssemblyResolver]::Register()
-    }
+            # Determine whether we're on a network location.
+            $isNetworkLocation = [System.Uri]::new($PSScriptRoot).IsUnc -or (($PSScriptRoot -match '^[A-Za-z]:\\') -and [System.IO.DriveInfo]::new($Matches.0).DriveType.Equals([System.IO.DriveType]::Network))
 
-    # Now load in the remainder, everything should be good from here.
-    $Module.Assemblies | & { process { if (!$_.EndsWith('\PSAppDeployToolkit.dll')) { return $_ } } } | & (Get-Item -LiteralPath Microsoft.PowerShell.Core\Function::Import-ADTModuleAssembly)
+            # Add in system assemblies.
+            Add-Type -AssemblyName @(
+                'System.ServiceProcess'
+            )
+        }
+
+        process
+        {
+            # Test whether the assembly is already loaded.
+            if (($existingAssembly = $domainAssemblies | & { process { if (!$_.IsDynamic -and [System.IO.Path]::GetFileName($_.Location).Equals([System.IO.Path]::GetFileName($args[0]))) { return $_ } } } $_ | Select-Object -First 1))
+            {
+                # Test the loaded assembly for SHA256 hash equality, returning early if the assembly is OK.
+                if (!(Get-FileHash -LiteralPath $existingAssembly.Location).Hash.Equals((Get-FileHash -LiteralPath $_).Hash))
+                {
+                    throw [System.Management.Automation.ErrorRecord]::new(
+                        [System.InvalidProgramException]::new("A PSAppDeployToolkit assembly of a different file hash is already loaded. Please restart PowerShell and try again."),
+                        'ConflictingModuleLoaded',
+                        [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                        $existingAssembly
+                    )
+                }
+                return
+            }
+
+            # If we're on a compiled build, confirm the DLLs are signed before proceeding.
+            if ($Module.Signed -and !($badFile = Get-AuthenticodeSignature -LiteralPath $_).Status.Equals([System.Management.Automation.SignatureStatus]::Valid))
+            {
+                throw [System.Management.Automation.ErrorRecord]::new(
+                    [System.Security.Cryptography.CryptographicException]::new("The assembly [$_] has an invalid digital signature and cannot be loaded."),
+                    'ADTAssemblyFileSignatureError',
+                    [System.Management.Automation.ErrorCategory]::SecurityError,
+                    $badFile
+                )
+            }
+
+            # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
+            if ($isNetworkLocation)
+            {
+                [System.Reflection.Assembly]::UnsafeLoadFrom($_)
+            }
+            else
+            {
+                Add-Type -LiteralPath $_
+            }
+        }
+    }
 
     # Remove any previous functions that may have been defined.
     if ($Module.Compiled)

@@ -18,7 +18,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Platforms>AnyCPU</Platforms>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
     <EmbedAllSources>false</EmbedAllSources>
     <EmbedUntrackedSources>false</EmbedUntrackedSources>
     <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
@@ -44,8 +43,21 @@
   </PropertyGroup>
 
   <!-- ARM64 preference for .NET Framework -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <PreferNativeArm64>true</PreferNativeArm64>
+  </PropertyGroup>
+
+  <!-- Debugging symbol setup for .NET Framework -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472' And '$(Configuration)' == 'Release'">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472' And '$(Configuration)' == 'Debug'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <!-- Debugging symbol setup for .NET Core -->
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net472'">
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <!-- Banned API analyzer -->

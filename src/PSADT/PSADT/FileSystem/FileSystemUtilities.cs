@@ -32,65 +32,65 @@ namespace PSADT.FileSystem
     public static class FileSystemUtilities
     {
         /// <summary>
-        /// Gets the security descriptor for the specified file.
+        /// Gets the security descriptor for the specified file. This is here for PowerShell 7.
         /// </summary>
         /// <param name="fileInfo">The file to get the security descriptor for.</param>
         /// <returns>The security descriptor for the file.</returns>
         public static FileSecurity GetAccessControl(FileInfo fileInfo)
         {
-            return FileSystemAclExtensions.GetAccessControl(fileInfo);
+            return fileInfo.GetAccessControl();
         }
 
         /// <summary>
-        /// Gets the security descriptor for the specified file.
+        /// Gets the security descriptor for the specified file. This is here for PowerShell 7.
         /// </summary>
         /// <param name="fileInfo">The file to get the security descriptor for.</param>
         /// <param name="includeSections">Specifies which sections of the security descriptor to include.</param>
         /// <returns>The security descriptor for the file.</returns>
         public static FileSecurity GetAccessControl(FileInfo fileInfo, AccessControlSections includeSections)
         {
-            return FileSystemAclExtensions.GetAccessControl(fileInfo, includeSections);
+            return fileInfo.GetAccessControl(includeSections);
         }
 
         /// <summary>
-        /// Gets the access control security for a directory.
+        /// Gets the access control security for a directory. This is here for PowerShell 7.
         /// </summary>
         /// <param name="directoryInfo">The directory to get security information for.</param>
         /// <returns>The security descriptor for the specified directory.</returns>
         public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo)
         {
-            return FileSystemAclExtensions.GetAccessControl(directoryInfo);
+            return directoryInfo.GetAccessControl();
         }
 
         /// <summary>
-        /// Gets the access control security for a directory.
+        /// Gets the access control security for a directory. This is here for PowerShell 7.
         /// </summary>
         /// <param name="directoryInfo">The directory to get security information for.</param>
         /// <param name="includeSections">Specifies which sections of the security descriptor to include.</param>
         /// <returns>The security descriptor for the specified directory.</returns>
         public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo, AccessControlSections includeSections)
         {
-            return FileSystemAclExtensions.GetAccessControl(directoryInfo, includeSections);
+            return directoryInfo.GetAccessControl(includeSections);
         }
 
         /// <summary>
-        /// Sets the security access control for a file.
+        /// Sets the security access control for a file. This is here for PowerShell 7.
         /// </summary>
         /// <param name="fileInfo">The file to modify.</param>
         /// <param name="fileSecurity">The security access control to apply.</param>
         public static void SetAccessControl(FileInfo fileInfo, FileSecurity fileSecurity)
         {
-            FileSystemAclExtensions.SetAccessControl(fileInfo, fileSecurity);
+            fileInfo.SetAccessControl(fileSecurity);
         }
 
         /// <summary>
-        /// Sets access control information for the specified directory.
+        /// Sets access control information for the specified directory. This is here for PowerShell 7.
         /// </summary>
         /// <param name="directoryInfo">The directory for which to set access control information.</param>
         /// <param name="directorySecurity">The access control information to apply to the directory.</param>
         public static void SetAccessControl(DirectoryInfo directoryInfo, DirectorySecurity directorySecurity)
         {
-            FileSystemAclExtensions.SetAccessControl(directoryInfo, directorySecurity);
+            directoryInfo.SetAccessControl(directorySecurity);
         }
 
         /// <summary>
