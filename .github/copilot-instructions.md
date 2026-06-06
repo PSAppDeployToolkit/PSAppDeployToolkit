@@ -30,6 +30,7 @@ The main build dependency is a current .NET SDK. Visual Studio is recommended fo
 - Run `build.cmd` or `build.ps1` from the repository root to perform a full build.
 - Prefer the existing VS Code tasks and build entry points over ad-hoc commands when validating changes.
 - Common validation tasks include `Build`, `Test`, `Analyze`, `FormattingCheck`, and `ValidateRequirements`.
+- Only build from within Visual Studio; do not use `dotnet build` for validation/builds. When diagnosing build behavior in this repository, prefer Visual Studio/MSBuild workspace builds and Output window logs over `dotnet build` for issues suspected to be MSBuild-specific. Use `dotnet msbuild` when compiling and permit it for MSBuild diagnostics.
 
 ## Repository Orientation
 

@@ -86,7 +86,14 @@ try
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
-            Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]("$PSScriptRoot\lib\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\PSADT.dll", "$PSScriptRoot\lib\PSADT.UserInterface.dll", "$PSScriptRoot\lib\PSADT.ClientServer.Server.dll")
+            Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]$(if (!$PSVersionTable.PSEdition.Equals('Desktop'))
+                {
+                    "$PSScriptRoot\lib\net10.0\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net10.0\PSADT.Interop.dll", "$PSScriptRoot\lib\net10.0\PSADT.dll", "$PSScriptRoot\lib\net10.0\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net10.0\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net10.0\Microsoft.Windows.SDK.NET.dll", "$PSScriptRoot\lib\net10.0\PSADT.WindowsRuntime.dll"
+                }
+                else
+                {
+                    "$PSScriptRoot\lib\net472\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net472\PSADT.Interop.dll", "$PSScriptRoot\lib\net472\PSADT.dll", "$PSScriptRoot\lib\net472\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net472\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net472\PSADT.WindowsRuntime.dll"
+                })
             Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
             Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
         }).AsReadOnly()
@@ -139,11 +146,20 @@ try
             # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
             if ($isNetworkLocation)
             {
-                [System.Reflection.Assembly]::UnsafeLoadFrom($_)
+                $null = [System.Reflection.Assembly]::UnsafeLoadFrom($_)
             }
             else
             {
                 Add-Type -LiteralPath $_
+            }
+        }
+
+        end
+        {
+            # Prime the pump for WinRT on Windows PowerShell 5.1.
+            if ($PSVersionTable.PSEdition.Equals('Desktop'))
+            {
+                $null = [Windows.UI.Notifications.ToastNotificationMode, Windows.UI.Notifications, ContentType = WindowsRuntime]
             }
         }
     }
