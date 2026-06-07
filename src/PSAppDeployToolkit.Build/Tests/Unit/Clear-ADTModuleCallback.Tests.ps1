@@ -68,6 +68,10 @@ Describe 'Clear-ADTModuleCallback' {
     }
 
     Context 'Input Validation' {
+        It 'Should have a mandatory Hookpoint parameter' {
+            (Get-Command Clear-ADTModuleCallback).Parameters['Hookpoint'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] }).Mandatory | Should -Contain $true
+        }
+
         It 'Throws ParameterArgumentTransformationError when Hookpoint is an invalid enum value' {
             $shouldParams = @{
                 Throw         = $true
