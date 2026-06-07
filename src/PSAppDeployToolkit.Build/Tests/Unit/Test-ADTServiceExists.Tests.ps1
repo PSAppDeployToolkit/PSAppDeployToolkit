@@ -6,25 +6,8 @@ Describe 'Test-ADTServiceExists' {
     BeforeAll {
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'realServiceName', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
         $realServiceName = Get-Service | Select-Object -First 1 -ExpandProperty Name
-
-        while ($true)
-        {
-            $fakeServiceName = [System.Guid]::NewGuid().ToString()
-
-            try
-            {
-                Get-Service -Name $fakeServiceName
-            }
-            catch [Microsoft.PowerShell.Commands.ServiceCommandException]
-            {
-                if ($_.CategoryInfo.Category -eq [System.Management.Automation.ErrorCategory]::ObjectNotFound)
-                {
-                    break
-                }
-
-                throw
-            }
-        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fakeServiceName', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
+        $fakeServiceName = [System.Guid]::NewGuid().ToString()
 
         # Mock Write-ADTLogEntry due to its expense when running via Pester.
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
