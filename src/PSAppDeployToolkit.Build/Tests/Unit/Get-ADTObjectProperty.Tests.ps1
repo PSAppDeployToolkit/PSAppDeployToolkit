@@ -17,6 +17,9 @@ Describe 'Get-ADTObjectProperty' {
             $fi = [System.IO.FileInfo]::new('C:\x.txt')
             Get-ADTObjectProperty -InputObject $fi -PropertyName 'Name' | Should -BeOfType ([System.String])
         }
+        It 'Returns the character at the given index via -ArgumentList' {
+            Get-ADTObjectProperty -InputObject 'hello' -PropertyName 'Chars' -ArgumentList @(1) | Should -Be 'e'
+        }
         It 'Throws MissingMethodException when the property does not exist' {
             $fi = [System.IO.FileInfo]::new('C:\x.txt')
             $shouldParams = @{
