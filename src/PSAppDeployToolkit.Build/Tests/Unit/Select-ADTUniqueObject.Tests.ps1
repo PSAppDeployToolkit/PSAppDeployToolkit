@@ -23,6 +23,9 @@ Describe 'Select-ADTUniqueObject' {
         It 'Preserves distinct-cased strings when -CaseSensitivity Ordinal is specified' {
             $result = 'alpha', 'Alpha', 'ALPHA' | Select-ADTUniqueObject -CaseSensitivity Ordinal
             $result | Should -HaveCount 3
+            $result | Should -Contain 'alpha'
+            $result | Should -Contain 'Alpha'
+            $result | Should -Contain 'ALPHA'
         }
         It 'Returns a single item when all inputs are the same value' {
             $result = 42, 42, 42 | Select-ADTUniqueObject
