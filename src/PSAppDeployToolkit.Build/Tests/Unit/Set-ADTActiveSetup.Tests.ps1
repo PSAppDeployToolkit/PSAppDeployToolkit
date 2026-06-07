@@ -53,11 +53,21 @@ Describe 'Set-ADTActiveSetup' {
         }
 
         It 'Should reject a Version containing more than four octets' {
-            { Set-ADTActiveSetup -StubExePath 'C:\Tool\app.exe' -Key 'K' -Description 'D' -Version '1.2.3.4.5' } | Should -Throw
+            $shouldParams = @{
+                Throw         = $true
+                ExceptionType = [System.ArgumentException]
+                ErrorId       = 'InvalidVersionParameterValue,Set-ADTActiveSetup'
+            }
+            { Set-ADTActiveSetup -StubExePath 'C:\Tool\app.exe' -Key 'K' -Description 'D' -Version '1.2.3.4.5' } | Should @shouldParams
         }
 
         It 'Should reject a Version containing non-numeric, non-separator characters' {
-            { Set-ADTActiveSetup -StubExePath 'C:\Tool\app.exe' -Key 'K' -Description 'D' -Version 'abc' } | Should -Throw
+            $shouldParams = @{
+                Throw         = $true
+                ExceptionType = [System.ArgumentException]
+                ErrorId       = 'InvalidVersionParameterValue,Set-ADTActiveSetup'
+            }
+            { Set-ADTActiveSetup -StubExePath 'C:\Tool\app.exe' -Key 'K' -Description 'D' -Version 'abc' } | Should @shouldParams
         }
     }
 

@@ -5,6 +5,11 @@
 Describe 'Open-ADTSession' {
     BeforeAll {
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
+        # Mock the exit seam so that Close-ADTSession -NoShellExit never calls Exit-ADTInvocation,
+        # which executes a bare 'break' statement that would abort the while-loop in the helper
+        # below after only one iteration. Without this mock the helper is not deterministic when
+        # more than one session is stacked. (Mirrors the pattern in Close-ADTSession.Tests.ps1.)
+        Mock -ModuleName PSAppDeployToolkit Exit-ADTInvocation { }
 
         # Helper to ensure no session leaks between It blocks within this file.
         function Close-AnyActiveADTSession

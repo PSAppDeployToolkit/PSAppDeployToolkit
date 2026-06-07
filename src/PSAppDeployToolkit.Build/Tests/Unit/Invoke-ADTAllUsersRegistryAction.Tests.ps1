@@ -55,7 +55,7 @@ Describe 'Invoke-ADTAllUsersRegistryAction' {
             Should -Invoke -ModuleName PSAppDeployToolkit -CommandName Get-ADTUserProfiles -Times 1 -Exactly
         }
 
-        It 'Does not invoke reg.exe when the hive is already loaded' {
+        It 'Runs the scriptblock for all profiles when hives are already loaded (no-load path)' {
             # The hive-load branch is gated behind Test-Path returning $false; with it true,
             # the function must not attempt to mount any hive.
             $script:invokedSids = [System.Collections.Generic.List[System.String]]::new()

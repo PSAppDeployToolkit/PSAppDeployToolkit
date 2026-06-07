@@ -9,12 +9,12 @@ Describe 'Get-ADTCommandTable' {
 
     Context 'Functionality' {
         It 'Does not throw' {
-            # BUG: Get-ADTCommandTable.ps1:47 iterates $Script:CommandTable.Values.GetEnumerator()
-            # with foreach. ImmutableArray<T>.Enumerator is a struct that also implements
-            # IEnumerable<T>, so PowerShell foreach treats the enumerator struct itself as the
-            # iterable collection, yielding one item (the struct) instead of the CommandInfo objects.
-            # The fix is to iterate $Script:CommandTable.Values directly (without .GetEnumerator()).
-            # This test documents the correct contract and will pass once the bug is fixed.
+            # Regression guard: Get-ADTCommandTable.ps1 previously iterated
+            # $Script:CommandTable.Values.GetEnumerator() with foreach. ImmutableArray<T>.Enumerator
+            # is a struct that also implements IEnumerable<T>, so PowerShell foreach treated the
+            # enumerator struct itself as the iterable, yielding one item (the struct) instead of
+            # the CommandInfo objects. The fix was to iterate $Script:CommandTable.Values directly
+            # (without .GetEnumerator()). This test guards against that regression recurring.
             { Get-ADTCommandTable } | Should -Not -Throw
         }
 

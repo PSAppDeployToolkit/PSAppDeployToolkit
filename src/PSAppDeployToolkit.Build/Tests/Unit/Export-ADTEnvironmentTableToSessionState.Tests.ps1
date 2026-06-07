@@ -79,6 +79,9 @@ Describe 'Export-ADTEnvironmentTableToSessionState' {
 
         It 'SessionState parameter is not mandatory' {
             $attrs = (Get-Command Export-ADTEnvironmentTableToSessionState).Parameters['SessionState'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] })
+            # Guard: at least one [Parameter()] attribute must exist, otherwise the Mandatory check would
+            # trivially pass even if the parameter had no [Parameter()] decoration at all.
+            $attrs.Count | Should -BeGreaterThan 0
             $attrs.Mandatory | Should -Not -Contain $true
         }
     }

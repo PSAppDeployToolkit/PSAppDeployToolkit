@@ -32,6 +32,9 @@ Describe 'Test-ADTModuleInitialized' {
             Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
             { Test-ADTModuleInitialized } | Should -Not -Throw
         }
+        # NOTE: this Describe intentionally leaves the in-memory module uninitialized at file end.
+        # The next test file re-imports the module fresh in its own top-level BeforeAll, so this
+        # uninitialized state does not leak to subsequent test files.
     }
 
     Context 'Metadata' {

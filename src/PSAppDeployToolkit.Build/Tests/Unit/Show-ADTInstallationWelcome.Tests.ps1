@@ -2,6 +2,9 @@
     Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
     Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }
+# NOTE: tests in this file can be individually slow (~2 s each) because the production
+# silent-close path calls Thread.Sleep(2000). That sleep is deep inside the module and is
+# not mocked here; it is by design so the UI has time to close gracefully.
 Describe 'Show-ADTInstallationWelcome' {
     BeforeAll {
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }

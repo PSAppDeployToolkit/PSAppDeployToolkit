@@ -2,6 +2,10 @@
     Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
     Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }
+# NOTE: the 'Should pass a populated ModuleHelpMap' test is inherently slow (~several seconds)
+# because Show-ADTHelpConsole builds its help map by calling Get-Help -Full over every exported
+# command at startup. The ModuleHelpMap.Count > 0 assertion is intentionally NOT mocked away
+# because verifying a non-empty map is the core contract of that test.
 Describe 'Show-ADTHelpConsole' {
     BeforeAll {
         Mock -ModuleName PSAppDeployToolkit Write-ADTLogEntry { }
