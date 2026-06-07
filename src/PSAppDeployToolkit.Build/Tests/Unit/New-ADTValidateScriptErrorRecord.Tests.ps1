@@ -29,6 +29,12 @@ Describe 'New-ADTValidateScriptErrorRecord' {
             $record = New-ADTValidateScriptErrorRecord -ParameterName 'FilePath' -ProvidedValue 'C:\bad' -ExceptionMessage 'Path is invalid' -InnerException $inner
             $record.Exception.InnerException | Should -BeOfType ([System.IO.IOException])
         }
+        It 'Does not throw and returns an [ErrorRecord] with null TargetObject when ProvidedValue is $null' {
+            { New-ADTValidateScriptErrorRecord -ParameterName 'FilePath' -ProvidedValue $null -ExceptionMessage 'Path is invalid' } | Should -Not -Throw
+            $record = New-ADTValidateScriptErrorRecord -ParameterName 'FilePath' -ProvidedValue $null -ExceptionMessage 'Path is invalid'
+            $record | Should -BeOfType ([System.Management.Automation.ErrorRecord])
+            $record.TargetObject | Should -BeNull
+        }
     }
 
     Context 'Input Validation' {
