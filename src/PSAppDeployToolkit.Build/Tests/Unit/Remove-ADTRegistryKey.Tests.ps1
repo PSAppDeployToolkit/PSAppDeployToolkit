@@ -57,8 +57,12 @@ Describe 'Remove-ADTRegistryKey' {
         It 'Should not throw and write an error when removing a key with subkeys without -Recurse' {
             # Initialize-ADTFunction uses SilentlyContinue, so the SubKeyRecursionError is handled
             # internally by Invoke-ADTFunctionErrorHandler and is not propagated as a terminating exception.
+            # Call directly (not inside a Should-Not-Throw scriptblock) so -ErrorVariable is reachable.
             New-Item -Path "$TestRegistry\Target\SubKey" -ItemType Directory | Out-Null
-            { Remove-ADTRegistryKey -LiteralPath "$TestRegistry\Target" } | Should -Not -Throw
+            $err = $null
+            Remove-ADTRegistryKey -LiteralPath "$TestRegistry\Target" -ErrorVariable err -ErrorAction SilentlyContinue
+            $err | Should -Not -BeNullOrEmpty
+            $err[0].FullyQualifiedErrorId | Should -BeLike 'SubKeyRecursionError*'
             # The target key should still exist because the removal was blocked.
             Test-Path -LiteralPath "$TestRegistry\Target" | Should -BeTrue
         }
