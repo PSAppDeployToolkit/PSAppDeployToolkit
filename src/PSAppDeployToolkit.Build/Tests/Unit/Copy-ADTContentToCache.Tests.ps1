@@ -103,8 +103,11 @@ Describe 'Copy-ADTContentToCache' {
         It 'Invokes Copy-ADTFile only for Files when Exclude contains SupportFiles and Toolkit' {
             $excludeCache = "$TestDrive\Cache\ExcludeRun"
             Copy-ADTContentToCache -LiteralPath $excludeCache -Exclude SupportFiles, Toolkit
-            Should -Invoke -CommandName Copy-ADTFile -ModuleName PSAppDeployToolkit -ParameterFilter {
-                $LiteralPath -contains "$FakeScriptDir\Files" -or ($LiteralPath -like '*\Files')
+            Should -Invoke -CommandName Copy-ADTFile -ModuleName PSAppDeployToolkit -Times 1 -Exactly -ParameterFilter {
+                $LiteralPath -like '*\Files'
+            }
+            Should -Invoke -CommandName Copy-ADTFile -ModuleName PSAppDeployToolkit -Times 0 -ParameterFilter {
+                $LiteralPath -like '*\SupportFiles'
             }
         }
 
