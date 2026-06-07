@@ -2,12 +2,10 @@
     Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
     Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 
-    # Build a minimal but valid MSI fixture in $env:TEMP using the Windows Installer COM.
-    # The MSI is created with mode 3 (msiOpenDatabaseModeCreate), a SummaryInformation stream,
-    # and a seeded Property table.  All COM handles are released + GC'd before the fixture is
-    # copied to a second path.  Get-ADTMsiTableProperty uses P/Invoke (MsiOpenDatabase) which
-    # cannot open a file still held by the COM Installer object in the same process; copying
-    # the file after releasing the COM handles produces an unlocked file that P/Invoke can read.
+    # Build a minimal but valid MSI fixture via the shared real-fixture toolkit. The helper
+    # authors a Property table + SummaryInformation stream with the WindowsInstaller COM and
+    # releases all COM handles before returning, leaving an unlocked file on disk.
+    Import-Module "$PSScriptRoot\..\Support\TestFixtures.psm1" -Force
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'MsiFixturePath', Justification = 'Used inside It blocks.')]
     $MsiFixturePath = $null
@@ -15,64 +13,17 @@
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'MsiFixtureGuid', Justification = 'Used inside It blocks.')]
     $MsiFixtureGuid = '{FIXTURE0-0000-0000-0000-000000000001}'
 
-    # Helper: insert one Property row via a parameterised INSERT.
-    $InsertProperty = {
-        param($Db, $Installer, [string]$Name, [string]$Value)
-        $sqlInsert = 'INSERT INTO Property (Property, Value) VALUES (?, ?)'
-        $iv = $Db.GetType().InvokeMember('OpenView', [System.Reflection.BindingFlags]::InvokeMethod, $null, $Db, @($sqlInsert))
-        $ir = $Installer.GetType().InvokeMember('CreateRecord', [System.Reflection.BindingFlags]::InvokeMethod, $null, $Installer, @(2))
-        $null = $ir.GetType().InvokeMember('StringData', [System.Reflection.BindingFlags]::SetProperty, $null, $ir, @(1, $Name))
-        $null = $ir.GetType().InvokeMember('StringData', [System.Reflection.BindingFlags]::SetProperty, $null, $ir, @(2, $Value))
-        $null = $iv.GetType().InvokeMember('Execute', [System.Reflection.BindingFlags]::InvokeMethod, $null, $iv, @($ir))
-        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($ir)
-        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($iv)
+    # Author the MSI into a temp path with the five known seed properties.
+    $tmpMsiPath = "$env:TEMP\GetMsiTableProp_$(New-Guid).msi"
+    $null = New-ADTTestMsiDatabase -Path $tmpMsiPath -ProductName 'Fixture App' -ProductCode $MsiFixtureGuid -Properties @{
+        ProductVersion  = '1.2.3'
+        Manufacturer    = 'Fixture Corp'
+        ProductLanguage = '1033'
     }
 
-    # Phase 1: create the MSI via COM into a temp file.
-    $tmpMsiPath = "$env:TEMP\GetMsiTableProp_$(New-Guid).msi"
-
-    $installer = New-Object -ComObject WindowsInstaller.Installer
-    $db = $installer.GetType().InvokeMember('OpenDatabase', [System.Reflection.BindingFlags]::InvokeMethod, $null, $installer, @([string]$tmpMsiPath, 3))
-
-    # Write SummaryInformation stream (required for a valid MSI).
-    # COM property indices: 2=Subject, 3=Author, 4=Title, 7=Template, 9=RevisionNumber, 14=PageCount, 15=WordCount.
-    $si = $db.GetType().InvokeMember('SummaryInformation', [System.Reflection.BindingFlags]::GetProperty, $null, $db, @(10))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(2, $MsiFixtureGuid))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(3, 'PSAppDeployToolkit Test Suite'))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(4, 'PSAppDeployToolkit Test Author'))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(7, ';1033'))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(9, $MsiFixtureGuid))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(14, 200))
-    $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(15, 2))
-    $null = $si.GetType().InvokeMember('Persist', [System.Reflection.BindingFlags]::InvokeMethod, $null, $si, @())
-    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($si)
-    $si = $null
-
-    # Create the Property table.
-    $sqlCreate = 'CREATE TABLE Property (Property CHAR(72) NOT NULL, Value CHAR(0) NOT NULL PRIMARY KEY Property)'
-    $cv = $db.GetType().InvokeMember('OpenView', [System.Reflection.BindingFlags]::InvokeMethod, $null, $db, @($sqlCreate))
-    $null = $cv.GetType().InvokeMember('Execute', [System.Reflection.BindingFlags]::InvokeMethod, $null, $cv, @([System.Reflection.Missing]::Value))
-    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($cv)
-    $cv = $null
-
-    # Seed five known properties.
-    & $InsertProperty $db $installer 'ProductName'     'Fixture App'
-    & $InsertProperty $db $installer 'ProductCode'     $MsiFixtureGuid
-    & $InsertProperty $db $installer 'ProductVersion'  '1.2.3'
-    & $InsertProperty $db $installer 'Manufacturer'    'Fixture Corp'
-    & $InsertProperty $db $installer 'ProductLanguage' '1033'
-
-    $null = $db.GetType().InvokeMember('Commit', [System.Reflection.BindingFlags]::InvokeMethod, $null, $db, @())
-
-    # Phase 2: release all COM handles so the P/Invoke layer can open the file.
-    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($db)
-    $db = $null
-    $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
-    $installer = $null
-    [System.GC]::Collect()
-    [System.GC]::WaitForPendingFinalizers()
-
-    # Phase 3: copy to an unlocked path for P/Invoke reads.
+    # COPY-BEFORE-READ: Get-ADTMsiTableProperty reads via P/Invoke (MsiOpenDatabase), which can
+    # fail to open a file authored by the COM Installer in the same process even after the COM
+    # handles are released. Copying to a fresh path yields an unlocked file the reader opens cleanly.
     $MsiFixturePath = "$env:TEMP\GetMsiTableProp_$(New-Guid)_fixture.msi"
     Copy-Item -LiteralPath $tmpMsiPath -Destination $MsiFixturePath -Force
     Remove-Item -LiteralPath $tmpMsiPath -Force -ErrorAction SilentlyContinue
