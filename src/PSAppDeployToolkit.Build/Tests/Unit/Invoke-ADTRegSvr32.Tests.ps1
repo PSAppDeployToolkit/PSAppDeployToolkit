@@ -26,17 +26,17 @@ Describe 'Invoke-ADTRegSvr32' {
             Should -Invoke -CommandName Start-ADTProcess -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
 
-        It 'Passes the /s silent switch without /u when registering' {
+        It 'Passes /s without /u and targets regsvr32.exe when registering' {
             Invoke-ADTRegSvr32 -FilePath $DllPath -Action Register
             Should -Invoke -CommandName Start-ADTProcess -ModuleName PSAppDeployToolkit -Times 1 -Exactly -ParameterFilter {
-                $ArgumentList -notmatch '/u'
+                ($ArgumentList -match '/s') -and ($ArgumentList -notmatch '/u') -and ($FilePath -match 'regsvr32\.exe$') -and ($SuccessExitCodes -contains 0)
             }
         }
 
-        It 'Passes /s and /u when unregistering a DLL' {
+        It 'Passes /s and /u and targets regsvr32.exe when unregistering' {
             Invoke-ADTRegSvr32 -FilePath $DllPath -Action Unregister
             Should -Invoke -CommandName Start-ADTProcess -ModuleName PSAppDeployToolkit -Times 1 -Exactly -ParameterFilter {
-                $ArgumentList -match '/u'
+                ($ArgumentList -match '/s') -and ($ArgumentList -match '/u') -and ($FilePath -match 'regsvr32\.exe$') -and ($SuccessExitCodes -contains 0)
             }
         }
 
@@ -69,8 +69,13 @@ Describe 'Invoke-ADTRegSvr32' {
             (Get-Command Invoke-ADTRegSvr32).Parameters['Action'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] }).Mandatory | Should -Contain $true
         }
 
-        It 'Throws when the DLL file does not exist' {
-            { Invoke-ADTRegSvr32 -FilePath (Join-Path $TestDrive 'nonexistent.dll') -Action Register } | Should -Throw
+        It 'Throws InvalidFilePathParameterValue when the DLL file does not exist' {
+            $shouldParams = @{
+                Throw         = $true
+                ExceptionType = [System.ArgumentException]
+                ErrorId       = 'InvalidFilePathParameterValue,Invoke-ADTRegSvr32'
+            }
+            { Invoke-ADTRegSvr32 -FilePath (Join-Path $TestDrive 'nonexistent.dll') -Action Register } | Should @shouldParams
         }
 
         It 'Throws ParameterArgumentValidationError when Action is not Register or Unregister' {
