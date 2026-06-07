@@ -41,8 +41,13 @@ Describe 'Unregister-ADTDll' {
             (Get-Command Unregister-ADTDll).Parameters['FilePath'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] }).Mandatory | Should -Contain $true
         }
 
-        It 'Throws when the DLL file does not exist' {
-            { Unregister-ADTDll -FilePath (Join-Path $TestDrive 'nonexistent.dll') } | Should -Throw
+        It 'Throws InvalidFilePathParameterValue when the DLL file does not exist' {
+            $shouldParams = @{
+                Throw         = $true
+                ExceptionType = [System.ArgumentException]
+                ErrorId       = 'InvalidFilePathParameterValue,Unregister-ADTDll'
+            }
+            { Unregister-ADTDll -FilePath (Join-Path $TestDrive 'nonexistent.dll') } | Should @shouldParams
         }
     }
 }
