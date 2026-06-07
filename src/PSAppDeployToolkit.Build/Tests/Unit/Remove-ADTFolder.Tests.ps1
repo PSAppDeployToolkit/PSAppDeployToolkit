@@ -57,7 +57,7 @@ Describe 'Remove-ADTFolder' {
 
         It 'Accepts pipeline input via InputObject parameter' {
             $dirInfo = [System.IO.DirectoryInfo]::new($EmptyFolder)
-            { $dirInfo | Remove-ADTFolder } | Should -Not -Throw
+            $dirInfo | Remove-ADTFolder
             Test-Path -LiteralPath $EmptyFolder | Should -BeFalse
         }
     }
