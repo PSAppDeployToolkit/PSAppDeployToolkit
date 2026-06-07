@@ -61,6 +61,14 @@ Describe 'Get-ADTPendingReboot' {
             $result = Get-ADTPendingReboot
             $result.PendingFileRenameOperations | Should -Not -Be $null
         }
+
+        It 'Nullable reboot flags are null or boolean' {
+            $result = Get-ADTPendingReboot
+            foreach ($p in 'IsSCCMClientRebootPending', 'IsIntuneClientRebootPending', 'IsFileRenameRebootPending')
+            {
+                ($null -eq $result.$p -or $result.$p -is [System.Boolean]) | Should -BeTrue
+            }
+        }
     }
 
     Context 'Metadata' {
