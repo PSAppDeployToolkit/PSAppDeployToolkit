@@ -71,6 +71,8 @@ function Dismount-ADTWimFile
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
         $PSBoundParameters.($PSCmdlet.ParameterSetName) = $PSBoundParameters.($PSCmdlet.ParameterSetName).FullName
+        $null = $PSBoundParameters.Remove('WhatIf')
+        $null = $PSBoundParameters.Remove('Confirm')
     }
 
     process

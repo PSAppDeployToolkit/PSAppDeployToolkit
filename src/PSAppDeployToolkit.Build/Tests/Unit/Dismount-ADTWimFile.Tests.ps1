@@ -83,11 +83,23 @@ Describe 'Dismount-ADTWimFile' {
     }
 
     Context 'WhatIf support' {
+        BeforeAll {
+            # Ensure the default mock is active for this context.
+            Mock -ModuleName PSAppDeployToolkit Get-ADTMountedWimFile { return $FakeMountInfo }
+        }
+
+        It 'Does not throw when -WhatIf is specified' {
+            { Dismount-ADTWimFile -ImagePath $WimFilePath -WhatIf } | Should -Not -Throw
+        }
+
         It 'Does not invoke Invoke-ADTCommandWithRetries when -WhatIf is specified' {
-            # The begin block passes PSBoundParameters (including -WhatIf) via @PSBoundParameters to
-            # Get-ADTMountedWimFile which is a private function without SupportsShouldProcess, so
-            # the -WhatIf parameter causes a ParameterBindingException before ShouldProcess is reached.
-            Set-ItResult -Skipped -Because 'Private Get-ADTMountedWimFile does not accept -WhatIf; ShouldProcess skip path cannot be exercised headlessly.'
+            Dismount-ADTWimFile -ImagePath $WimFilePath -WhatIf
+            Should -Invoke -CommandName Invoke-ADTCommandWithRetries -ModuleName PSAppDeployToolkit -Times 0 -Exactly
+        }
+
+        It 'Still invokes Get-ADTMountedWimFile when -WhatIf is specified (enumeration runs regardless)' {
+            Dismount-ADTWimFile -ImagePath $WimFilePath -WhatIf
+            Should -Invoke -CommandName Get-ADTMountedWimFile -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
     }
 
