@@ -21,10 +21,10 @@ Describe 'Get-ADTExecutableInfo' {
             $result.Machine | Should -BeOfType ([PSADT.Interop.IMAGE_FILE_MACHINE])
         }
 
-        It 'Returns an object with a populated Subsystem property' -Skip:(-not (Test-Path "$env:SystemRoot\System32\kernel32.dll")) {
+        It 'Returns IMAGE_SUBSYSTEM_WINDOWS_CUI subsystem for kernel32.dll' -Skip:(-not (Test-Path "$env:SystemRoot\System32\kernel32.dll")) {
             $result = Get-ADTExecutableInfo -LiteralPath "$env:SystemRoot\System32\kernel32.dll"
-            $result.Subsystem | Should -Not -BeNullOrEmpty
             $result.Subsystem | Should -BeOfType ([PSADT.Interop.IMAGE_SUBSYSTEM])
+            $result.Subsystem | Should -Be ([PSADT.Interop.IMAGE_SUBSYSTEM]::IMAGE_SUBSYSTEM_WINDOWS_CUI)
         }
 
         It 'Returns an object with a populated FileInfo property pointing to the target file' -Skip:(-not (Test-Path "$env:SystemRoot\System32\kernel32.dll")) {
