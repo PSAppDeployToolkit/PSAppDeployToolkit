@@ -67,16 +67,27 @@ Describe 'Get-ADTModuleCallback' {
             $result.Count | Should -Be 0
         }
 
-        It 'Output collection is read-only and throws on attempted mutation' {
+        It 'Output collection is read-only and throws when mutation is attempted' {
             [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'cb', Justification = 'This variable is used within script blocks that PSScriptAnalyzer has no visibility of.')]
             $cb = Get-Command -Name 'Get-Process'
             Add-ADTModuleCallback -Hookpoint OnExit -Callback $cb
             $result = Get-ADTModuleCallback -Hookpoint OnExit
-            { $result.Add((Get-Command -Name 'Get-Item')) } | Should -Throw
+            # ReadOnlyCollection<T> does not expose RemoveAt/Insert on its public surface; PowerShell
+            # surfaces MethodException/MethodCountCouldNotFindBest when attempting to call them.
+            $shouldParams = @{
+                Throw         = $true
+                ExceptionType = [System.Management.Automation.MethodException]
+                ErrorId       = 'MethodCountCouldNotFindBest'
+            }
+            { $result.RemoveAt(0) } | Should @shouldParams
         }
     }
 
     Context 'Input Validation' {
+        It 'Should have a mandatory Hookpoint parameter' {
+            (Get-Command Get-ADTModuleCallback).Parameters['Hookpoint'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] }).Mandatory | Should -Contain $true
+        }
+
         It 'Throws ParameterArgumentTransformationError when Hookpoint is an invalid enum value' {
             $shouldParams = @{
                 Throw         = $true
