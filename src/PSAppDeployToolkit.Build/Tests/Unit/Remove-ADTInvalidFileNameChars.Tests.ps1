@@ -24,6 +24,13 @@ Describe 'Remove-ADTInvalidFileNameChars' {
             $result = Remove-ADTInvalidFileNameChars -Name ('prefix' + $invalid + 'suffix')
             $result | Should -Be 'prefixsuffix'
         }
+        It 'Returns an empty string when the name consists entirely of invalid filename characters' {
+            $allInvalid = [System.String]::Join([System.String]::Empty, [System.IO.Path]::GetInvalidFileNameChars())
+            Remove-ADTInvalidFileNameChars -Name $allInvalid | Should -Be ([System.String]::Empty)
+        }
+        It 'Trims leading and trailing spaces from the result' {
+            Remove-ADTInvalidFileNameChars -Name '  spaced name  ' | Should -Be 'spaced name'
+        }
         It 'Returns a [System.String]' {
             Remove-ADTInvalidFileNameChars -Name 'test' | Should -BeOfType ([System.String])
         }
