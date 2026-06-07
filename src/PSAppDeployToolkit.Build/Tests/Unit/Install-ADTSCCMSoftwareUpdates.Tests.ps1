@@ -10,7 +10,9 @@ Describe 'Install-ADTSCCMSoftwareUpdates' {
         # Mock Invoke-ADTSCCMTask to intercept the initial software-updates scan trigger.
         Mock -ModuleName PSAppDeployToolkit Invoke-ADTSCCMTask { }
 
-        # Mock Start-Sleep so the do-while poll loop does not block for 60 s.
+        # Mock Start-Sleep so the do-while poll loop (Start-Sleep -Seconds 60) does not block.
+        # Note: the initial scan-wait uses the unmockable [System.Threading.Thread]::Sleep static;
+        # all tests pass -SoftwareUpdatesScanWaitInSeconds 1 to keep that sleep to 1 second.
         Mock -ModuleName PSAppDeployToolkit Start-Sleep { }
     }
 
@@ -109,8 +111,8 @@ Describe 'Install-ADTSCCMSoftwareUpdates' {
             }
         }
 
-        It 'Throws when InstallUpdates returns a non-zero return value' {
-            Set-ItResult -Skipped -Because 'Install-ADTSCCMSoftwareUpdates wraps the InstallUpdates error path with Invoke-ADTFunctionErrorHandler; the resulting exception type varies by module error-handling policy and is not stably assertable via Should -Throw -ExceptionType in headless contexts. The non-zero path is covered implicitly by the Invoke-CimMethod mock contract.'
+        It 'Throws when InstallUpdates returns a non-zero ReturnValue' {
+            { Install-ADTSCCMSoftwareUpdates -SoftwareUpdatesScanWaitInSeconds 1 } | Should -Throw
         }
     }
 
@@ -123,14 +125,28 @@ Describe 'Install-ADTSCCMSoftwareUpdates' {
             (Get-Command Install-ADTSCCMSoftwareUpdates).Parameters['WaitForPendingUpdatesTimeout'].Attributes.Where({ $_ -is [System.Management.Automation.ParameterAttribute] }).Mandatory | Should -Not -Contain $true
         }
 
-        It 'SoftwareUpdatesScanWaitInSeconds defaults to 180' {
-            $param = (Get-Command Install-ADTSCCMSoftwareUpdates).Parameters['SoftwareUpdatesScanWaitInSeconds']
-            $param.ParameterType | Should -Be ([System.UInt32])
+        It 'SoftwareUpdatesScanWaitInSeconds parameter type is UInt32 and defaults to 180' {
+            $cmd = Get-Command Install-ADTSCCMSoftwareUpdates
+            $cmd.Parameters['SoftwareUpdatesScanWaitInSeconds'].ParameterType | Should -Be ([System.UInt32])
+            $defaultText = $cmd.ScriptBlock.Ast.FindAll(
+                { $args[0] -is [System.Management.Automation.Language.ParamBlockAst] }, $true
+            ).Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq 'SoftwareUpdatesScanWaitInSeconds' } |
+                Select-Object -ExpandProperty DefaultValue |
+                Select-Object -ExpandProperty Extent |
+                Select-Object -ExpandProperty Text
+            $defaultText | Should -Be '180'
         }
 
-        It 'WaitForPendingUpdatesTimeout defaults to a TimeSpan value' {
-            $param = (Get-Command Install-ADTSCCMSoftwareUpdates).Parameters['WaitForPendingUpdatesTimeout']
-            $param.ParameterType | Should -Be ([System.TimeSpan])
+        It 'WaitForPendingUpdatesTimeout parameter type is TimeSpan and defaults to 45 minutes' {
+            $cmd = Get-Command Install-ADTSCCMSoftwareUpdates
+            $cmd.Parameters['WaitForPendingUpdatesTimeout'].ParameterType | Should -Be ([System.TimeSpan])
+            $defaultText = $cmd.ScriptBlock.Ast.FindAll(
+                { $args[0] -is [System.Management.Automation.Language.ParamBlockAst] }, $true
+            ).Parameters | Where-Object { $_.Name.VariablePath.UserPath -eq 'WaitForPendingUpdatesTimeout' } |
+                Select-Object -ExpandProperty DefaultValue |
+                Select-Object -ExpandProperty Extent |
+                Select-Object -ExpandProperty Text
+            $defaultText | Should -BeLike '*FromMinutes(45)*'
         }
 
         It 'Skips Invoke-CimMethod when -WhatIf is supplied and missing updates are present' {
