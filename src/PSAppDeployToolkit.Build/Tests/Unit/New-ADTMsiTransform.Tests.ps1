@@ -29,7 +29,7 @@ Describe 'New-ADTMsiTransform' {
     Context 'Input Validation' {
         It 'Should throw when MsiPath does not exist' {
             { New-ADTMsiTransform -MsiPath "$TestDrive\DoesNotExist.msi" -TransformProperties @{ ALLUSERS = '1' } } |
-                Should -Throw -ExceptionType ([System.ArgumentException])
+                Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId 'InvalidMsiPathParameterValue,New-ADTMsiTransform'
         }
 
         It 'Should throw when ApplyTransformPath does not exist' {
@@ -37,7 +37,7 @@ Describe 'New-ADTMsiTransform' {
             $dummyMsi = "$TestDrive\dummy.msi"
             New-Item -Path $dummyMsi -ItemType File -Force | Out-Null
             { New-ADTMsiTransform -MsiPath $dummyMsi -ApplyTransformPath "$TestDrive\NoSuchTransform.mst" -TransformProperties @{ ALLUSERS = '1' } } |
-                Should -Throw -ExceptionType ([System.ArgumentException])
+                Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId 'InvalidApplyTransformPathParameterValue,New-ADTMsiTransform'
         }
 
         It 'Should throw when TransformProperties is null or empty' {
