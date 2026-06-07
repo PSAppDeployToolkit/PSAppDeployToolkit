@@ -109,3 +109,47 @@ Cover the parameter shapes that materially affect behaviour:
 - Use `SuppressMessageAttribute` only when PSScriptAnalyzer cannot see legitimate variable usage inside Pester scriptblocks.
 - Apply suppressions narrowly and with a real justification.
 - Do not suppress warnings to avoid restructuring a weak test.
+
+## Unit vs Integration Split
+
+Unit tests live under `src/PSAppDeployToolkit.Build/Tests/Unit/` and are run by `Invoke-ADTPesterUnitTesting`. Integration tests live under `src/PSAppDeployToolkit.Build/Tests/Integration/` and are run by `Invoke-ADTPesterIntegrationTesting`.
+
+**Unit tests must be:**
+
+- Fast and isolated — no machine mutation, no network, no real installs.
+- Restricted to `TestRegistry:\` and `$TestDrive` for any persistent fixtures.
+- Order-independent — no test may assume another test ran before it.
+
+**Integration tests must:**
+
+- Import the **built** module (not the source tree directly).
+- Carry `-Tag Integration` on the top-level `Describe`.
+- Skip the entire `Describe` block (via `BeforeAll` + `Set-ItResult -Skipped` or `Skip`) when not running in an elevated session.
+- Use only `BeforeAll`/`AfterAll` for ordered setup and teardown within a single file, with best-effort `AfterAll` cleanup.
+
+## No Cross-Test Ordering / No Test-Scaffold-as-Fixture
+
+- Never assign state in one `It` block and read it in another. Tests must be independently runnable.
+- Recreate mutable fixtures in `BeforeEach`; clean them up in `AfterEach` or `AfterAll`.
+- Do not call the function under test to build a fixture for a different test. Use a real isolated fixture instead (see Shared Fixture Toolkit below).
+
+## Shared Fixture Toolkit
+
+`src/PSAppDeployToolkit.Build/Tests/Support/TestFixtures.psm1` provides four helpers for authoring real on-disk artifacts:
+
+| Helper | What it produces |
+| --- | --- |
+| `Get-ADTFakeInstaller` | A deterministic, side-effect-free console EXE for real subprocess testing (exit codes, stdout/stderr, sleep, retry via state file). |
+| `New-ADTTestMsiDatabase` | A COM-authored MSI with a Property table — suitable for property-reading tests. Copy before reading via P/Invoke (`MsiOpenDatabase`). |
+| `New-ADTTestRegFile` | A valid `.reg` file (UTF-16 LE with BOM) — written to disk, never imported. |
+| `New-ADTTestWim` | A `.wim` captured via Dism — elevation required; integration tests only. |
+
+The `Support` directory is a sibling of `Tests/Unit`, so the unit runner never collects it. Do not give any file in `Support` a `.Tests.ps1` suffix.
+
+## Hard-Won Gotchas
+
+- **BOM.** Every `*.Tests.ps1` file must be saved as UTF-8 with BOM (`utf-8-bom`). Files without a BOM cause silent parse failures under some PowerShell hosts.
+- **Mandatory-parameter tests hang under `-NonInteractive`.** Do not invoke a function with missing mandatory parameters to assert it throws — PowerShell will prompt. Assert the parameter metadata (`[Parameter(Mandatory)]`) instead.
+- **ReadOnlyDictionary mutations throw `MethodException`.** Attempting to mutate a value returned as `ReadOnlyDictionary` throws `MethodException`, not `NotSupportedException`. Assert accordingly.
+- **`LogSeverity` enum values.** `Success=0`, `Info=1`, `Warning=2`, `Error=3`.
+- **Mockability boundary.** `Get-ADTSession` and `Get-ADTConfig` are PowerShell functions and can be mocked with `-ModuleName PSAppDeployToolkit`. Static .NET members cannot be mocked via Pester — restructure code or use a wrapper seam instead.
