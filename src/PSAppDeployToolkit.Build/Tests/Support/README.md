@@ -58,10 +58,56 @@ Authors a minimal but valid MSI (Property table + SummaryInformation stream) at 
 supplied via `-Properties`. All COM handles are released and the GC is run before returning, so
 the file is unlocked. Returns the MSI path.
 
+> **Note — default `ProductCode` is intentionally not a valid GUID.** The default value is fine
+> for property-reading tests (`Get-ADTMsiTableProperty`) but will fail if passed to
+> `Start-ADTMsiProcess`, which casts `ProductCode` to `[System.Guid]`. Any test that drives an
+> MSI through `Start-ADTMsiProcess` must supply a real GUID via `-ProductCode` and `-UpgradeCode`.
+
 ```powershell
 $msi = New-ADTTestMsiDatabase -Path "$TestDrive\test.msi" -Properties @{ ProductVersion = '1.2.3' }
 $copy = "$TestDrive\test_copy.msi"
 Copy-Item -LiteralPath $msi -Destination $copy   # copy-before-read for P/Invoke readers
+```
+
+### `New-ADTTestInstallMsi -Path <string> [-ProductName <string>] [-ProductCode <guid>] [-UpgradeCode <guid>] [-ProductVersion <string>]`
+
+Authors a minimal but **genuinely installing** `.msi` at `-Path` via the `WindowsInstaller.Installer`
+COM object — **no cabinet required**. Unlike `New-ADTTestMsiDatabase` (read-only property table),
+the package produced here installs under msiexec, registers with Windows Installer (so it is
+discoverable via `Get-ADTApplication`), and removes every artifact on uninstall. **Integration
+tests only** (requires elevation + real machine mutation). Returns a descriptor object.
+
+Install artifacts (all under a dedicated `PSADT.Test` namespace; `<Name>` = `-ProductName`):
+
+| Artifact | Location | Created by | Removed by |
+| --- | --- | --- | --- |
+| Registry value | `HKLM:\SOFTWARE\PSADT.Test\<Name>\InstallMarker = '1'` (REG_SZ, **native 64-bit hive**) | MSI `Registry` table (component KeyPath) | uninstall removes the whole key |
+| Real file | `%ProgramData%\PSADT.Test\<Name>\Installed.ini` | MSI `IniFile` table (`WriteIniValues`) | `RemoveIniValues` on uninstall |
+| Folders | `%ProgramData%\PSADT.Test\<Name>` | `CreateFolder` table | `RemoveFile` table on uninstall |
+| Product registration | Add/Remove Programs (visible to `Get-ADTApplication`) | `RegisterProduct`/`PublishProduct`/`PublishFeatures` | uninstall |
+
+> **64-bit hive:** the package is authored x64 (`Template = 'x64;1033'`) with a 64-bit component
+> (`msidbComponentAttributes64bit`), so on a 64-bit OS the registry marker lands in the **native**
+> `HKLM\SOFTWARE\PSADT.Test` hive, not `WOW6432Node`. On a 32-bit OS msiexec installs it natively.
+
+> **No upgrade actions / no `File` table:** the execute sequence deliberately omits
+> `FindRelatedProducts`/`RemoveExistingProducts` (no `Upgrade` table) and the package carries no
+> `File`/cabinet payload. A `Media` table with a single no-cabinet row is present because
+> `RegisterProduct` queries it.
+
+**`SIMULATEFAIL=1` contract.** Passing the public property `SIMULATEFAIL=1` on the msiexec command
+line (e.g. via `-AdditionalArgumentList 'SIMULATEFAIL=1'`) trips a `LaunchCondition`
+(`SIMULATEFAIL <> "1"`). The install fails **before `InstallInitialize`**, msiexec returns
+**1603**, and **no artifacts** are written. Through `Start-ADTMsiProcess` this surfaces as:
+- a terminating error (`Execution failed with exit code [1603].`) under the default `-ErrorAction`, or
+- a returned `ProcessResult` with `ExitCode = 1603` when `-PassThru -ErrorAction SilentlyContinue` is used.
+
+```powershell
+$msi  = New-ADTTestInstallMsi -Path "$env:TEMP\PSADT.Test\app.msi"
+$desc = $msi   # descriptor: Path, ProductName, ProductCode, UpgradeCode, RegistryKey,
+               #             RegistryValueName, InstallFolder, InstalledFile
+Start-ADTMsiProcess -Action Install   -FilePath $desc.Path
+Start-ADTMsiProcess -Action Uninstall -FilePath $desc.Path
 ```
 
 ### `New-ADTTestRegFile -Path <string> -Content <hashtable|string>`

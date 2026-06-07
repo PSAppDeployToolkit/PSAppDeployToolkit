@@ -468,6 +468,318 @@ function New-ADTTestMsiDatabase
 
 #-----------------------------------------------------------------------------
 #
+# MARK: New-ADTTestInstallMsi
+#
+#-----------------------------------------------------------------------------
+
+function New-ADTTestInstallMsi
+{
+    <#
+
+    .SYNOPSIS
+    Authors a minimal but genuinely INSTALLING .msi (no cabinet required) for integration tests.
+
+    .DESCRIPTION
+    Creates a real, installable Windows Installer database at the supplied path using the
+    WindowsInstaller.Installer COM object. Unlike New-ADTTestMsiDatabase (which only authors a
+    property table for read-only tests), the package produced here installs successfully under
+    msiexec and leaves real, verifiable artifacts on the machine, then removes every one of them
+    on uninstall.
+
+    INSTALL ARTIFACTS (all under a dedicated 'PSADT.Test' namespace):
+      - A registry value: HKLM\SOFTWARE\PSADT.Test\<ProductName>\InstallMarker = '1' (REG_SZ).
+        Authored via the MSI Registry table; this is the component KeyPath. msiexec removes the
+        whole HKLM\SOFTWARE\PSADT.Test\<ProductName> key on uninstall.
+      - A real file on disk: %ProgramData%\PSADT.Test\<ProductName>\Installed.ini, written via the
+        MSI IniFile table (WriteIniValues on install, RemoveIniValues on uninstall). No cabinet or
+        File-table payload is needed because an .ini file is materialised directly by the installer.
+      - The namespaced folders (CommonAppDataFolder\PSADT.Test\<ProductName>) are created via the
+        CreateFolder table and removed on uninstall via the RemoveFile table.
+
+    The package also REGISTERS with Windows Installer (RegisterProduct / PublishProduct /
+    PublishFeatures are sequenced), so the installed product is discoverable via Get-ADTApplication
+    and msiexec /x by ProductCode.
+
+    SIMULATEFAIL CONTRACT:
+      Passing SIMULATEFAIL=1 on the msiexec command line trips a LaunchCondition that fails the
+      install before InstallInitialize, so msiexec returns a non-zero exit code (1603) and NO
+      artifacts are written. With SIMULATEFAIL unset (or 0) the install proceeds normally.
+
+    A VALID GUID ProductCode and UpgradeCode are required for a real install; sensible fixture
+    GUIDs are used by default. All COM handles are released and the GC is run before returning, so
+    the file is left unlocked.
+
+    .PARAMETER Path
+    The full path where the MSI should be written (normally a temp path). The parent directory must
+    already exist.
+
+    .PARAMETER ProductName
+    The ProductName property value, also used as the namespaced sub-key/sub-folder name. Defaults
+    to 'PSADTTestApp'.
+
+    .PARAMETER ProductCode
+    A VALID GUID ProductCode. Defaults to a fixed fixture GUID.
+
+    .PARAMETER UpgradeCode
+    A VALID GUID UpgradeCode. Defaults to a fixed fixture GUID.
+
+    .PARAMETER ProductVersion
+    The ProductVersion. Defaults to '1.0.0'.
+
+    .EXAMPLE
+    $msi = New-ADTTestInstallMsi -Path "$env:TEMP\PSADT.Test\app.msi"
+    Start-ADTMsiProcess -Action Install -FilePath $msi
+
+    .OUTPUTS
+    System.Management.Automation.PSCustomObject. An object describing the authored package and the
+    exact artifacts it creates/removes:
+      - Path             : the MSI path
+      - ProductName      : the product name
+      - ProductCode      : the ProductCode GUID (braced)
+      - UpgradeCode      : the UpgradeCode GUID (braced)
+      - RegistryKey      : the full HKLM key path created on install / removed on uninstall
+      - RegistryValueName: the value name written under RegistryKey
+      - InstallFolder    : the on-disk folder created on install / removed on uninstall
+      - InstalledFile    : the full path of the .ini file created on install / removed on uninstall
+
+    #>
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'This is a test-fixture authoring helper that only writes the MSI to a caller-supplied path; it does not itself install anything. ShouldProcess support is inappropriate.')]
+    [CmdletBinding()]
+    [OutputType([System.Management.Automation.PSCustomObject])]
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$Path,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ProductName = 'PSADTTestApp',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ProductCode = '{B2C3D4E5-6F70-4811-9233-445566778899}',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$UpgradeCode = '{C3D4E5F6-7081-4922-A344-5566778899AA}',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [System.String]$ProductVersion = '1.0.0'
+    )
+
+    # The namespaced artifact names. These mirror exactly what the authored tables below produce so
+    # callers (and the returned descriptor) can verify/clean up unambiguously.
+    $registryKey = "HKLM:\SOFTWARE\PSADT.Test\$ProductName"
+    $registryValueName = 'InstallMarker'
+    $installFolder = [System.IO.Path]::Combine($env:ProgramData, 'PSADT.Test', $ProductName)
+    $installedFile = [System.IO.Path]::Combine($installFolder, 'Installed.ini')
+
+    # Local helper: execute an arbitrary SQL statement against the database (no parameters).
+    $execSql = {
+        param($Db, [System.String]$Sql)
+        $view = $Db.GetType().InvokeMember('OpenView', [System.Reflection.BindingFlags]::InvokeMethod, $null, $Db, @($Sql))
+        $null = $view.GetType().InvokeMember('Execute', [System.Reflection.BindingFlags]::InvokeMethod, $null, $view, @([System.Reflection.Missing]::Value))
+        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($view)
+    }
+
+    # Local helper: INSERT a row whose values are all supplied as an ordered string/int array. The
+    # caller passes the full INSERT statement and a matching array of field values; CreateRecord is
+    # sized to the array and each field is set via StringData (strings) or IntegerData (integers).
+    $insertRow = {
+        param($Db, $Installer, [System.String]$Sql, [System.Object[]]$Values)
+        $view = $Db.GetType().InvokeMember('OpenView', [System.Reflection.BindingFlags]::InvokeMethod, $null, $Db, @($Sql))
+        $rec = $Installer.GetType().InvokeMember('CreateRecord', [System.Reflection.BindingFlags]::InvokeMethod, $null, $Installer, @($Values.Count))
+        for ($i = 0; $i -lt $Values.Count; $i++)
+        {
+            $field = $i + 1
+            $val = $Values[$i]
+            if ($null -eq $val)
+            {
+                continue
+            }
+            if ($val -is [System.Int32])
+            {
+                $null = $rec.GetType().InvokeMember('IntegerData', [System.Reflection.BindingFlags]::SetProperty, $null, $rec, @($field, [System.Int32]$val))
+            }
+            else
+            {
+                $null = $rec.GetType().InvokeMember('StringData', [System.Reflection.BindingFlags]::SetProperty, $null, $rec, @($field, [System.String]$val))
+            }
+        }
+        $null = $view.GetType().InvokeMember('Execute', [System.Reflection.BindingFlags]::InvokeMethod, $null, $view, @($rec))
+        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($rec)
+        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($view)
+    }
+
+    $installer = $null
+    $db = $null
+    try
+    {
+        $installer = New-Object -ComObject WindowsInstaller.Installer
+
+        # Mode 3 = msiOpenDatabaseModeCreateDirect (create + transact).
+        $db = $installer.GetType().InvokeMember('OpenDatabase', [System.Reflection.BindingFlags]::InvokeMethod, $null, $installer, @([System.String]$Path, 3))
+
+        # --- SummaryInformation stream -----------------------------------------------------------
+        # Template 'x64;1033' marks an x64, en-US package so the HKLM registry marker is written to
+        # the native 64-bit hive (HKLM\SOFTWARE\PSADT.Test) rather than WOW6432Node on a 64-bit OS.
+        # On a 32-bit OS, msiexec ignores the x64 platform tag and installs natively. Word Count = 2
+        # sets the 'source files compressed' hint (irrelevant for a no-payload package but harmless).
+        # PageCount 200 is the minimum installer version (Windows Installer 2.0).
+        $si = $db.GetType().InvokeMember('SummaryInformation', [System.Reflection.BindingFlags]::GetProperty, $null, $db, @(20))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(2, "$ProductName Installer"))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(3, 'PSAppDeployToolkit Test Suite'))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(4, 'PSAppDeployToolkit Test Suite'))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(7, 'x64;1033'))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(9, [System.Guid]::NewGuid().ToString('B').ToUpperInvariant()))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(14, 200))
+        $null = $si.GetType().InvokeMember('Property', [System.Reflection.BindingFlags]::SetProperty, $null, $si, @(15, 2))
+        $null = $si.GetType().InvokeMember('Persist', [System.Reflection.BindingFlags]::InvokeMethod, $null, $si, @())
+        $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($si)
+        $si = $null
+
+        # --- Table creation (DDL) ----------------------------------------------------------------
+        & $execSql $db 'CREATE TABLE `Property` (`Property` CHAR(72) NOT NULL, `Value` CHAR(0) NOT NULL PRIMARY KEY `Property`)'
+        & $execSql $db 'CREATE TABLE `Directory` (`Directory` CHAR(72) NOT NULL, `Directory_Parent` CHAR(72), `DefaultDir` CHAR(255) NOT NULL PRIMARY KEY `Directory`)'
+        & $execSql $db 'CREATE TABLE `Feature` (`Feature` CHAR(38) NOT NULL, `Feature_Parent` CHAR(38), `Title` CHAR(64), `Description` CHAR(255), `Display` INT, `Level` INT NOT NULL, `Directory_` CHAR(72), `Attributes` INT NOT NULL PRIMARY KEY `Feature`)'
+        & $execSql $db 'CREATE TABLE `Component` (`Component` CHAR(72) NOT NULL, `ComponentId` CHAR(38), `Directory_` CHAR(72) NOT NULL, `Attributes` INT NOT NULL, `Condition` CHAR(255), `KeyPath` CHAR(72) PRIMARY KEY `Component`)'
+        & $execSql $db 'CREATE TABLE `FeatureComponents` (`Feature_` CHAR(38) NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `Feature_`, `Component_`)'
+        & $execSql $db 'CREATE TABLE `Registry` (`Registry` CHAR(72) NOT NULL, `Root` INT NOT NULL, `Key` CHAR(255) NOT NULL, `Name` CHAR(255), `Value` CHAR(0), `Component_` CHAR(72) NOT NULL PRIMARY KEY `Registry`)'
+        & $execSql $db 'CREATE TABLE `IniFile` (`IniFile` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL, `DirProperty` CHAR(72), `Section` CHAR(96) NOT NULL, `Key` CHAR(128) NOT NULL, `Value` CHAR(255) NOT NULL, `Action` INT NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `IniFile`)'
+        & $execSql $db 'CREATE TABLE `CreateFolder` (`Directory_` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `Directory_`, `Component_`)'
+        & $execSql $db 'CREATE TABLE `RemoveFile` (`FileKey` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `FileName` CHAR(255), `DirProperty` CHAR(72) NOT NULL, `InstallMode` INT NOT NULL PRIMARY KEY `FileKey`)'
+        & $execSql $db 'CREATE TABLE `Media` (`DiskId` INT NOT NULL, `LastSequence` INT NOT NULL, `DiskPrompt` CHAR(64), `Cabinet` CHAR(255), `VolumeLabel` CHAR(32), `Source` CHAR(72) PRIMARY KEY `DiskId`)'
+        & $execSql $db 'CREATE TABLE `LaunchCondition` (`Condition` CHAR(255) NOT NULL, `Description` CHAR(255) NOT NULL PRIMARY KEY `Condition`)'
+        & $execSql $db 'CREATE TABLE `InstallExecuteSequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` INT PRIMARY KEY `Action`)'
+        & $execSql $db 'CREATE TABLE `AdminExecuteSequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` INT PRIMARY KEY `Action`)'
+        & $execSql $db 'CREATE TABLE `AdvtExecuteSequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` INT PRIMARY KEY `Action`)'
+
+        # --- Property table ----------------------------------------------------------------------
+        # ALLUSERS=1 forces a per-machine install (writes to HKLM, registers machine-wide).
+        # A stable component GUID is required so the same package always owns the same artifacts.
+        $componentGuid = '{D4E5F607-8192-4A33-B455-66778899AABB}'
+        $properties = [ordered]@{
+            ProductName = $ProductName
+            ProductCode = $ProductCode
+            ProductVersion = $ProductVersion
+            UpgradeCode = $UpgradeCode
+            Manufacturer = 'PSAppDeployToolkit Test Suite'
+            ProductLanguage = '1033'
+            ALLUSERS = '1'
+        }
+        foreach ($key in $properties.Keys)
+        {
+            & $insertRow $db $installer 'INSERT INTO `Property` (`Property`, `Value`) VALUES (?, ?)' @([System.String]$key, [System.String]$properties[$key])
+        }
+
+        # --- Directory table ---------------------------------------------------------------------
+        # TARGETDIR (root) -> CommonAppDataFolder (%ProgramData%) -> PSADT.Test -> <ProductName>.
+        & $insertRow $db $installer 'INSERT INTO `Directory` (`Directory`, `Directory_Parent`, `DefaultDir`) VALUES (?, ?, ?)' @('TARGETDIR', $null, 'SourceDir')
+        & $insertRow $db $installer 'INSERT INTO `Directory` (`Directory`, `Directory_Parent`, `DefaultDir`) VALUES (?, ?, ?)' @('CommonAppDataFolder', 'TARGETDIR', '.')
+        & $insertRow $db $installer 'INSERT INTO `Directory` (`Directory`, `Directory_Parent`, `DefaultDir`) VALUES (?, ?, ?)' @('NSDIR', 'CommonAppDataFolder', 'PSADT.Test')
+        & $insertRow $db $installer 'INSERT INTO `Directory` (`Directory`, `Directory_Parent`, `DefaultDir`) VALUES (?, ?, ?)' @('INSTALLDIR', 'NSDIR', $ProductName)
+
+        # --- Media (no cabinet; required by RegisterProduct's Media query) -----------------------
+        & $insertRow $db $installer 'INSERT INTO `Media` (`DiskId`, `LastSequence`, `DiskPrompt`, `Cabinet`, `VolumeLabel`, `Source`) VALUES (?, ?, ?, ?, ?, ?)' @([System.Int32]1, [System.Int32]0, $null, $null, $null, $null)
+
+        # --- Feature / Component / mapping -------------------------------------------------------
+        # Feature Level 1 = installed by default. Component Attributes:
+        #   4   = msidbComponentAttributesRegistryKeyPath (KeyPath is a registry value, so no
+        #         File/cabinet is required for a valid component), plus
+        #   256 = msidbComponentAttributes64bit (write the registry marker to the NATIVE 64-bit hive
+        #         HKLM\SOFTWARE\PSADT.Test rather than WOW6432Node on a 64-bit OS). This pairs with
+        #         the x64 package template. On a 32-bit OS msiexec treats the component as native.
+        & $insertRow $db $installer 'INSERT INTO `Feature` (`Feature`, `Feature_Parent`, `Title`, `Description`, `Display`, `Level`, `Directory_`, `Attributes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)' @('MainFeature', $null, 'Main', 'Main feature', [System.Int32]1, [System.Int32]1, 'INSTALLDIR', [System.Int32]0)
+        & $insertRow $db $installer 'INSERT INTO `Component` (`Component`, `ComponentId`, `Directory_`, `Attributes`, `Condition`, `KeyPath`) VALUES (?, ?, ?, ?, ?, ?)' @('MainComponent', $componentGuid, 'INSTALLDIR', [System.Int32]260, $null, 'RegMarker')
+        & $insertRow $db $installer 'INSERT INTO `FeatureComponents` (`Feature_`, `Component_`) VALUES (?, ?)' @('MainFeature', 'MainComponent')
+
+        # --- Registry (the HKLM marker; Root 2 = HKEY_LOCAL_MACHINE) ------------------------------
+        # This is the component KeyPath ('RegMarker'). msiexec removes the key on uninstall.
+        & $insertRow $db $installer 'INSERT INTO `Registry` (`Registry`, `Root`, `Key`, `Name`, `Value`, `Component_`) VALUES (?, ?, ?, ?, ?, ?)' @('RegMarker', [System.Int32]2, "SOFTWARE\PSADT.Test\$ProductName", $registryValueName, '1', 'MainComponent')
+
+        # --- IniFile (the real on-disk file, written into INSTALLDIR; Action 0 = AddLine) ---------
+        & $insertRow $db $installer 'INSERT INTO `IniFile` (`IniFile`, `FileName`, `DirProperty`, `Section`, `Key`, `Value`, `Action`, `Component_`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)' @('IniMarker', 'Installed.ini', 'INSTALLDIR', 'PSADT', 'Installed', '1', [System.Int32]0, 'MainComponent')
+
+        # --- CreateFolder + RemoveFile (own + clean up the namespaced folder) ---------------------
+        & $insertRow $db $installer 'INSERT INTO `CreateFolder` (`Directory_`, `Component_`) VALUES (?, ?)' @('INSTALLDIR', 'MainComponent')
+        # InstallMode 2 = msidbRemoveFileInstallModeOnRemove (remove on uninstall). FileName null = the folder itself.
+        & $insertRow $db $installer 'INSERT INTO `RemoveFile` (`FileKey`, `Component_`, `FileName`, `DirProperty`, `InstallMode`) VALUES (?, ?, ?, ?, ?)' @('RemoveInstallDir', 'MainComponent', $null, 'INSTALLDIR', [System.Int32]2)
+        & $insertRow $db $installer 'INSERT INTO `RemoveFile` (`FileKey`, `Component_`, `FileName`, `DirProperty`, `InstallMode`) VALUES (?, ?, ?, ?, ?)' @('RemoveNsDir', 'MainComponent', $null, 'NSDIR', [System.Int32]2)
+
+        # --- LaunchCondition (SIMULATEFAIL contract) ---------------------------------------------
+        # The install proceeds only when SIMULATEFAIL is not '1'. When SIMULATEFAIL=1 this condition
+        # is false, LaunchConditions fails, and msiexec returns non-zero (1603) before any artifact
+        # is written.
+        & $insertRow $db $installer 'INSERT INTO `LaunchCondition` (`Condition`, `Description`) VALUES (?, ?)' @('SIMULATEFAIL <> "1"', 'SIMULATEFAIL=1 was specified, failing the installation on purpose for testing.')
+
+        # --- InstallExecuteSequence --------------------------------------------------------------
+        # A complete, valid execute sequence (no upgrade actions, so no Upgrade table is needed).
+        # RegisterProduct/PublishFeatures/PublishProduct make
+        # the product discoverable (Add/Remove Programs, Get-ADTApplication). WriteIniValues and
+        # RemoveIniValues materialise/remove the .ini file. RemoveRegistryValues/WriteRegistryValues
+        # handle the registry marker. RemoveFiles handles the folder cleanup on uninstall.
+        # An [ordered] map of action -> sequence number keeps each entry flat (no nested-array
+        # flattening pitfalls). All conditions are null here.
+        $seq = [ordered]@{
+            LaunchConditions = 100
+            CostInitialize = 800
+            FileCost = 900
+            CostFinalize = 1000
+            InstallValidate = 1400
+            InstallInitialize = 1500
+            ProcessComponents = 1600
+            RemoveRegistryValues = 2600
+            RemoveIniValues = 3100
+            RemoveFiles = 3500
+            CreateFolders = 3700
+            WriteRegistryValues = 5000
+            WriteIniValues = 5100
+            RegisterUser = 6000
+            RegisterProduct = 6100
+            PublishFeatures = 6300
+            PublishProduct = 6400
+            InstallFinalize = 6600
+        }
+        foreach ($action in $seq.Keys)
+        {
+            & $insertRow $db $installer 'INSERT INTO `InstallExecuteSequence` (`Action`, `Condition`, `Sequence`) VALUES (?, ?, ?)' @([System.String]$action, $null, [System.Int32]$seq[$action])
+        }
+
+        $null = $db.GetType().InvokeMember('Commit', [System.Reflection.BindingFlags]::InvokeMethod, $null, $db, @())
+    }
+    finally
+    {
+        if ($null -ne $db)
+        {
+            $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($db)
+            $db = $null
+        }
+        if ($null -ne $installer)
+        {
+            $null = [System.Runtime.InteropServices.Marshal]::FinalReleaseComObject($installer)
+            $installer = $null
+        }
+        [System.GC]::Collect()
+        [System.GC]::WaitForPendingFinalizers()
+    }
+
+    return [PSCustomObject]@{
+        Path = $Path
+        ProductName = $ProductName
+        ProductCode = $ProductCode
+        UpgradeCode = $UpgradeCode
+        RegistryKey = $registryKey
+        RegistryValueName = $registryValueName
+        InstallFolder = $installFolder
+        InstalledFile = $installedFile
+    }
+}
+
+#-----------------------------------------------------------------------------
+#
 # MARK: New-ADTTestRegFile
 #
 #-----------------------------------------------------------------------------
@@ -631,4 +943,4 @@ function New-ADTTestWim
 #
 #-----------------------------------------------------------------------------
 
-Export-ModuleMember -Function Get-ADTFakeInstaller, New-ADTTestMsiDatabase, New-ADTTestRegFile, New-ADTTestWim
+Export-ModuleMember -Function Get-ADTFakeInstaller, New-ADTTestMsiDatabase, New-ADTTestInstallMsi, New-ADTTestRegFile, New-ADTTestWim
