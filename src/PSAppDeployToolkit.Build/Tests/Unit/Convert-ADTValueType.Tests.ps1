@@ -1,4 +1,4 @@
-BeforeAll {
+﻿BeforeAll {
     Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
     Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
 }
@@ -17,11 +17,14 @@ Describe 'Convert-ADTValueType' {
             @{ Value = 255;  To = 'Byte';  Expected = 255 }
             @{ Value = 256;  To = 'Byte';  Expected = 0 }
             @{ Value = -1;   To = 'Byte';  Expected = 255 }
+            @{ Value = 127;  To = 'SByte'; Expected = 127 }
+            @{ Value = 128;  To = 'SByte'; Expected = -128 }
         ) {
             Convert-ADTValueType -Value $Value -To $To | Should -Be $Expected
         }
-        It 'Returns a System.ValueType' {
-            Convert-ADTValueType -Value 1 -To Int32 | Should -BeOfType ([System.ValueType])
+        It 'Returns the concrete output type matching the -To parameter' {
+            Convert-ADTValueType -Value 1 -To Int32 | Should -BeOfType ([System.Int32])
+            Convert-ADTValueType -Value 1 -To Byte  | Should -BeOfType ([System.Byte])
         }
         It 'Accepts -Value from the pipeline' {
             256 | Convert-ADTValueType -To Byte | Should -Be 0
