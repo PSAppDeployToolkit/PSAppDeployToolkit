@@ -77,10 +77,23 @@ function Set-ADTPowerShellCulture
                     throw (New-ADTErrorRecord @naerParams)
                 }
 
-                # Reflectively update the culture to the specified value.
-                # This will change PowerShell, but not its default variables like $PSCulture and $PSUICulture.
-                $smaCultureResolver.GetField('m_Culture', $smaResolverFlags).SetValue($null, $CultureInfo)
-                $smaCultureResolver.GetField('m_uiCulture', $smaResolverFlags).SetValue($null, $CultureInfo)
+                # Update the culture to the specified value. Windows PowerShell exposes the internal
+                # NativeCultureResolver fields used for culture resolution, and reflectively setting them
+                # changes PowerShell without touching its default variables ($PSCulture/$PSUICulture).
+                # PowerShell 7+ no longer exposes those fields, so fall back to setting the current
+                # thread's culture directly (which on that runtime is what PowerShell resolves against).
+                $mCultureField = $smaCultureResolver.GetField('m_Culture', $smaResolverFlags)
+                $mUiCultureField = $smaCultureResolver.GetField('m_uiCulture', $smaResolverFlags)
+                if ($mCultureField -and $mUiCultureField)
+                {
+                    $mCultureField.SetValue($null, $CultureInfo)
+                    $mUiCultureField.SetValue($null, $CultureInfo)
+                }
+                else
+                {
+                    [System.Threading.Thread]::CurrentThread.CurrentCulture = $CultureInfo
+                    [System.Threading.Thread]::CurrentThread.CurrentUICulture = $CultureInfo
+                }
             }
             catch
             {

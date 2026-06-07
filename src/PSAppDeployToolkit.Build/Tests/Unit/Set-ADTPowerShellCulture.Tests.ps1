@@ -1,13 +1,6 @@
 ﻿BeforeAll {
     Remove-Module PSAppDeployToolkit -Force -ErrorAction SilentlyContinue
     Import-Module "$PSScriptRoot\..\..\..\PSAppDeployToolkit\PSAppDeployToolkit.psd1" -Force
-
-    # Determine whether this runtime's Microsoft.PowerShell.NativeCultureResolver still
-    # exposes the m_Culture/m_uiCulture static fields the function reflects against.
-    # On modern PowerShell 7 these fields no longer exist, so the success path cannot run.
-    $smaResolver = [System.Reflection.Assembly]::Load('System.Management.Automation').GetType('Microsoft.PowerShell.NativeCultureResolver')
-    $smaFlags = [System.Reflection.BindingFlags]::NonPublic -bor [System.Reflection.BindingFlags]::Static
-    $script:CultureResolverFieldsAvailable = ($null -ne $smaResolver.GetField('m_Culture', $smaFlags)) -and ($null -ne $smaResolver.GetField('m_uiCulture', $smaFlags))
 }
 Describe 'Set-ADTPowerShellCulture' {
     BeforeAll {
@@ -67,11 +60,18 @@ Describe 'Set-ADTPowerShellCulture' {
             [System.Threading.Thread]::CurrentThread.CurrentUICulture = $script:savedUICulture
         }
 
-        It 'Should not throw when the requested culture is reported as installed' -Skip:(-not $script:CultureResolverFieldsAvailable) {
+        It 'Should not throw when the requested culture is reported as installed' {
             { Set-ADTPowerShellCulture -CultureInfo 'fr-FR' } | Should -Not -Throw
         }
 
-        It 'Should query the installed language list to validate the culture' -Skip:(-not $script:CultureResolverFieldsAvailable) {
+        It 'Should change the resolved PowerShell culture to the requested value' {
+            # Get-Culture reflects the change on both editions: Windows PowerShell via the
+            # NativeCultureResolver fields, PowerShell 7+ via the current thread's culture.
+            Set-ADTPowerShellCulture -CultureInfo 'fr-FR'
+            (Get-Culture).Name | Should -Be 'fr-FR'
+        }
+
+        It 'Should query the installed language list to validate the culture' {
             Set-ADTPowerShellCulture -CultureInfo 'fr-FR'
             Should -Invoke -ModuleName PSAppDeployToolkit Get-WinUserLanguageList -Times 1 -Exactly
         }
