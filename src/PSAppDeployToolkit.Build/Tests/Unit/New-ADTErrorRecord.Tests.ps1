@@ -50,7 +50,7 @@ Describe 'New-ADTErrorRecord' {
     }
 
     Context 'Input Validation' {
-        It 'Throws when Exception is null' {
+        It 'Throws ParameterBindingException when Exception is null' {
             $shouldParams = @{
                 Throw         = $true
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
