@@ -44,13 +44,29 @@ Describe 'New-ADTZipFile' {
             }
         }
 
-        It 'Overwrites an existing archive when -Force is specified' {
+        It 'Overwrites an existing archive when -Force is specified (replaces, not appends)' {
+            # First archive: a.txt + b.txt + Sub/c.txt
             New-ADTZipFile -LiteralPath $SourceDir -DestinationPath $ZipPath
-            $firstSize = (Get-Item -LiteralPath $ZipPath).Length
+
+            # Add a new file to the source so the second archive is observably different
+            New-Item -Path "$SourceDir\d.txt" -ItemType File -Force | Out-Null
+
+            # Second call with -Force must delete-then-recreate (source line 130), not append
             New-ADTZipFile -LiteralPath $SourceDir -DestinationPath $ZipPath -Force
-            $secondSize = (Get-Item -LiteralPath $ZipPath).Length
-            $secondSize | Should -Be $firstSize
-            Test-Path -LiteralPath $ZipPath | Should -BeTrue
+
+            $zip = [System.IO.Compression.ZipFile]::OpenRead($ZipPath)
+            try
+            {
+                $entryNames = $zip.Entries | Select-Object -ExpandProperty Name
+                # New entry must be present — proves the archive was rebuilt with current source
+                $entryNames | Should -Contain 'd.txt'
+                # Pre-existing entry must appear exactly once — proves no duplication from append
+                ($entryNames | Where-Object { $_ -eq 'a.txt' }).Count | Should -Be 1
+            }
+            finally
+            {
+                $zip.Dispose()
+            }
         }
 
         It 'Archives a single file via -Path' {
