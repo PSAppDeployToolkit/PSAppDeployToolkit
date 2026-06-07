@@ -86,10 +86,30 @@ Describe 'Get-ADTBoundParametersAndDefaultValues' {
             $result.ContainsKey('Alpha') | Should -BeTrue
             $result.ContainsKey('Beta') | Should -BeFalse
         }
+        It '-Exclude takes precedence over -Include when the same parameter name appears in both' {
+            function Invoke-PrecedenceHelper
+            {
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Alpha', Justification = 'This parameter is read via MyInvocation.BoundParameters and AST, not directly in the body.')]
+                [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Beta', Justification = 'This parameter is read via MyInvocation.BoundParameters and AST, not directly in the body.')]
+                [CmdletBinding()]
+                param
+                (
+                    [Parameter(Mandatory = $false)]
+                    [System.String]$Alpha = 'a',
+
+                    [Parameter(Mandatory = $false)]
+                    [System.String]$Beta = 'b'
+                )
+                return Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Include 'Alpha', 'Beta' -Exclude 'Beta'
+            }
+            $result = Invoke-PrecedenceHelper -Alpha 'x' -Beta 'y'
+            $result.ContainsKey('Alpha') | Should -BeTrue
+            $result.ContainsKey('Beta') | Should -BeFalse
+        }
     }
 
     Context 'Input Validation' {
-        It 'Throws ParameterBindingException when Invocation is null' {
+        It 'Throws ParameterArgumentValidationError when Invocation is null' {
             $shouldParams = @{
                 Throw         = $true
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
@@ -103,7 +123,6 @@ Describe 'Get-ADTBoundParametersAndDefaultValues' {
                 ExceptionType = [System.Management.Automation.ParameterBindingException]
                 ErrorId       = 'ParameterArgumentValidationError,Get-ADTBoundParametersAndDefaultValues'
             }
-            { Invoke-TestHelper -Name 'A' } | Out-Null
             { Get-ADTBoundParametersAndDefaultValues -Invocation $MyInvocation -Exclude '' } | Should @shouldParams
         }
     }
