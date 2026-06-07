@@ -109,7 +109,7 @@ Describe 'Remove-ADTContentFromCache' {
             $result | Should -BeNullOrEmpty
         }
 
-        It 'Reverts session DirFiles to the script directory path after removal' {
+        It 'Reverts session DirFiles and DirSupportFiles to the script directory paths after removal' {
             $cacheToRemove3 = "$TestDrive\CacheExists\ToRemove3"
             New-Item -Path $cacheToRemove3 -ItemType Directory -Force | Out-Null
 
@@ -123,6 +123,7 @@ Describe 'Remove-ADTContentFromCache' {
 
             Remove-ADTContentFromCache -LiteralPath $cacheToRemove3
             $fakeSession.DirFiles | Should -Be "$FakeScriptDir2\Files"
+            $fakeSession.DirSupportFiles | Should -Be "$FakeScriptDir2\SupportFiles"
         }
     }
 }
