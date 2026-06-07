@@ -87,8 +87,30 @@ Describe 'Set-ADTItemPermission' {
         }
 
         It 'Should apply an ACL object directly via the AccessControlList parameter set' {
-            $existingAcl = Get-Acl -LiteralPath $TestFile
-            { Set-ADTItemPermission -LiteralPath $TestFile -AccessControlList $existingAcl } | Should -Not -Throw
+            # Build an ACL that explicitly protects from inheritance and adds a known Allow-Read ACE,
+            # then verify both properties survive the round-trip through SetAccessControl.
+            $acl = Get-Acl -LiteralPath $TestFile
+            $acl.SetAccessRuleProtection($true, $false)
+            $ace = [System.Security.AccessControl.FileSystemAccessRule]::new(
+                'BUILTIN\Users',
+                [System.Security.AccessControl.FileSystemRights]::Read,
+                [System.Security.AccessControl.InheritanceFlags]::None,
+                [System.Security.AccessControl.PropagationFlags]::None,
+                [System.Security.AccessControl.AccessControlType]::Allow
+            )
+            $acl.AddAccessRule($ace)
+
+            Set-ADTItemPermission -LiteralPath $TestFile -AccessControlList $acl
+
+            $aclAfter = Get-Acl -LiteralPath $TestFile
+            $aclAfter.AreAccessRulesProtected | Should -BeTrue
+            $rules = $aclAfter.GetAccessRules($true, $false, [System.Security.Principal.NTAccount])
+            $match = $rules | Where-Object {
+                $_.IdentityReference.Value -eq 'BUILTIN\Users' -and
+                ($_.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::Read) -ne 0 -and
+                $_.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow
+            }
+            $match | Should -Not -BeNullOrEmpty
         }
 
         It 'Should enable inheritance on a folder via -EnableInheritance' {
@@ -107,7 +129,7 @@ Describe 'Set-ADTItemPermission' {
     Context 'Input Validation' {
         It 'Should throw when LiteralPath does not exist' {
             { Set-ADTItemPermission -LiteralPath "$TestDrive\DoesNotExist.txt" -User 'BUILTIN\Users' -Permission Read } |
-                Should -Throw -ExceptionType ([System.ArgumentException])
+                Should -Throw -ExceptionType ([System.ArgumentException]) -ErrorId 'InvalidLiteralPathParameterValue,Set-ADTItemPermission'
         }
 
         It 'Should accept a SID prefixed with asterisk (*) as a user identifier' {
