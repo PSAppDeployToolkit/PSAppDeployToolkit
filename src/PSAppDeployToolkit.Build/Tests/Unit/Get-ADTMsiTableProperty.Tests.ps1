@@ -113,9 +113,7 @@ Describe 'Get-ADTMsiTableProperty' {
             $result.Keys | Should -Contain 'ProductLanguage'
         }
 
-        It 'Applies a transform (.mst) before reading properties when TransformPath is specified' {
-            # Without a real .mst to apply, verify that the function still succeeds when
-            # TransformPath is omitted and falls back to the base MSI table read.
+        It 'Reads the base Property table and returns the expected ProductCode when no transform is applied' {
             $result = Get-ADTMsiTableProperty -LiteralPath $MsiFixturePath -Table 'Property'
             $result['ProductCode'] | Should -Be $MsiFixtureGuid
         }

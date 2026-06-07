@@ -48,7 +48,7 @@ Describe 'Remove-ADTFileFromUserProfiles' {
             }
         }
 
-        It 'Forwards the joined path to Remove-ADTFile once per profile (LiteralPath set)' {
+        It 'Joins the LiteralPath value to each profile and forwards it to Remove-ADTFile via -Path' {
             Mock -ModuleName PSAppDeployToolkit Remove-ADTFile { }
 
             Remove-ADTFileFromUserProfiles -LiteralPath 'AppData\Local\MyApp\file.txt'

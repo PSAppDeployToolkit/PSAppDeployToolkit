@@ -19,6 +19,10 @@ Describe 'Remove-ADTEdgeExtension' {
         $RedirectedEdgeKey = 'TestRegistry:\HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Edge'
     }
 
+    AfterAll {
+        Remove-Item -Path 'TestRegistry:\HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Edge' -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
     Context 'Functionality' {
         It 'Should remove the target extension and preserve other extensions' {
             New-Item -Path $RedirectedEdgeKey -Force | Out-Null

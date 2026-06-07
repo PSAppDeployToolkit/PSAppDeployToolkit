@@ -53,6 +53,17 @@ Describe 'Test-ADTUserIsBusy' {
             $result = Test-ADTUserIsBusy
             $result | Should -BeFalse
         }
+
+        It 'Should return $false when notification state is QUNS_APP' {
+            Mock -ModuleName PSAppDeployToolkit Get-ADTClientServerUser { return [PSCustomObject]@{ UserName = 'TestUser' } }
+            Mock -ModuleName PSAppDeployToolkit Test-ADTMicrophoneInUse { return $false }
+            Mock -ModuleName PSAppDeployToolkit Test-ADTUserInFocusMode { return $false }
+            Mock -ModuleName PSAppDeployToolkit Get-ADTUserToastNotificationMode { return 0 }
+            Mock -ModuleName PSAppDeployToolkit Get-ADTUserNotificationState { return [PSADT.Interop.QUERY_USER_NOTIFICATION_STATE]::QUNS_APP }
+            Mock -ModuleName PSAppDeployToolkit Test-ADTPowerPoint { return $false }
+            $result = Test-ADTUserIsBusy
+            $result | Should -BeFalse
+        }
     }
 
     Context 'Metadata' {
