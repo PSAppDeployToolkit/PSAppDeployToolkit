@@ -85,11 +85,18 @@ Describe 'Mount-ADTWimFile' {
     }
 
     Context 'WhatIf support' {
+        It 'Does not throw when -WhatIf is specified' {
+            { Mount-ADTWimFile -ImagePath $WimFilePath -Path $MountDir -Index 1 -WhatIf } | Should -Not -Throw
+        }
+
         It 'Does not invoke Mount-WindowsImage when -WhatIf is specified' {
-            # The begin block passes PSBoundParameters (including WhatIf) to Get-WindowsImage which does not
-            # accept WhatIf as a named parameter, causing a ParameterBindingException when the real cmdlet is
-            # invoked. This is a known limitation when testing ShouldProcess with the mocked Get-WindowsImage.
-            Set-ItResult -Skipped -Because 'The mocked Get-WindowsImage does not accept -WhatIf; ShouldProcess skip path cannot be exercised headlessly without a real DISM module.'
+            Mount-ADTWimFile -ImagePath $WimFilePath -Path $MountDir -Index 1 -WhatIf
+            Should -Invoke -CommandName Mount-WindowsImage -ModuleName PSAppDeployToolkit -Times 0 -Exactly
+        }
+
+        It 'Still invokes Get-WindowsImage when -WhatIf is specified (read-only image query runs regardless)' {
+            Mount-ADTWimFile -ImagePath $WimFilePath -Path $MountDir -Index 1 -WhatIf
+            Should -Invoke -CommandName Get-WindowsImage -ModuleName PSAppDeployToolkit -Times 1 -Exactly
         }
     }
 

@@ -144,6 +144,8 @@ function Mount-ADTWimFile
             $PSBoundParameters.Remove('PassThru')
             $PSBoundParameters.Remove('Force')
             $PSBoundParameters.Remove('Path')
+            $PSBoundParameters.Remove('WhatIf')
+            $PSBoundParameters.Remove('Confirm')
             Get-WindowsImage @PSBoundParameters
         }
         catch
