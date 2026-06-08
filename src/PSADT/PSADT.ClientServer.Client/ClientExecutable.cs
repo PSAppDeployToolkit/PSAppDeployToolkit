@@ -911,7 +911,7 @@ namespace PSADT.ClientServer
 
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
-            using (SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryToken(sessionId, elevatedTokenType, uiAccess).ConfigureAwait(false))
+            using (SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryTokenAsync(sessionId, elevatedTokenType, uiAccess).ConfigureAwait(false))
             using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
             using (SafeProcessHandle hCurrentProcess = NativeMethods.GetCurrentProcess())
             {

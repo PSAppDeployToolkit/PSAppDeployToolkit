@@ -93,7 +93,7 @@ namespace PSADT.AccountManagement
 
             // Generate a RunAsActiveUser object for the current user.
             CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
-            SessionRunAsActiveUser = SessionInfo.GetAsync(CallerSessionId).GetAwaiter().GetResult()?.ToRunAsActiveUser();
+            SessionRunAsActiveUser = SessionInfo.GetAsync(CallerSessionId).ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
             CallerIsLoggedOnUser = CallerRunAsActiveUser == SessionRunAsActiveUser;
         }
 

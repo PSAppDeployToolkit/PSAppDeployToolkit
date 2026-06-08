@@ -150,7 +150,7 @@ namespace PSADT.ProcessManagement
             {
                 if (RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
                 {
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(RunAsActiveUser.SessionId).GetAwaiter().GetResult();
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(RunAsActiveUser.SessionId).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, InheritEnvironmentVariables);
                     using (lpEnvironment)
                     {

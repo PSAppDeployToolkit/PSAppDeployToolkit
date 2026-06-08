@@ -39,7 +39,7 @@ namespace PSADT.Foundation
             using WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
             using SafeHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
                 ? runAsActiveUser != AccountUtilities.CallerRunAsActiveUser || AccountUtilities.CallerIsAdmin
-                ? await TokenManager.GetUserPrimaryToken(runAsActiveUser.SessionId, elevatedTokenType).ConfigureAwait(false)
+                ? await TokenManager.GetUserPrimaryTokenAsync(runAsActiveUser.SessionId, elevatedTokenType).ConfigureAwait(false)
                 : currentUser.AccessToken
                 : null;
             Func<FileInfo, bool> testEffectiveAccess = hPrimaryToken is null

@@ -192,12 +192,12 @@ namespace PSAppDeployToolkit.Foundation
             EnvPSVersion = psVersion;
 
             // Logged on user information.
-            if ((LoggedOnUserSessions = SessionInfo.GetAsync().GetAwaiter().GetResult()).Count > 0)
+            if ((LoggedOnUserSessions = SessionInfo.GetAsync().ConfigureAwait(false).GetAwaiter().GetResult()).Count > 0)
             {
                 UsersLoggedOn = new ReadOnlyCollection<NTAccount>([.. LoggedOnUserSessions.Select(static s => s.NTAccount)]);
                 CurrentLoggedOnUserSession = LoggedOnUserSessions.FirstOrDefault(static s => s.IsCurrentSession);
                 CurrentConsoleUserSession = LoggedOnUserSessions.FirstOrDefault(static s => s.IsConsoleSession);
-                RunAsActiveUser = RunAsActiveUser.GetAsync(LoggedOnUserSessions).GetAwaiter().GetResult();
+                RunAsActiveUser = RunAsActiveUser.GetAsync(LoggedOnUserSessions).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (RunAsActiveUser is not null)
                 {
                     RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName && !string.IsNullOrWhiteSpace(localeName) ? new(localeName) : null;

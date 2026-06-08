@@ -597,7 +597,7 @@ namespace PSADT.ClientServer
                         // Failed to gracefully close the process, so cancel it.
                         if (!_clientProcessCts.IsCancellationRequested)
                         {
-                            await _clientProcessCts.CancelAsync();
+                            await _clientProcessCts.CancelAsync().ConfigureAwait(false);
                         }
                     }
                 }
@@ -616,7 +616,7 @@ namespace PSADT.ClientServer
             }
 
             // Cancel the log writer and wait for it to finish.
-            await _logWriterTaskCts.CancelAsync();
+            await _logWriterTaskCts.CancelAsync().ConfigureAwait(false);
             if (_logWriterTask is not null)
             {
                 await _logWriterTask.ConfigureAwait(false);

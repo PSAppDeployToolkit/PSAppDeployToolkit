@@ -133,7 +133,7 @@ namespace PSADT.TerminalServices
             {
                 if (AccountUtilities.CallerIsAdmin)
                 {
-                    using SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryToken(session.SessionId, ElevatedTokenType.HighestAvailable);
+                    using SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryTokenAsync(session.SessionId, ElevatedTokenType.HighestAvailable).ConfigureAwait(false);
                     sid = TokenUtilities.GetTokenSid(hPrimaryToken); isLocalAdmin = TokenUtilities.IsTokenAdministrative(hPrimaryToken);
                 }
                 else
