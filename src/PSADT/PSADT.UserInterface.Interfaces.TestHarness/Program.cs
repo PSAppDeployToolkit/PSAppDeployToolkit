@@ -396,9 +396,9 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
         /// <param name="predicate">The predicate used to match an invoke member expression.</param>
         /// <param name="invokeMemberExpressionAst">The matching invoke member expression, if found.</param>
         /// <returns><see langword="true" /> when a matching ancestor is found; otherwise, <see langword="false" />.</returns>
-        private static bool TryFindAncestor(Ast? ast, Func<InvokeMemberExpressionAst, bool> predicate, out InvokeMemberExpressionAst? invokeMemberExpressionAst)
+        private static bool TryFindAncestor(Ast ast, Func<InvokeMemberExpressionAst, bool> predicate, out InvokeMemberExpressionAst? invokeMemberExpressionAst)
         {
-            for (Ast? current = ast; current != null; current = current.Parent)
+            for (Ast current = ast; current != null; current = current.Parent)
             {
                 if (current is InvokeMemberExpressionAst currentInvokeMemberExpressionAst && predicate(currentInvokeMemberExpressionAst))
                 {
@@ -406,7 +406,6 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
                     return true;
                 }
             }
-
             invokeMemberExpressionAst = null;
             return false;
         }
