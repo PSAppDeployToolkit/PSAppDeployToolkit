@@ -1006,6 +1006,7 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <returns>The exit code.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
         public int Close()
         {
             // Throw if this object has already been disposed.

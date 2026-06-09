@@ -697,7 +697,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Check if the argument is a key-value pair.
-            int equalsPos = argument.IndexOf("=");
+            int equalsPos = argument.IndexOf('=');
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
                 // Return the argument irrespective of whether it's quoted or not to support

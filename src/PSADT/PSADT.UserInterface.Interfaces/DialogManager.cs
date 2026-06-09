@@ -408,17 +408,14 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="messageText">The message text to display in the notification area icon.</param>
         /// <exception cref="InvalidOperationException">Thrown when no notify icon is currently open.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="messageText"/> is null or whitespace.</exception>
-        internal static async Task UpdateNotifyIconAsync(string messageText)
+        internal static Task UpdateNotifyIconAsync(string messageText)
         {
             if (notifyIcon is null)
             {
                 throw new InvalidOperationException("Cannot update a notify icon while one is not open.");
             }
-            if (string.IsNullOrWhiteSpace(messageText))
-            {
-                throw new ArgumentException("Message text cannot be null or whitespace.", nameof(messageText));
-            }
-            await InvokeDialogActionAsync(() => { notifyIcon.Text = messageText; });
+            ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
+            return InvokeDialogActionAsync(() => { notifyIcon.Text = messageText; });
         }
 
         /// <summary>
@@ -467,13 +464,13 @@ namespace PSADT.UserInterface.Interfaces
         /// <returns>The result of the dialog interaction, cast to the specified type parameter.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="state"/> is null and <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/>.</exception>
-        private static async Task<TResult> ShowModalDialogAsync<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
+        private static Task<TResult> ShowModalDialogAsync<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
         {
             if (dialogType == DialogType.CloseAppsDialog)
             {
                 ArgumentNullException.ThrowIfNull(state);
             }
-            return await InvokeDialogActionAsync(() =>
+            return InvokeDialogActionAsync(() =>
             {
                 using IModalDialog dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;
