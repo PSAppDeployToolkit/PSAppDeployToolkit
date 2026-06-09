@@ -113,7 +113,7 @@ namespace PSADT.ProcessManagement
                                     // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
                                     if (LaunchInfo.KillChildProcessesWithParent)
                                     {
-                                        CanDisposeJobObject = false;
+                                        JobObject.SetHandleAsInvalid();
                                     }
                                     break;
                                 }
@@ -309,7 +309,7 @@ namespace PSADT.ProcessManagement
         /// <returns>An object used to await this task.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
+        internal ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
         {
             return ProcessResultTask.ConfigureAwait(continueOnCapturedContext);
         }
@@ -338,11 +338,6 @@ namespace PSADT.ProcessManagement
         /// Represents the task for the shared process result.
         /// </summary>
         private readonly Task<ProcessResult> ProcessResultTask;
-
-        /// <summary>
-        /// Indicates whether the job can be disposed.
-        /// </summary>
-        private bool CanDisposeJobObject = true;
 
         /// <summary>
         /// Represents the safe handle for the associated process.
@@ -434,20 +429,8 @@ namespace PSADT.ProcessManagement
             StdIn?.Dispose();
 
             // Dispose of the I/O completion port and job object if they were created.
-            if (JobObject is not null)
-            {
-                // Prevent the finalizer from closing the job handle, which would kill the processes
-                // due to JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE. This intentionally leaks the handle.
-                if (!CanDisposeJobObject)
-                {
-                    JobObject.SetHandleAsInvalid();
-                }
-                else
-                {
-                    JobObject.Dispose();
-                }
-            }
             IoCompletionPort?.Dispose();
+            JobObject?.Dispose();
 
             // Dispose of the task if it's completed. If it's not complete, we're not transferring
             // ownership of the Process object to a ProcessResult object, so we handle that here too.
