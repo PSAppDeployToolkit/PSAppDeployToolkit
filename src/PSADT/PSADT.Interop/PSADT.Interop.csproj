@@ -24,6 +24,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="PolySharp" Version="1.16.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.16" />
     <PackageReference Include="System.Collections.Immutable" Version="10.0.8" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
@@ -38,6 +42,17 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <PolySharpIncludeGeneratedTypes>
+      System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
+      System.Diagnostics.CodeAnalysis.NotNullAttribute;
+      System.Diagnostics.StackTraceHiddenAttribute;
+      System.Runtime.CompilerServices.CallerArgumentExpressionAttribute;
+      System.Runtime.CompilerServices.ModuleInitializerAttribute;
+    </PolySharpIncludeGeneratedTypes>
+    <PolySharpExcludeGeneratedTypes>
+      System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute;
+    </PolySharpExcludeGeneratedTypes>
+    <PolySharpUseEmbeddedAttributeForGeneratedTypes>false</PolySharpUseEmbeddedAttributeForGeneratedTypes>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 </Project>
