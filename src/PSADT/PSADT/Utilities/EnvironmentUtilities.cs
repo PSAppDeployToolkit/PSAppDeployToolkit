@@ -267,5 +267,18 @@ namespace PSADT.Utilities
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
             Environment.SetEnvironmentVariable(variable, null, target);
         }
+
+        /// <summary>
+        /// Expands environment variable references in the specified string and returns the resulting string.
+        /// </summary>
+        /// <param name="name">The string containing environment variable references to expand.</param>
+        /// <returns>The string with environment variable references expanded, or <c>null</c> if the result is null or whitespace.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
+        public static string? ExpandEnvironmentVariables(string name)
+        {
+            return Environment.ExpandEnvironmentVariables(name) is not string ret || string.IsNullOrWhiteSpace(ret)
+                ? null
+                : ret;
+        }
     }
 }
