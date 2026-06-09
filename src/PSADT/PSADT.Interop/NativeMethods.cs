@@ -501,7 +501,7 @@ namespace PSADT.Interop
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
-                        lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                        lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
                         return res;
                     }
                 }
@@ -1774,7 +1774,7 @@ namespace PSADT.Interop
                         {
                             throw ExceptionUtilities.GetExceptionForLastWin32Error();
                         }
-                        lpCommandLine = lpCommandLine.Slice(0, ((PWSTR)plpCommandLine).Length);
+                        lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
                         return res;
                     }
                 }

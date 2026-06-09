@@ -40,7 +40,7 @@ namespace PSADT.Interop.Utilities
             List<string> result = new(lines.Length);
             for (int i = 0; i < lines.Length; i++)
             {
-                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[result.Count - 1].TrimStart().StartsWith(StackTraceAtPrefix, StringComparison.Ordinal)))
+                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[^1].TrimStart().StartsWith(StackTraceAtPrefix, StringComparison.Ordinal)))
                 {
                     result.Add(lines[i]);
                 }
@@ -284,7 +284,7 @@ namespace PSADT.Interop.Utilities
                         int idx = line.IndexOf(marker, StringComparison.Ordinal);
                         if (idx > 0)
                         {
-                            return line.Substring(0, idx);
+                            return line[..idx];
                         }
                     }
                 }

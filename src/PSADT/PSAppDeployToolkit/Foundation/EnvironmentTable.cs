@@ -172,7 +172,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     EnvOfficeBitness = platformStr;
                 }
-                EnvOfficeChannel = (EnvOfficeVars.TryGetValue("UpdateChannel", out object? channelObj) && channelObj is string channelStr ? channelStr.Substring(channelStr.LastIndexOf('/') + 1) : EnvOfficeVars.TryGetValue("CDNBaseUrl", out object? cdnBaseUrlObj) && cdnBaseUrlObj is string cdnBaseUrlStr ? cdnBaseUrlStr.Substring(cdnBaseUrlStr.LastIndexOf('/') + 1) : null) switch
+                EnvOfficeChannel = (EnvOfficeVars.TryGetValue("UpdateChannel", out object? channelObj) && channelObj is string channelStr ? channelStr[(channelStr.LastIndexOf('/') + 1)..] : EnvOfficeVars.TryGetValue("CDNBaseUrl", out object? cdnBaseUrlObj) && cdnBaseUrlObj is string cdnBaseUrlStr ? cdnBaseUrlStr[(cdnBaseUrlStr.LastIndexOf('/') + 1)..] : null) switch
                 {
                     "492350f6-3a01-4f97-b9c0-c7c6ddf67d60" => "monthly",
                     "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114" => "semi-annual",

@@ -482,7 +482,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 // Add text before the current match with current formatting
                 if (match.Index > lastPos)
                 {
-                    string textContent = message.Substring(lastPos, match.Index - lastPos);
+                    string textContent = message[lastPos..match.Index];
                     AddFormattedText(textBlock, textContent, formattingStack);
                 }
 
@@ -494,7 +494,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Add any remaining text after the last match
             if (lastPos < message.Length)
             {
-                string remainingText = message.Substring(lastPos);
+                string remainingText = message[lastPos..];
                 AddFormattedText(textBlock, remainingText, formattingStack);
             }
         }

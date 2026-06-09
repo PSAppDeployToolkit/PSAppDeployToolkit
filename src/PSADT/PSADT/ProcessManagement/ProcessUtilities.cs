@@ -484,7 +484,7 @@ namespace PSADT.ProcessManagement
         {
             Span<char> buffer = stackalloc char[1024]; buffer.Clear();
             _ = NativeMethods.QueryFullProcessImageName(hProcess, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, out uint requiredLength);
-            string result = buffer.Slice(0, (int)requiredLength).ToString();
+            string result = buffer[..(int)requiredLength].ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidProgramException("The QueryFullProcessImageName() call returned a null or empty result.")
                 : new(result);
@@ -505,7 +505,7 @@ namespace PSADT.ProcessManagement
         private static FileInfo GetProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             Span<char> buffer = stackalloc char[1024]; buffer.Clear();
-            string result = buffer.Slice(0, (int)NativeMethods.GetProcessImageFileName(hProcess, buffer)).ToString();
+            string result = buffer[..(int)NativeMethods.GetProcessImageFileName(hProcess, buffer)].ToString();
             return string.IsNullOrWhiteSpace(result)
                 ? throw new InvalidProgramException("The GetProcessImageFileName() call returned a null or empty result.")
                 : new(TranslateNtPathToWin32Path(result, ntPathLookupTable));

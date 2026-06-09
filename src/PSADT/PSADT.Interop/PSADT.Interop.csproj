@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.Bcl.Memory" Version="9.0.16" />
     <PackageReference Include="System.Collections.Immutable" Version="10.0.8" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />

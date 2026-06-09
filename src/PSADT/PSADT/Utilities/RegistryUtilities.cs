@@ -64,7 +64,7 @@ namespace PSADT.Utilities
             {
                 throw new FormatException("Invalid registry key format.");
             }
-            string hiveName = keyPath.Substring(0, firstBackslashIndex);
+            string hiveName = keyPath[..firstBackslashIndex];
             RegistryKey baseKey = hiveName switch
             {
                 "HKEY_LOCAL_MACHINE" or "HKLM" => Registry.LocalMachine,
@@ -74,7 +74,7 @@ namespace PSADT.Utilities
                 "HKEY_CURRENT_CONFIG" or "HKCC" => Registry.CurrentConfig,
                 _ => throw new FormatException($"Invalid registry hive: {hiveName}"),
             };
-            return baseKey.OpenSubKey(keyPath.Substring(firstBackslashIndex + 1), writable) ?? throw new InvalidOperationException("The specified registry key does not exist."); ;
+            return baseKey.OpenSubKey(keyPath[(firstBackslashIndex + 1)..], writable) ?? throw new InvalidOperationException("The specified registry key does not exist."); ;
         }
 
         /// <summary>

@@ -33,7 +33,7 @@ namespace PSADT.Security
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 _ = NativeMethods.LookupPrivilegeName(attr.Luid, buffer, out uint retLength);
-                ReadOnlySpan<char> refBuf = buffer.Slice(0, (int)retLength).Trim();
+                ReadOnlySpan<char> refBuf = buffer[..(int)retLength].Trim();
                 if (refBuf.IsEmpty)
                 {
                     throw new InvalidProgramException($"Privilege name for LUID: {attr.Luid} is empty.");
@@ -58,7 +58,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
                 {
-                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer.Slice(bufferOffset + (increment * i)).AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
                     if ((attr.Attributes & attributes) == attributes)
                     {
                         privileges.Add(GetPrivilege(in attr, charSpan));
@@ -69,7 +69,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
                 {
-                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer.Slice(bufferOffset + (increment * i)).AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }

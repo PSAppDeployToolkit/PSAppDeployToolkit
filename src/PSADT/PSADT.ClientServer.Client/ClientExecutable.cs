@@ -135,7 +135,7 @@ namespace PSADT.ClientServer
                 if (argv.Length == 0)
                 {
                     string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
-                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
+                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion[..productVersion.IndexOf('+')])}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
@@ -1016,7 +1016,7 @@ namespace PSADT.ClientServer
                 {
                     continue;
                 }
-                string key = argv[i].Substring(1).Trim();
+                string key = argv[i][1..].Trim();
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
                 if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
                 {
@@ -1032,8 +1032,8 @@ namespace PSADT.ClientServer
                 {
                     // Provided value is a registry key path.
                     int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
-                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex));
-                    return registryKey.GetValue(argvDictValue.Substring(lastBackslashIndex + 1), null) is not string argvDictContent
+                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue[..lastBackslashIndex]);
+                    return registryKey.GetValue(argvDictValue[(lastBackslashIndex + 1)..], null) is not string argvDictContent
                         ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
                         : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }

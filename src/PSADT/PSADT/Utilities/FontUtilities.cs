@@ -183,8 +183,8 @@ namespace PSADT.Utilities
             }
 
             // Use the font's full name if available.
-            ushort count = BinaryPrimitives.ReadUInt16BigEndian(nameTable.Slice(2));
-            ushort stringOffset = BinaryPrimitives.ReadUInt16BigEndian(nameTable.Slice(4));
+            ushort count = BinaryPrimitives.ReadUInt16BigEndian(nameTable[2..]);
+            ushort stringOffset = BinaryPrimitives.ReadUInt16BigEndian(nameTable[4..]);
             string? full = GetFontTitleByNameId(nameTable, count, stringOffset, NAME_ID.NAME_ID_FULL_NAME);
             if (!string.IsNullOrWhiteSpace(full))
             {

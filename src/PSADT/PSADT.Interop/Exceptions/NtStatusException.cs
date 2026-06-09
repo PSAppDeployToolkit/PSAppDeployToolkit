@@ -79,7 +79,7 @@ namespace PSADT.Interop.Exceptions
             Span<char> buffer = new char[short.MaxValue];
             try
             {
-                return $"{Regex.Replace(buffer.Slice(0, (int)NativeMethods.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)).ToString(), @"\{.+\}", string.Empty).Trim().TrimEnd('.')}. {messageSuffix}";
+                return $"{Regex.Replace(buffer[..(int)NativeMethods.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)].ToString(), @"\{.+\}", string.Empty).Trim().TrimEnd('.')}. {messageSuffix}";
             }
             catch (Win32Exception)
             {

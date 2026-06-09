@@ -192,7 +192,7 @@ namespace PSADT.FileSystem
             for (uint i = 0; i < typesCount; i++)
             {
                 // Marshal the data into our structure and add the necessary values to the dictionary.
-                ref readonly OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr.Slice(ptrOffset).AsReadOnlyStructure<OBJECT_TYPE_INFORMATION>();
+                ref readonly OBJECT_TYPE_INFORMATION typeInfo = ref typesBufferPtr[ptrOffset..].AsReadOnlyStructure<OBJECT_TYPE_INFORMATION>();
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString());
                 ptrOffset += objectTypeSize + (int)NativeMethods.ALIGN_UP_POINTER<nint>(typeInfo.TypeName.MaximumLength);
             }

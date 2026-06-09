@@ -98,7 +98,7 @@ namespace PSADT.Foundation
             {
                 int divider = NTAccount.Value.IndexOf('\\');
                 return divider != -1
-                    ? NTAccount.Value.Substring(divider + 1)
+                    ? NTAccount.Value[(divider + 1)..]
                     : NTAccountValue;
             }
         }
@@ -113,7 +113,7 @@ namespace PSADT.Foundation
             {
                 int divider = NTAccount.Value.IndexOf('\\');
                 return divider != -1
-                    ? NTAccount.Value.Substring(0, divider)
+                    ? NTAccount.Value[..divider]
                     : null;
             }
         }

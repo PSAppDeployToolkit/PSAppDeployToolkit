@@ -230,14 +230,14 @@ namespace System.IO
                     {
                         continue;
                     }
-                    if (written > 0 && !EndsInDirectorySeparator(buffer.Slice(0, written)))
+                    if (written > 0 && !EndsInDirectorySeparator(buffer[..written]))
                     {
                         buffer[written++] = Path.DirectorySeparatorChar;
                     }
-                    segment.CopyTo(buffer.Slice(written));
+                    segment.CopyTo(buffer[written..]);
                     written += segment.Length;
                 }
-                return buffer.Slice(0, written).ToString();
+                return buffer[..written].ToString();
             }
 
             /// <summary>
@@ -292,7 +292,7 @@ namespace System.IO
                 {
                     buffer[pos++] = Path.DirectorySeparatorChar;
                 }
-                s1.CopyTo(buffer.Slice(pos));
+                s1.CopyTo(buffer[pos..]);
                 pos += s1.Length;
 
                 // Write s2.
@@ -302,7 +302,7 @@ namespace System.IO
                     {
                         buffer[pos++] = Path.DirectorySeparatorChar;
                     }
-                    s2.CopyTo(buffer.Slice(pos));
+                    s2.CopyTo(buffer[pos..]);
                     pos += s2.Length;
                 }
 
@@ -313,10 +313,10 @@ namespace System.IO
                     {
                         buffer[pos++] = Path.DirectorySeparatorChar;
                     }
-                    s3.CopyTo(buffer.Slice(pos));
+                    s3.CopyTo(buffer[pos..]);
                     pos += s3.Length;
                 }
-                return buffer.Slice(0, pos).ToString();
+                return buffer[..pos].ToString();
             }
 
             /// <summary>
@@ -344,7 +344,7 @@ namespace System.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static bool EndsInDirectorySeparator(ReadOnlySpan<char> path)
             {
-                return path.Length > 0 && (path[path.Length - 1] == Path.DirectorySeparatorChar || path[path.Length - 1] == Path.AltDirectorySeparatorChar);
+                return path.Length > 0 && (path[^1] == Path.DirectorySeparatorChar || path[^1] == Path.AltDirectorySeparatorChar);
             }
         }
     }

@@ -41,7 +41,7 @@ namespace PSADT.Utilities
             {
                 return null;
             }
-            return buffer.Slice(0, (int)len).Trim().ToString();
+            return buffer[..(int)len].Trim().ToString();
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace PSADT.Utilities
             }
 
             OrderedDictionary dictionary = [];
-            foreach (string entry in buffer.Slice(0, (int)res).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+            foreach (string entry in buffer[..(int)res].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
             {
                 if (string.IsNullOrWhiteSpace(entry))
                 {
@@ -122,8 +122,8 @@ namespace PSADT.Utilities
                     continue;
                 }
 
-                string key = entry.Substring(0, separatorIndex);
-                string value = entry.Substring(separatorIndex + 1);
+                string key = entry[..separatorIndex];
+                string value = entry[(separatorIndex + 1)..];
                 if (dictionary.Contains(key))
                 {
                     dictionary[key] = value;
@@ -144,7 +144,7 @@ namespace PSADT.Utilities
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536]; uint len = NativeMethods.GetPrivateProfileSectionNames(buffer, filepath);
-            string[] sections = buffer.Slice(0, (int)len).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries);
+            string[] sections = buffer[..(int)len].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries);
             return sections.Length == 0 ? throw new InvalidDataException("No sections found in the INI file.") : new(sections);
         }
 

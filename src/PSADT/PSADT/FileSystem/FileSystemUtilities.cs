@@ -181,7 +181,7 @@ namespace PSADT.FileSystem
             {
                 while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
                 {
-                    path = path.Substring(0, path.Length - 1);
+                    path = path[..^1];
                 }
                 return path;
             }
@@ -510,7 +510,7 @@ namespace PSADT.FileSystem
                     continue;
                     throw;
                 }
-                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(path => path.Length > 0 && !lookupTable.ContainsKey(path)))
+                foreach (string path in targetPath[..(int)length].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(path => path.Length > 0 && !lookupTable.ContainsKey(path)))
                 {
                     lookupTable.Add(path, driveLetter);
                 }

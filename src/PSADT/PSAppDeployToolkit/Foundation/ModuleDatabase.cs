@@ -144,7 +144,7 @@ namespace PSAppDeployToolkit.Foundation
         {
             return !(_database?.Properties["Sessions"].Value is List<DeploymentSession> sessionList && sessionList.Count > 0)
                 ? throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
-                : sessionList[sessionList.Count - 1];
+                : sessionList[^1];
         }
 
         /// <summary>

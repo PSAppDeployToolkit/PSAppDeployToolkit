@@ -344,7 +344,7 @@ namespace PSADT.ClientServer
                     byte[] input = new byte[previousBlock.Length + info.Length + 1];
                     Buffer.BlockCopy(previousBlock, 0, input, 0, previousBlock.Length);
                     Buffer.BlockCopy(info, 0, input, previousBlock.Length, info.Length);
-                    input[input.Length - 1] = counter++;
+                    input[^1] = counter++;
 
                     previousBlock = hmac.ComputeHash(input);
                     int copyLength = Math.Min(previousBlock.Length, outputLength - offset);

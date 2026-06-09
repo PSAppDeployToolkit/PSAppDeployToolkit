@@ -304,7 +304,7 @@ namespace PSADT.WindowsInstaller
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength + 1];
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
-            return XmlUtilities.SafeLoadFromText(bufSpan.Slice(0, (int)requiredLength).ToString());
+            return XmlUtilities.SafeLoadFromText(bufSpan[..(int)requiredLength].ToString());
         }
 
         /// <summary>
@@ -444,9 +444,9 @@ namespace PSADT.WindowsInstaller
             // - next 4 reversed -> Data3 (ushort)
             // - last 16: swap each byte pair -> Data4[8]
             return new(
-                ReadInt32FromReversedChars(packed32.Slice(0, 8)),
-                ReadInt16FromReversedChars(packed32.Slice(8, 4)),
-                ReadInt16FromReversedChars(packed32.Slice(12, 4)),
+                ReadInt32FromReversedChars(packed32[..8]),
+                ReadInt16FromReversedChars(packed32[8..12]),
+                ReadInt16FromReversedChars(packed32[12..16]),
                 ReadByteFromSwappedPair(packed32, 16),
                 ReadByteFromSwappedPair(packed32, 18),
                 ReadByteFromSwappedPair(packed32, 20),
@@ -544,7 +544,7 @@ namespace PSADT.WindowsInstaller
             }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
-            ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
             return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
 
@@ -667,7 +667,7 @@ namespace PSADT.WindowsInstaller
             _ = NativeMethods.MsiRecordGetString(hRecord, field, null, out uint requiredSize);
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
-            ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
             return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
     }

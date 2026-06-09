@@ -44,7 +44,7 @@ namespace PSADT.Interop.Extensions
             {
                 throw new FormatException("The provided span does not contain a null-terminated Unicode string.");
             }
-            ReadOnlySpan<char> stringSpan = span.Slice(0, nullTerminator).Trim();
+            ReadOnlySpan<char> stringSpan = span[..nullTerminator].Trim();
             return !stringSpan.IsWhiteSpace() ? stringSpan.ToString() : null;
         }
 

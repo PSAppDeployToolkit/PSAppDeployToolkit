@@ -38,7 +38,7 @@ namespace PSADT.WindowManagement
             if (textLength > 0)
             {
                 Span<char> buffer = stackalloc char[textLength + 1];
-                string text = buffer.Slice(0, NativeMethods.GetWindowText(hWnd, buffer)).Trim().ToString();
+                string text = buffer[..NativeMethods.GetWindowText(hWnd, buffer)].Trim().ToString();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return text;
