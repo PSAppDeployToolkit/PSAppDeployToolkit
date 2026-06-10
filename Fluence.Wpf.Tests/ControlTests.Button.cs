@@ -119,6 +119,52 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void Button_IconOnly_CentersGlyphAndRestoresGapWithContent()
+        {
+            RunOnStaThread(() =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+                Fluent.Button button = new()
+                {
+                    MinWidth = 32,
+                    Padding = new Thickness(8, 4, 8, 4),
+                    Icon = new Fluent.FontIcon { Glyph = "", IconFontSize = 14 }
+                };
+
+                try
+                {
+                    window.Content = button;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    ContentPresenter iconPresenter = FindVisualChildByName<ContentPresenter>(button, "IconPresenter")
+                        ?? throw new InvalidOperationException("IconPresenter must exist in the Button template.");
+                    Assert.AreEqual(new Thickness(0), iconPresenter.Margin,
+                        "An icon-only button must drop the icon-to-text gap.");
+
+                    Point iconCenter = iconPresenter.TranslatePoint(
+                        new Point(iconPresenter.ActualWidth / 2.0, iconPresenter.ActualHeight / 2.0), button);
+                    Assert.AreEqual(button.ActualWidth / 2.0, iconCenter.X, 1.0,
+                        "The icon-only glyph must be horizontally centered in the button.");
+
+                    button.Content = "Copy";
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+                    Assert.AreEqual(new Thickness(0, 0, 8, 0), iconPresenter.Margin,
+                        "A button with icon and content must keep the 8px icon-to-text gap.");
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [TestMethod]
         public void Button_Appearances_ApplyWinUiRestBrushesAndBorders()
         {
             RunOnStaThread(() =>

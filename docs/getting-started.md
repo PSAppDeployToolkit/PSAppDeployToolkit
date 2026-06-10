@@ -1,10 +1,3 @@
-﻿---
-title: Getting started
-linkTitle: Getting started
-description: Reference Fluence.Wpf, initialize the theme manager, and host a FluenceWindow shell.
-weight: 10
----
-
 ## Reference the library
 
 1. Add a **project reference** to `Fluence.Wpf/Fluence.Wpf.csproj` (recommended until a NuGet package is published):

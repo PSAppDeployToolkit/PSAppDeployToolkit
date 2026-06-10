@@ -1,10 +1,3 @@
-﻿---
-title: Controls
-linkTitle: Controls
-description: Catalog of Fluence.Wpf controls aligned with the demo gallery, with XAML snippets and template contracts.
-weight: 30
----
-
 The **Fluence.Wpf.Demo** gallery shows every control: `FluenceWindow` chrome with a search box in the title bar, a left `NavigationView` (compact / expanded), and grouped `UserControl` pages under `Fluence.Wpf.Demo/Pages/`:
 
 - Home (clickable hero cards)
@@ -13,12 +6,12 @@ The **Fluence.Wpf.Demo** gallery shows every control: `FluenceWindow` chrome wit
 - Accessibility (focus order, high contrast, automation, RTL)
 - Buttons
 - Selection (CheckBox, RadioButton, ToggleSwitch, RatingControl)
-- Inputs (TextBox, PasswordBox, NumberBox, ComboBox, Slider)
-- Forms (sign-in, checkout, settings)
+- Inputs (TextBox, PasswordBox, NumberBox, ComboBox, Slider, AutoSuggestBox)
+- Forms (sign-in, checkout, settings, DatePicker, TimePicker, ColorPicker)
 - Data (Card, ListBox, ListView)
 - Data Binding (ObservableCollection, selection modes, data templates)
 - Trees (TreeView)
-- Menus (Menu, ContextMenu, ToolTip, command buttons)
+- Menus (Menu, ContextMenu, ToolTip, Flyout, ContentDialog, TeachingTip, command buttons)
 - Navigation (NavigationView modes)
 - Tabs (TabControl, TabView)
 - Layout (StackPanel, DockPanel, Border, Separator, Expander)
@@ -51,13 +44,14 @@ xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | Window              | `FluenceWindow`, `TitleBar`                                                                                                         |
 | Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `RepeatButton`, `ToggleButton`                                       |
-| Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`                                                       |
-| Text                | `TextBox`, `PasswordBox`, `TextBlock` + `TextBlockExtensions`                                                                      |
+| Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`, `DatePicker`, `TimePicker`, `ColorPicker`            |
+| Text                | `TextBox`, `PasswordBox`, `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions`                                                    |
 | Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem`                                                                               |
 | Tabs                | `TabControl`, `TabItem`, `TabView`, `TabViewItem`                                                                                  |
 | Feedback            | `ProgressBar`, `ProgressRing`, `InfoBar`, `InfoBadge`, `RatingControl`                                                             |
-| Navigation          | `NavigationView`, `NavigationViewItem`, `NavigationViewItemHeader`, `NavigationViewItemSeparator`                                  |
-| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`                                                                                       |
+| Navigation          | `NavigationView`, `NavigationViewItem`, `NavigationViewItemHeader`, `NavigationViewItemSeparator`, `BreadcrumbBar`, `BreadcrumbBarItem`, `PipsPager` |
+| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`, `FlyoutBase`, `Flyout`, `FlyoutPresenter`, `TeachingTip`, `CommandBarFlyout`, `AppBarButton` |
+| Dialogs             | `ContentDialog`                                                                                                                    |
 | Trees & collections | `TreeView`, `TreeViewItem`                                                                                                         |
 | Layout / surfaces   | `Card`, `Expander`, `Border`, `StackPanel`, `DockPanel`, `SmoothScrollViewer`, `Separator`                                         |
 | Person / social     | `PersonPicture`                                                                                                                    |
@@ -65,22 +59,11 @@ xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
 
 Tab strip and scroll bar styling are provided via merged themes (see `Themes/Generic.xaml`).
 
-## Control Screenshots and API
+## Control API
 
-Each area below pairs Light and Dark gallery screenshots with the public API types it uses. Screenshots live under `docs/screenshots/gallery/`; API links point to `/api/` on the documentation site.
+Each area below lists the public API types it uses; API links point to `/api/` on the documentation site.
 
 ### Window and Shell
-
-<div class="fluence-control-shot-pair" aria-label="Window and shell screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-home-light.png" alt="Gallery shell home page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-home-dark.png" alt="Gallery shell home page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -94,17 +77,6 @@ Key API:
 Primary members include `SystemBackdropType`, `CornerStyle`, `ExtendsContentIntoTitleBar`, `TitleBar`, `TitleBarHeight`, caption-button visibility properties, and title-bar events for back and pane-toggle requests.
 
 ### Basic Actions
-
-<div class="fluence-control-shot-pair" aria-label="Basic action control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-buttons-light.png" alt="Buttons gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-buttons-dark.png" alt="Buttons gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -122,17 +94,6 @@ The action controls keep standard WPF command, content, and click patterns. Use 
 
 ### Selection
 
-<div class="fluence-control-shot-pair" aria-label="Selection control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-selection-light.png" alt="Selection gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-selection-dark.png" alt="Selection gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
-
 Key API:
 
 <div class="fluence-api-list">
@@ -146,17 +107,6 @@ Selection controls follow WPF checked-state APIs (`IsChecked`, groups, and selec
 
 ### Inputs
 
-<div class="fluence-control-shot-pair" aria-label="Input control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-inputs-light.png" alt="Inputs gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-inputs-dark.png" alt="Inputs gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
-
 Key API:
 
 <div class="fluence-api-list">
@@ -165,24 +115,18 @@ Key API:
   <a href="../../api/Fluence.Wpf.Controls.NumberBox.html">NumberBox</a>
   <a href="../../api/Fluence.Wpf.Controls.TextBox.html">TextBox</a>
   <a href="../../api/Fluence.Wpf.Controls.PasswordBox.html">PasswordBox</a>
+  <a href="../../api/Fluence.Wpf.Controls.AutoSuggestBox.html">AutoSuggestBox</a>
   <a href="../../api/Fluence.Wpf.SpinButtonPlacementMode.html">SpinButtonPlacementMode</a>
   <a href="../../api/Fluence.Wpf.NumberBoxValueChangedEventArgs.html">NumberBoxValueChangedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs.html">AutoSuggestBoxTextChangedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.AutoSuggestBoxSuggestionChosenEventArgs.html">AutoSuggestBoxSuggestionChosenEventArgs</a>
+  <a href="../../api/Fluence.Wpf.AutoSuggestBoxQuerySubmittedEventArgs.html">AutoSuggestBoxQuerySubmittedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.AutoSuggestionBoxTextChangeReason.html">AutoSuggestionBoxTextChangeReason</a>
 </div>
 
-Input controls keep standard WPF editing, selection, command, and binding behavior. `NumberBox` adds numeric parsing, range, increment, and spin-button placement. Text inputs get placeholder, validation, and focus visuals from the shared templates.
+Input controls keep standard WPF editing, selection, command, and binding behavior. `NumberBox` adds numeric parsing, range, increment, and spin-button placement. Text inputs get placeholder, validation, and focus visuals from the shared templates. `AutoSuggestBox` pairs a text input with a light-dismiss suggestion list the application fills through `TextChanged`, `SuggestionChosen`, and `QuerySubmitted`.
 
 ### Forms
-
-<div class="fluence-control-shot-pair" aria-label="Form screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-forms-light.png" alt="Forms gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-forms-dark.png" alt="Forms gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -191,23 +135,18 @@ Key API:
   <a href="../../api/Fluence.Wpf.Controls.PasswordBox.html">PasswordBox</a>
   <a href="../../api/Fluence.Wpf.Controls.ComboBox.html">ComboBox</a>
   <a href="../../api/Fluence.Wpf.Controls.Button.html">Button</a>
+  <a href="../../api/Fluence.Wpf.Controls.DatePicker.html">DatePicker</a>
+  <a href="../../api/Fluence.Wpf.Controls.TimePicker.html">TimePicker</a>
+  <a href="../../api/Fluence.Wpf.Controls.ColorPicker.html">ColorPicker</a>
   <a href="../../api/Fluence.Wpf.ValidationState.html">ValidationState</a>
+  <a href="../../api/Fluence.Wpf.DatePickerSelectedValueChangedEventArgs.html">DatePickerSelectedValueChangedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.TimePickerSelectedValueChangedEventArgs.html">TimePickerSelectedValueChangedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.ColorPickerColorChangedEventArgs.html">ColorPickerColorChangedEventArgs</a>
 </div>
 
-The form page combines input controls with card surfaces, status text, validation states, and primary actions. Start here for sign-in, checkout, and settings forms.
+The form page combines input controls with card surfaces, status text, validation states, and primary actions. Start here for sign-in, checkout, and settings forms. `DatePicker`, `TimePicker`, and `ColorPicker` add flyout-based date, time, and color selection for form fields.
 
 ### Data and Collections
-
-<div class="fluence-control-shot-pair" aria-label="Data control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-data-light.png" alt="Data gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-data-dark.png" alt="Data gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -225,17 +164,6 @@ Collection controls keep WPF item-source and template behavior. `Card` adds head
 
 ### Data Binding
 
-<div class="fluence-control-shot-pair" aria-label="Data binding screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-data-binding-light.png" alt="Data binding gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-data-binding-dark.png" alt="Data binding gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
-
 Key API:
 
 <div class="fluence-api-list">
@@ -250,17 +178,6 @@ The data-binding page shows standard WPF `ItemsSource`, `SelectedItem`, `Selecte
 
 ### Icons
 
-<div class="fluence-control-shot-pair" aria-label="Icon screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-icons-light.png" alt="Icons gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-icons-dark.png" alt="Icons gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
-
 Key API:
 
 <div class="fluence-api-list">
@@ -270,17 +187,6 @@ Key API:
 `FontIcon` renders Segoe Fluent Symbols glyphs and adds icon-size, foreground, and alignment properties. It works inside buttons, navigation items, tab headers, cards, and standalone icon lists.
 
 ### Typography
-
-<div class="fluence-control-shot-pair" aria-label="Typography screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-typography-light.png" alt="Typography gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-typography-dark.png" alt="Typography gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -294,17 +200,6 @@ Key API:
 
 ### Navigation
 
-<div class="fluence-control-shot-pair" aria-label="Navigation control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-navigation-light.png" alt="Navigation gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-navigation-dark.png" alt="Navigation gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
-
 Key API:
 
 <div class="fluence-api-list">
@@ -315,22 +210,33 @@ Key API:
   <a href="../../api/Fluence.Wpf.NavigationViewPaneDisplayMode.html">NavigationViewPaneDisplayMode</a>
   <a href="../../api/Fluence.Wpf.NavigationViewBackRequestedEventArgs.html">NavigationViewBackRequestedEventArgs</a>
   <a href="../../api/Fluence.Wpf.NavigationViewItemInvokedEventArgs.html">NavigationViewItemInvokedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.Controls.BreadcrumbBar.html">BreadcrumbBar</a>
+  <a href="../../api/Fluence.Wpf.Controls.BreadcrumbBarItem.html">BreadcrumbBarItem</a>
+  <a href="../../api/Fluence.Wpf.BreadcrumbBarItemClickedEventArgs.html">BreadcrumbBarItemClickedEventArgs</a>
+  <a href="../../api/Fluence.Wpf.Controls.PipsPager.html">PipsPager</a>
+  <a href="../../api/Fluence.Wpf.PipsPagerButtonVisibility.html">PipsPagerButtonVisibility</a>
+  <a href="../../api/Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs.html">PipsPagerSelectedIndexChangedEventArgs</a>
 </div>
 
 `NavigationView` owns pane layout, selection, back-button state, top overflow, and item invocation events. Application route history remains app-owned.
 
-### Tabs
+`BreadcrumbBar` shows the path to the current location as clickable crumbs separated by chevrons; the last crumb renders emphasized with no trailing chevron. Long trails clip when constrained rather than collapsing leading crumbs into an ellipsis (there is no overflow flyout in this version). Bind `ItemsSource` and handle `ItemClicked` (which carries the clicked `Item` and `Index`) to trim the path:
 
-<div class="fluence-control-shot-pair" aria-label="Tab control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-tabs-light.png" alt="Tabs gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-tabs-dark.png" alt="Tabs gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
+```xml
+<ui:BreadcrumbBar x:Name="Trail" ItemClicked="Trail_ItemClicked" />
+```
+
+`PipsPager` is a compact page indicator for carousels and onboarding flows: a row (or column) of clickable pip dots with the selected page emphasized, optional previous/next chevron buttons (`PipsPagerButtonVisibility`), and a sliding window of at most `MaxVisiblePips` dots for large page counts. Handle `SelectedIndexChanged` to switch content:
+
+```xml
+<ui:PipsPager
+    NumberOfPages="8"
+    PreviousButtonVisibility="Visible"
+    NextButtonVisibility="Visible"
+    SelectedIndexChanged="Pager_SelectedIndexChanged" />
+```
+
+### Tabs
 
 Key API:
 
@@ -345,17 +251,6 @@ Key API:
 `TabView` adds add-tab, close-request, width-mode, and close-button overlay APIs. Standard `TabControl` and `TabItem` pick up Fluent styling through the merged control templates.
 
 ### Layout and Surfaces
-
-<div class="fluence-control-shot-pair" aria-label="Layout control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-layout-light.png" alt="Layout gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-layout-dark.png" alt="Layout gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -373,17 +268,6 @@ Layout primitives preserve WPF layout behavior. `SmoothScrollViewer` is the scro
 
 ### Menus and Popups
 
-<div class="fluence-control-shot-pair" aria-label="Menu and popup screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-menus-light.png" alt="Menus gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-menus-dark.png" alt="Menus gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
-
 Key API:
 
 <div class="fluence-api-list">
@@ -391,22 +275,24 @@ Key API:
   <a href="../../api/Fluence.Wpf.Controls.MenuItem.html">MenuItem</a>
   <a href="../../api/Fluence.Wpf.Controls.ContextMenu.html">ContextMenu</a>
   <a href="../../api/Fluence.Wpf.Controls.ToolTip.html">ToolTip</a>
+  <a href="../../api/Fluence.Wpf.Controls.FlyoutBase.html">FlyoutBase</a>
+  <a href="../../api/Fluence.Wpf.Controls.Flyout.html">Flyout</a>
+  <a href="../../api/Fluence.Wpf.Controls.FlyoutPresenter.html">FlyoutPresenter</a>
+  <a href="../../api/Fluence.Wpf.Controls.ContentDialog.html">ContentDialog</a>
+  <a href="../../api/Fluence.Wpf.Controls.TeachingTip.html">TeachingTip</a>
+  <a href="../../api/Fluence.Wpf.FlyoutPlacementMode.html">FlyoutPlacementMode</a>
+  <a href="../../api/Fluence.Wpf.TeachingTipPlacementMode.html">TeachingTipPlacementMode</a>
+  <a href="../../api/Fluence.Wpf.Controls.CommandBarFlyout.html">CommandBarFlyout</a>
+  <a href="../../api/Fluence.Wpf.Controls.CommandBarFlyoutPresenter.html">CommandBarFlyoutPresenter</a>
+  <a href="../../api/Fluence.Wpf.Controls.AppBarButton.html">AppBarButton</a>
+  <a href="../../api/Fluence.Wpf.ContentDialogResult.html">ContentDialogResult</a>
+  <a href="../../api/Fluence.Wpf.ContentDialogButton.html">ContentDialogButton</a>
+  <a href="../../api/Fluence.Wpf.ContentDialogButtonClickEventArgs.html">ContentDialogButtonClickEventArgs</a>
 </div>
 
-Menu and popup controls use WinUI-style flyout visuals. Command text, separators, nested menu items, context menus, and tooltips all follow the same visual contract.
+Menu and popup controls use WinUI-style flyout visuals. Command text, separators, nested menu items, context menus, and tooltips all follow the same visual contract. `Flyout` hosts arbitrary content in a light-dismiss popup, `ContentDialog` raises a modal prompt with up to three command buttons, and `TeachingTip` anchors a coaching callout to a target element.
 
 ### Trees
-
-<div class="fluence-control-shot-pair" aria-label="Tree control screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-trees-light.png" alt="Trees gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-trees-dark.png" alt="Trees gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -419,17 +305,6 @@ Key API:
 `TreeView` supports single and multiple selection modes, a live `SelectedItems` list, expandable hierarchy, and tri-state item selection through `TreeViewItem.IsSelectionChecked`.
 
 ### Status and Feedback
-
-<div class="fluence-control-shot-pair" aria-label="Status and feedback screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-status-light.png" alt="Status gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-status-dark.png" alt="Status gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -448,17 +323,6 @@ Key API:
 Status controls cover severity, closable state, determinate and indeterminate progress, paused and error states, and count or attention badge styling.
 
 ### Accessibility
-
-<div class="fluence-control-shot-pair" aria-label="Accessibility screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-accessibility-light.png" alt="Accessibility gallery page in light theme.">
-    <figcaption>Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-accessibility-dark.png" alt="Accessibility gallery page in dark theme.">
-    <figcaption>Dark</figcaption>
-  </figure>
-</div>
 
 Key API:
 
@@ -574,27 +438,30 @@ You remove the tab from the source collection yourself; the control does not aut
 
 ## Feedback
 
-`ProgressBar` supports determinate, indeterminate, step, paused, and error modes through `ProgressMode`. Paused and error modes use the system caution and critical brushes.
+`ProgressBar` follows the WinUI 3 contract: `IsIndeterminate` toggles the sliding two-segment indeterminate animation, and `ShowError` / `ShowPaused` switch the indicator to the system critical and caution brushes. The three flags are orthogonal, so an indeterminate bar can also carry the error or paused color.
 
 ```xml
-<ui:ProgressBar Value="62" ProgressMode="Paused" />
-<ui:ProgressBar Value="78" ProgressMode="Error" />
+<ui:ProgressBar Value="62" ShowPaused="True" />
+<ui:ProgressBar Value="78" ShowError="True" />
+<ui:ProgressBar IsIndeterminate="True" />
 ```
 
-`ProgressRing` supports the same normal/caution/critical visual language through `ProgressState`:
+The legacy `ProgressMode` enum (`Standard`, `Indeterminate`, `Error`, `Paused`, `StepProgress`) is retained as a backward-compatible alias that maps onto those flags. `StepProgress` (with `Steps` / `CurrentStep`) is a Fluence-only determinate sub-mode with no WinUI equivalent.
+
+`ProgressRing` uses the same `IsActive` / `IsIndeterminate` / `Value` contract as WinUI, plus `ShowError` / `ShowPaused` for the critical and caution colors. The indeterminate ring is a pulsing arc that rotates, matching the WinUI motion.
 
 ```xml
 <ui:ProgressRing IsActive="True" IsIndeterminate="True" />
-<ui:ProgressRing ProgressState="Paused"
-                 IsActive="True"
-                 IsIndeterminate="True" />
-<ui:ProgressRing ProgressState="Error"
-                 IsActive="True"
+<ui:ProgressRing IsActive="True"
+                 IsIndeterminate="True"
+                 ShowPaused="True" />
+<ui:ProgressRing IsActive="True"
                  IsIndeterminate="False"
+                 ShowError="True"
                  Value="70" />
 ```
 
-`ProgressRingState` values are `Normal`, `Paused`, and `Error`. `Normal` uses the accent brush, `Paused` uses `SystemFillColorCautionBrush`, and `Error` uses `SystemFillColorCriticalBrush`.
+`ProgressState` (`Normal`, `Paused`, `Error`) remains as a backward-compatible alias for `ShowPaused` / `ShowError`: `Normal` uses the accent brush, `Paused` uses `SystemFillColorCautionBrush`, and `Error` uses `SystemFillColorCriticalBrush`.
 
 ## Menus & Popups
 
@@ -630,6 +497,87 @@ You remove the tab from the source collection yourself; the control does not aut
 <ui:Button Content="Save" ToolTipService.ToolTip="Save the document" />
 ```
 
+`Flyout` shows arbitrary content in a light-dismiss popup anchored to a placement target. Any element can carry one through the `FlyoutBase.AttachedFlyout` attached property and open it with `FlyoutBase.ShowAttachedFlyout` (or call `ShowAt` directly). `Placement` picks the side via `FlyoutPlacementMode`, `FlyoutPresenterStyle` restyles the themed `FlyoutPresenter` chrome, and `Opening` / `Opened` / `Closing` / `Closed` track the lifecycle - `Closing` is cancelable through `FlyoutBaseClosingEventArgs.Cancel`.
+
+```xml
+<ui:Button Click="ShowNoteFlyout_Click" Content="Show flyout">
+    <ui:FlyoutBase.AttachedFlyout>
+        <ui:Flyout Placement="Bottom">
+            <ui:Flyout.Content>
+                <TextBlock Text="A lightweight, light-dismiss popup." />
+            </ui:Flyout.Content>
+        </ui:Flyout>
+    </ui:FlyoutBase.AttachedFlyout>
+</ui:Button>
+```
+
+```csharp
+private void ShowNoteFlyout_Click(object sender, RoutedEventArgs e)
+{
+    FlyoutBase.ShowAttachedFlyout((FrameworkElement)sender);
+}
+```
+
+`ContentDialog` raises a modal prompt with a title, arbitrary body content, and up to three command buttons (`PrimaryButtonText`, `SecondaryButtonText`, `CloseButtonText`; buttons with no text collapse). `ShowAsync()` returns a `Task<ContentDialogResult>` that completes when the dialog closes, `Hide()` dismisses it programmatically, and `DefaultButton` picks the button that takes initial focus and answers Enter; Escape routes through the close button, and Tab navigation is trapped inside the dialog. Over a `FluenceWindow` the smoke layer dims the entire window, title bar included; over a plain `Window` the dialog is hosted in the content adorner layer.
+
+A dialog declared inline in XAML starts collapsed and is detached from its declared parent when `ShowAsync()` runs, then re-hosted inside the modal overlay (it becomes visible only while overlay-hosted). The supported parent types are `Panel`, `Decorator` (for example `Border`), and `ContentControl`; `ShowAsync()` throws an `InvalidOperationException` with a descriptive message for any other parent type, so remove the dialog from an unsupported parent before showing it.
+
+```csharp
+ContentDialog dialog = new()
+{
+    Title = "Delete file?",
+    Content = "Roadmap.md will be permanently deleted. This cannot be undone.",
+    PrimaryButtonText = "Delete",
+    CloseButtonText = "Cancel",
+    DefaultButton = ContentDialogButton.Close,
+};
+
+ContentDialogResult result = await dialog.ShowAsync();
+```
+
+The cancelable `PrimaryButtonClick` / `SecondaryButtonClick` / `CloseButtonClick` events run before the dialog closes - set `ContentDialogButtonClickEventArgs.Cancel` to keep it open (for example when validation fails) - and the matching `*ButtonCommand` / `*ButtonCommandParameter` properties execute alongside them. `Opened` and `Closed` report the dialog lifecycle.
+
+`TeachingTip` is a non-blocking coaching callout. Set `Target` to anchor the tip to an element - the beak points at the target and `PreferredPlacement` (`TeachingTipPlacementMode`) picks the side - or leave it unset to center the tip over the window content with the beak hidden. `IsOpen` shows and hides the tip, `IsLightDismissEnabled` lets a click elsewhere dismiss it, and `ActionButtonContent` / `ActionButtonCommand` plus `CloseButtonContent` drive the optional buttons, reported through `ActionButtonClick`, `CloseButtonClick`, and `Closed`.
+
+```xml
+<Grid>
+    <ui:Button x:Name="SaveButton" Click="ShowTipButton_Click" Content="Save" />
+    <ui:TeachingTip x:Name="SaveTip"
+                    Title="Autosave is on"
+                    Subtitle="Your changes are saved as you type."
+                    CloseButtonContent="Got it"
+                    IsLightDismissEnabled="True"
+                    PreferredPlacement="Bottom" />
+</Grid>
+```
+
+```csharp
+private void ShowTipButton_Click(object sender, RoutedEventArgs e)
+{
+    SaveTip.Target = SaveButton;
+    SaveTip.IsOpen = true;
+}
+```
+
+`CommandBarFlyout` shows a compact horizontal strip of `AppBarButton` commands with an optional overflow menu of secondary commands behind a "see more" button. Invoking any command dismisses the flyout. It derives from `FlyoutBase`, so `ShowAt`, `Hide`, and the attached `FlyoutBase.AttachedFlyout` pattern all apply:
+
+```xml
+<ui:CommandBarFlyout>
+    <ui:CommandBarFlyout.PrimaryCommands>
+        <ui:AppBarButton Click="Copy_Click" Label="Copy">
+            <ui:AppBarButton.Icon>
+                <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+            </ui:AppBarButton.Icon>
+        </ui:AppBarButton>
+    </ui:CommandBarFlyout.PrimaryCommands>
+    <ui:CommandBarFlyout.SecondaryCommands>
+        <ui:AppBarButton Click="Delete_Click" Label="Delete" />
+    </ui:CommandBarFlyout.SecondaryCommands>
+</ui:CommandBarFlyout>
+```
+
+Primary commands render icon-only with the `Label` as a tooltip; secondary commands render as icon-plus-label menu rows.
+
 ## Trees
 
 `TreeView` and `TreeViewItem` render a hierarchical list matching the WinUI 3 `TreeView` visual contract.
@@ -661,38 +609,82 @@ Visual contract:
 - `SubtleFillColorSecondaryBrush` on hover, `SubtleFillColorTertiaryBrush` on press, `AccentFillColorDefaultBrush` when selected.
 - VSM groups: `CommonStates`, `SelectionStates`, `ExpansionStates`.
 
+## AutoSuggestBox
+
+`AutoSuggestBox` is a text input with a light-dismiss suggestion list that follows the WinUI 3 contract: the application owns filtering. Handle `TextChanged`, ignore stale notifications (a `Reason` other than `UserInput`, or `CheckCurrent()` returning false), and update `ItemsSource`; the list opens while the box has keyboard focus and suggestions exist.
+
+```xml
+<ui:AutoSuggestBox x:Name="SearchBox"
+                   Width="280"
+                   Header="Fruit"
+                   PlaceholderText="Search fruit"
+                   QuerySubmitted="SearchBox_QuerySubmitted"
+                   TextChanged="SearchBox_TextChanged" />
+```
+
+```csharp
+private void SearchBox_TextChanged(object sender, AutoSuggestBoxTextChangedEventArgs e)
+{
+    if (e.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+    {
+        return;
+    }
+
+    SearchBox.ItemsSource = FindMatches(SearchBox.Text);
+}
+
+private void SearchBox_QuerySubmitted(object sender, AutoSuggestBoxQuerySubmittedEventArgs e)
+{
+    string submitted = e.ChosenSuggestion as string ?? e.QueryText;
+    // Act on the query.
+}
+```
+
+Up and Down move through the suggestions, Enter raises `QuerySubmitted` (with `ChosenSuggestion` set when a suggestion is selected), and Escape closes the list. `UpdateTextOnSelect` (default `true`) writes a chosen suggestion back into `Text` through `TextMemberPath`, and `Header`, `PlaceholderText`, `QueryIcon`, and `MaxSuggestionListHeight` shape the field.
+
+## Pickers
+
+`DatePicker` and `TimePicker` show a button-styled field that opens a light-dismiss selector flyout; the flyout's accept button commits the pending column selection and cancel discards it.
+
+`DatePicker` binds `SelectedDate` (`DateTime?`, `null` until the user picks) and raises `SelectedDateChanged` with the old and new dates. The field orders its day, month, and year segments by the current culture's short date pattern; `MinYear` / `MaxYear` (defaults 1900 and 2100) bound the year column, `DayVisible` / `MonthVisible` / `YearVisible` hide individual segments, and the day column rebuilds for the pending month and year, so 29 February is offered only in leap years.
+
+```xml
+<ui:DatePicker Header="Due date"
+               PlaceholderText="Pick a date"
+               SelectedDate="{Binding DueDate}" />
+```
+
+`TimePicker` binds `SelectedTime` (`TimeSpan?`) and raises `SelectedTimeChanged`. `ClockIdentifier` selects `12HourClock` (hours 1-12 plus an AM/PM column using the culture's designators, with an invariant AM/PM fallback when the culture defines none) or `24HourClock` (hours 0-23, no designator column); the default follows the current culture's short time pattern. `MinuteIncrement` steps the minute column (for example 5 offers 00, 05, 10, and so on).
+
+```xml
+<ui:TimePicker Header="Reminder time"
+               ClockIdentifier="24HourClock"
+               MinuteIncrement="5"
+               SelectedTime="{Binding ReminderTime}" />
+```
+
+`ColorPicker` combines a saturation/value spectrum at the selected hue, a hue slider, an optional alpha slider, current/previous preview swatches, and an optional hex input. `Color` (two-way bindable, opaque red by default) raises `ColorChanged` with the old and new values; `PreviousColor` fills the comparison swatch, `IsAlphaEnabled` (default `false`) adds the alpha slider and 8-digit hex editing, and `IsColorSpectrumVisible` / `IsColorChannelTextInputVisible` trim the layout. The picker keeps hue, saturation, value, and alpha as its internal source of truth, so dragging along the spectrum's grey axis does not accumulate RGB round-trip drift.
+
+```xml
+<ui:ColorPicker Color="{Binding AccentColor, Mode=TwoWay}"
+                IsAlphaEnabled="True" />
+```
+
 ## Screenshots
 
-Reference captures live under `docs/screenshots/`:
+Ten reference captures live under `docs/screenshots/`:
 
-- `gallery/gallery-*-light.png` and `gallery/gallery-*-dark.png` cover every gallery page, including Settings.
-- `apps/mvvm-light.png` / `apps/mvvm-dark.png` cover the MVVM Task Manager demo.
-- `apps/powershell-light.png` / `apps/powershell-dark.png` cover the PowerShell-hosted XAML demo.
-- `banner-{light,dark,highcontrast}-{1x,1.5x}.png` remain available for compact banner references.
+- `gallery-home-{light,dark}.png` - gallery shell on the Home page with the expanded `Left` navigation pane.
+- `gallery-buttons-{light,dark}.png` - Buttons page with the `LeftCompact` navigation rail.
+- `gallery-status-{light,dark}.png` - Status page with the `Top` navigation bar.
+- `mvvm-{light,dark}.png` - the MVVM Task Manager demo.
+- `powershell-{light,dark}.png` - the PowerShell controls-tour window (`03-ControlsTour.ps1`).
 
-<div class="fluence-screenshot-row" aria-label="Representative demo screenshots">
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-home-light.png" alt="Gallery home page capture in light theme.">
-    <figcaption>Gallery home, Light</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/gallery/gallery-buttons-dark.png" alt="Buttons gallery page capture in dark theme.">
-    <figcaption>Buttons, Dark</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/apps/mvvm-dark.png" alt="MVVM task manager capture in dark theme.">
-    <figcaption>MVVM, Dark</figcaption>
-  </figure>
-  <figure>
-    <img src="../../images/screenshots/apps/powershell-light.png" alt="PowerShell demo host capture in light theme.">
-    <figcaption>PowerShell, Light</figcaption>
-  </figure>
-</div>
-
-The full screenshot set lives under [`docs/screenshots/`](screenshots/). To refresh captures locally, run the screenshot harness directly:
+Capture is opt-in: the `GalleryScreenshotHarness` tests skip unless the `FLUENCE_CAPTURE_SCREENSHOTS` environment variable is set, so an ordinary test run never overwrites the committed images. To regenerate them (use the .NET 10 target so the MVVM capture is included):
 
 ```powershell
-dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug --filter "FullyQualifiedName~GalleryScreenshotHarness"
+$env:FLUENCE_CAPTURE_SCREENSHOTS = '1'
+dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-windows10.0.26100.0 --filter "TestCategory=Screenshots"
 ```
 
 The harness uses `RenderTargetBitmap` and flattens transparent WPF layers over `SolidBackgroundFillColorBaseBrush`. It cannot capture DWM Mica / Acrylic, which compose outside WPF, so the screenshots show WPF control and shell surfaces only. `FluenceWindowTitleBarTests` verifies `FluenceWindow` caption styling.

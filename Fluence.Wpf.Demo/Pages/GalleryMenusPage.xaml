@@ -199,6 +199,133 @@
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use ToolTip for short hints that clarify icons, disabled commands, or risky actions." />
 
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <ui:Button
+                    VerticalAlignment="Center"
+                    Click="FlyoutButton_Click"
+                    Content="Show flyout">
+                    <ui:FlyoutBase.AttachedFlyout>
+                        <ui:Flyout Placement="Bottom">
+                            <ui:Flyout.Content>
+                                <StackPanel MaxWidth="260">
+                                    <TextBlock
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                        Text="Quick note" />
+                                    <TextBlock
+                                        Margin="0,4,0,0"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="A Flyout is a lightweight, light-dismiss popup anchored to its owner. Click outside to dismiss it."
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </ui:Flyout.Content>
+                        </ui:Flyout>
+                    </ui:FlyoutBase.AttachedFlyout>
+                </ui:Button>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use Flyout for lightweight, light-dismiss popups (details, quick forms, confirmations) anchored to a control." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <ui:Button
+                    VerticalAlignment="Center"
+                    Click="ShowDialogButton_Click"
+                    Content="Show dialog" />
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot05OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="DialogResultLabel"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Dialog result: None" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ContentDialog for modal prompts that require an explicit choice (confirmations, errors, sign-in)." />
+
+
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <Grid>
+                    <ui:Button
+                        x:Name="TeachingTipButton"
+                        VerticalAlignment="Center"
+                        Click="ShowTeachingTipButton_Click"
+                        Content="Show teaching tip" />
+                    <ui:TeachingTip
+                        x:Name="DemoTeachingTip"
+                        Title="Pro tip"
+                        CloseButtonContent="Got it"
+                        IsLightDismissEnabled="True"
+                        PreferredPlacement="Bottom"
+                        Subtitle="A TeachingTip points at a target element to coach the user without blocking. Click Got it to dismiss." />
+                </Grid>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use TeachingTip for contextual, non-blocking coaching anchored to a UI element." />
+
+
+            <ContentControl x:Name="DemoSampleSlot07DemoContentHost" Visibility="Collapsed">
+                <ui:Button
+                    VerticalAlignment="Center"
+                    Click="FlyoutButton_Click"
+                    Content="Show command bar">
+                    <ui:FlyoutBase.AttachedFlyout>
+                        <ui:CommandBarFlyout>
+                            <ui:CommandBarFlyout.PrimaryCommands>
+                                <ui:AppBarButton
+                                    Click="CommandBarAction_Click"
+                                    Label="Cut"
+                                    Tag="Cut">
+                                    <ui:AppBarButton.Icon>
+                                        <ui:FontIcon Glyph="&#xE8C6;" IconFontSize="16" />
+                                    </ui:AppBarButton.Icon>
+                                </ui:AppBarButton>
+                                <ui:AppBarButton
+                                    Click="CommandBarAction_Click"
+                                    Label="Copy"
+                                    Tag="Copy">
+                                    <ui:AppBarButton.Icon>
+                                        <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </ui:AppBarButton.Icon>
+                                </ui:AppBarButton>
+                                <ui:AppBarButton
+                                    Click="CommandBarAction_Click"
+                                    Label="Paste"
+                                    Tag="Paste">
+                                    <ui:AppBarButton.Icon>
+                                        <ui:FontIcon Glyph="&#xE77F;" IconFontSize="16" />
+                                    </ui:AppBarButton.Icon>
+                                </ui:AppBarButton>
+                            </ui:CommandBarFlyout.PrimaryCommands>
+                            <ui:CommandBarFlyout.SecondaryCommands>
+                                <ui:AppBarButton
+                                    Click="CommandBarAction_Click"
+                                    Label="Rename"
+                                    Tag="Rename">
+                                    <ui:AppBarButton.Icon>
+                                        <ui:FontIcon Glyph="&#xE8AC;" IconFontSize="16" />
+                                    </ui:AppBarButton.Icon>
+                                </ui:AppBarButton>
+                                <ui:AppBarButton
+                                    Click="CommandBarAction_Click"
+                                    Label="Delete"
+                                    Tag="Delete">
+                                    <ui:AppBarButton.Icon>
+                                        <ui:FontIcon Glyph="&#xE74D;" IconFontSize="16" />
+                                    </ui:AppBarButton.Icon>
+                                </ui:AppBarButton>
+                            </ui:CommandBarFlyout.SecondaryCommands>
+                        </ui:CommandBarFlyout>
+                    </ui:FlyoutBase.AttachedFlyout>
+                </ui:Button>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot07OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="CommandBarResultLabel"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Last command: None" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use CommandBarFlyout for a compact command strip with an overflow menu; commands dismiss the flyout when invoked." />
+
         </StackPanel>
     </ui:SmoothScrollViewer>
 </UserControl>

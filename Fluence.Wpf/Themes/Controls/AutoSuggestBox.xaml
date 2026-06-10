@@ -1,0 +1,166 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <!--
+        Fluent Design AutoSuggestBox style.
+        Authority: WinUI 3 AutoSuggestBox_themeresources.xaml (text field + light-dismiss
+        suggestion flyout below the box, QueryButton hosting the QueryIcon).
+        The text field is the Fluence TextBox (placeholder + right icon slot); QueryIcon is
+        hosted in a clickable subtle button (PART_QueryButton, the WinUI QueryButton) inside
+        that icon slot, and the trigger below clears the slot entirely while QueryIcon is
+        null so no empty button plate is shown. The suggestion surface reuses the canonical
+        flyout tokens from FlyoutPresenter.xaml: SolidBackgroundFillColorTertiaryBrush +
+        SurfaceStrokeColorFlyoutBrush + OverlayCornerRadius.
+        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
+        produce artifacts in a Popup (see DropDownButton.xaml).
+    -->
+
+    <!--
+        Subtle plate for the query icon button (SubtleFillColorSecondaryBrush hover /
+        SubtleFillColorTertiaryBrush press, see the NumberBox spin buttons and the
+        PipsPager navigation buttons for the same pattern). Focusable=False keeps keyboard
+        focus in the text box while the button submits the query.
+    -->
+    <Style x:Key="AutoSuggestBoxQueryButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Cursor" Value="Arrow" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="MinWidth" Value="24" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="ButtonPlate"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <ContentPresenter
+                            Margin="4,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:AutoSuggestBox}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <!--
+            IsTabStop=False: the outer AutoSuggestBox shell must not be a tab stop.
+            Focus is hosted by PART_TextBox (inner element); the shell forwards any
+            focus it receives to the inner text box. See NumberBox.xaml for the same
+            pattern and rationale.
+        -->
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:AutoSuggestBox}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Header  -->
+                        <ContentPresenter
+                            x:Name="HeaderPresenter"
+                            Grid.Row="0"
+                            Margin="0,0,0,8"
+                            Content="{TemplateBinding Header}"
+                            TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                            TextBlock.FontSize="{TemplateBinding FontSize}"
+                            TextBlock.Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+                        <Grid x:Name="FieldRoot" Grid.Row="1">
+                            <controls:TextBox
+                                x:Name="PART_TextBox"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                Foreground="{TemplateBinding Foreground}"
+                                IconPlacement="Right"
+                                PlaceholderText="{TemplateBinding PlaceholderText}">
+                                <controls:TextBox.Icon>
+                                    <Button
+                                        x:Name="PART_QueryButton"
+                                        Content="{Binding QueryIcon, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Style="{StaticResource AutoSuggestBoxQueryButtonStyle}" />
+                                </controls:TextBox.Icon>
+                            </controls:TextBox>
+                        </Grid>
+
+                        <!--  Suggestion list flyout  -->
+                        <Popup
+                            x:Name="PART_SuggestionsPopup"
+                            AllowsTransparency="True"
+                            Focusable="False"
+                            IsOpen="{Binding IsSuggestionListOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding ElementName=FieldRoot}"
+                            PopupAnimation="None"
+                            StaysOpen="False">
+                            <Border
+                                x:Name="SuggestionsSurface"
+                                MinWidth="{Binding ActualWidth, ElementName=FieldRoot}"
+                                MaxHeight="{TemplateBinding MaxSuggestionListHeight}"
+                                Margin="0,4,0,0"
+                                Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                UseLayoutRounding="True">
+                                <controls:ListBox
+                                    x:Name="PART_SuggestionsList"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    DisplayMemberPath="{TemplateBinding TextMemberPath}"
+                                    Focusable="False"
+                                    IsTabStop="False"
+                                    ItemsSource="{TemplateBinding ItemsSource}" />
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Header" Value="{x:Null}">
+                            <Setter TargetName="HeaderPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--  No query button while QueryIcon is unset: clear the icon slot.  -->
+                        <Trigger Property="QueryIcon" Value="{x:Null}">
+                            <Setter TargetName="PART_TextBox" Property="Icon" Value="{x:Null}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+</ResourceDictionary>

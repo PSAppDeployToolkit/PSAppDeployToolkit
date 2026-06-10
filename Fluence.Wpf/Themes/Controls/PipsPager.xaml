@@ -1,0 +1,265 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <!--
+        Fluent Design PipsPager style.
+        Authority: WinUI 3 PipsPager.xaml + PipsPager_themeresources.xaml (a run of round pip
+        dots inside fixed square touch targets, selected pip larger, optional previous/next
+        chevron buttons with the subtle fill states).
+        Pips are neutral per PipsPagerSelectionIndicatorForeground*: dot 4px at rest in
+        ControlStrongFillColorDefaultBrush, grows to 5px in TextFillColorSecondaryBrush on
+        hover (TextFillColorSecondaryBrush pressed), and the selected pip renders 6px in the
+        same ControlStrongFillColorDefaultBrush (ControlStrongFillColorDisabledBrush when
+        disabled), matching the WinUI 4/5/6 px pip scale; the size changes animate over the
+        ControlFasterAnimationDuration on the ControlFastOutSlowIn spline (ToggleSwitch.xaml
+        knob-morph precedent).
+        Navigation buttons: subtle plates (SubtleFillColorSecondaryBrush hover /
+        SubtleFillColorTertiaryBrush press, see NumberBox spin buttons) hosting Fluence
+        FontIcon chevrons; ChevronLeft/Right E76B/E76C when horizontal and ChevronUp/Down
+        E70E/E70D when vertical. Buttons default Collapsed per WinUI, show always for Visible,
+        and show only while the pointer is over the pager for VisibleOnPointerOver.
+        The pip ToggleButtons are generated in code into PART_PipsHost (see PipsPager.cs and
+        the RatingControl PART_StarsPanel precedent); WinUI's edge-pip scale-down animation
+        and edge-scrolling viewport are deliberate v1 omissions.
+    -->
+
+    <Style x:Key="PipsPagerPipStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Ellipse
+                            x:Name="Pip"
+                            Width="4"
+                            Height="4"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Fill="{DynamicResource ControlStrongFillColorDefaultBrush}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!--
+                            Pip size morph (rest 4 / hover 5 / selected 6), ToggleSwitch.xaml knob
+                            precedent: Width/Height animate over 83ms on the 0.8,0,0,1 spline
+                            (Typography.xaml motion tokens ControlFasterAnimationDuration +
+                            ControlFastOutSlowInKeySpline; storyboard attributes need literal
+                            values). Brush roles keep the committed neutral strong-fill mapping.
+                            Hover sizing applies only to unchecked pips and is declared before the
+                            IsChecked trigger, so checking a hovered pip lets the 6px selected
+                            storyboard begin last and win the size handoff.
+                        -->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsChecked" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Pip" Property="Fill" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <MultiTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="5" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="5" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.EnterActions>
+                            <MultiTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="4" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="4" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiTrigger.ExitActions>
+                        </MultiTrigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Pip" Property="Fill" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Pip" Property="Fill" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="6" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="6" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Width">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="4" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pip" Storyboard.TargetProperty="Height">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.083"
+                                                Value="4" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Pip" Property="Fill" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="20" />
+    </Style>
+
+    <Style x:Key="PipsPagerNavigationButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+        <Setter Property="Foreground" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="ButtonPlate"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource ControlStrongFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="20" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:PipsPager}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <!--
+            IsTabStop=False: the pager itself must not be a tab stop. Keyboard focus belongs
+            to the generated pip buttons and the navigation chevrons. See BreadcrumbBar.xaml
+            for the same pattern.
+        -->
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:PipsPager}">
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <StackPanel Orientation="{TemplateBinding Orientation}">
+                            <Button
+                                x:Name="PART_PreviousButton"
+                                Style="{StaticResource PipsPagerNavigationButtonStyle}"
+                                Visibility="Collapsed">
+                                <controls:FontIcon
+                                    x:Name="PreviousGlyph"
+                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                    Glyph="&#xE76B;"
+                                    IconFontSize="8"
+                                    IsHitTestVisible="False" />
+                            </Button>
+                            <!--  Pip ToggleButtons are generated in code via UpdatePips() in OnApplyTemplate.  -->
+                            <StackPanel x:Name="PART_PipsHost" Orientation="{TemplateBinding Orientation}" />
+                            <Button
+                                x:Name="PART_NextButton"
+                                Style="{StaticResource PipsPagerNavigationButtonStyle}"
+                                Visibility="Collapsed">
+                                <controls:FontIcon
+                                    x:Name="NextGlyph"
+                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                    Glyph="&#xE76C;"
+                                    IconFontSize="8"
+                                    IsHitTestVisible="False" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Orientation" Value="Vertical">
+                            <Setter TargetName="NextGlyph" Property="Glyph" Value="&#xE70D;" />
+                            <Setter TargetName="PreviousGlyph" Property="Glyph" Value="&#xE70E;" />
+                        </Trigger>
+                        <Trigger Property="PreviousButtonVisibility" Value="Visible">
+                            <Setter TargetName="PART_PreviousButton" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="PreviousButtonVisibility" Value="VisibleOnPointerOver" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_PreviousButton" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                        <Trigger Property="NextButtonVisibility" Value="Visible">
+                            <Setter TargetName="PART_NextButton" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="NextButtonVisibility" Value="VisibleOnPointerOver" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_NextButton" Property="Visibility" Value="Visible" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

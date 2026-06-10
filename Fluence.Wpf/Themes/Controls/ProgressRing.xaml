@@ -10,30 +10,37 @@
         <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
         <Setter Property="Height" Value="32" />
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="MinHeight" Value="20" />
-        <Setter Property="MinWidth" Value="20" />
+        <Setter Property="MinHeight" Value="16" />
+        <Setter Property="MinWidth" Value="16" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:ProgressRing}">
                     <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}">
 
                         <!--
-                            Indeterminate caterpillar arc.  Geometry is set from code-behind
-                            as the animated start/sweep angles change; the path keeps the
-                            same Fluent accent foreground and rounded caps as determinate mode.
+                            Indeterminate arc (WinUI 3 motion model).  Code-behind
+                            pulses the arc length (0 -> half circumference -> 0 over 2 s)
+                            while PART_IndeterminateRotate spins the arc 90 -> 1170 degrees
+                            over the same 2 s linear cycle.  The path keeps the same Fluent
+                            accent foreground and rounded caps as determinate mode.
                         -->
                         <Path
                             x:Name="PART_IndeterminateArc"
+                            RenderTransformOrigin="0.5,0.5"
                             Stroke="{TemplateBinding Foreground}"
                             StrokeEndLineCap="Round"
                             StrokeStartLineCap="Round"
                             StrokeThickness="{TemplateBinding StrokeThickness}"
-                            Visibility="Collapsed" />
+                            Visibility="Collapsed">
+                            <Path.RenderTransform>
+                                <RotateTransform x:Name="PART_IndeterminateRotate" Angle="90" />
+                            </Path.RenderTransform>
+                        </Path>
 
                         <!--
                             Determinate arc.  Path geometry is set from code-behind
                             (ProgressRing.RenderDeterminateArc) whenever Value, Minimum,
-                            Maximum, or StrokeThickness changes.  A 150 ms ease-in-out
+                            Maximum, or StrokeThickness changes.  A 367 ms spline-eased
                             animation on a private AnimatedFraction DP drives the tween.
                         -->
                         <Path
@@ -46,7 +53,7 @@
                     </Grid>
 
                     <ControlTemplate.Triggers>
-                        <!--  Active + Indeterminate: show the code-driven caterpillar arc.  -->
+                        <!--  Active + Indeterminate: show the code-driven pulsing arc.  -->
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsActive" Value="True" />

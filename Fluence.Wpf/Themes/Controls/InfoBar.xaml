@@ -88,7 +88,15 @@
                                         x:Name="CustomIconPresenter"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Content="{TemplateBinding Icon}" />
+                                        Content="{TemplateBinding Icon}"
+                                        TextElement.Foreground="{TemplateBinding Foreground}">
+                                        <ContentPresenter.Resources>
+                                            <!--  Custom icon follows the InfoBar title text (SplitButton precedent); the default severity icon above stays semantic. A consumer's local Foreground still wins.  -->
+                                            <Style TargetType="{x:Type controls:FontIcon}">
+                                                <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:InfoBar}}}" />
+                                            </Style>
+                                        </ContentPresenter.Resources>
+                                    </ContentPresenter>
                                 </Grid>
 
                                 <!--  Title and message  -->

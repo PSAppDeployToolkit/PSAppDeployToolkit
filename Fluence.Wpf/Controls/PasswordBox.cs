@@ -216,10 +216,11 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowCapsLockIndicator),
                 typeof(bool),
                 typeof(PasswordBox),
-                new FrameworkPropertyMetadata(true, OnChromePropertyChanged));
+                new FrameworkPropertyMetadata(false, OnChromePropertyChanged));
 
         /// <summary>
         /// Gets or sets whether the Caps Lock indicator is shown when Caps Lock is active.
+        /// Defaults to <see langword="false"/>; opt in per box.
         /// </summary>
         public bool ShowCapsLockIndicator
         {
@@ -235,10 +236,11 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowPasswordStrength),
                 typeof(bool),
                 typeof(PasswordBox),
-                new FrameworkPropertyMetadata(true, OnChromePropertyChanged));
+                new FrameworkPropertyMetadata(false, OnChromePropertyChanged));
 
         /// <summary>
         /// Gets or sets whether the password strength meter is displayed.
+        /// Defaults to <see langword="false"/>; opt in per box.
         /// </summary>
         public bool ShowPasswordStrength
         {

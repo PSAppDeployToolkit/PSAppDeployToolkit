@@ -2,7 +2,7 @@
 
 Windows 11 Fluent Design controls and theming for WPF applications targeting **.NET Framework 4.7.2** and **Windows 10** (1809+), with enhanced visuals on **Windows 11**.
 
-**Current build:** `0.7.0-pre` (2026-06-03).
+**Current build:** `0.8.0-preview` (2026-06-10).
 
 **Docs:** see the Markdown guides under [`docs/`](docs/) (start with [Getting started](docs/getting-started.md)).
 
@@ -12,19 +12,29 @@ Windows 11 Fluent Design controls and theming for WPF applications targeting **.
 - **Accent colors** - System accent palette, app-defined accent, and custom accent ramps mapped to WinUI-style resource keys.
 - **40+ Fluent-styled controls** - accessible and themed, aligned with their WinUI 3 counterparts.
 - **PowerShell and .NET Framework 4.7.2 support** - build modern UIs for scripts and legacy apps without migrating to .NET 5+ or the Windows App SDK.
-- **Small footprint** - 600 kb.
+- **Small footprint** - ~480 KB per assembly.
 
 ## Key controls
 - **FluenceWindow** - A window with **Mica**, **Acrylic**, and **Tabbed (Mica Alt)** backdrops, rounded corners, configurable minimize / maximize / close buttons, and an extensible title bar for a WinUI-style search box or custom content.
 - **Controls** - 40+ Fluent-styled controls: Button, HyperlinkButton, DropDownButton, SplitButton, RepeatButton, ToggleButton, CheckBox, RadioButton, ToggleSwitch, TextBox, PasswordBox, ComboBox, Slider, NumberBox, ProgressBar, ProgressRing, InfoBar, InfoBadge, RatingControl, PersonPicture, ListView, ListBox, Expander, Card (clickable), NavigationView, ContextMenu, MenuItem, Menu, ToolTip, TreeView, TreeViewItem, Separator, FontIcon, Border, StackPanel, DockPanel, SmoothScrollViewer, plus TabView and ScrollBar themes.
-- **Typography** - Styles or Attached properties on `TextBlock` for the WinUI type ramp (Caption / Body / BodyStrong / Title / TitleLarge / Display).
+- **Typography** - Styles or Attached properties on `TextBlock` for the WinUI type ramp (Caption / Body / BodyStrong / Subtitle / Title / TitleLarge / Display).
 - **TabView** - Multi-document surface over `TabControl` with per-tab close (`CloseRequested` / `TabCloseRequested`), trailing add-tab button (`AddTabButtonClick`), per-tab icons, `TabWidthMode`, `CloseButtonOverlayMode`, and horizontal overflow scroll.
 - **NavigationView** - `Top`, `Left`, and `LeftCompact` pane modes with animated shared selection indicator, pane toggle + back button in the 48 px rail, and WinUI 3 content-region border (`CornerRadius="8,0,0,0"`, `CardStrokeColorDefault` top/left stroke).
 
 ## Demos
-- **Gallery** - A code-behind WPF app for visual verification: theme swatches, accent picker, DWM backdrops, grouped control pages (Data Binding, Accessibility, Buttons, Selection, Inputs, Forms, Data, Trees, Navigation, Tabs, Menus, Status, Icons, Settings), inline examples, and embedded source for each one.
+- **Gallery** - A code-behind WPF app for visual verification: theme swatches, accent picker, DWM backdrops, grouped control pages (Colors, Icons, Typography, Buttons, Selection, Inputs, Forms, Data, Data Binding, Trees, Menus, Navigation, Tabs, Layout, Status, Accessibility, Settings), inline examples, and embedded source for each one.
 - **MVVM Pattern** - A minimal Task Manager (`Fluence.Wpf.Demo.Mvvm`) built with CommunityToolkit.Mvvm. It uses `[ObservableProperty]`, `[RelayCommand]`, filter bindings, and progress reporting with no code-behind.
 - **PowerShell** - Build UIs for scripts from Windows PowerShell 5.1, without installing PowerShell 7, .NET 9 / 10, or the Windows App SDK.
+
+## Screenshots
+
+| Light Mode | Dark Mode       |
+|:----------:|:---------------:|
+| ![Home (Light)](https://github.com/user-attachments/assets/edbba17f-347e-4a7c-bb37-0a39b9e849dd) | ![Home (Dark)](https://github.com/user-attachments/assets/358f7804-9d13-4f2f-9167-1eacef6350fa) |
+| ![Buttons (Light)](https://github.com/user-attachments/assets/77eeeab8-e5bd-4b34-a3ce-186783990dc0) | ![Buttons (Dark)](https://github.com/user-attachments/assets/f6499937-f4a8-449c-959a-2e0167613d37) |
+| ![Status (Light)](https://github.com/user-attachments/assets/b5dc5bfe-3c73-49b1-8ccd-c6769027ff2e) | ![Status (Dark)](https://github.com/user-attachments/assets/9b50b401-f79c-4940-a6c8-05ba5be6355d) |
+| ![MVVM (Light)](https://github.com/user-attachments/assets/cb3d6401-59f5-46a2-81d3-404806b2ec9f) | ![MVVM (Dark)](https://github.com/user-attachments/assets/bb5d9c26-c8d9-4890-9c02-f0baed88bc97) |
+| ![PowerShell (Light)](https://github.com/user-attachments/assets/5b271459-2fe6-4edc-8431-2a7fd0b6aa71) | ![PowerShell (Dark)](https://github.com/user-attachments/assets/3b7bead7-a567-457c-a89d-4c9bd97c3a48) |
 
 ## Quick Start
 

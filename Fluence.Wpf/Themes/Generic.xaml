@@ -43,6 +43,16 @@
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/RatingControl.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PersonPicture.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TreeView.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/FlyoutPresenter.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ContentDialog.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TeachingTip.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/AutoSuggestBox.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/DatePicker.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/TimePicker.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ColorPicker.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/CommandBarFlyout.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/BreadcrumbBar.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PipsPager.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

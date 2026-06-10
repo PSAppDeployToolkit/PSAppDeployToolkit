@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Demo.Pages;
-using Fluence.Wpf.Demo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -39,7 +36,6 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Xml;
 using DemoMainWindow = Fluence.Wpf.Demo.MainWindow;
 using FluenceWindow = Fluence.Wpf.Controls.FluenceWindow;
 #if NET10_0_OR_GREATER
@@ -50,27 +46,32 @@ using MvvmMainViewModel = Fluence.Wpf.Demo.Mvvm.ViewModels.MainViewModel;
 namespace Fluence.Wpf.Tests
 {
     /// <summary>
-    /// Maintainer-driven harness that renders representative demo surfaces with
-    /// <see cref="RenderTargetBitmap"/> and writes PNGs under
-    /// <c>docs/screenshots/</c>. The screenshot capture runs as part of the normal
-    /// full test suite so documentation images stay current with visual changes.
+    /// Maintainer-driven, opt-in harness that renders the representative demo surfaces used in the
+    /// documentation and writes PNGs under <c>docs/screenshots/</c>: the gallery shell in its three
+    /// navigation modes (Home / Left, Buttons / LeftCompact, Status / Top), the MVVM task-manager
+    /// app, and the PowerShell controls-tour window, each in Light and Dark.
     /// </summary>
     /// <remarks>
-    /// Captures only the WPF visual tree - DWM Mica / Acrylic backdrops are composited
-    /// outside WPF and are not included in RenderTargetBitmap output. That is the
-    /// intended behavior: the screenshots document control surfaces and theme resources,
-    /// not DWM composition.
+    /// Capture is gated behind the <c>FLUENCE_CAPTURE_SCREENSHOTS</c> environment variable, so a
+    /// normal test run reports these tests as inconclusive and never overwrites the committed
+    /// images; set the variable to <c>1</c> to regenerate them. Only the WPF visual tree is
+    /// captured - DWM Mica / Acrylic backdrops are composited outside WPF and are not included in
+    /// <see cref="RenderTargetBitmap"/> output, which is intended: the screenshots document control
+    /// surfaces and theme resources, not DWM composition.
     /// </remarks>
     [TestClass]
     [TestCategory("Screenshots")]
     public class GalleryScreenshotHarness
     {
-        private const int CaptureWidth = 1280;
-        private const int CaptureHeight = 800;
+        private const string OptInEnvironmentVariable = "FLUENCE_CAPTURE_SCREENSHOTS";
         private const int GalleryCaptureWidth = 1280;
         private const int GalleryCaptureHeight = 900;
+        private const int PowerShellCaptureWidth = 620;
+        private const int PowerShellCaptureHeight = 560;
+#if NET10_0_OR_GREATER
         private const int AppCaptureWidth = 960;
         private const int AppCaptureHeight = 740;
+#endif
         private const double BaseDpi = 96.0;
         private const double ReferenceScale = 1.0;
 
@@ -81,20 +82,28 @@ namespace Fluence.Wpf.Tests
             "/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml",
             UriKind.Relative);
 
-        private static readonly double[] BannerScales = [1.0, 1.5];
-
-        private static readonly (ApplicationTheme theme, string slug)[] Themes =
-        [
-            (ApplicationTheme.Light, "light"),
-            (ApplicationTheme.Dark, "dark"),
-            (ApplicationTheme.HighContrast, "highcontrast"),
-        ];
-
         private static readonly (ApplicationTheme theme, string slug)[] DocumentationThemes =
         [
             (ApplicationTheme.Light, "light"),
             (ApplicationTheme.Dark, "dark"),
         ];
+
+        /// <summary>
+        /// Skips the calling capture test unless <c>FLUENCE_CAPTURE_SCREENSHOTS</c> is set, so the
+        /// screenshots are never regenerated during an ordinary test run.
+        /// </summary>
+        private static void RequireScreenshotOptIn()
+        {
+            string? flag = Environment.GetEnvironmentVariable(OptInEnvironmentVariable);
+            bool enabled = string.Equals(flag, "1", StringComparison.Ordinal)
+                || string.Equals(flag, "true", StringComparison.OrdinalIgnoreCase);
+            if (!enabled)
+            {
+                Assert.Inconclusive(
+                    "Screenshot capture is opt-in; set " + OptInEnvironmentVariable
+                    + "=1 to regenerate docs/screenshots.");
+            }
+        }
 
         private static void RunOnStaThread(Action action)
         {
@@ -128,15 +137,9 @@ namespace Fluence.Wpf.Tests
                 "Could not locate Fluence.Wpf.sln ancestor directory from " + AppContext.BaseDirectory);
         }
 
-        private static string EnsureOutputDirectory(params string[] segments)
+        private static string EnsureOutputDirectory()
         {
-            string root = FindRepoRoot();
-            string path = Path.Combine(root, "docs", "screenshots");
-            for (int i = 0; i < segments.Length; i++)
-            {
-                path = Path.Combine(path, segments[i]);
-            }
-
+            string path = Path.Combine(FindRepoRoot(), "docs", "screenshots");
             _ = Directory.CreateDirectory(path);
             return path;
         }
@@ -242,104 +245,23 @@ namespace Fluence.Wpf.Tests
             Dispatcher.PushFrame(frame);
         }
 
-        private static void CaptureHomeAt(ApplicationTheme theme, string themeSlug, double scale, string outputDirectory)
-        {
-            _ = ResetApplication(theme, true);
-
-            Window? window = null;
-            try
-            {
-                Border host = new()
-                {
-                    Width = CaptureWidth,
-                    Height = CaptureHeight,
-                };
-                host.SetResourceReference(Border.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
-
-                GalleryHomePage page = new();
-                host.Child = page;
-
-                // Plain Window avoids the FluenceWindow DWM backdrop (which RenderTargetBitmap
-                // can't capture) and keeps the capture focused on the control surface.
-                window = new Window
-                {
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    WindowStartupLocation = WindowStartupLocation.Manual,
-                    WindowStyle = WindowStyle.None,
-                    ShowInTaskbar = false,
-                    Top = -10000,
-                    Left = -10000,
-                    AllowsTransparency = false,
-                    Content = host,
-                };
-
-                window.Show();
-                DrainDispatcher(window.Dispatcher);
-                window.UpdateLayout();
-
-                // Re-fire the theme apply *after* the page has subscribed in its Loaded
-                // handler. This guarantees the banner image (and any Changed-driven state)
-                // reflects the requested theme.
-                ApplicationThemeManager.Apply(theme, BackdropType.None, true);
-                DrainDispatcher(window.Dispatcher);
-                window.UpdateLayout();
-                _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(delegate { }));
-
-                string slug = Invariant("banner-{0}-{1}x.png", themeSlug, scale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
-                string fullPath = Path.Combine(outputDirectory, slug);
-
-                SaveElementPng(host, scale, fullPath);
-            }
-            finally
-            {
-                window?.Close();
-
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
-            }
-        }
-
         private static string Invariant(string format, params object[] args)
         {
             return string.Format(System.Globalization.CultureInfo.InvariantCulture, format, args);
         }
 
-        private static string ToFileSlug(string value)
-        {
-            StringBuilder builder = new();
-            bool previousHyphen = false;
-            for (int i = 0; i < value.Length; i++)
-            {
-                char character = value[i];
-                if (char.IsLetterOrDigit(character))
-                {
-                    _ = builder.Append(char.ToLowerInvariant(character));
-                    previousHyphen = false;
-                    continue;
-                }
-
-                if (!previousHyphen && builder.Length > 0)
-                {
-                    _ = builder.Append('-');
-                    previousHyphen = true;
-                }
-            }
-
-            string slug = builder.ToString().Trim('-');
-            return string.IsNullOrWhiteSpace(slug) ? "capture" : slug;
-        }
-
-        private static int CountGalleryRoutesWithSettings()
-        {
-            int count = 1;
-            foreach (DemoNavigationItem item in DemoNavigationCatalog.Items)
-            {
-                count++;
-            }
-
-            return count;
-        }
-
-        private static void CaptureGalleryShellAt(ApplicationTheme theme, string themeSlug, string route, string outputDirectory)
+        /// <summary>
+        /// Captures the gallery shell (<see cref="DemoMainWindow"/>) at <paramref name="route"/>
+        /// with the navigation pane forced to <paramref name="paneMode"/>, writing
+        /// <c>{outputName}-{themeSlug}.png</c>.
+        /// </summary>
+        private static void CaptureGalleryShellAt(
+            ApplicationTheme theme,
+            string themeSlug,
+            string route,
+            NavigationViewPaneDisplayMode paneMode,
+            string outputName,
+            string outputDirectory)
         {
             _ = ResetApplication(theme, true);
 
@@ -351,6 +273,12 @@ namespace Fluence.Wpf.Tests
                 window.Show();
                 DrainDispatcher(window.Dispatcher);
 
+                if (window.DemoNav is not null)
+                {
+                    window.DemoNav.PaneDisplayMode = paneMode;
+                    window.DemoNav.IsPaneOpen = paneMode == NavigationViewPaneDisplayMode.Left;
+                }
+
                 window.NavigateTo(route);
                 ApplicationThemeManager.Apply(theme, BackdropType.None, true);
                 DrainDispatcher(window.Dispatcher);
@@ -358,8 +286,7 @@ namespace Fluence.Wpf.Tests
                 window.UpdateLayout();
                 _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(delegate { }));
 
-                string slug = Invariant("gallery-{0}-{1}.png", ToFileSlug(route), themeSlug);
-                string fullPath = Path.Combine(outputDirectory, slug);
+                string fullPath = Path.Combine(outputDirectory, Invariant("{0}-{1}.png", outputName, themeSlug));
                 SaveElementPng(window, ReferenceScale, fullPath);
             }
             finally
@@ -369,19 +296,67 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        private static void CapturePowerShellDemoAt(ApplicationTheme theme, string themeSlug, string outputDirectory)
+        /// <summary>
+        /// Reads the inline XAML here-string from <c>03-ControlsTour.ps1</c> so the captured window
+        /// stays in lock-step with the script the screenshot documents.
+        /// </summary>
+        private static string ExtractControlsTourXaml()
+        {
+            string scriptPath = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "03-ControlsTour.ps1");
+            string[] lines = File.ReadAllLines(scriptPath);
+
+            int start = -1;
+            int end = -1;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (start < 0)
+                {
+                    if (lines[i].TrimEnd().EndsWith("@'", StringComparison.Ordinal))
+                    {
+                        start = i + 1;
+                    }
+
+                    continue;
+                }
+
+                if (lines[i].TrimStart().StartsWith("'@", StringComparison.Ordinal))
+                {
+                    end = i;
+                    break;
+                }
+            }
+
+            if (start < 0 || end < 0)
+            {
+                throw new InvalidOperationException(
+                    "Could not locate the XAML here-string in 03-ControlsTour.ps1.");
+            }
+
+            StringBuilder builder = new();
+            for (int i = start; i < end; i++)
+            {
+                if (builder.Length > 0)
+                {
+                    _ = builder.Append('\n');
+                }
+
+                _ = builder.Append(lines[i]);
+            }
+
+            return builder.ToString();
+        }
+
+        private static void CapturePowerShellControlsAt(ApplicationTheme theme, string themeSlug, string outputDirectory)
         {
             _ = ResetApplication(theme, false);
 
             Window? window = null;
             try
             {
-                string xamlPath = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "MainWindow.xaml");
-                using XmlReader reader = XmlReader.Create(xamlPath);
-                window = XamlReader.Load(reader) as Window
-                    ?? throw new InvalidOperationException("PowerShell MainWindow.xaml did not load as a WPF Window.");
+                window = XamlReader.Parse(ExtractControlsTourXaml()) as Window
+                    ?? throw new InvalidOperationException("03-ControlsTour.ps1 XAML did not load as a WPF Window.");
 
-                PrepareCaptureWindow(window, AppCaptureWidth, AppCaptureHeight);
+                PrepareCaptureWindow(window, PowerShellCaptureWidth, PowerShellCaptureHeight);
                 string fullPath = Path.Combine(outputDirectory, Invariant("powershell-{0}.png", themeSlug));
                 ShowSettleAndCapture(window, theme, fullPath);
             }
@@ -442,72 +417,49 @@ namespace Fluence.Wpf.Tests
 #endif
 
         [TestMethod]
-        public void CaptureBannerAcrossThemesAndScales()
+        public void CaptureGalleryShellNavigationModes()
         {
+            RequireScreenshotOptIn();
             RunOnStaThread(() =>
             {
                 string output = EnsureOutputDirectory();
-                List<string> written = [];
-                foreach ((ApplicationTheme theme, string? slug) in Themes)
+                foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
                 {
-                    foreach (double scale in BannerScales)
-                    {
-                        CaptureHomeAt(theme, slug, scale, output);
-                        written.Add(Invariant("banner-{0}-{1}x.png", slug, scale.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)));
-                    }
+                    CaptureGalleryShellAt(theme, themeSlug, "home", NavigationViewPaneDisplayMode.Left, "gallery-home", output);
+                    CaptureGalleryShellAt(theme, themeSlug, "buttons", NavigationViewPaneDisplayMode.LeftCompact, "gallery-buttons", output);
+                    CaptureGalleryShellAt(theme, themeSlug, "status", NavigationViewPaneDisplayMode.Top, "gallery-status", output);
                 }
-
-                Assert.AreEqual(Themes.Length * BannerScales.Length, written.Count);
             });
         }
 
         [TestMethod]
-        public void CaptureGalleryPagesAcrossLightAndDarkThemes()
+        public void CapturePowerShellControlsTour()
         {
+            RequireScreenshotOptIn();
             RunOnStaThread(() =>
             {
-                string output = EnsureOutputDirectory("gallery");
-                int written = 0;
-                foreach ((ApplicationTheme theme, string? themeSlug) in DocumentationThemes)
+                string output = EnsureOutputDirectory();
+                foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
                 {
-                    foreach (DemoNavigationItem item in DemoNavigationCatalog.Items)
-                    {
-                        CaptureGalleryShellAt(theme, themeSlug, item.Route, output);
-                        written++;
-                    }
-
-                    CaptureGalleryShellAt(theme, themeSlug, "settings", output);
-                    written++;
+                    CapturePowerShellControlsAt(theme, themeSlug, output);
                 }
-
-                Assert.AreEqual(CountGalleryRoutesWithSettings() * DocumentationThemes.Length, written);
             });
         }
-
-        [TestMethod]
-        public void CaptureSecondaryDemoSurfacesAcrossLightAndDarkThemes()
-        {
-            RunOnStaThread(() =>
-            {
-                string output = EnsureOutputDirectory("apps");
-                int written = 0;
-                foreach ((ApplicationTheme theme, string? themeSlug) in DocumentationThemes)
-                {
-                    CapturePowerShellDemoAt(theme, themeSlug, output);
-                    written++;
 
 #if NET10_0_OR_GREATER
+        [TestMethod]
+        public void CaptureMvvmTaskManager()
+        {
+            RequireScreenshotOptIn();
+            RunOnStaThread(() =>
+            {
+                string output = EnsureOutputDirectory();
+                foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
+                {
                     CaptureMvvmDemoAt(theme, themeSlug, output);
-                    written++;
-#endif
                 }
-
-#if NET10_0_OR_GREATER
-                Assert.AreEqual(DocumentationThemes.Length * 2, written);
-#else
-                Assert.AreEqual(DocumentationThemes.Length, written);
-#endif
             });
         }
+#endif
     }
 }

@@ -1,4 +1,4 @@
-﻿# Fluence.Wpf - Developer Handbook
+# Fluence.Wpf - Developer Handbook
 
 Self-contained persistent memory for engineers (human and AI) working in this repository. Read top-to-bottom before touching code. This file is the single source of truth for conventions, architecture, reference authority, testing policy, and workflow; do **not** rely on out-of-repo agent bundles, external skill packs, or downstream-consumer-specific paths.
 
@@ -271,7 +271,7 @@ When adding a new control or materially changing an existing one:
 - **InternalsVisibleTo**: the test assembly sees library internals; theme tests can call `ApplicationThemeManager.ResetForTesting()` to isolate fixtures.
 - **Baseline policy**: the HEAD-of-branch test count is the floor. Add tests, do not weaken it. If a test is legitimately obsoleted by a design change, remove the whole file in the same commit that supersedes it, record the rationale in `CHANGELOG.md`, and update this handbook if the testing pattern itself changed.
 - **Known pre-existing failures**: a root `KNOWN_ISSUES.md` exists; it tracks deliberate non-features and resolved follow-ups, not accepted test failures. If a failing test is ever accepted instead of fixed, record it there with the reproduction, affected TFM, reason, owner, and intended fix. A green local run is `total - skipped - known-failures = passed`; do not merge if your own changes add to the known-failure count.
-- **Screenshot harness**: `Fluence.Wpf.Tests/GalleryScreenshotHarness.cs` regenerates `docs/screenshots/banner-{theme}-{scale}x.png` via `RenderTargetBitmap` during normal full test runs. DWM backdrops (Mica / Acrylic) are _not_ captured by `RenderTargetBitmap`, so the harness hosts `GalleryHomePage` inside a plain `Window` with a solid `SolidBackgroundFillColorBaseBrush`.
+- **Screenshot harness**: `Fluence.Wpf.Tests/GalleryScreenshotHarness.cs` writes the ten documentation PNGs under `docs/screenshots/` - the gallery shell in its three navigation modes (`gallery-home` / Left, `gallery-buttons` / LeftCompact, `gallery-status` / Top) plus the MVVM (`mvvm`) and PowerShell controls-tour (`powershell`) apps, each in Light and Dark. Capture is **opt-in**: the tests are `[TestCategory("Screenshots")]` and skip (inconclusive) unless `FLUENCE_CAPTURE_SCREENSHOTS=1`, so an ordinary `dotnet test` never overwrites the committed images; set the variable to regenerate. DWM backdrops (Mica / Acrylic) are _not_ captured by `RenderTargetBitmap`, so each surface is hosted in a plain off-screen `Window` over a solid `SolidBackgroundFillColorBaseBrush`.
 
 ---
 
@@ -373,8 +373,8 @@ Public and repository documentation:
 - [docs/migration-guide.md](docs/migration-guide.md)
 - [docs/contributing.md](docs/contributing.md)
 - [docs/release.md](docs/release.md)
-- [docs/templated-prompts.md](docs/templated-prompts.md) - canonical task templates (referenced from Section 13)
-- [docs/demo-sample-pages.md](docs/demo-sample-pages.md) - demo sample-page standard (referenced from Section 14)
+- [docs/skill_templated-prompts.md](docs/skill_templated-prompts.md) - canonical task templates (referenced from Section 13)
+- [docs/skill_demo-sample-pages.md](docs/skill_demo-sample-pages.md) - demo sample-page standard (referenced from Section 14)
 - [KNOWN_ISSUES.md](KNOWN_ISSUES.md)
 
 Maintainer / AI context (this file and its siblings):
@@ -419,13 +419,13 @@ Consumer build compatibility is a release gate. For build-policy, public API, pr
 
 ## 13. Templated prompts
 
-Two canonical task templates (a generic development workflow plus its acceptance gates) live in [docs/templated-prompts.md](docs/templated-prompts.md). Copy the relevant block, fill in the `TASK` line, and execute end-to-end.
+Two canonical task templates (a generic development workflow plus its acceptance gates) live in [docs/skill_templated-prompts.md](docs/skiLL_templated-prompts.md). Copy the relevant block, fill in the `TASK` line, and execute end-to-end.
 
 ---
 
 ## 14. Demo Sample Pages
 
-The full demo sample-page standard - page skeleton, color layering, the `DemoSampleControl` contract, catalog surfaces, and definition of done - lives in [docs/demo-sample-pages.md](docs/demo-sample-pages.md). Control samples in `Fluence.Wpf.Demo` render through `DemoSampleControl`; design reference pages that mirror WinUI Gallery catalog surfaces (such as Typography) may render directly.
+The full demo sample-page standard - page skeleton, color layering, the `DemoSampleControl` contract, catalog surfaces, and definition of done - lives in [docs/skill_demo-sample-pages.md](docs/skill_demo-sample-pages.md). Control samples in `Fluence.Wpf.Demo` render through `DemoSampleControl`; design reference pages that mirror WinUI Gallery catalog surfaces (such as Typography) may render directly.
 
 ---
 

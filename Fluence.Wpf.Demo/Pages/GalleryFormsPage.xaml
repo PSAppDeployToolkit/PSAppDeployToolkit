@@ -29,7 +29,9 @@
                         x:Name="SignInPasswordBox"
                         Margin="{DynamicResource DemoControlBottomGapMargin}"
                         PlaceholderText="Password"
-                        RevealButtonEnabled="True" />
+                        RevealButtonEnabled="True"
+                        ShowCapsLockIndicator="True"
+                        ShowPasswordStrength="True" />
                     <ui:CheckBox
                         x:Name="RememberMeCheckBox"
                         Margin="{DynamicResource DemoSampleBlockMargin}"
@@ -141,6 +143,57 @@
                     Severity="{x:Static uicore:InfoBarSeverity.Success}" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use form controls to edit a small set of preferences and show confirmation after saving." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:DatePicker
+                        x:Name="DemoDatePicker"
+                        Header="Due date"
+                        PlaceholderText="Pick a date"
+                        SelectedDateChanged="DemoDatePicker_SelectedDateChanged" />
+                    <TextBlock
+                        x:Name="DatePickerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="No date selected" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use DatePicker for choosing a date from day, month, and year columns in a flyout." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:TimePicker
+                        x:Name="DemoTimePicker"
+                        Header="Reminder time"
+                        MinuteIncrement="5"
+                        PlaceholderText="Pick a time"
+                        SelectedTimeChanged="DemoTimePicker_SelectedTimeChanged" />
+                    <TextBlock
+                        x:Name="TimePickerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="No time selected" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use TimePicker for choosing a time from hour, minute, and AM/PM columns in a flyout." />
+
+
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:ColorPicker
+                        x:Name="DemoColorPicker"
+                        ColorChanged="DemoColorPicker_ColorChanged"
+                        IsAlphaEnabled="True" />
+                    <TextBlock
+                        x:Name="ColorPickerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Color: #FFFF0000" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with hue, alpha, and hex input." />
         </StackPanel>
     </ui:SmoothScrollViewer>
 </UserControl>

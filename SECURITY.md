@@ -4,7 +4,7 @@ Fluence.Wpf is a WPF control library (UI controls, theming, accent handling, win
 
 ## Supported versions
 
-The project is pre-1.0 (currently a `0.7.0` preview). Only the latest tagged release and the `main` branch receive security fixes; there is no back-porting to older preview tags. Fixes land on `main` first and ship in the next tagged release. If you consume a built package or a project reference, upgrade to the newest available version once a fix is published.
+The project is pre-1.0 (currently a `0.8.0` preview). Only the latest tagged release and the `main` branch receive security fixes; there is no back-porting to older preview tags. Fixes land on `main` first and ship in the next tagged release. If you consume a built package or a project reference, upgrade to the newest available version once a fix is published.
 
 Both target frameworks are in scope:
 

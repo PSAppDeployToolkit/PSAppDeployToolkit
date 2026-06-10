@@ -152,7 +152,15 @@
                                             Margin="0,0,8,0"
                                             VerticalAlignment="Center"
                                             Content="{TemplateBinding Icon}"
-                                            Visibility="Visible" />
+                                            TextElement.Foreground="{TemplateBinding Foreground}"
+                                            Visibility="Visible">
+                                            <ContentPresenter.Resources>
+                                                <!--  Icon follows the selection text (SplitButton precedent): the scoped implicit style outranks the FontIcon theme-style Foreground; a consumer's local Foreground still wins.  -->
+                                                <Style TargetType="{x:Type controls:FontIcon}">
+                                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:ComboBox}}}" />
+                                                </Style>
+                                            </ContentPresenter.Resources>
+                                        </ContentPresenter>
                                         <Grid Grid.Column="1" VerticalAlignment="Center">
                                             <ContentPresenter
                                                 x:Name="contentPresenter"
@@ -316,7 +324,6 @@
                             <Setter TargetName="MainBorder" Property="BorderThickness" Value="1" />
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
                             <Setter TargetName="ChevronGlyph" Property="Opacity" Value="0.4" />
-                            <Setter TargetName="LeftIcon" Property="Opacity" Value="0.4" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
