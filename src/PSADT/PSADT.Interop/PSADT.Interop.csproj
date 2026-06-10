@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="PolySharp" Version="1.16.0">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.150">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -42,17 +42,24 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PolySharpIncludeGeneratedTypes>
-      System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute;
-      System.Diagnostics.CodeAnalysis.NotNullAttribute;
-      System.Diagnostics.StackTraceHiddenAttribute;
-      System.Runtime.CompilerServices.CallerArgumentExpressionAttribute;
-      System.Runtime.CompilerServices.ModuleInitializerAttribute;
-    </PolySharpIncludeGeneratedTypes>
-    <PolySharpExcludeGeneratedTypes>
-      System.Runtime.CompilerServices.OverloadResolutionPriorityAttribute;
-    </PolySharpExcludeGeneratedTypes>
-    <PolySharpUseEmbeddedAttributeForGeneratedTypes>false</PolySharpUseEmbeddedAttributeForGeneratedTypes>
+    <MeziantouPolyfill_IncludedPolyfills>
+      M:System.ArgumentException.Throw|
+      M:System.ArgumentNullException.Throw|
+      M:System.ArgumentOutOfRangeException.Throw|
+      M:System.Diagnostics.Process.WaitForExitAsync|
+      M:System.IO.Path.IsPathFullyQualified|
+      M:System.IO.Path.Join|
+      M:System.ObjectDisposedException.Throw|
+      M:System.Threading.CancellationTokenSource.CancelAsync|
+      M:System.Threading.Tasks.Task.WaitAsync|
+      T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
+      T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
+      T:System.Diagnostics.StackTraceHiddenAttribute|
+      T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
+      T:System.Runtime.CompilerServices.ModuleInitializerAttribute|
+    </MeziantouPolyfill_IncludedPolyfills>
+    <DefineConstants>$(DefineConstants);MEZIANTOU_POLYFILL_SKIP_MICROSOFT_CODEANALYSIS_EMBEDDEDATTRIBUTE</DefineConstants>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 </Project>
