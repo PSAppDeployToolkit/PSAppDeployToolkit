@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -326,7 +326,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
 
             Thread.Sleep(3000); // Simulate some work being done
 
-            // Simulate a process with progress updates
+            // Simulate a process with progress updates.
             for (int i = 0; i <= 100; i += 10)
             {
                 // Update progress
