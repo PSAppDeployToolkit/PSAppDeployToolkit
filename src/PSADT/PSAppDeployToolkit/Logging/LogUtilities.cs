@@ -74,10 +74,10 @@ namespace PSAppDeployToolkit.Logging
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
-                StackFrame invoker = stackFrames.First(static f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == false);
+                StackFrame invoker = stackFrames.First(static f => f.GetMethod()?.DeclaringType?.FullName is string fullName && !DeclaringTypeRegex.IsMatch(fullName));
                 if (invoker.GetFileName() is null)
                 {
-                    invoker = stackFrames.Last(static f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
+                    invoker = stackFrames.Last(static f => f.GetMethod()?.DeclaringType?.FullName is string fullName && DeclaringTypeRegex.IsMatch(fullName));
                 }
                 callerFileName = invoker.GetFileName() ?? "<Unavailable>";
                 callerSource = invoker.GetMethod() is MethodBase method && method.DeclaringType is Type declaringType
@@ -245,5 +245,10 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
         /// "&lt;example&gt;"). This is typically used to identify script locations in a specific format.</remarks>
         private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Represents a compiled regular expression used to match declaring types in stack frames that belong to the PSAppDeployToolkit or ADT namespaces.
+        /// </summary>
+        private static readonly Regex DeclaringTypeRegex = new(@"^PS(AppDeployToolkit|ADT)\..+$", RegexOptions.Compiled);
     }
 }
