@@ -74,7 +74,7 @@ namespace PSAppDeployToolkit.Logging
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
-                StackFrame invoker = stackFrames.First(static f => !f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
+                StackFrame invoker = stackFrames.First(static f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == false);
                 if (invoker.GetFileName() is null)
                 {
                     invoker = stackFrames.Last(static f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
