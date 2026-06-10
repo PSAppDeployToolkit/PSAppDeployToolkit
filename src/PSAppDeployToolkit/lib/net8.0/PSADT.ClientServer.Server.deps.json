@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "PSADT.ClientServer.Server/1.0.0": {
         "dependencies": {
-          "Microsoft.Bcl.Cryptography": "10.0.8",
+          "Microsoft.Bcl.Cryptography": "10.0.9",
           "PSADT": "1.0.0",
           "PSADT.Interop": "1.0.0",
           "PSADT.UserInterface": "1.0.0",
@@ -18,14 +18,14 @@
           "PSADT.ClientServer.Server.dll": {}
         }
       },
-      "Microsoft.Bcl.Cryptography/10.0.8": {
+      "Microsoft.Bcl.Cryptography/10.0.9": {
         "dependencies": {
-          "System.Formats.Asn1": "10.0.8"
+          "System.Formats.Asn1": "10.0.9"
         },
         "runtime": {
           "lib/net8.0/Microsoft.Bcl.Cryptography.dll": {
-            "assemblyVersion": "10.0.0.8",
-            "fileVersion": "10.0.826.23019"
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
           }
         }
       },
@@ -67,22 +67,22 @@
           }
         }
       },
-      "System.Drawing.Common/8.0.27": {
+      "System.Drawing.Common/8.0.28": {
         "dependencies": {
           "Microsoft.Win32.SystemEvents": "8.0.0"
         },
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.2726.23001"
+            "fileVersion": "8.0.2826.26901"
           }
         }
       },
-      "System.Formats.Asn1/10.0.8": {
+      "System.Formats.Asn1/10.0.9": {
         "runtime": {
           "lib/net8.0/System.Formats.Asn1.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.826.23019"
+            "fileVersion": "10.0.926.27113"
           }
         }
       },
@@ -125,7 +125,6 @@
         "dependencies": {
           "PSADT.Interop": "1.0.0",
           "System.IO.Packaging": "8.0.1",
-          "System.Linq.AsyncEnumerable": "10.0.5",
           "System.ServiceProcess.ServiceController": "8.0.1"
         },
         "runtime": {
@@ -136,6 +135,9 @@
         }
       },
       "PSADT.Interop/1.0.0": {
+        "dependencies": {
+          "System.Linq.AsyncEnumerable": "10.0.5"
+        },
         "runtime": {
           "PSADT.Interop.dll": {
             "assemblyVersion": "4.2.0.0",
@@ -147,7 +149,7 @@
         "dependencies": {
           "PSADT": "1.0.0",
           "PSAppDeployToolkit": "1.0.0",
-          "System.Drawing.Common": "8.0.27"
+          "System.Drawing.Common": "8.0.28"
         },
         "runtime": {
           "PSADT.UserInterface.dll": {
@@ -176,12 +178,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Microsoft.Bcl.Cryptography/10.0.8": {
+    "Microsoft.Bcl.Cryptography/10.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-N2JKLpc3v4Jk1qiSF9dU0Monoyt8jmSqtyvipTRVWq2YYqf2pvM4sa7J8Tl/8p5LOIaF0KpRCYN9/69CBic2EA==",
-      "path": "microsoft.bcl.cryptography/10.0.8",
-      "hashPath": "microsoft.bcl.cryptography.10.0.8.nupkg.sha512"
+      "sha512": "sha512-iSljz/oaqFzH7c4mNKwYt8GqK1mxoDMgP0wliKaEF9TejFxyZ3acLopin1v5PAQIa9GE0flOESkwOnik83X0YA==",
+      "path": "microsoft.bcl.cryptography/10.0.9",
+      "hashPath": "microsoft.bcl.cryptography.10.0.9.nupkg.sha512"
     },
     "Microsoft.Win32.SystemEvents/8.0.0": {
       "type": "package",
@@ -197,19 +199,19 @@
       "path": "system.diagnostics.eventlog/8.0.1",
       "hashPath": "system.diagnostics.eventlog.8.0.1.nupkg.sha512"
     },
-    "System.Drawing.Common/8.0.27": {
+    "System.Drawing.Common/8.0.28": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-G/4T2mE+RElzXxHO+PdCngA2lEjGbZvEMyfsFjZHZXROdbI6n5AQC3LHcTKJ2wTHILf4U5eA5zF/ili0YAj+BQ==",
-      "path": "system.drawing.common/8.0.27",
-      "hashPath": "system.drawing.common.8.0.27.nupkg.sha512"
+      "sha512": "sha512-1w0El5UNX2w8YJZoCMwDfGFzt+S+G1OjZdmQFocAA+XVs3sUuxtbpEdQsJdhEbEOurrLq008eUON2DEZWPBMHg==",
+      "path": "system.drawing.common/8.0.28",
+      "hashPath": "system.drawing.common.8.0.28.nupkg.sha512"
     },
-    "System.Formats.Asn1/10.0.8": {
+    "System.Formats.Asn1/10.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XBaf+5rSEtX3y1zptaff7+KlHgr1Cukq/5V208ORFYP3oqtv+ZouqqgQrTjsiIq/Yc8XxbG1HyHtLx5J7coA7A==",
-      "path": "system.formats.asn1/10.0.8",
-      "hashPath": "system.formats.asn1.10.0.8.nupkg.sha512"
+      "sha512": "sha512-8bZO8fKrV3yzHt28pJleimT66buB+xSHxqQl2wOa6IYfn6JQ6VUVh9cdpBTb4mwgAVu7IuX2EW1wywBhXKyeJA==",
+      "path": "system.formats.asn1/10.0.9",
+      "hashPath": "system.formats.asn1.10.0.9.nupkg.sha512"
     },
     "System.IO.Packaging/8.0.1": {
       "type": "package",

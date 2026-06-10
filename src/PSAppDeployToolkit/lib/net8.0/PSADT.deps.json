@@ -10,7 +10,6 @@
         "dependencies": {
           "PSADT.Interop": "1.0.0",
           "System.IO.Packaging": "8.0.1",
-          "System.Linq.AsyncEnumerable": "10.0.5",
           "System.ServiceProcess.ServiceController": "8.0.1"
         },
         "runtime": {
@@ -75,6 +74,9 @@
         }
       },
       "PSADT.Interop/1.0.0": {
+        "dependencies": {
+          "System.Linq.AsyncEnumerable": "10.0.5"
+        },
         "runtime": {
           "PSADT.Interop.dll": {
             "assemblyVersion": "4.2.0.0",
