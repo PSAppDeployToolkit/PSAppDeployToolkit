@@ -290,8 +290,7 @@ namespace PSADT.Tests.SMBIOS
         /// short to be valid.
         /// </summary>
         /// <remarks>This test ensures that the SystemInformation.Get method correctly validates the
-        /// length of the input buffer and provides an appropriate error message when the buffer does not meet the
-        /// minimum required size.</remarks>
+        /// length of the input buffer and reports the parameter that does not meet the minimum required size.</remarks>
         [Fact]
         public void Get_ThrowsWhenStructureTooShort()
         {
@@ -304,7 +303,7 @@ namespace PSADT.Tests.SMBIOS
                     "Manufacturer"));
 
             ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => SystemInformation.Get(buffer));
-            Assert.Contains("must be greater than", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("structureLength", ex.ParamName);
         }
     }
 }

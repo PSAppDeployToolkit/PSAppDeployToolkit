@@ -274,8 +274,7 @@ namespace PSADT.Tests.SMBIOS
         /// contain valid platform firmware information.
         /// </summary>
         /// <remarks>This test ensures that the Get method properly validates the length of the input
-        /// buffer and provides an appropriate error message when the buffer does not meet the minimum required
-        /// size.</remarks>
+        /// buffer and reports the parameter that does not meet the minimum required size.</remarks>
         [Fact]
         public void Get_ThrowsWhenStructureTooShort()
         {
@@ -292,7 +291,7 @@ namespace PSADT.Tests.SMBIOS
                     "Version"));
 
             ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => PlatformFirmwareInformation.Get(buffer));
-            Assert.Contains("must be greater than", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("structureLength", ex.ParamName);
         }
 
         /// <summary>
