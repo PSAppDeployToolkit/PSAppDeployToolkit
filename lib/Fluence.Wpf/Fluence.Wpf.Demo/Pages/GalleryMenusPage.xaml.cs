@@ -27,6 +27,7 @@
  */
 
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -267,6 +268,142 @@ namespace Fluence.Wpf.Demo.Pages.Menus
 }
 ";
 
+        private const string FlyoutXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Menus.FlyoutSample""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <ui:Button Click=""FlyoutButton_Click"" Content=""Show flyout"">
+        <ui:FlyoutBase.AttachedFlyout>
+            <ui:Flyout Placement=""Bottom"">
+                <ui:Flyout.Content>
+                    <StackPanel MaxWidth=""260"">
+                        <TextBlock
+                            FontWeight=""SemiBold""
+                            Foreground=""{DynamicResource TextFillColorPrimaryBrush}""
+                            Text=""Quick note"" />
+                        <TextBlock
+                            Margin=""0,4,0,0""
+                            Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
+                            Text=""A lightweight, light-dismiss popup anchored to its owner.""
+                            TextWrapping=""Wrap"" />
+                    </StackPanel>
+                </ui:Flyout.Content>
+            </ui:Flyout>
+        </ui:FlyoutBase.AttachedFlyout>
+    </ui:Button>
+</UserControl>
+";
+
+        private const string FlyoutCSharpSource = @"using System.Windows;
+using System.Windows.Controls;
+using Fluence.Wpf.Controls;
+
+namespace Fluence.Wpf.Demo.Pages.Menus
+{
+    public partial class FlyoutSample : UserControl
+    {
+        public FlyoutSample()
+        {
+            InitializeComponent();
+        }
+
+        private void FlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+            {
+                FlyoutBase.ShowAttachedFlyout(element);
+            }
+        }
+    }
+}
+";
+
+        private const string ContentDialogXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Menus.ContentDialogSample""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <ui:Button Click=""ShowDialogButton_Click"" Content=""Show dialog"" />
+</UserControl>
+";
+
+        private const string ContentDialogCSharpSource = @"using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using Fluence.Wpf;
+using Fluence.Wpf.Controls;
+
+namespace Fluence.Wpf.Demo.Pages.Menus
+{
+    public partial class ContentDialogSample : UserControl
+    {
+        public ContentDialogSample()
+        {
+            InitializeComponent();
+        }
+
+        private void ShowDialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = ShowDialogAsync();
+        }
+
+        private async Task ShowDialogAsync()
+        {
+            ContentDialog dialog = new()
+            {
+                Title = ""Delete file?"",
+                Content = ""Roadmap.md will be permanently deleted. This cannot be undone."",
+                PrimaryButtonText = ""Delete"",
+                CloseButtonText = ""Cancel"",
+                DefaultButton = ContentDialogButton.Close
+            };
+
+            ContentDialogResult result = await dialog.ShowAsync();
+        }
+    }
+}
+";
+
+        private const string TeachingTipXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Menus.TeachingTipSample""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <Grid>
+        <ui:Button x:Name=""TipButton"" Click=""ShowTipButton_Click"" Content=""Show teaching tip"" />
+        <ui:TeachingTip
+            x:Name=""Tip""
+            Title=""Pro tip""
+            Subtitle=""A TeachingTip coaches the user from a target element without blocking.""
+            CloseButtonContent=""Got it""
+            IsLightDismissEnabled=""True""
+            PreferredPlacement=""Bottom"" />
+    </Grid>
+</UserControl>
+";
+
+        private const string TeachingTipCSharpSource = @"using System.Windows;
+using System.Windows.Controls;
+
+namespace Fluence.Wpf.Demo.Pages.Menus
+{
+    public partial class TeachingTipSample : UserControl
+    {
+        public TeachingTipSample()
+        {
+            InitializeComponent();
+        }
+
+        private void ShowTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            Tip.Target = TipButton;
+            Tip.IsOpen = true;
+        }
+    }
+}
+";
+
         public GalleryMenusPage()
         {
             InitializeComponent();
@@ -275,7 +412,11 @@ namespace Fluence.Wpf.Demo.Pages.Menus
                 (DependencyObject)Content,
                 new DemoSampleSource(1, MenuBarXamlSource, MenuBarCSharpSource),
                 new DemoSampleSource(2, ContextMenuXamlSource, ContextMenuCSharpSource),
-                new DemoSampleSource(3, ToolTipsXamlSource, ToolTipsCSharpSource));
+                new DemoSampleSource(3, ToolTipsXamlSource, ToolTipsCSharpSource),
+                new DemoSampleSource(4, FlyoutXamlSource, FlyoutCSharpSource),
+                new DemoSampleSource(5, ContentDialogXamlSource, ContentDialogCSharpSource),
+                new DemoSampleSource(6, TeachingTipXamlSource, TeachingTipCSharpSource),
+                new DemoSampleSource(7, CommandBarFlyoutXamlSource, CommandBarFlyoutCSharpSource));
         }
 
         private void MenuBar_Click(object sender, RoutedEventArgs e)
@@ -286,6 +427,98 @@ namespace Fluence.Wpf.Demo.Pages.Menus
         private void ContextMenu_Click(object sender, RoutedEventArgs e)
         {
             SetTextFromTag(ContextMenuResultLabel, "Last action", sender);
+        }
+
+        private void FlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+            {
+                Fluence.Wpf.Controls.FlyoutBase.ShowAttachedFlyout(element);
+            }
+        }
+
+        private void ShowDialogButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = ShowDialogAsync();
+        }
+
+        private async Task ShowDialogAsync()
+        {
+            Fluence.Wpf.Controls.ContentDialog dialog = new()
+            {
+                Title = "Delete file?",
+                Content = "Roadmap.md will be permanently deleted. This cannot be undone.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel",
+                DefaultButton = Fluence.Wpf.ContentDialogButton.Close
+            };
+
+            Fluence.Wpf.ContentDialogResult result = await dialog.ShowAsync();
+            DialogResultLabel.Text = string.Format(CultureInfo.CurrentCulture, "Dialog result: {0}", result);
+        }
+
+        private const string CommandBarFlyoutXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Menus.CommandBarSample""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <ui:Button Click=""ShowCommandBarButton_Click"" Content=""Show command bar"">
+        <ui:FlyoutBase.AttachedFlyout>
+            <ui:CommandBarFlyout>
+                <ui:CommandBarFlyout.PrimaryCommands>
+                    <ui:AppBarButton Click=""Command_Click"" Label=""Copy"" Tag=""Copy"">
+                        <ui:AppBarButton.Icon>
+                            <ui:FontIcon Glyph=""&#xE8C8;"" IconFontSize=""16"" />
+                        </ui:AppBarButton.Icon>
+                    </ui:AppBarButton>
+                </ui:CommandBarFlyout.PrimaryCommands>
+                <ui:CommandBarFlyout.SecondaryCommands>
+                    <ui:AppBarButton Click=""Command_Click"" Label=""Delete"" Tag=""Delete"" />
+                </ui:CommandBarFlyout.SecondaryCommands>
+            </ui:CommandBarFlyout>
+        </ui:FlyoutBase.AttachedFlyout>
+    </ui:Button>
+</UserControl>
+";
+
+        private const string CommandBarFlyoutCSharpSource = @"using System.Windows;
+using System.Windows.Controls;
+using Fluence.Wpf.Controls;
+
+namespace Fluence.Wpf.Demo.Pages.Menus
+{
+    public partial class CommandBarSample : UserControl
+    {
+        public CommandBarSample()
+        {
+            InitializeComponent();
+        }
+
+        private void ShowCommandBarButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+            {
+                FlyoutBase.ShowAttachedFlyout(element);
+            }
+        }
+
+        private void Command_Click(object sender, RoutedEventArgs e)
+        {
+            // Invoked commands dismiss the flyout automatically.
+        }
+    }
+}
+";
+
+        private void CommandBarAction_Click(object sender, RoutedEventArgs e)
+        {
+            SetTextFromTag(CommandBarResultLabel, "Last command", sender);
+        }
+
+        private void ShowTeachingTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            DemoTeachingTip.Target = TeachingTipButton;
+            DemoTeachingTip.IsOpen = true;
         }
 
         private static void SetTextFromTag(TextBlock label, string prefix, object sender)

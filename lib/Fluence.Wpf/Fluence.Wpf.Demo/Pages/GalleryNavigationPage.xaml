@@ -164,6 +164,37 @@
                 </Border>
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use InfoBadge in NavigationViewItem to call attention to item state without changing the item label." />
+
+
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:BreadcrumbBar x:Name="DemoBreadcrumbBar" ItemClicked="DemoBreadcrumbBar_ItemClicked" />
+                    <TextBlock
+                        x:Name="BreadcrumbResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Click a crumb to navigate up" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use BreadcrumbBar to show the path to the current location and jump back to any ancestor." />
+
+
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:PipsPager
+                        x:Name="DemoPipsPager"
+                        NextButtonVisibility="Visible"
+                        NumberOfPages="8"
+                        PreviousButtonVisibility="Visible"
+                        SelectedIndexChanged="DemoPipsPager_SelectedIndexChanged" />
+                    <TextBlock
+                        x:Name="PipsPagerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Page 1 of 8" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use PipsPager for compact page indication and switching, as in carousels and onboarding flows." />
         </StackPanel>
     </ui:SmoothScrollViewer>
 </UserControl>

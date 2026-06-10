@@ -1,10 +1,3 @@
-﻿---
-title: Migration guide
-linkTitle: Migration guide
-description: Move an existing WPF application from standard WPF controls or another Fluent-style library to Fluence.Wpf.
-weight: 40
----
-
 ## Scope
 
 `Fluence.Wpf` targets WPF applications on .NET Framework 4.7.2 and .NET 10 for Windows. It mirrors the Windows 11 Fluent / WinUI 3 visual language using WPF primitives, with no dependency on the Windows App SDK.

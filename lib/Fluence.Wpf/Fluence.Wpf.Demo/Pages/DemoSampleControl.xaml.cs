@@ -451,9 +451,8 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 Name = "CopySourceButton",
                 Appearance = ControlAppearance.Subtle,
-                Content = "\uE8C8",
+                Icon = new Controls.FontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
                 HorizontalAlignment = HorizontalAlignment.Right,
-                FontFamily = new FontFamily("Segoe Fluent Icons"),
                 MinWidth = 0,
                 Padding = GetThicknessResource("DemoSourceCopyButtonPadding", new Thickness(8, 4, 8, 4)),
                 Tag = source

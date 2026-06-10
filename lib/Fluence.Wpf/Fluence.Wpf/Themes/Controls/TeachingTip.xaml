@@ -1,0 +1,311 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls"
+    xmlns:ui="clr-namespace:Fluence.Wpf">
+
+    <!--
+        Fluent Design TeachingTip style.
+        Authority: WinUI 3 TeachingTip_themeresources.xaml (TeachingTipMinWidth 320 /
+        TeachingTipMaxWidth 336; SemiBold 14px title over a wrapped secondary subtitle;
+        a 20x10 tail on the edge facing the target, matching the WinUI TailPolygon points).
+        Surface treatment reuses the canonical in-tree flyout tokens from FlyoutPresenter.xaml:
+        SolidBackgroundFillColorTertiaryBrush + SurfaceStrokeColorFlyoutBrush +
+        OverlayCornerRadius + the WinUI FlyoutContentThemePadding (16,15,16,17).
+        The beak is an open Path (no closing segment), so only its two slanted edges are
+        stroked; a 1px negative margin overlaps the surface border and the fill hides the seam.
+        The control resolves ActualPlacement when it opens: a tip popped below its target
+        (placement Bottom) shows the beak on its top edge, and untargeted / Center tips
+        collapse the beak entirely.
+        Close affordance follows the WinUI CloseButtonLocations states: the footer close
+        button shows only while CloseButtonContent is set; a null CloseButtonContent shows
+        the alternate top-right X (FontIcon E711 on a subtle plate, WinUI
+        TeachingTipAlternateCloseButton* tokens) unless light dismiss is enabled, in which
+        case no close affordance is shown. The title reserves a 28px right margin under the
+        alternate X (WinUI TeachingTipTitleStackPanelMarginWithHeaderCloseButton).
+        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
+        produce artifacts in a Popup (see DropDownButton.xaml).
+    -->
+
+    <!--
+        Subtle plate for the alternate top-right X close button. Tokens per WinUI
+        TeachingTipAlternateCloseButton*: transparent rest plate, SubtleFillColorSecondary
+        hover / SubtleFillColorTertiary press, primary-to-secondary text foreground (see
+        PipsPager.xaml for the same plate pattern).
+    -->
+    <Style x:Key="TeachingTipAlternateCloseButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="ButtonPlate"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="24" />
+    </Style>
+
+    <Style TargetType="{x:Type controls:TeachingTip}">
+        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SurfaceStrokeColorFlyoutBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MaxWidth" Value="336" />
+        <Setter Property="MinWidth" Value="320" />
+        <Setter Property="Padding" Value="16,15,16,17" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:TeachingTip}">
+                    <Grid x:Name="TipRoot" UseLayoutRounding="True">
+                        <Grid.RenderTransform>
+                            <TranslateTransform x:Name="TipTranslate" />
+                        </Grid.RenderTransform>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border
+                            x:Name="TipSurface"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    x:Name="TitleText"
+                                    Grid.Row="0"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{TemplateBinding Title}"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    x:Name="SubtitleText"
+                                    Grid.Row="1"
+                                    Margin="0,4,0,0"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{TemplateBinding Subtitle}"
+                                    TextWrapping="Wrap" />
+                                <ContentPresenter
+                                    x:Name="BodyPresenter"
+                                    Grid.Row="2"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                    TextElement.FontSize="{TemplateBinding FontSize}"
+                                    TextElement.Foreground="{TemplateBinding Foreground}" />
+                                <StackPanel
+                                    x:Name="FooterArea"
+                                    Grid.Row="3"
+                                    Margin="0,12,0,0"
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal">
+                                    <controls:Button
+                                        x:Name="PART_ActionButton"
+                                        MinWidth="0"
+                                        Margin="0,0,8,0"
+                                        Appearance="Accent"
+                                        Content="{TemplateBinding ActionButtonContent}" />
+                                    <controls:Button
+                                        x:Name="PART_CloseButton"
+                                        MinWidth="0"
+                                        Content="{TemplateBinding CloseButtonContent}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Path
+                            x:Name="TopBeak"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="0,0,0,-1"
+                            HorizontalAlignment="Center"
+                            Data="M 0,10 L 10,0 L 20,10"
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="1"
+                            Visibility="Collapsed" />
+                        <Path
+                            x:Name="BottomBeak"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="0,-1,0,0"
+                            HorizontalAlignment="Center"
+                            Data="M 0,0 L 10,10 L 20,0"
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="1"
+                            Visibility="Collapsed" />
+                        <Path
+                            x:Name="LeftBeak"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="0,0,-1,0"
+                            VerticalAlignment="Center"
+                            Data="M 10,0 L 0,10 L 10,20"
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="1"
+                            Visibility="Collapsed" />
+                        <Path
+                            x:Name="RightBeak"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Margin="-1,0,0,0"
+                            VerticalAlignment="Center"
+                            Data="M 0,0 L 10,10 L 0,20"
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="1"
+                            Visibility="Collapsed" />
+                        <Button
+                            x:Name="PART_AlternateCloseButton"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="0,8,8,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Style="{StaticResource TeachingTipAlternateCloseButtonStyle}"
+                            Visibility="Collapsed">
+                            <controls:FontIcon
+                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                Glyph="&#xE711;"
+                                IconFontSize="12"
+                                IsHitTestVisible="False" />
+                        </Button>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!--
+                            Open reveal, ContextMenu.xaml submenu precedent: fade 0 to 1 over 83ms
+                            (ControlFasterAnimationDuration) and slide from Y=-8 (the beak/target
+                            side) to 0 over 167ms (ControlFastAnimationDuration) on the 0.8,0,0,1
+                            spline (ControlFastOutSlowInKeySpline); Typography.xaml motion tokens,
+                            mirrored literally because storyboard attributes cannot reference them.
+                            A Loaded EventTrigger cannot key off ActualPlacement, so v1 uses this
+                            fixed direction matching the dominant bottom placement (Auto resolves
+                            to Bottom, beak on the top edge). TeachingTip.cs sets the popup's
+                            PopupAnimation to None so this storyboard owns the reveal.
+                            SourceName anchors the trigger to the template child: a tip that is
+                            declared collapsed in a panel raises Loaded before its template ever
+                            instantiates, and an unanchored trigger would then fail to resolve
+                            the storyboard target names.
+                        -->
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded" SourceName="TipRoot">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TipRoot" Storyboard.TargetProperty="Opacity">
+                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                        <SplineDoubleKeyFrame
+                                            KeySpline="0.8,0,0,1"
+                                            KeyTime="0:0:0.083"
+                                            Value="1" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TipTranslate" Storyboard.TargetProperty="Y">
+                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="-8" />
+                                        <SplineDoubleKeyFrame
+                                            KeySpline="0.8,0,0,1"
+                                            KeyTime="0:0:0.167"
+                                            Value="0" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <!--  The beak sits on the edge of the tip that faces the target.  -->
+                        <Trigger Property="ActualPlacement" Value="{x:Static ui:TeachingTipPlacementMode.Bottom}">
+                            <Setter TargetName="TopBeak" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="ActualPlacement" Value="{x:Static ui:TeachingTipPlacementMode.Top}">
+                            <Setter TargetName="BottomBeak" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="ActualPlacement" Value="{x:Static ui:TeachingTipPlacementMode.Left}">
+                            <Setter TargetName="RightBeak" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="ActualPlacement" Value="{x:Static ui:TeachingTipPlacementMode.Right}">
+                            <Setter TargetName="LeftBeak" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="Title" Value="">
+                            <Setter TargetName="TitleText" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="SubtitleText" Property="Margin" Value="0" />
+                        </Trigger>
+                        <Trigger Property="Subtitle" Value="">
+                            <Setter TargetName="SubtitleText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="Content" Value="{x:Null}">
+                            <Setter TargetName="BodyPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="ActionButtonContent" Value="{x:Null}">
+                            <Setter TargetName="PART_ActionButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <!--
+                            WinUI close-affordance matrix: footer close only with content;
+                            alternate top-right X for null content without light dismiss;
+                            no close affordance for null content with light dismiss.
+                        -->
+                        <Trigger Property="CloseButtonContent" Value="{x:Null}">
+                            <Setter TargetName="PART_CloseButton" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="CloseButtonContent" Value="{x:Null}" />
+                                <Condition Property="IsLightDismissEnabled" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="PART_AlternateCloseButton" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="TitleText" Property="Margin" Value="0,0,28,0" />
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="ActionButtonContent" Value="{x:Null}" />
+                                <Condition Property="CloseButtonContent" Value="{x:Null}" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="FooterArea" Property="Visibility" Value="Collapsed" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    </Style>
+
+</ResourceDictionary>

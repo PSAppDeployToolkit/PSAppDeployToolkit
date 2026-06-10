@@ -1954,12 +1954,18 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public void Stage3_PasswordBox_ShowCapsLockIndicator_DefaultTrue()
+        public void Stage3_PasswordBox_IndicatorsDefaultOffAndOptIn()
         {
             RunOnStaThread(() =>
             {
                 Controls.PasswordBox pb = new();
+                Assert.IsFalse(pb.ShowCapsLockIndicator, "Caps Lock indicator must be opt-in by default.");
+                Assert.IsFalse(pb.ShowPasswordStrength, "Password strength meter must be opt-in by default.");
+
+                pb.ShowCapsLockIndicator = true;
+                pb.ShowPasswordStrength = true;
                 Assert.IsTrue(pb.ShowCapsLockIndicator);
+                Assert.IsTrue(pb.ShowPasswordStrength);
             });
         }
 

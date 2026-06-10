@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,8 @@ using System.Windows.Shapes;
 namespace Fluence.Wpf.Tests
 {
     /// <summary>
-    /// Tests for the rewritten <see cref="ProgressRing"/> - arc-based indeterminate
-    /// animation plus code-driven determinate arc.
+    /// Tests for the rewritten <see cref="ProgressRing"/> - WinUI 3 arc-length
+    /// pulse + rotation indeterminate animation plus code-driven determinate arc.
     /// </summary>
     public partial class ControlTests
     {
@@ -63,6 +63,9 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual(0.0, ring.Minimum, "Default Minimum must be 0.");
                 Assert.AreEqual(100.0, ring.Maximum, "Default Maximum must be 100.");
                 Assert.AreEqual(4.0, ring.StrokeThickness, "Default StrokeThickness must be 4.");
+                Assert.AreEqual(ProgressRingState.Normal, ring.ProgressState, "Default ProgressState must be Normal.");
+                Assert.IsFalse(ring.ShowError, "Default ShowError must be false.");
+                Assert.IsFalse(ring.ShowPaused, "Default ShowPaused must be false.");
             });
         }
 
@@ -86,11 +89,11 @@ namespace Fluence.Wpf.Tests
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        // Indeterminate template - caterpillar arc path
+        // Indeterminate template - pulsing arc path + rotate transform
         // ──────────────────────────────────────────────────────────────────────
 
         [TestMethod]
-        public void ProgressRing_Indeterminate_TemplateContainsCaterpillarArc()
+        public void ProgressRing_Indeterminate_TemplateContainsAnimatedArc()
         {
             WpfTestSta.Invoke(() =>
             {
@@ -108,7 +111,14 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual(Visibility.Visible, arc.Visibility,
                     "Indeterminate arc should be visible when IsActive=True and IsIndeterminate=True.");
                 Assert.IsNotNull(arc.Data,
-                    "Indeterminate arc Path.Data should be populated by the caterpillar geometry renderer.");
+                    "Indeterminate arc Path.Data should be populated by the arc-length pulse renderer.");
+                Assert.AreEqual(new Point(0.5, 0.5), arc.RenderTransformOrigin,
+                    "Indeterminate arc must rotate around the control center.");
+
+                RotateTransform? rotate = GetIndeterminateRotateTransform(ring);
+                Assert.IsNotNull(rotate, "ProgressRing template must contain PART_IndeterminateRotate.");
+                Assert.IsTrue(rotate.HasAnimatedProperties,
+                    "Active indeterminate ProgressRing should animate the template rotate transform.");
 
                 Grid? dotHost = FindVisualChildByName<Grid>(ring, "DotHost");
                 Assert.IsNull(dotHost, "Default ProgressRing template should no longer use the legacy orbit-dot host.");
@@ -444,36 +454,39 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public void ProgressRing_IndeterminateAnimation_UsesAvaloniaKeyframes()
+        public void ProgressRing_IndeterminateAnimation_UsesArcPulseAndRotationModel()
         {
             WpfTestSta.Invoke(() =>
             {
-                DoubleAnimationUsingKeyFrames start = InvokePrivateAnimationFactory("CreateIndeterminateStartAnimation");
-                DoubleAnimationUsingKeyFrames sweep = InvokePrivateAnimationFactory("CreateIndeterminateSweepAnimation");
+                DoubleAnimationUsingKeyFrames sweep =
+                    InvokePrivateAnimationFactory<DoubleAnimationUsingKeyFrames>("CreateIndeterminateSweepAnimation");
+                DoubleAnimation rotation =
+                    InvokePrivateAnimationFactory<DoubleAnimation>("CreateIndeterminateRotationAnimation");
 
-                Assert.AreEqual(TimeSpan.FromMilliseconds(4000), start.Duration.TimeSpan,
-                    "Indeterminate start animation should use the configured 4 second cadence.");
-                Assert.AreEqual(TimeSpan.FromMilliseconds(4000), sweep.Duration.TimeSpan,
-                    "Indeterminate sweep animation should use the configured 4 second cadence.");
-                Assert.AreEqual(RepeatBehavior.Forever, start.RepeatBehavior);
+                // Arc-length pulse: sweep fraction 0 -> 0.5 -> 0 over a 2 second linear
+                // cycle; percents 0 / 0.5 / 1.0 of the 2000 ms duration are 0 s / 1 s / 2 s.
+                Assert.AreEqual(TimeSpan.FromMilliseconds(2000), sweep.Duration.TimeSpan,
+                    "Indeterminate sweep-fraction animation should use the 2 second WinUI cadence.");
                 Assert.AreEqual(RepeatBehavior.Forever, sweep.RepeatBehavior);
-
-                AssertKeyFrames(start,
-                [
-                    -720.0, -540.0, -360.0, -180.0, 0.0, 180.0, 360.0, 540.0, 720.0
-                ]);
                 AssertKeyFrames(sweep,
                 [
-                    0.0, 50.0, 100.0, 50.0, 5.0, 50.0, 100.0, 50.0, 0.0
-                ]);
-                AssertKeyFramePercents(start,
-                [
-                    0.0, 0.125, 0.25, 0.325, 0.5, 0.625, 0.75, 0.875, 1.0
+                    0.0, 0.5, 0.0
                 ]);
                 AssertKeyFramePercents(sweep,
                 [
-                    0.0, 0.125, 0.25, 0.325, 0.5, 0.625, 0.75, 0.875, 1.0
+                    0.0, 0.5, 1.0
                 ]);
+
+                // Rotation: the template transform spins 90 -> 1170 degrees (three full
+                // turns) per 2 second cycle with no easing.
+                Assert.AreEqual(TimeSpan.FromMilliseconds(2000), rotation.Duration.TimeSpan,
+                    "Indeterminate rotation animation should use the 2 second WinUI cadence.");
+                Assert.AreEqual(RepeatBehavior.Forever, rotation.RepeatBehavior);
+                Assert.IsNotNull(rotation.From, "Rotation animation must declare an explicit From angle.");
+                Assert.AreEqual(90.0, rotation.From.Value, 0.001, "Rotation must start at 90 degrees.");
+                Assert.IsNotNull(rotation.To, "Rotation animation must declare an explicit To angle.");
+                Assert.AreEqual(1170.0, rotation.To.Value, 0.001, "Rotation must end at 1170 degrees.");
+                Assert.IsNull(rotation.EasingFunction, "Rotation must be linear (no easing function).");
             });
         }
 
@@ -516,10 +529,15 @@ namespace Fluence.Wpf.Tests
                     "Paused ProgressRing should not animate the arc shape.");
                 Assert.AreEqual(initialBounds.Height, laterBounds.Height, 0.01,
                     "Paused ProgressRing should not animate the arc shape.");
-                AssertDependencyPropertyNotAnimated(ring, "IndeterminateStartAngleProperty",
-                    "Paused ProgressRing should not have an active start-angle animation clock.");
-                AssertDependencyPropertyNotAnimated(ring, "IndeterminateSweepAngleProperty",
-                    "Paused ProgressRing should not have an active sweep-angle animation clock.");
+                AssertDependencyPropertyNotAnimated(ring, "IndeterminateSweepFractionProperty",
+                    "Paused ProgressRing should not have an active sweep-fraction animation clock.");
+
+                RotateTransform? rotate = GetIndeterminateRotateTransform(ring);
+                Assert.IsNotNull(rotate, "ProgressRing template must contain PART_IndeterminateRotate.");
+                Assert.IsFalse(rotate.HasAnimatedProperties,
+                    "Paused ProgressRing must not run the rotation animation.");
+                Assert.AreEqual(90.0, rotate.Angle, 0.01,
+                    "Paused ProgressRing should park the rotate transform at its 90 degree reset angle.");
 
                 w.Close();
             });
@@ -565,6 +583,151 @@ namespace Fluence.Wpf.Tests
             });
         }
 
+        // ──────────────────────────────────────────────────────────────────────
+        // Orthogonal ShowError / ShowPaused flags + ProgressState alias
+        // ──────────────────────────────────────────────────────────────────────
+
+        [TestMethod]
+        public void ProgressRing_ShowError_ColorsArcsWithCriticalBrush()
+        {
+            WpfTestSta.Invoke(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ProgressRing ring = new()
+                {
+                    ShowError = true,
+                    IsActive = true,
+                    IsIndeterminate = true,
+                    Width = 64,
+                    Height = 64
+                };
+                Window w = new() { Content = ring, Width = 200, Height = 200 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.AreEqual(ProgressRingState.Normal, ring.ProgressState,
+                    "Setting ShowError directly must not mutate the legacy ProgressState alias.");
+
+                SolidColorBrush? expected = app?.TryFindResource("SystemFillColorCriticalBrush") as SolidColorBrush;
+                Assert.IsNotNull(expected, "SystemFillColorCriticalBrush must resolve.");
+
+                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                AssertPathStroke(indeterminateArc, expected, "ShowError indeterminate arc should use the critical brush.");
+
+                RotateTransform? rotate = GetIndeterminateRotateTransform(ring);
+                Assert.IsNotNull(rotate, "ProgressRing template must contain PART_IndeterminateRotate.");
+                Assert.IsTrue(rotate.HasAnimatedProperties,
+                    "ShowError should keep the indeterminate arc spinning.");
+
+                ring.IsIndeterminate = false;
+                ring.Value = 50;
+                DrainDispatcher(w.Dispatcher);
+
+                Path? determinateArc = FindVisualChildByName<Path>(ring, "PART_DeterminateArc");
+                AssertPathStroke(determinateArc, expected, "ShowError determinate arc should use the critical brush.");
+
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void ProgressRing_ShowPaused_RendersStaticCautionHalfArc()
+        {
+            WpfTestSta.Invoke(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ProgressRing ring = new()
+                {
+                    ShowPaused = true,
+                    IsActive = true,
+                    IsIndeterminate = true,
+                    Width = 64,
+                    Height = 64
+                };
+                Window w = new() { Content = ring, Width = 200, Height = 200 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.AreEqual(ProgressRingState.Normal, ring.ProgressState,
+                    "Setting ShowPaused directly must not mutate the legacy ProgressState alias.");
+
+                SolidColorBrush? expected = app?.TryFindResource("SystemFillColorCautionBrush") as SolidColorBrush;
+                Assert.IsNotNull(expected, "SystemFillColorCautionBrush must resolve.");
+
+                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                AssertPathStroke(indeterminateArc, expected, "ShowPaused indeterminate arc should use the caution brush.");
+                Assert.IsNotNull(indeterminateArc?.Data, "ShowPaused indeterminate ProgressRing should render a static arc.");
+
+                double sweepFraction = GetPrivateDoubleDependencyPropertyValue(ring, "IndeterminateSweepFractionProperty");
+                Assert.AreEqual(0.5, sweepFraction, 0.001,
+                    "ShowPaused should render the static half-arc (sweep fraction 0.5 -> 180 degrees).");
+                AssertDependencyPropertyNotAnimated(ring, "IndeterminateSweepFractionProperty",
+                    "ShowPaused must not run the sweep-fraction animation.");
+
+                RotateTransform? rotate = GetIndeterminateRotateTransform(ring);
+                Assert.IsNotNull(rotate, "ProgressRing template must contain PART_IndeterminateRotate.");
+                Assert.IsFalse(rotate.HasAnimatedProperties,
+                    "ShowPaused must not rotate the indeterminate arc.");
+                Assert.AreEqual(90.0, rotate.Angle, 0.01,
+                    "ShowPaused should park the rotate transform at its 90 degree reset angle.");
+
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void ProgressRing_ProgressStateAlias_MapsOntoStateFlags()
+        {
+            WpfTestSta.Invoke(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ProgressRing ring = new()
+                {
+                    IsActive = true,
+                    IsIndeterminate = true,
+                    Width = 64,
+                    Height = 64
+                };
+                Window w = new() { Content = ring, Width = 200, Height = 200 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                ring.ProgressState = ProgressRingState.Error;
+                DrainDispatcher(w.Dispatcher);
+                Assert.IsTrue(ring.ShowError, "ProgressState=Error must set ShowError.");
+                Assert.IsFalse(ring.ShowPaused, "ProgressState=Error must clear ShowPaused.");
+
+                SolidColorBrush? critical = app?.TryFindResource("SystemFillColorCriticalBrush") as SolidColorBrush;
+                Assert.IsNotNull(critical, "SystemFillColorCriticalBrush must resolve.");
+                Path? indeterminateArc = FindVisualChildByName<Path>(ring, "PART_IndeterminateArc");
+                AssertPathStroke(indeterminateArc, critical,
+                    "ProgressState=Error alias should still color the arc with the critical brush.");
+
+                ring.ProgressState = ProgressRingState.Paused;
+                DrainDispatcher(w.Dispatcher);
+                Assert.IsTrue(ring.ShowPaused, "ProgressState=Paused must set ShowPaused.");
+                Assert.IsFalse(ring.ShowError, "ProgressState=Paused must clear ShowError.");
+
+                ring.ProgressState = ProgressRingState.Normal;
+                DrainDispatcher(w.Dispatcher);
+                Assert.IsFalse(ring.ShowPaused, "ProgressState=Normal must clear ShowPaused.");
+                Assert.IsFalse(ring.ShowError, "ProgressState=Normal must clear ShowError.");
+
+                SolidColorBrush? accent = app?.TryFindResource("AccentFillColorDefaultBrush") as SolidColorBrush;
+                Assert.IsNotNull(accent, "AccentFillColorDefaultBrush must resolve.");
+                AssertPathStroke(indeterminateArc, accent,
+                    "Returning to ProgressState=Normal should restore the accent stroke.");
+
+                w.Close();
+            });
+        }
+
         [TestMethod]
         public void ProgressRing_ThemeCycle_TemplateRemainsApplied()
         {
@@ -596,22 +759,39 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(expected.Color, actual.Color, message);
         }
 
-        private static DoubleAnimationUsingKeyFrames InvokePrivateAnimationFactory(string methodName)
+        private static T InvokePrivateAnimationFactory<T>(string methodName)
+            where T : AnimationTimeline
         {
             MethodInfo? method = typeof(ProgressRing).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
             Assert.IsNotNull(method, "ProgressRing should expose private factory: " + methodName);
-            DoubleAnimationUsingKeyFrames? animation = method.Invoke(null, null) as DoubleAnimationUsingKeyFrames;
-            Assert.IsNotNull(animation, methodName + " should return keyframe animation.");
+            T? animation = method.Invoke(null, null) as T;
+            Assert.IsNotNull(animation, methodName + " should return " + typeof(T).Name + ".");
             return animation;
         }
 
-        private static void AssertDependencyPropertyNotAnimated(ProgressRing ring, string fieldName, string message)
+        private static RotateTransform? GetIndeterminateRotateTransform(ProgressRing ring)
+        {
+            return ring.Template?.FindName("PART_IndeterminateRotate", ring) as RotateTransform;
+        }
+
+        private static DependencyProperty GetPrivateDependencyProperty(string fieldName)
         {
             FieldInfo? field = typeof(ProgressRing).GetField(fieldName, BindingFlags.Static | BindingFlags.NonPublic);
             Assert.IsNotNull(field, "ProgressRing should expose private dependency property field: " + fieldName);
             DependencyProperty? property = field.GetValue(null) as DependencyProperty;
             Assert.IsNotNull(property, fieldName + " should be a dependency property.");
+            return property;
+        }
 
+        private static double GetPrivateDoubleDependencyPropertyValue(ProgressRing ring, string fieldName)
+        {
+            DependencyProperty property = GetPrivateDependencyProperty(fieldName);
+            return (double)ring.GetValue(property);
+        }
+
+        private static void AssertDependencyPropertyNotAnimated(ProgressRing ring, string fieldName, string message)
+        {
+            DependencyProperty property = GetPrivateDependencyProperty(fieldName);
             double currentValue = (double)ring.GetValue(property);
             double baseValue = (double)ring.GetAnimationBaseValue(property);
             Assert.AreEqual(baseValue, currentValue, 0.01, message);

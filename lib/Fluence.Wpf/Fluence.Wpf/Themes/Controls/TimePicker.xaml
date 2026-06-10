@@ -1,0 +1,270 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Fluence.Wpf.Controls">
+
+    <!--
+        Fluent Design TimePicker style.
+        Authority: WinUI 3 TimePicker_themeresources.xaml (button field split into
+        hour/minute/AM-PM segments with thin dividers, and a flyout of selector columns
+        over an accept/dismiss button row; equal column weights).
+        The field reuses the Fluence Button visuals (ControlFillColorDefaultBrush +
+        ControlElevationBorderBrush); the flyout surface reuses the canonical flyout tokens
+        from FlyoutPresenter.xaml: SolidBackgroundFillColorTertiaryBrush +
+        SurfaceStrokeColorFlyoutBrush + OverlayCornerRadius.
+        The selector columns are plain scrollable Fluence ListBoxes; WinUI's infinitely
+        looping selectors are a deliberate v1 omission (see TimePicker.cs).
+        Segment texts and column population are managed by TimePicker code-behind through
+        the named optional elements below; the AM/PM segment, its divider, and the AM/PM
+        selector column collapse through the 24HourClock trigger.
+        No DropShadowEffect on the Border - WPF bitmap effects on a Border with CornerRadius
+        produce artifacts in a Popup (see DropDownButton.xaml).
+    -->
+
+    <DataTemplate x:Key="TimePickerColumnItemTemplate">
+        <TextBlock HorizontalAlignment="Center" Text="{Binding}" />
+    </DataTemplate>
+
+    <Style TargetType="{x:Type controls:TimePicker}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FluentFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <!--
+            IsTabStop=False: the outer TimePicker shell must not be a tab stop. Keyboard
+            focus belongs to PART_FlyoutButton (the field) and the flyout buttons. See
+            DatePicker.xaml for the same pattern and rationale.
+        -->
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="MinWidth" Value="242" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:TimePicker}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Header  -->
+                        <ContentPresenter
+                            x:Name="HeaderPresenter"
+                            Grid.Row="0"
+                            Margin="0,0,0,8"
+                            Content="{TemplateBinding Header}"
+                            TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                            TextBlock.FontSize="{TemplateBinding FontSize}"
+                            TextBlock.Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+
+                        <!--  Field: a button-styled row of hour, minute, and AM/PM segments  -->
+                        <controls:Button
+                            x:Name="PART_FlyoutButton"
+                            Grid.Row="1"
+                            MinWidth="0"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
+                            Foreground="{TemplateBinding Foreground}">
+                            <Grid>
+                                <Grid x:Name="SegmentsHost">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="78*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="78*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition x:Name="PeriodSegmentColumn" Width="78*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        x:Name="HourSegmentText"
+                                        Grid.Column="0"
+                                        Margin="12,5,12,6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                    <Border
+                                        x:Name="FirstDivider"
+                                        Grid.Column="1"
+                                        Width="1"
+                                        Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                                    <TextBlock
+                                        x:Name="MinuteSegmentText"
+                                        Grid.Column="2"
+                                        Margin="12,5,12,6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                    <Border
+                                        x:Name="SecondDivider"
+                                        Grid.Column="3"
+                                        Width="1"
+                                        Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                                    <TextBlock
+                                        x:Name="PeriodSegmentText"
+                                        Grid.Column="4"
+                                        Margin="12,5,12,6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Grid>
+                                <TextBlock
+                                    x:Name="PlaceholderTextBlock"
+                                    Margin="12,5,12,6"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Text="{TemplateBinding PlaceholderText}"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                        </controls:Button>
+
+                        <!--  Selector flyout  -->
+                        <Popup
+                            x:Name="PART_Popup"
+                            AllowsTransparency="True"
+                            Focusable="False"
+                            Placement="Bottom"
+                            PlacementTarget="{Binding ElementName=PART_FlyoutButton}"
+                            PopupAnimation="None"
+                            StaysOpen="False">
+                            <Border
+                                x:Name="FlyoutSurface"
+                                MinWidth="{Binding ActualWidth, ElementName=PART_FlyoutButton}"
+                                Margin="0,4,0,0"
+                                Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
+                                BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{DynamicResource OverlayCornerRadius}"
+                                UseLayoutRounding="True">
+                                <Border.RenderTransform>
+                                    <TranslateTransform x:Name="FlyoutSurfaceTranslate" />
+                                </Border.RenderTransform>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid
+                                        x:Name="SelectorsGrid"
+                                        Grid.Row="0"
+                                        Height="272"
+                                        Margin="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="78*" />
+                                            <ColumnDefinition Width="78*" />
+                                            <ColumnDefinition x:Name="PeriodSelectorColumn" Width="78*" />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:ListBox
+                                            x:Name="PART_HourList"
+                                            Grid.Column="0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                        <controls:ListBox
+                                            x:Name="PART_MinuteList"
+                                            Grid.Column="1"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                        <controls:ListBox
+                                            x:Name="PART_PeriodList"
+                                            Grid.Column="2"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            ItemTemplate="{StaticResource TimePickerColumnItemTemplate}" />
+                                    </Grid>
+                                    <Border
+                                        Grid.Row="1"
+                                        Height="1"
+                                        Background="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                                    <Grid Grid.Row="2" Margin="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <controls:Button
+                                            x:Name="PART_AcceptButton"
+                                            Grid.Column="0"
+                                            MinWidth="0"
+                                            Margin="0,0,2,0"
+                                            HorizontalAlignment="Stretch">
+                                            <controls:FontIcon Glyph="&#xE73E;" IconFontSize="12" />
+                                        </controls:Button>
+                                        <controls:Button
+                                            x:Name="PART_CancelButton"
+                                            Grid.Column="1"
+                                            MinWidth="0"
+                                            Margin="2,0,0,0"
+                                            HorizontalAlignment="Stretch">
+                                            <controls:FontIcon Glyph="&#xE711;" IconFontSize="12" />
+                                        </controls:Button>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!--
+                            Flyout open reveal, ContextMenu.xaml submenu precedent: the surface
+                            slides down from Y=-8 to 0 (the popup is Placement=Bottom) with a fade
+                            0 to 1 over 167ms on the 0.8,0,0,1 spline (Typography.xaml motion
+                            tokens ControlFastAnimationDuration + ControlFastOutSlowInKeySpline;
+                            storyboard attributes need literal values). The popup keeps
+                            PopupAnimation=None so this storyboard owns the reveal.
+                        -->
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded" SourceName="FlyoutSurface">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FlyoutSurfaceTranslate" Storyboard.TargetProperty="Y">
+                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="-8" />
+                                        <SplineDoubleKeyFrame
+                                            KeySpline="0.8,0,0,1"
+                                            KeyTime="0:0:0.167"
+                                            Value="0" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="FlyoutSurface" Storyboard.TargetProperty="Opacity">
+                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                        <SplineDoubleKeyFrame
+                                            KeySpline="0.8,0,0,1"
+                                            KeyTime="0:0:0.167"
+                                            Value="1" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <Trigger Property="Header" Value="{x:Null}">
+                            <Setter TargetName="HeaderPresenter" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                        <Trigger Property="SelectedTime" Value="{x:Null}">
+                            <Setter TargetName="SegmentsHost" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="ClockIdentifier" Value="24HourClock">
+                            <Setter TargetName="PeriodSegmentText" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="SecondDivider" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PeriodSegmentColumn" Property="Width" Value="0" />
+                            <Setter TargetName="PART_PeriodList" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="PeriodSelectorColumn" Property="Width" Value="0" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                            <Setter TargetName="PlaceholderTextBlock" Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

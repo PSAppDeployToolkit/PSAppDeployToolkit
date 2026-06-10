@@ -153,7 +153,15 @@
                                 Grid.Column="0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Content="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" />
+                                Content="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}"
+                                TextElement.Foreground="{TemplateBinding Foreground}">
+                                <ContentPresenter.Resources>
+                                    <!--  Icon follows the item text (SplitButton precedent): the scoped implicit style outranks the FontIcon theme-style Foreground; a consumer's local Foreground still wins.  -->
+                                    <Style TargetType="{x:Type controls:FontIcon}">
+                                        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:NavigationViewItem}}}" />
+                                    </Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
                             <ContentPresenter
                                 x:Name="ContentPresenter"
                                 Grid.Column="2"

@@ -261,6 +261,19 @@
                             <AdornerDecorator x:Name="ContentArea" Grid.Row="1">
                                 <ContentPresenter />
                             </AdornerDecorator>
+
+                            <!--
+                                Modal dialog overlay host. Spans the whole window (title bar in
+                                Row 0 and content in Row 1) above all chrome so a ContentDialog
+                                can dim and block the entire window, title-bar content included,
+                                while open. Empty and inert (no Background, so hit-testing passes
+                                through) until a dialog is shown.
+                            -->
+                            <Grid
+                                x:Name="PART_DialogOverlayHost"
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Panel.ZIndex="10" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>

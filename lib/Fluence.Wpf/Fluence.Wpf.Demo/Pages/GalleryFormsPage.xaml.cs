@@ -49,7 +49,9 @@ namespace Fluence.Wpf.Demo.Pages
         <ui:PasswordBox
             Margin=""0,0,0,12""
             PlaceholderText=""Password""
-            RevealButtonEnabled=""True"" />
+            RevealButtonEnabled=""True""
+            ShowCapsLockIndicator=""True""
+            ShowPasswordStrength=""True"" />
         <ui:CheckBox
             Margin=""0,0,0,24""
             Content=""Remember me"" />
@@ -192,6 +194,39 @@ namespace Fluence.Wpf.Demo.Pages.Forms
 }
 ";
 
+        private const string DatePickerXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Forms.DueDateForm""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <ui:DatePicker
+        x:Name=""DueDatePicker""
+        Header=""Due date""
+        PlaceholderText=""Pick a date""
+        SelectedDateChanged=""DueDatePicker_SelectedDateChanged"" />
+</UserControl>
+";
+
+        private const string DatePickerCSharpSource = @"using System.Windows.Controls;
+using Fluence.Wpf;
+
+namespace Fluence.Wpf.Demo.Pages.Forms
+{
+    public partial class DueDateForm : UserControl
+    {
+        public DueDateForm()
+        {
+            InitializeComponent();
+        }
+
+        private void DueDatePicker_SelectedDateChanged(object sender, DatePickerSelectedValueChangedEventArgs e)
+        {
+            // e.NewDate carries the committed date (null when cleared).
+        }
+    }
+}
+";
+
         public GalleryFormsPage()
         {
             InitializeComponent();
@@ -200,9 +235,97 @@ namespace Fluence.Wpf.Demo.Pages.Forms
                 (DependencyObject)Content,
                 new DemoSampleSource(1, SignInFormXamlSource, SignInFormCSharpSource),
                 new DemoSampleSource(2, CheckoutFormXamlSource, CheckoutFormCSharpSource),
-                new DemoSampleSource(3, SettingsFormXamlSource, SettingsFormCSharpSource));
+                new DemoSampleSource(3, SettingsFormXamlSource, SettingsFormCSharpSource),
+                new DemoSampleSource(4, DatePickerXamlSource, DatePickerCSharpSource),
+                new DemoSampleSource(5, TimePickerXamlSource, TimePickerCSharpSource),
+                new DemoSampleSource(6, ColorPickerXamlSource, ColorPickerCSharpSource));
 
             Loaded += GalleryFormsPage_Loaded;
+        }
+
+        private const string TimePickerXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Forms.ReminderTimeForm""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <ui:TimePicker
+        x:Name=""ReminderTimePicker""
+        Header=""Reminder time""
+        MinuteIncrement=""5""
+        PlaceholderText=""Pick a time""
+        SelectedTimeChanged=""ReminderTimePicker_SelectedTimeChanged"" />
+</UserControl>
+";
+
+        private const string TimePickerCSharpSource = @"using System.Windows.Controls;
+using Fluence.Wpf;
+
+namespace Fluence.Wpf.Demo.Pages.Forms
+{
+    public partial class ReminderTimeForm : UserControl
+    {
+        public ReminderTimeForm()
+        {
+            InitializeComponent();
+        }
+
+        private void ReminderTimePicker_SelectedTimeChanged(object sender, TimePickerSelectedValueChangedEventArgs e)
+        {
+            // e.NewTime carries the committed time (null when cleared).
+        }
+    }
+}
+";
+
+        private const string ColorPickerXamlSource = @"<UserControl
+    x:Class=""Fluence.Wpf.Demo.Pages.Forms.AccentColorForm""
+    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
+    <ui:ColorPicker
+        x:Name=""AccentColorPicker""
+        ColorChanged=""AccentColorPicker_ColorChanged""
+        IsAlphaEnabled=""True"" />
+</UserControl>
+";
+
+        private const string ColorPickerCSharpSource = @"using System.Windows.Controls;
+using Fluence.Wpf;
+
+namespace Fluence.Wpf.Demo.Pages.Forms
+{
+    public partial class AccentColorForm : UserControl
+    {
+        public AccentColorForm()
+        {
+            InitializeComponent();
+        }
+
+        private void AccentColorPicker_ColorChanged(object sender, ColorPickerColorChangedEventArgs e)
+        {
+            // e.NewColor carries the picked color.
+        }
+    }
+}
+";
+
+        private void DemoColorPicker_ColorChanged(object sender, Fluence.Wpf.ColorPickerColorChangedEventArgs e)
+        {
+            ColorPickerResultLabel.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture, "Color: {0}", e.NewColor);
+        }
+
+        private void DemoTimePicker_SelectedTimeChanged(object sender, Fluence.Wpf.TimePickerSelectedValueChangedEventArgs e)
+        {
+            TimePickerResultLabel.Text = e.NewTime is System.TimeSpan newTime
+                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, "Selected: {0:t}", System.DateTime.Today.Add(newTime))
+                : "No time selected";
+        }
+
+        private void DemoDatePicker_SelectedDateChanged(object sender, Fluence.Wpf.DatePickerSelectedValueChangedEventArgs e)
+        {
+            DatePickerResultLabel.Text = e.NewDate is System.DateTime newDate
+                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, "Selected: {0:d}", newDate)
+                : "No date selected";
         }
 
         private void GalleryFormsPage_Loaded(object sender, RoutedEventArgs e)

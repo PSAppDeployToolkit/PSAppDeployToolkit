@@ -1,10 +1,3 @@
-﻿---
-title: Theming
-linkTitle: Theming
-description: Dictionary slots, canonical token families, accent ramps, backdrops, and high contrast in Fluence.Wpf.
-weight: 20
----
-
 Fluence.Wpf uses WinUI 3 naming and state behavior for theme resources, implemented as plain WPF. If you already work with WinUI keys, most token names and control roles will look familiar.
 
 ## Merge order (application resources)

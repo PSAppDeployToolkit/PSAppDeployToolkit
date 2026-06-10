@@ -1,10 +1,3 @@
-﻿---
-title: Contributing
-linkTitle: Contributing
-description: Build matrix, test policy, and PR conventions for Fluence.Wpf contributors.
-weight: 50
----
-
 ## Build and test
 
 ```powershell

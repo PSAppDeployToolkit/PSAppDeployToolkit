@@ -20,7 +20,6 @@
                 <StackPanel>
                     <ui:ProgressBar
                         x:Name="StandardProgressBar"
-                        Height="8"
                         Margin="{DynamicResource DemoProgressBarMargin}"
                         HorizontalAlignment="Stretch"
                         Maximum="100"
@@ -38,13 +37,12 @@
                                 Style="{StaticResource StateLabelStyle}"
                                 Text="Paused" />
                             <ui:ProgressBar
-                                Height="8"
                                 Margin="{DynamicResource DemoProgressBarLabelMargin}"
                                 HorizontalAlignment="Stretch"
                                 Maximum="100"
                                 Minimum="0"
                                 ProgressMode="Paused"
-                                Value="80" />
+                                Value="100" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock
@@ -52,13 +50,12 @@
                                 Style="{StaticResource StateLabelStyle}"
                                 Text="Failure" />
                             <ui:ProgressBar
-                                Height="8"
                                 Margin="{DynamicResource DemoProgressBarLabelMargin}"
                                 HorizontalAlignment="Stretch"
                                 Maximum="100"
                                 Minimum="0"
                                 ProgressMode="Error"
-                                Value="80" />
+                                Value="100" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
@@ -74,7 +71,7 @@
                     Minimum="0"
                     SmallChange="1"
                     SpinButtonPlacementMode="{x:Static uicore:SpinButtonPlacementMode.Inline}"
-                    Value="50" />
+                    Value="25" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use ProgressBar for measurable work where the current value can be reported." />
 
@@ -82,7 +79,6 @@
             <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
                 <ui:ProgressBar
                     x:Name="IndeterminateProgressBar"
-                    Height="8"
                     Margin="{DynamicResource DemoProgressBarMargin}"
                     HorizontalAlignment="Stretch"
                     ProgressMode="Indeterminate" />
