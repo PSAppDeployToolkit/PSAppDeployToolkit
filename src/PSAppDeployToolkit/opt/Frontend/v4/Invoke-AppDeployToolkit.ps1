@@ -32,15 +32,6 @@ Invokes this script via our supplied executable.
 
 #>
 
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Pre-Install', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Install', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Post-Install', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Pre-Uninstall', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Uninstall', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Post-Uninstall', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Pre-Repair', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Repair', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'Post-Repair', Justification = 'This variable is accessed dynamically via Get-Variable and therefore cannot be seen by PSScriptAnalyzer.')]
 [CmdletBinding()]
 param
 (
@@ -80,7 +71,7 @@ $adtSession = @{
 }
 
 ## MARK: Pre-Install
-${Pre-Install} = {
+New-Variable -Name Pre-Install -Value {
     $saiwParams = @{
         AllowDefer = $true
         DeferTimes = 3
@@ -96,16 +87,16 @@ ${Pre-Install} = {
 }
 
 ## MARK: Install
-${Install} = {
+New-Variable -Name Install -Value {
 }
 
 ## MARK: Post-Install
-${Post-Install} = {
+New-Variable -Name Post-Install -Value {
     Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) complete." -ButtonRightText 'OK' -NoWait
 }
 
 ## MARK: Pre-Uninstall
-${Pre-Uninstall} = {
+New-Variable -Name Pre-Uninstall -Value {
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
         Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
@@ -114,15 +105,15 @@ ${Pre-Uninstall} = {
 }
 
 ## MARK: Uninstall
-${Uninstall} = {
+New-Variable -Name Uninstall -Value {
 }
 
 ## MARK: Post-Uninstall
-${Post-Uninstall} = {
+New-Variable -Name Post-Uninstall -Value {
 }
 
 ## MARK: Pre-Repair
-${Pre-Repair} = {
+New-Variable -Name Pre-Repair -Value {
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
         Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
@@ -131,11 +122,11 @@ ${Pre-Repair} = {
 }
 
 ## MARK: Repair
-${Repair} = {
+New-Variable -Name Repair -Value {
 }
 
 ## MARK: Post-Repair
-${Post-Repair} = {
+New-Variable -Name Post-Repair -Value {
     Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) complete." -ButtonRightText 'OK' -NoWait
 }
 
