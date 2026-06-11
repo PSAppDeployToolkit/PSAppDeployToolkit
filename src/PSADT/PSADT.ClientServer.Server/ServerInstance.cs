@@ -34,6 +34,7 @@ namespace PSADT.ClientServer
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication
         /// infrastructure using anonymous pipes.
         /// </summary>
+        /// <param name="runAsActiveUser">Specifies whether the server instance should run as the active user.</param>
         /// <remarks>This constructor creates the instance with the specified user session information.
         /// All communication infrastructure (pipes, encryption, cancellation tokens) is initialized inline.
         /// Call <see cref="OpenAsync"/> to start the client process and begin communication.</remarks>
@@ -48,8 +49,8 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method launches the client process, performs key exchange for encrypted communication,
         /// and ensures that the client process is ready to receive commands before returning.</remarks>
-        /// <exception cref="ObjectDisposedException">Thrown if the instance has been disposed.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the server instance already has an associated client process.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the opened client process returns an invalid response.</exception>
         /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
         public async Task OpenAsync()
         {
@@ -130,6 +131,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Prompts the user to close any running applications that may interfere with the installation process.
         /// </summary>
+        /// <param name="promptToCloseTimeout">The timeout duration for the prompt to close applications.</param>
         /// <remarks>This method invokes a prompt to the user and returns their response. Ensure that the
         /// environment allows user interaction before calling this method.</remarks>
         /// <returns><see langword="true"/> if the user agrees to close the applications; otherwise, <see langword="false"/>.</returns>
@@ -658,7 +660,7 @@ namespace PSADT.ClientServer
         /// <typeparam name="TResult">The expected return type from the client.</typeparam>
         /// <param name="command">The command to execute.</param>
         /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
-        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private TResult Invoke<TResult>(PipeCommand command)
         {
@@ -681,7 +683,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method sends the command and payload to the client, reads the response,
         /// and returns the strongly-typed result. The request format is: [1-byte command][serialized payload].
         /// The response format uses a single byte discriminator:
-        /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or 
+        /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or
         /// <see cref="ResponseMarker.Error"/> (followed by serialized exception).</remarks>
         /// <typeparam name="TPayload">The payload type, which must implement <see cref="IClientServerPayload"/>.</typeparam>
         /// <typeparam name="TResult">The expected return type from the client.</typeparam>
@@ -714,7 +716,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <typeparam name="T">The expected return type from the client.</typeparam>
         /// <returns>The result from the client, deserialized to type <typeparamref name="T"/>.</returns>
-        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the client process returns an invalid or empty response.</exception>
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private T ReadResponse<T>()
         {
@@ -744,6 +746,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method reads each line from the log stream until the end of the stream is
         /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
+        /// <exception cref="ServerException">Thrown when an error occurs while reading from the log stream.</exception>
         private void ReadLog()
         {
             // Read the log stream until cancellation is requested or the end of the stream is reached.

@@ -169,6 +169,9 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Parses a key name into a virtual key code.
         /// </summary>
+        /// <param name="keyName">The name of the key to parse.</param>
+        /// <returns>The virtual key code corresponding to the key name.</returns>
+        /// <exception cref="ArgumentException">Thrown when the key name is not recognized.</exception>
         private static byte ParseKeyCode(string keyName)
         {
             // Single character (A-Z, 0-9).
@@ -299,6 +302,8 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets a human-readable name for a virtual key code.
         /// </summary>
+        /// <param name="keyCode">The virtual key code to get the name for.</param>
+        /// <returns>A string representing the name of the key corresponding to the given virtual key code. If the key code is not recognized, it returns a hexadecimal representation of the key code.</returns>
         private static string GetKeyName(byte keyCode)
         {
             return keyCode switch

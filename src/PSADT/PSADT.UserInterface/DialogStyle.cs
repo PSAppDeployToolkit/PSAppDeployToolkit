@@ -8,11 +8,11 @@
         /// <summary>
         /// Presents a dialog using the classic interface.
         /// </summary>
-        Classic,
+        Classic = 0,
 
         /// <summary>
         /// Presents a dialog using the fluent interface.
         /// </summary>
-        Fluent,
+        Fluent = 1,
     }
 }

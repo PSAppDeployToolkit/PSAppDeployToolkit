@@ -24,7 +24,7 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="arguments">The argument value to validate.</param>
         /// <param name="engineIntrinsics">Provides access to the PowerShell engine APIs.</param>
-        /// <exception cref="ValidationMetadataException">
+        /// <exception cref="ArgumentNullException">
         /// Thrown when <paramref name="arguments"/> is null, cannot be compared to zero, or is less than or equal to
         /// zero.
         /// </exception>
@@ -47,6 +47,7 @@ namespace PSAppDeployToolkit.Attributes
         /// Validates that each element in the specified collection is greater than zero.
         /// </summary>
         /// <param name="enumerator">The enumerator for the collection to validate.</param>
+        /// <exception cref="ArgumentNullException">Thrown when any element in the collection is null.</exception>
         private static void ValidateElements(IEnumerator enumerator)
         {
             while (enumerator.MoveNext())
@@ -64,6 +65,9 @@ namespace PSAppDeployToolkit.Attributes
         /// Validates that the specified argument is greater than zero.
         /// </summary>
         /// <param name="value">The argument value to validate.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the argument is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the argument type does not support greater-than-zero validation.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the argument is less than or equal to zero.</exception>
         private static void ValidateValue(object value)
         {
             value = GetBaseObject(value);

@@ -17,6 +17,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests basic argument parsing with simple cases.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program", new[] { "program" })]
         [InlineData("program arg1 arg2", new[] { "program", "arg1", "arg2" })]
@@ -33,6 +35,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests argument parsing with quoted strings.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"program\"", new[] { "program" })]
         [InlineData("\"program with spaces\"", new[] { "program with spaces" })]
@@ -51,6 +55,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests argument parsing with backslash escaping according to Windows rules.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program \\arg", new[] { "program", "\\arg" })]
         [InlineData("program \\\\arg", new[] { "program", "\\\\arg" })]
@@ -73,6 +79,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests complex cases that test the interaction between quotes and backslashes
         /// according to CommandLineToArgv() and msvcrt rules.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program \"a\\\\b\"", new[] { "program", "a\\\\b" })]
         [InlineData("program \"a\\\\\\\"b\"", new[] { "program", "a\\\"b" })]
@@ -92,6 +100,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests edge cases with empty arguments and special characters.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program \"\"", new[] { "program", "" })]
         [InlineData("program \"\" \"\"", new[] { "program", "", "" })]
@@ -120,6 +130,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests basic command line creation from arguments.
         /// </summary>
+        /// <param name="args">The list of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "program" }, "program")]
         [InlineData(new[] { "program", "arg1", "arg2" }, "program arg1 arg2")]
@@ -135,6 +147,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests command line creation with arguments that need quoting.
         /// </summary>
+        /// <param name="args">The list of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "program with spaces" }, "\"program with spaces\"")]
         [InlineData(new[] { "program", "arg with spaces" }, "program \"arg with spaces\"")]
@@ -152,6 +166,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests command line creation with arguments containing special characters.
         /// </summary>
+        /// <param name="args">The list of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "program", "arg\"with\"quotes" }, "program \"arg\\\"with\\\"quotes\"")]
         [InlineData(new[] { "program", "arg\\with\\backslashes" }, "program arg\\with\\backslashes")] // No quotes needed
@@ -243,6 +259,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests round-trip parsing: parsing a command line and then recreating it should yield equivalent results.
         /// </summary>
+        /// <param name="originalCommandLine">The original command line string to parse.</param>
         [Theory]
         [InlineData("program arg1 arg2")]
         [InlineData("\"program with spaces\" \"arg with spaces\"")]
@@ -292,6 +309,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests known cases that should match CommandLineToArgv() behavior exactly.
         /// These test cases are based on documented Windows behavior.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program a\\\\\\\"b c", new[] { "program", "a\\\"b", "c" })]
         [InlineData("program \"a\\\\\\\"b c\"", new[] { "program", "a\\\"b c" })]
@@ -311,6 +330,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests the CommandLineToArgvW-specific behavior where characters immediately
         /// following a closing quote are appended to the argument.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"ab\"c", new[] { "abc" })]
         [InlineData("\"a b\"c", new[] { "a bc" })]
@@ -330,6 +351,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that unquoted and quoted parts of a single argument are parsed as one.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("arg1\" part2\"arg3", new[] { "arg1 part2arg3" })]
         //[InlineData("arg1\" part2 \"arg3", new[] { "arg1 part2 ", "arg3" })]
@@ -346,6 +369,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests tab character handling (tabs should be treated as whitespace).
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program\targ1\targ2", new[] { "program", "arg1", "arg2" })]
         [InlineData("program\t\targ1", new[] { "program", "arg1" })]
@@ -388,6 +413,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests special Windows-specific cases that might appear in real-world scenarios.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" --config \"C:\\Users\\User\\Documents\\config.json\"",
                    new[] { "C:\\Program Files\\MyApp\\myapp.exe", "--config", "C:\\Users\\User\\Documents\\config.json" })]
@@ -406,6 +433,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests msvcrt-specific edge cases with backslashes at end of arguments.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program arg\\", new[] { "program", "arg\\" })]
         [InlineData("program arg\\\\", new[] { "program", "arg\\\\" })]
@@ -424,6 +453,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests advanced quote state transitions according to CommandLineToArgv behavior.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("a\"b c\"d", new[] { "ab cd" })]
         [InlineData("a\"\"b", new[] { "ab" })]
@@ -443,6 +474,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests various msvcrt pre-2008 vs post-2008 differences in backslash handling.
         /// These tests ensure the unified parser handles both standards correctly.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"a\\\\\\\\\\\"b\"", new[] { "a\\\\\"b" })] // 5 backslashes + quote -> 2 backslashes + literal quote
         [InlineData("\"a\\\\\\\\\\\\\"b\"", new[] { "a\\\\\\b" })] // 6 backslashes + quote -> 3 backslashes, quote is delimiter
@@ -460,6 +493,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests Windows-specific filename and path parsing scenarios.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"C:\\Program Files\\App\\app.exe\" /flag", new[] { "C:\\Program Files\\App\\app.exe", "/flag" })]
         [InlineData("C:\\path\\file.txt", new[] { "C:\\path\\file.txt" })]
@@ -478,6 +513,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests edge cases in ArgumentListToCommandLine escaping.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "arg ending with backslash\\" }, "\"arg ending with backslash\\\\\"")]
         [InlineData(new[] { "arg ending with quote\"" }, "\"arg ending with quote\\\"\"")]
@@ -495,6 +532,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests handling of unterminated quotes - quotes that are opened but never closed.
         /// In this case, the parser should continue to the end of the command line.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"a b c", new[] { "a b c" })]
         [InlineData("program \"unterminated arg", new[] { "program", "unterminated arg" })]
@@ -512,6 +551,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests MSVCRT-specific quote escaping using the double quote ("") method within quoted strings.
         /// This is a specific behavior of some Microsoft C Runtime implementations.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"a \"\" b\"", new[] { "a \" b" })]
         [InlineData("\"a \"\"\" b\"", new[] { "a \"", "b" })]  // Complex case: first "" becomes literal ", then third " ends quote
@@ -531,6 +572,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests explicit even backslash count handling before quotes in quoted arguments.
         /// Even number of backslashes before a quote means the backslashes are literal and the quote toggles quote mode.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"a\\\\\"b\"", new[] { "a\\b" })]
         [InlineData("\"a\\\\\\\\\"b\"", new[] { "a\\\\b" })]
@@ -548,6 +591,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests explicit odd backslash count handling before quotes in quoted arguments.
         /// Odd number of backslashes before a quote means the last backslash escapes the quote, making it literal.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"a\\\"b\"", new[] { "a\"b" })]
         [InlineData("\"a\\\\\\\"b\"", new[] { "a\\\"b" })]
@@ -565,6 +610,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests comprehensive ArgumentListToCommandLine scenarios with Windows path handling
         /// and trailing backslash edge cases that are common in real-world usage.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "C:\\Program Files\\App\\", "arg" }, "\"C:\\Program Files\\App\\\\\" arg")]
         [InlineData(new[] { "C:\\Path\\" }, "C:\\Path\\")]  // Fixed: No quotes needed for simple paths
@@ -623,6 +670,7 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests systematic round-trip conversion using MemberData for comprehensive coverage.
         /// This test ensures that arguments can be converted to command line and back without loss.
         /// </summary>
+        /// <param name="originalArgv">The original array of arguments to test.</param>
         [Theory]
         [MemberData(nameof(SystematicRoundTripTestData))]
         public void SystematicRoundTrip_ArgumentListToCommandLineAndBack_PreservesArguments(string[] originalArgv)
@@ -639,6 +687,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests systematic round-trip parsing starting from command line strings.
         /// This verifies that command lines parse correctly and can be reconstructed.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expectedArgv">The expected array of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("a b", new[] { "a", "b" })]
         [InlineData("\"a b\"", new[] { "a b" })]
@@ -675,6 +725,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests real-world UNC path scenarios that might be encountered in enterprise environments.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S /D=\"C:\\Program Files\\MyApp\"",
                    new[] { "\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe", "/S", "/D=C:\\Program Files\\MyApp" })]
@@ -694,6 +746,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests real-world UNC path scenarios that might be encountered in enterprise environments.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S /D=\"C:\\Program Files\\MyApp\"",
                    new[] { "\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe", "/S", "/D=\"C:\\Program Files\\MyApp\"" })]
@@ -712,6 +766,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests complex real-world scenarios that combine multiple edge cases.
         /// These scenarios are based on actual command lines that might be encountered in Windows environments.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"C:\\Program Files\\\\app.exe\" -arg \"value with \\\"quotes\\\"\"",
                    new[] { "C:\\Program Files\\\\app.exe", "-arg", "value with \"quotes\"" })]
@@ -734,6 +790,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests complex real-world scenarios that combine multiple edge cases.
         /// These scenarios are based on actual command lines that might be encountered in Windows environments.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("msiexec.exe /i \"C:\\Temp\\App Installer.msi\" /qn TARGETDIR=\"C:\\Program Files\\My App\\\"",
                    new[] { "msiexec.exe", "/i", "C:\\Temp\\App Installer.msi", "/qn", "TARGETDIR=\"C:\\Program Files\\My App\\\"" })]
@@ -750,6 +808,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests ArgumentListToCommandLine with complex real-world scenarios.
         /// These test the reverse operation to ensure proper escaping for complex arguments.
         /// </summary>
+        /// <param name="argv">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "C:\\Program Files\\app.exe", "-arg", "value with \"quotes\"" },
                    "\"C:\\Program Files\\app.exe\" -arg \"value with \\\"quotes\\\"\"")]
@@ -774,6 +834,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests backslashes not followed by quotes are treated as literal characters.
         /// This is an important distinction in Windows command line parsing.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("a\\\\b", new[] { "a\\\\b" })]
         [InlineData("a\\\\\\b", new[] { "a\\\\\\b" })]
@@ -792,6 +854,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests backslashes in quoted arguments where they're not followed by quotes.
         /// These should be treated as literal backslashes.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"a\\\\b\"", new[] { "a\\\\b" })]
         [InlineData("\"a\\\\\\b\"", new[] { "a\\\\\\b" })]
@@ -809,6 +873,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests trailing backslashes at the end of command line arguments.
         /// This is important for file path handling in Windows.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("a\\\\", new[] { "a\\\\" })]
         [InlineData("a\\\\\\", new[] { "a\\\\\\" })]
@@ -853,6 +919,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests comprehensive UNC path scenarios to ensure proper backslash handling and escaping.
         /// UNC paths are critical for Windows environments and present unique challenges for command line parsing.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\\\\server\\share", new[] { "\\\\server\\share" })]
         [InlineData("\\\\server\\share\\file.txt", new[] { "\\\\server\\share\\file.txt" })]
@@ -873,6 +941,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests UNC paths with spaces that require quoting.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"\\\\server name\\share name\"", new[] { "\\\\server name\\share name" })]
         [InlineData("\"\\\\server\\share with spaces\\file.txt\"", new[] { "\\\\server\\share with spaces\\file.txt" })]
@@ -891,6 +961,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests UNC paths with quotes in the path names (rare but possible).
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"\\\\server\\share\\file\"\"name.txt\"", new[] { "\\\\server\\share\\file\"name.txt" })]
         [InlineData("\"\\\\server\\share \"\"with quotes\"\"\\file.txt\"", new[] { "\\\\server\\share \"with quotes\"\\file.txt" })]
@@ -908,6 +980,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests ArgumentListToCommandLine with various UNC path scenarios.
         /// Ensures proper escaping for UNC paths when converting back to command lines.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "\\\\server\\share" }, "\\\\server\\share")]
         [InlineData(new[] { "\\\\server\\share\\file.txt" }, "\\\\server\\share\\file.txt")]
@@ -928,6 +1002,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests complex UNC path scenarios with multiple arguments and mixed path types.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("copy \"C:\\Local Folder\\\\\" \"\\\\server\\remote\\\\\" /E /Y",
                    new[] { "copy", "C:\\Local Folder\\", "\\\\server\\remote\\", "/E", "/Y" })]
@@ -947,6 +1023,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests ArgumentListToCommandLine with complex UNC scenarios to ensure proper escaping.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "copy", "C:\\local file.txt", "\\\\server\\share\\remote file.txt" },
                    "copy \"C:\\local file.txt\" \"\\\\server\\share\\remote file.txt\"")]
@@ -989,6 +1067,7 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests UNC path round-trip scenarios to ensure perfect preservation.
         /// These tests verify that UNC paths can be converted to command line and back without any loss.
         /// </summary>
+        /// <param name="originalArgs">The original array of arguments to convert to a command line string and back.</param>
         [Theory]
         [MemberData(nameof(UncPathRoundTripTestData))]
         public void UncPaths_RoundTripConversion_PreservesExactArguments(string[] originalArgs)
@@ -1004,6 +1083,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests UNC paths with edge cases involving backslashes at various positions.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"\\\\server\\share\\\\\"end", new[] { "\\\\server\\share\\end" })]
         [InlineData("\\\\server\\share\\\\file", new[] { "\\\\server\\share\\\\file" })]
@@ -1022,6 +1103,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests ArgumentListToCommandLine with UNC paths that have complex backslash patterns.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "\\\\server\\share\\", "end" }, "\\\\server\\share\\ end")]
         [InlineData(new[] { "\\\\server\\share\\\\file" }, "\\\\server\\share\\\\file")]
@@ -1041,6 +1124,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests ArgumentListToCommandLine with real-world UNC scenarios to verify proper escaping.
         /// Key=value arguments are preserved without quotes to support tools like NSIS.
         /// </summary>
+        /// <param name="argv">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from the conversion.</param>
         [Theory]
         [InlineData(new[] { "\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe", "/S", "/D=C:\\Program Files\\MyApp" },
                    "\"\\\\fileserver.domain.com\\shared\\IT\\Software\\Installers\\MyApp v2.1\\setup.exe\" /S /D=C:\\Program Files\\MyApp")]
@@ -1060,6 +1145,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests the new path detection functionality for unquoted paths with spaces.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag",
                    new[] { "C:\\Program Files\\MyApp\\myapp.exe", "/flag" })]
@@ -1083,6 +1170,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that path detection can be disabled and falls back to standard parsing.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("C:\\Program Files\\MyApp\\myapp.exe /flag",
                    new[] { "C:\\Program", "Files\\MyApp\\myapp.exe", "/flag" })]
@@ -1100,6 +1189,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that quoted paths are still handled correctly with path detection enabled.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"C:\\Program Files\\MyApp\\myapp.exe\" /flag",
                    new[] { "C:\\Program Files\\MyApp\\myapp.exe", "/flag" })]
@@ -1119,6 +1210,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests complex scenarios mixing quoted and unquoted paths.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("C:\\Program Files\\App\\app.exe \"C:\\Some Path\\config.txt\" /option",
                    new[] { "C:\\Program Files\\App\\app.exe", "C:\\Some Path\\config.txt", "/option" })]
@@ -1156,6 +1249,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests edge cases for path detection.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("C: /flag", new[] { "C:", "/flag" })] // Just a drive letter, not a path
         [InlineData("C:\\ /flag", new[] { "C:\\", "/flag" })] // Root directory
@@ -1173,6 +1268,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that non-path arguments starting with letters are not mistaken for paths.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("program argument1 argument2", new[] { "program", "argument1", "argument2" })]
         [InlineData("command option=value key=data", new[] { "command", "option=value", "key=data" })]
@@ -1189,6 +1286,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests UNC paths with path detection.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\\\\server\\share\\folder with spaces\\app.exe /option",
                    new[] { "\\\\server\\share\\folder with spaces\\app.exe", "/option" })]
@@ -1208,6 +1307,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests various executable extensions are properly detected as path endpoints.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("C:\\My App\\program.exe /flag", new[] { "C:\\My App\\program.exe", "/flag" })]
         [InlineData("D:\\Setup Files\\installer.msi /quiet", new[] { "D:\\Setup Files\\installer.msi", "/quiet" })]
@@ -1227,6 +1328,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that the new overload with detectUnquotedPaths=false behaves identically to the original method.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
         [Theory]
         [InlineData("program arg1 arg2")]
         [InlineData("\"program with spaces\" \"arg with spaces\"")]
@@ -1245,6 +1347,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests real-world installer command lines that commonly have unquoted paths.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("C:\\ProgramData\\Package Cache\\{guid}\\Microsoft Visual C++ 2019 Redistributable\\vc_redist.x64.exe /install /quiet /norestart",
                    new[] { "C:\\ProgramData\\Package Cache\\{guid}\\Microsoft Visual C++ 2019 Redistributable\\vc_redist.x64.exe", "/install", "/quiet", "/norestart" })]
@@ -1264,6 +1368,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests POSIX path conversion in quoted arguments.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"/C/Program Files/Sublime Text/plugin_host-3.3.exe\" 9112 \"/C/Program Files/Sublime Text/sublime_text.exe\" \\\\.\\pipe\\crashpad_9112_SGAHEOQJOQPLOLLL \"/C/Users/mjr40/AppData/Roaming/Sublime Text\" \"/C/Users/mjr40/AppData/Local/Sublime Text\" \"/C/Program Files/Sublime Text/Packages\"",
                    new[] { "C:\\Program Files\\Sublime Text\\plugin_host-3.3.exe", "9112", "C:\\Program Files\\Sublime Text\\sublime_text.exe", "\\\\.\\pipe\\crashpad_9112_SGAHEOQJOQPLOLLL", "C:\\Users\\mjr40\\AppData\\Roaming\\Sublime Text", "C:\\Users\\mjr40\\AppData\\Local\\Sublime Text", "C:\\Program Files\\Sublime Text\\Packages" })]
@@ -1283,6 +1389,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests POSIX path conversion with strict parsing (should not convert).
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"/C/Program Files/App/app.exe\"", new[] { "/C/Program Files/App/app.exe" })]
         [InlineData("/C/Windows/notepad.exe", new[] { "/C/Windows/notepad.exe" })]
@@ -1298,6 +1406,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that non-POSIX paths starting with slash are not converted.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/flag", new[] { "/flag" })]
         [InlineData("/option=value", new[] { "/option=value" })]
@@ -1318,6 +1428,8 @@ namespace PSADT.Tests.ProcessManagement
         /// command lines where arguments like "--user-data-dir=C:\path with spaces" are quoted
         /// as a whole.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("\"--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\"",
                    new[] { "--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data" })]
@@ -1346,7 +1458,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_ChromeStyleCommandLine_ParsedCorrectly()
         {
             // Arrange - Real Chrome crashpad handler command line
-            string commandLine = "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" " +
+            const string commandLine = "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" " +
                 "--type=crashpad-handler " +
                 "\"--user-data-dir=C:\\Users\\test\\AppData\\Local\\Google\\Chrome\\User Data\" " +
                 "/prefetch:4 " +
@@ -1386,6 +1498,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests that unquoted key=value arguments with quoted values are still parsed correctly.
         /// This ensures the fix for quoted whole arguments doesn't break the existing key="value" handling.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("--key=\"value with spaces\"",
                    new[] { "--key=\"value with spaces\"" })]
@@ -1409,6 +1523,8 @@ namespace PSADT.Tests.ProcessManagement
         /// NSIS explicitly requires: "It must be the last parameter used in the command line and must not
         /// contain any quotes, even if the path contains spaces."
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/D=C:\\Program Files\\NSIS",
                    new[] { "/D=C:\\Program Files\\NSIS" })]
@@ -1428,6 +1544,8 @@ namespace PSADT.Tests.ProcessManagement
         /// NSIS explicitly requires: "It must be the last parameter used in the command line and must not
         /// contain any quotes, even if the path contains spaces."
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
         [Theory]
         [InlineData(new[] { "C:\\Windows\\notepad.exe", "/D=C:\\Program Files\\NSIS" },
                    "C:\\Windows\\notepad.exe /D=C:\\Program Files\\NSIS")]
@@ -1448,6 +1566,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests that flag+path arguments (like 7-Zip's -sfx_o parameter) are escaped correctly.
         /// When a flag has a path attached without a space, only the path portion should be quoted.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
         [Theory]
         [InlineData(new[] { "-sfx_oC:\\Program Files\\Output" }, "-sfx_o\"C:\\Program Files\\Output\"")]
         [InlineData(new[] { "-sfx_oC:\\My Path\\file.exe" }, "-sfx_o\"C:\\My Path\\file.exe\"")]
@@ -1469,6 +1589,8 @@ namespace PSADT.Tests.ProcessManagement
         /// This handles the case where the caller passes an argument like -sfx_o"C:\Path\To\Output"
         /// with embedded quotes that should be preserved as-is.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
         [Theory]
         [InlineData(new[] { "-sfx_o\"C:\\Path\\To\\Output\"" }, "-sfx_o\"C:\\Path\\To\\Output\"")]
         [InlineData(new[] { "/D\"C:\\Program Files\\App\"" }, "/D\"C:\\Program Files\\App\"")]
@@ -1488,6 +1610,8 @@ namespace PSADT.Tests.ProcessManagement
         /// This is critical for tools like 7-Zip that require -sfx_o"path" format.
         /// In compatible mode, the quotes are preserved as part of the argument.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("-sfx_o\"C:\\Program Files\\Output\"", new[] { "-sfx_o\"C:\\Program Files\\Output\"" })]
         [InlineData("-sfx_o\"C:\\My Path\\file.exe\"", new[] { "-sfx_o\"C:\\My Path\\file.exe\"" })]
@@ -1512,7 +1636,7 @@ namespace PSADT.Tests.ProcessManagement
         public void FlagWithAttachedPath_RoundTrip_PreservesFormat()
         {
             // Arrange - Original command line with 7-Zip style flag+path
-            string original = "-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"";
+            const string original = "-sfx_o\"C:\\Program Files\\Adobe Acrobat Reader install\"";
 
             // Act - Parse to arguments
             IReadOnlyList<string> parsed = CommandLineUtilities.CommandLineToArgumentList(original);
@@ -1537,6 +1661,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that regular arguments starting with - or / are not incorrectly treated as flag+path.
         /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
         [Theory]
         [InlineData(new[] { "-flag" }, "-flag")]
         [InlineData(new[] { "/option" }, "/option")]
@@ -1559,7 +1685,7 @@ namespace PSADT.Tests.ProcessManagement
         public void ArgumentListToCommandLine_SevenZipScenario_EscapedCorrectly()
         {
             // Arrange - Test the specific flag+path argument
-            string sfxArg = "-sfx_oC:\\Program Files\\My App\\";
+            const string sfxArg = "-sfx_oC:\\Program Files\\My App\\";
             string[] testArgs = [sfxArg];
 
             // Act
@@ -1573,6 +1699,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests InstallShield-style /v"..." arguments where the quoted portion contains MSI properties.
         /// Issue 1: Simple properties without embedded flags.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"",
                    new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"" })]
@@ -1595,6 +1723,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests InstallShield-style /v"..." arguments where the quoted portion contains msiexec switches.
         /// Issue 2: Properties with embedded msiexec flags like /qb.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/s /v\"ALLUSERS=1 /qb\"",
                    new[] { "/s", "/v\"ALLUSERS=1 /qb\"" })]
@@ -1617,6 +1747,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests InstallShield-style /v"..." arguments with nested quotes for paths.
         /// Issue 3: Properties with embedded quoted paths like /log "C:\path\file.log".
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"\"C:\\Windows\\Logs\\logfile.log\"\"\"",
                    new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"\"C:\\Windows\\Logs\\logfile.log\"\"\"" })]
@@ -1635,6 +1767,8 @@ namespace PSADT.Tests.ProcessManagement
         /// Tests InstallShield-style /v"..." arguments with nested quotes using space-before-quote pattern.
         /// This pattern: /v"PROP=1 /log "C:\path"" where there's a space before the inner quote.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"C:\\Windows\\Logs\\logfile.log\"\"",
                    new[] { "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO /qn /log \"C:\\Windows\\Logs\\logfile.log\"\"" })]
@@ -1652,6 +1786,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests round-trip parsing for InstallShield-style arguments.
         /// </summary>
+        /// <param name="originalCommandLine">The original command line string to parse and recreate.</param>
         [Theory]
         [InlineData("/s /v\"ALLUSERS=1 INSTALLDIR=C:\\ZEDPRO\"")]
         [InlineData("/s /v\"ALLUSERS=1 /qb\"")]
@@ -1674,6 +1809,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests real-world InstallShield command lines.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("setup.exe /s /v\"ALLUSERS=1 INSTALLDIR=C:\\Program Files\\MyApp /qn\"",
                    new[] { "setup.exe", "/s", "/v\"ALLUSERS=1 INSTALLDIR=C:\\Program Files\\MyApp /qn\"" })]
@@ -1693,6 +1830,8 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests that regular arguments are not incorrectly matched as InstallShield patterns.
         /// </summary>
+        /// <param name="commandLine">The command line string to parse.</param>
+        /// <param name="expected">The expected list of arguments resulting from parsing the command line.</param>
         [Theory]
         [InlineData("/flag \"value with spaces\"", new[] { "/flag", "value with spaces" })]
         [InlineData("-option \"argument\"", new[] { "-option", "argument" })]

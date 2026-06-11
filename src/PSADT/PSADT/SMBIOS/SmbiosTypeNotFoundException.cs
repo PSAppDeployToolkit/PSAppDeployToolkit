@@ -29,6 +29,7 @@ namespace PSADT.SMBIOS
     /// <remarks>This exception is specifically used to indicate that a requested SMBIOS type does not exist
     /// in the current context.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors here are correct for our specific, internal requirements.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "The constructors here are correct for our specific, internal requirements.")]
     internal sealed class SmbiosTypeNotFoundException : ArgumentOutOfRangeException
     {
         /// <summary>

@@ -263,7 +263,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion Initialization
                 #region DetectDefaultWim
 
 
@@ -291,7 +291,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion DetectDefaultWim
                 #region DetectDefaultMsi
 
 
@@ -395,7 +395,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion DetectDefaultMsi
                 #region SetAppProperties
 
 
@@ -423,7 +423,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion SetAppProperties
                 #region SetInstallProperties
 
 
@@ -432,21 +432,21 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     InstallTitle = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor} " : null)}{AppName} {AppVersion}".Trim();
                 }
-                InstallTitle = Regex.Replace(InstallTitle, @"\s{2,}", string.Empty);
+                InstallTitle = DoubleSpaceRegex.Replace(InstallTitle, string.Empty);
 
                 // Build the Installation Name.
-                if (string.IsNullOrWhiteSpace(InstallName))
+                if (InstallName is null || string.IsNullOrWhiteSpace(InstallName))
                 {
                     InstallName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor}_" : null)}{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
                 }
-                InstallName = invalidChars.Replace(Regex.Replace(InstallName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
+                InstallName = invalidChars.Replace(DoubleUnderscoreRegex.Replace(InstallName.Trim('_').Replace(" ", null), "_"), string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
                 RegKeyDeferHistory = $@"{RegKeyDeferBase}\{InstallName}";
 
 
-                #endregion
+                #endregion SetInstallProperties
                 #region InitLogging
 
 
@@ -558,7 +558,7 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"[{InstallName}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())} started.");
 
 
-                #endregion
+                #endregion InitLogging
                 #region LogScriptInfo
 
 
@@ -618,7 +618,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion LogScriptInfo
                 #region LogSystemInfo
 
 
@@ -641,7 +641,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion LogSystemInfo
                 #region LogUserInfo
 
 
@@ -684,7 +684,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion LogUserInfo
                 #region LogLanguageInfo
 
 
@@ -699,7 +699,7 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"The following locale was used to import UI messages from the strings.psd1 files: [{adtData.Properties["Language"].Value}].");
 
 
-                #endregion
+                #endregion LogLanguageInfo
                 #region PerformConfigMgrTests
 
 
@@ -714,7 +714,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion PerformConfigMgrTests
                 #region SetDeploymentProperties
 
 
@@ -746,7 +746,7 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry("The WWAHost process is running, checking ESP User Account setup phase.");
                     if (runAsActiveUser?.SID is SecurityIdentifier userSid)
                     {
-                        if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == runAsActiveUser.SessionId) is not null)
+                        if (wwaHostProcesses.Any(p => p.SessionId == runAsActiveUser.SessionId))
                         {
                             PSObject? fsRegData = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
                             if (fsRegData is not null)
@@ -825,7 +825,7 @@ namespace PSAppDeployToolkit.Foundation
                             }
                             else
                             {
-                                WriteLogEntry($"Session 0 detected, no users logged on but process running in user interactive mode.");
+                                WriteLogEntry("Session 0 detected, no users logged on but process running in user interactive mode.");
                             }
                         }
                         else
@@ -900,7 +900,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else
                 {
-                    WriteLogEntry($"No processes were specified as requiring closure, not adjusting DeployMode as DeployAppScriptVersion is less than [4.2.0].");
+                    WriteLogEntry("No processes were specified as requiring closure, not adjusting DeployMode as DeployAppScriptVersion is less than [4.2.0].");
                 }
 
                 // If we're still in Auto mode, then set the deployment mode to Interactive.
@@ -925,14 +925,14 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"Deployment type is [{DeploymentType}].");
 
 
-                #endregion
+                #endregion SetDeploymentProperties
                 #region TestSessionViability
 
 
                 // Check current permissions and exit if not running with Administrator rights.
                 if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
                 {
-                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
+                    throw new UnauthorizedAccessException("This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
                 }
 
                 // Throw if the process is 32-bit on a 64-bit OS.
@@ -944,11 +944,11 @@ namespace PSAppDeployToolkit.Foundation
                 // Check if the caller explicitly wants interactivity but we can't do it.
                 if (DeployMode != DeployMode.Silent && runAsActiveUser is null && !isProcessUserInteractive)
                 {
-                    throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
+                    throw new NotSupportedException("This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
 
 
-                #endregion
+                #endregion TestSessionViability
                 #region Finalization
 
 
@@ -984,7 +984,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion Finalization
             }
             catch (Exception ex) when (ex.Message is not null)
             {
@@ -997,7 +997,7 @@ namespace PSAppDeployToolkit.Foundation
         }
 
 
-        #endregion
+        #endregion Constructors.
         #region Public methods.
 
 
@@ -1005,8 +1005,10 @@ namespace PSAppDeployToolkit.Foundation
         /// Closes the session and releases resources.
         /// </summary>
         /// <returns>The exit code.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         public int Close()
         {
             // Throw if this object has already been disposed.
@@ -1025,7 +1027,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallNameFormatterRegex.Replace(InstallName, "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
@@ -1242,8 +1244,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Sets the deferral history.
         /// </summary>
-        /// <param name="deferDeadline">The deferral deadline.</param>
         /// <param name="deferTimesRemaining">The deferral times remaining.</param>
+        /// <param name="deferDeadline">The deferral deadline.</param>
         /// <param name="deferRunInterval">The interval as a TimeSpan before prompting the user again after a deferral.</param>
         /// <param name="deferRunIntervalLastTime">The timestamp of the last deferRunInterval.</param>
         public void SetDeferHistory(uint? deferTimesRemaining, DateTime? deferDeadline, TimeSpan? deferRunInterval, DateTime? deferRunIntervalLastTime)
@@ -1383,7 +1385,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Add the mounted WIM files.
         /// </summary>
-        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
+        /// <param name="wimFile">The WIM file to add to the list for dismounting upon session closure.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMountedWimFile(FileInfo wimFile)
         {
@@ -1391,7 +1393,7 @@ namespace PSAppDeployToolkit.Foundation
         }
 
 
-        #endregion
+        #endregion Public methods.
         #region Private methods.
 
 
@@ -1407,6 +1409,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Writes a divider if one hasn't been written already.
         /// </summary>
+        /// <param name="written">A reference to a boolean indicating whether a divider has already been written.</param>
         private void WriteInitialDivider(ref bool written)
         {
             if (written)
@@ -1477,7 +1480,7 @@ namespace PSAppDeployToolkit.Foundation
         /// are complete.</remarks>
         private void DismountWimFiles()
         {
-            if (MountedWimFiles.Count <= 0)
+            if (MountedWimFiles.Count == 0)
             {
                 return;
             }
@@ -1531,7 +1534,7 @@ namespace PSAppDeployToolkit.Foundation
         }
 
 
-        #endregion
+        #endregion Private methods.
         #region Public properties.
 
 
@@ -1726,7 +1729,7 @@ namespace PSAppDeployToolkit.Foundation
         public string InstallPhase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); } = "Initialization";
 
 
-        #endregion
+        #endregion Public properties.
         #region Private fields.
 
 
@@ -1813,9 +1816,24 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new(@"Z:"), new(@"Y:"), new(@"X:"), new(@"W:"), new(@"V:"), new(@"U:"), new(@"T:"), new(@"S:"), new(@"R:"), new(@"Q:"), new(@"P:"), new(@"O:"), new(@"N:"), new(@"M:"), new(@"L:"), new(@"K:"), new(@"J:"), new(@"I:"), new(@"H:"), new(@"G:"), new(@"F:"), new(@"E:"), new(@"D:"), new(@"C:"), new(@"B:"), new(@"A:")]);
+        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new("Z:"), new("Y:"), new("X:"), new("W:"), new("V:"), new("U:"), new("T:"), new("S:"), new("R:"), new("Q:"), new("P:"), new("O:"), new("N:"), new("M:"), new("L:"), new("K:"), new("J:"), new("I:"), new("H:"), new("G:"), new("F:"), new("E:"), new("D:"), new("C:"), new("B:"), new("A:")]);
+
+        /// <summary>
+        /// A regular expression used to replace multiple consecutive whitespace characters with a single space. This is useful for normalizing log messages and other strings that may contain irregular spacing, ensuring consistent formatting in the output.
+        /// </summary>
+        private static readonly Regex DoubleSpaceRegex = new(@"\s{2,}", RegexOptions.Compiled);
+
+        /// <summary>
+        /// A regular expression used to replace multiple consecutive underscore characters with a single underscore. This can be helpful for normalizing strings that may contain multiple underscores, such as file names or identifiers, ensuring consistent formatting in the output.
+        /// </summary>
+        private static readonly Regex DoubleUnderscoreRegex = new("_+", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Formats the InstallName property when closing out of the active DeploymentSession.
+        /// </summary>
+        private static readonly Regex InstallNameFormatterRegex = new(@"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", RegexOptions.Compiled);
 
 
-        #endregion
+        #endregion Private fields.
     }
 }

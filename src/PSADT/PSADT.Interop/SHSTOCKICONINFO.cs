@@ -55,7 +55,7 @@ namespace PSADT.Interop
         /// </summary>
         public void Dispose()
         {
-            if (default == _hIcon)
+            if (_hIcon == default)
             {
                 return;
             }

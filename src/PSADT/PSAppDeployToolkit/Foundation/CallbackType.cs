@@ -8,51 +8,51 @@
         /// <summary>
         /// The callback is executed before the module is initialized.
         /// </summary>
-        OnInit,
+        OnInit = 0,
 
         /// <summary>
         /// The callback is executed before the first deployment session is opened.
         /// </summary>
-        OnStart,
+        OnStart = 1,
 
         /// <summary>
         /// The callback is executed before a deployment session is opened.
         /// </summary>
-        PreOpen,
+        PreOpen = 2,
 
         /// <summary>
         /// The callback is executed after a deployment session is opened.
         /// </summary>
-        PostOpen,
+        PostOpen = 3,
 
         /// <summary>
         /// The callback is executed after a message is logged.
         /// </summary>
-        OnLogEntry,
+        OnLogEntry = 4,
 
         /// <summary>
         /// The callback is executed when a user defers the active deployment.
         /// </summary>
-        OnDefer,
+        OnDefer = 5,
 
         /// <summary>
         /// The callback is executed before the deployment session is closed.
         /// </summary>
-        PreClose,
+        PreClose = 6,
 
         /// <summary>
         /// The callback is executed after the deployment session is closed.
         /// </summary>
-        PostClose,
+        PostClose = 7,
 
         /// <summary>
         /// The callback is executed before the last deployment session is closed.
         /// </summary>
-        OnFinish,
+        OnFinish = 8,
 
         /// <summary>
         /// The callback is executed after the last deployment session is closed.
         /// </summary>
-        OnExit,
+        OnExit = 9,
     }
 }

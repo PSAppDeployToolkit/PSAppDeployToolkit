@@ -8,21 +8,21 @@
         /// <summary>
         /// The deployment completed successfully.
         /// </summary>
-        Complete,
+        Complete = 0,
 
         /// <summary>
         /// The deployment completed successfully, but a restart is required.
         /// </summary>
-        RestartRequired,
+        RestartRequired = 1,
 
         /// <summary>
         /// The deployment was deferred.
         /// </summary>
-        FastRetry,
+        FastRetry = 2,
 
         /// <summary>
         /// The deployment encountered an error.
         /// </summary>
-        Error
+        Error = 3
     }
 }

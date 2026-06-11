@@ -66,7 +66,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="length">The number of characters to read from the memory pointed to by <paramref name="handle"/>.</param>
         /// <returns>A managed string containing the characters read from the specified memory location. Returns an empty string
         /// if the memory does not contain valid string data.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
+        /// <exception cref="FormatException">Thrown if the specified pointer does not reference valid string data or if the length is zero.</exception>
         internal static string ToStringUni(this nint handle, int length)
         {
             InvalidOperationException.ThrowIfZeroOrInvalid(handle, "The called upon IntPtr instance is invalid.");

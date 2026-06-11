@@ -84,9 +84,11 @@ namespace PSADT.Utilities
         /// <summary>
         /// Gets all key/value pairs in a section of an INI file.
         /// </summary>
-        /// <param name="section">The section name</param>
         /// <param name="filepath">Path to the INI file</param>
+        /// <param name="section">The section name</param>
         /// <returns>OrderedDictionary of key/value pairs in the section</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified section does not exist in the INI file.</exception>
+        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section.</exception>"
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static OrderedDictionary? GetSection(string filepath, string section)
         {
@@ -141,6 +143,7 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="filepath">Path to the INI file</param>
         /// <returns>Array of section names</returns>
+        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section names.</exception>"
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536]; uint len = NativeMethods.GetPrivateProfileSectionNames(buffer, filepath);
@@ -151,9 +154,10 @@ namespace PSADT.Utilities
         /// <summary>
         /// Writes multiple key/value pairs to a section in an INI file.
         /// </summary>
+        /// <param name="filepath">Path to the INI file</param>
         /// <param name="section">The section name</param>
         /// <param name="content">INI content to write</param>
-        /// <param name="filepath">Path to the INI file</param>
+        /// <exception cref="ArgumentException">Thrown if the content contains invalid keys or values.</exception>
         public static void WriteSection(string filepath, string section, IDictionary? content)
         {
             if (content is null)

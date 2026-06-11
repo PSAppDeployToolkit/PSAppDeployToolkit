@@ -25,8 +25,7 @@ namespace PSADT.Security
         /// <param name="attributes">Optional attributes used to filter the privileges. If specified, only privileges matching the given <see
         /// cref="TOKEN_PRIVILEGES_ATTRIBUTES"/> will be included in the result.</param>
         /// <returns>A <see cref="ReadOnlyCollection{T}"/> containing the privileges associated with the token.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if a privilege name retrieved from the token cannot be mapped to a known <see cref="SE_PRIVILEGE"/>
-        /// value.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if a privilege name retrieved from the token cannot be mapped to a known <see cref="SE_PRIVILEGE"/> value.</exception>
         private static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(SafeFileHandle token, TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
             // Internal worker function to retrieve the privilege name from the token attributes.

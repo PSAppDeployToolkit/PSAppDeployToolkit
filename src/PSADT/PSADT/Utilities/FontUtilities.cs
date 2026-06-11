@@ -103,9 +103,9 @@ namespace PSADT.Utilities
         /// and trailing whitespace and quotes are ignored.</param>
         /// <returns>A string containing the font's title as specified in the font's name table. If the title cannot be
         /// determined, returns the file name without its extension.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if fontPath is null, empty, or consists only of whitespace.</exception>
-        /// <exception cref="FileNotFoundException">Thrown if the file specified by fontPath does not exist.</exception>
+        /// <exception cref="BadImageFormatException">Thrown if the specified font file is not a supported font format.</exception>
         /// <exception cref="FileFormatException">Thrown if the font file format is not supported or if the font file contains no font faces.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the font title cannot be determined from the name table of any font face in the file.</exception>"
         public static string GetFontTitle(string fontPath)
         {
             // Create factory and font file reference.
@@ -119,7 +119,7 @@ namespace PSADT.Utilities
                     fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
                     if (!supported)
                     {
-                        throw new ArgumentOutOfRangeException(nameof(fontPath), fontPath, "Font file format is not supported.");
+                        throw new BadImageFormatException($"The specified font file '{fontPath}' is not a supported font format.", fontPath);
                     }
                     if (faceCount == 0)
                     {
@@ -284,6 +284,7 @@ namespace PSADT.Utilities
         /// <param name="result">When this method returns, contains the decoded name string if a matching record is found and successfully
         /// decoded; otherwise, null. This parameter is passed uninitialized.</param>
         /// <returns>true if a matching name record is found and successfully decoded; otherwise, false.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1134:Remove redundant statement", Justification = "We can't have an empty catch block.")]
         private static bool TryFindNameIdRecord(ReadOnlySpan<byte> nameTable, ushort count, ushort stringOffset, NAME_ID desiredNameId, ushort platformId, bool requireWindowsUnicode, ushort? languageId, out string? result)
         {
             // Attempt to decode the name string.

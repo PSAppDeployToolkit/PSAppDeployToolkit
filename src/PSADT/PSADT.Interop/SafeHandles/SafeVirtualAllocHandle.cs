@@ -56,7 +56,7 @@ namespace PSADT.Interop.SafeHandles
         /// exception is thrown.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

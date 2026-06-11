@@ -171,6 +171,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// the window to ensure user attention.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the tick event.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
+        /// <exception cref="InvalidProgramException">Thrown when the countdown timer ticks but no duration or stopwatch is set.</exception>
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             if (countdownDuration is null)

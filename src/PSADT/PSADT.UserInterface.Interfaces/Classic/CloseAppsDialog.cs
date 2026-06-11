@@ -55,7 +55,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 // Set up main options.
                 labelWelcomeMessage.Text = StripFormattingTags(options.Strings.Classic.WelcomeMessage);
-                labelAppName.Text = StripFormattingTags(Regex.Replace(options.AppTitle, @"(?<!&)&(?!&)", "&&"));
+                labelAppName.Text = StripFormattingTags(AmpersandRegex.Replace(options.AppTitle, "&&"));
                 labelCloseProcessesMessage.Text = StripFormattingTags(options.Strings.Classic.CloseAppsMessage);
                 labelDeferralExpiryMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryMessage);
                 labelDeferWarningMessage.Text = StripFormattingTags(options.Strings.Classic.ExpiryWarning);
@@ -270,6 +270,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// that periodically updates the countdown in a user interface.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the tick event.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
+        /// <exception cref="InvalidProgramException">Thrown if the countdown timer ticks but the required countdown duration or stopwatch is not set. This indicates a programming error in the dialog's implementation.</exception>"
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             if (countdownDuration is null)
@@ -406,5 +407,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <remarks>This delegate is invoked to write log messages with optional severity.</remarks>
         private readonly Action<string, LogSeverity>? logAction;
+
+        /// <summary>
+        /// A regular expression used to replace single ampersands with double ampersands, while preserving existing double ampersands. This is necessary because in Windows Forms, a single ampersand is used to denote an accelerator key (e.g., "&amp;File" would display as "File" with 'F' underlined), while a double ampersand is displayed as a literal ampersand character. The regex uses negative lookbehind and lookahead assertions to ensure that only single ampersands that are not already part of a double ampersand sequence are replaced, allowing for correct display of text that includes ampersands without unintended accelerator keys.
+        /// </summary>
+        private static readonly Regex AmpersandRegex = new("(?<!&)&(?!&)", RegexOptions.Compiled);
     }
 }

@@ -16,7 +16,7 @@ namespace PSADT.Utilities
         /// Generates a cryptographically secure random <see cref="Guid"/>.
         /// </summary>
         /// <remarks>This method uses a <see cref="RandomNumberGenerator"/>
-        /// to ensure the generated <see cref="Guid"/> is based on high-quality random data, suitable for scenarios 
+        /// to ensure the generated <see cref="Guid"/> is based on high-quality random data, suitable for scenarios
         /// requiring enhanced security or unpredictability.</remarks>
         /// <returns>A <see cref="Guid"/> created using cryptographically secure random data.</returns>
         internal static Guid SecureNewGuid()

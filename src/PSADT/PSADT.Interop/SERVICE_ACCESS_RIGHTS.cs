@@ -11,6 +11,8 @@ namespace PSADT.Interop
     /// cref="SERVICE_QUERY_STATUS"/> is needed to query the status of a service, while <see cref="SERVICE_START"/> is
     /// required to start a service.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1157:Composite enum value contains undefined flag", Justification = "This is how the Win32 API defines it.")]
     [Flags]
     internal enum SERVICE_ACCESS_RIGHTS : uint
     {

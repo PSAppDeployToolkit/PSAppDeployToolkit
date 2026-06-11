@@ -35,6 +35,7 @@ namespace PSADT.SMBIOS
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There is no zero value in the SMBIOS specification for this.")]
     [Flags]
     public enum FirmwareCharacteristics : ulong
     {

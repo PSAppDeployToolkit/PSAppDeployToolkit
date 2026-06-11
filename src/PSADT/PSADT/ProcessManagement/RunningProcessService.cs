@@ -82,6 +82,7 @@ namespace PSADT.ProcessManagement
         /// cancellation token. It updates the cached list of running processes and notifies subscribers if the set of
         /// processes to close has changed. Polling continues until cancellation is requested.</remarks>
         /// <returns>A task that represents the asynchronous polling operation.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the cancellation token source is not initialized.</exception>
         private async Task PollRunningProcesses()
         {
             if (_cancellationTokenSource is null)

@@ -43,7 +43,7 @@ namespace PSADT.Security
         /// the handle when it is no longer needed.</returns>
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
         internal static async System.Threading.Tasks.Task<SafeFileHandle> GetUserPrimaryTokenAsync(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
         {
             // Confirm that the caller is an administrator.
@@ -65,7 +65,13 @@ namespace PSADT.Security
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
                 string pipeName = $"PSADT.ClientServer.Client_TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
                 PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new(AccountUtilities.LocalSystemSid, PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite, AccessControlType.Allow));
-                using NamedPipeServerStream pipe = CreateNamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+                #pragma warning disable format
+                #if !NETFRAMEWORK
+                await using NamedPipeServerStream pipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+                #else
+                using NamedPipeServerStream pipe = new(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+                #endif
+                #pragma warning restore format
 
                 // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
                 ITaskService servicePtr = (ITaskService)new TaskScheduler();
@@ -213,29 +219,27 @@ namespace PSADT.Security
                 // Return the token handle.
                 return new(tokenBuf.AsReadOnlyStructure<nint>(), true);
             }
-            else
+
+            // When we're local system, we can just get the primary token for the user.
+            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+            _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
+            using (hUserToken)
             {
-                // When we're local system, we can just get the primary token for the user.
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
-                using (hUserToken)
+                if (elevatedTokenType != ElevatedTokenType.None)
                 {
-                    if (elevatedTokenType != ElevatedTokenType.None)
+                    try
                     {
-                        try
+                        return GetLinkedPrimaryToken(hUserToken, uiAccess);
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
                         {
-                            return GetLinkedPrimaryToken(hUserToken, uiAccess);
-                        }
-                        catch (Exception ex) when (ex.Message is not null)
-                        {
-                            if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
-                            {
-                                throw new UnauthorizedAccessException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
-                            }
+                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                         }
                     }
-                    return GetPrimaryToken(hUserToken, uiAccess);
                 }
+                return GetPrimaryToken(hUserToken, uiAccess);
             }
         }
 
@@ -248,6 +252,7 @@ namespace PSADT.Security
         /// <param name="tokenHandle">A handle to the security token. This handle must have the necessary access rights to allow duplication.</param>
         /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>"
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
             _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
@@ -321,35 +326,6 @@ namespace PSADT.Security
                 return GetPrimaryToken(tokenHandle, uiAccess);
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Creates a new instance of a named pipe server stream with the specified configuration parameters.
-        /// </summary>
-        /// <remarks>This method allows fine-grained control over the creation of a named pipe server,
-        /// including security, buffer sizes, and transmission mode. The caller is responsible for managing the lifetime
-        /// and disposal of the returned stream. The pipe name must not conflict with existing named pipes on the
-        /// system.</remarks>
-        /// <param name="pipeName">The name of the pipe to create. This value must be unique on the system and cannot be null or empty.</param>
-        /// <param name="direction">The direction of the pipe, indicating whether the pipe supports reading, writing, or both.</param>
-        /// <param name="maxNumberOfServerInstances">The maximum number of server instances that can simultaneously share the same pipe name. Must be greater
-        /// than zero.</param>
-        /// <param name="transmissionMode">The transmission mode for the pipe, specifying how data is transmitted through the pipe (byte or message
-        /// mode).</param>
-        /// <param name="options">Pipe options that modify the behavior of the pipe, such as asynchronous operation or write-through.</param>
-        /// <param name="inBufferSize">The size, in bytes, of the input buffer for the pipe. Must be a positive integer.</param>
-        /// <param name="outBufferSize">The size, in bytes, of the output buffer for the pipe. Must be a positive integer.</param>
-        /// <param name="pipeSecurity">An optional PipeSecurity object that specifies access control for the pipe. If null, default security is
-        /// applied.</param>
-        /// <returns>A NamedPipeServerStream instance configured with the specified parameters and ready to accept client
-        /// connections.</returns>
-        private static NamedPipeServerStream CreateNamedPipeServerStream(string pipeName, PipeDirection direction, int maxNumberOfServerInstances, PipeTransmissionMode transmissionMode, PipeOptions options, int inBufferSize, int outBufferSize, PipeSecurity pipeSecurity)
-        {
-#if !NETFRAMEWORK
-            return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
-#else
-            return new(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
-#endif
         }
     }
 }

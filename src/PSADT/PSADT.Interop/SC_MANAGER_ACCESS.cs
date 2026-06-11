@@ -10,6 +10,8 @@ namespace PSADT.Interop
     /// it, creating services, enumerating services, and modifying boot configurations. The values are based on the
     /// Windows API constants.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1157:Composite enum value contains undefined flag", Justification = "This is how the Win32 API defines it.")]
     [Flags]
     internal enum SC_MANAGER_ACCESS : uint
     {

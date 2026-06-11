@@ -307,6 +307,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets or sets the icon index for the Internet shortcut.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if attempting to set the IconIndex to null when IconFile is set.</exception>
         public int? IconIndex
         {
             get
@@ -462,6 +463,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or <see langword="null"/> if not set.</returns>
+        /// <exception cref="FileFormatException">Thrown if the property has an unexpected type.</exception>
         private bool? GetBooleanProperty(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
@@ -544,6 +546,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or <see langword="null"/> if not set.</returns>
+        /// <exception cref="FileFormatException">Thrown if the property has an unexpected type.</exception>
         private string? GetStringProperty(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
@@ -649,6 +652,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or 0 if not set.</returns>
+        /// <exception cref="FileFormatException">Thrown if the property has an unexpected type.</exception>
         private int? GetInt32Property(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);
@@ -688,6 +692,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or <see langword="null"/> if not set.</returns>
+        /// <exception cref="FileFormatException">Thrown if the property has an unexpected type.</exception>"
         private ushort? GetUInt16Property(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);

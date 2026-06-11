@@ -35,10 +35,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
     internal abstract partial class FluentDialog : FluenceWindow, IBaseDialog
     {
         /// <summary>
-        /// Static constructor to set up the theme and resources for the dialog.
-        /// </summary>
-
-        /// <summary>
         /// Initializes a new instance of the FluentDialog class with the specified dialog options, result, and optional
         /// settings for custom messaging and countdown behavior.
         /// </summary>
@@ -578,11 +574,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="textBlock">The TextBlock to add text to.</param>
         /// <param name="text">The text content to add.</param>
         /// <param name="formattingStack">The current formatting context stack.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is specifically allowed here.")]
         private static void AddFormattedText(System.Windows.Controls.TextBlock textBlock, string text, Stack<FormattingContext> formattingStack)
         {
             // Check for null only, not whitespace - we need to preserve whitespace-only
             // content (including line breaks) between formatting tags.
-            if (text is null || text.Length == 0)
+            if (string.IsNullOrEmpty(text))
             {
                 return;
             }
@@ -781,6 +778,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <see cref="OnContentRendered"/>.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         private void PositionWindow()
         {
             if (_firstShowPending)

@@ -125,6 +125,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// The asynchronous main entry point for the application.
         /// </summary>
+        /// <param name="argv">A string array containing the command-line arguments passed to the application.</param>
         [STAThread]
         private static async Task<int> Main(string[] argv)
         {
@@ -168,12 +169,13 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Enters client-server mode by establishing communication through input and output pipes.
         /// </summary>
-        /// <remarks>This method initializes anonymous pipe clients for input and output communication 
+        /// <remarks>This method initializes anonymous pipe clients for input and output communication
         /// using the provided pipe handles. If the required pipe handles are missing, invalid, or cannot be opened,
         /// the method writes an error message to the standard error stream and terminates the process with an
         /// appropriate exit code.</remarks>
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
         /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
+        /// <exception cref="ClientException">Thrown when a required pipe handle is missing, invalid, or cannot be opened.</exception>
         private static async Task<int> EnterClientServerModeAsync(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
@@ -200,7 +202,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
+                throw new ClientException("Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
             }
             try
             {
@@ -208,7 +210,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
+                throw new ClientException("Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
             }
             try
             {
@@ -216,7 +218,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
+                throw new ClientException("Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
             }
 
             // Start reading data from the pipes. We only return from here when the server's pipe closes on us.
@@ -280,112 +282,102 @@ namespace PSADT.ClientServer
                                     switch (command)
                                     {
                                         case PipeCommand.Open:
-                                            {
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.Close:
-                                            {
-                                                WriteSuccess(true);
-                                                return (int)ClientExitCode.Success;
-                                            }
+                                            WriteSuccess(true);
+                                            return (int)ClientExitCode.Success;
 
                                         case PipeCommand.InitCloseAppsDialog:
+                                            // We have the suppression here as the analyser can't handle our setup with IAsyncDisposable.
+                                            // It is correct though and under no circumstances is any memory leaked out of our setup.
+                                            if (closeAppsDialogState is not null)
                                             {
-                                                // We have the suppression here as the analyser can't handle our setup with IAsyncDisposable.
-                                                // It is correct though and under no circumstances is any memory leaked out of our setup.
-                                                if (closeAppsDialogState is not null)
-                                                {
-                                                    await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
-                                                }
-                                                #pragma warning disable format
-                                                #pragma warning disable CA2000 
-                                                closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
-                                                #pragma warning restore CA2000
-                                                #pragma warning restore format
-                                                WriteSuccess(true);
-                                                break;
+                                                await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
                                             }
+                                            #pragma warning disable format, CA2000 
+                                            closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
+                                            #pragma warning restore CA2000, format
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.PromptToCloseApps:
+                                            // If we're here without a RunningProcessService, the InitCloseAppsDialog command was not called properly.
+                                            if (closeAppsDialogState?.RunningProcessService is null)
                                             {
-                                                // If we're here without a RunningProcessService, the InitCloseAppsDialog command was not called properly.
-                                                if (closeAppsDialogState?.RunningProcessService is null)
-                                                {
-                                                    throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
-                                                }
-
-                                                // Get all the windows that haven't failed on us and start closing them.
-                                                TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(requestBytes, payloadOffset).Timeout; List<nint> failures = []; Process[] runningProcesses;
-                                                while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
-                                                {
-                                                    // Start gracefully closing each open window.
-                                                    foreach (WindowInfo window in windows)
-                                                    {
-                                                        Process process = Process.GetProcessById(window.ParentProcessId);
-                                                        closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
-                                                        try
-                                                        {
-                                                            WindowTools.BringWindowToFront((HWND)window.WindowHandle);
-                                                        }
-                                                        catch (Exception ex) when (ex.Message is not null)
-                                                        {
-                                                            closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
-                                                            failures.Add(window.WindowHandle);
-                                                            continue;
-                                                        }
-
-                                                        // Attempt to close out the process's main window.
-                                                        try
-                                                        {
-                                                            if (!process.CloseMainWindow())
-                                                            {
-                                                                throw new ClientException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.", ClientExitCode.PromptToSaveFailure);
-                                                            }
-                                                        }
-                                                        catch (Exception ex) when (ex.Message is not null)
-                                                        {
-                                                            closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
-                                                            failures.Add(window.WindowHandle);
-                                                            continue;
-                                                        }
-
-                                                        // Spin until the window is closed or we time out.
-                                                        Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
-                                                        while (true)
-                                                        {
-                                                            if (WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Count == 0)
-                                                            {
-                                                                closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
-                                                                break;
-                                                            }
-                                                            if (promptToCloseStopwatch.Elapsed >= promptToSaveTimeout)
-                                                            {
-                                                                closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
-                                                                break;
-                                                            }
-                                                            Thread.Sleep(2000);
-                                                        }
-                                                    }
-                                                }
-
-                                                // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
-                                                if (failures.Count == 0 && runningProcesses.Length > 0)
-                                                {
-                                                    closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
-                                                    foreach (Process process in runningProcesses)
-                                                    {
-                                                        closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
-                                                        if (!process.HasExited)
-                                                        {
-                                                            process.Kill(); await process.WaitForExitAsync().ConfigureAwait(false);
-                                                        }
-                                                    }
-                                                }
-                                                WriteSuccess(true);
-                                                break;
+                                                throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
                                             }
+
+                                            // Get all the windows that haven't failed on us and start closing them.
+                                            TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(requestBytes, payloadOffset).Timeout; List<nint> failures = []; Process[] runningProcesses;
+                                            while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
+                                            {
+                                                // Start gracefully closing each open window.
+                                                foreach (WindowInfo window in windows)
+                                                {
+                                                    Process process = Process.GetProcessById(window.ParentProcessId);
+                                                    closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
+                                                    try
+                                                    {
+                                                        WindowTools.BringWindowToFront((HWND)window.WindowHandle);
+                                                    }
+                                                    catch (Exception ex) when (ex.Message is not null)
+                                                    {
+                                                        closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
+                                                        failures.Add(window.WindowHandle);
+                                                        continue;
+                                                    }
+
+                                                    // Attempt to close out the process's main window.
+                                                    try
+                                                    {
+                                                        if (!process.CloseMainWindow())
+                                                        {
+                                                            throw new ClientException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.", ClientExitCode.PromptToSaveFailure);
+                                                        }
+                                                    }
+                                                    catch (Exception ex) when (ex.Message is not null)
+                                                    {
+                                                        closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
+                                                        failures.Add(window.WindowHandle);
+                                                        continue;
+                                                    }
+
+                                                    // Spin until the window is closed or we time out.
+                                                    Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
+                                                    while (true)
+                                                    {
+                                                        if (WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Count == 0)
+                                                        {
+                                                            closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
+                                                            break;
+                                                        }
+                                                        if (promptToCloseStopwatch.Elapsed >= promptToSaveTimeout)
+                                                        {
+                                                            closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
+                                                            break;
+                                                        }
+                                                        Thread.Sleep(2000);
+                                                    }
+                                                }
+                                            }
+
+                                            // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
+                                            if (failures.Count == 0 && runningProcesses.Length > 0)
+                                            {
+                                                closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
+                                                foreach (Process process in runningProcesses)
+                                                {
+                                                    closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
+                                                    if (!process.HasExited)
+                                                    {
+                                                        process.Kill(); await process.WaitForExitAsync().ConfigureAwait(false);
+                                                    }
+                                                }
+                                            }
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.ShowModalDialog:
                                             {
@@ -403,10 +395,8 @@ namespace PSADT.ClientServer
                                             }
 
                                         case PipeCommand.ProgressDialogOpen:
-                                            {
-                                                WriteSuccess(DialogManager.ProgressDialogOpen());
-                                                break;
-                                            }
+                                            WriteSuccess(DialogManager.ProgressDialogOpen());
+                                            break;
 
                                         case PipeCommand.UpdateProgressDialog:
                                             {
@@ -417,97 +407,70 @@ namespace PSADT.ClientServer
                                             }
 
                                         case PipeCommand.CloseProgressDialog:
-                                            {
-                                                await DialogManager.CloseProgressDialogAsync().ConfigureAwait(false);
-                                                WriteSuccess(!DialogManager.ProgressDialogOpen());
-                                                break;
-                                            }
+                                            await DialogManager.CloseProgressDialogAsync().ConfigureAwait(false);
+                                            WriteSuccess(!DialogManager.ProgressDialogOpen());
+                                            break;
 
                                         case PipeCommand.ShowNotifyIcon:
-                                            {
-                                                await DialogManager.ShowNotifyIconAsync(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.ShowNotifyIconAsync(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.NotifyIconOpen:
-                                            {
-                                                WriteSuccess(DialogManager.NotifyIconOpen());
-                                                break;
-                                            }
+                                            WriteSuccess(DialogManager.NotifyIconOpen());
+                                            break;
 
                                         case PipeCommand.UpdateNotifyIcon:
-                                            {
-                                                await DialogManager.UpdateNotifyIconAsync(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText).ConfigureAwait(false);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.UpdateNotifyIconAsync(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText).ConfigureAwait(false);
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.ShowBalloonTip:
-                                            {
-                                                await DialogManager.ShowBalloonTipAsync(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.ShowBalloonTipAsync(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.CloseNotifyIcon:
-                                            {
-                                                await DialogManager.CloseNotifyIconAsync().ConfigureAwait(false);
-                                                WriteSuccess(!DialogManager.NotifyIconOpen());
-                                                break;
-                                            }
+                                            await DialogManager.CloseNotifyIconAsync().ConfigureAwait(false);
+                                            WriteSuccess(!DialogManager.NotifyIconOpen());
+                                            break;
 
                                         case PipeCommand.MinimizeAllWindows:
-                                            {
-                                                DesktopUtilities.MinimizeAllWindows();
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            DesktopUtilities.MinimizeAllWindows();
+                                            WriteSuccess(true);
+                                            break;
+
 
                                         case PipeCommand.RestoreAllWindows:
-                                            {
-                                                DesktopUtilities.RestoreAllWindows();
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            DesktopUtilities.RestoreAllWindows();
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.SendKeys:
-                                            {
-                                                await DialogManager.SendKeysAsync(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.SendKeysAsync(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.GetProcessWindowInfo:
-                                            {
-                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options));
-                                                break;
-                                            }
+                                            WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options));
+                                            break;
 
                                         case PipeCommand.RefreshDesktopAndEnvironmentVariables:
-                                            {
-                                                DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.GetUserNotificationState:
-                                            {
-                                                WriteSuccess(DesktopUtilities.GetUserNotificationState());
-                                                break;
-                                            }
+                                            WriteSuccess(DesktopUtilities.GetUserNotificationState());
+                                            break;
 
                                         case PipeCommand.GetForegroundWindowProcessId:
-                                            {
-                                                WriteSuccess(DesktopUtilities.GetForegroundWindowProcessId());
-                                                break;
-                                            }
+                                            WriteSuccess(DesktopUtilities.GetForegroundWindowProcessId());
+                                            break;
 
                                         case PipeCommand.GetEnvironmentVariable:
-                                            {
-                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
-                                                break;
-                                            }
+                                            WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                            break;
 
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
@@ -518,11 +481,9 @@ namespace PSADT.ClientServer
                                             }
 
                                         case PipeCommand.RemoveEnvironmentVariable:
-                                            {
-                                                EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
+                                            WriteSuccess(true);
+                                            break;
 
                                         case PipeCommand.GroupPolicyUpdate:
                                             {
@@ -539,21 +500,15 @@ namespace PSADT.ClientServer
                                             }
 
                                         case PipeCommand.GetUserFocusModeState:
-                                            {
-                                                WriteSuccess(GetUserFocusModeState());
-                                                break;
-                                            }
+                                            WriteSuccess(GetUserFocusModeState());
+                                            break;
 
                                         case PipeCommand.GetUserToastNotificationMode:
-                                            {
-                                                WriteSuccess(GetUserToastNotificationMode());
-                                                break;
-                                            }
+                                            WriteSuccess(GetUserToastNotificationMode());
+                                            break;
 
                                         default:
-                                            {
-                                                throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
-                                            }
+                                            throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
                                     }
                                 }
                                 catch (Exception ex) when (ex.Message is not null)
@@ -581,7 +536,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
+                throw new ClientException("Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
         }
 
@@ -760,6 +715,7 @@ namespace PSADT.ClientServer
         /// configured for execution blocking.</param>
         /// <returns>A serialized string representing the result of the modal dialog, such as the selected button text or other
         /// relevant outcome information.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the method is configured to block execution but fails to launch the specified process.</exception>"
         /// <exception cref="ClientException">Thrown if a required argument is missing or invalid, such as when 'DialogType' or 'DialogStyle' is not
         /// specified or is invalid, or if the dialog type is not supported.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code can deliberately short circuit.")]
@@ -939,6 +895,7 @@ namespace PSADT.ClientServer
         /// <param name="force">A value indicating whether to force the update, reapplying all policy settings even if they have not
         /// changed. If <see langword="true"/>, all settings are reapplied.</param>
         /// <returns>A <see cref="ProcessResult"/> object that contains the results of the Group Policy update operation.</returns>
+        /// <exception cref="ClientException">Thrown if the Group Policy update process fails to launch.</exception>
         private static async Task<ProcessResult> GroupPolicyUpdateAsync(bool force)
         {
             // Build out argument list for gpupdate.exe.
@@ -1006,6 +963,7 @@ namespace PSADT.ClientServer
         /// followed by its corresponding value as a separate argument.</param>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
         /// arguments.</returns>
+        /// <exception cref="ClientException">Thrown if any argument key is not followed by a valid value, such as when the value is null, empty, whitespace, or resembles another key.</exception>"
         private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
         {
             // Loop through arguments and match argument names to their values.
@@ -1068,7 +1026,7 @@ namespace PSADT.ClientServer
             return !arguments.TryGetValue("Options", out string? options)
                 ? throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions)
                 : string.IsNullOrWhiteSpace(options)
-                ? throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions)
+                ? throw new ClientException("The specified options are null or invalid.", ClientExitCode.InvalidOptions)
                 : options;
         }
 
@@ -1088,7 +1046,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
+                throw new ClientException("An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
         }
 
@@ -1107,7 +1065,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
+                throw new ClientException("An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
         }
 
@@ -1127,7 +1085,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
+                throw new ClientException("An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
         }
 
@@ -1147,7 +1105,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
+                throw new ClientException("An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
         }
 

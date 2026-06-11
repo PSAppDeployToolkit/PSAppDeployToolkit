@@ -68,6 +68,7 @@ namespace PSADT.ProcessManagement
         /// arguments, user context, environment variables, and standard stream handling.</param>
         /// <returns>A handle to the launched process, encapsulated in a ProcessHandle object, which provides access to process
         /// state and standard streams as configured.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the process cannot be started.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This function must remain synchronous for now.")]
         private static ProcessHandle LaunchWithCreateProcessAsync(ProcessLaunchInfo launchInfo)
         {
@@ -216,14 +217,11 @@ namespace PSADT.ProcessManagement
                         stdInHandle?.Task.Start(TaskScheduler.Default);
                         return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges, stdOutHandle, stdErrHandle, interleavedData, stdInHandle));
                     }
-                    else
+                    using (hThread)
                     {
-                        using (hThread)
-                        {
-                            _ = NativeMethods.ResumeThread(hThread);
-                        }
-                        return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges));
+                        _ = NativeMethods.ResumeThread(hThread);
                     }
+                    return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges));
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -260,6 +258,7 @@ namespace PSADT.ProcessManagement
         /// was a pure shell action and no process was started.</returns>
         /// <exception cref="NotSupportedException">Thrown if the RunAsActiveUser property of launchInfo is set, as running as a different user is not supported
         /// with ShellExecuteEx.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the process cannot be started and the specified file exists.</exception>
         private static ProcessHandle? LaunchWithShellExecuteExAsync(ProcessLaunchInfo launchInfo)
         {
             // Throw if RunAsActiveUser is populated as it's not supported.
@@ -416,6 +415,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Determines whether the current process can use the CreateProcessAsUser function.
         /// </summary>
+        /// <param name="isCallerToken">true if the token being evaluated represents the current caller; false if it represents a different user or security context.</param>
+        /// <param name="callerPrivilges">The privileges of the caller.</param>
         /// <remarks>This method checks if the current process has the necessary privileges and conditions
         /// to use the CreateProcessAsUser function. It verifies the presence of specific privileges and evaluates
         /// whether the process is part of a job object that allows breakaway.</remarks>
@@ -440,6 +441,9 @@ namespace PSADT.ProcessManagement
         /// Determines whether the current process has the necessary privileges to use the CreateProcessWithToken
         /// function.
         /// </summary>
+        /// <param name="isCallerToken">true if the token being evaluated represents the current caller; false if it represents a different user or security context.</param>
+        /// <param name="callerPrivilges">The privileges of the caller.</param>
+        /// <param name="commandLine">The command line to be executed.</param>
         /// <returns><see langword="true"/> if the current process has the SeImpersonatePrivilege; otherwise, <see
         /// langword="false"/>.</returns>
         private static CreateProcessUsingTokenStatus CanUseCreateProcessWithToken(bool isCallerToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges, ReadOnlySpan<char> commandLine)
@@ -547,8 +551,7 @@ namespace PSADT.ProcessManagement
         /// handles, and appearance of the main window for the new process.</param>
         /// <param name="pi">When this method returns, contains a <see cref="PROCESS_INFORMATION"/> structure with information about the
         /// newly created process and its primary thread.</param>
-        /// <exception cref="UnauthorizedAccessException">Thrown if the calling user account does not have the necessary privileges to create a process using the
-        /// specified token.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the process cannot be started.</exception>
         private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, bool hasExternalHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, bool runAsInvoker, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
@@ -616,6 +619,7 @@ namespace PSADT.ProcessManagement
         /// <param name="runAsInvoker">If true, adds the EXTENDED_PROCESS_CREATION_FLAG_FORCELUA attribute.</param>
         /// <param name="pinnedHandles">When this method returns, contains the pinned GC handle for the handles array, or null if no handles were specified.</param>
         /// <returns>A tuple containing the STARTUPINFOEXW structure and the SafeProcThreadAttributeListHandle.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if no attributes are specified or if an error occurs during attribute list creation or updating.</exception>"
         private static (STARTUPINFOEXW startupInfoEx, SafeProcThreadAttributeListHandle hAttributeList) CreateStartupInfoEx(in STARTUPINFOW startupInfo, List<nint> handlesToInherit, bool forceBreakaway, bool runAsInvoker, out SafePinnedGCHandle? pinnedHandles)
         {
             // Calculate the number of attributes needed.
@@ -705,31 +709,31 @@ namespace PSADT.ProcessManagement
         private enum CreateProcessUsingTokenStatus
         {
             // This deliberately doesn't have a description as we should never need it/be asking for it.
-            OK,
+            OK = 0,
 
             [Description("The calling process does not have the necessary SeIncreaseQuotaPrivilege privilege.")]
-            SeIncreaseQuotaPrivilege,
+            SeIncreaseQuotaPrivilege = 1,
 
             [Description("The calling process does not have the necessary SeAssignPrimaryTokenPrivilege privilege.")]
-            SeAssignPrimaryTokenPrivilege,
+            SeAssignPrimaryTokenPrivilege = 2,
 
             [Description("The calling process is part of a job that does not allow breakaway.")]
-            JobBreakawayNotPermitted,
+            JobBreakawayNotPermitted = 3,
 
             [Description("The calling process does not have the necessary SeTcbPrivilege privilege.")]
-            SeTcbPrivilege,
+            SeTcbPrivilege = 4,
 
             [Description("The process command line exceeds the API limitation of 1024 characters.")]
-            CommandLineTooLong,
+            CommandLineTooLong = 5,
 
             [Description("The calling process does not have the necessary SeImpersonatePrivilege privilege.")]
-            SeImpersonatePrivilege,
+            SeImpersonatePrivilege = 6,
 
             [Description("The system's Secondary Log-on service (seclogon) could not be found.")]
-            SecLogonServiceNotFound,
+            SecLogonServiceNotFound = 7,
 
             [Description("The system's Secondary Log-on service (seclogon) is disabled.")]
-            SecLogonServiceDisabled,
+            SecLogonServiceDisabled = 8,
         }
 
         /// <summary>

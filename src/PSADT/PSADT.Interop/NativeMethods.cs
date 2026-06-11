@@ -221,7 +221,7 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(TokenHandle);
             BOOL res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation, out ReturnLength);
-            if (!res && 0 != TokenInformation.Length)
+            if (!res && TokenInformation.Length != 0)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -489,20 +489,24 @@ namespace PSADT.Interop
                 unsafe
                 {
                     fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
-                    fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
-                    fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                     {
-                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
-                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
-                        hToken.DangerousAddRef(ref hTokenAddRef);
-                        lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                        BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
-                        if (!res)
+                        fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
                         {
-                            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                            fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
+                            {
+                                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
+                                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
+                                hToken.DangerousAddRef(ref hTokenAddRef);
+                                lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                                BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                                if (!res)
+                                {
+                                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                                }
+                                lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
+                                return res;
+                            }
                         }
-                        lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
-                        return res;
                     }
                 }
             }
@@ -522,6 +526,7 @@ namespace PSADT.Interop
         /// <summary>
         /// Opens a handle to the specified service control manager database.
         /// </summary>
+        /// <param name="dwDesiredAccess">The access rights to the service control manager database. This parameter specifies the access level required for the handle.</param>
         /// <returns>A <see cref="CloseServiceHandleSafeHandle"/> that represents the handle to the service control manager
         /// database.</returns>
         internal static CloseServiceHandleSafeHandle OpenSCManager(SC_MANAGER_ACCESS dwDesiredAccess)
@@ -903,10 +908,14 @@ namespace PSADT.Interop
             unsafe
             {
                 fixed (char* pObjectNameLocal = pObjectName)
-                fixed (byte* pDaclPtr = pDacl)
-                fixed (byte* pSaclPtr = pSacl)
                 {
-                    return PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner, psidGroup, (ACL*)pDaclPtr, (ACL*)pSaclPtr).ThrowOnFailure();
+                    fixed (byte* pDaclPtr = pDacl)
+                    {
+                        fixed (byte* pSaclPtr = pSacl)
+                        {
+                            return PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner, psidGroup, (ACL*)pDaclPtr, (ACL*)pSaclPtr).ThrowOnFailure();
+                        }
+                    }
                 }
             }
         }
@@ -925,7 +934,7 @@ namespace PSADT.Interop
         /// <param name="pGroup">An optional handle to the new group SID. If null, the group is not changed.</param>
         /// <param name="pDacl">An optional handle to the new discretionary access control list (DACL). If null, the DACL is not changed.</param>
         /// <param name="pSacl">An optional handle to the new system access control list (SACL). If null, the SACL is not changed.</param>
-        /// <param name="KeepExplicit">A value indicating whether explicit access control entries (ACEs) in the DACL or SACL should be preserved. 
+        /// <param name="KeepExplicit">A value indicating whether explicit access control entries (ACEs) in the DACL or SACL should be preserved.
         /// Specify <see langword="true"/> to keep explicit ACEs; otherwise, <see langword="false"/>.</param>
         /// <param name="fnProgress">A callback function that is invoked to report progress during the operation. This can be used to monitor or
         /// cancel the operation.</param>
@@ -1245,7 +1254,7 @@ namespace PSADT.Interop
         /// Opens a handle to the Local Security Authority (LSA) Policy object on a specified system.
         /// </summary>
         /// <remarks>This method wraps the native LsaOpenPolicy function and provides error handling by
-        /// throwing a <see cref="Win32Exception"/> if the operation fails. Ensure that the caller has the necessary 
+        /// throwing a <see cref="Win32Exception"/> if the operation fails. Ensure that the caller has the necessary
         /// privileges to access the specified policy object.</remarks>
         /// <param name="ObjectAttributes">A reference to an <see cref="LSA_OBJECT_ATTRIBUTES"/> structure that specifies attributes for the policy
         /// object. This parameter is typically initialized to default values.</param>
@@ -1383,6 +1392,7 @@ namespace PSADT.Interop
         /// enough to hold all section names and a final null terminator.</param>
         /// <param name="lpFileName">The full path to the initialization (.ini) file from which to retrieve section names. Cannot be null.</param>
         /// <returns>The number of characters copied to lpReturnedString, not including the final null character.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1179:Unnecessary assignment", Justification = "The pattern is valid here.")]
         internal static uint GetPrivateProfileSectionNames(Span<char> lpReturnedString, string lpFileName)
         {
             PInvoke.SetLastError(0); uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
@@ -1410,6 +1420,7 @@ namespace PSADT.Interop
         /// buffer must be large enough to hold the data, including the final null terminator.</param>
         /// <param name="lpFileName">The name of the initialization file. Cannot be null.</param>
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1179:Unnecessary assignment", Justification = "The pattern is valid here.")]
         internal static uint GetPrivateProfileSection(string lpAppName, Span<char> lpReturnedString, string lpFileName)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
@@ -1439,6 +1450,7 @@ namespace PSADT.Interop
         /// the terminating null character.</param>
         /// <param name="lpFileName">The full path to the initialization file. Cannot be null.</param>
         /// <returns>The number of characters copied to the buffer, not including the terminating null character.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1179:Unnecessary assignment", Justification = "The pattern is valid here.")]
         internal static uint GetPrivateProfileString(string lpAppName, string? lpKeyName, string? lpDefault, Span<char> lpReturnedString, string lpFileName)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
@@ -1540,7 +1552,7 @@ namespace PSADT.Interop
                 ArgumentException.ThrowIfNullOrClosed(ExistingCompletionPort);
             }
             SafeFileHandle res = PInvoke.CreateIoCompletionPort(FileHandle, ExistingCompletionPort, CompletionKey, NumberOfConcurrentThreads);
-            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res; ;
+            return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -1763,19 +1775,23 @@ namespace PSADT.Interop
                 unsafe
                 {
                     fixed (char* lpApplicationNameLocal = lpApplicationName, plpCommandLine = lpCommandLine, lpCurrentDirectoryLocal = lpCurrentDirectory)
-                    fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
-                    fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                     {
-                        SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
-                        SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
-                        lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                        BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
-                        if (!res)
+                        fixed (PROCESS_INFORMATION* lpProcessInformationLocal = &lpProcessInformation)
                         {
-                            throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                            fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
+                            {
+                                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
+                                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
+                                lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
+                                BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                                if (!res)
+                                {
+                                    throw ExceptionUtilities.GetExceptionForLastWin32Error();
+                                }
+                                lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
+                                return res;
+                            }
                         }
-                        lpCommandLine = lpCommandLine[..((PWSTR)plpCommandLine).Length];
-                        return res;
                     }
                 }
             }
@@ -2009,7 +2025,7 @@ namespace PSADT.Interop
         /// Determines whether the system is currently in Terminal Services application installation mode.
         /// </summary>
         /// <remarks>Terminal Services application installation mode is used to install applications in a
-        /// way that supports multiple users on a terminal server. This method can be used to check the current mode 
+        /// way that supports multiple users on a terminal server. This method can be used to check the current mode
         /// before performing operations that depend on the installation mode.</remarks>
         /// <returns><see langword="true"/> if the system is in Terminal Services application installation mode; otherwise, <see
         /// langword="false"/>.</returns>
@@ -2545,7 +2561,7 @@ namespace PSADT.Interop
                 fixed (byte* SystemInformationLocal = SystemInformation)
                 {
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
-                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && 0 != SystemInformation.Length)))
+                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && SystemInformation.Length != 0)))
                     {
                         throw ExceptionUtilities.GetException(res);
                     }
@@ -2584,7 +2600,7 @@ namespace PSADT.Interop
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
                 res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && 0 != ObjectInformation.Length)))
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && ObjectInformation.Length != 0)))
                 {
                     throw ExceptionUtilities.GetException(res);
                 }
@@ -2719,12 +2735,14 @@ namespace PSADT.Interop
                 unsafe
                 {
                     fixed (byte* ProcessInformationLocal = ProcessInformation)
-                    fixed (uint* ReturnLengthLocal = &ReturnLength)
                     {
-                        res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
-                        if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+                        fixed (uint* ReturnLengthLocal = &ReturnLength)
                         {
-                            throw ExceptionUtilities.GetException(res);
+                            res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
+                            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+                            {
+                                throw ExceptionUtilities.GetException(res);
+                            }
                         }
                     }
                 }
@@ -3352,9 +3370,11 @@ namespace PSADT.Interop
             {
                 ArgumentNullException.ThrowIfNull(hWnd.Value);
                 fixed (char* wParamPtr = wParam)
-                fixed (char* lParamPtr = lParam)
                 {
-                    return SendNotifyMessage(hWnd, Msg, (nuint)wParamPtr, (nint)lParamPtr);
+                    fixed (char* lParamPtr = lParam)
+                    {
+                        return SendNotifyMessage(hWnd, Msg, (nuint)wParamPtr, (nint)lParamPtr);
+                    }
                 }
             }
         }
@@ -3431,9 +3451,11 @@ namespace PSADT.Interop
             unsafe
             {
                 fixed (char* wParamPtr = wParam)
-                fixed (char* lParamPtr = lParam)
                 {
-                    return SendMessage(hWnd, Msg, (nuint)wParamPtr, (nint)lParamPtr);
+                    fixed (char* lParamPtr = lParam)
+                    {
+                        return SendMessage(hWnd, Msg, (nuint)wParamPtr, (nint)lParamPtr);
+                    }
                 }
             }
         }
@@ -3652,10 +3674,12 @@ namespace PSADT.Interop
             unsafe
             {
                 fixed (WINTRUST_DATA* pWVTDataPtr = &pWVTData)
-                fixed (Guid* pgActionIDPtr = &pgActionID)
                 {
-                    HRESULT res = (HRESULT)PInvoke.WinVerifyTrust((HWND)(nint)HANDLE.INVALID_HANDLE_VALUE, pgActionIDPtr, pWVTDataPtr);
-                    return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+                    fixed (Guid* pgActionIDPtr = &pgActionID)
+                    {
+                        HRESULT res = (HRESULT)PInvoke.WinVerifyTrust((HWND)(nint)HANDLE.INVALID_HANDLE_VALUE, pgActionIDPtr, pWVTDataPtr);
+                        return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+                    }
                 }
             }
         }
@@ -3867,11 +3891,8 @@ namespace PSADT.Interop
                 using SafeFileHandle nullHandle = new(default, true);
                 return ((WIN32_ERROR)PInvoke.MsiViewExecute(hView, nullHandle)).ThrowOnFailure();
             }
-            else
-            {
-                ArgumentException.ThrowIfNullOrInvalid(hRecord);
-                return ((WIN32_ERROR)PInvoke.MsiViewExecute(hView, hRecord)).ThrowOnFailure();
-            }
+            ArgumentException.ThrowIfNullOrInvalid(hRecord);
+            return ((WIN32_ERROR)PInvoke.MsiViewExecute(hView, hRecord)).ThrowOnFailure();
         }
 
         /// <summary>

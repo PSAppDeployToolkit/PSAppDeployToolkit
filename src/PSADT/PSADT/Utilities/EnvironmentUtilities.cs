@@ -127,8 +127,11 @@ namespace PSADT.Utilities
         /// contains the '=' character, exceeds length limits, or if both <paramref name="append"/> and <paramref
         /// name="remove"/> are <see langword="true"/>. Also thrown if attempting to append or remove with a null
         /// <paramref name="value"/>.</exception>
+        /// <exception cref="FormatException">Thrown if the variable name or value contains invalid characters or formats.</exception>
+        /// <exception cref="NotSupportedException">Thrown if both <paramref name="append"/> and <paramref name="remove"/> are <see langword="true"/>, or if <paramref name="target"/> is <see cref="EnvironmentVariableTarget.Process"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the registry key for the specified target cannot be opened, or if <paramref name="target"/> is
         /// <see cref="EnvironmentVariableTarget.Process"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="variable"/> exceeds length limits or if <paramref name="target"/> is an invalid enum value.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable, bool append, bool remove)
         {

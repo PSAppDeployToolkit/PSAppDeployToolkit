@@ -8,21 +8,21 @@
         /// <summary>
         /// Not a standard icon.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// An information icon.
         /// </summary>
-        Info,
+        Info = 1,
 
         /// <summary>
         /// A warning icon.
         /// </summary>
-        Warning,
+        Warning = 2,
 
         /// <summary>
         /// An error icon.
         /// </summary>
-        Error
+        Error = 3
     }
 }

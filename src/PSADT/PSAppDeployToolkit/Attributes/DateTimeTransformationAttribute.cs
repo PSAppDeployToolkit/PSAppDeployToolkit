@@ -20,7 +20,8 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="engineIntrinsics">The PowerShell engine intrinsics.</param>
         /// <param name="inputData">The input value to transform.</param>
         /// <returns>A <see cref="DateTime"/> value derived from the input.</returns>
-        /// <exception cref="ArgumentTransformationMetadataException">Thrown when the input cannot be transformed into a <see cref="DateTime"/>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the input value is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the input value cannot be transformed into a DateTime.</exception>
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {
             while (inputData is PSObject psObject)
@@ -133,7 +134,7 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="days">The number of days to convert. May be fractional.</param>
         /// <returns>A <see cref="DateTime"/> that represents the specified number of days from <see cref="DateTime.MinValue"/>.</returns>
-        /// <exception cref="ArgumentTransformationMetadataException">Thrown when <paramref name="days"/> is outside the valid range for <see cref="DateTime"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="days"/> is outside the valid range for <see cref="DateTime"/>.</exception>
         private static DateTime DateTimeFromDays(double days)
         {
             try

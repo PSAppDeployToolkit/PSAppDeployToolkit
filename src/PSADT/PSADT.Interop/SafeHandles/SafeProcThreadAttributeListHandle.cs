@@ -122,7 +122,7 @@ namespace PSADT.Interop.SafeHandles
         /// already in its default state.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

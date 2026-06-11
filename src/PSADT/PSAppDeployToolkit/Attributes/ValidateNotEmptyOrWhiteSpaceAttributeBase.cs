@@ -31,9 +31,8 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="arguments">The argument value to validate.</param>
         /// <param name="engineIntrinsics">Provides access to the PowerShell engine APIs.</param>
-        /// <exception cref="ValidationMetadataException">
-        /// Thrown when <paramref name="arguments"/> fails validation based on the configured rules.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">Thrown when the argument is null and allowNull is <see langword="false"/>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the argument is empty or consists only of white-space characters and allowEmpty is <see langword="false"/>.</exception>
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
             // Unwrap PSObject to get the underlying value.
@@ -186,7 +185,7 @@ namespace PSAppDeployToolkit.Attributes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNonNullableValueType(Type? type)
         {
-            return type is not null && type.IsValueType && Nullable.GetUnderlyingType(type) is null;
+            return type?.IsValueType == true && Nullable.GetUnderlyingType(type) is null;
         }
 
         /// <summary>

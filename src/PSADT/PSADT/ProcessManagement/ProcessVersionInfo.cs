@@ -61,7 +61,7 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Retrieves version information for the specified process.
         /// </summary>
-        /// <remarks>This method provides a convenient way to access version information for a process, 
+        /// <remarks>This method provides a convenient way to access version information for a process,
         /// utilizing a lookup table to resolve NT paths.</remarks>
         /// <param name="process">The process for which to obtain version information. This parameter cannot be null.</param>
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
@@ -182,6 +182,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets information about the main module of the specified process.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <returns>A <see cref="MODULEINFO"/> structure containing information about the main module.</returns>
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
@@ -196,6 +198,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the version resource from the process memory.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <param name="moduleInfo">Information about the module from which to read the version resource.</param>
+        /// <returns>A byte array containing the version resource data.</returns>
+        /// <exception cref="BadImageFormatException">Thrown if the process does not have a valid PE header or resource directory.</exception>
+        /// <exception cref="FileFormatException">Thrown if the process does not contain a valid RT_VERSION resource.</exception>
         private static byte[] ReadVersionResource(SafeFileHandle processHandle, in MODULEINFO moduleInfo)
         {
             // Read the DOS header to make sure we have a valid PE header.
@@ -263,6 +270,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Navigates the resource directory structure to find the version resource.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <param name="resourceDirectoryAddress">The memory address of the resource directory.</param>
+        /// <param name="baseAddress">The base address of the module in the process's memory.</param>
+        /// <returns>A byte array containing the version resource data.</returns>
+        /// <exception cref="FileFormatException">Thrown if the process does not contain an RT_VERSION resource in its Level 1 data.</exception>
         private static byte[] FindVersionResource(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress)
         {
             // Read the resource directory
@@ -292,6 +304,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the actual version resource data.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <param name="resourceDirectoryAddress">The memory address of the resource directory.</param>
+        /// <param name="baseAddress">The base address of the module in the process's memory.</param>
+        /// <param name="offsetToData">The offset to the version resource data.</param>
+        /// <returns>A byte array containing the version resource data.</returns>
+        /// <exception cref="BadImageFormatException">Thrown if the process does not have a valid PE header or resource directory.</exception>
         private static byte[] ReadVersionResourceData(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress, uint offsetToData)
         {
             // Navigate through the directory levels using a do/while loop.
@@ -324,6 +342,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets language/codepage combinations from the Translation table.
         /// </summary>
+        /// <param name="versionResource">A span containing the version resource data.</param>
+        /// <returns>A read-only collection of language/codepage combinations.</returns>
         private static ReadOnlyCollection<string> GetTranslationTableCombinations(ReadOnlySpan<byte> versionResource)
         {
             // Return any translation pairs found in the version resource.

@@ -54,7 +54,7 @@ namespace PSADT.UserInterface.DialogState
         /// <summary>
         /// Represents a delegate used for logging operations with severity.
         /// </summary>
-        /// <remarks>This delegate is intended for internal use only.When invoked, it writes the 
+        /// <remarks>This delegate is intended for internal use only.When invoked, it writes the
         /// provided message with the specified severity to the configured logging destination.</remarks>
         internal readonly Action<string, LogSeverity> LogAction;
 

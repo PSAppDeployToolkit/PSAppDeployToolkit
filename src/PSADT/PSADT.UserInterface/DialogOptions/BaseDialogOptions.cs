@@ -211,8 +211,8 @@ namespace PSADT.UserInterface.DialogOptions
         /// image file or a valid base64-encoded image.</param>
         /// <param name="identifier">The name of the image parameter, used in exception messages to identify the source of errors.</param>
         /// <returns>The original image string if the image is valid.</returns>
-        /// <exception cref="FileNotFoundException">Thrown if the specified image file does not exist.</exception>
-        /// <exception cref="ArgumentException">Thrown if the specified image is not a valid image format.</exception>
+        /// <exception cref="FileFormatException">Thrown if the specified image file is invalid or corrupted.</exception>
+        /// <exception cref="BadImageFormatException">Thrown if the specified image is not in a valid format that can be loaded as an icon or bitmap.</exception>
         [StackTraceHidden]
         internal static string ThrowIfImageIsInvalid(string image, string identifier)
         {

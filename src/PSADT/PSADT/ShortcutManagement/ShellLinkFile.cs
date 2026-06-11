@@ -332,7 +332,7 @@ namespace PSADT.ShortcutManagement
         /// // Set hotkey using WScript.Shell-compatible string format
         /// shortcut.Hotkey = "ALT+CTRL+F";
         /// shortcut.Hotkey = "Ctrl+Shift+Q";
-        /// 
+        ///
         /// // Read and display hotkey
         /// Console.WriteLine(shortcut.Hotkey); // Output: "Ctrl+Shift+Q"
         /// </code>

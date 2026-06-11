@@ -54,6 +54,7 @@ namespace PSADT.TerminalServices
         /// Enumerates all active Windows Terminal Services (WTS) sessions and materializes the required data for each
         /// session.
         /// </summary>
+        /// <param name="sessionId">Optional session identifier to filter the results. If null, all sessions are returned.</param>
         /// <returns>An enumerable sequence of managed session snapshots created from the native session buffer.</returns>
         private static async IAsyncEnumerable<SessionInfo> GetAllAsync(uint? sessionId = null)
         {

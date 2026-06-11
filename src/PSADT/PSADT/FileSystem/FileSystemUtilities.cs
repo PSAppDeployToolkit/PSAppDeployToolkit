@@ -120,6 +120,7 @@ namespace PSADT.FileSystem
         /// validation of the path (URIs will be returned as relative as a result).
         /// Returns false if the path specified is relative to the current drive or working directory.
         /// </summary>
+        /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
         /// <remarks>
         /// Handles paths that use the alternate directory separator.  It is a frequent mistake to
         /// assume that rooted paths <see cref="Path.IsPathRooted(string)"/> are not relative.  This isn't the case.
@@ -142,6 +143,7 @@ namespace PSADT.FileSystem
         /// validation of the path (URIs will be returned as relative as a result).
         /// Returns false if the path specified is relative to the current drive or working directory.
         /// </summary>
+        /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
         /// <remarks>
         /// Handles paths that use the alternate directory separator.  It is a frequent mistake to
         /// assume that rooted paths <see cref="Path.IsPathRooted(string)"/> are not relative.  This isn't the case.
@@ -191,7 +193,7 @@ namespace PSADT.FileSystem
             using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))).ThrowIfDirectoryDoesNotExist()];
             int workerCount = Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32));
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
-            _ = Parallel.For(0, workerCount, workerIndex =>
+            _ = Parallel.For(0, workerCount, __ =>
             {
                 foreach (string dir in queue.GetConsumingEnumerable())
                 {
@@ -547,10 +549,7 @@ namespace PSADT.FileSystem
                 {
                     throw new DirectoryNotFoundException($"The specified directory does not exist: {path.FullName}");
                 }
-                else
-                {
-                    throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
-                }
+                throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
             }
 
             // Retrieve the security descriptor for the file.

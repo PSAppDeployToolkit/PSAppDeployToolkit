@@ -33,6 +33,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Reads the SMBIOS BIOS Information (Type 0) structure.
         /// </summary>
+        /// <param name="buffer">The buffer containing the SMBIOS data.</param>
         /// <returns>The BIOS information or null if not found.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static PlatformFirmwareInformation Get(ReadOnlySpan<byte> buffer = default)
@@ -43,6 +44,10 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Parses a BIOS Information (Type 0) structure.
         /// </summary>
+        /// <param name="buffer">The buffer containing the SMBIOS data.</param>
+        /// <param name="structureOffset">The offset of the structure within the buffer.</param>
+        /// <param name="structureLength">The length of the structure in bytes.</param>
+        /// <returns>The parsed BIOS information.</returns>
         private static PlatformFirmwareInformation Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
             // Calculate ROM and extended ROM size (if available and ROM size byte is 0xFF).
@@ -168,6 +173,21 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatformFirmwareInformation"/> class.
         /// </summary>
+        /// <param name="structureLength">The length of the structure in bytes.</param>
+        /// <param name="handle">The handle of the structure.</param>
+        /// <param name="vendor">The BIOS vendor name.</param>
+        /// <param name="version">The BIOS version.</param>
+        /// <param name="startingAddressSegment">The BIOS starting address segment (null when not applicable on UEFI-based systems).</param>
+        /// <param name="releaseDate">The BIOS release date, if supplied by the SMBIOS string table and successfully parsed.</param>
+        /// <param name="romSizeBytes">The BIOS ROM size in bytes.</param>
+        /// <param name="characteristics">The BIOS characteristics.</param>
+        /// <param name="characteristicsExt1">The BIOS characteristics extension byte 1.</param>
+        /// <param name="characteristicsExt2">The BIOS characteristics extension byte 2.</param>
+        /// <param name="systemBiosMajorRelease">The system BIOS major release.</param>
+        /// <param name="systemBiosMinorRelease">The system BIOS minor release.</param>
+        /// <param name="embeddedControllerMajorRelease">The embedded controller firmware major release.</param>
+        /// <param name="embeddedControllerMinorRelease">The embedded controller firmware minor release.</param>
+        /// <param name="extendedRomSize">The raw decoded Extended ROM Size field (present only when legacy size byte is 0xFF and length >= 26).</param>
         private PlatformFirmwareInformation(
             byte structureLength,
             ushort handle,
@@ -316,7 +336,7 @@ namespace PSADT.SMBIOS
             string version = Version ?? string.Empty;
             string date = $" ({ReleaseDate:yyyy-MM-dd})";
             string spaceIfBoth = string.IsNullOrWhiteSpace(vendor) || string.IsNullOrWhiteSpace(version) ? string.Empty : " ";
-            return $"{vendor}{spaceIfBoth}{version}{date}";
+            return vendor + spaceIfBoth + version + date;
         }
     }
 }

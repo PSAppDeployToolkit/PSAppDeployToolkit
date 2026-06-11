@@ -30,7 +30,8 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="engineIntrinsics">The PowerShell engine intrinsics.</param>
         /// <param name="inputData">The input value to transform.</param>
         /// <returns>A <see cref="TimeSpan"/> value derived from the input.</returns>
-        /// <exception cref="ArgumentTransformationMetadataException">Thrown when the input cannot be transformed into a <see cref="TimeSpan"/>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the input value is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the input value cannot be transformed into a TimeSpan.</exception>
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {
             while (inputData is PSObject psObject)
@@ -131,7 +132,7 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="seconds">The number of seconds to convert. May be fractional. Must be within the valid range for <see
         /// cref="TimeSpan.FromSeconds(double)"/>.</param>
         /// <returns>A <see cref="TimeSpan"/> that represents the specified number of seconds.</returns>
-        /// <exception cref="ArgumentTransformationMetadataException">Thrown when <paramref name="seconds"/> is outside the valid range for <see cref="TimeSpan"/> or is not a
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="seconds"/> is outside the valid range for <see cref="TimeSpan"/> or is not a
         /// valid value.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private static TimeSpan TimeSpanFromSeconds(double seconds)

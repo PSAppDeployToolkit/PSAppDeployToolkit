@@ -47,7 +47,7 @@ namespace PSADT.SafeHandles
         /// <returns>true if the handle was released successfully; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

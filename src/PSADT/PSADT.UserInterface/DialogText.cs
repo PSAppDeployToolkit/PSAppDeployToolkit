@@ -25,13 +25,13 @@ namespace PSADT.UserInterface
         /// </item> </list> The regular expression is compiled for improved performance during repeated use and supports
         /// nested tag combinations.</remarks>
         internal static readonly Regex FormattingRegex = new(
-            @"(?<UrlLinkSimple>\[url\](?<UrlLinkSimpleContent>.+?)\[/url\])" + @"|" +
-            @"(?<UrlLinkDescriptive>\[url=(?<UrlLinkUrl>[^\]]+)\](?<UrlLinkDescription>.+?)\[/url\])" + @"|" +
-            @"(?<OpenAccent>\[accent\])" + @"|" +
-            @"(?<CloseAccent>\[/accent\])" + @"|" +
-            @"(?<OpenBold>\[bold\])" + @"|" +
-            @"(?<CloseBold>\[/bold\])" + @"|" +
-            @"(?<OpenItalic>\[italic\])" + @"|" +
+            @"(?<UrlLinkSimple>\[url\](?<UrlLinkSimpleContent>.+?)\[/url\])" + "|" +
+            @"(?<UrlLinkDescriptive>\[url=(?<UrlLinkUrl>[^\]]+)\](?<UrlLinkDescription>.+?)\[/url\])" + "|" +
+            @"(?<OpenAccent>\[accent\])" + "|" +
+            @"(?<CloseAccent>\[/accent\])" + "|" +
+            @"(?<OpenBold>\[bold\])" + "|" +
+            @"(?<CloseBold>\[/bold\])" + "|" +
+            @"(?<OpenItalic>\[italic\])" + "|" +
             @"(?<CloseItalic>\[/italic\])",
             RegexOptions.Compiled);
     }

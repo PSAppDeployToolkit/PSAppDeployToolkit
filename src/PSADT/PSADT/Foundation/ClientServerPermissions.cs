@@ -30,9 +30,9 @@ namespace PSADT.Foundation
         /// and point to existing files.</param>
         /// <param name="elevatedTokenType">An optional parameter specifying the type of elevated token to use when checking permissions.
         /// The default value is <see cref="ElevatedTokenType.None"/>.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="runAsActiveUser"/> is <see langword="null"/>.</exception>
         /// <exception cref="DriveNotFoundException">Thrown if any path in <paramref name="extraPaths"/> is not an absolute path.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any path in <paramref name="extraPaths"/> or the default assemblies does not exist.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the permissions cannot be modified for any path due to insufficient privileges or if the file is located on a network share.</exception>"
         internal static async Task Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths = null, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None)
         {
             // Get the primary token for the user if they have a valid session ID, otherwise we'll just use their SID.
@@ -85,7 +85,7 @@ namespace PSADT.Foundation
         /// <summary>
         /// Gets the path that contains this assembly (and all required client/server assembly files).
         /// </summary>
-        private static readonly FrozenSet<FileInfo> _assemblies = FrozenSet.ToFrozenSet(ClientServerUtilities.ClientServerDirectory.GetFiles("*", SearchOption.AllDirectories));
+        private static readonly FrozenSet<FileInfo> _assemblies = ClientServerUtilities.ClientServerDirectory.GetFiles("*", SearchOption.AllDirectories).ToFrozenSet();
 
         /// <summary>
         /// Represents the required file system permissions for the operation.

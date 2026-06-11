@@ -5,7 +5,5 @@
     /// </summary>
     /// <remarks>This interface is used to provide type safety for dialog results
     /// in the client-server communication layer.</remarks>
-    internal interface IDialogResult
-    {
-    }
+    internal interface IDialogResult;
 }

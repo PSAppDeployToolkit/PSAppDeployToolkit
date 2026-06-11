@@ -401,6 +401,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         /// <remarks>The form is positioned within the working area of the screen that contains the form. The position is determined by the <see cref="dialogPosition"/> field, which specifies predefined locations such as top-left, center, or bottom-right. If the calculated position exceeds the working area bounds, it is clamped to ensure the form remains fully visible.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         private void PositionForm()
         {
             // Get the working area (pixels not DIPs)

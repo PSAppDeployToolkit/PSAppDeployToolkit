@@ -39,6 +39,7 @@ namespace PSADT.SMBIOS
         /// useful for determining the buffer size required to retrieve the table data. The method relies on the
         /// specified firmware table provider and table identifier to locate the appropriate table.</remarks>
         /// <returns>The size of the system firmware table, in bytes.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the SMBIOS table size exceeds supported limits.</exception>
         internal static int GetRequiredLength()
         {
             uint size = NativeMethods.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, null);
@@ -52,6 +53,7 @@ namespace PSADT.SMBIOS
         /// data. Ensure that the buffer is properly sized to avoid data truncation.</remarks>
         /// <param name="buffer">A span of bytes where the SMBIOS firmware table will be written. The buffer must be large enough to hold the
         /// table data.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the number of bytes written does not match the buffer length.</exception>
         internal static void FillBuffer(Span<byte> buffer)
         {
             uint written = NativeMethods.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, buffer);

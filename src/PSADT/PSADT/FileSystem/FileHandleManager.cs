@@ -196,7 +196,7 @@ namespace PSADT.FileSystem
                 typeTable.Add(typeInfo.TypeIndex, typeInfo.TypeName.ToManagedString());
                 ptrOffset += objectTypeSize + (int)NativeMethods.ALIGN_UP_POINTER<nint>(typeInfo.TypeName.MaximumLength);
             }
-            ObjectTypeLookupTable = FrozenDictionary.ToFrozenDictionary(typeTable);
+            ObjectTypeLookupTable = typeTable.ToFrozenDictionary();
         }
 
         /// <summary>

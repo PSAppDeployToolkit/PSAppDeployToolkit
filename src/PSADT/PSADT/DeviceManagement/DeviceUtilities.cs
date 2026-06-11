@@ -108,6 +108,8 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the attempt to restart the computer fails or if shutdown.exe returns a non-zero exit code.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the 'Environment.Exit()' method does not terminate the process as expected.</exception>
         [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
         internal static async Task RestartComputer()

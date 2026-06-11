@@ -16,7 +16,7 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<HWND> EnumWindows()
         {
             List<HWND> windows = [];
-            _ = NativeMethods.EnumWindows((hWnd, lParam) =>
+            _ = NativeMethods.EnumWindows((hWnd, _) =>
             {
                 if (hWnd != HWND.Null)
                 {

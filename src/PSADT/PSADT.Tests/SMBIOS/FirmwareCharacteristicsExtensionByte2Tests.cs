@@ -57,7 +57,7 @@ namespace PSADT.Tests.SMBIOS
         /// FirmwareCharacteristicsExtensionByte2 flag and its corresponding bit position as an integer.</returns>
         public static TheoryData<byte, int> BitAssignments()
         {
-            TheoryData<byte, int> data = new()
+            return new()
             {
                 { (byte)FirmwareCharacteristicsExtensionByte2.BiosBootSpecificationSupported, 0 },
                 { (byte)FirmwareCharacteristicsExtensionByte2.FunctionKeyNetworkBootSupported, 1 },
@@ -67,7 +67,6 @@ namespace PSADT.Tests.SMBIOS
                 { (byte)FirmwareCharacteristicsExtensionByte2.ManufacturingModeSupported, 5 },
                 { (byte)FirmwareCharacteristicsExtensionByte2.ManufacturingModeEnabled, 6 }
             };
-            return data;
         }
     }
 }

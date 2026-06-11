@@ -121,6 +121,7 @@ namespace PSADT.SMBIOS
         /// <param name="targetType">The SMBIOS structure type to search for.</param>
         /// <param name="parser">Function to parse the structure from the buffer.</param>
         /// <returns>The parsed structure or null if not found.</returns>
+        /// <exception cref="NotSupportedException">Thrown if multiple SMBIOS structures of the specified type are found in the buffer.</exception>"
         internal static T ParseStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
         {
             // Get all structures that match the target type.
@@ -151,6 +152,10 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Extracts a string from the SMBIOS string section.
         /// </summary>
+        /// <param name="buffer">The SMBIOS buffer containing the string data.</param>
+        /// <param name="stringTableOffset">The offset to the string table within the buffer.</param>
+        /// <param name="stringIndex">The 1-based index of the string to retrieve.</param>
+        /// <returns>The requested string, or null if the index is 0 or the string is not found.</returns>
         internal static string? GetSmbiosString(ReadOnlySpan<byte> buffer, int stringTableOffset, byte stringIndex)
         {
             // SMBIOS string indices are 1-based; 0 means no string.

@@ -8,6 +8,7 @@ namespace PSAppDeployToolkit.Foundation
     [Flags]
     internal enum DeploymentSettings : uint
     {
+        None = 0,
         Disposed = 1 << 0,
         CompatibilityMode = 1 << 1,
         SuppressRebootPassThru = 1 << 2,

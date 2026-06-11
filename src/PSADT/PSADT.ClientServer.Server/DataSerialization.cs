@@ -420,6 +420,12 @@ namespace PSADT.ClientServer
             /// <summary>
             /// Maps a type to its data contract name during serialization.
             /// </summary>
+            /// <param name="type">The type to be resolved.</param>
+            /// <param name="declaredType">The declared type of the object.</param>
+            /// <param name="knownTypeResolver">The known type resolver to use for fallback resolution.</param>
+            /// <param name="typeName">The resulting data contract name.</param>
+            /// <param name="typeNamespace">The resulting data contract namespace.</param>
+            /// <returns><see langword="true"/> if the type was successfully resolved; otherwise, <see langword="false"/>.</returns>
             public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, out XmlDictionaryString? typeNamespace)
             {
                 // Handle ListDictionaryInternal and Hashtable - they both map to the same contract.
@@ -438,6 +444,11 @@ namespace PSADT.ClientServer
             /// <summary>
             /// Maps a data contract name back to a type during deserialization.
             /// </summary>
+            /// <param name="typeName">The data contract name to be resolved.</param>
+            /// <param name="typeNamespace">The data contract namespace to be resolved.</param>
+            /// <param name="declaredType">The declared type of the object.</param>
+            /// <param name="knownTypeResolver">The known type resolver to use for fallback resolution.</param>
+            /// <returns>The resolved type, or <see langword="null"/> if the type cannot be resolved.</returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
             {

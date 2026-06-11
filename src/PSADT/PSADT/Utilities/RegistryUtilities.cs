@@ -40,7 +40,7 @@ namespace PSADT.Utilities
         /// <param name="newKeyName">The new name for the subkey. This cannot be null or empty.</param>
         public static void RenameRegistryKey(string keyPath, string? subKeyName, string newKeyName)
         {
-            using SafeRegistryHandle hKey = OpenRegistryKey(keyPath, REG_SAM_FLAGS.KEY_READ | REG_SAM_FLAGS.KEY_WRITE);
+            using SafeRegistryHandle hKey = OpenRegistryKey(keyPath);
             _ = NativeMethods.RegRenameKey(hKey, subKeyName, newKeyName);
         }
 
@@ -56,6 +56,7 @@ namespace PSADT.Utilities
         /// <returns>A read-only <see cref="RegistryKey"/> object representing the specified registry key.</returns>
         /// <exception cref="FormatException">Thrown if <paramref name="keyPath"/> is null, empty, not in a valid format, specifies an unrecognized hive,
         /// or if the specified registry key does not exist.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the specified registry key does not exist.</exception>
         internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable = false)
         {
             keyPath = keyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null);
@@ -74,7 +75,7 @@ namespace PSADT.Utilities
                 "HKEY_CURRENT_CONFIG" or "HKCC" => Registry.CurrentConfig,
                 _ => throw new FormatException($"Invalid registry hive: {hiveName}"),
             };
-            return baseKey.OpenSubKey(keyPath[(firstBackslashIndex + 1)..], writable) ?? throw new InvalidOperationException("The specified registry key does not exist."); ;
+            return baseKey.OpenSubKey(keyPath[(firstBackslashIndex + 1)..], writable) ?? throw new InvalidOperationException("The specified registry key does not exist.");
         }
 
         /// <summary>

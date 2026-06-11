@@ -8,6 +8,7 @@ namespace PSADT.Interop
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "These values are precisely as they're defined in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1157:Composite enum value contains undefined flag", Justification = "This is how the Win32 API defines it.")]
     [Flags]
     internal enum SEE_MASK_FLAGS : uint
     {
@@ -62,6 +63,11 @@ namespace PSADT.Interop
         SEE_MASK_FLAG_DDEWAIT = Windows.Win32.PInvoke.SEE_MASK_FLAG_DDEWAIT,
 
         /// <summary>
+        /// NOASYNC
+        /// </summary>
+        SEE_MASK_NOASYNC = Windows.Win32.PInvoke.SEE_MASK_NOASYNC,
+
+        /// <summary>
         /// DOENVSUBST
         /// </summary>
         SEE_MASK_DOENVSUBST = Windows.Win32.PInvoke.SEE_MASK_DOENVSUBST,
@@ -82,19 +88,14 @@ namespace PSADT.Interop
         SEE_MASK_NO_CONSOLE = Windows.Win32.PInvoke.SEE_MASK_NO_CONSOLE,
 
         /// <summary>
-        /// NOZONECHECKS
-        /// </summary>
-        SEE_MASK_NOZONECHECKS = Windows.Win32.PInvoke.SEE_MASK_NOZONECHECKS,
-
-        /// <summary>
-        /// NOASYNC
-        /// </summary>
-        SEE_MASK_NOASYNC = Windows.Win32.PInvoke.SEE_MASK_NOASYNC,
-
-        /// <summary>
         /// HMONITOR
         /// </summary>
         SEE_MASK_HMONITOR = Windows.Win32.PInvoke.SEE_MASK_HMONITOR,
+
+        /// <summary>
+        /// NOZONECHECKS
+        /// </summary>
+        SEE_MASK_NOZONECHECKS = Windows.Win32.PInvoke.SEE_MASK_NOZONECHECKS,
 
         /// <summary>
         /// NOQUERYCLASSSTORE

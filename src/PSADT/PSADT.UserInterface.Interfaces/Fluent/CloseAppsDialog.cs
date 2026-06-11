@@ -462,6 +462,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Dispose managed and unmanaged resources
         /// </summary>
+        /// <param name="disposing">true if called from Dispose; false if called from finalizer.</param>
         private protected override void Dispose(bool disposing)
         {
             if (Disposed)

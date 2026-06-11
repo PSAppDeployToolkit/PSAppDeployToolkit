@@ -111,6 +111,6 @@ namespace PSADT.UserInterface.DialogResults
         /// <remarks>This dictionary enables consistent translation of user responses from message boxes
         /// to dialog box results within the deployment session. The mapping is intended for internal use and is not
         /// typically accessed directly by consumers of the API.</remarks>
-        private static readonly FrozenDictionary<MESSAGEBOX_RESULT, DialogBoxResult> MessageBoxResultMap = FrozenDictionary.ToFrozenDictionary(typeof(DialogBoxResult).GetFields(BindingFlags.Public | BindingFlags.Static).ToDictionary(static field => (MESSAGEBOX_RESULT)(nint)(DialogBoxResult)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field.")), static field => (DialogBoxResult)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))));
+        private static readonly FrozenDictionary<MESSAGEBOX_RESULT, DialogBoxResult> MessageBoxResultMap = typeof(DialogBoxResult).GetFields(BindingFlags.Public | BindingFlags.Static).ToDictionary(static field => (MESSAGEBOX_RESULT)(nint)(DialogBoxResult)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field.")), static field => (DialogBoxResult)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToFrozenDictionary();
     }
 }

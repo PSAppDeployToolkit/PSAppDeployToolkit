@@ -109,6 +109,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="options">The options specifying the applications to be closed and other dialog configurations.</param>
         /// <param name="state">The current state of the dialog, including services for tracking running processes and logging.</param>
         /// <returns>A string representing the user's response or selection from the dialog.</returns>
+        /// <exception cref="InvalidProgramException">Thrown if the WPF application fails to initialize or the dispatcher throws an exception.</exception>
         internal static async Task<CloseAppsDialogResult> ShowCloseAppsDialogAsync(DialogStyle dialogStyle, CloseAppsDialogOptions options, CloseAppsDialogState state)
         {
             // Start the RunningProcessService if it is not already running.
@@ -226,6 +227,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options for configuring the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
+        /// <exception cref="NotSupportedException">Thrown if the caller is using ServiceUI, as input dialogs are not supported in that context.</exception>
         internal static async Task<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
             if (AccountUtilities.CallerUsingServiceUI)
@@ -304,6 +306,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="progressDetailMessage">Optional new detail message.</param>
         /// <param name="progressPercentage">Optional progress percentage (0-100). If provided, the progress bar becomes determinate.</param>
         /// <param name="messageAlignment">Optional message alignment. If provided, the message alignment is updated.</param>
+        /// <exception cref="InvalidOperationException">Thrown if no progress dialog is currently open. Ensure a progress dialog is displayed before attempting to update it.</exception>
         internal static async Task UpdateProgressDialogAsync(string? progressMessage = null, string? progressDetailMessage = null, double? progressPercentage = null, DialogMessageAlignment? messageAlignment = null)
         {
             if (progressDialog is null)
@@ -324,6 +327,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Closes the currently open dialog, if any.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if no progress dialog is currently open. Ensure a progress dialog is displayed before attempting to close it.</exception>"
         internal static async Task CloseProgressDialogAsync()
         {
             if (progressDialog is null)
@@ -364,7 +368,7 @@ namespace PSADT.UserInterface.Interfaces
                 // Correct the registry data for the AUMID. This can reference stale info from a previous run.
                 string appIconPath = options.AppTaskbarIconImage ?? options.AppIconImage;
                 System.Drawing.Icon iconObj = Classic.ClassicDialog.GetIcon(appIconPath);
-                string regKey = $@"{(AccountUtilities.CallerIsAdmin ? @"HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
+                string regKey = $@"{(AccountUtilities.CallerIsAdmin ? "HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
                 Registry.SetValue(regKey, "DisplayName", options.AppTitle, RegistryValueKind.String);
                 if (MiscUtilities.GetBase64StringBytes(appIconPath) is not null)
                 {
@@ -415,7 +419,7 @@ namespace PSADT.UserInterface.Interfaces
                 throw new InvalidOperationException("Cannot update a notify icon while one is not open.");
             }
             ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
-            return InvokeDialogActionAsync(() => { notifyIcon.Text = messageText; });
+            return InvokeDialogActionAsync(() => notifyIcon.Text = messageText);
         }
 
         /// <summary>
@@ -586,6 +590,8 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Invokes the specified action on the WPF UI thread.
         /// </summary>
+        /// <param name="callback">The action to invoke on the WPF UI thread.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Task InvokeDialogActionAsync(Action callback)
         {
@@ -595,6 +601,9 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Invokes the specified function on the WPF UI thread.
         /// </summary>
+        /// <param name="callback">The function to invoke on the WPF UI thread.</param>
+        /// <typeparam name="TResult">The type of the result returned by the function.</typeparam>
+        /// <returns>A task that represents the asynchronous operation, containing the result of the function.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Task<TResult> InvokeDialogActionAsync<TResult>(Func<TResult> callback)
         {
@@ -634,20 +643,20 @@ namespace PSADT.UserInterface.Interfaces
             { DialogStyle.Classic, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
-                { DialogType.CustomDialog, static (options, state) => new Classic.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, state) => new Classic.InputDialog((InputDialogOptions)options) },
-                { DialogType.ListSelectionDialog, static (options, state) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, state) => new Classic.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, state) => new Classic.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CustomDialog, static (options, _) => new Classic.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, _) => new Classic.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, static (options, _) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, _) => new Classic.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, _) => new Classic.RestartDialog((RestartDialogOptions)options) },
             })},
             { DialogStyle.Fluent, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
                 { DialogType.CloseAppsDialog, static (options, state) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
-                { DialogType.CustomDialog, static (options, state) => new Fluent.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, state) => new Fluent.InputDialog((InputDialogOptions)options) },
-                { DialogType.ListSelectionDialog, static (options, state) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, state) => new Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, state) => new Fluent.RestartDialog((RestartDialogOptions)options) },
+                { DialogType.CustomDialog, static (options, _) => new Fluent.CustomDialog((CustomDialogOptions)options) },
+                { DialogType.InputDialog, static (options, _) => new Fluent.InputDialog((InputDialogOptions)options) },
+                { DialogType.ListSelectionDialog, static (options, _) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
+                { DialogType.ProgressDialog, static (options, _) => new Fluent.ProgressDialog((ProgressDialogOptions)options) },
+                { DialogType.RestartDialog, static (options, _) => new Fluent.RestartDialog((RestartDialogOptions)options) },
             })},
         });
     }

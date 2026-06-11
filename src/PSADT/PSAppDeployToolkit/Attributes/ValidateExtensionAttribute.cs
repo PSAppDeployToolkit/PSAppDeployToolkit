@@ -35,9 +35,8 @@ namespace PSAppDeployToolkit.Attributes
         /// Validates that an element in the argument has one of the extensions specified in the constructor.
         /// </summary>
         /// <param name="element">The argument value to validate.</param>
-        /// <exception cref="ValidationMetadataException">
-        /// Thrown when <paramref name="element"/> fails validation based on the configured rules.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">Thrown when the argument is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the argument is not a string or does not have a valid extension.</exception>
         protected override void ValidateElement(object element)
         {
             if (element is null || element == AutomationNull.Value || element == NullString.Value)

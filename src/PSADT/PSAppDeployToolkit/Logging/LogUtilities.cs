@@ -38,6 +38,8 @@ namespace PSAppDeployToolkit.Logging
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logStyle">The type of log.</param>
+        /// <exception cref="InvalidProgramException">Thrown when the logging operation encounters an unexpected state.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the provided dictionary contains a null key or a null value.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStreamType hostLogStreamType, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null)
         {
@@ -208,7 +210,7 @@ namespace PSAppDeployToolkit.Logging
         private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
             FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green } }),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>()),
             FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow } }),
             FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red } }),
         ]);

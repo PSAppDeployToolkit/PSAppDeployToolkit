@@ -67,7 +67,7 @@ namespace PSADT.AccountManagement
                 wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
             }
             LocalSystemSid = wellKnownSids[WellKnownSidType.LocalSystemSid];
-            WellKnownSidLookupTable = FrozenDictionary.ToFrozenDictionary(wellKnownSids);
+            WellKnownSidLookupTable = wellKnownSids.ToFrozenDictionary();
 
             // Determine if the caller is the local system account.
             CallerIsInteractive = Environment.UserInteractive;
@@ -149,7 +149,7 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Represents the security identifier (SID) of the caller.
         /// </summary>
-        /// <remarks>This field provides the SID associated with the caller, which can be used for 
+        /// <remarks>This field provides the SID associated with the caller, which can be used for
         /// security-related operations such as access control or identity verification.</remarks>
         public static readonly SecurityIdentifier CallerSid;
 

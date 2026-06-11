@@ -92,6 +92,7 @@ namespace PSADT.UserInterface
         /// required for recognizing the icon file format.</remarks>
         /// <param name="stream">The stream to examine. Must have a length of at least 6 bytes to be valid for icon detection.</param>
         /// <returns>true if the stream starts with the ICONDIR header indicating it is an icon file; otherwise, false.</returns>
+        /// <exception cref="ArgumentException">Thrown if the stream is not readable or seekable.</exception>
         internal static bool IsStreamAnIcon(Stream stream)
         {
             // Confirm the stream is valid.

@@ -10,6 +10,8 @@ namespace PSADT.ClientServer
     /// Provides secure, authenticated encryption and key exchange for inter-process communication using Elliptic Curve
     /// Diffie-Hellman (ECDH) and AES-256-GCM.
     /// </summary>
+    /// <typeparam name="TSelf">The specific subclass type that implements the role-specific key exchange protocol. This allows for
+    /// fluent method chaining and type-safe operations within the subclass.</typeparam>
     /// <remarks>
     /// <para>
     /// PipeEncryption manages the full lifecycle of key exchange and message encryption for secure communication
@@ -167,8 +169,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="encryptedData">The encrypted data containing nonce, ciphertext, and authentication tag.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the encrypted data is too short.</exception>
         private protected byte[] Decrypt(byte[] encryptedData)
         {
             // Verify state and parameters.

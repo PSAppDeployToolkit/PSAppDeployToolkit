@@ -21,7 +21,7 @@ namespace PSADT.ProcessManagement
     /// <item><description>Other commonly accepted Windows command line parsing conventions</description></item>
     /// </list>
     /// The implementation uses tokenization with multiple passes and lookahead/lookbehind capabilities
-    /// to ensure 100% accurate parsing without compromise. Performance is optimized using Span&lt;T&gt; 
+    /// to ensure 100% accurate parsing without compromise. Performance is optimized using Span&lt;T&gt;
     /// where beneficial, but accuracy takes precedence over performance.
     /// </remarks>
     public static class CommandLineUtilities
@@ -53,9 +53,9 @@ namespace PSADT.ProcessManagement
         /// <param name="argv">The array of arguments to convert.</param>
         /// <param name="strict">If true, use strict escaping rules. If false, use compatible escaping rules.</param>
         /// <returns>A properly escaped command line string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="argv"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="argv"/> contains invalid arguments.</exception>
         /// <remarks>
-        /// This method ensures that the resulting command line, when parsed back through 
+        /// This method ensures that the resulting command line, when parsed back through
         /// <see cref="CommandLineToArgumentList(string, bool)"/>, will yield the original arguments.
         /// Special characters are properly escaped according to Windows conventions.
         /// </remarks>
@@ -433,7 +433,7 @@ namespace PSADT.ProcessManagement
             {
                 // Check if this part ends with an executable extension.
                 string currentPath = string.Join(" ", tokens.Take(i + 1));
-                if (CommonExecutableExtensions.FirstOrDefault(ext => currentPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) is not null)
+                if (CommonExecutableExtensions.Any(ext => currentPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
                 {
                     return (currentPath, i + 1);
                 }
