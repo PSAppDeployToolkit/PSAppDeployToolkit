@@ -23,6 +23,6 @@
         /// <summary>
         /// An error icon.
         /// </summary>
-        Error = 3
+        Error = 3,
     }
 }

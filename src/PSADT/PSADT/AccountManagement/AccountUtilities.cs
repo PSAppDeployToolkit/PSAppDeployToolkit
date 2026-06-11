@@ -34,8 +34,8 @@ namespace PSADT.AccountManagement
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-                CallerGroups = identity.Groups?.Select(static g => (SecurityIdentifier)g).ToFrozenSet() ?? FrozenSet<SecurityIdentifier>.Empty;
-                CallerIsServiceAccount = CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null));
+                CallerGroups = identity.Groups?.Cast<SecurityIdentifier>().ToFrozenSet() ?? FrozenSet<SecurityIdentifier>.Empty;
+                CallerIsServiceAccount = CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, domainSid: null));
                 CallerSid = identity.User ?? throw new NotSupportedException("Current Windows identity does not have a user SID.");
                 CallerUsername = new(identity.Name);
             }

@@ -89,10 +89,11 @@ namespace PSADT.SMBIOS
         /// <returns>A read-only list of <see cref="SmbiosTablePosition"/> objects, each representing the position and length of
         /// a found structure.</returns>
         /// <exception cref="SmbiosTypeNotFoundException">Thrown if no SMBIOS structures of the specified <paramref name="targetType"/> are found in the buffer.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static IReadOnlyList<SmbiosTablePosition> GetStructureOffsets(ReadOnlySpan<byte> buffer, SmbiosType targetType)
         {
             // Loop through the data and find all instances of the target structure.
-            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
+            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             List<SmbiosTablePosition> offsets = []; int offset = 8;
             while (offset < buffer.Length - 4)
             {
@@ -213,6 +214,7 @@ namespace PSADT.SMBIOS
         /// <param name="buffer">The SMBIOS buffer containing version data.</param>
         /// <returns>SMBIOS version information if valid; otherwise throws exception.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "This is an example struct that I'd like to leave here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private static SmbiosVersionInfo ParseSmbiosVersion(ReadOnlySpan<byte> buffer)
         {
             /*
@@ -226,7 +228,7 @@ namespace PSADT.SMBIOS
                 BYTE    SMBIOSTableData[];
             };
             */
-            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
+            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             byte major = buffer[1]; byte minor = buffer[2]; byte dmiRevision = buffer[3];
             SmbiosEntryPointType entryPointType = major >= 3 ? SmbiosEntryPointType.Smbios3x : SmbiosEntryPointType.Smbios2x;
             return new(major, minor, dmiRevision, entryPointType);

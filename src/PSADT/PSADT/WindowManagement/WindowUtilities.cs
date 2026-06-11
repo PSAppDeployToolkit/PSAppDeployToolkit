@@ -13,6 +13,7 @@ namespace PSADT.WindowManagement
     /// <summary>
     /// Provides methods for interacting with UI automation on Windows.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class WindowUtilities
     {
         /// <summary>
@@ -51,24 +52,25 @@ namespace PSADT.WindowManagement
         /// matching one or more of the specified handles will be included.</param>
         /// <returns>A read-only list of <see cref="WindowInfo"/> objects containing details about the visible windows that match
         /// the specified filters. If no filters are provided, all visible windows are included.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static ReadOnlyCollection<WindowInfo> GetProcessWindowInfo(IReadOnlyList<Process>? parentProcesses = null, IReadOnlyList<string>? parentProcessFilter = null, IReadOnlyList<int>? parentProcessIdFilter = null, IReadOnlyList<nint>? parentProcessMainWindowHandleFilter = null, string? windowTitleRegex = null, IReadOnlyList<nint>? windowHandleFilter = null)
         {
             // Ensure list inputs are not empty if they're not null.
             if (parentProcesses is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcesses.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcesses.Count, nameof(parentProcesses));
             }
             if (parentProcessFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcessFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessFilter.Count, nameof(parentProcessFilter));
             }
             if (parentProcessIdFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcessIdFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessIdFilter.Count, nameof(parentProcessIdFilter));
             }
             if (parentProcessMainWindowHandleFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count, nameof(parentProcessMainWindowHandleFilter));
             }
             if (windowTitleRegex is not null)
             {
@@ -76,7 +78,7 @@ namespace PSADT.WindowManagement
             }
             if (windowHandleFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count, nameof(windowHandleFilter));
             }
 
             // Get the list of processes based on the provided filters and start finding applicable windows.

@@ -6,6 +6,7 @@ namespace PSADT.WindowsRuntime.UI.Notifications
     /// <summary>
     /// Provides utility methods for querying Windows toast notification state.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class NotificationsUtilities
     {
         /// <summary>

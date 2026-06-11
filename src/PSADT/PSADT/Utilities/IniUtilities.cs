@@ -35,7 +35,7 @@ namespace PSADT.Utilities
             uint len;
             try
             {
-                len = NativeMethods.GetPrivateProfileString(section, key, null, buffer, filepath);
+                len = NativeMethods.GetPrivateProfileString(section, key, lpDefault: null, buffer, filepath);
             }
             catch (FileNotFoundException)
             {
@@ -118,7 +118,7 @@ namespace PSADT.Utilities
                     continue;
                 }
 
-                int separatorIndex = entry.IndexOf('=');
+                int separatorIndex = entry.IndexOf('=', StringComparison.OrdinalIgnoreCase);
                 if (separatorIndex <= 0)
                 {
                     continue;
@@ -162,7 +162,7 @@ namespace PSADT.Utilities
         {
             if (content is null)
             {
-                _ = NativeMethods.WritePrivateProfileSection(section, null, filepath);
+                _ = NativeMethods.WritePrivateProfileSection(section, lpString: null, filepath);
                 return;
             }
             StringBuilder entries = new();
@@ -172,15 +172,15 @@ namespace PSADT.Utilities
                 {
                     if (entry.Key is not (string or ValueType))
                     {
-                        throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.");
+                        throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.", nameof(content));
                     }
                     if (entry.Key?.ToString()?.Trim() is not string key || string.IsNullOrWhiteSpace(key))
                     {
-                        throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]");
+                        throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]", nameof(content));
                     }
                     if (entry.Value is not (string or ValueType or null))
                     {
-                        throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.");
+                        throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
                     }
                     _ = entries.Append(key);
                     _ = entries.Append('=');

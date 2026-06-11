@@ -47,10 +47,11 @@ namespace PSADT.Foundation
         /// <param name="sessionId">The session ID of the user.</param>
         /// <param name="isLocalAdmin">Indicates whether the user has local administrator privileges. Can be <see langword="null"/> if unknown.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value);
-            ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value, nameof(nTAccount));
+            ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value, nameof(sID));
             NTAccountValue = nTAccount.Value;
             SIDValue = sID.Value;
             SessionId = sessionId;
@@ -96,7 +97,7 @@ namespace PSADT.Foundation
         {
             get
             {
-                int divider = NTAccount.Value.IndexOf('\\');
+                int divider = NTAccount.Value.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
                 return divider != -1
                     ? NTAccount.Value[(divider + 1)..]
                     : NTAccountValue;
@@ -111,7 +112,7 @@ namespace PSADT.Foundation
         {
             get
             {
-                int divider = NTAccount.Value.IndexOf('\\');
+                int divider = NTAccount.Value.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
                 return divider != -1
                     ? NTAccount.Value[..divider]
                     : null;

@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Management.Automation.Language;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -77,18 +76,18 @@ namespace PSADT.UserInterface.TestHarness
                 new("winword", "Microsoft Office Word"),
                 new("notepad", "Windows Notepad"),
                 new("regedit", "Windows Registry Editor"),
-                new("taskmgr", "Windows Task Manager")
+                new("taskmgr", "Windows Task Manager"),
             ]);
 
             TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
 
-            const string customMessageText = @"Basic URL: [url]https://example.com[/url]
-URL with Description: [url=https://example.com]Read the IT Security Policy here[/url].
-This is [bold]bold text[/bold] and [italic]italic text[/italic].
-Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]accent[/accent][/bold].
-Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
+            const string customMessageText = "Basic URL: [url]https://example.com[/url]\r\n" +
+                                             "URL with Description: [url=https://example.com]Read the IT Security Policy here[/url].\r\n" +
+                                             "This is [bold]bold text[/bold] and [italic]italic text[/italic].\r\n" +
+                                             "Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]accent[/accent][/bold].\r\n" +
+                                             "Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
 
             const uint deferralsRemaining = 99;
             DateTime deferralDeadline = DateTime.Parse("2026-06-04T13:00:00", CultureInfo.InvariantCulture);
@@ -115,244 +114,247 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             const string inputDialogButtonRightText = "Cancel";
 
             // Set up options for the dialogs
-            await using CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
-            Hashtable closeAppsDialogOptions = new()
+            CloseAppsDialogState closeAppsDialogState = new(appsToClose, (_, _, _) => { });
+            await using (closeAppsDialogState.ConfigureAwait(false))
             {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "DialogTopMost", true },
-                { "DialogAllowMove", true },
-                { "DialogAllowMinimize", true },
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "CountdownDuration", countdownDuration },
-                { "DeferralsRemaining", deferralsRemaining },
-                { "DeferralDeadline", deferralDeadline },
-                { "CustomMessageText", customMessageText },
-                { "Language", CultureInfo.CurrentCulture },
-                { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
-            };
-            ProgressDialogOptions progressDialogOptions = new(new Hashtable
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00CC6A) }, // Accent Color: Green #00CC6A
-                { "DialogAllowMinimize", true },
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "ProgressMessageText", progressMessageText },
-                { "ProgressDetailMessageText", progressDetailMessageText },
-                { "Language", CultureInfo.CurrentCulture },
-                { "AdditionalOption", true }
-            });
-            CustomDialogOptions customDialogOptions = new(new Hashtable
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF0099BC) }, // Accent Color: Cyan #0099BC
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "MessageText", customDialogMessageText },
-                { "ButtonLeftText", customDialogButtonLeftText },
-                { "ButtonMiddleText", customDialogButtonMiddleText },
-                { "ButtonRightText", customDialogButtonRightText },
-                { "Icon", DialogSystemIcon.Information },
-                { "MinimizeWindows", false },
-                { "Language", CultureInfo.CurrentCulture },
-                { "MessageAlignment", DialogMessageAlignment.Left }
-            });
+                Hashtable closeAppsDialogOptions = new()
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "CountdownDuration", countdownDuration },
+                    { "DeferralsRemaining", deferralsRemaining },
+                    { "DeferralDeadline", deferralDeadline },
+                    { "CustomMessageText", customMessageText },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "Strings", (Hashtable)stringTable["CloseAppsPrompt"]! },
+                };
+                ProgressDialogOptions progressDialogOptions = new(new Hashtable
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00CC6A) }, // Accent Color: Green #00CC6A
+                    { "DialogAllowMinimize", true },
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "ProgressMessageText", progressMessageText },
+                    { "ProgressDetailMessageText", progressDetailMessageText },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "AdditionalOption", true },
+                });
+                CustomDialogOptions customDialogOptions = new(new Hashtable
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF0099BC) }, // Accent Color: Cyan #0099BC
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "MessageText", customDialogMessageText },
+                    { "ButtonLeftText", customDialogButtonLeftText },
+                    { "ButtonMiddleText", customDialogButtonMiddleText },
+                    { "ButtonRightText", customDialogButtonRightText },
+                    { "Icon", DialogSystemIcon.Information },
+                    { "MinimizeWindows", false },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "MessageAlignment", DialogMessageAlignment.Left },
+                });
 
-            CustomDialogOptions customDialog2Options = new(new Hashtable
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF4A5459) }, // Accent Color: Navy Blue #4A5459
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "MessageText", customDialogMessageText },
-                { "ButtonLeftText", customDialogButtonLeftText },
-                { "ButtonRightText", customDialogButtonRightText },
-                { "Icon", DialogSystemIcon.Information },
-                { "MinimizeWindows", false },
-                { "Language", CultureInfo.CurrentCulture },
-                { "MessageAlignment", DialogMessageAlignment.Left }
-            });
+                CustomDialogOptions customDialog2Options = new(new Hashtable
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF4A5459) }, // Accent Color: Navy Blue #4A5459
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "MessageText", customDialogMessageText },
+                    { "ButtonLeftText", customDialogButtonLeftText },
+                    { "ButtonRightText", customDialogButtonRightText },
+                    { "Icon", DialogSystemIcon.Information },
+                    { "MinimizeWindows", false },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "MessageAlignment", DialogMessageAlignment.Left },
+                });
 
 
-            CustomDialogOptions customDialog3Options = new(new Hashtable
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFF7630C) }, // Accent Color: Orange #F7630C
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "MessageText", customDialogMessageText },
-                { "ButtonRightText", customDialogButtonRightText },
-                { "Icon", DialogSystemIcon.Information },
-                { "MinimizeWindows", false },
-                { "Language", CultureInfo.CurrentCulture },
-                { "MessageAlignment", DialogMessageAlignment.Left }
-            });
+                CustomDialogOptions customDialog3Options = new(new Hashtable
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFF7630C) }, // Accent Color: Orange #F7630C
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "MessageText", customDialogMessageText },
+                    { "ButtonRightText", customDialogButtonRightText },
+                    { "Icon", DialogSystemIcon.Information },
+                    { "MinimizeWindows", false },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "MessageAlignment", DialogMessageAlignment.Left },
+                });
 
-            ListSelectionDialogOptions listSelectionDialogOptions = new(new Hashtable
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFF600CE) }, // Accent Color: Purple #F600CE
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "MessageText", listDialogMessageText },
-                { "ButtonLeftText", listDialogButtonLeftText },
-                { "ButtonRightText", listDialogButtonRightText },
-                { "ListItems", listDialogItems },
-                { "InitialSelectedItem", listDialogItems[0] },
-                { "Strings", (Hashtable)stringTable["ListSelectionPrompt"]! },
-                { "MinimizeWindows", false },
-                { "Language", CultureInfo.CurrentCulture },
-                { "MessageAlignment", DialogMessageAlignment.Left }
-            });
+                ListSelectionDialogOptions listSelectionDialogOptions = new(new Hashtable
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFF600CE) }, // Accent Color: Purple #F600CE
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "MessageText", listDialogMessageText },
+                    { "ButtonLeftText", listDialogButtonLeftText },
+                    { "ButtonRightText", listDialogButtonRightText },
+                    { "ListItems", listDialogItems },
+                    { "InitialSelectedItem", listDialogItems[0] },
+                    { "Strings", (Hashtable)stringTable["ListSelectionPrompt"]! },
+                    { "MinimizeWindows", false },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "MessageAlignment", DialogMessageAlignment.Left },
+                });
 
-            InputDialogOptions inputDialogOptions = new(new Hashtable
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "MessageText", inputDialogMessageText },
-                { "InitialInputText", inputDialogTextBox },
-                { "ButtonLeftText", inputDialogButtonLeftText },
-                { "ButtonRightText", inputDialogButtonRightText },
-                { "Icon", DialogSystemIcon.Information },
-                { "MinimizeWindows", false },
-                { "Language", CultureInfo.CurrentCulture },
-                { "MessageAlignment", DialogMessageAlignment.Left }
-            });
-            Hashtable restartDialogOptions = new()
-            {
-                { "DialogExpiryDuration", dialogExpiryDuration },
-                { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE81123) }, // Accent Color: Red #E81123
-                { "DialogTopMost", true },
-                { "DialogAllowMove", true },
-                { "DialogAllowMinimize", true },
-                { "AppTitle", appTitle },
-                { "Subtitle", subtitle },
-                { "AppIconImage", appIconImage },
-                { "AppIconDarkImage", appIconDarkImage },
-                { "AppBannerImage", appBannerImage },
-                { "CountdownDuration", restartCountdownDuration },
-                { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
-                // { "CustomMessageText", customMessageText },
-                { "Language", CultureInfo.CurrentCulture },
-                { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
-            };
+                InputDialogOptions inputDialogOptions = new(new Hashtable
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFFFB900) }, // Accent Color: Yellow #FFB900
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "MessageText", inputDialogMessageText },
+                    { "InitialInputText", inputDialogTextBox },
+                    { "ButtonLeftText", inputDialogButtonLeftText },
+                    { "ButtonRightText", inputDialogButtonRightText },
+                    { "Icon", DialogSystemIcon.Information },
+                    { "MinimizeWindows", false },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "MessageAlignment", DialogMessageAlignment.Left },
+                });
+                Hashtable restartDialogOptions = new()
+                {
+                    { "DialogExpiryDuration", dialogExpiryDuration },
+                    { "FluentAccentColor", ValueTypeConverter.ToInt(0xFFE81123) }, // Accent Color: Red #E81123
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
+                    { "AppTitle", appTitle },
+                    { "Subtitle", subtitle },
+                    { "AppIconImage", appIconImage },
+                    { "AppIconDarkImage", appIconDarkImage },
+                    { "AppBannerImage", appBannerImage },
+                    { "CountdownDuration", restartCountdownDuration },
+                    { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
+                    // { "CustomMessageText", customMessageText },
+                    { "Language", CultureInfo.CurrentCulture },
+                    { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
+                };
 
-            // #################################################################################
+                // #################################################################################
 
-            // Show CloseApps Dialog
+                // Show CloseApps Dialog
 
-            CloseAppsDialogResult closeAppsResult = await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState).ConfigureAwait(false); // Pass the service as optional parameter
+                CloseAppsDialogResult closeAppsResult = await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, new CloseAppsDialogOptions(deploymentType, closeAppsDialogOptions), closeAppsDialogState).ConfigureAwait(false); // Pass the service as optional parameter
 
-            if (closeAppsResult.Equals(CloseAppsDialogResult.Defer))
-            {
-                return;
+                if (closeAppsResult.Equals(CloseAppsDialogResult.Defer))
+                {
+                    return;
+                }
+
+                // #################################################################################
+
+                // Show Progress Dialog
+
+                await DialogManager.ShowProgressDialogAsync(dialogStyle, progressDialogOptions).ConfigureAwait(false);
+
+                await Task.Delay(3000).ConfigureAwait(false); // Simulate some work being done
+
+                // Simulate a process with progress updates.
+                for (int i = 0; i <= 100; i += 10)
+                {
+                    // Update progress
+                    await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i.ToString(CultureInfo.InvariantCulture)}%", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
+                    await Task.Delay(250).ConfigureAwait(false);  // Simulate work being done
+                }
+
+                // Close Progress Dialog
+                await DialogManager.CloseProgressDialogAsync().ConfigureAwait(false);
+
+                // #################################################################################
+
+                // Show Custom Dialog
+
+                string customResult = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialogOptions).ConfigureAwait(false);
+
+                if (customResult.Equals(customDialogButtonRightText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                // #################################################################################
+
+                // Show Custom2 Dialog
+
+                string custom2Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog2Options).ConfigureAwait(false);
+
+                if (customResult.Equals(customDialogButtonRightText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                // #################################################################################
+
+                // Show Custom3 Dialog
+
+                string custom3Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog3Options).ConfigureAwait(false);
+
+                // This dialog only has one button, so we don't need to bother checking the result.
+
+                // #################################################################################
+
+                // Show List Selection Dialog
+
+                ListSelectionDialogResult listSelectionResult = await DialogManager.ShowListSelectionDialogAsync(dialogStyle, listSelectionDialogOptions).ConfigureAwait(false);
+
+                if (listSelectionResult.Result.Equals(listDialogButtonRightText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                Console.WriteLine(listSelectionResult.SelectedItem);
+
+                // #################################################################################
+
+                // Show Input Dialog
+
+                InputDialogResult inputResult = await DialogManager.ShowInputDialogAsync(dialogStyle, inputDialogOptions).ConfigureAwait(false);
+
+                if (inputResult.Result.Equals(inputDialogButtonRightText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                Console.WriteLine(inputResult.Text);
+
+                // #################################################################################
+
+                // Show Restart Dialog
+                _ = await DialogManager.ShowRestartDialogAsync(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions)).ConfigureAwait(false);
+
+                // No need to check the result of the Restart Dialog
             }
-
-            // #################################################################################
-
-            // Show Progress Dialog
-
-            await DialogManager.ShowProgressDialogAsync(dialogStyle, progressDialogOptions).ConfigureAwait(false);
-
-            Thread.Sleep(3000); // Simulate some work being done
-
-            // Simulate a process with progress updates.
-            for (int i = 0; i <= 100; i += 10)
-            {
-                // Update progress
-                await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i}%", $"Step {i / 10} of 10", i).ConfigureAwait(false);
-                Thread.Sleep(250);  // Simulate work being done
-            }
-
-            // Close Progress Dialog
-            await DialogManager.CloseProgressDialogAsync().ConfigureAwait(false);
-
-            // #################################################################################
-
-            // Show Custom Dialog
-
-            string customResult = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialogOptions).ConfigureAwait(false);
-
-            if (customResult == customDialogButtonRightText)
-            {
-                return;
-            }
-
-            // #################################################################################
-
-            // Show Custom2 Dialog
-
-            string custom2Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog2Options).ConfigureAwait(false);
-
-            if (customResult == customDialogButtonRightText)
-            {
-                return;
-            }
-
-            // #################################################################################
-
-            // Show Custom3 Dialog
-
-            string custom3Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog3Options).ConfigureAwait(false);
-
-            // This dialog only has one button, so we don't need to bother checking the result.
-
-            // #################################################################################
-
-            // Show List Selection Dialog
-
-            ListSelectionDialogResult listSelectionResult = await DialogManager.ShowListSelectionDialogAsync(dialogStyle, listSelectionDialogOptions).ConfigureAwait(false);
-
-            if (listSelectionResult.Result == listDialogButtonRightText)
-            {
-                return;
-            }
-
-            Console.WriteLine(listSelectionResult.SelectedItem);
-
-            // #################################################################################
-
-            // Show Input Dialog
-
-            InputDialogResult inputResult = await DialogManager.ShowInputDialogAsync(dialogStyle, inputDialogOptions).ConfigureAwait(false);
-
-            if (inputResult.Result == inputDialogButtonRightText)
-            {
-                return;
-            }
-
-            Console.WriteLine(inputResult.Text);
-
-            // #################################################################################
-
-            // Show Restart Dialog
-            _ = await DialogManager.ShowRestartDialogAsync(dialogStyle, new RestartDialogOptions(deploymentType, restartDialogOptions)).ConfigureAwait(false);
-
-            // No need to check the result of the Restart Dialog
         }
 
         /// <summary>
@@ -367,7 +369,7 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
             return (Hashtable)(importsAst.Find(node =>
                 node is HashtableAst hashtableAst &&
                 IsModuleDefaultHashtable(hashtableAst, tableName),
-                true)?.SafeGetValue() ?? throw new InvalidDataException($"Unable to locate the '{tableName}' defaults hashtable in ImportsLast.ps1."));
+                searchNestedScriptBlocks: true)?.SafeGetValue() ?? throw new InvalidDataException($"Unable to locate the '{tableName}' defaults hashtable in ImportsLast.ps1."));
         }
 
         /// <summary>
@@ -379,15 +381,15 @@ Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][
         private static bool IsModuleDefaultHashtable(HashtableAst hashtableAst, string tableName)
         {
             return TryFindAncestor(hashtableAst.Parent, static invoke =>
-                invoke.Member.Extent.Text == "new" &&
+                "new".Equals(invoke.Member.Extent.Text, StringComparison.Ordinal) &&
                 invoke.Arguments.Count >= 2 &&
-                invoke.Arguments[0].Extent.Text == "[System.String]::Empty",
+                "[System.String]::Empty".Equals(invoke.Arguments[0].Extent.Text, StringComparison.Ordinal),
                 out InvokeMemberExpressionAst? defaultEntry) &&
                 defaultEntry != null &&
                 TryFindAncestor(defaultEntry.Parent, invoke =>
-                invoke.Member.Extent.Text == "new" &&
+                "new".Equals(invoke.Member.Extent.Text, StringComparison.Ordinal) &&
                 invoke.Arguments.Count >= 2 &&
-                invoke.Arguments[0].Extent.Text == $"'{tableName}'",
+                $"'{tableName}'".Equals(invoke.Arguments[0].Extent.Text, StringComparison.Ordinal),
                 out _);
         }
 

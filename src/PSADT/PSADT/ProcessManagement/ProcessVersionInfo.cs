@@ -43,7 +43,7 @@ namespace PSADT.ProcessManagement
         public static ProcessVersionInfo GetVersionInfo(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);
-            return new(process, null, null);
+            return new(process, filePath: null, ntPathLookupTable: null);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace PSADT.ProcessManagement
         public static ProcessVersionInfo GetVersionInfo(int processId)
         {
             using Process process = Process.GetProcessById(processId);
-            return new(process, null, null);
+            return new(process, filePath: null, ntPathLookupTable: null);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace PSADT.ProcessManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            return new(process, null, ntPathLookupTable);
+            return new(process, filePath: null, ntPathLookupTable);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace PSADT.ProcessManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessVersionInfo GetVersionInfo(Process process, string filePath)
         {
-            return new(process, filePath, null);
+            return new(process, filePath, ntPathLookupTable: null);
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace PSADT.ProcessManagement
                 FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
             }
             ReadOnlySpan<byte> versionResource;
-            using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
+            using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, bInheritHandle: false, (uint)process.Id))
             {
                 try
                 {
@@ -148,11 +148,11 @@ namespace PSADT.ProcessManagement
             ProductVersionRaw = new(ProductMajorPart, ProductMinorPart, ProductBuildPart, ProductPrivatePart);
 
             // Set the flags based on the fixed file info.
-            IsDebug = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
-            IsPatched = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED) != 0;
-            IsPrivateBuild = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD) != 0;
-            IsPreRelease = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE) != 0;
-            IsSpecialBuild = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD) != 0;
+            IsDebug = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG);
+            IsPatched = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED);
+            IsPrivateBuild = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD);
+            IsPreRelease = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE);
+            IsSpecialBuild = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD);
 
             // Read the version resource strings.
             ReadOnlyCollection<string> codepageTable = GetTranslationTableCombinations(versionResource);
@@ -187,7 +187,7 @@ namespace PSADT.ProcessManagement
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
-            _ = NativeMethods.EnumProcessModules(processHandle, null, out uint bytesNeeded);
+            _ = NativeMethods.EnumProcessModules(processHandle, lphModule: null, out uint bytesNeeded);
             Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
             _ = NativeMethods.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
             ref readonly HMODULE hModule = ref moduleBuffer.AsReadOnlyStructure<HMODULE>();
@@ -361,7 +361,7 @@ namespace PSADT.ProcessManagement
             translationCombinations.Add("040904B0");
             translationCombinations.Add("040904E4");
             translationCombinations.Add("04090000");
-            return new([.. translationCombinations.Distinct()]);
+            return new([.. translationCombinations.Distinct(StringComparer.OrdinalIgnoreCase)]);
         }
 
         /// <summary>

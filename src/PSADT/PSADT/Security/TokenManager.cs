@@ -79,7 +79,7 @@ namespace PSADT.Security
                 {
                     // Set up the task as required.
                     using SafeFreeBSTRHandle folderName = SafeFreeBSTRHandle.Alloc(@"\");
-                    servicePtr.Connect(null, null, null, null);
+                    servicePtr.Connect(serverName: null, user: null, domain: null, password: null);
                     servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
                     try
                     {
@@ -119,12 +119,12 @@ namespace PSADT.Security
                                                     principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
                                                     execAction.Path = (BSTR)path.DangerousGetHandle();
                                                     execAction.Arguments = (BSTR)args.DangerousGetHandle();
-                                                    rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
+                                                    rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, userId: null, password: null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, sddl: null, out IRegisteredTask task);
                                                     try
                                                     {
                                                         // Wait for the token broker to connect while task is in scope for error reporting.
                                                         // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
-                                                        task.Run(null, out IRunningTask runningTask);
+                                                        task.Run(@params: null, out IRunningTask runningTask);
                                                         _ = Marshal.FinalReleaseComObject(runningTask);
                                                         try
                                                         {
@@ -217,7 +217,7 @@ namespace PSADT.Security
                 }
 
                 // Return the token handle.
-                return new(tokenBuf.AsReadOnlyStructure<nint>(), true);
+                return new(tokenBuf.AsReadOnlyStructure<nint>(), ownsHandle: true);
             }
 
             // When we're local system, we can just get the primary token for the user.
@@ -255,7 +255,7 @@ namespace PSADT.Security
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>"
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
-            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, lpTokenAttributes: null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
             if (uiAccess)
             {
                 if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
@@ -286,7 +286,7 @@ namespace PSADT.Security
             Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<TOKEN_LINKED_TOKEN>()];
             _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
             ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
-            return new(tokenLinkedToken.LinkedToken, true);
+            return new(tokenLinkedToken.LinkedToken, ownsHandle: true);
         }
 
         /// <summary>

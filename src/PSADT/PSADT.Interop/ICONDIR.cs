@@ -11,6 +11,7 @@ namespace PSADT.Interop
     /// directory entries. An instance is considered valid when the reserved identifier is zero, the type identifier is
     /// either 1 or 2, and the count is greater than zero. This structure is typically used when parsing or constructing
     /// icon resources in unmanaged memory contexts.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     internal readonly struct ICONDIR
     {

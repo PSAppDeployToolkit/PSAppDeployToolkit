@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <summary>
     /// Restart dialog form.
     /// </summary>
-    internal partial class RestartDialog : ClassicDialog, IModalDialog
+    internal sealed partial class RestartDialog : ClassicDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialog"/> class.
@@ -32,6 +32,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// flexible customization of the dialog's content and behavior based on the supplied options.</remarks>
         /// <param name="options">The options that configure the dialog's appearance and behavior, including title, custom messages, and
         /// countdown settings. Cannot be null.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0056:Do not call overridable members in constructor", Justification = "This is OK here.")]
         internal RestartDialog(RestartDialogOptions options) : base(options, null!)
         {
             // Initialise the form and reset the control order.
@@ -86,9 +87,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
             }
 
             // Resume the dialog now that we've applied any options.
-            flowLayoutPanelDialog.ResumeLayout(false);
+            flowLayoutPanelDialog.ResumeLayout(performLayout: false);
             flowLayoutPanelDialog.PerformLayout();
-            flowLayoutPanelBase.ResumeLayout(false);
+            flowLayoutPanelBase.ResumeLayout(performLayout: false);
             flowLayoutPanelBase.PerformLayout();
             ResumeLayout();
             PerformLayout();

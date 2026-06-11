@@ -29,6 +29,7 @@ namespace PSADT.WindowManagement
         /// <param name="parentProcessMainWindowHandleFilter">A list of main window handles for parent processes to include in the filter. Only windows whose parent
         /// process main window handle matches any of these values will be considered. Can be null to disable this
         /// filtering.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public WindowInfoOptions(string? windowTitleRegex, ReadOnlyCollection<nint>? windowHandleFilter, ReadOnlyCollection<string>? parentProcessFilter, ReadOnlyCollection<int>? parentProcessIdFilter, ReadOnlyCollection<nint>? parentProcessMainWindowHandleFilter)
         {
             // Ensure list inputs are not empty if they're not null.
@@ -38,19 +39,19 @@ namespace PSADT.WindowManagement
             }
             if (windowHandleFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(windowHandleFilter.Count, nameof(windowHandleFilter));
             }
             if (parentProcessFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcessFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessFilter.Count, nameof(parentProcessFilter));
             }
             if (parentProcessIdFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcessIdFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessIdFilter.Count, nameof(parentProcessIdFilter));
             }
             if (parentProcessMainWindowHandleFilter is not null)
             {
-                ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count);
+                ArgumentOutOfRangeException.ThrowIfZero(parentProcessMainWindowHandleFilter.Count, nameof(parentProcessMainWindowHandleFilter));
             }
 
             // Assign read-only collections or null based on input.

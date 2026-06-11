@@ -51,6 +51,6 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// External interface enabled
         /// </summary>
-        ExternalInterfaceEnabled = 0x05
+        ExternalInterfaceEnabled = 0x05,
     }
 }

@@ -184,6 +184,6 @@
         /// <summary>
         /// The right to generate input for the system.
         /// </summary>
-        SeUnsolicitedInputPrivilege = 35
+        SeUnsolicitedInputPrivilege = 35,
     }
 }

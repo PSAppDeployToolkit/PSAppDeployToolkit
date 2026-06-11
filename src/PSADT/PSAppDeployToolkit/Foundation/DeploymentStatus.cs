@@ -23,6 +23,6 @@
         /// <summary>
         /// The deployment encountered an error.
         /// </summary>
-        Error = 3
+        Error = 3,
     }
 }

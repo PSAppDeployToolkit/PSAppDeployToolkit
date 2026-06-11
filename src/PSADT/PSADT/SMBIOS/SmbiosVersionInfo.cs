@@ -177,7 +177,7 @@ namespace PSADT.SMBIOS
                 SmbiosType.OnboardDevicesExtendedInformation => MajorVersion >= 2,
                 SmbiosType.ManagementControllerHostInterface => MajorVersion >= 2,
                 SmbiosType.ProcessorAdditionalInformation => MajorVersion >= 2,
-                _ => MajorVersion >= 2
+                _ => MajorVersion >= 2,
             };
         }
 
@@ -278,7 +278,7 @@ namespace PSADT.SMBIOS
                 SmbiosType.StringProperty => false,
                 SmbiosType.Inactive => false,
                 SmbiosType.EndOfTable => false,
-                _ => false
+                _ => false,
             };
         }
 

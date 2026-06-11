@@ -42,7 +42,7 @@ namespace PSADT.SMBIOS
         /// <exception cref="InvalidOperationException">Thrown if the SMBIOS table size exceeds supported limits.</exception>
         internal static int GetRequiredLength()
         {
-            uint size = NativeMethods.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, null);
+            uint size = NativeMethods.GetSystemFirmwareTable(FIRMWARE_TABLE_PROVIDER.RSMB, FIRMWARE_TABLE_ID.SMBIOS, pFirmwareTableBuffer: null);
             return size > int.MaxValue ? throw new InvalidOperationException("SMBIOS table size exceeds supported limits.") : (int)size;
         }
 

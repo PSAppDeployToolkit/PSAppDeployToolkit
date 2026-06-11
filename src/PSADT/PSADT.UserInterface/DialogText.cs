@@ -11,6 +11,7 @@ namespace PSADT.UserInterface
     /// [accent], [bold], and [italic] for text styling. These tags can be nested and combined to achieve cumulative
     /// formatting effects. The regular expression is compiled to improve performance during repeated parsing
     /// operations.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class DialogText
     {
         /// <summary>

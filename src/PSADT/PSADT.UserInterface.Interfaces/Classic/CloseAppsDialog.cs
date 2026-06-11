@@ -16,7 +16,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <summary>
     /// Close applications dialog form.
     /// </summary>
-    internal partial class CloseAppsDialog : ClassicDialog, IModalDialog
+    internal sealed partial class CloseAppsDialog : ClassicDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialog"/> class.
@@ -163,9 +163,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
             }
 
             // Resume the dialog now that we've applied any options.
-            flowLayoutPanelDialog.ResumeLayout(false);
+            flowLayoutPanelDialog.ResumeLayout(performLayout: false);
             flowLayoutPanelDialog.PerformLayout();
-            flowLayoutPanelBase.ResumeLayout(false);
+            flowLayoutPanelBase.ResumeLayout(performLayout: false);
             flowLayoutPanelBase.PerformLayout();
             ResumeLayout();
             PerformLayout();

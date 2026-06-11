@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -136,7 +136,7 @@ namespace PSADT.ClientServer
                 if (argv.Length == 0)
                 {
                     string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
-                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion[..productVersion.IndexOf('+')])}";
+                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion[..productVersion.IndexOf('+', StringComparison.OrdinalIgnoreCase)])}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
@@ -147,22 +147,22 @@ namespace PSADT.ClientServer
                         string.Empty,
                         "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                     ]);
-                    _ = await DialogManager.ShowDialogBoxAsync(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default).ConfigureAwait(false);
+                    _ = await DialogManager.ShowDialogBoxAsync(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, TopMost: true, default).ConfigureAwait(false);
                     throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
                 }
-                return argv.Any(static arg => arg is "/ClientServer" or "/cs")
+                return argv.Any(static arg => arg.Equals("/ClientServer", StringComparison.Ordinal) || arg.Equals("/cs", StringComparison.Ordinal))
                     ? await EnterClientServerModeAsync(ArgvToDictionary(argv)).ConfigureAwait(false)
                     : await EnterStandaloneModeAsync(argv).ConfigureAwait(false);
             }
             catch (ClientException ex)
             {
                 // We've caught our own error. Write it out, the error handler will get the exit code out of it.
-                return InvokeMainErrorHandler(ex, $"Failed to perform the requested operation with error code [{ex.HResult}].");
+                return InvokeMainErrorHandler(ex, $"Failed to perform the requested operation with error code [{ex.HResult.ToString("X8", CultureInfo.InvariantCulture)}].");
             }
             catch (Exception ex) when (ex.Message is not null)
             {
                 // This block is here as a fail-safe and should never be reached.
-                return InvokeMainErrorHandler(ex, $"An unexpected exception occurred with HRESULT [{ex.HResult}].", ClientExitCode.Unknown);
+                return InvokeMainErrorHandler(ex, $"An unexpected exception occurred with HRESULT [{ex.HResult.ToString("X8", CultureInfo.InvariantCulture)}].", ClientExitCode.Unknown);
             }
         }
 
@@ -282,11 +282,11 @@ namespace PSADT.ClientServer
                                     switch (command)
                                     {
                                         case PipeCommand.Open:
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.Close:
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             return (int)ClientExitCode.Success;
 
                                         case PipeCommand.InitCloseAppsDialog:
@@ -299,7 +299,7 @@ namespace PSADT.ClientServer
                                             #pragma warning disable format, CA2000 
                                             closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
                                             #pragma warning restore CA2000, format
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.PromptToCloseApps:
@@ -358,7 +358,7 @@ namespace PSADT.ClientServer
                                                             closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
                                                             break;
                                                         }
-                                                        Thread.Sleep(2000);
+                                                        await Task.Delay(2000).ConfigureAwait(false);
                                                     }
                                                 }
                                             }
@@ -376,7 +376,7 @@ namespace PSADT.ClientServer
                                                     }
                                                 }
                                             }
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.ShowModalDialog:
@@ -402,7 +402,7 @@ namespace PSADT.ClientServer
                                             {
                                                 UpdateProgressDialogPayload payload = DeserializeBytes<UpdateProgressDialogPayload>(requestBytes, payloadOffset);
                                                 await DialogManager.UpdateProgressDialogAsync(payload.Message, payload.DetailMessage, payload.Percentage, payload.Alignment).ConfigureAwait(false);
-                                                WriteSuccess(true);
+                                                WriteSuccess(result: true);
                                                 break;
                                             }
 
@@ -413,7 +413,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.ShowNotifyIcon:
                                             await DialogManager.ShowNotifyIconAsync(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.NotifyIconOpen:
@@ -422,12 +422,12 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.UpdateNotifyIcon:
                                             await DialogManager.UpdateNotifyIconAsync(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText).ConfigureAwait(false);
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.ShowBalloonTip:
                                             await DialogManager.ShowBalloonTipAsync(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.CloseNotifyIcon:
@@ -437,18 +437,18 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.MinimizeAllWindows:
                                             DesktopUtilities.MinimizeAllWindows();
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
 
                                         case PipeCommand.RestoreAllWindows:
                                             DesktopUtilities.RestoreAllWindows();
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.SendKeys:
                                             await DialogManager.SendKeysAsync(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.GetProcessWindowInfo:
@@ -457,7 +457,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.RefreshDesktopAndEnvironmentVariables:
                                             DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.GetUserNotificationState:
@@ -476,13 +476,13 @@ namespace PSADT.ClientServer
                                             {
                                                 EnvironmentVariablePayload payload = DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset);
                                                 EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable, payload.Append, payload.Remove);
-                                                WriteSuccess(true);
+                                                WriteSuccess(result: true);
                                                 break;
                                             }
 
                                         case PipeCommand.RemoveEnvironmentVariable:
                                             EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
-                                            WriteSuccess(true);
+                                            WriteSuccess(result: true);
                                             break;
 
                                         case PipeCommand.GroupPolicyUpdate:
@@ -558,51 +558,51 @@ namespace PSADT.ClientServer
             // Parse the arguments and execute the requested operation.
             foreach (string arg in argv)
             {
-                if (arg is "/ShowModalDialog" or "/smd")
+                if (arg.Equals("/ShowModalDialog", StringComparison.Ordinal) || arg.Equals("/smd", StringComparison.Ordinal))
                 {
                     Console.WriteLine(await ShowModalDialogAsync(ArgvToDictionary(argv), argv: argv).ConfigureAwait(false));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetProcessWindowInfo" or "/gpwi")
+                if (arg.Equals("/GetProcessWindowInfo", StringComparison.Ordinal) || arg.Equals("/gpwi", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetUserNotificationState" or "/guns")
+                if (arg.Equals("/GetUserNotificationState", StringComparison.Ordinal) || arg.Equals("/guns", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(DesktopUtilities.GetUserNotificationState()));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
+                if (arg.Equals("/GetForegroundWindowProcessId", StringComparison.Ordinal) || arg.Equals("/gfwpi", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(DesktopUtilities.GetForegroundWindowProcessId()));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
+                if (arg.Equals("/RefreshDesktopAndEnvironmentVariables", StringComparison.Ordinal) || arg.Equals("/rdaev", StringComparison.Ordinal))
                 {
                     DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/MinimizeAllWindows" or "/maw")
+                if (arg.Equals("/MinimizeAllWindows", StringComparison.Ordinal) || arg.Equals("/maw", StringComparison.Ordinal))
                 {
                     DesktopUtilities.MinimizeAllWindows();
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/RestoreAllWindows" or "/raw")
+                if (arg.Equals("/RestoreAllWindows", StringComparison.Ordinal) || arg.Equals("/raw", StringComparison.Ordinal))
                 {
                     DesktopUtilities.RestoreAllWindows();
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/SendKeys" or "/sk")
+                if (arg.Equals("/SendKeys", StringComparison.Ordinal) || arg.Equals("/sk", StringComparison.Ordinal))
                 {
                     await DialogManager.SendKeysAsync(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))).ConfigureAwait(false);
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetEnvironmentVariable" or "/gev")
+                if (arg.Equals("/GetEnvironmentVariable", StringComparison.Ordinal) || arg.Equals("/gev", StringComparison.Ordinal))
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
                     {
@@ -611,7 +611,7 @@ namespace PSADT.ClientServer
                     Console.WriteLine(SerializeToString(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/SetEnvironmentVariable" or "/sev")
+                if (arg.Equals("/SetEnvironmentVariable", StringComparison.Ordinal) || arg.Equals("/sev", StringComparison.Ordinal))
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
                     {
@@ -634,42 +634,42 @@ namespace PSADT.ClientServer
                         throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable, append, remove);
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/RemoveEnvironmentVariable" or "/rev")
+                if (arg.Equals("/RemoveEnvironmentVariable", StringComparison.Ordinal) || arg.Equals("/rev", StringComparison.Ordinal))
                 {
                     if (!ArgvToDictionary(argv).TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
                     {
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.RemoveEnvironmentVariable(variable, EnvironmentVariableTarget.User);
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/SilentRestart" or "/sr")
+                if (arg.Equals("/SilentRestart", StringComparison.Ordinal) || arg.Equals("/sr", StringComparison.Ordinal))
                 {
-                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
+                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, NumberStyles.Integer, CultureInfo.InvariantCulture, out int delayValue))
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
-                    Thread.Sleep(delayValue * 1000);
+                    await Task.Delay(delayValue * 1000).ConfigureAwait(false);
                     await DeviceUtilities.RestartComputer().ConfigureAwait(false);
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetLastInputTime" or "/glit")
+                if (arg.Equals("/GetLastInputTime", StringComparison.Ordinal) || arg.Equals("/glit", StringComparison.Ordinal))
                 {
                     Console.WriteLine(DesktopUtilities.GetLastInputTime().Ticks);
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/TokenBroker" or "/tb")
+                if (arg.Equals("/TokenBroker", StringComparison.Ordinal) || arg.Equals("/tb", StringComparison.Ordinal))
                 {
                     await BrokerTokenForCaller(ArgvToDictionary(argv)).ConfigureAwait(false);
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GroupPolicyUpdate" or "/gpu")
+                if (arg.Equals("/GroupPolicyUpdate", StringComparison.Ordinal) || arg.Equals("/gpu", StringComparison.Ordinal))
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || string.IsNullOrWhiteSpace(forceStr) || !bool.TryParse(forceStr, out bool force))
                     {
@@ -680,18 +680,18 @@ namespace PSADT.ClientServer
                     Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/ShellExecuteProcess" or "/sep")
+                if (arg.Equals("/ShellExecuteProcess", StringComparison.Ordinal) || arg.Equals("/sep", StringComparison.Ordinal))
                 {
                     using ProcessResult result = await ShellExecuteProcessAsync(DeserializeString<UserShellExecuteOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetUserFocusModeState" or "/gufms")
+                if (arg.Equals("/GetUserFocusModeState", StringComparison.Ordinal) || arg.Equals("/gufms", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(GetUserFocusModeState()));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetUserToastNotificationMode" or "/gutnm")
+                if (arg.Equals("/GetUserToastNotificationMode", StringComparison.Ordinal) || arg.Equals("/gutnm", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(GetUserToastNotificationMode()));
                     return (int)ClientExitCode.Success;
@@ -738,7 +738,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("A required DialogType was not specified on the command line.", ClientExitCode.NoDialogType);
             }
-            if (!Enum.TryParse(dialogTypeArg, true, out DialogType dialogType))
+            if (!Enum.TryParse(dialogTypeArg, ignoreCase: true, out DialogType dialogType))
             {
                 throw new ClientException($"The specified DialogType of [{dialogTypeArg}] is invalid.", ClientExitCode.InvalidDialog);
             }
@@ -748,7 +748,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("A required DialogStyle was not specified on the command line.", ClientExitCode.NoDialogStyle);
             }
-            if (!Enum.TryParse(dialogStyleArg, true, out DialogStyle dialogStyle))
+            if (!Enum.TryParse(dialogStyleArg, ignoreCase: true, out DialogStyle dialogStyle))
             {
                 throw new ClientException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
             }
@@ -763,7 +763,7 @@ namespace PSADT.ClientServer
                 DialogType.InputDialog => DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments)),
                 DialogType.ListSelectionDialog => DataSerialization.DeserializeFromString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments)),
                 DialogType.RestartDialog => DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog)
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog),
             };
             return SerializeToString(await InvokeModalDialogAsync(dialogType, dialogStyle, options, closeAppsDialogState).ConfigureAwait(false));
         }
@@ -800,7 +800,7 @@ namespace PSADT.ClientServer
                 DialogType.CustomDialog => options is CustomDialogOptions customDialogOptions ? await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
                 DialogType.ListSelectionDialog => options is ListSelectionDialogOptions listSelectionDialogOptions ? await DialogManager.ShowListSelectionDialogAsync(dialogStyle, listSelectionDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
                 DialogType.RestartDialog => options is RestartDialogOptions restartDialogOptions ? await DialogManager.ShowRestartDialogAsync(dialogStyle, restartDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog),
             };
         }
 
@@ -819,6 +819,7 @@ namespace PSADT.ClientServer
         /// values must be non-null and non-whitespace.</param>
         /// <exception cref="ClientException">Thrown if the caller is not running as the Local System account, or if any required argument is missing,
         /// invalid, or cannot be parsed.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
         private static async Task BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we're running as the SYSTEM account before proceeding.
@@ -850,7 +851,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("A required ElevatedTokenType was not specified on the command line.", ClientExitCode.InvalidArguments);
             }
-            if (!Enum.TryParse(elevatedTokenTypeArg, true, out ElevatedTokenType elevatedTokenType))
+            if (!Enum.TryParse(elevatedTokenTypeArg, ignoreCase: true, out ElevatedTokenType elevatedTokenType))
             {
                 throw new ClientException($"The specified ElevatedTokenType of [{elevatedTokenType}] is invalid.", ClientExitCode.InvalidArguments);
             }
@@ -868,10 +869,10 @@ namespace PSADT.ClientServer
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
             using (SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryTokenAsync(sessionId, elevatedTokenType, uiAccess).ConfigureAwait(false))
-            using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
+            using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, processId))
             using (SafeProcessHandle hCurrentProcess = NativeMethods.GetCurrentProcess())
             {
-                _ = NativeMethods.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                _ = NativeMethods.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, bInheritHandle: false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
             }
 
             // Write the duplicated token to the pipe.
@@ -986,25 +987,19 @@ namespace PSADT.ClientServer
             // Check whether an ArgumentsDictionary was provided.
             if (arguments.TryGetValue("ArgumentsDictionary", out string? argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
             {
+                // Assume it's a registry key if it starts with HKEY, otherwise assume it's a file path or literal string.
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
                     // Provided value is a registry key path.
                     int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
                     using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue[..lastBackslashIndex]);
-                    return registryKey.GetValue(argvDictValue[(lastBackslashIndex + 1)..], null) is not string argvDictContent
+                    return registryKey.GetValue(argvDictValue[(lastBackslashIndex + 1)..], defaultValue: null) is not string argvDictContent
                         ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
                         : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }
-                else if (File.Exists(argvDictValue))
-                {
-                    // Provided value is a file path.
-                    return DeserializeString<ReadOnlyDictionary<string, string>>(File.ReadAllText(argvDictValue));
-                }
-                else
-                {
-                    // Assume anything else is a literal Base64-encoded string.
-                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictValue);
-                }
+                return File.Exists(argvDictValue)
+                    ? DeserializeString<ReadOnlyDictionary<string, string>>(File.ReadAllText(argvDictValue))
+                    : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictValue);
             }
 
             // This data should never change once read, so return read-only.

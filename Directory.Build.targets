@@ -2,6 +2,7 @@
   <!-- ARM64 preference for .NET Framework -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <PreferNativeArm64>true</PreferNativeArm64>
+    <NoWarn>$(NoWarn);MA0074</NoWarn>
   </PropertyGroup>
 
   <!-- Debugging symbol setup for projects -->

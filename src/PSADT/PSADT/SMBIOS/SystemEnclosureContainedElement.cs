@@ -18,11 +18,14 @@
  * along with PSAppDeployToolkit. If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System.Runtime.InteropServices;
+
 namespace PSADT.SMBIOS
 {
     /// <summary>
     /// Decoded view of a System Enclosure (Type 3) Contained Element record (length >= 3).
     /// </summary>
+    [StructLayout(LayoutKind.Auto)]
     public readonly record struct SystemEnclosureContainedElement
     {
         /// <summary>

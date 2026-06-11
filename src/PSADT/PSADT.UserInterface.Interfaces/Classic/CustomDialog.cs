@@ -126,9 +126,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
             }
 
             // Resume the dialog now that we've applied any options.
-            flowLayoutPanelDialog.ResumeLayout(false);
+            flowLayoutPanelDialog.ResumeLayout(performLayout: false);
             flowLayoutPanelDialog.PerformLayout();
-            flowLayoutPanelBase.ResumeLayout(false);
+            flowLayoutPanelBase.ResumeLayout(performLayout: false);
             flowLayoutPanelBase.PerformLayout();
             ResumeLayout();
             PerformLayout();

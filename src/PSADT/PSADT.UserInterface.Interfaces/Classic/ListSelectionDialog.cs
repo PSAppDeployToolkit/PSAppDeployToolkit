@@ -8,7 +8,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <summary>
     /// Abortable classic dialog form.
     /// </summary>
-    internal partial class ListSelectionDialog : CustomDialog, IModalDialog
+    internal sealed partial class ListSelectionDialog : CustomDialog, IModalDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ListSelectionDialog"/> class.

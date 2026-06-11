@@ -63,7 +63,7 @@ namespace PSADT.Tests.SMBIOS
                 { (byte)FirmwareCharacteristicsExtensionByte1.Ls120BootSupported, 4 },
                 { (byte)FirmwareCharacteristicsExtensionByte1.AtapiZipBootSupported, 5 },
                 { (byte)FirmwareCharacteristicsExtensionByte1.Ieee1394BootSupported, 6 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.SmartBatterySupported, 7 }
+                { (byte)FirmwareCharacteristicsExtensionByte1.SmartBatterySupported, 7 },
             };
     }
 }

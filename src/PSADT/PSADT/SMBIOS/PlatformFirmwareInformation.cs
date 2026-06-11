@@ -48,6 +48,7 @@ namespace PSADT.SMBIOS
         /// <param name="structureOffset">The offset of the structure within the buffer.</param>
         /// <param name="structureLength">The length of the structure in bytes.</param>
         /// <returns>The parsed BIOS information.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         private static PlatformFirmwareInformation Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
             // Calculate ROM and extended ROM size (if available and ROM size byte is 0xFF).
@@ -210,7 +211,7 @@ namespace PSADT.SMBIOS
             Vendor = !string.IsNullOrWhiteSpace(vendor) ? vendor : null;
             Version = !string.IsNullOrWhiteSpace(version) ? version : null;
             StartingAddressSegment = startingAddressSegment;
-            ReleaseDate = DateTime.TryParseExact(releaseDate?.TrimEnd('Z') + 'Z', ["MM/dd/yyyyZ", "M/d/yyyyZ", "MM/dd/yyZ", "M/d/yyZ"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate) ? parsedDate.ToUniversalTime() : throw new ArgumentOutOfRangeException($"The system's release date of [{releaseDate}] was unable to be parsed.", (Exception?)null);
+            ReleaseDate = DateTime.TryParseExact(releaseDate?.TrimEnd('Z') + 'Z', ["MM/dd/yyyyZ", "M/d/yyyyZ", "MM/dd/yyZ", "M/d/yyZ"], CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate) ? parsedDate.ToUniversalTime() : throw new ArgumentOutOfRangeException(nameof(releaseDate), $"The system's release date of [{releaseDate}] was unable to be parsed.");
             RomSizeBytes = romSizeBytes;
             Characteristics = characteristics;
             CharacteristicsExt1 = characteristicsExt1;

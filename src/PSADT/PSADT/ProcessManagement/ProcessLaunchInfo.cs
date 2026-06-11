@@ -424,7 +424,7 @@ namespace PSADT.ProcessManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string MakeCommandLine()
         {
-            return MakeCommandLine(false);
+            return MakeCommandLine(nullTerminated: false);
         }
 
         /// <summary>

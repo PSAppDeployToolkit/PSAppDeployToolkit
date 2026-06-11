@@ -25,7 +25,7 @@ namespace PSADT.UserInterface
         /// <param name="outputPath">The path where the resulting icon file will be saved. The file will be created or overwritten if it already exists.</param>
         public static void ConvertBitmapFileToIcon(string inputPath, string outputPath)
         {
-            using Bitmap bmp = new(inputPath, true);
+            using Bitmap bmp = new(inputPath, useIcm: true);
             File.WriteAllBytes(outputPath, CreateIconByteArray(bmp));
         }
 
@@ -41,8 +41,8 @@ namespace PSADT.UserInterface
             static Rectangle GetAspectFitRectangle(int sourceWidth, int sourceHeight, int boxWidth, int boxHeight)
             {
                 double scale = Math.Min((double)boxWidth / sourceWidth, (double)boxHeight / sourceHeight);
-                int drawWidth = Math.Max(1, (int)Math.Round(sourceWidth * scale));
-                int drawHeight = Math.Max(1, (int)Math.Round(sourceHeight * scale));
+                int drawWidth = Math.Max(1, (int)Math.Round(sourceWidth * scale, MidpointRounding.AwayFromZero));
+                int drawHeight = Math.Max(1, (int)Math.Round(sourceHeight * scale, MidpointRounding.AwayFromZero));
                 return new(x: (boxWidth - drawWidth) / 2, y: (boxHeight - drawHeight) / 2, drawWidth, drawHeight);
             }
 

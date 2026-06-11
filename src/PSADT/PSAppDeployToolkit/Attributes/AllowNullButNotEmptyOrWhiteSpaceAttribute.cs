@@ -9,5 +9,5 @@
     /// element and that each element is itself not null or, for strings, not empty or white space. Null values are
     /// explicitly allowed, enabling optional parameters that must be non-empty if specified. This attribute is commonly
     /// used in PowerShell cmdlets and functions to enforce input validation at runtime.</remarks>
-    public sealed class AllowNullButNotEmptyOrWhiteSpaceAttribute() : ValidateNotEmptyOrWhiteSpaceAttributeBase(allowNull: true);
+    public sealed class AllowNullButNotEmptyOrWhiteSpaceAttribute() : BaseValidateNotEmptyOrWhiteSpaceAttribute(allowNull: true);
 }

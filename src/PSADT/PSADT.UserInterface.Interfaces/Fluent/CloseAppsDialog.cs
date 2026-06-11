@@ -164,7 +164,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (state.RunningProcessService is not null)
             {
                 _runningProcessService = state.RunningProcessService;
-                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), true);
+                AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), force: true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
             UpdateRunningProcesses();
@@ -344,7 +344,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = AutomationProperties.GetName(ButtonLeft) == _buttonLeftText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
+            DialogResult = AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftText, StringComparison.Ordinal) ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -379,11 +379,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft) == _buttonLeftNoProcessesText && !_hideCloseButton))
+                DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftNoProcessesText, StringComparison.Ordinal) && !_hideCloseButton))
                     ? CloseAppsDialogResult.Continue
                     : _forcedCountdown && DeferralsAvailable()
                     ? CloseAppsDialogResult.Defer
-                    : AutomationProperties.GetName(ButtonLeft) == _buttonLeftText
+                    : AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftText, StringComparison.Ordinal)
                     ? CloseAppsDialogResult.Close
                     : CloseAppsDialogResult.Continue;
                 CloseDialog();

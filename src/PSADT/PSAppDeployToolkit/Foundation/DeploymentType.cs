@@ -18,6 +18,6 @@
         /// <summary>
         /// The deployment is for a repair.
         /// </summary>
-        Repair = 2
+        Repair = 2,
     }
 }

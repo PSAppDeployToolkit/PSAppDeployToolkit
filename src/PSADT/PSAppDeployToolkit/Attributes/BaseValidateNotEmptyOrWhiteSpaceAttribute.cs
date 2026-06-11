@@ -23,7 +23,7 @@ namespace PSAppDeployToolkit.Attributes
     /// validation errors.</param>
     /// <param name="allowEmpty">Indicates whether empty values (empty strings, empty collections) are permitted. If set to <see langword="true"/>,
     /// empty values will not trigger validation errors, but whitespace-only strings will still be rejected.</param>
-    public abstract class ValidateNotEmptyOrWhiteSpaceAttributeBase(bool allowNull, bool allowEmpty = false) : ValidateArgumentsAttribute
+    public abstract class BaseValidateNotEmptyOrWhiteSpaceAttribute(bool allowNull, bool allowEmpty = false) : ValidateArgumentsAttribute
     {
         /// <summary>
         /// Validates that the argument is not empty or consists only of white-space characters.
@@ -33,6 +33,7 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="engineIntrinsics">Provides access to the PowerShell engine APIs.</param>
         /// <exception cref="ArgumentNullException">Thrown when the argument is null and allowNull is <see langword="false"/>.</exception>
         /// <exception cref="ArgumentException">Thrown when the argument is empty or consists only of white-space characters and allowEmpty is <see langword="false"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
             // Unwrap PSObject to get the underlying value.
@@ -48,7 +49,7 @@ namespace PSAppDeployToolkit.Attributes
                 {
                     return;
                 }
-                throw new ArgumentNullException(null, "The argument is null. Provide a valid value for the argument, and then try running the command again.");
+                throw new ArgumentNullException(paramName: null, "The argument is null. Provide a valid value for the argument, and then try running the command again.");
             }
 
             // Handle varying type checks.
@@ -131,7 +132,7 @@ namespace PSAppDeployToolkit.Attributes
         /// Determines whether the specified value is null, including PowerShell-specific null representations.
         /// </summary>
         /// <param name="value">The value to check.</param>
-        /// <returns><c>true</c> if the value is null or a PowerShell/database null representation; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true"/> if the value is null or a PowerShell/database null representation; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNull(object? value)
         {
@@ -142,7 +143,7 @@ namespace PSAppDeployToolkit.Attributes
         /// Determines whether the specified string consists only of white-space characters (but is not empty).
         /// </summary>
         /// <param name="value">The string to check.</param>
-        /// <returns><c>true</c> if the string is non-empty and consists only of white-space characters; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true"/> if the string is non-empty and consists only of white-space characters; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsWhiteSpaceOnly(string value)
         {
@@ -154,7 +155,7 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="type">The type to check.</param>
         /// <param name="isElementValueType">When this method returns, indicates whether the collection's element type is a non-nullable value type.</param>
-        /// <returns><c>true</c> if the type is a collection (array or implements <see cref="IEnumerable"/>); otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true"/> if the type is a collection (array or implements <see cref="IEnumerable"/>); otherwise, <see langword="false"/>.</returns>
         private static bool IsCollection(Type type, out bool isElementValueType)
         {
             if (type.IsArray)
@@ -181,7 +182,7 @@ namespace PSAppDeployToolkit.Attributes
         /// Determines whether the specified type is a non-nullable value type.
         /// </summary>
         /// <param name="type">The type to check.</param>
-        /// <returns><c>true</c> if the type is a value type that is not <see cref="Nullable{T}"/>; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true"/> if the type is a value type that is not <see cref="Nullable{T}"/>; otherwise, <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNonNullableValueType(Type? type)
         {
@@ -194,7 +195,7 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="value">The object to check.</param>
         /// <param name="count">When this method returns, contains the count of elements if the object is a read-only dictionary; otherwise, 0.</param>
-        /// <returns><c>true</c> if the object implements <see cref="IReadOnlyDictionary{TKey, TValue}"/>; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true"/> if the object implements <see cref="IReadOnlyDictionary{TKey, TValue}"/>; otherwise, <see langword="false"/>.</returns>
         private static bool IsReadOnlyDictionary(object value, out int count)
         {
             if (value.GetType().GetInterfaces().FirstOrDefault(static iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)) is Type iface)

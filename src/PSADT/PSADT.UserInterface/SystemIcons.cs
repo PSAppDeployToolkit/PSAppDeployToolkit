@@ -13,6 +13,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Static class to manage system icons.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class SystemIcons
     {
         /// <summary>

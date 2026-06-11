@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <summary>
     /// Progress dialog form.
     /// </summary>
-    internal partial class ProgressDialog : ClassicDialog, IProgressDialog
+    internal sealed partial class ProgressDialog : ClassicDialog, IProgressDialog
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressDialog"/> class.
@@ -51,9 +51,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
             }
 
             // Resume the dialog now that we've applied any options.
-            flowLayoutPanelDialog.ResumeLayout(false);
+            flowLayoutPanelDialog.ResumeLayout(performLayout: false);
             flowLayoutPanelDialog.PerformLayout();
-            flowLayoutPanelBase.ResumeLayout(false);
+            flowLayoutPanelBase.ResumeLayout(performLayout: false);
             flowLayoutPanelBase.PerformLayout();
             ResumeLayout();
             PerformLayout();

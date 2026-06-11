@@ -23,6 +23,6 @@
         /// <summary>
         /// Logs are written to PowerShell's host via the Verbose stream.
         /// </summary>
-        Verbose = 3
+        Verbose = 3,
     }
 }

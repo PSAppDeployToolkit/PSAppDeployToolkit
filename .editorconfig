@@ -60,3 +60,9 @@ roslynator_refactorings.enabled = true
 dotnet_diagnostic.RCS1181.severity = none
 dotnet_diagnostic.RCS1238.severity = none
 dotnet_diagnostic.RCS1242.severity = none
+
+# Disable Meziantou.Analyzer rules we don't want to deal with.
+dotnet_diagnostic.MA0009.severity = none
+dotnet_diagnostic.MA0012.severity = none
+dotnet_diagnostic.MA0051.severity = none
+dotnet_diagnostic.MA0110.severity = none

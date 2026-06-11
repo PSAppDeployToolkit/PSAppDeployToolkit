@@ -41,6 +41,7 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="arguments"/> is a collection that contains duplicate elements.
         /// </exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
             // Verify the provided input before proceeding.

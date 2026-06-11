@@ -2,6 +2,7 @@
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -29,6 +30,7 @@ namespace PSADT.UserInterface.Interfaces
     /// Static class to manage WPF dialogs within a console application.
     /// </summary>
     [SuppressMessage("Usage", "VSTHRD001:Await JoinableTaskFactory.SwitchToMainThreadAsync() to switch to the UI thread instead of APIs that can deadlock or require specifying a priority", Justification = "DialogManager marshals to its own dedicated WPF dispatcher thread outside any JoinableTaskFactory context.")]
+    [SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class DialogManager
     {
         /// <summary>
@@ -50,7 +52,7 @@ namespace PSADT.UserInterface.Interfaces
             AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.InvokeShutdown();
 
             // Create and start the WPF application thread.
-            using ManualResetEvent dispatcherRunning = new(false);
+            using ManualResetEvent dispatcherRunning = new(initialState: false);
             System.Windows.Application? appLocal = null;
             Exception? appThreadException = null;
             Thread appThread = new(() =>
@@ -137,16 +139,16 @@ namespace PSADT.UserInterface.Interfaces
                 }
                 if (procsRunning?.Count > 0)
                 {
-                    state.LogAction($"Close applications countdown has [{elapsed}] seconds remaining.", LogSeverity.Info);
+                    state.LogAction($"Close applications countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info);
                 }
                 else
                 {
-                    state.LogAction($"Countdown has [{elapsed}] seconds remaining.", LogSeverity.Info);
+                    state.LogAction($"Countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info);
                 }
             }
 
             // Show the dialog and get the result.
-            CloseAppsDialogResult result = await ShowModalDialogAsync<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state);
+            CloseAppsDialogResult result = await ShowModalDialogAsync<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state).ConfigureAwait(false);
 
             // Perform some result logging before returning.
             if ((options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
@@ -172,7 +174,7 @@ namespace PSADT.UserInterface.Interfaces
                 {
                     throw new InvalidProgramException("Unexpected null RunningProcessService. This should never happen.");
                 }
-                await state.RunningProcessService.StopAsync();
+                await state.RunningProcessService.StopAsync().ConfigureAwait(false);
             }
             return result;
         }
@@ -190,7 +192,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 DesktopUtilities.MinimizeAllWindows();
             }
-            CustomDialogResult res = await ShowModalDialogAsync<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options);
+            CustomDialogResult res = await ShowModalDialogAsync<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options).ConfigureAwait(false);
             if (options.MinimizeWindows)
             {
                 DesktopUtilities.RestoreAllWindows();
@@ -212,7 +214,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 DesktopUtilities.MinimizeAllWindows();
             }
-            ListSelectionDialogResult res = await ShowModalDialogAsync<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options);
+            ListSelectionDialogResult res = await ShowModalDialogAsync<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options).ConfigureAwait(false);
             if (options.MinimizeWindows)
             {
                 DesktopUtilities.RestoreAllWindows();
@@ -238,7 +240,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 DesktopUtilities.MinimizeAllWindows();
             }
-            InputDialogResult res = await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options);
+            InputDialogResult res = await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options).ConfigureAwait(false);
             if (options.MinimizeWindows)
             {
                 DesktopUtilities.RestoreAllWindows();
@@ -255,7 +257,7 @@ namespace PSADT.UserInterface.Interfaces
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static async Task<string> ShowRestartDialogAsync(DialogStyle dialogStyle, RestartDialogOptions options)
         {
-            return await ShowModalDialogAsync<string>(DialogType.RestartDialog, dialogStyle, options);
+            return await ShowModalDialogAsync<string>(DialogType.RestartDialog, dialogStyle, options).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -285,7 +287,7 @@ namespace PSADT.UserInterface.Interfaces
                     ExceptionDispatchInfo.Capture(ex).Throw();
                     throw;
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -321,7 +323,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(progressDetailMessage);
             }
-            await InvokeDialogActionAsync(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment));
+            await InvokeDialogActionAsync(() => progressDialog.UpdateProgress(progressMessage, progressDetailMessage, progressPercentage, messageAlignment)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -345,7 +347,7 @@ namespace PSADT.UserInterface.Interfaces
                     progressDialog.Dispose();
                     progressDialog = null;
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -393,7 +395,7 @@ namespace PSADT.UserInterface.Interfaces
                         icon.ShowBalloonTip(0, lastBalloonTip.Title, lastBalloonTip.Text, (System.Windows.Forms.ToolTipIcon)lastBalloonTip.Icon);
                     }
                 };
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -434,7 +436,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 throw new InvalidOperationException("Cannot show a balloon tip while no notify icon is open.");
             }
-            await InvokeDialogActionAsync(() => { notifyIcon.ShowBalloonTip(0, options.Title, options.Text, (System.Windows.Forms.ToolTipIcon)options.Icon); lastBalloonTip = options; });
+            await InvokeDialogActionAsync(() => { notifyIcon.ShowBalloonTip(0, options.Title, options.Text, (System.Windows.Forms.ToolTipIcon)options.Icon); lastBalloonTip = options; }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -452,7 +454,7 @@ namespace PSADT.UserInterface.Interfaces
                 lastBalloonTip = null;
                 notifyIcon.Dispose();
                 notifyIcon = null;
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -487,10 +489,11 @@ namespace PSADT.UserInterface.Interfaces
         /// <remarks>The behavior and appearance of the message box are determined by the properties of the <paramref name="options"/> parameter.</remarks>ews
         /// <param name="options">The options for configuring the message box, such as title, message text, buttons, icon, default button, topmost behavior, and expiry duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
+        [SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static async Task<DialogBoxResult> ShowDialogBoxAsync(DialogBoxOptions options)
         {
-            return await ShowDialogBoxAsync(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon ?? 0, options.DialogTopMost, options.DialogExpiryDuration);
+            return await ShowDialogBoxAsync(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon ?? 0, options.DialogTopMost, options.DialogExpiryDuration).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -508,7 +511,7 @@ namespace PSADT.UserInterface.Interfaces
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static async Task<DialogBoxResult> ShowDialogBoxAsync(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
         {
-            return DialogBoxResult.FromMessageBoxResult(await ShowDialogBoxAsync(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : 0), Timeout));
+            return DialogBoxResult.FromMessageBoxResult(await ShowDialogBoxAsync(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : MESSAGEBOX_STYLE.MB_OK), Timeout).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -526,7 +529,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 ClientServerUtilities.SetOperationSuccessFlag();
                 return NativeMethods.MessageBoxTimeout(Prompt, Title, Options, Timeout);
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -547,7 +550,7 @@ namespace PSADT.UserInterface.Interfaces
             {
                 ClientServerUtilities.SetOperationSuccessFlag();
                 return NativeMethods.TaskDialog(Title, Subtitle, Prompt, Buttons, Icon);
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -564,7 +567,7 @@ namespace PSADT.UserInterface.Interfaces
                 using Classic.HelpConsole helpConsole = new(options);
                 _ = helpConsole.ShowDialog();
                 return DialogBoxResult.OK;
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -584,7 +587,7 @@ namespace PSADT.UserInterface.Interfaces
                     throw new InvalidOperationException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.");
                 }
                 System.Windows.Forms.SendKeys.SendWait(options.Keys);
-            });
+            }).ConfigureAwait(false);
         }
 
         /// <summary>

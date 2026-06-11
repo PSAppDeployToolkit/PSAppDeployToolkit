@@ -181,7 +181,7 @@ namespace PSADT.FileSystem
             ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
             static string TrimTrailingSeparators(string path)
             {
-                while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
+                while (path.Length > 3 && (path.EndsWith('\\') || path.EndsWith('/')))
                 {
                     path = path[..^1];
                 }
@@ -220,16 +220,16 @@ namespace PSADT.FileSystem
                             {
                                 // Validate the file name and skip "." and ".." entries.
                                 string name = data.cFileName.ToString();
-                                if (name is "." or "..")
+                                if (name.Equals(".", StringComparison.OrdinalIgnoreCase) || name.Equals("..", StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
                                 }
 
                                 // Check if this is a directory or a file. For directories, we add them to the queue for processing. For files, we add their size to the total.
-                                if (((FileAttributes)data.dwFileAttributes & FileAttributes.Directory) != 0)
+                                if (((FileAttributes)data.dwFileAttributes).HasFlag(FileAttributes.Directory))
                                 {
                                     // Skip reparse points (e.g. symbolic links, junctions, mount points) to avoid potential cycles.
-                                    if (((FileAttributes)data.dwFileAttributes & FileAttributes.ReparsePoint) != 0)
+                                    if (((FileAttributes)data.dwFileAttributes).HasFlag(FileAttributes.ReparsePoint))
                                     {
                                         continue;
                                     }
@@ -295,21 +295,21 @@ namespace PSADT.FileSystem
 
             // Set up the required flags for CreateFile, then see if we can open the file.
             FILE_SHARE_MODE dwShareMode = FILE_SHARE_MODE.FILE_SHARE_NONE;
-            if ((desiredAccess & FileSystemRights.Read) == FileSystemRights.Read)
+            if (desiredAccess.HasFlag(FileSystemRights.Read))
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_READ;
             }
-            if ((desiredAccess & FileSystemRights.Write) == FileSystemRights.Write)
+            if (desiredAccess.HasFlag(FileSystemRights.Write))
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_WRITE;
             }
-            if ((desiredAccess & FileSystemRights.Delete) == FileSystemRights.Delete)
+            if (desiredAccess.HasFlag(FileSystemRights.Delete))
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_DELETE;
             }
             try
             {
-                using SafeFileHandle hFile = NativeMethods.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
+                using SafeFileHandle hFile = NativeMethods.CreateFile(path.FullName, desiredAccess, dwShareMode, lpSecurityAttributes: null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
                 return !hFile.IsInvalid;
             }
             catch
@@ -429,7 +429,7 @@ namespace PSADT.FileSystem
             using (ppDacl)
             using (ppSacl)
             {
-                _ = NativeMethods.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false);
+                _ = NativeMethods.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, KeepExplicit: false);
             }
         }
 
@@ -498,7 +498,7 @@ namespace PSADT.FileSystem
         /// <returns>A read-only dictionary where each key is an NT device path and each value is the associated drive letter.</returns>
         internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
         {
-            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
+            Dictionary<string, string> lookupTable = new(StringComparer.OrdinalIgnoreCase) { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[1024]; targetPath.Clear();
             foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
             {
@@ -538,6 +538,7 @@ namespace PSADT.FileSystem
         /// has on the file or directory.</returns>
         /// <exception cref="DirectoryNotFoundException">Thrown if the specified path refers to a directory that does not exist.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified path refers to a file that does not exist.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, AuthzInitializeContext AuthzInitializeContext)
         {
             // Validate that the path exists.

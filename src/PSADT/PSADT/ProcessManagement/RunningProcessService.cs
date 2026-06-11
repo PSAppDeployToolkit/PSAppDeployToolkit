@@ -10,6 +10,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Service for managing running processes.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal sealed record RunningProcessService : IAsyncDisposable
     {
         /// <summary>
@@ -18,9 +19,10 @@ namespace PSADT.ProcessManagement
         /// <param name="processDefinitions">A read-only collection of process definitions to be managed by the service. Must contain at least one
         /// element.</param>
         /// <exception cref="ArgumentNullException">Thrown if processDefinitions is null or contains no elements.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal RunningProcessService(ReadOnlyCollection<ProcessDefinition> processDefinitions)
         {
-            ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count);
+            ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count, nameof(processDefinitions));
             _processDefinitions = processDefinitions;
         }
 
@@ -109,7 +111,7 @@ namespace PSADT.ProcessManagement
 
                 // Raise the event if the list of processes to close has changed.
                 ReadOnlyCollection<string> processDescs = new([.. _processesToClose.Select(static runningProcess => runningProcess.Description)]);
-                if (!_lastProcessDescriptions.SequenceEqual(processDescs))
+                if (!_lastProcessDescriptions.SequenceEqual(processDescs, StringComparer.OrdinalIgnoreCase))
                 {
                     _lastProcessDescriptions = processDescs;
                     ProcessesToCloseChanged?.Invoke(this, new(_processesToClose));
@@ -151,7 +153,7 @@ namespace PSADT.ProcessManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _mutex.Wait();
+                _mutex.Wait(default(CancellationToken));
                 try
                 {
                     RefreshCachedProcessLists();
@@ -172,7 +174,7 @@ namespace PSADT.ProcessManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _mutex.Wait();
+                _mutex.Wait(default(CancellationToken));
                 try
                 {
                     RefreshCachedProcessLists();

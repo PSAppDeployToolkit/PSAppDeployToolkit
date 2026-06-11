@@ -43,10 +43,11 @@ namespace PSADT.Utilities
         /// <returns>A read-only dictionary that maps each font file path to its corresponding resource identifier.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="fontFilePaths"/> is <see langword="null"/>.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any file specified in <paramref name="fontFilePaths"/> does not exist.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static IReadOnlyDictionary<string, int> AddFonts(IReadOnlyList<string> fontFilePaths)
         {
             ArgumentNullException.ThrowIfNull(fontFilePaths);
-            ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count);
+            ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count, nameof(fontFilePaths));
             Dictionary<string, int> fontResults = [];
             foreach (string fontFilePath in fontFilePaths)
             {
@@ -79,15 +80,16 @@ namespace PSADT.Utilities
         /// system.</remarks>
         /// <param name="fontFilePaths">A read-only list of file paths that identify the font resource files to remove from the system.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="fontFilePaths"/> is <see langword="null"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void RemoveFonts(IReadOnlyList<string> fontFilePaths)
         {
             ArgumentNullException.ThrowIfNull(fontFilePaths);
-            ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count);
+            ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count, nameof(fontFilePaths));
             foreach (string fontFilePath in fontFilePaths)
             {
                 // Remove the font resource. We don't check for file existence because the input is just value that names a font resource file.
                 // See https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-removefontresourcew#parameters for more details.
-                ArgumentException.ThrowIfNullOrWhiteSpace(fontFilePath);
+                ArgumentException.ThrowIfNullOrWhiteSpace(fontFilePath, nameof(fontFilePaths));
                 _ = NativeMethods.RemoveFontResource(fontFilePath);
             }
             _ = NativeMethods.SendNotifyMessage(HWND.HWND_BROADCAST, WINDOW_MESSAGE.WM_FONTCHANGE);
@@ -113,7 +115,7 @@ namespace PSADT.Utilities
             _ = NativeMethods.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED, out IDWriteFactory factory);
             try
             {
-                factory.CreateFontFileReference(fontPath.ThrowIfFileDoesNotExist(), null, out IDWriteFontFile fontFile);
+                factory.CreateFontFileReference(fontPath.ThrowIfFileDoesNotExist(), lastWriteTime: null, out IDWriteFontFile fontFile);
                 try
                 {
                     fontFile.Analyze(out BOOL supported, out _, out DWRITE_FONT_FACE_TYPE fontFaceType, out uint faceCount);
@@ -536,274 +538,6 @@ namespace PSADT.Utilities
             /// 4 - Custom (rare).
             /// </summary>
             TT_PLATFORM_CUSTOM = 4,
-        }
-
-        /// <summary>
-        /// Specifies the Microsoft platform-specific character set identifiers used in TrueType and OpenType font
-        /// tables.
-        /// </summary>
-        /// <remarks>These identifiers are used to indicate the encoding scheme for character mapping
-        /// tables in font files. The values correspond to different character sets, such as Unicode, Symbol, and
-        /// various East Asian encodings, as defined by the OpenType specification.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
-        private enum TT_MS_ID : ushort
-        {
-            /// <summary>
-            /// 0 - Symbol encoding.
-            /// </summary>
-            TT_MS_ID_SYMBOL_CS = 0,
-
-            /// <summary>
-            /// 1 - Unicode BMP (UCS-2).
-            /// </summary>
-            TT_MS_ID_UNICODE_CS = 1,
-
-            /// <summary>
-            /// 2 - ShiftJIS.
-            /// </summary>
-            TT_MS_ID_SJIS = 2,
-
-            /// <summary>
-            /// 3 - PRC (GBK / GB2312).
-            /// </summary>
-            TT_MS_ID_PRC = 3,
-
-            /// <summary>
-            /// 4 - Big5.
-            /// </summary>
-            TT_MS_ID_BIG_5 = 4,
-
-            /// <summary>
-            /// 5 - Wansung.
-            /// </summary>
-            TT_MS_ID_WANSUNG = 5,
-
-            /// <summary>
-            /// 6 - Johab.
-            /// </summary>
-            TT_MS_ID_JOHAB = 6,
-
-            /// <summary>
-            /// 10 - Unicode full repertoire (UCS-4 / UTF-32 semantics).
-            /// </summary>
-            TT_MS_ID_UCS_4 = 10,
-        }
-
-        /// <summary>
-        /// Specifies the Mac encoding IDs used in TrueType and OpenType font tables to identify character sets for
-        /// different languages and scripts on Macintosh platforms.
-        /// </summary>
-        /// <remarks>These encoding IDs are used in font naming and character mapping tables to indicate
-        /// the specific Mac script or language encoding. The values correspond to the platform-specific identifiers
-        /// defined by Apple for font files. This enumeration is typically used when parsing or generating font metadata
-        /// that targets the Macintosh platform.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
-        private enum TT_MAC_ID : ushort
-        {
-            /// <summary>
-            /// 0 - Roman (MacRoman).
-            /// </summary>
-            TT_MAC_ID_ROMAN = 0,
-
-            /// <summary>
-            /// 1 - Japanese.
-            /// </summary>
-            TT_MAC_ID_JAPANESE = 1,
-
-            /// <summary>
-            /// 2 - Traditional Chinese.
-            /// </summary>
-            TT_MAC_ID_TRADITIONAL_CHINESE = 2,
-
-            /// <summary>
-            /// 3 - Korean.
-            /// </summary>
-            TT_MAC_ID_KOREAN = 3,
-
-            /// <summary>
-            /// 4 - Arabic.
-            /// </summary>
-            TT_MAC_ID_ARABIC = 4,
-
-            /// <summary>
-            /// 5 - Hebrew.
-            /// </summary>
-            TT_MAC_ID_HEBREW = 5,
-
-            /// <summary>
-            /// 6 - Greek.
-            /// </summary>
-            TT_MAC_ID_GREEK = 6,
-
-            /// <summary>
-            /// 7 - Russian.
-            /// </summary>
-            TT_MAC_ID_RUSSIAN = 7,
-
-            /// <summary>
-            /// 8 - RSymbol.
-            /// </summary>
-            TT_MAC_ID_RSYMBOL = 8,
-
-            /// <summary>
-            /// 9 - Devanagari.
-            /// </summary>
-            TT_MAC_ID_DEVANAGARI = 9,
-
-            /// <summary>
-            /// 10 - Gurmukhi.
-            /// </summary>
-            TT_MAC_ID_GURMUKHI = 10,
-
-            /// <summary>
-            /// 11 - Gujarati.
-            /// </summary>
-            TT_MAC_ID_GUJARATI = 11,
-
-            /// <summary>
-            /// 12 - Oriya.
-            /// </summary>
-            TT_MAC_ID_ORIYA = 12,
-
-            /// <summary>
-            /// 13 - Bengali.
-            /// </summary>
-            TT_MAC_ID_BENGALI = 13,
-
-            /// <summary>
-            /// 14 - Tamil.
-            /// </summary>
-            TT_MAC_ID_TAMIL = 14,
-
-            /// <summary>
-            /// 15 - Telugu.
-            /// </summary>
-            TT_MAC_ID_TELUGU = 15,
-
-            /// <summary>
-            /// 16 - Kannada.
-            /// </summary>
-            TT_MAC_ID_KANNADA = 16,
-
-            /// <summary>
-            /// 17 - Malayalam.
-            /// </summary>
-            TT_MAC_ID_MALAYALAM = 17,
-
-            /// <summary>
-            /// 18 - Sinhalese.
-            /// </summary>
-            TT_MAC_ID_SINHALESE = 18,
-
-            /// <summary>
-            /// 19 - Burmese.
-            /// </summary>
-            TT_MAC_ID_BURMESE = 19,
-
-            /// <summary>
-            /// 20 - Khmer.
-            /// </summary>
-            TT_MAC_ID_KHMER = 20,
-
-            /// <summary>
-            /// 21 - Thai.
-            /// </summary>
-            TT_MAC_ID_THAI = 21,
-
-            /// <summary>
-            /// 22 - Laotian.
-            /// </summary>
-            TT_MAC_ID_LAOTIAN = 22,
-
-            /// <summary>
-            /// 23 - Georgian.
-            /// </summary>
-            TT_MAC_ID_GEORGIAN = 23,
-
-            /// <summary>
-            /// 24 - Armenian.
-            /// </summary>
-            TT_MAC_ID_ARMENIAN = 24,
-
-            /// <summary>
-            /// 25 - Simplified Chinese.
-            /// </summary>
-            TT_MAC_ID_SIMPLIFIED_CHINESE = 25,
-
-            /// <summary>
-            /// 26 - Tibetan.
-            /// </summary>
-            TT_MAC_ID_TIBETAN = 26,
-
-            /// <summary>
-            /// 27 - Mongolian.
-            /// </summary>
-            TT_MAC_ID_MONGOLIAN = 27,
-
-            /// <summary>
-            /// 28 - Geez.
-            /// </summary>
-            TT_MAC_ID_GEEZ = 28,
-
-            /// <summary>
-            /// 29 - Slavic.
-            /// </summary>
-            TT_MAC_ID_SLAVIC = 29,
-
-            /// <summary>
-            /// 30 - Vietnamese.
-            /// </summary>
-            TT_MAC_ID_VIETNAMESE = 30,
-
-            /// <summary>
-            /// 31 - Sindhi.
-            /// </summary>
-            TT_MAC_ID_SINDHI = 31,
-
-            /// <summary>
-            /// 32 - Uninterpreted.
-            /// </summary>
-            TT_MAC_ID_UNINTERPRETED = 32,
-        }
-
-        /// <summary>
-        /// Unicode platform encoding identifiers for OpenType/TrueType 'name' table records
-        /// (encodingID field when <see cref="TT_PLATFORM_ID.TT_PLATFORM_APPLE_UNICODE"/> is the platformID).
-        /// </summary>
-        /// <remarks>
-        /// These values are defined by the OpenType specification for the Unicode (platformID = 0) platform.
-        /// In modern fonts, Unicode-platform name records are typically encoded as UTF-16BE in practice.
-        /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
-        private enum TT_UNICODE_ID : ushort
-        {
-            /// <summary>
-            /// 0 - Unicode 1.0 semantics (default).
-            /// </summary>
-            TT_UNICODE_ID_DEFAULT = 0,
-
-            /// <summary>
-            /// 1 - Unicode 1.1 semantics.
-            /// </summary>
-            TT_UNICODE_ID_UNICODE_1_1 = 1,
-
-            /// <summary>
-            /// 2 - ISO/IEC 10646 semantics (deprecated / historical).
-            /// </summary>
-            TT_UNICODE_ID_ISO_10646 = 2,
-
-            /// <summary>
-            /// 3 - Unicode 2.0 and later semantics (BMP only).
-            /// </summary>
-            TT_UNICODE_ID_UNICODE_2_0_BMP = 3,
-
-            /// <summary>
-            /// 4 - Unicode 2.0 and later semantics (full repertoire).
-            /// </summary>
-            TT_UNICODE_ID_UNICODE_2_0_FULL = 4,
         }
     }
 }

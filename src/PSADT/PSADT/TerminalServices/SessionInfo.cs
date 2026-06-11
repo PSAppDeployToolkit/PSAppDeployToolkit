@@ -251,6 +251,7 @@ namespace PSADT.TerminalServices
         /// <param name="clientBuildNumber">The build number of the client, or null if not available.</param>
         /// <exception cref="ArgumentNullException">Thrown if ntAccount, sid, userName, or domainName is null, or if userName or domainName is empty.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if sessionId is less than or equal to zero.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private SessionInfo(
             NTAccount ntAccount,
             SecurityIdentifier sid,
@@ -274,7 +275,7 @@ namespace PSADT.TerminalServices
             string? clientDirectory,
             uint? clientBuildNumber)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount.Value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount.Value, nameof(ntAccount));
             ArgumentException.ThrowIfNullOrWhiteSpace(userName);
             ArgumentException.ThrowIfNullOrWhiteSpace(domainName);
             if (sessionName is not null)

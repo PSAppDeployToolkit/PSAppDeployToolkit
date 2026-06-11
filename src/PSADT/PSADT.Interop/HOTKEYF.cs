@@ -10,6 +10,7 @@ namespace PSADT.Interop
     /// Win32 API, ensuring compatibility when interacting with native Windows functionality.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "This is as they're defined within the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     [Flags]
     internal enum HOTKEYF : uint
     {

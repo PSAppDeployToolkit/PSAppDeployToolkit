@@ -171,7 +171,7 @@ namespace PSADT.Interop
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(TSelf? other)
         {
-            return other is not null && _name == other._name && _value == other._value;
+            return other is not null && _name.Equals(other._name, StringComparison.Ordinal) && _value == other._value;
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace PSADT.Interop
                 ulong n => _value == (nint)n,
                 nint n => _value == n,
                 nuint n => _value == (nint)n,
-                _ => false
+                _ => false,
             };
         }
 

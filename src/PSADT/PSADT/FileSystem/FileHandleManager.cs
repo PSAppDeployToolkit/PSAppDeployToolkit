@@ -40,7 +40,7 @@ namespace PSADT.FileSystem
             static int GetObjectTypesBufferSize(int queryBufferSize)
             {
                 Span<byte> queryBuffer = stackalloc byte[queryBufferSize];
-                _ = NativeMethods.NtQueryObject(null, Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
+                _ = NativeMethods.NtQueryObject(Handle: null, Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, queryBuffer, out uint requiredLength, retrievingLength: true);
                 return (int)requiredLength;
             }
 
@@ -183,7 +183,7 @@ namespace PSADT.FileSystem
             int objectTypesSize = NativeMethods.ObjectInfoClassSizes[Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation];
             int objectTypeSize = NativeMethods.ObjectInfoClassSizes[Interop.OBJECT_INFORMATION_CLASS.ObjectTypeInformation];
             Span<byte> typesBufferPtr = stackalloc byte[GetObjectTypesBufferSize(objectTypesSize)];
-            _ = NativeMethods.NtQueryObject(null, Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
+            _ = NativeMethods.NtQueryObject(Handle: null, Interop.OBJECT_INFORMATION_CLASS.ObjectTypesInformation, typesBufferPtr, out _);
 
             // Read the number of types from the buffer and store the built-out dictionary.
             ref readonly OBJECT_TYPES_INFORMATION typesInfo = ref typesBufferPtr.AsReadOnlyStructure<OBJECT_TYPES_INFORMATION>();
@@ -210,6 +210,7 @@ namespace PSADT.FileSystem
         /// returned.</param>
         /// <returns>A read-only list of FileHandleInfo objects representing the open file handles that match the specified
         /// path.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         public static IReadOnlyList<FileHandleInfo> GetOpenHandles(string? path = null)
         {
             // Internal helper to get the required buffer size for extended handle information.
@@ -249,7 +250,7 @@ namespace PSADT.FileSystem
                 {
                     // Read the handle information into a structure, skipping over if it's not a file or directory handle.
                     ref readonly SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX sysHandle = ref handleBuffer.AsSpan(handleInfoExSize + (handleEntryExSize * i)).AsReadOnlyStructure<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX>();
-                    if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (objectType != "File" && objectType != "Directory"))
+                    if (!ObjectTypeLookupTable.TryGetValue(sysHandle.ObjectTypeIndex, out string? objectType) || (!"File".Equals(objectType, StringComparison.Ordinal) && !"Directory".Equals(objectType, StringComparison.Ordinal)))
                     {
                         return;
                     }
@@ -258,7 +259,7 @@ namespace PSADT.FileSystem
                     SafeFileHandle fileProcessHandle;
                     try
                     {
-                        fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)sysHandle.UniqueProcessId);
+                        fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, (uint)sysHandle.UniqueProcessId);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -271,7 +272,7 @@ namespace PSADT.FileSystem
 
                     // Duplicate the remote handle into our process.
                     SafeFileHandle fileDupHandle;
-                    using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, false))
+                    using (SafeFileHandle fileOpenHandle = new((HANDLE)sysHandle.HandleValue, ownsHandle: false))
                     using (fileProcessHandle)
                     {
                         // Skip to the next iteration if the handle is invalid.
@@ -283,7 +284,7 @@ namespace PSADT.FileSystem
                         // Duplicate the handle into our process.
                         try
                         {
-                            _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                            _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out fileDupHandle, 0, bInheritHandle: false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
                         }
                         catch (Win32Exception ex) when (ex.NativeErrorCode is ((int)WIN32_ERROR.ERROR_NOT_SUPPORTED) or ((int)WIN32_ERROR.ERROR_INVALID_HANDLE))
                         {
@@ -366,8 +367,8 @@ namespace PSADT.FileSystem
                     }
 
                     // Add the handle information to the list if it matches the specified directory path.
-                    string objectNameKey = $@"\{string.Join(@"\", objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
-                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter) is string dosPath && (path is null || dosPath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
+                    string objectNameKey = $@"\{string.Join('\\', objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+                    if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter, StringComparison.OrdinalIgnoreCase) is string dosPath && (path is null || dosPath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
                     {
                         openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
                     }
@@ -393,6 +394,7 @@ namespace PSADT.FileSystem
         /// <param name="handleEntries">An array of SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX structures representing the handles to be closed. Each entry
         /// must be valid and correspond to an open handle.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleEntries"/> is null.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
         {
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
@@ -400,9 +402,9 @@ namespace PSADT.FileSystem
             using SafeProcessHandle currentProcessHandle = NativeMethods.GetCurrentProcess();
             foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {
-                using SafeFileHandle fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, (uint)handleEntry.UniqueProcessId);
-                using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, false);
-                _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
+                using SafeFileHandle fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, (uint)handleEntry.UniqueProcessId);
+                using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, ownsHandle: false);
+                _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, bInheritHandle: false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
                 localHandle.Dispose();
             }
         }

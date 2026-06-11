@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
@@ -68,7 +69,7 @@ namespace PSADT.ClientServer
                 nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
                 nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
                 _clientProcess = ClientServerUtilities.StartClientOperation(
-                    ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
+                    ["/ClientServer", "-InputPipe", $"{((long)outputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-OutputPipe", $"{((long)inputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-LogPipe", $"{((long)logServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}"],
                     RunAsActiveUser,
                     [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
                     _clientProcessCts.Token
@@ -229,7 +230,7 @@ namespace PSADT.ClientServer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
-            return ShowModalDialog<DialogBoxResult>(DialogType.DialogBox, 0, options);
+            return ShowModalDialog<DialogBoxResult>(DialogType.DialogBox, DialogStyle.Classic, options);
         }
 
         /// <summary>
@@ -607,7 +608,7 @@ namespace PSADT.ClientServer
                 // We either closed or cancelled the process. Wait for that to occur.
                 try
                 {
-                    (await _clientProcess).Dispose();
+                    (await _clientProcess.ConfigureAwait(false)).Dispose();
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {

@@ -46,7 +46,7 @@ namespace PSADT.DeviceManagement
                 try
                 {
                     Guid iid = typeof(IAudioSessionManager2).GUID;
-                    microphoneDevice.Activate(in iid, CLSCTX.CLSCTX_INPROC_SERVER, null, out object sessionManager);
+                    microphoneDevice.Activate(in iid, CLSCTX.CLSCTX_INPROC_SERVER, pActivationParams: null, out object sessionManager);
                     try
                     {
                         IAudioSessionEnumerator sessionEnumerator = ((IAudioSessionManager2)sessionManager).GetSessionEnumerator();

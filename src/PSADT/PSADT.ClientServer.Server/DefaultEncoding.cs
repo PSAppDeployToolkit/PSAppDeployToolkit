@@ -18,6 +18,6 @@ namespace PSADT.ClientServer
         /// <remarks>This encoding instance is configured to omit the BOM when encoding and to throw an
         /// exception if invalid byte sequences are encountered during decoding. Use this encoding when you require
         /// strict UTF-8 compliance and want to avoid silent data loss from invalid bytes.</remarks>
-        internal static readonly UTF8Encoding Value = new(false, true);
+        internal static readonly UTF8Encoding Value = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
     }
 }

@@ -121,11 +121,9 @@ namespace PSADT.Interop.Utilities
                 // There was no suitable Win32Exception, however there was a managed exception for the HRESULT corresponding to the NTSTATUS code.
                 return hrException;
             }
-            else
-            {
-                // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.
-                return ntStatusException;
-            }
+
+            // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.
+            return ntStatusException;
         }
 
         /// <summary>

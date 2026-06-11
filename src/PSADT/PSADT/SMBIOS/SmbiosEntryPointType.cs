@@ -53,6 +53,6 @@ namespace PSADT.SMBIOS
         /// Supports SMBIOS versions 3.0 and later.
         /// Entry point structure is 24 bytes.
         /// </remarks>
-        Smbios3x = 2
+        Smbios3x = 2,
     }
 }

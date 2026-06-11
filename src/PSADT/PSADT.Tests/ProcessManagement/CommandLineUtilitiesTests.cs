@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using PSADT.ProcessManagement;
@@ -396,7 +397,7 @@ namespace PSADT.Tests.ProcessManagement
             List<string> originalArgs = [];
             for (int i = 0; i < argCount; i++)
             {
-                originalArgs.Add($"argument{i}");
+                originalArgs.Add($"argument{i.ToString(CultureInfo.InvariantCulture)}");
             }
             string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgs);
 
@@ -407,7 +408,7 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert
             Assert.Equal(argCount, result.Count);
-            Assert.True(elapsed.TotalMilliseconds < 100, $"Parsing took {elapsed.TotalMilliseconds}ms, expected < 100ms");
+            Assert.True(elapsed.TotalMilliseconds < 100, $"Parsing took {elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms, expected < 100ms");
         }
 
         /// <summary>
@@ -662,7 +663,7 @@ namespace PSADT.Tests.ProcessManagement
                 new[] { "argument with \"\"escaped quotes\"\"" },
                 new[] { "c:\\Path with spaces\\trailing_backslash\\" },
                 new[] { "program", "arg1", "arg2" },
-                new[] { "complex\"arg", "with\\backslashes", "and spaces" }
+                new[] { "complex\"arg", "with\\backslashes", "and spaces" },
             ];
         }
 
@@ -737,7 +738,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_RealWorldUncScenarios_ParsedCorrectlyStrict(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true);
 
             // Assert
             Assert.Equal(expected, result);
@@ -780,7 +781,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_ComplexRealWorldScenarios_ParsedCorrectlyStrict(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true);
 
             // Assert
             Assert.Equal(expected, result);
@@ -901,7 +902,7 @@ namespace PSADT.Tests.ProcessManagement
             string[] args = new string[argCount];
             for (int i = 0; i < argCount; i++)
             {
-                args[i] = $"argument {i} with spaces and \"quotes\" and \\backslashes";
+                args[i] = $"argument {i.ToString(CultureInfo.InvariantCulture)} with spaces and \"quotes\" and \\backslashes";
             }
 
             // Act
@@ -912,7 +913,7 @@ namespace PSADT.Tests.ProcessManagement
 
             // Assert
             Assert.Equal(args.Length, result.Count);
-            Assert.True(elapsed.TotalMilliseconds < 50, $"Parsing took {elapsed.TotalMilliseconds}ms, expected < 50ms");
+            Assert.True(elapsed.TotalMilliseconds < 50, $"Parsing took {elapsed.TotalMilliseconds.ToString(CultureInfo.InvariantCulture)}ms, expected < 50ms");
         }
 
         /// <summary>
@@ -1180,7 +1181,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_PathDetectionDisabled_UsesStandardParsing(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1239,7 +1240,7 @@ namespace PSADT.Tests.ProcessManagement
 
             // Act
             IReadOnlyList<string> compatibleResult = CommandLineUtilities.CommandLineToArgumentList(commandLine);
-            IReadOnlyList<string> strictResult = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+            IReadOnlyList<string> strictResult = CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true);
 
             // Assert
             Assert.Equal(["C:\\Program Files\\Autodesk\\DWG TrueView 2021 - English\\Setup\\en-us\\Setup\\Setup.exe", "/P"], compatibleResult);
@@ -1397,7 +1398,7 @@ namespace PSADT.Tests.ProcessManagement
         public void CommandLineToArgumentList_PosixPathConversion_StrictModeNoConversion(string commandLine, IReadOnlyList<string> expected)
         {
             // Act
-            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, true);
+            IReadOnlyList<string> result = CommandLineUtilities.CommandLineToArgumentList(commandLine, strict: true);
 
             // Assert
             Assert.Equal(expected, result);
@@ -1484,7 +1485,7 @@ namespace PSADT.Tests.ProcessManagement
                 "--annotation=plat=Win64",
                 "--annotation=prod=Chrome",
                 "--annotation=ver=143.0.7499.42",
-                "--initial-client-data=0x124,0x128,0x12c,0x100,0x130,0x7ff8afed59e8,0x7ff8afed59f4,0x7ff8afed5a00"
+                "--initial-client-data=0x124,0x128,0x12c,0x100,0x130,0x7ff8afed59e8,0x7ff8afed59f4,0x7ff8afed5a00",
             ];
 
             // Act

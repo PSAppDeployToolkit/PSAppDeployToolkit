@@ -6,6 +6,7 @@ namespace PSADT.WindowsRuntime.UI.Shell
     /// <summary>
     /// Provides utility methods for interacting with Windows Shell features.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class ShellUtilities
     {
         /// <summary>

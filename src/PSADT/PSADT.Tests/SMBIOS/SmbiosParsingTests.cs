@@ -130,7 +130,7 @@ namespace PSADT.Tests.SMBIOS
                 0x00, 0x00, 0x00, 0x00,
                 (byte)'A', (byte)'B', 0x00,
                 (byte)'C', 0x00,
-                0x00
+                0x00,
             ];
             string? first = SmbiosParsing.GetSmbiosString(data, 4, 1);
             string? second = SmbiosParsing.GetSmbiosString(data, 4, 2);
@@ -155,7 +155,7 @@ namespace PSADT.Tests.SMBIOS
             [
                 0x00, 0x00, 0x00, 0x00,
                 (byte)' ', 0x00,
-                0x00
+                0x00,
             ];
             string? value = SmbiosParsing.GetSmbiosString(data, 4, 1);
             Assert.Null(value);

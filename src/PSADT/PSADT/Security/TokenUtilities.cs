@@ -53,7 +53,7 @@ namespace PSADT.Security
         internal static SecurityIdentifier GetTokenSid(SafeHandle tokenHandle)
         {
             // Get the required buffer size and allocate it.
-            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, null, out uint returnLength);
+            _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenUser, TokenInformation: null, out uint returnLength);
             Span<byte> buffer = stackalloc byte[(int)returnLength];
 
             // Now grab the token's SID as requested.

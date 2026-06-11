@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
@@ -66,7 +67,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
             {
-                DialogResult = new CustomDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", null));
+                DialogResult = new CustomDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", newValue: null, StringComparison.OrdinalIgnoreCase));
             }
             base.ButtonLeft_Click(sender, e);
         }
@@ -85,7 +86,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
             {
-                DialogResult = new CustomDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", null));
+                DialogResult = new CustomDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", newValue: null, StringComparison.OrdinalIgnoreCase));
             }
             base.ButtonMiddle_Click(sender, e);
         }
@@ -104,7 +105,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (DialogResult is CustomDialogResult result && result.Equals(CustomDialogResult.DefaultResult))
             {
-                DialogResult = new CustomDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", null));
+                DialogResult = new CustomDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", newValue: null, StringComparison.OrdinalIgnoreCase));
             }
             base.ButtonRight_Click(sender, e);
         }

@@ -91,6 +91,6 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Interconnect Board
         /// </summary>
-        InterconnectBoard = 0x0D
+        InterconnectBoard = 0x0D,
     }
 }

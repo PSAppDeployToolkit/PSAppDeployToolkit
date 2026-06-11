@@ -218,13 +218,14 @@ namespace PSADT.Interop.SafeHandles
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="data"/> parameter is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="data"/> parameter is empty, or if the combined length of <paramref
         /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentNullException.ThrowIfNull(data);
-            ArgumentOutOfRangeException.ThrowIfZero(data.Length);
+            ArgumentOutOfRangeException.ThrowIfZero(data.Length, nameof(data));
             ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + startIndex, Length);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + startIndex, Length, nameof(data));
             Marshal.Copy(data, startIndex, handle, data.Length - startIndex);
             return (TSelf)this;
         }

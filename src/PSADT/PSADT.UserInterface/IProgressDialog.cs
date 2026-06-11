@@ -4,6 +4,7 @@
     /// Represents a dialog interface for deployment operations, providing a result and the ability to close the dialog.
     /// </summary>
     /// <remarks>This interface is intended to be implemented by classes that manage deployment-related dialogs. It provides a mechanism to retrieve the result of the dialog and to close it when the operation is complete.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal interface IProgressDialog : IBaseDialog
     {
         /// <summary>

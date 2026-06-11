@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -96,7 +97,7 @@ namespace PSADT.ClientServer
             }
             if (length > MaxMessageSize)
             {
-                throw new InvalidDataException($"Message size {length} exceeds maximum allowed size of {MaxMessageSize} bytes.");
+                throw new InvalidDataException($"Message size {length.ToString(CultureInfo.InvariantCulture)} exceeds maximum allowed size of {MaxMessageSize} bytes.");
             }
 
             // Read the data
@@ -208,7 +209,7 @@ namespace PSADT.ClientServer
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
-            ECParameters ecParams = _ecdh.ExportParameters(false);
+            ECParameters ecParams = _ecdh.ExportParameters(includePrivateParameters: false);
             // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y
             // Magic for ECDH P-256 public key: ECDH_PUBLIC_P256 = 0x314B4345
             int keySize = ecParams.Q.X!.Length;
@@ -252,7 +253,7 @@ namespace PSADT.ClientServer
             ECParameters remoteParams = new()
             {
                 Curve = ECCurve.NamedCurves.nistP256,
-                Q = new ECPoint { X = x, Y = y }
+                Q = new ECPoint { X = x, Y = y },
             };
             using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create(remoteParams);
             byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remoteEcdh.PublicKey);
@@ -418,7 +419,7 @@ namespace PSADT.ClientServer
         private readonly ECDiffieHellmanCng _ecdh = new(256)
         {
             KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
-            HashAlgorithm = CngAlgorithm.Sha256
+            HashAlgorithm = CngAlgorithm.Sha256,
         };
 #endif
 

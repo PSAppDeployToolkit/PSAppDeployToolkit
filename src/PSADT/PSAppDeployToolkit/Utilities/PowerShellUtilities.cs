@@ -19,11 +19,11 @@ namespace PSAppDeployToolkit.Utilities
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
         /// <exception cref="FormatException">Thrown when the parser is unable to process the provided arguments.</exception>
-        public static Dictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
+        public static IReadOnlyDictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
             if (!(remainingArguments?.Count > 0))
             {
-                return new(StringComparer.OrdinalIgnoreCase);
+                return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             }
             Dictionary<string, object> values = new(StringComparer.OrdinalIgnoreCase);
             try
@@ -38,7 +38,7 @@ namespace PSAppDeployToolkit.Utilities
                     if ((argument is string str) && PowerShellParameterRegex.IsMatch(str))
                     {
                         currentKey = PowerShellParamTokenRegex.Replace(str, string.Empty);
-                        values.Add(currentKey, new SwitchParameter(true));
+                        values.Add(currentKey, new SwitchParameter(isPresent: true));
                     }
                     else if (!string.IsNullOrWhiteSpace(currentKey))
                     {
@@ -76,7 +76,7 @@ namespace PSAppDeployToolkit.Utilities
                     {
                         continue;
                     }
-                    if (exclusions?.Contains(entry.Key) == true)
+                    if (exclusions?.Contains(entry.Key, StringComparer.OrdinalIgnoreCase) == true)
                     {
                         continue;
                     }
@@ -84,7 +84,7 @@ namespace PSAppDeployToolkit.Utilities
                     // Handle nested dictionaries.
                     if (entry.Value is IDictionary dictionary)
                     {
-                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key} is null.")), exclusions);
+                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key} is null."), StringComparer.OrdinalIgnoreCase), exclusions);
                         continue;
                     }
 
@@ -99,7 +99,7 @@ namespace PSAppDeployToolkit.Utilities
                     }
                     else if (entry.Value is IEnumerable enumerable)
                     {
-                        val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(static s => SingleQuoteRegex.Replace(s, "''")))}'" : string.Join(",", enumerable);
+                        val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(static s => SingleQuoteRegex.Replace(s, "''")))}'" : string.Join(',', enumerable);
                     }
                     else if (entry.Value is not SwitchParameter)
                     {
@@ -108,7 +108,7 @@ namespace PSAppDeployToolkit.Utilities
                     yield return !string.IsNullOrWhiteSpace(val) ? $"-{key}:{val}" : $"-{key}";
                 }
             }
-            return string.Join(" ", ConvertDictToPowerShellArgsImpl(dict, exclusions));
+            return string.Join(' ', ConvertDictToPowerShellArgsImpl(dict, exclusions));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace PSAppDeployToolkit.Utilities
         /// <summary>
         /// A regular expression to match the leading hyphen and optional trailing colon in PowerShell parameter tokens, used for extracting the parameter name from the token.
         /// </summary>
-        private static readonly Regex PowerShellParamTokenRegex = new("(^-|:$)", RegexOptions.Compiled);
+        private static readonly Regex PowerShellParamTokenRegex = new("(^-|:$)", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// A regular expression to match single quotes that are not part of a pair of single quotes, used for escaping single quotes in PowerShell string literals by doubling them. This regex uses negative lookbehind and negative lookahead assertions to ensure that it only matches single quotes that are not preceded or followed by another single quote, allowing for proper handling of escaped single quotes in PowerShell strings.

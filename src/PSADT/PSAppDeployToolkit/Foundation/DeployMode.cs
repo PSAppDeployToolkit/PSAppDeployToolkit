@@ -23,6 +23,6 @@
         /// <summary>
         /// The deployment is silent, with no user interface displayed.
         /// </summary>
-        Silent = 3
+        Silent = 3,
     }
 }

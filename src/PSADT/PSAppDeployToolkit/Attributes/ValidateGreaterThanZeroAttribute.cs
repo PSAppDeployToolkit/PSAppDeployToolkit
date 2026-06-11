@@ -33,7 +33,7 @@ namespace PSAppDeployToolkit.Attributes
             arguments = GetBaseObject(arguments);
             if (IsNull(arguments))
             {
-                throw new ArgumentNullException(null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
+                throw new ArgumentNullException(paramName: null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
             }
             if (arguments is not string && LanguagePrimitives.GetEnumerator(arguments) is IEnumerator enumerator)
             {
@@ -55,7 +55,7 @@ namespace PSAppDeployToolkit.Attributes
                 object element = GetBaseObject(enumerator.Current);
                 if (IsNull(element))
                 {
-                    throw new ArgumentNullException(null, "The argument collection contains a null element. Provide a collection whose elements are greater than zero, and then try running the command again.");
+                    throw new ArgumentNullException(paramName: null, "The argument collection contains a null element. Provide a collection whose elements are greater than zero, and then try running the command again.");
                 }
                 ValidateValue(element);
             }
@@ -68,12 +68,13 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentNullException">Thrown when the argument is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the argument type does not support greater-than-zero validation.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the argument is less than or equal to zero.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         private static void ValidateValue(object value)
         {
             value = GetBaseObject(value);
             if (IsNull(value))
             {
-                throw new ArgumentNullException(null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
+                throw new ArgumentNullException(paramName: null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
             }
             if (!TryIsGreaterThanZero(value, out bool isGreaterThanZero))
             {
@@ -81,7 +82,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             if (!isGreaterThanZero)
             {
-                throw new ArgumentOutOfRangeException(null, value, "The argument is less than or equal to zero. Provide an argument that is greater than zero, and then try running the command again.");
+                throw new ArgumentOutOfRangeException(paramName: null, value, "The argument is less than or equal to zero. Provide an argument that is greater than zero, and then try running the command again.");
             }
         }
 

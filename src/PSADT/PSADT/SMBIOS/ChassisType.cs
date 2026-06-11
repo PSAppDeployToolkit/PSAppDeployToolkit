@@ -206,6 +206,6 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Stick PC
         /// </summary>
-        StickPc = 0x24
+        StickPc = 0x24,
     }
 }

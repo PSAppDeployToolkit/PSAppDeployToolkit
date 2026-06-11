@@ -3,6 +3,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -21,11 +22,10 @@ using PSADT.DeviceManagement;
 using PSADT.Foundation;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.Utilities;
-using Fluence.Wpf;
-using Fluence.Wpf.Controls;
-using Button = Fluence.Wpf.Controls.Button;
 using PSADT.WindowManagement;
 using Windows.Win32.Foundation;
+using Fluence.Wpf;
+using Fluence.Wpf.Controls;
 
 namespace PSADT.UserInterface.Interfaces.Fluent
 {
@@ -53,6 +53,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// dialog.</param>
         /// <param name="countdownStopwatch">An optional Stopwatch instance used to track the countdown duration. If not provided, a new Stopwatch is
         /// created.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0056:Do not call overridable members in constructor", Justification = "This is OK here.")]
         private protected FluentDialog(BaseDialogOptions options, IDialogResult dialogResult, string? customMessageText = null, TimeSpan? countdownDuration = null, TimeSpan? countdownWarningDuration = null, Stopwatch? countdownStopwatch = null)
         {
             // Confirm nullable input is valid before proceeding.
@@ -179,7 +180,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (_countdownDuration is not null)
             {
                 _countdownTimer = new() { Interval = TimeSpan.FromSeconds(1) };
-                _countdownTimer.Tick += (s, e) => CountdownTimer_Tick(null);
+                _countdownTimer.Tick += (s, e) => CountdownTimer_Tick(state: null);
                 CountdownStackPanel.Visibility = Visibility.Visible;
                 CountdownDeferPanelSeparator.Visibility = Visibility.Visible;
             }
@@ -391,7 +392,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private void SystemParameters_StaticPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             // Reposition the window if screen dimensions or work area change.
-            if (e.PropertyName is (nameof(SystemParameters.PrimaryScreenWidth)) or (nameof(SystemParameters.PrimaryScreenHeight)) or (nameof(SystemParameters.WorkArea)))
+            if (e.PropertyName.Equals(nameof(SystemParameters.PrimaryScreenWidth), StringComparison.Ordinal) || e.PropertyName.Equals(nameof(SystemParameters.PrimaryScreenHeight), StringComparison.Ordinal) || e.PropertyName.Equals(nameof(SystemParameters.WorkArea), StringComparison.Ordinal))
             {
                 PositionWindow();
             }
@@ -442,7 +443,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// by other handlers.</remarks>
         /// <param name="sender">The source of the event, typically the hyperlink that was clicked.</param>
         /// <param name="e">The event data containing information about the navigation request, including the target URI.</param>
-        private void Hyperlink_RequestNavigate(object? sender, RequestNavigateEventArgs e)
+        private static void Hyperlink_RequestNavigate(object? sender, RequestNavigateEventArgs e)
         {
             // Use ShellExecute to open the URL in the default browser/handler
             using Process? process = Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
@@ -460,7 +461,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// content is added.</param>
         /// <param name="message">The message string containing text and formatting tags to be processed. If the message is null or consists
         /// only of whitespace, no formatting is applied.</param>
-        private protected void FormatMessageWithHyperlinks(System.Windows.Controls.TextBlock textBlock, string message)
+        private protected static void FormatMessageWithHyperlinks(System.Windows.Controls.TextBlock textBlock, string message)
         {
             // Don't waste time on an empty string.
             textBlock.Inlines.Clear();
@@ -501,7 +502,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="textBlock">The TextBlock to add content to.</param>
         /// <param name="match">The regex match to process.</param>
         /// <param name="formattingStack">The current formatting context stack.</param>
-        private void ProcessFormattingTag(System.Windows.Controls.TextBlock textBlock, Match match, Stack<FormattingContext> formattingStack)
+        private static void ProcessFormattingTag(System.Windows.Controls.TextBlock textBlock, Match match, Stack<FormattingContext> formattingStack)
         {
             if (match.Groups["UrlLinkSimple"].Success)
             {
@@ -615,11 +616,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="textBlock">The TextBlock to add the hyperlink to.</param>
         /// <param name="url">The URL to navigate to when clicked.</param>
         /// <param name="displayText">The text to display for the hyperlink.</param>
-        private void ProcessUrlLink(System.Windows.Controls.TextBlock textBlock, string url, string displayText)
+        private static void ProcessUrlLink(System.Windows.Controls.TextBlock textBlock, string url, string displayText)
         {
             // Ensure the URL has a scheme for Process.Start
             string navigateUrl = url;
-            if (!navigateUrl.Contains("://") && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) && (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase)))
+            if (!navigateUrl.Contains("://", StringComparison.OrdinalIgnoreCase) && !navigateUrl.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) && (navigateUrl.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || navigateUrl.StartsWith("ftp.", StringComparison.OrdinalIgnoreCase)))
             {
                 navigateUrl = "http://" + navigateUrl;
             }
@@ -630,7 +631,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 Hyperlink link = new(new Run(displayText))
                 {
                     NavigateUri = uri,
-                    ToolTip = $"Open link: {url}"
+                    ToolTip = $"Open link: {url}",
                 };
                 link.SetResourceReference(ForegroundProperty, "AccentTextFillColorPrimaryBrush");
                 link.RequestNavigate += Hyperlink_RequestNavigate;
@@ -649,7 +650,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <remarks>This method sets a resource reference on the button's style property, enabling the
         /// button to automatically reflect changes in the theme's accent styling.</remarks>
         /// <param name="button">The button to which the accent style will be applied. This parameter must not be null.</param>
-        private protected static void SetAccentButton(Button button)
+        private protected static void SetAccentButton(Fluence.Wpf.Controls.Button button)
         {
             button.Appearance = ControlAppearance.Accent;
         }
@@ -659,7 +660,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// the user presses the Escape key.
         /// </summary>
         /// <param name="button">The button to designate as the cancel button. This button will be triggered when the Escape key is pressed.</param>
-        private protected static void SetCancelButton(Button button)
+        private protected static void SetCancelButton(Fluence.Wpf.Controls.Button button)
         {
             button.IsCancel = true;
         }
@@ -669,7 +670,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// user presses the Enter key.
         /// </summary>
         /// <param name="button">The button to designate as the default. Cannot be null.</param>
-        private protected static void SetDefaultButton(Button button)
+        private protected static void SetDefaultButton(Fluence.Wpf.Controls.Button button)
         {
             button.IsDefault = true;
         }
@@ -683,7 +684,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="button">The button whose content is to be set. Cannot be null.</param>
         /// <param name="text">The text to display on the button. Underscores in the text are interpreted as accelerator keys. If null or
         /// consists only of white space, the button's content is not changed.</param>
-        private protected static void SetButtonContentWithAccelerator(Button button, string text)
+        private protected static void SetButtonContentWithAccelerator(Fluence.Wpf.Controls.Button button, string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -693,7 +694,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Create AccessText to properly handle the underscore as accelerator
             button.Content = new AccessText
             {
-                Text = text
+                Text = text,
             };
         }
 
@@ -730,7 +731,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Try to get from cache first.
             if (!_dialogIconCache.TryGetValue(dialogIconPath, out BitmapSource? bitmapSource))
             {
-                using Stream stream = MiscUtilities.GetBase64StringBytes(dialogIconPath) is not byte[] bytes ? new FileStream(dialogIconPath, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                using Stream stream = MiscUtilities.GetBase64StringBytes(dialogIconPath) is not byte[] bytes ? new FileStream(dialogIconPath, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
                 if (!DrawingUtilities.IsStreamAnIcon(stream))
                 {
                     BitmapImage bitmapImage = new();
@@ -925,7 +926,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     // Set margin based on position
                     ActionButtons.ColumnDefinitions.Add(new() { Width = new(1, GridUnitType.Star) });
                     Grid.SetColumn(visibleButtons[i], i);
-                    Button button = (Button)visibleButtons[i];
+                    Fluence.Wpf.Controls.Button button = (Fluence.Wpf.Controls.Button)visibleButtons[i];
                     button.Margin = i == 0 ? new(0, 0, 4, 0) : i == visibleButtons.Count - 1 ? new(4, 0, 0, 0) : new(4, 0, 4, 0);
                 }
             }
@@ -939,7 +940,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 Grid.SetColumn(visibleButtons[0], 1);
 
                 // Set appropriate margin
-                Button button = (Button)visibleButtons[0];
+                Fluence.Wpf.Controls.Button button = (Fluence.Wpf.Controls.Button)visibleButtons[0];
                 button.Margin = new(0, 0, 0, 0);
 
                 // Set this to be the default button with accent
@@ -983,8 +984,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
 
             // Format the remaining time as hh:mm:ss
-            CountdownValueTextBlock.Text = $"{(_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours}h {_countdownRemainingTime.Minutes}m {_countdownRemainingTime.Seconds}s";
-            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {(_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours} hours, {_countdownRemainingTime.Minutes} minutes, {_countdownRemainingTime.Seconds} seconds");
+            CountdownValueTextBlock.Text = $"{((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)}h {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)}m {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)}s";
+            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)} hours, {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)} minutes, {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)} seconds");
 
             // Update text color based on remaining time using style application
             if (_countdownRemainingTime.TotalSeconds <= 60)
@@ -1132,7 +1133,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(disposing: true);
         }
 
         /// <summary>
@@ -1190,7 +1191,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 {
                     IsAccent = IsAccent,
                     IsBold = IsBold,
-                    IsItalic = IsItalic
+                    IsItalic = IsItalic,
                 };
             }
         }

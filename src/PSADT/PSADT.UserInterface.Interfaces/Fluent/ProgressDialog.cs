@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using PSADT.DeviceManagement;
@@ -73,7 +74,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 ProgressBar.Value = percentComplete.Value;
 
                 // Update accessibility properties
-                AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete:F0}%");
+                AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete.Value.ToString("F0", CultureInfo.InvariantCulture)}%");
             }
             else
             {

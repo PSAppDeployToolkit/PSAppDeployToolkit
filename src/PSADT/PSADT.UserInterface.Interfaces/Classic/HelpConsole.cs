@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
     /// <remarks>The <see cref="HelpConsole"/> class is intended for use in design-time scenarios and should
     /// not be instantiated directly in runtime mode. Attempting to use the parameterless constructor in runtime mode
     /// will result in an <see cref="NotSupportedException"/>.</remarks>
-    internal partial class HelpConsole : ClassicBase
+    internal sealed partial class HelpConsole : ClassicBase
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HelpConsole"/> class.

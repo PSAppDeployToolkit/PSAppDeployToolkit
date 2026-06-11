@@ -77,7 +77,7 @@ namespace PSADT.SMBIOS
         /// (Data1, Data2, Data3 little-endian; Data4 as-is). No byte swapping is required.
         /// </summary>
         /// <param name="raw16">The raw 16-byte UUID from the SMBIOS structure.</param>
-        /// <returns>The parsed <see cref="Guid"/> if present; otherwise, <c>null</c>.</returns>
+        /// <returns>The parsed <see cref="Guid"/> if present; otherwise, <see langword="null"/>.</returns>
         private static Guid? ParseSmbiosUuid(ReadOnlySpan<byte> raw16)
         {
             // Treat all-zeros or all-0xFF as "not present"

@@ -10,6 +10,7 @@ namespace PSADT.Interop.Extensions
     /// <summary>
     /// Provides extension methods for working with IDWriteFontFace instances.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class IDWriteFontFaceExtensions
     {
         /// <summary>
@@ -38,7 +39,7 @@ namespace PSADT.Interop.Extensions
                     InvalidOperationException.ThrowIfInvalid((nint)tableContextLocal, "Failed to retrieve font table context.");
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)tableData, "Failed to retrieve font table data pointer.");
                     InvalidOperationException.ThrowIfZero(tableSize, "Retrieved font table size is zero, which is invalid.");
-                    tableContext = new(fontFace, (nint)tableContextLocal, (nint)tableData, tableSize, true);
+                    tableContext = new(fontFace, (nint)tableContextLocal, (nint)tableData, tableSize, ownsHandle: true);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {

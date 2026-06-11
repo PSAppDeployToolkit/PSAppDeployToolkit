@@ -135,16 +135,17 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than 0.</exception>
         /// <exception cref="ArgumentNullException">Thrown if bytes is null or if the length of bytes is less than or equal to offset.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization returns a null result.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
             ArgumentNullException.ThrowIfNull(bytes);
-            ArgumentOutOfRangeException.ThrowIfZero(bytes.Length);
+            ArgumentOutOfRangeException.ThrowIfZero(bytes.Length, nameof(bytes));
             if (((uint)offset > (uint)bytes.Length) || (offset == bytes.Length))
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset points past the end of the buffer.");
             }
             bool deserializingException = typeof(Exception).IsAssignableFrom(type);
-            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
+            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, writable: false);
             using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
             return GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result
                 ? throw new SerializationException("Deserialization returned a null result.")
@@ -401,7 +402,7 @@ namespace PSADT.ClientServer
                 // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
                 typeof(ReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyDictionary<string, string>>),
                 typeof(ReadOnlyDictionary<string, string>),
-            ])
+            ]),
         };
 
         /// <summary>
@@ -453,7 +454,7 @@ namespace PSADT.ClientServer
             public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
             {
                 // When deserializing the dictionary contract, return Hashtable (more general and public).
-                return typeName != DictionaryTypeName || typeNamespace != ArraysNamespace
+                return !DictionaryTypeName.Equals(typeName, StringComparison.Ordinal) || !ArraysNamespace.Equals(typeNamespace, StringComparison.Ordinal)
                     ? knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, NullContractResolver)
                     : typeof(System.Collections.Hashtable);
             }

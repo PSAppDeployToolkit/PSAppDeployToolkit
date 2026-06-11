@@ -20,14 +20,14 @@ namespace PSADT.UserInterface.Interfaces.Classic
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception type is OK here.")]
         static ClassicBase()
         {
-            if ("Server Core".Equals(Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion", "InstallationType", null)))
+            if ("Server Core".Equals(Registry.GetValue(@"HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null)))
             {
                 throw new NotSupportedException("The dialog style [Classic] is not supported on Windows Server Core.");
             }
             if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
             {
                 Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
+                Application.SetCompatibleTextRenderingDefault(defaultValue: false);
             }
         }
 

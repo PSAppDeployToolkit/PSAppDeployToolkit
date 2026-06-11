@@ -10,5 +10,5 @@
     /// collection is not empty and that each element is not null, empty, or white space. This attribute is commonly
     /// used in PowerShell cmdlets and functions to ensure that required arguments are provided and meet basic content
     /// requirements.</remarks>
-    public sealed class ValidateNotNullOrWhiteSpaceAttribute() : ValidateNotEmptyOrWhiteSpaceAttributeBase(allowNull: false);
+    public sealed class ValidateNotNullOrWhiteSpaceAttribute() : BaseValidateNotEmptyOrWhiteSpaceAttribute(allowNull: false);
 }

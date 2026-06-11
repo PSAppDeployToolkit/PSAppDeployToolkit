@@ -146,7 +146,7 @@ namespace PSADT.Utilities
         /// to be non-null and non-empty if the operation succeeds.</returns>
         internal static DirectoryInfo GetUserProfilesDirectory()
         {
-            _ = NativeMethods.SHGetKnownFolderPath(in PInvoke.FOLDERID_UserProfiles, 0, null, out SafeCoTaskMemHandle ppszPath);
+            _ = NativeMethods.SHGetKnownFolderPath(in PInvoke.FOLDERID_UserProfiles, KNOWN_FOLDER_FLAG.KF_FLAG_DEFAULT, hToken: null, out SafeCoTaskMemHandle ppszPath);
             using (ppszPath)
             {
                 return new(ppszPath.ToStringUni());

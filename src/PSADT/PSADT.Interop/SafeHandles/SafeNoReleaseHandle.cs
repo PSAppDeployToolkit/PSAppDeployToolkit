@@ -21,7 +21,7 @@ namespace PSADT.Interop.SafeHandles
         /// the SafeNoReleaseHandle is disposed or finalized. Use this when the handle's lifetime is managed
         /// elsewhere.</remarks>
         /// <param name="handle">The native handle to be encapsulated by the SafeNoReleaseHandle instance.</param>
-        internal SafeNoReleaseHandle(nint handle) : base(false)
+        internal SafeNoReleaseHandle(nint handle) : base(ownsHandle: false)
         {
             ArgumentOutOfRangeException.ThrowIfZeroOrInvalid(handle);
             SetHandle(handle);

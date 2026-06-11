@@ -82,7 +82,7 @@ namespace PSADT.Tests.SMBIOS
             { (ulong)FirmwareCharacteristics.SerialSupported, 28 },
             { (ulong)FirmwareCharacteristics.PrinterSupported, 29 },
             { (ulong)FirmwareCharacteristics.CgaMonoVideoSupported, 30 },
-            { (ulong)FirmwareCharacteristics.NecPc98, 31 }
+            { (ulong)FirmwareCharacteristics.NecPc98, 31 },
         };
     }
 }

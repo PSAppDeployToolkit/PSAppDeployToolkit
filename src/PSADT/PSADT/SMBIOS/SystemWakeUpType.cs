@@ -66,6 +66,6 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// AC Power Restored
         /// </summary>
-        AcPowerRestored = 0x08
+        AcPowerRestored = 0x08,
     }
 }

@@ -26,6 +26,7 @@ namespace PSADT.AccountManagement
         /// <param name="oneDriveCommercialPath">The path to the user's OneDrive for Business directory.</param>
         /// <param name="userLocale">The locale information for the user.</param>
         /// <exception cref="ArgumentNullException">Thrown when a required parameter is null or empty.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public UserProfileInfo(
             NTAccount ntAccount,
             SecurityIdentifier sid,
@@ -40,7 +41,7 @@ namespace PSADT.AccountManagement
             DirectoryInfo? oneDriveCommercialPath = null,
             CultureInfo? userLocale = null)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount?.Value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ntAccount?.Value, nameof(ntAccount));
             ArgumentNullException.ThrowIfNull(profilePath);
             ArgumentNullException.ThrowIfNull(ntAccount);
             ArgumentNullException.ThrowIfNull(sid);

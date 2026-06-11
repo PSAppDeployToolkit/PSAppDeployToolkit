@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Represents the default dialog result used when a dialog times out.
         /// </summary>
-        public static new readonly ListSelectionDialogResult DefaultResult = new("Timeout", null);
+        public static new readonly ListSelectionDialogResult DefaultResult = new("Timeout", selectedItem: null);
 
         /// <summary>
         /// Initializes a new instance of the ListSelectionDialogResult class with the specified result and selected
@@ -47,7 +47,7 @@ namespace PSADT.UserInterface.DialogResults
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object? obj)
         {
-            return obj is ListSelectionDialogResult other && Result == other.Result && SelectedItem == other.SelectedItem;
+            return obj is ListSelectionDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && SelectedItem?.Equals(other.SelectedItem, StringComparison.Ordinal) == true;
         }
 
         /// <summary>

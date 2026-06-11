@@ -24,7 +24,7 @@ namespace PSADT.SafeHandles
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SafeFreeBSTRHandle Alloc(string str)
         {
-            return new(Marshal.StringToBSTR(str), true);
+            return new(Marshal.StringToBSTR(str), ownsHandle: true);
         }
 
         /// <summary>

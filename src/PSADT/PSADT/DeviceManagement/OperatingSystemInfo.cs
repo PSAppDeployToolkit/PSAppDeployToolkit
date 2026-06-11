@@ -24,7 +24,7 @@ namespace PSADT.DeviceManagement
             // Helper function to determine if the OS is an Enterprise Multi-Session OS.
             static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
             {
-                return productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER && ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase)) && !string.IsNullOrWhiteSpace(productName) && (productName.Contains("Virtual Desktops", StringComparison.OrdinalIgnoreCase) || productName.Contains("Multi-Session", StringComparison.OrdinalIgnoreCase));
+                return productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER && ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase)) && productName is not null && !string.IsNullOrWhiteSpace(productName) && (productName.Contains("Virtual Desktops", StringComparison.OrdinalIgnoreCase) || productName.Contains("Multi-Session", StringComparison.OrdinalIgnoreCase));
             }
 
             // Get OS version information.
@@ -47,13 +47,13 @@ namespace PSADT.DeviceManagement
 
             // Build out the properties for this instance.
             _ = NativeMethods.GetProductInfo(osVersion.dwMajorVersion, osVersion.dwMinorVersion, osVersion.wServicePackMajor, osVersion.wServicePackMinor, out OS_PRODUCT_TYPE edition);
-            Name = productType == PRODUCT_TYPE.VER_NT_WORKSTATION && productName.Contains("10") && osVersion.dwBuildNumber >= 22000 ? productName.Replace("10", "11") : productName;
+            Name = productType == PRODUCT_TYPE.VER_NT_WORKSTATION && productName.Contains("10", StringComparison.OrdinalIgnoreCase) && osVersion.dwBuildNumber >= 22000 ? productName.Replace("10", "11", StringComparison.OrdinalIgnoreCase) : productName;
             Version = new((int)osVersion.dwMajorVersion, (int)osVersion.dwMinorVersion, (int)osVersion.dwBuildNumber, ubr);
             Edition = edition.ToString();
             Architecture = RuntimeInformation.OSArchitecture;
             ProductType = productType;
             Is64BitOperatingSystem = Environment.Is64BitOperatingSystem;
-            IsTerminalServer = (suiteMask & SUITE_MASK.VER_SUITE_TERMINAL) == SUITE_MASK.VER_SUITE_TERMINAL && (suiteMask & SUITE_MASK.VER_SUITE_SINGLEUSERTS) != SUITE_MASK.VER_SUITE_SINGLEUSERTS;
+            IsTerminalServer = suiteMask.HasFlag(SUITE_MASK.VER_SUITE_TERMINAL) && !suiteMask.HasFlag(SUITE_MASK.VER_SUITE_SINGLEUSERTS);
             IsWorkstationEnterpriseMultiSessionOS = IsOperatingSystemEnterpriseMultiSessionOS(edition, editionId, productName);
             IsWorkstation = productType == PRODUCT_TYPE.VER_NT_WORKSTATION;
             IsServer = productType == PRODUCT_TYPE.VER_NT_SERVER;

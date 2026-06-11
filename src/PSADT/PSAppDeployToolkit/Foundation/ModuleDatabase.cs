@@ -20,13 +20,14 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="database">The PowerShell object representing the database to initialize. This parameter cannot be null.</param>
         /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="database"/> parameter is null.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void Init(PSObject database)
         {
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
-            ArgumentNullException.ThrowIfNull(database); ArgumentOutOfRangeException.ThrowIfZero(database.Properties.Count());
+            ArgumentNullException.ThrowIfNull(database); ArgumentOutOfRangeException.ThrowIfZero(database.Properties.Count(), nameof(database));
             _database = database;
         }
 

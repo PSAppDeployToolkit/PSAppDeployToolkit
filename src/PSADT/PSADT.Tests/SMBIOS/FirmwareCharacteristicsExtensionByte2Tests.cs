@@ -65,7 +65,7 @@ namespace PSADT.Tests.SMBIOS
                 { (byte)FirmwareCharacteristicsExtensionByte2.UefiSupported, 3 },
                 { (byte)FirmwareCharacteristicsExtensionByte2.VirtualMachine, 4 },
                 { (byte)FirmwareCharacteristicsExtensionByte2.ManufacturingModeSupported, 5 },
-                { (byte)FirmwareCharacteristicsExtensionByte2.ManufacturingModeEnabled, 6 }
+                { (byte)FirmwareCharacteristicsExtensionByte2.ManufacturingModeEnabled, 6 },
             };
         }
     }

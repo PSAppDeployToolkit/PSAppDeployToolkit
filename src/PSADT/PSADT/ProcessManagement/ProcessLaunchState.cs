@@ -127,7 +127,7 @@ namespace PSADT.ProcessManagement
                                 break;
                             }
                         }
-                    }).ConfigureAwait(false);
+                    }, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -149,7 +149,7 @@ namespace PSADT.ProcessManagement
                             {
                                 // Already exited.
                             }
-                            await Process.WaitForExitAsync().ConfigureAwait(false);
+                            await Process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
                             processFinished = true;
                         }
                         exitCode = ProcessManager.TimeoutExitCode;
@@ -200,8 +200,8 @@ namespace PSADT.ProcessManagement
                         {
                             BasicLimitInformation = new()
                             {
-                                LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-                            }
+                                LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+                            },
                         });
                     }
                     _ = NativeMethods.AssignProcessToJobObject(JobObject, ProcessSafeHandle);
@@ -266,11 +266,11 @@ namespace PSADT.ProcessManagement
                             if (changeOwner)
                             {
                                 using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(AccountUtilities.CallerSid.GetBinaryForm());
-                                _ = NativeMethods.SetSecurityInfo(ProcessSafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, null, pAcl, null);
+                                _ = NativeMethods.SetSecurityInfo(ProcessSafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, psidGroup: null, pAcl, pSacl: null);
                             }
                             else
                             {
-                                _ = NativeMethods.SetSecurityInfo(ProcessSafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, null, null, pAcl, null);
+                                _ = NativeMethods.SetSecurityInfo(ProcessSafeHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, psidOwner: null, psidGroup: null, pAcl, pSacl: null);
                             }
                         }
                     }
@@ -401,7 +401,7 @@ namespace PSADT.ProcessManagement
         /// further.</remarks>
         public void Dispose()
         {
-            Dispose(true);
+            Dispose(disposing: true);
         }
 
         /// <summary>

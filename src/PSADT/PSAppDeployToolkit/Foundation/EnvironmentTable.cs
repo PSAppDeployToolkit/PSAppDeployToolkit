@@ -88,7 +88,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Determine the logon server.
-                if (EnvironmentUtilities.GetEnvironmentVariable("LOGONSERVER") is string logonServer && !logonServer.Contains("\\\\MicrosoftAccount"))
+                if (EnvironmentUtilities.GetEnvironmentVariable("LOGONSERVER") is string logonServer && !logonServer.Contains("\\\\MicrosoftAccount", StringComparison.Ordinal))
                 {
                     try
                     {
@@ -97,14 +97,14 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
-                        EnvLogonServer = (string?)Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\History", "DCName", null);
+                        EnvLogonServer = (string?)Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\History", "DCName", defaultValue: null);
                     }
                 }
                 else
                 {
-                    EnvLogonServer = (string?)Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\History", "DCName", null);
+                    EnvLogonServer = (string?)Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\History", "DCName", defaultValue: null);
                 }
-                if (EnvLogonServer?.StartsWith("\\") == true)
+                if (EnvLogonServer?.StartsWith('\\') == true)
                 {
                     EnvLogonServer = EnvLogonServer.TrimStart('\\');
                 }
@@ -179,7 +179,7 @@ namespace PSAppDeployToolkit.Foundation
                     "64256afe-f5d9-4f86-8936-8840a6a4f5be" => "monthly targeted",
                     "b8f9b850-328d-4355-9145-c59439a0c4cf" => "semi-annual targeted",
                     "55336b82-a18d-4dd6-b5f6-9e5095c314a6" => "monthly enterprise",
-                    _ => null
+                    _ => null,
                 };
             }
 
@@ -200,8 +200,8 @@ namespace PSAppDeployToolkit.Foundation
                 RunAsActiveUser = RunAsActiveUser.GetAsync(LoggedOnUserSessions).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (RunAsActiveUser is not null)
                 {
-                    RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", null) is string localeName && !string.IsNullOrWhiteSpace(localeName) ? new(localeName) : null;
-                    RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", null) is string runAsUserProfile && !string.IsNullOrWhiteSpace(runAsUserProfile) ? new(runAsUserProfile) : null;
+                    RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", defaultValue: null) is string localeName && !string.IsNullOrWhiteSpace(localeName) ? new(localeName) : null;
+                    RunAsUserProfile = Registry.GetValue(@$"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{RunAsActiveUser.SID}", "ProfileImagePath", defaultValue: null) is string runAsUserProfile && !string.IsNullOrWhiteSpace(runAsUserProfile) ? new(runAsUserProfile) : null;
                     UserProfileName = RunAsUserProfile?.Name;
                 }
             }
@@ -647,6 +647,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for determining process architecture, which can affect
         /// compatibility with certain libraries and APIs.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool Is64BitProcess => Environment.Is64BitProcess;
 
         /// <summary>
@@ -723,6 +724,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the name of the operating system environment.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public string EnvOSName => OperatingSystemInfo.Current.Name;
 
         /// <summary>
@@ -731,6 +733,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the OS version information, which can be useful for
         /// determining compatibility or specific features available in the current environment.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public Version EnvOSVersion => OperatingSystemInfo.Current.Version;
 
         /// <summary>
@@ -767,6 +770,7 @@ namespace PSAppDeployToolkit.Foundation
         /// system's product type identifier, which may be useful for environment-specific logic or
         /// configuration.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public int EnvOSProductType => (int)OperatingSystemInfo.Current.ProductType;
 
         /// <summary>
@@ -799,6 +803,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>Use this property to determine if the application is running in a terminal server
         /// environment, which may affect certain functionalities or configurations.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsTerminalServer => OperatingSystemInfo.Current.IsTerminalServer;
 
         /// <summary>
@@ -807,6 +812,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property is useful for determining if the application can leverage multi-session
         /// capabilities, such as in terminal services or remote desktop scenarios.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsMultiSessionOS => OperatingSystemInfo.Current.IsWorkstationEnterpriseMultiSessionOS;
 
         /// <summary>
@@ -819,7 +825,7 @@ namespace PSAppDeployToolkit.Foundation
             1 => "Workstation",
             2 => "Domain Controller",
             3 => "Server",
-            _ => "Unknown"
+            _ => "Unknown",
         };
 
         /// <summary>
@@ -867,6 +873,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides information about the hardware configuration, which can be
         /// useful for diagnostics and performance tuning.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public string? EnvHardwareType => _envHardwareType;
 
         /// <summary>
@@ -883,6 +890,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides the full path to the PowerShell executable being used in the current environment.
         /// It is useful for scenarios where the exact location of the PowerShell process is required.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public FileInfo EnvPSProcessPath => AssemblyManager.CallingProcessPath;
 
         /// <summary>
@@ -960,6 +968,7 @@ namespace PSAppDeployToolkit.Foundation
         /// security-related operations, such as access control and auditing. The SID is retrieved from the caller's
         /// security context.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public SecurityIdentifier CurrentProcessSID => AccountUtilities.CallerSid;
 
         /// <summary>
@@ -968,6 +977,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property can be used for auditing, access control, or logging scenarios where
         /// the process's user context is relevant.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public NTAccount ProcessNTAccount => AccountUtilities.CallerUsername;
 
         /// <summary>
@@ -977,6 +987,7 @@ namespace PSAppDeployToolkit.Foundation
         /// actions that require elevated rights. This is useful for enabling or restricting access to features that are
         /// limited to administrators.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsAdmin => AccountUtilities.CallerIsAdmin;
 
         /// <summary>
@@ -987,6 +998,7 @@ namespace PSAppDeployToolkit.Foundation
         /// security context of the application, especially when performing operations that require elevated privileges
         /// or when making security-related decisions.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsLocalSystemAccount => AccountUtilities.CallerIsLocalSystem;
 
         /// <summary>
@@ -996,6 +1008,7 @@ namespace PSAppDeployToolkit.Foundation
         /// Service account. This can be useful for adjusting behavior or permissions based on the account
         /// context.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsLocalServiceAccount => AccountUtilities.CallerIsLocalService;
 
         /// <summary>
@@ -1005,6 +1018,7 @@ namespace PSAppDeployToolkit.Foundation
         /// running, particularly in scenarios where specific permissions or behaviors are associated with the network
         /// service account.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsNetworkServiceAccount => AccountUtilities.CallerIsNetworkService;
 
         /// <summary>
@@ -1014,6 +1028,7 @@ namespace PSAppDeployToolkit.Foundation
         /// standard user accounts. Use this property to determine if the current context is running under a service
         /// account, which may affect access control and operational logic.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsServiceAccount => AccountUtilities.CallerIsServiceAccount;
 
         /// <summary>
@@ -1024,6 +1039,7 @@ namespace PSAppDeployToolkit.Foundation
         /// running in a non-interactive context, such as a service or background process. This can be useful for
         /// determining whether to display user interface elements or prompt the user for input.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public bool IsProcessUserInteractive => AccountUtilities.CallerIsInteractive;
 
         /// <summary>
@@ -1134,7 +1150,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the default user profile path from the Windows registry at
         /// HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList. If the registry value is not
         /// found, the property returns null.</remarks>
-        public DirectoryInfo? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", null) is string defaultProfilePath && !string.IsNullOrWhiteSpace(defaultProfilePath) ? new(defaultProfilePath) : null;
+        public DirectoryInfo? DefaultUserProfile { get; } = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", "Default", defaultValue: null) is string defaultProfilePath && !string.IsNullOrWhiteSpace(defaultProfilePath) ? new(defaultProfilePath) : null;
 
         /// <summary>
         /// Gets the type of hardware used in the current environment.
@@ -1142,17 +1158,17 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides information about the hardware configuration, which can be
         /// useful for diagnostics and performance tuning.</remarks>
         private static readonly string? _envHardwareType = HardwareInfo.SystemInformation.Manufacturer is string manufacturer && HardwareInfo.SystemInformation.SerialNumber is string serialNumber && HardwareInfo.SystemInformation.ProductName is string productName && HardwareInfo.SystemInformation.Version is string version
-            ? version.Contains("VRTUAL") || (manufacturer.Contains("Microsoft") && !productName.Contains("Surface"))
+            ? version.Contains("VRTUAL", StringComparison.Ordinal) || (manufacturer.Contains("Microsoft", StringComparison.Ordinal) && !productName.Contains("Surface", StringComparison.Ordinal))
                 ? "Virtual:Hyper-V"
-                : version.Contains("A M I")
+                : version.Contains("A M I", StringComparison.Ordinal)
                 ? "Virtual:Virtual PC"
-                : version.Contains("Xen")
+                : version.Contains("Xen", StringComparison.Ordinal)
                 ? "Virtual:Xen"
-                : serialNumber.Contains("VMware") || manufacturer.Contains("VMware")
+                : serialNumber.Contains("VMware", StringComparison.Ordinal) || manufacturer.Contains("VMware", StringComparison.Ordinal)
                 ? "Virtual:VMware"
-                : serialNumber.Contains("Parallels") || manufacturer.Contains("Parallels")
+                : serialNumber.Contains("Parallels", StringComparison.Ordinal) || manufacturer.Contains("Parallels", StringComparison.Ordinal)
                 ? "Virtual:Parallels"
-                : productName.Contains("Virtual")
+                : productName.Contains("Virtual", StringComparison.Ordinal)
                 ? "Virtual"
                 : "Physical"
             : null;
@@ -1164,6 +1180,7 @@ namespace PSAppDeployToolkit.Foundation
         /// which may vary by operating system. It is useful for validating file names before attempting to create or
         /// manipulate files.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public IReadOnlyList<char> InvalidFileNameChars => new ReadOnlyCollection<char>(_invalidFileNameChars);
 
         /// <summary>
@@ -1173,6 +1190,7 @@ namespace PSAppDeployToolkit.Foundation
         /// file names against a set of invalid characters. It is useful for ensuring that file names conform to system
         /// requirements and do not contain characters that are not allowed.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public Regex InvalidFileNameCharsRegexPattern => _invalidFileNameCharsRegexPattern;
 
         /// <summary>
@@ -1183,6 +1201,7 @@ namespace PSAppDeployToolkit.Foundation
         /// verify whether a given string is a valid product code before performing installation-related
         /// operations.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public Regex MsiProductCodeRegexPattern => _msiProductCodeRegexPattern;
 
         /// <summary>
@@ -1192,6 +1211,7 @@ namespace PSAppDeployToolkit.Foundation
         /// characters, such as backslashes, slashes, colons, asterisks, question marks, double quotes, angle brackets,
         /// and vertical bars. This regular expression is compiled for performance.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
         public Regex InvalidScheduledTaskNameCharsRegexPattern => _invalidScheduledTaskNameCharsRegexPattern;
 
         /// <summary>

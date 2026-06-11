@@ -72,7 +72,7 @@ namespace PSAppDeployToolkit.Logging
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            StackFrame[] stackFrames = [.. new StackTrace(true).GetFrames().Skip(1)]; string callerFileName, callerSource;
+            StackFrame[] stackFrames = [.. new StackTrace(fNeedFileInfo: true).GetFrames().Skip(1)]; string callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
@@ -129,7 +129,7 @@ namespace PSAppDeployToolkit.Logging
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
-                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), true, LogEncoding);
+                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), append: true, LogEncoding);
                 if (logStyle.Value == LogStyle.CMTrace)
                 {
                     foreach (LogEntry logEntry in logEntries)
@@ -192,12 +192,12 @@ namespace PSAppDeployToolkit.Logging
         /// </summary>
         /// <remarks>This regular expression can be used to identify or filter files commonly used for
         /// logging purposes based on their extensions. The match is case-sensitive by default.</remarks>
-        public static readonly Regex LogFileNameRegex = new(@"\.(log|logx|txt|out)$", RegexOptions.Compiled);
+        public static readonly Regex LogFileNameRegex = new(@"\.(log|logx|txt|out)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
-        internal static readonly UTF8Encoding LogEncoding = new(true, true);
+        internal static readonly UTF8Encoding LogEncoding = new(encoderShouldEmitUTF8Identifier: true, throwOnInvalidBytes: true);
 
         /// <summary>
         /// Gets the log divider string.
@@ -209,10 +209,10 @@ namespace PSAppDeployToolkit.Logging
         /// </summary>
         private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green } }),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>()),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow } }),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Green } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase)),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Yellow } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Red } }),
         ]);
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches commands in the following formats: - "Write-Log" or
         /// "Write-ADTLogEntry" - "&lt;ScriptBlock&gt;" optionally followed by "&lt;tag&gt;" This regex is optimized for performance
         /// using the <see cref="RegexOptions.Compiled"/> option.</remarks>
-        private static readonly Regex CallerCommandRegex = new(@"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
+        private static readonly Regex CallerCommandRegex = new(@"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Represents a compiled regular expression used to match script block patterns.
@@ -239,18 +239,18 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches strings that begin with "&lt;ScriptBlock&gt;" and optionally
         /// include an additional tag. This is useful for identifying specific script block structures in
         /// text.</remarks>
-        private static readonly Regex CallerScriptBlockRegex = new(@"^(<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
+        private static readonly Regex CallerScriptBlockRegex = new(@"^(<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Represents a compiled regular expression used to match caller script locations.
         /// </summary>
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
         /// "&lt;example&gt;"). This is typically used to identify script locations in a specific format.</remarks>
-        private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
+        private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Represents a compiled regular expression used to match declaring types in stack frames that belong to the PSAppDeployToolkit or ADT namespaces.
         /// </summary>
-        private static readonly Regex DeclaringTypeRegex = new(@"^PS(AppDeployToolkit|ADT)\..+$", RegexOptions.Compiled);
+        private static readonly Regex DeclaringTypeRegex = new(@"^PS(AppDeployToolkit|ADT)\..+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
     }
 }

@@ -46,7 +46,7 @@ namespace PSADT.ProcessManagement
         /// Retrieves the parent process of the specified process by its process identifier.
         /// </summary>
         /// <param name="processId">The identifier of the process whose parent process is to be retrieved. Must correspond to a running process.</param>
-        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process. Returns <c>null</c>
+        /// <returns>A <see cref="Process"/> object representing the parent process of the specified process. Returns <see langword="null"/>
         /// if the parent process cannot be determined.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Process GetParentProcess(int processId)
@@ -133,7 +133,7 @@ namespace PSADT.ProcessManagement
         public static int GetParentProcessId(int processId)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);
             return (int)GetParentProcessId(hProcess);
         }
 
@@ -196,7 +196,7 @@ namespace PSADT.ProcessManagement
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
             try
             {
-                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);
                 return NativeMethods.GetExitCodeProcess(hProcess, out uint exitCode) && exitCode != NTSTATUS.STATUS_PENDING;
             }
             catch
@@ -232,7 +232,7 @@ namespace PSADT.ProcessManagement
         public static SecurityIdentifier GetProcessSid(int processId)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);
             _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
             using (hToken)
             {
@@ -266,7 +266,7 @@ namespace PSADT.ProcessManagement
         public static string GetProcessCommandLine(int processId)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
-            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+            using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);
             return GetProcessCommandLine(hProcess);
         }
 
@@ -282,7 +282,7 @@ namespace PSADT.ProcessManagement
         internal static string GetProcessCommandLine(SafeHandle hProcess)
         {
             // Get the required length we need for the buffer.
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, null, out uint requiredLength);
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, PROCESSINFOCLASS.ProcessCommandLineInformation, ProcessInformation: null, out uint requiredLength);
 
             // Allocate the buffer, then retrieve the actual command line string.
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
@@ -371,7 +371,7 @@ namespace PSADT.ProcessManagement
                 SafeFileHandle hProcess;
                 try
                 {
-                    hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, processId);
+                    hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, processId);
                 }
                 catch (Exception ex2) when (ex2.Message is not null)
                 {
@@ -552,7 +552,7 @@ namespace PSADT.ProcessManagement
         private static string QueryProcessImageFileNameCommon(SafeHandle hProcess, PROCESSINFOCLASS processInfoClass)
         {
             // Determine required buffer size.
-            _ = NativeMethods.NtQueryInformationProcess(hProcess, processInfoClass, null, out uint requiredLength);
+            _ = NativeMethods.NtQueryInformationProcess(hProcess, processInfoClass, ProcessInformation: null, out uint requiredLength);
             Span<byte> buffer = stackalloc byte[(int)requiredLength];
 
             // Perform the query.
@@ -575,10 +575,10 @@ namespace PSADT.ProcessManagement
         /// <exception cref="FormatException">Thrown if the NT device name derived from the specified path does not exist in the lookup table.</exception>
         private static string TranslateNtPathToWin32Path(string ntPath, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            string ntDeviceName = $@"\{string.Join(@"\", ntPath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
+            string ntDeviceName = $@"\{string.Join('\\', ntPath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
             return !ntPathLookupTable.TryGetValue(ntDeviceName, out string? driveLetter)
                 ? throw new FormatException($"Unable to find drive letter for NT device [{ntDeviceName}], derived from NT path [{ntPath}].")
-                : ntPath.Replace(ntDeviceName, driveLetter);
+                : ntPath.Replace(ntDeviceName, driveLetter, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

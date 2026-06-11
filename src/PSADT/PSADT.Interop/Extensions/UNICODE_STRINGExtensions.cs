@@ -9,6 +9,7 @@ namespace PSADT.Interop.Extensions
     /// <remarks>This class contains methods intended to facilitate interoperability between managed code and
     /// native code that uses the UNICODE_STRING structure. These methods help convert and manipulate UNICODE_STRING
     /// instances in a manner suitable for .NET applications.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class UNICODE_STRINGExtensions
     {
         /// <summary>

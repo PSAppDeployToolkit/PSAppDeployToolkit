@@ -68,17 +68,17 @@ namespace PSADT.WindowManagement
             // Bring the window to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
             uint windowThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out _);
-            _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, true);
+            _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, fAttach: true);
             try
             {
                 _ = NativeMethods.BringWindowToTop(hWnd);
-                _ = NativeMethods.SetForegroundWindow(hWnd, true);
+                _ = NativeMethods.SetForegroundWindow(hWnd, noThrowOnFailure: true);
                 _ = NativeMethods.SetActiveWindow(hWnd);
                 _ = NativeMethods.SetFocus(hWnd);
             }
             finally
             {
-                _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, false);
+                _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, fAttach: false);
             }
         }
 

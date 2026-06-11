@@ -219,12 +219,12 @@ namespace PSADT.UserInterface.DialogOptions
             ArgumentException.ThrowIfNullOrWhiteSpace(image); ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
             try
             {
-                using Stream stream = MiscUtilities.GetBase64StringBytes(image) is not byte[] bytes ? new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                using Stream stream = MiscUtilities.GetBase64StringBytes(image) is not byte[] bytes ? new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
                 try
                 {
                     if (!DrawingUtilities.IsStreamAnIcon(stream))
                     {
-                        using Bitmap bmp = new(stream, true);
+                        using Bitmap bmp = new(stream, useIcm: true);
                         _ = bmp.Size;
                     }
                     else

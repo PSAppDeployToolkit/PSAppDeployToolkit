@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -43,6 +44,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the dialog's appearance and behavior. Must not be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, used to determine the outcome when the dialog
         /// is closed.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0056:Do not call overridable members in constructor", Justification = "This is OK here.")]
         private protected ClassicDialog(BaseDialogOptions options, IDialogResult dialogResult)
         {
             // Initialise the underlying form as set up by the designer.
@@ -152,7 +154,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected static string FormatTime(TimeSpan ts)
         {
-            return $"{(ts.Days * 24) + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
+            return $"{((ts.Days * 24) + ts.Hours).ToString(CultureInfo.InvariantCulture)}:{ts.Minutes.ToString("D2", CultureInfo.InvariantCulture)}:{ts.Seconds.ToString("D2", CultureInfo.InvariantCulture)}";
         }
 
         /// <summary>
@@ -207,7 +209,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected virtual void Form_Load(object? sender, EventArgs e)
         {
             // Adjust the menu depending on our config options.
-            using (DestroyMenuSafeHandle menuHandle = NativeMethods.GetSystemMenu((HWND)Handle, false))
+            using (DestroyMenuSafeHandle menuHandle = NativeMethods.GetSystemMenu((HWND)Handle, bRevert: false))
             {
                 // Disable the close button on the form. Failing that, disable the ControlBox.
                 try
@@ -363,17 +365,17 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 if (match.Groups["UrlLinkSimple"] is Group urlLinkSimple && urlLinkSimple.Success)
                 {
-                    text = text.Replace(urlLinkSimple.Value, match.Groups["UrlLinkSimpleContent"].Value);
+                    text = text.Replace(urlLinkSimple.Value, match.Groups["UrlLinkSimpleContent"].Value, StringComparison.Ordinal);
                 }
                 else if (match.Groups["UrlLinkDescriptive"] is Group urlLinkDescriptive && urlLinkDescriptive.Success)
                 {
-                    text = text.Replace(urlLinkDescriptive.Value, match.Groups["UrlLinkDescription"].Value);
+                    text = text.Replace(urlLinkDescriptive.Value, match.Groups["UrlLinkDescription"].Value, StringComparison.Ordinal);
                 }
                 else
                 {
                     foreach (Group formattingTag in match.Groups.OfType<Group>().Where(static g => g.Success && (g.Name.StartsWith("Open", StringComparison.Ordinal) || g.Name.StartsWith("Close", StringComparison.Ordinal))))
                     {
-                        text = text.Replace(formattingTag.Value, null);
+                        text = text.Replace(formattingTag.Value, newValue: null, StringComparison.Ordinal);
                     }
                 }
             }
@@ -521,10 +523,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // Use a cached icon if available, otherwise load and cache it before returning it.
             if (!iconCache.TryGetValue(path, out Icon? icon))
             {
-                using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
                 if (!DrawingUtilities.IsStreamAnIcon(stream))
                 {
-                    using Bitmap image = new(stream, true);
+                    using Bitmap image = new(stream, useIcm: true);
                     icon = DrawingUtilities.ConvertBitmapToIcon(image);
                 }
                 else
@@ -550,8 +552,8 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // Use a cached image if available, otherwise load and cache it before returning it.
             if (!imageCache.TryGetValue(path, out Bitmap? image))
             {
-                using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
-                imageCache.Add(path, image = new(stream, true));
+                using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
+                imageCache.Add(path, image = new(stream, useIcm: true));
             }
             return image;
         }
