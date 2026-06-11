@@ -60,6 +60,7 @@ namespace PSADT.Invoke
         /// <param name="dwProcessId">The identifier of the local process to open. This must be the process ID of an existing process.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the opened process handle. The caller is responsible for
         /// releasing the handle when it is no longer needed.</returns>
+        /// <exception cref="Win32Exception">Thrown if the underlying OpenProcess system call fails. The exception's error code corresponds to the Win32 error code returned by the system.</exception>
         internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
         {
             SafeFileHandle res = Windows.Win32.PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);

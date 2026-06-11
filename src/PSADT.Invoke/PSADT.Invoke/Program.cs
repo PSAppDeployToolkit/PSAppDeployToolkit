@@ -35,6 +35,7 @@ namespace PSADT.Invoke
         /// include options such as debug mode or script path.</param>
         /// <returns>An integer exit code indicating the result of the deployment operation. Returns 0 for success, or a nonzero
         /// value if an error occurs.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the PowerShell process fails to start or if specified command-line arguments are invalid. The exception message provides details about the failure.</exception>
         private static int Main(string[] argv)
         {
             // Configure debug mode if /Debug is specified.
@@ -42,7 +43,7 @@ namespace PSADT.Invoke
             ConfigureDebugMode(cliArguments);
 
             // Announce commencement and begin.
-            WriteDebugMessage($"Preparing for PSAppDeployToolkit invocation.");
+            WriteDebugMessage("Preparing for PSAppDeployToolkit invocation.");
             try
             {
                 // Establish the PowerShell process start information.
@@ -63,7 +64,7 @@ namespace PSADT.Invoke
 
                 // Null out PSModulePath to prevent any module conflicts.
                 // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
-                Environment.SetEnvironmentVariable("PSModulePath", null);
+                Environment.SetEnvironmentVariable("PSModulePath", value: null);
 
                 // Invoke the given script as per the StartInfo.
                 try
@@ -89,7 +90,7 @@ namespace PSADT.Invoke
                             }
                         };
                     }
-                    WriteDebugMessage($"Commencing invocation.\n");
+                    WriteDebugMessage("Commencing invocation.\n");
                     if (!process.Start())
                     {
                         throw new InvalidOperationException("Failed to start the PowerShell process.");
@@ -107,7 +108,7 @@ namespace PSADT.Invoke
                 catch (Exception ex) when (ex.Message is not null)
                 {
                     string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
-                    WriteDebugMessage($"{errorMessage} {ex}", true);
+                    WriteDebugMessage($"{errorMessage} {ex}", isError: true);
                     if (!inDebugMode)
                     {
                         Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
@@ -117,8 +118,8 @@ namespace PSADT.Invoke
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                const string errorMessage = $"Error while preparing to invoke deployment script.";
-                WriteDebugMessage($"{errorMessage} {ex}", true);
+                const string errorMessage = "Error while preparing to invoke deployment script.";
+                WriteDebugMessage($"{errorMessage} {ex}", isError: true);
                 if (!inDebugMode)
                 {
                     Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
@@ -220,7 +221,7 @@ namespace PSADT.Invoke
             bool coreSpecified = cliArguments.Exists(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
             if (x32Specified && coreSpecified)
             {
-                throw new ArgumentException("The use of both [/32] and [/Core] on the command line is not supported.");
+                throw new ArgumentException("The use of both [/32] and [/Core] on the command line is not supported.", nameof(cliArguments));
             }
 
             // Check if we're using PowerShell Core (7).
@@ -249,7 +250,7 @@ namespace PSADT.Invoke
             }
 
             // If the PowerShell mode hasn't been explicitly specified, override it if PowerShell Core (7) is a parent process.
-            return pwshExecutablePath == pwshDefaultPath && GetParentProcesses().FirstOrDefault(static p => p.ProcessName == "pwsh") is Process parentProcess
+            return pwshExecutablePath.Equals(pwshDefaultPath, StringComparison.OrdinalIgnoreCase) && GetParentProcesses().FirstOrDefault(static p => p.ProcessName.Equals("pwsh", StringComparison.OrdinalIgnoreCase)) is Process parentProcess
                 ? parentProcess.MainModule.FileName
                 : pwshExecutablePath;
         }
@@ -274,7 +275,7 @@ namespace PSADT.Invoke
             // Check for the App Deploy Script file being specified.
             if (cliArguments.Exists(static x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException("The [-Command] parameter was specified on the command line. Please use the [-File] parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.");
+                throw new ArgumentException("The [-Command] parameter was specified on the command line. Please use the [-File] parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.", nameof(cliArguments));
             }
 
             // Determine the path to the script to invoke.
@@ -282,7 +283,7 @@ namespace PSADT.Invoke
             int fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
-                adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", null);
+                adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
                     adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{adtFrontendPath}";
@@ -293,7 +294,7 @@ namespace PSADT.Invoke
             }
             else if (cliArguments.Exists(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
             {
-                adtFrontendPath = cliArguments.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", null);
+                adtFrontendPath = cliArguments.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
                     adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{adtFrontendPath}";
@@ -330,7 +331,7 @@ namespace PSADT.Invoke
             // Internal method to get the parent process of a given process.
             static int GetParentProcessId(int processId)
             {
-                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
+                using SafeFileHandle hProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, bInheritHandle: false, (uint)processId);
                 _ = NativeMethods.NtQueryInformationProcess(hProcess, out PROCESS_BASIC_INFORMATION pbi);
                 return (int)pbi.InheritedFromUniqueProcessId;
             }
@@ -339,16 +340,10 @@ namespace PSADT.Invoke
             int processId = (int)PInvoke.GetCurrentProcessId();
             List<Process> processes = [];
             List<int> processesIds = [];
-            while (true)
+            while (!processesIds.Contains(processId = GetParentProcessId(processId)))
             {
-                // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
-                if (processesIds.Contains(processId = GetParentProcessId(processId)))
-                {
-                    break;
-                }
-                processesIds.Add(processId);
-
                 // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
+                processesIds.Add(processId);
                 try
                 {
                     processes.Add(Process.GetProcessById(processId));
