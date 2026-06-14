@@ -28,6 +28,7 @@ namespace PSADT.SMBIOS
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the SMBIOS specification.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There is no zero value in the SMBIOS specification for this.")]
     [Flags]
     public enum FirmwareCharacteristicsExtensionByte2 : byte
     {
@@ -57,8 +58,8 @@ namespace PSADT.SMBIOS
         VirtualMachine = 1 << 4,
 
         /// <summary>
-        /// Manufacturing mode is supported. (Manufacturing mode is a special boot mode, 
-        /// not normally available to end users, that modifies platform firmware features 
+        /// Manufacturing mode is supported. (Manufacturing mode is a special boot mode,
+        /// not normally available to end users, that modifies platform firmware features
         /// and settings for use while the computer is being manufactured and tested.)
         /// </summary>
         ManufacturingModeSupported = 1 << 5,

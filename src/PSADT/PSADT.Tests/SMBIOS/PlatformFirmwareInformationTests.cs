@@ -46,7 +46,7 @@ namespace PSADT.Tests.SMBIOS
         public void Get_ParsesCompleteStructure()
         {
             const ushort handle = 0x1234;
-            ulong characteristics = (ulong)(FirmwareCharacteristics.BiosUpgradeable | FirmwareCharacteristics.PciSupported);
+            const ulong characteristics = (ulong)(FirmwareCharacteristics.BiosUpgradeable | FirmwareCharacteristics.PciSupported);
             byte[] formatted = new byte[20];
             formatted[0] = 1; // Vendor index
             formatted[1] = 2; // Version index
@@ -117,7 +117,7 @@ namespace PSADT.Tests.SMBIOS
         public void Get_NormalizesOptionalFields()
         {
             const ushort handle = 0x0102;
-            ulong characteristics = (ulong)FirmwareCharacteristics.BootFromCdSupported;
+            const ulong characteristics = (ulong)FirmwareCharacteristics.BootFromCdSupported;
             byte[] formatted = new byte[20];
             formatted[0] = 0; // Vendor index missing
             formatted[1] = 2; // Version index
@@ -167,7 +167,7 @@ namespace PSADT.Tests.SMBIOS
         public void Get_UsesExtendedRomSizeWhenLegacyByteIsSentinel()
         {
             const ushort handle = 0x0B0B;
-            ulong characteristics = 0;
+            const ulong characteristics = 0;
             byte[] formatted = new byte[22];
             formatted[0] = 1;
             formatted[1] = 2;
@@ -182,9 +182,9 @@ namespace PSADT.Tests.SMBIOS
             formatted[17] = 0;
             formatted[18] = 0;
             formatted[19] = 0;
-            ushort extendedRaw = ((int)BiosRomUnit.GB << 14) | 2; // 2 GB
-            formatted[20] = (byte)(extendedRaw & 0xFF);
-            formatted[21] = (byte)(extendedRaw >> 8);
+            const ushort extendedRaw = ((int)BiosRomUnit.GB << 14) | 2; // 2 GB
+            formatted[20] = extendedRaw & 0xFF;
+            formatted[21] = extendedRaw >> 8;
 
             byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
                 new SmbiosTestDataBuilder.SmbiosStructure(
@@ -219,9 +219,9 @@ namespace PSADT.Tests.SMBIOS
             formatted[4] = 3;
             formatted[5] = 0xFF;
             CopyUInt64LittleEndian(0, formatted, 6);
-            ushort extendedRaw = (2 << 14) | 100;
-            formatted[20] = (byte)(extendedRaw & 0xFF);
-            formatted[21] = (byte)(extendedRaw >> 8);
+            const ushort extendedRaw = (2 << 14) | 100;
+            formatted[20] = extendedRaw & 0xFF;
+            formatted[21] = extendedRaw >> 8;
 
             byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
                 new SmbiosTestDataBuilder.SmbiosStructure(
@@ -274,8 +274,7 @@ namespace PSADT.Tests.SMBIOS
         /// contain valid platform firmware information.
         /// </summary>
         /// <remarks>This test ensures that the Get method properly validates the length of the input
-        /// buffer and provides an appropriate error message when the buffer does not meet the minimum required
-        /// size.</remarks>
+        /// buffer and reports the parameter that does not meet the minimum required size.</remarks>
         [Fact]
         public void Get_ThrowsWhenStructureTooShort()
         {
@@ -292,7 +291,7 @@ namespace PSADT.Tests.SMBIOS
                     "Version"));
 
             ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => PlatformFirmwareInformation.Get(buffer));
-            Assert.Contains("must be greater than", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("structureLength", ex.ParamName);
         }
 
         /// <summary>

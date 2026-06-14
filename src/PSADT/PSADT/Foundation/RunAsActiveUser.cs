@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using PSADT.AccountManagement;
 using PSADT.TerminalServices;
 
@@ -29,11 +30,11 @@ namespace PSADT.Foundation
         /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
         /// session is found.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static RunAsActiveUser? Get(IReadOnlyList<SessionInfo>? sessionInfo = null)
+        public static async Task<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null)
         {
             // Determine the account that will be used to execute client/server commands in the user's context.
             // Favour the caller's session if it's found and is currently an active user session on the device.
-            return (sessionInfo ??= SessionInfo.Get()).FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession) is not SessionInfo callerSession
+            return (sessionInfo ??= await SessionInfo.GetAsync().ConfigureAwait(false)).FirstOrDefault(static s => (s.SID == AccountUtilities.CallerSid || s.SessionId == AccountUtilities.CallerSessionId) && s.IsActiveUserSession) is not SessionInfo callerSession
                 ? sessionInfo.Where(static s => s.IsActiveUserSession).OrderBy(static s => (s.IdleTime ?? TimeSpan.MaxValue).Ticks / TimeSpan.TicksPerSecond).ThenByDescending(static s => s.LogonTime).FirstOrDefault()?.ToRunAsActiveUser()
                 : callerSession.ToRunAsActiveUser();
         }
@@ -46,10 +47,11 @@ namespace PSADT.Foundation
         /// <param name="sessionId">The session ID of the user.</param>
         /// <param name="isLocalAdmin">Indicates whether the user has local administrator privileges. Can be <see langword="null"/> if unknown.</param>
         /// <exception cref="ArgumentNullException">Thrown if any of the parameters are <see langword="null"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public RunAsActiveUser(NTAccount nTAccount, SecurityIdentifier sID, uint sessionId, bool? isLocalAdmin)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value);
-            ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value, nameof(nTAccount));
+            ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value, nameof(sID));
             NTAccountValue = nTAccount.Value;
             SIDValue = sID.Value;
             SessionId = sessionId;
@@ -95,9 +97,9 @@ namespace PSADT.Foundation
         {
             get
             {
-                int divider = NTAccount.Value.IndexOf('\\');
+                int divider = NTAccount.Value.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
                 return divider != -1
-                    ? NTAccount.Value.Substring(divider + 1)
+                    ? NTAccount.Value[(divider + 1)..]
                     : NTAccountValue;
             }
         }
@@ -110,9 +112,9 @@ namespace PSADT.Foundation
         {
             get
             {
-                int divider = NTAccount.Value.IndexOf('\\');
+                int divider = NTAccount.Value.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
                 return divider != -1
-                    ? NTAccount.Value.Substring(0, divider)
+                    ? NTAccount.Value[..divider]
                     : null;
             }
         }
@@ -120,14 +122,12 @@ namespace PSADT.Foundation
         /// <summary>
         /// Represents the session ID of the user.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly uint SessionId;
 
         /// <summary>
         /// Indicates whether the current user has local administrator privileges.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool? IsLocalAdmin;
 

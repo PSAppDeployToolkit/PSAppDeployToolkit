@@ -7,7 +7,7 @@
     /// <remarks>The <see cref="WINDOW_MESSAGE"/> enumeration defines a comprehensive set of message constants
     /// that are used by the Windows operating system to communicate with applications. These messages cover a wide
     /// range of events, including window creation, destruction, input handling, and system commands. Each message is
-    /// associated with a unique identifier, which is used to determine the type of event or action that has occurred. 
+    /// associated with a unique identifier, which is used to determine the type of event or action that has occurred.
     /// This enumeration is primarily used in the context of Windows message loops, where applications process incoming
     /// messages to perform appropriate actions. The messages are categorized into several groups, such as core window
     /// messages, non-client area messages, keyboard and input method editor (IME) messages, dialog and command

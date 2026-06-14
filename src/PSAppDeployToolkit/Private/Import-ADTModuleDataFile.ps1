@@ -62,11 +62,11 @@ function Private:Import-ADTModuleDataFile
     }
 
     # Import the default data first and foremost.
-    $section = [System.IO.Path]::GetFileNameWithoutExtension($FileName)
+    $section = [System.Globalization.CultureInfo]::InvariantCulture.TextInfo.ToTitleCase([System.IO.Path]::GetFileNameWithoutExtension($FileName))
     $initialUICulture = $UICulture
     $importedData = while ($true)
     {
-        if ($Script:ADT.ModuleDefaults.$section.Contains($UICulture.Name))
+        if ($Script:ADT.ModuleDefaults.$section.ContainsKey($UICulture.Name))
         {
             $Script:ADT.ModuleDefaults.$section.($UICulture.Name).Ast.EndBlock.Statements.PipelineElements.Expression.SafeGetValue()
             $UICulture = $initialUICulture

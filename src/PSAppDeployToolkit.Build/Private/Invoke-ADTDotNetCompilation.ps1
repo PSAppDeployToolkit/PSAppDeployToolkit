@@ -132,19 +132,47 @@ function Invoke-ADTDotNetCompilation
                     throw "Failed to build solution [$($buildItem.SolutionPath -replace '^.+\\')] with exit code [$Global:LASTEXITCODE]."
                 }
 
+                # Run any publish actions if present.
+                if ($buildItem.PublishItems)
+                {
+                    foreach ($publishItem in $buildItem.PublishItems.GetEnumerator())
+                    {
+                        Write-ADTBuildLogEntry -Message "Running publish action for [$([System.IO.Path]::GetFileName($publishItem.Key))], please wait..."
+                        $null = & $dotnet publish $publishItem.Key -r win-x64  # The RID doesn't matter here, it's all IL but we need to specify it.
+                    }
+                }
+
                 # Copy the debug configuration into the module's folder within the repo. The release copy will come later on directly into the artifact.
                 if ($buildType.Equals('Debug'))
                 {
-                    $sourcePath = [System.IO.Path]::Combine([System.Management.Automation.WildcardPattern]::Escape($buildItem.BinaryPath), '*')
-                    foreach ($outputPath in $buildItem.OutputPath)
+                    # Reset the base path if provided before transferring assets.
+                    if ($buildItem.BasePath)
                     {
-                        Write-ADTBuildLogEntry -Message "Copying from [$sourcePath] to [$outputPath], please wait..."
-                        if ($outputPath.EndsWith('lib'))
+                        $null = Remove-Item -LiteralPath $buildItem.BasePath -Force -Recurse -ErrorAction Ignore
+                        $null = [System.IO.Directory]::CreateDirectory($buildItem.BasePath)
+                    }
+                    foreach ($outputPath in $buildItem.PathMap.GetEnumerator())
+                    {
+                        Write-ADTBuildLogEntry -Message "Copying from [$($outputPath.Key)] to [$($outputPath.Value)], please wait..."
+                        if ($buildItem.BasePath -and !(Test-Path -Path $outputPath.Value -PathType Container))
                         {
-                            $null = Remove-Item -LiteralPath $outputPath -Force -Recurse -ErrorAction Ignore
-                            $null = [System.IO.Directory]::CreateDirectory($outputPath)
+                            $null = New-Item -Path $outputPath.Value -ItemType Directory
                         }
-                        Copy-Item -Path $sourcePath -Destination $outputPath -Recurse -Force
+                        Copy-Item -Path $outputPath.Key -Destination $outputPath.Value -Recurse -Force
+                        Get-ChildItem -LiteralPath $outputPath.Value -Filter runtimes | Remove-Item -Recurse -Force
+                        Get-ChildItem -LiteralPath $outputPath.Value -Filter *.xml | Remove-Item
+                        if (!$outputPath.Value.EndsWith('net472'))
+                        {
+                            Get-ChildItem -LiteralPath $buildItem.SourcePath -Filter *.deps.json -Recurse | & { process { if ($_.FullName.Contains('Debug') -and !$_.Name.Contains('Harness')) { return $_ } } } | Copy-Item -Destination $outputPath.Value -Force
+                        }
+                    }
+                    if ($buildItem.PublishItems)
+                    {
+                        foreach ($publishItem in $buildItem.PublishItems.Values.GetEnumerator().GetEnumerator())
+                        {
+                            Write-ADTBuildLogEntry -Message "Copying published item from [$($publishItem.Key)] to [$($publishItem.Value)]."
+                            Copy-Item -Path $publishItem.Key -Destination $publishItem.Value -Force
+                        }
                     }
                 }
                 Write-ADTBuildLogEntry -Message "Built [$($buildItem.SolutionPath)] solution in [$buildType] mode as required." -ForegroundColor DarkGreen

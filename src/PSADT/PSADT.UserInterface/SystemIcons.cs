@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
@@ -13,6 +13,7 @@ namespace PSADT.UserInterface
     /// <summary>
     /// Static class to manage system icons.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class SystemIcons
     {
         /// <summary>
@@ -45,7 +46,7 @@ namespace PSADT.UserInterface
         /// <summary>
         /// A lookup table for system icons.
         /// </summary>
-        private static readonly ReadOnlyDictionary<DialogSystemIcon, SHSTOCKICONID> SystemIconLookupTable = new(new Dictionary<DialogSystemIcon, SHSTOCKICONID>
+        private static readonly FrozenDictionary<DialogSystemIcon, SHSTOCKICONID> SystemIconLookupTable = FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogSystemIcon, SHSTOCKICONID>
         {
             { DialogSystemIcon.Application, SHSTOCKICONID.SIID_APPLICATION },
             { DialogSystemIcon.Asterisk, SHSTOCKICONID.SIID_INFO },

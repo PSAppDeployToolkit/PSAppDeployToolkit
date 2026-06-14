@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using PSADT.Foundation;
 
 namespace PSADT.ClientServer
@@ -23,9 +24,9 @@ namespace PSADT.ClientServer
         /// langword="null"/>.</param>
         /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must be absolute
         /// and point to existing files.</param>
-        public static void Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
+        public static async Task Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
         {
-            AssemblyPermissions.Remediate(runAsActiveUser, extraPaths, ClientServerUtilities.DefaultElevationType);
+            await ClientServerPermissions.Remediate(runAsActiveUser, extraPaths, ClientServerUtilities.DefaultElevationType).ConfigureAwait(false);
         }
     }
 }

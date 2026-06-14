@@ -65,11 +65,11 @@ namespace System
             /// Validates that the specified SafeHandle is neither null, closed, nor invalid, and throws an exception if the
             /// handle is not usable.
             /// </summary>
-            /// <remarks>This method is intended to simplify SafeHandle validation. It ensures that the handle 
+            /// <remarks>This method is intended to simplify SafeHandle validation. It ensures that the handle
             /// is ready for use and provides clear exception information if validation fails.</remarks>
             /// <param name="handle">The SafeHandle instance to validate. Must not be null, closed, or invalid.</param>
             /// <param name="name">The name of the parameter. Used in exception messages to identify the source of the error.</param>
-            /// <exception cref="ArgumentException">Thrown if the SafeHandle is invalid, indicating that the handle cannot be used.</exception>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown if the SafeHandle is invalid, indicating that the handle cannot be used.</exception>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfNullOrInvalid(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string name = null!)

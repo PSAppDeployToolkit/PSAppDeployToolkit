@@ -43,7 +43,7 @@ namespace PSADT.ProcessManagement
         public static ProcessVersionInfo GetVersionInfo(Process process)
         {
             ArgumentNullException.ThrowIfNull(process);
-            return new(process, null, null);
+            return new(process, filePath: null, ntPathLookupTable: null);
         }
 
         /// <summary>
@@ -55,13 +55,13 @@ namespace PSADT.ProcessManagement
         public static ProcessVersionInfo GetVersionInfo(int processId)
         {
             using Process process = Process.GetProcessById(processId);
-            return new(process, null, null);
+            return new(process, filePath: null, ntPathLookupTable: null);
         }
 
         /// <summary>
         /// Retrieves version information for the specified process.
         /// </summary>
-        /// <remarks>This method provides a convenient way to access version information for a process, 
+        /// <remarks>This method provides a convenient way to access version information for a process,
         /// utilizing a lookup table to resolve NT paths.</remarks>
         /// <param name="process">The process for which to obtain version information. This parameter cannot be null.</param>
         /// <param name="ntPathLookupTable">A read-only dictionary that maps NT paths to their corresponding user-friendly paths. This is used to
@@ -70,7 +70,7 @@ namespace PSADT.ProcessManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessVersionInfo GetVersionInfo(Process process, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
-            return new(process, null, ntPathLookupTable);
+            return new(process, filePath: null, ntPathLookupTable);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace PSADT.ProcessManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessVersionInfo GetVersionInfo(Process process, string filePath)
         {
-            return new(process, filePath, null);
+            return new(process, filePath, ntPathLookupTable: null);
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace PSADT.ProcessManagement
                 FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
             }
             ReadOnlySpan<byte> versionResource;
-            using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)process.Id))
+            using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, bInheritHandle: false, (uint)process.Id))
             {
                 try
                 {
@@ -148,11 +148,11 @@ namespace PSADT.ProcessManagement
             ProductVersionRaw = new(ProductMajorPart, ProductMinorPart, ProductBuildPart, ProductPrivatePart);
 
             // Set the flags based on the fixed file info.
-            IsDebug = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG) != 0;
-            IsPatched = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED) != 0;
-            IsPrivateBuild = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD) != 0;
-            IsPreRelease = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE) != 0;
-            IsSpecialBuild = (fixedFileInfo.dwFileFlags & VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD) != 0;
+            IsDebug = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_DEBUG);
+            IsPatched = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PATCHED);
+            IsPrivateBuild = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRIVATEBUILD);
+            IsPreRelease = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_PRERELEASE);
+            IsSpecialBuild = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD);
 
             // Read the version resource strings.
             ReadOnlyCollection<string> codepageTable = GetTranslationTableCombinations(versionResource);
@@ -182,10 +182,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets information about the main module of the specified process.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <returns>A <see cref="MODULEINFO"/> structure containing information about the main module.</returns>
         private static MODULEINFO GetMainModuleInfo(SafeFileHandle processHandle)
         {
             // Get all process modules, then return the first one (main module).
-            _ = NativeMethods.EnumProcessModules(processHandle, null, out uint bytesNeeded);
+            _ = NativeMethods.EnumProcessModules(processHandle, lphModule: null, out uint bytesNeeded);
             Span<byte> moduleBuffer = stackalloc byte[(int)bytesNeeded];
             _ = NativeMethods.EnumProcessModules(processHandle, moduleBuffer, out bytesNeeded);
             ref readonly HMODULE hModule = ref moduleBuffer.AsReadOnlyStructure<HMODULE>();
@@ -196,6 +198,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the version resource from the process memory.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <param name="moduleInfo">Information about the module from which to read the version resource.</param>
+        /// <returns>A byte array containing the version resource data.</returns>
+        /// <exception cref="BadImageFormatException">Thrown if the process does not have a valid PE header or resource directory.</exception>
+        /// <exception cref="FileFormatException">Thrown if the process does not contain a valid RT_VERSION resource.</exception>
         private static byte[] ReadVersionResource(SafeFileHandle processHandle, in MODULEINFO moduleInfo)
         {
             // Read the DOS header to make sure we have a valid PE header.
@@ -263,6 +270,11 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Navigates the resource directory structure to find the version resource.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <param name="resourceDirectoryAddress">The memory address of the resource directory.</param>
+        /// <param name="baseAddress">The base address of the module in the process's memory.</param>
+        /// <returns>A byte array containing the version resource data.</returns>
+        /// <exception cref="FileFormatException">Thrown if the process does not contain an RT_VERSION resource in its Level 1 data.</exception>
         private static byte[] FindVersionResource(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress)
         {
             // Read the resource directory
@@ -292,6 +304,12 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Reads the actual version resource data.
         /// </summary>
+        /// <param name="processHandle">A handle to the process.</param>
+        /// <param name="resourceDirectoryAddress">The memory address of the resource directory.</param>
+        /// <param name="baseAddress">The base address of the module in the process's memory.</param>
+        /// <param name="offsetToData">The offset to the version resource data.</param>
+        /// <returns>A byte array containing the version resource data.</returns>
+        /// <exception cref="BadImageFormatException">Thrown if the process does not have a valid PE header or resource directory.</exception>
         private static byte[] ReadVersionResourceData(SafeFileHandle processHandle, nint resourceDirectoryAddress, nint baseAddress, uint offsetToData)
         {
             // Navigate through the directory levels using a do/while loop.
@@ -324,6 +342,8 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets language/codepage combinations from the Translation table.
         /// </summary>
+        /// <param name="versionResource">A span containing the version resource data.</param>
+        /// <returns>A read-only collection of language/codepage combinations.</returns>
         private static ReadOnlyCollection<string> GetTranslationTableCombinations(ReadOnlySpan<byte> versionResource)
         {
             // Return any translation pairs found in the version resource.
@@ -341,7 +361,7 @@ namespace PSADT.ProcessManagement
             translationCombinations.Add("040904B0");
             translationCombinations.Add("040904E4");
             translationCombinations.Add("04090000");
-            return new([.. translationCombinations.Distinct()]);
+            return new([.. translationCombinations.Distinct(StringComparer.OrdinalIgnoreCase)]);
         }
 
         /// <summary>
@@ -355,7 +375,7 @@ namespace PSADT.ProcessManagement
         private static string? GetFileVersionLanguage(string codepage)
         {
             Span<char> szLang = stackalloc char[1024]; szLang.Clear();
-            string result = szLang.Slice(0, (int)NativeMethods.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang)).ToString();
+            string result = szLang[..(int)NativeMethods.VerLanguageName(PInvoke.HIWORD(uint.Parse(codepage, NumberStyles.HexNumber, CultureInfo.InvariantCulture)), szLang)].ToString();
             return !string.IsNullOrWhiteSpace(result) ? result : null;
         }
 

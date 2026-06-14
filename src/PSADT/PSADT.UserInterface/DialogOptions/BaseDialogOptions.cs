@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
-using PSADT.UserInterface.Utilities;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -22,7 +21,6 @@ namespace PSADT.UserInterface.DialogOptions
     [KnownType(typeof(ListSelectionDialogOptions))]
     [KnownType(typeof(ProgressDialogOptions))]
     [KnownType(typeof(RestartDialogOptions))]
-    [KnownType(typeof(BalloonTipOptions))]
     public abstract record BaseDialogOptions : IDialogOptions
     {
         /// <summary>
@@ -113,49 +111,42 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The title of the application or process being displayed in the dialog.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string AppTitle;
 
         /// <summary>
         /// The subtitle of the dialog, providing additional context or information.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string Subtitle;
 
         /// <summary>
         /// The image file path for the application icon to be displayed in the dialog.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string AppIconImage;
 
         /// <summary>
         /// The image file path for the application icon (dark mode) to be displayed in the dialog.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? AppIconDarkImage;
 
         /// <summary>
         /// The image file path for the banner to be displayed in the dialog.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string AppBannerImage;
 
         /// <summary>
         /// Gets the file path or resource identifier for the application's tray icon image.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? AppTaskbarIconImage;
 
         /// <summary>
         /// Indicates whether the dialog should be displayed as a top-most window.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool DialogTopMost;
 
@@ -168,21 +159,18 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The accent color for the dialog.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly int? FluentAccentColor;
 
         /// <summary>
         /// The position of the dialog on the screen.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly DialogPosition? DialogPosition;
 
         /// <summary>
         /// Indicates whether the dialog allows the user to move it around the screen.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool? DialogAllowMove;
 
@@ -191,21 +179,18 @@ namespace PSADT.UserInterface.DialogOptions
         /// A value of <see langword="null"/> or <see langword="false"/> keeps the default behavior
         /// (minimize hidden). Only explicit <see langword="true"/> opts the dialog into minimize support.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool? DialogAllowMinimize;
 
         /// <summary>
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly TimeSpan? DialogExpiryDuration;
 
         /// <summary>
         /// The interval for which the dialog will persist on the screen.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly TimeSpan? DialogPersistInterval;
 
@@ -226,20 +211,20 @@ namespace PSADT.UserInterface.DialogOptions
         /// image file or a valid base64-encoded image.</param>
         /// <param name="identifier">The name of the image parameter, used in exception messages to identify the source of errors.</param>
         /// <returns>The original image string if the image is valid.</returns>
-        /// <exception cref="FileNotFoundException">Thrown if the specified image file does not exist.</exception>
-        /// <exception cref="ArgumentException">Thrown if the specified image is not a valid image format.</exception>
+        /// <exception cref="FileFormatException">Thrown if the specified image file is invalid or corrupted.</exception>
+        /// <exception cref="BadImageFormatException">Thrown if the specified image is not in a valid format that can be loaded as an icon or bitmap.</exception>
         [StackTraceHidden]
         internal static string ThrowIfImageIsInvalid(string image, string identifier)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(image); ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
             try
             {
-                using Stream stream = MiscUtilities.GetBase64StringBytes(image) is not byte[] bytes ? new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, false);
+                using Stream stream = MiscUtilities.GetBase64StringBytes(image) is not byte[] bytes ? new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
                 try
                 {
                     if (!DrawingUtilities.IsStreamAnIcon(stream))
                     {
-                        using Bitmap bmp = new(stream, true);
+                        using Bitmap bmp = new(stream, useIcm: true);
                         _ = bmp.Size;
                     }
                     else

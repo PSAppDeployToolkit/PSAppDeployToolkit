@@ -26,9 +26,30 @@ namespace PSADT.Foundation
         /// <remarks>This static constructor determines whether the calling process matches any of the
         /// predefined client or launcher paths and sets the CallerIsClientServerExecutable property accordingly. This
         /// affects how the class identifies the context in which it is being used.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "This is fine.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This is fine.")]
         static ClientServerUtilities()
         {
+            // Set up the assembly path for the client/server architecture, factoring in the caller may be coming from a .NET Core client.
+            string assemblyDirectory = Path.GetDirectoryName(typeof(ClientServerUtilities).Assembly.Location) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly.");
+            ClientServerDirectory = !assemblyDirectory.EndsWith("net472", StringComparison.OrdinalIgnoreCase)
+                ? new(Path.Join(Directory.GetParent(assemblyDirectory)?.FullName ?? throw new InvalidProgramException("Failed to retrieve parent directory for this assembly."), "net472"))
+                : new(assemblyDirectory);
+
+            // Set up the paths to each client/server client executable.
+            ClientDefaultPath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.exe"));
+            ClientCompatiblePath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.Compatible.exe"));
+            ClientLauncherDefaultPath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.Launcher.exe"));
+            ClientLauncherCompatiblePath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
+
+            // Set up calculated fields based on whether the client/server code is signed.
+            ClientAutoPath = !ClientDefaultPath.IsAuthenticodeTrusted()
+                ? ClientCompatiblePath
+                : ClientDefaultPath;
+            ClientLauncherAutoPath = !ClientLauncherDefaultPath.IsAuthenticodeTrusted()
+                ? ClientLauncherCompatiblePath
+                : ClientLauncherDefaultPath;
+
+            // Determine whether the caller is a client/server executable.
             string callingProcessPath = AssemblyManager.CallingProcessPath.FullName;
             CallerIsClientServerClient = callingProcessPath.Equals(ClientDefaultPath.FullName, StringComparison.OrdinalIgnoreCase)
                 || callingProcessPath.Equals(ClientCompatiblePath.FullName, StringComparison.OrdinalIgnoreCase);
@@ -136,13 +157,13 @@ namespace PSADT.Foundation
                 argumentList,
                 Environment.SystemDirectory,
                 runAsActiveUser,
-                elevatedTokenType: elevatedTokenType,
                 denyUserTermination: denyUserTermination,
+                elevatedTokenType: elevatedTokenType,
                 runAsInvoker: runAsInvoker,
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
                 useShellExecute: useShellExecute,
-                createNoWindow: !filePath.Name.Contains("Launcher"),
+                createNoWindow: !filePath.Name.Contains("Launcher", StringComparison.OrdinalIgnoreCase),
                 waitForChildProcesses: true,
                 cancellationToken: cancellationToken
             )) ?? throw new InvalidOperationException("Failed to launch client operation.");
@@ -169,7 +190,7 @@ namespace PSADT.Foundation
         /// <remarks>This path is constructed by combining the assembly's directory path with the
         /// executable name "PSADT.ClientServer.Client.exe". It is intended for use when launching or referencing the
         /// ClientServer client from within the application.</remarks>
-        public static readonly FileInfo ClientDefaultPath = new(Path.Join(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.exe"));
+        public static readonly FileInfo ClientDefaultPath;
 
         /// <summary>
         /// Gets the file path for the compatible version of the PSADT Client Server executable.
@@ -177,7 +198,7 @@ namespace PSADT.Foundation
         /// <remarks>This path is constructed by combining the base assembly path with the specific
         /// executable name. Ensure that the executable exists at the specified location before attempting to use
         /// it.</remarks>
-        public static readonly FileInfo ClientCompatiblePath = new(Path.Join(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.Compatible.exe"));
+        public static readonly FileInfo ClientCompatiblePath;
 
         /// <summary>
         /// Gets the path to the client server executable, selecting a compatible version if the primary executable is
@@ -185,9 +206,7 @@ namespace PSADT.Foundation
         /// </summary>
         /// <remarks>The path is determined based on the trust status of the primary executable. If the
         /// primary executable is not trusted, the compatible version is used instead.</remarks>
-        public static readonly FileInfo ClientAutoPath = !ClientDefaultPath.IsAuthenticodeTrusted()
-            ? ClientCompatiblePath
-            : ClientDefaultPath;
+        public static readonly FileInfo ClientAutoPath;
 
         /// <summary>
         /// Gets the default file system path for the Client Server Client Launcher executable.
@@ -195,14 +214,14 @@ namespace PSADT.Foundation
         /// <remarks>The path is constructed by combining the assembly directory with the executable name.
         /// Use this value to locate the launcher for the Client Server Client application when performing operations
         /// that require its presence.</remarks>
-        public static readonly FileInfo ClientLauncherDefaultPath = new(Path.Join(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.Launcher.exe"));
+        public static readonly FileInfo ClientLauncherDefaultPath;
 
         /// <summary>
         /// Gets the file path for the compatible version of the Client Server Client Launcher executable.
         /// </summary>
         /// <remarks>This path is constructed by combining the assembly path with the executable name.
         /// Ensure that the executable is present at the specified location for proper functionality.</remarks>
-        public static readonly FileInfo ClientLauncherCompatiblePath = new(Path.Join(AssemblyManager.AssemblyDirectory.FullName, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
+        public static readonly FileInfo ClientLauncherCompatiblePath;
 
         /// <summary>
         /// Gets the path to the client server launcher executable, selecting a compatible version if the primary
@@ -210,9 +229,7 @@ namespace PSADT.Foundation
         /// </summary>
         /// <remarks>This path is determined based on the trust status of the primary launcher executable.
         /// If the primary executable is not trusted, the compatible version will be used instead.</remarks>
-        public static readonly FileInfo ClientLauncherAutoPath = !ClientLauncherDefaultPath.IsAuthenticodeTrusted()
-            ? ClientLauncherCompatiblePath
-            : ClientLauncherDefaultPath;
+        public static readonly FileInfo ClientLauncherAutoPath;
 
         /// <summary>
         /// Specifies the default timeout duration for client operations.
@@ -242,6 +259,11 @@ namespace PSADT.Foundation
         /// not provided. The value is set to HighestAvailable, which requests the highest available privileges for the
         /// current user context.</remarks>
         internal const ElevatedTokenType DefaultElevationType = ElevatedTokenType.HighestAvailable;
+
+        /// <summary>
+        /// Gets the directory path where the client-server architecture executables are located, based on the location of the current assembly.
+        /// </summary>
+        internal static readonly DirectoryInfo ClientServerDirectory;
 
         /// <summary>
         /// Indicates whether the current caller is the client component of the client-server architecture.

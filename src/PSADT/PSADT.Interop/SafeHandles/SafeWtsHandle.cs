@@ -21,7 +21,7 @@ namespace PSADT.Interop.SafeHandles
         /// <returns>Always returns <see langword="true"/>, indicating that the handle has been released.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

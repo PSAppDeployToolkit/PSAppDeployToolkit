@@ -40,7 +40,7 @@ namespace PSADT.Interop.Utilities
             List<string> result = new(lines.Length);
             for (int i = 0; i < lines.Length; i++)
             {
-                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[result.Count - 1].TrimStart().StartsWith(StackTraceAtPrefix, StringComparison.Ordinal)))
+                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[^1].TrimStart().StartsWith(StackTraceAtPrefix, StringComparison.Ordinal)))
                 {
                     result.Add(lines[i]);
                 }
@@ -121,11 +121,9 @@ namespace PSADT.Interop.Utilities
                 // There was no suitable Win32Exception, however there was a managed exception for the HRESULT corresponding to the NTSTATUS code.
                 return hrException;
             }
-            else
-            {
-                // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.
-                return ntStatusException;
-            }
+
+            // Just return an NtStatusException with the message from FormatMessage for the NTSTATUS code.
+            return ntStatusException;
         }
 
         /// <summary>
@@ -137,6 +135,7 @@ namespace PSADT.Interop.Utilities
         /// <param name="hResult">The HRESULT value that represents the error condition. Must be a negative value to indicate an error.</param>
         /// <returns>An Exception instance that represents the error condition described by the provided HRESULT value.</returns>
         /// <exception cref="NotSupportedException">Thrown if hResult is non-negative, indicating that no error has occurred.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the method fails to retrieve an exception for the provided HRESULT value, which should not occur under normal circumstances.</exception>"
         internal static Exception GetException(HRESULT hResult)
         {
             return hResult >= 0
@@ -284,7 +283,7 @@ namespace PSADT.Interop.Utilities
                         int idx = line.IndexOf(marker, StringComparison.Ordinal);
                         if (idx > 0)
                         {
-                            return line.Substring(0, idx);
+                            return line[..idx];
                         }
                     }
                 }

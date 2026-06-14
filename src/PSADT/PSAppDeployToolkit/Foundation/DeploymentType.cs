@@ -8,16 +8,16 @@
         /// <summary>
         /// The deployment is for an installation.
         /// </summary>
-        Install,
+        Install = 0,
 
         /// <summary>
         /// The deployment is for an uninstallation.
         /// </summary>
-        Uninstall,
+        Uninstall = 1,
 
         /// <summary>
         /// The deployment is for a repair.
         /// </summary>
-        Repair
+        Repair = 2,
     }
 }

@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Represents the default dialog result used when a dialog times out.
         /// </summary>
-        public static new readonly InputDialogResult DefaultResult = new("Timeout", null);
+        public static new readonly InputDialogResult DefaultResult = new("Timeout", text: null);
 
         /// <summary>
         /// Initializes a new instance of the InputDialogResult class with the specified result and optional text.
@@ -31,7 +31,6 @@ namespace PSADT.UserInterface.DialogResults
         /// <summary>
         /// Gets the text entered by the user.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? Text;
 
@@ -44,7 +43,7 @@ namespace PSADT.UserInterface.DialogResults
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object? obj)
         {
-            return obj is InputDialogResult other && Result == other.Result && Text == other.Text;
+            return obj is InputDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && Text?.Equals(other.Text, StringComparison.Ordinal) == true;
         }
 
         /// <summary>

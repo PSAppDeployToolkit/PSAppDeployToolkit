@@ -1,6 +1,23 @@
 ﻿<Project>
-  <!-- Delete unwanted XML documentation files from output -->
-  <Target Name="DeleteUnwantedOutput" AfterTargets="Build">
-    <Delete Files="$(TargetDir)$(AssemblyName).xml" Condition="Exists('$(TargetDir)$(AssemblyName).xml')" />
-  </Target>
+  <!-- ARM64 preference for .NET Framework -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PreferNativeArm64>true</PreferNativeArm64>
+    <NoWarn>$(NoWarn);MA0074</NoWarn>
+  </PropertyGroup>
+
+  <!-- Debugging symbol setup for projects -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472' And '$(MSBuildProjectName)' != 'PSADT.Interop' And '$(Configuration)' == 'Release'">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472' And '$(MSBuildProjectName)' != 'PSADT.Interop' And '$(Configuration)' == 'Debug'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net472' And '$(MSBuildProjectName)' != 'PSADT.Interop'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!-- Silence incompatibility warnings since we're not targeting Windows directly -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
 </Project>

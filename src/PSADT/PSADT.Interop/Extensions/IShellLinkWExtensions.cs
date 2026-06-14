@@ -9,6 +9,7 @@ namespace PSADT.Interop.Extensions
     /// <remarks>This class contains static methods that extend the capabilities of the IShellLinkW interface,
     /// particularly for use in unmanaged code contexts. It is important to ensure that any spans used are properly
     /// allocated to prevent buffer overflows.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class IShellLinkWExtensions
     {
         /// <summary>
@@ -26,7 +27,7 @@ namespace PSADT.Interop.Extensions
             {
                 fixed (char* pszFileLocal = pszFile)
                 {
-                    @this.GetPath(pszFileLocal, pszFile.Length, null, fFlags);
+                    @this.GetPath(pszFileLocal, pszFile.Length, pfd: null, fFlags);
                 }
             }
         }

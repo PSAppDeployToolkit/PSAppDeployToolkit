@@ -8,5 +8,5 @@
     /// values and strings containing only whitespace are not. This is useful in scenarios where an empty string is a
     /// valid value, such as optional user input fields, but you want to prevent nulls or strings that contain only
     /// spaces or tabs.</remarks>
-    public sealed class AllowEmptyButNotNullOrWhiteSpaceAttribute() : ValidateNotEmptyOrWhiteSpaceAttributeBase(allowNull: false, allowEmpty: true);
+    public sealed class AllowEmptyButNotNullOrWhiteSpaceAttribute() : BaseValidateNotEmptyOrWhiteSpaceAttribute(allowNull: false, allowEmpty: true);
 }

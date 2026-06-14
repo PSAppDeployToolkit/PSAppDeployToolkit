@@ -72,10 +72,10 @@ function Test-ADTMSUpdates
                     $null = try
                     {
                         $updateSearcher = $updateSession.CreateUpdateSearcher()
-                        $updateSearcher.IncludePotentiallySupersededUpdates = $false
-                        $updateSearcher.Online = $false
                         try
                         {
+                            $updateSearcher.Online = $false
+                            $updateSearcher.IncludePotentiallySupersededUpdates = $false
                             if (($updateHistoryCount = $updateSearcher.GetTotalHistoryCount()) -le 0)
                             {
                                 Write-ADTLogEntry -Message 'Unable to detect Windows Update history via COM object.'

@@ -43,7 +43,7 @@ namespace PSADT.WindowsInstaller
                 return null;
                 throw;
             }
-            return !string.IsNullOrWhiteSpace(lpBuffer) ? Regex.Replace(lpBuffer, @"\s{2,}", " ") : null;
+            return !string.IsNullOrWhiteSpace(lpBuffer) ? DoubleSpaceRegex.Replace(lpBuffer, " ") : null;
         }
 
         /// <summary>
@@ -72,11 +72,11 @@ namespace PSADT.WindowsInstaller
             }
             if (ResolveColumnName(hDatabase, resolvedTableName, keyColumn) is not string keyColumnName)
             {
-                throw new InvalidDataException($"The specified key column number '{keyColumn}' was not found in the table '{resolvedTableName}'.");
+                throw new InvalidDataException($"The specified key column number '{keyColumn.ToString(CultureInfo.InvariantCulture)}' was not found in the table '{resolvedTableName}'.");
             }
             if (ResolveColumnName(hDatabase, resolvedTableName, valueColumn) is not string valueColumnName)
             {
-                throw new InvalidDataException($"The specified value column number '{valueColumn}' was not found in the table '{resolvedTableName}'.");
+                throw new InvalidDataException($"The specified value column number '{valueColumn.ToString(CultureInfo.InvariantCulture)}' was not found in the table '{resolvedTableName}'.");
             }
 
             // Query the database for the specified table and columns, then build a dictionary from the results.
@@ -124,7 +124,7 @@ namespace PSADT.WindowsInstaller
             }
             if (ResolveColumnName(hDatabase, resolvedTableName, column) is not string columnName)
             {
-                throw new InvalidDataException($"The specified column number '{column}' was not found in the table '{resolvedTableName}'.");
+                throw new InvalidDataException($"The specified column number '{column.ToString(CultureInfo.InvariantCulture)}' was not found in the table '{resolvedTableName}'.");
             }
 
             // Query the database for the specified table and columns, then build a dictionary from the results.
@@ -173,13 +173,14 @@ namespace PSADT.WindowsInstaller
         /// <exception cref="ArgumentException">Thrown if <paramref name="newTransformPath"/> is not an absolute path, if <paramref
         /// name="transformProperties"/> is empty or contains null or empty keys, or if <paramref name="tempMsiPath"/>
         /// already exists.</exception>
-        /// <exception cref="IOException">Thrown if the transform file could not be generated at the specified <paramref name="newTransformPath"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the specified temp MSI path already exists or if the directory for the temp MSI path cannot be created.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2263:Prefer generic overload when type is known", Justification = "This isn't supported on net472.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void CreatePropertyTransformFile(string msiPath, string newTransformPath, IReadOnlyDictionary<string, string> transformProperties, string? applyTransformPath = null, string? tempMsiPath = null)
         {
             // Validate input parameters.
             ArgumentNullException.ThrowIfNull(transformProperties);
-            ArgumentOutOfRangeException.ThrowIfZero(transformProperties.Count);
+            ArgumentOutOfRangeException.ThrowIfZero(transformProperties.Count, nameof(transformProperties));
             msiPath = Path.GetFullPath(msiPath).ThrowIfFileDoesNotExist();
             newTransformPath = Path.GetFullPath(newTransformPath).ThrowIfPathIsNotFullyQualified();
             if (applyTransformPath is not null)
@@ -280,6 +281,7 @@ namespace PSADT.WindowsInstaller
         /// <param name="szDatabasePath">The file path to the patch package (MSP) database. Cannot be null or empty.</param>
         /// <returns>A string containing the supported product codes, separated by semicolons. Returns an empty string if no
         /// product codes are found.</returns>
+        /// <exception cref="FileFormatException">Thrown if the patch database does not contain a valid PID_TEMPLATE property with supported product codes.</exception>
         public static IReadOnlyList<Guid> GetMspSupportedProductCodes(string szDatabasePath)
         {
             // Get the summary information from the patch database, then determine the size of the buffer we need.
@@ -301,10 +303,10 @@ namespace PSADT.WindowsInstaller
         /// <returns>An XmlDocument containing the XML data extracted from the specified patch file.</returns>
         public static XmlDocument ExtractPatchXmlData(string szPatchPath)
         {
-            _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, null, out uint requiredLength);
+            _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, szXMLData: null, out uint requiredLength);
             Span<char> bufSpan = stackalloc char[(int)requiredLength + 1];
             _ = NativeMethods.MsiExtractPatchXMLData(szPatchPath, bufSpan, out _);
-            return XmlUtilities.SafeLoadFromText(bufSpan.Slice(0, (int)requiredLength).ToString());
+            return XmlUtilities.SafeLoadFromText(bufSpan[..(int)requiredLength].ToString());
         }
 
         /// <summary>
@@ -394,11 +396,12 @@ namespace PSADT.WindowsInstaller
         /// <param name="packed32">A read-only span of 32 characters containing the packed hexadecimal representation of a GUID. Each character
         /// must be a valid hexadecimal digit (0-9, A-F, a-f).</param>
         /// <returns>A Guid structure that represents the GUID decoded from the specified packed hexadecimal string.</returns>
-        /// <exception cref="ArgumentException">Thrown if packed32 does not contain exactly 32 characters or contains non-hexadecimal characters.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if packed32 does not contain exactly 32 characters or contains non-hexadecimal characters.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static Guid DecompressPackedGuid(ReadOnlySpan<char> packed32)
         {
             // Validate provided input.
-            ArgumentOutOfRangeException.ThrowIfNotEqual(packed32.Length, 32);
+            ArgumentOutOfRangeException.ThrowIfNotEqual(packed32.Length, 32, nameof(packed32));
             for (int idx = 0; idx < 32; idx++)
             {
                 if (packed32[idx] is not ((>= '0' and <= '9') or (>= 'A' and <= 'F') or (>= 'a' and <= 'f')))
@@ -444,9 +447,9 @@ namespace PSADT.WindowsInstaller
             // - next 4 reversed -> Data3 (ushort)
             // - last 16: swap each byte pair -> Data4[8]
             return new(
-                ReadInt32FromReversedChars(packed32.Slice(0, 8)),
-                ReadInt16FromReversedChars(packed32.Slice(8, 4)),
-                ReadInt16FromReversedChars(packed32.Slice(12, 4)),
+                ReadInt32FromReversedChars(packed32[..8]),
+                ReadInt16FromReversedChars(packed32[8..12]),
+                ReadInt16FromReversedChars(packed32[12..16]),
                 ReadByteFromSwappedPair(packed32, 16),
                 ReadByteFromSwappedPair(packed32, 18),
                 ReadByteFromSwappedPair(packed32, 20),
@@ -467,6 +470,8 @@ namespace PSADT.WindowsInstaller
         /// to patch files.</param>
         /// <param name="szPersist">An optional persistence mode for opening the database. If null, the method will determine the appropriate mode based on the file type.</param>
         /// <returns>A handle to the opened database. This handle must be disposed of when no longer needed.</returns>
+        /// <exception cref="NotSupportedException">Thrown if transformations are attempted on a patch file.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static MsiCloseHandleSafeHandle OpenDatabase(string szDatabasePath, IReadOnlyList<string>? szTransformFiles = null, MSI_PERSISTENCE_MODE? szPersist = null)
         {
             // Open the msi/msp as a database.
@@ -485,7 +490,7 @@ namespace PSADT.WindowsInstaller
                 // Apply any transformations to the database.
                 if (szTransformFiles is not null)
                 {
-                    ArgumentOutOfRangeException.ThrowIfZero(szTransformFiles.Count);
+                    ArgumentOutOfRangeException.ThrowIfZero(szTransformFiles.Count, nameof(szTransformFiles));
                     if (isPatchFile)
                     {
                         throw new NotSupportedException("Cannot apply transforms to patch files.");
@@ -537,14 +542,14 @@ namespace PSADT.WindowsInstaller
         /// not set.</returns>
         internal static string? GetSummaryInfoStringProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
-            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, null, out uint requiredSize);
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, szValueBuf: null, out uint requiredSize);
             if (requiredSize == 0)
             {
                 return null;
             }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
-            ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
             return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
 
@@ -559,7 +564,7 @@ namespace PSADT.WindowsInstaller
         /// <returns>An integer value representing the property if it is of type VT_I2 or VT_I4; otherwise, null.</returns>
         internal static int? GetSummaryInfoIntProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
-            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out VARENUM puiDataType, out int piValue, out _, null, out _);
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out VARENUM puiDataType, out int piValue, out _, szValueBuf: null, out _);
             return puiDataType is VARENUM.VT_I2 or VARENUM.VT_I4 && piValue != 0 ? piValue : null;
         }
 
@@ -574,7 +579,7 @@ namespace PSADT.WindowsInstaller
         /// <returns>A nullable UTC DateTime representing the value of the requested date property if it is set; otherwise, null.</returns>
         internal static DateTime? GetSummaryInfoDateProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
-            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out FILETIME pftValue, null, out _);
+            _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out FILETIME pftValue, szValueBuf: null, out _);
             return !pftValue.IsZero() ? pftValue.ToDateTimeUtc() : null;
         }
 
@@ -664,11 +669,16 @@ namespace PSADT.WindowsInstaller
         /// <returns>The string value of the specified field if it exists; otherwise, null if the field is empty or not found.</returns>
         private static string? GetRecordString(MsiCloseHandleSafeHandle hRecord, uint field)
         {
-            _ = NativeMethods.MsiRecordGetString(hRecord, field, null, out uint requiredSize);
+            _ = NativeMethods.MsiRecordGetString(hRecord, field, szValueBuf: null, out uint requiredSize);
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
-            ReadOnlySpan<char> resSpan = bufSpan.Slice(0, (int)requiredSize).Trim();
+            ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
             return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
+
+        /// <summary>
+        /// A regular expression used to remove insert placeholders (e.g., "{0}", "{1}") from the messages returned by FormatMessage. This is necessary because the FORMAT_MESSAGE_IGNORE_INSERTS flag is used, which leaves the placeholders in the message string. The regex matches any substring that starts with '{', followed by one or more characters, and ends with '}', effectively identifying all insert placeholders for removal.
+        /// </summary>
+        private static readonly Regex DoubleSpaceRegex = new(@"\s{2,}", RegexOptions.Compiled);
     }
 }

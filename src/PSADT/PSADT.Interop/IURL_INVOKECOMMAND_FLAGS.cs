@@ -10,6 +10,7 @@ namespace PSADT.Interop
     /// conversations, enabling asynchronous execution, and logging usage for telemetry purposes.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "This is how they're named in the Win32 API.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2344:Enumeration type names should not have \"Flags\" or \"Enum\" suffixes", Justification = "This is appropriately named.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
     [Flags]
     public enum IURL_INVOKECOMMAND_FLAGS
     {

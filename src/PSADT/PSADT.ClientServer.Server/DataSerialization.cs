@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -134,16 +135,17 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than 0.</exception>
         /// <exception cref="ArgumentNullException">Thrown if bytes is null or if the length of bytes is less than or equal to offset.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization returns a null result.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
             ArgumentNullException.ThrowIfNull(bytes);
-            ArgumentOutOfRangeException.ThrowIfZero(bytes.Length);
+            ArgumentOutOfRangeException.ThrowIfZero(bytes.Length, nameof(bytes));
             if (((uint)offset > (uint)bytes.Length) || (offset == bytes.Length))
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset points past the end of the buffer.");
             }
             bool deserializingException = typeof(Exception).IsAssignableFrom(type);
-            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, false);
+            using MemoryStream ms = new(bytes, offset, bytes.Length - offset, writable: false);
             using XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(ms, XmlDictionaryReaderQuotas.Max);
             return GetSerializer(type).ReadObject(reader, verifyObjectName: !deserializingException) is not object result
                 ? throw new SerializationException("Deserialization returned a null result.")
@@ -176,7 +178,7 @@ namespace PSADT.ClientServer
             DataContractResolver = new DictionaryDataContractResolver(),
             PreserveObjectReferences = false,
             SerializeReadOnlyTypes = true,
-            KnownTypes = new ReadOnlyCollection<Type>(
+            KnownTypes = FrozenSet.ToFrozenSet(
             [
                 // Exception types - System namespace (core)
                 typeof(Exception),
@@ -238,7 +240,6 @@ namespace PSADT.ClientServer
                 typeof(System.ComponentModel.LicenseException),
                 typeof(System.ComponentModel.WarningException),
                 typeof(System.ComponentModel.Win32Exception),
-                typeof(System.Configuration.ConfigurationException),
                 typeof(System.Data.ConstraintException),
                 typeof(System.Data.DataException),
                 typeof(System.Data.DBConcurrencyException),
@@ -304,7 +305,6 @@ namespace PSADT.ClientServer
                 typeof(System.Security.Authentication.InvalidCredentialException),
                 typeof(System.Security.Cryptography.CryptographicException),
                 typeof(System.Security.Cryptography.CryptographicUnexpectedOperationException),
-                typeof(System.Security.Policy.PolicyException),
                 typeof(System.Text.DecoderFallbackException),
                 typeof(System.Text.EncoderFallbackException),
                 typeof(System.Text.RegularExpressions.RegexMatchTimeoutException),
@@ -402,7 +402,7 @@ namespace PSADT.ClientServer
                 // Used within UserInterface.DialogOptions.HelpConsoleOptions class.
                 typeof(ReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyDictionary<string, string>>),
                 typeof(ReadOnlyDictionary<string, string>),
-            ])
+            ]),
         };
 
         /// <summary>
@@ -421,6 +421,12 @@ namespace PSADT.ClientServer
             /// <summary>
             /// Maps a type to its data contract name during serialization.
             /// </summary>
+            /// <param name="type">The type to be resolved.</param>
+            /// <param name="declaredType">The declared type of the object.</param>
+            /// <param name="knownTypeResolver">The known type resolver to use for fallback resolution.</param>
+            /// <param name="typeName">The resulting data contract name.</param>
+            /// <param name="typeNamespace">The resulting data contract namespace.</param>
+            /// <returns><see langword="true"/> if the type was successfully resolved; otherwise, <see langword="false"/>.</returns>
             public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, out XmlDictionaryString? typeNamespace)
             {
                 // Handle ListDictionaryInternal and Hashtable - they both map to the same contract.
@@ -439,11 +445,16 @@ namespace PSADT.ClientServer
             /// <summary>
             /// Maps a data contract name back to a type during deserialization.
             /// </summary>
+            /// <param name="typeName">The data contract name to be resolved.</param>
+            /// <param name="typeNamespace">The data contract namespace to be resolved.</param>
+            /// <param name="declaredType">The declared type of the object.</param>
+            /// <param name="knownTypeResolver">The known type resolver to use for fallback resolution.</param>
+            /// <returns>The resolved type, or <see langword="null"/> if the type cannot be resolved.</returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public override Type? ResolveName(string typeName, string? typeNamespace, Type? declaredType, DataContractResolver knownTypeResolver)
             {
                 // When deserializing the dictionary contract, return Hashtable (more general and public).
-                return typeName != DictionaryTypeName || typeNamespace != ArraysNamespace
+                return !DictionaryTypeName.Equals(typeName, StringComparison.Ordinal) || !ArraysNamespace.Equals(typeNamespace, StringComparison.Ordinal)
                     ? knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, NullContractResolver)
                     : typeof(System.Collections.Hashtable);
             }

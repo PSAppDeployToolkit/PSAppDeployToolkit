@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -10,6 +11,8 @@ namespace PSADT.ClientServer
     /// Provides secure, authenticated encryption and key exchange for inter-process communication using Elliptic Curve
     /// Diffie-Hellman (ECDH) and AES-256-GCM.
     /// </summary>
+    /// <typeparam name="TSelf">The specific subclass type that implements the role-specific key exchange protocol. This allows for
+    /// fluent method chaining and type-safe operations within the subclass.</typeparam>
     /// <remarks>
     /// <para>
     /// PipeEncryption manages the full lifecycle of key exchange and message encryption for secure communication
@@ -94,7 +97,7 @@ namespace PSADT.ClientServer
             }
             if (length > MaxMessageSize)
             {
-                throw new InvalidDataException($"Message size {length} exceeds maximum allowed size of {MaxMessageSize} bytes.");
+                throw new InvalidDataException($"Message size {length.ToString(CultureInfo.InvariantCulture)} exceeds maximum allowed size of {MaxMessageSize} bytes.");
             }
 
             // Read the data
@@ -167,8 +170,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="encryptedData">The encrypted data containing nonce, ciphertext, and authentication tag.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="encryptedData"/> is null.</exception>
-        /// <exception cref="CryptographicException">Thrown if authentication fails or data is corrupted.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the encrypted data is too short.</exception>
         private protected byte[] Decrypt(byte[] encryptedData)
         {
             // Verify state and parameters.
@@ -207,7 +209,18 @@ namespace PSADT.ClientServer
         {
             ThrowIfDisposed();
 #if NET8_0_OR_GREATER
-            return _ecdh.PublicKey.ExportSubjectPublicKeyInfo();
+            ECParameters ecParams = _ecdh.ExportParameters(includePrivateParameters: false);
+            // Build CNG EccPublicBlob: BCRYPT_ECCKEY_BLOB header (8 bytes) + X + Y
+            // Magic for ECDH P-256 public key: ECDH_PUBLIC_P256 = 0x314B4345
+            int keySize = ecParams.Q.X!.Length;
+            byte[] blob = new byte[8 + (keySize * 2)];
+            // ECDH_PUBLIC_P256 magic
+            blob[0] = 0x45; blob[1] = 0x43; blob[2] = 0x4B; blob[3] = 0x31;
+            // Key length in bytes
+            blob[4] = (byte)keySize; blob[5] = 0; blob[6] = 0; blob[7] = 0;
+            Buffer.BlockCopy(ecParams.Q.X, 0, blob, 8, keySize);
+            Buffer.BlockCopy(ecParams.Q.Y!, 0, blob, 8 + keySize, keySize);
+            return blob;
 #else
             return _ecdh.PublicKey.ToByteArray();
 #endif
@@ -231,8 +244,18 @@ namespace PSADT.ClientServer
 
             // Import the remote public key and derive shared secret
 #if NET8_0_OR_GREATER
-            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create();
-            remoteEcdh.ImportSubjectPublicKeyInfo(remotePublicKey, out _);
+            // Remote key is in CNG EccPublicBlob format: 8-byte header + X + Y
+            int keySize = BitConverter.ToInt32(remotePublicKey, 4);
+            byte[] x = new byte[keySize];
+            byte[] y = new byte[keySize];
+            Buffer.BlockCopy(remotePublicKey, 8, x, 0, keySize);
+            Buffer.BlockCopy(remotePublicKey, 8 + keySize, y, 0, keySize);
+            ECParameters remoteParams = new()
+            {
+                Curve = ECCurve.NamedCurves.nistP256,
+                Q = new ECPoint { X = x, Y = y },
+            };
+            using ECDiffieHellman remoteEcdh = ECDiffieHellman.Create(remoteParams);
             byte[] sharedSecret = _ecdh.DeriveKeyMaterial(remoteEcdh.PublicKey);
 #else
             ECDiffieHellmanPublicKey remotePubKey = ECDiffieHellmanCngPublicKey.FromByteArray(remotePublicKey, CngKeyBlobFormat.EccPublicBlob);
@@ -323,7 +346,7 @@ namespace PSADT.ClientServer
                     byte[] input = new byte[previousBlock.Length + info.Length + 1];
                     Buffer.BlockCopy(previousBlock, 0, input, 0, previousBlock.Length);
                     Buffer.BlockCopy(info, 0, input, previousBlock.Length, info.Length);
-                    input[input.Length - 1] = counter++;
+                    input[^1] = counter++;
 
                     previousBlock = hmac.ComputeHash(input);
                     int copyLength = Math.Min(previousBlock.Length, outputLength - offset);
@@ -396,7 +419,7 @@ namespace PSADT.ClientServer
         private readonly ECDiffieHellmanCng _ecdh = new(256)
         {
             KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash,
-            HashAlgorithm = CngAlgorithm.Sha256
+            HashAlgorithm = CngAlgorithm.Sha256,
         };
 #endif
 

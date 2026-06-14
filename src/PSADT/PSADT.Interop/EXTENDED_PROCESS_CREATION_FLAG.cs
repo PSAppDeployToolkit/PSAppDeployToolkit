@@ -7,6 +7,8 @@ namespace PSADT.Interop
     /// </summary>
     /// <remarks>Sourced from https://github.com/winsiderss/phnt/blob/fc1f96ee976635f51faa89896d1d805eb0586350/ntpsapi.h#L2781-L2783</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     [Flags]
     internal enum EXTENDED_PROCESS_CREATION_FLAG : uint
     {
@@ -17,7 +19,7 @@ namespace PSADT.Interop
         /// and that no further elevation prompts should occur during the process creation. It is typically used in
         /// scenarios where the caller has explicitly managed elevation before invoking the process creation
         /// API.</remarks>
-        EXTENDED_PROCESS_CREATION_FLAG_ELEVATION_HANDLED = 0x1,
+        EXTENDED_PROCESS_CREATION_FLAG_ELEVATION_HANDLED = 1 << 0,
 
         /// <summary>
         /// Specifies that the process should be created with forced User Account Control (UAC) virtualization enabled.
@@ -25,7 +27,7 @@ namespace PSADT.Interop
         /// <remarks>This flag is typically used when creating processes that require UAC virtualization,
         /// ensuring that file and registry operations are redirected for compatibility with legacy applications. Use
         /// this flag only when necessary, as it may affect how the process interacts with system resources.</remarks>
-        EXTENDED_PROCESS_CREATION_FLAG_FORCELUA = 0x2,
+        EXTENDED_PROCESS_CREATION_FLAG_FORCELUA = 1 << 1,
 
         /// <summary>
         /// Specifies that the process should be created with a force breakaway flag, allowing it to break away from any
@@ -34,6 +36,6 @@ namespace PSADT.Interop
         /// <remarks>Use this flag when creating a process that must not be associated with the job object
         /// of its parent, even if the parent is running within a job. This is typically relevant in advanced process
         /// management scenarios on Windows platforms.</remarks>
-        EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY = 0x4,
+        EXTENDED_PROCESS_CREATION_FLAG_FORCE_BREAKAWAY = 1 << 2,
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
@@ -26,14 +26,16 @@ namespace PSADT.AccountManagement
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1810:Initialize reference type static fields inline", Justification = "The static constructor is very much needed here.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "This exception will never be thrown during operation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "There's no async support during static construction.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0301:Simplify collection initialization", Justification = "The collection expression won't compile for net8.0...")]
         static AccountUtilities()
         {
             // Cache information about the current user.
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 CallerIsAdmin = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
-                CallerGroups = new ReadOnlyCollection<SecurityIdentifier>(identity.Groups?.Select(static g => (SecurityIdentifier)g) is IEnumerable<SecurityIdentifier> callerGroups ? [.. callerGroups] : []);
-                CallerIsServiceAccount = CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, null));
+                CallerGroups = identity.Groups?.Cast<SecurityIdentifier>().ToFrozenSet() ?? FrozenSet<SecurityIdentifier>.Empty;
+                CallerIsServiceAccount = CallerGroups.Contains(new SecurityIdentifier(WellKnownSidType.ServiceSid, domainSid: null));
                 CallerSid = identity.User ?? throw new NotSupportedException("Current Windows identity does not have a user SID.");
                 CallerUsername = new(identity.Name);
             }
@@ -65,7 +67,7 @@ namespace PSADT.AccountManagement
                 wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
             }
             LocalSystemSid = wellKnownSids[WellKnownSidType.LocalSystemSid];
-            WellKnownSidLookupTable = new(wellKnownSids);
+            WellKnownSidLookupTable = wellKnownSids.ToFrozenDictionary();
 
             // Determine if the caller is the local system account.
             CallerIsInteractive = Environment.UserInteractive;
@@ -91,7 +93,7 @@ namespace PSADT.AccountManagement
 
             // Generate a RunAsActiveUser object for the current user.
             CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
-            SessionRunAsActiveUser = SessionInfo.Get(CallerSessionId)?.ToRunAsActiveUser();
+            SessionRunAsActiveUser = SessionInfo.GetAsync(CallerSessionId).ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
             CallerIsLoggedOnUser = CallerRunAsActiveUser == SessionRunAsActiveUser;
         }
 
@@ -129,7 +131,7 @@ namespace PSADT.AccountManagement
         /// <remarks>This property is read-only and can be used to determine the group memberships of the
         /// caller for authorization or auditing purposes. The value may be null if group information is unavailable for
         /// the caller.</remarks>
-        public static readonly IReadOnlyList<SecurityIdentifier> CallerGroups;
+        public static readonly FrozenSet<SecurityIdentifier> CallerGroups;
 
         /// <summary>
         /// Gets a value indicating whether the current caller is a service account.
@@ -147,7 +149,7 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Represents the security identifier (SID) of the caller.
         /// </summary>
-        /// <remarks>This field provides the SID associated with the caller, which can be used for 
+        /// <remarks>This field provides the SID associated with the caller, which can be used for
         /// security-related operations such as access control or identity verification.</remarks>
         public static readonly SecurityIdentifier CallerSid;
 
@@ -234,6 +236,6 @@ namespace PSADT.AccountManagement
         /// <remarks>This dictionary provides a lookup table for well-known security identifiers (SIDs)
         /// based on their type. It is intended to facilitate quick access to predefined SIDs commonly used in
         /// security-related operations.</remarks>
-        private static readonly ReadOnlyDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
+        private static readonly FrozenDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
     }
 }

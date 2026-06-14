@@ -30,7 +30,9 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="engineIntrinsics">The PowerShell engine intrinsics.</param>
         /// <param name="inputData">The input value to transform.</param>
         /// <returns>A <see cref="TimeSpan"/> value derived from the input.</returns>
-        /// <exception cref="ArgumentTransformationMetadataException">Thrown when the input cannot be transformed into a <see cref="TimeSpan"/>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the input value is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the input value cannot be transformed into a TimeSpan.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {
             while (inputData is PSObject psObject)
@@ -39,7 +41,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             if (inputData is null)
             {
-                throw new ArgumentNullException(null, "Cannot transform null to TimeSpan.");
+                throw new ArgumentNullException(paramName: null, "Cannot transform null to TimeSpan.");
             }
             if (inputData is TimeSpan timeSpan)
             {
@@ -51,18 +53,18 @@ namespace PSAppDeployToolkit.Attributes
                 {
                     return parsedTimeSpan;
                 }
-                if (long.TryParse(valueAsString, out long parsedIntegerSeconds))
+                if (long.TryParse(valueAsString, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsedIntegerSeconds))
                 {
-                    return TimeSpanFromSeconds(parsedIntegerSeconds);
+                    return TimeSpan.FromSeconds(parsedIntegerSeconds);
                 }
-                if (double.TryParse(valueAsString, out double parsedNumericalSeconds))
+                if (double.TryParse(valueAsString, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out double parsedNumericalSeconds))
                 {
-                    return TimeSpanFromSeconds(parsedNumericalSeconds);
+                    return TimeSpan.FromSeconds(parsedNumericalSeconds);
                 }
             }
             return !TryGetNumericalSeconds(inputData, out double seconds)
                 ? throw new ArgumentException($"Cannot transform value of type '{inputData.GetType().FullName}' to TimeSpan.")
-                : TimeSpanFromSeconds(seconds);
+                : TimeSpan.FromSeconds(seconds);
         }
 
         /// <summary>
@@ -122,27 +124,6 @@ namespace PSAppDeployToolkit.Attributes
                 default:
                     seconds = default;
                     return false;
-            }
-        }
-
-        /// <summary>
-        /// Converts a specified number of seconds to a <see cref="TimeSpan"/> instance.
-        /// </summary>
-        /// <param name="seconds">The number of seconds to convert. May be fractional. Must be within the valid range for <see
-        /// cref="TimeSpan.FromSeconds(double)"/>.</param>
-        /// <returns>A <see cref="TimeSpan"/> that represents the specified number of seconds.</returns>
-        /// <exception cref="ArgumentTransformationMetadataException">Thrown when <paramref name="seconds"/> is outside the valid range for <see cref="TimeSpan"/> or is not a
-        /// valid value.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
-        private static TimeSpan TimeSpanFromSeconds(double seconds)
-        {
-            try
-            {
-                return TimeSpan.FromSeconds(seconds);
-            }
-            catch (Exception ex) when (ex is ArgumentException or OverflowException)
-            {
-                throw new ArgumentOutOfRangeException($"The value '{seconds}' cannot be represented as a TimeSpan in seconds.", ex);
             }
         }
 

@@ -56,6 +56,6 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Non-recoverable
         /// </summary>
-        NonRecoverable = 0x06
+        NonRecoverable = 0x06,
     }
 }

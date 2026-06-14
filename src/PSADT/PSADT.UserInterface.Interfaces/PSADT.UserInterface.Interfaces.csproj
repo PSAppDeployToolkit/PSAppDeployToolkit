@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Library</OutputType>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>PSADT.UserInterface.Interfaces</RootNamespace>
+    <AssemblyName>PSADT.UserInterface.Interfaces</AssemblyName>
+    <Product>PSAppDeployToolkit User Interface Dialog Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit User Interface Dialog Library</AssemblyTitle>
+    <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
+    <NoWarn>SYSLIB1045</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\lib\Fluence.Wpf\Fluence.Wpf\Fluence.Wpf.csproj" />
+    <ProjectReference Include="..\PSADT\PSADT.csproj" />
+    <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Interfaces\Classic\ClassicBase.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\ClassicDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\CloseAppsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\CustomDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\HelpConsole.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\InputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\ProgressDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Interfaces\Classic\RestartDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+</Project>

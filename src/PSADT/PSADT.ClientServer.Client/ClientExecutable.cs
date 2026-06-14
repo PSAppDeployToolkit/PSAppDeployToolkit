@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
@@ -20,9 +21,13 @@ using PSADT.Security;
 using PSADT.UserInterface;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogState;
+using PSADT.UserInterface.Interfaces;
 using PSADT.Utilities;
 using PSADT.WindowManagement;
+using PSADT.WindowsRuntime.UI.Notifications;
+using PSADT.WindowsRuntime.UI.Shell;
 using PSAppDeployToolkit.Logging;
+using Windows.UI.Notifications;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 
@@ -65,7 +70,8 @@ namespace PSADT.ClientServer
             {
                 throw new InvalidOperationException("Failed to determine the application directory from the assembly location.");
             }
-            HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> attemptedReferences = new(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> queuedAssemblies = new(StringComparer.OrdinalIgnoreCase);
             Queue<Assembly> queue = new();
             EnqueueIfNeeded(AssemblyInfo);
             while (queue.Count > 0)
@@ -85,26 +91,16 @@ namespace PSADT.ClientServer
                     {
                         continue;
                     }
-                    if (!seen.Add(requestedFullName))
+                    if (!attemptedReferences.Add(requestedFullName))
                     {
                         continue;
                     }
 
-                    // Skip over loading any assembly not adjacent to this binary.
-                    string dllPath = Path.Join(applicationDirectory, simpleName + ".dll");
-                    string exePath = Path.Join(applicationDirectory, simpleName + ".exe");
-                    if (!File.Exists(dllPath) && !File.Exists(exePath))
+                    // Load the assembly and enqueue if it's adjacent to this binary.
+                    if (File.Exists(Path.Join(applicationDirectory, simpleName + ".dll")) || File.Exists(Path.Join(applicationDirectory, simpleName + ".exe")))
                     {
-                        continue;
+                        EnqueueIfNeeded(Assembly.Load(referencedAssemblyName));
                     }
-
-                    // Load the assembly and enqueue it for processing.
-                    Assembly referencedAssembly = Assembly.Load(referencedAssemblyName);
-                    if (referencedAssembly.FullName is string actualFullName)
-                    {
-                        _ = seen.Add(actualFullName);
-                    }
-                    EnqueueIfNeeded(referencedAssembly);
                 }
             }
 
@@ -119,7 +115,7 @@ namespace PSADT.ClientServer
                 {
                     return;
                 }
-                if (seen.Add(fullName))
+                if (queuedAssemblies.Add(fullName))
                 {
                     queue.Enqueue(assembly);
                 }
@@ -127,19 +123,20 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// The main entry point for the application.
+        /// The asynchronous main entry point for the application.
         /// </summary>
+        /// <param name="argv">A string array containing the command-line arguments passed to the application.</param>
         [STAThread]
-        private static int Main(string[] argv)
+        private static async Task<int> Main(string[] argv)
         {
             // Detect what mode the executable has been asked to run in.
             try
             {
                 // Determine the mode of operation based on the provided arguments.
-                if (!(argv?.Length > 0))
+                if (argv.Length == 0)
                 {
                     string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
-                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion.Substring(0, productVersion.IndexOf('+')))}";
+                    string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion[..productVersion.IndexOf('+', StringComparison.OrdinalIgnoreCase)])}";
                     string helpMessage = string.Join(Environment.NewLine,
                     [
                         helpTitle,
@@ -150,33 +147,36 @@ namespace PSADT.ClientServer
                         string.Empty,
                         "If you're an end-user or employee of your organization, please report this message to your helpdesk for further assistance.",
                     ]);
-                    _ = DialogManager.ShowDialogBox(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, true, default);
+                    _ = await DialogManager.ShowDialogBoxAsync(helpTitle, helpMessage, DialogBoxButtons.Ok, DialogBoxDefaultButton.First, DialogBoxIcon.Stop, TopMost: true, default).ConfigureAwait(false);
                     throw new ClientException("No arguments were provided to the display server.", ClientExitCode.NoArguments);
                 }
-                return argv.Any(static arg => arg is "/ClientServer" or "/cs") ? EnterClientServerMode(ArgvToDictionary(argv)) : EnterStandaloneMode(argv);
+                return argv.Any(static arg => arg.Equals("/ClientServer", StringComparison.Ordinal) || arg.Equals("/cs", StringComparison.Ordinal))
+                    ? await EnterClientServerModeAsync(ArgvToDictionary(argv)).ConfigureAwait(false)
+                    : await EnterStandaloneModeAsync(argv).ConfigureAwait(false);
             }
             catch (ClientException ex)
             {
                 // We've caught our own error. Write it out, the error handler will get the exit code out of it.
-                return InvokeMainErrorHandler(ex, $"Failed to perform the requested operation with error code [{ex.HResult}].");
+                return InvokeMainErrorHandler(ex, $"Failed to perform the requested operation with error code [{ex.HResult.ToString("X8", CultureInfo.InvariantCulture)}].");
             }
             catch (Exception ex) when (ex.Message is not null)
             {
                 // This block is here as a fail-safe and should never be reached.
-                return InvokeMainErrorHandler(ex, $"An unexpected exception occurred with HRESULT [{ex.HResult}].", ClientExitCode.Unknown);
+                return InvokeMainErrorHandler(ex, $"An unexpected exception occurred with HRESULT [{ex.HResult.ToString("X8", CultureInfo.InvariantCulture)}].", ClientExitCode.Unknown);
             }
         }
 
         /// <summary>
         /// Enters client-server mode by establishing communication through input and output pipes.
         /// </summary>
-        /// <remarks>This method initializes anonymous pipe clients for input and output communication 
+        /// <remarks>This method initializes anonymous pipe clients for input and output communication
         /// using the provided pipe handles. If the required pipe handles are missing, invalid, or cannot be opened,
         /// the method writes an error message to the standard error stream and terminates the process with an
         /// appropriate exit code.</remarks>
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
         /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
-        private static int EnterClientServerMode(ReadOnlyDictionary<string, string> arguments)
+        /// <exception cref="ClientException">Thrown when a required pipe handle is missing, invalid, or cannot be opened.</exception>
+        private static async Task<int> EnterClientServerModeAsync(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
             if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || string.IsNullOrWhiteSpace(outputPipeHandle))
@@ -202,7 +202,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
+                throw new ClientException("Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
             }
             try
             {
@@ -210,7 +210,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
+                throw new ClientException("Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
             }
             try
             {
@@ -218,7 +218,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
+                throw new ClientException("Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
             }
 
             // Start reading data from the pipes. We only return from here when the server's pipe closes on us.
@@ -282,271 +282,233 @@ namespace PSADT.ClientServer
                                     switch (command)
                                     {
                                         case PipeCommand.Open:
-                                            {
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.Close:
-                                            {
-                                                WriteSuccess(true);
-                                                return (int)ClientExitCode.Success;
-                                            }
+                                            WriteSuccess(result: true);
+                                            return (int)ClientExitCode.Success;
 
                                         case PipeCommand.InitCloseAppsDialog:
+                                            // We have the suppression here as the analyser can't handle our setup with IAsyncDisposable.
+                                            // It is correct though and under no circumstances is any memory leaked out of our setup.
+                                            if (closeAppsDialogState is not null)
                                             {
-                                                closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
-                                                WriteSuccess(true);
-                                                break;
+                                                await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
                                             }
+                                            #pragma warning disable format, CA2000 
+                                            closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
+                                            #pragma warning restore CA2000, format
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.PromptToCloseApps:
+                                            // If we're here without a RunningProcessService, the InitCloseAppsDialog command was not called properly.
+                                            if (closeAppsDialogState?.RunningProcessService is null)
                                             {
-                                                // If we're here without a RunningProcessService, the InitCloseAppsDialog command was not called properly.
-                                                if (closeAppsDialogState?.RunningProcessService is null)
-                                                {
-                                                    throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
-                                                }
-
-                                                // Get all the windows that haven't failed on us and start closing them.
-                                                TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(requestBytes, payloadOffset).Timeout; List<nint> failures = []; Process[] runningProcesses;
-                                                while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
-                                                {
-                                                    // Start gracefully closing each open window.
-                                                    foreach (WindowInfo window in windows)
-                                                    {
-                                                        Process process = Process.GetProcessById(window.ParentProcessId);
-                                                        closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
-                                                        try
-                                                        {
-                                                            WindowTools.BringWindowToFront((HWND)window.WindowHandle);
-                                                        }
-                                                        catch (Exception ex) when (ex.Message is not null)
-                                                        {
-                                                            closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
-                                                            failures.Add(window.WindowHandle);
-                                                            continue;
-                                                        }
-
-                                                        // Attempt to close out the process's main window.
-                                                        try
-                                                        {
-                                                            if (!process.CloseMainWindow())
-                                                            {
-                                                                throw new ClientException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.", ClientExitCode.PromptToSaveFailure);
-                                                            }
-                                                        }
-                                                        catch (Exception ex) when (ex.Message is not null)
-                                                        {
-                                                            closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
-                                                            failures.Add(window.WindowHandle);
-                                                            continue;
-                                                        }
-
-                                                        // Spin until the window is closed or we time out.
-                                                        Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
-                                                        while (true)
-                                                        {
-                                                            if (WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Count == 0)
-                                                            {
-                                                                closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
-                                                                break;
-                                                            }
-                                                            if (promptToCloseStopwatch.Elapsed >= promptToSaveTimeout)
-                                                            {
-                                                                closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
-                                                                break;
-                                                            }
-                                                            Thread.Sleep(2000);
-                                                        }
-                                                    }
-                                                }
-
-                                                // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
-                                                if (failures.Count == 0 && runningProcesses.Length > 0)
-                                                {
-                                                    closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
-                                                    foreach (Process process in runningProcesses)
-                                                    {
-                                                        closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
-                                                        if (!process.HasExited)
-                                                        {
-                                                            process.Kill();
-                                                            process.WaitForExit();
-                                                        }
-                                                    }
-                                                }
-                                                WriteSuccess(true);
-                                                break;
+                                                throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
                                             }
+
+                                            // Get all the windows that haven't failed on us and start closing them.
+                                            TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(requestBytes, payloadOffset).Timeout; List<nint> failures = []; Process[] runningProcesses;
+                                            while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
+                                            {
+                                                // Start gracefully closing each open window.
+                                                foreach (WindowInfo window in windows)
+                                                {
+                                                    Process process = Process.GetProcessById(window.ParentProcessId);
+                                                    closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
+                                                    try
+                                                    {
+                                                        WindowTools.BringWindowToFront((HWND)window.WindowHandle);
+                                                    }
+                                                    catch (Exception ex) when (ex.Message is not null)
+                                                    {
+                                                        closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
+                                                        failures.Add(window.WindowHandle);
+                                                        continue;
+                                                    }
+
+                                                    // Attempt to close out the process's main window.
+                                                    try
+                                                    {
+                                                        if (!process.CloseMainWindow())
+                                                        {
+                                                            throw new ClientException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.", ClientExitCode.PromptToSaveFailure);
+                                                        }
+                                                    }
+                                                    catch (Exception ex) when (ex.Message is not null)
+                                                    {
+                                                        closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
+                                                        failures.Add(window.WindowHandle);
+                                                        continue;
+                                                    }
+
+                                                    // Spin until the window is closed or we time out.
+                                                    Stopwatch promptToCloseStopwatch = Stopwatch.StartNew();
+                                                    while (true)
+                                                    {
+                                                        if (WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Count == 0)
+                                                        {
+                                                            closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
+                                                            break;
+                                                        }
+                                                        if (promptToCloseStopwatch.Elapsed >= promptToSaveTimeout)
+                                                        {
+                                                            closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
+                                                            break;
+                                                        }
+                                                        await Task.Delay(2000).ConfigureAwait(false);
+                                                    }
+                                                }
+                                            }
+
+                                            // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
+                                            if (failures.Count == 0 && runningProcesses.Length > 0)
+                                            {
+                                                closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
+                                                foreach (Process process in runningProcesses)
+                                                {
+                                                    closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
+                                                    if (!process.HasExited)
+                                                    {
+                                                        process.Kill(); await process.WaitForExitAsync().ConfigureAwait(false);
+                                                    }
+                                                }
+                                            }
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.ShowModalDialog:
                                             {
                                                 ShowModalDialogPayload payload = DeserializeBytes<ShowModalDialogPayload>(requestBytes, payloadOffset);
-                                                WriteSuccess(InvokeModalDialog(payload.DialogType, payload.DialogStyle, payload.Options, closeAppsDialogState));
+                                                WriteSuccess(await InvokeModalDialogAsync(payload.DialogType, payload.DialogStyle, payload.Options, closeAppsDialogState).ConfigureAwait(false));
                                                 break;
                                             }
 
                                         case PipeCommand.ShowProgressDialog:
                                             {
                                                 ShowProgressDialogPayload payload = DeserializeBytes<ShowProgressDialogPayload>(requestBytes, payloadOffset);
-                                                DialogManager.ShowProgressDialog(payload.DialogStyle, payload.Options);
+                                                await DialogManager.ShowProgressDialogAsync(payload.DialogStyle, payload.Options).ConfigureAwait(false);
                                                 WriteSuccess(DialogManager.ProgressDialogOpen());
                                                 break;
                                             }
 
                                         case PipeCommand.ProgressDialogOpen:
-                                            {
-                                                WriteSuccess(DialogManager.ProgressDialogOpen());
-                                                break;
-                                            }
+                                            WriteSuccess(DialogManager.ProgressDialogOpen());
+                                            break;
 
                                         case PipeCommand.UpdateProgressDialog:
                                             {
                                                 UpdateProgressDialogPayload payload = DeserializeBytes<UpdateProgressDialogPayload>(requestBytes, payloadOffset);
-                                                DialogManager.UpdateProgressDialog(payload.Message, payload.DetailMessage, payload.Percentage, payload.Alignment);
-                                                WriteSuccess(true);
+                                                await DialogManager.UpdateProgressDialogAsync(payload.Message, payload.DetailMessage, payload.Percentage, payload.Alignment).ConfigureAwait(false);
+                                                WriteSuccess(result: true);
                                                 break;
                                             }
 
                                         case PipeCommand.CloseProgressDialog:
-                                            {
-                                                DialogManager.CloseProgressDialog();
-                                                WriteSuccess(!DialogManager.ProgressDialogOpen());
-                                                break;
-                                            }
+                                            await DialogManager.CloseProgressDialogAsync().ConfigureAwait(false);
+                                            WriteSuccess(!DialogManager.ProgressDialogOpen());
+                                            break;
 
                                         case PipeCommand.ShowNotifyIcon:
-                                            {
-                                                DialogManager.ShowNotifyIcon(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.ShowNotifyIconAsync(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.NotifyIconOpen:
-                                            {
-                                                WriteSuccess(DialogManager.NotifyIconOpen());
-                                                break;
-                                            }
+                                            WriteSuccess(DialogManager.NotifyIconOpen());
+                                            break;
 
                                         case PipeCommand.UpdateNotifyIcon:
-                                            {
-                                                DialogManager.UpdateNotifyIcon(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.UpdateNotifyIconAsync(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText).ConfigureAwait(false);
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.ShowBalloonTip:
-                                            {
-                                                DialogManager.ShowBalloonTip(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.ShowBalloonTipAsync(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.CloseNotifyIcon:
-                                            {
-                                                DialogManager.CloseNotifyIcon();
-                                                WriteSuccess(!DialogManager.NotifyIconOpen());
-                                                break;
-                                            }
+                                            await DialogManager.CloseNotifyIconAsync().ConfigureAwait(false);
+                                            WriteSuccess(!DialogManager.NotifyIconOpen());
+                                            break;
 
                                         case PipeCommand.MinimizeAllWindows:
-                                            {
-                                                ShellUtilities.MinimizeAllWindows();
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            DesktopUtilities.MinimizeAllWindows();
+                                            WriteSuccess(result: true);
+                                            break;
+
 
                                         case PipeCommand.RestoreAllWindows:
-                                            {
-                                                ShellUtilities.RestoreAllWindows();
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            DesktopUtilities.RestoreAllWindows();
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.SendKeys:
-                                            {
-                                                SendKeys(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            await DialogManager.SendKeysAsync(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.GetProcessWindowInfo:
-                                            {
-                                                WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options));
-                                                break;
-                                            }
+                                            WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options));
+                                            break;
 
                                         case PipeCommand.RefreshDesktopAndEnvironmentVariables:
-                                            {
-                                                ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.GetUserNotificationState:
-                                            {
-                                                WriteSuccess(ShellUtilities.GetUserNotificationState());
-                                                break;
-                                            }
+                                            WriteSuccess(DesktopUtilities.GetUserNotificationState());
+                                            break;
 
                                         case PipeCommand.GetForegroundWindowProcessId:
-                                            {
-                                                WriteSuccess(ShellUtilities.GetForegroundWindowProcessId());
-                                                break;
-                                            }
+                                            WriteSuccess(DesktopUtilities.GetForegroundWindowProcessId());
+                                            break;
 
                                         case PipeCommand.GetEnvironmentVariable:
-                                            {
-                                                WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
-                                                break;
-                                            }
+                                            WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                            break;
 
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
                                                 EnvironmentVariablePayload payload = DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset);
                                                 EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable, payload.Append, payload.Remove);
-                                                WriteSuccess(true);
+                                                WriteSuccess(result: true);
                                                 break;
                                             }
 
                                         case PipeCommand.RemoveEnvironmentVariable:
-                                            {
-                                                EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
-                                                WriteSuccess(true);
-                                                break;
-                                            }
+                                            EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
+                                            WriteSuccess(result: true);
+                                            break;
 
                                         case PipeCommand.GroupPolicyUpdate:
                                             {
-                                                using ProcessResult result = GroupPolicyUpdate(DeserializeBytes<GroupPolicyUpdatePayload>(requestBytes, payloadOffset).Force);
+                                                using ProcessResult result = await GroupPolicyUpdateAsync(DeserializeBytes<GroupPolicyUpdatePayload>(requestBytes, payloadOffset).Force).ConfigureAwait(false);
                                                 WriteSuccess(result);
                                                 break;
                                             }
 
                                         case PipeCommand.ShellExecuteProcess:
                                             {
-                                                using ProcessResult result = ShellExecuteProcess(DeserializeBytes<ShellExecuteProcessPayload>(requestBytes, payloadOffset).Options);
+                                                using ProcessResult result = await ShellExecuteProcessAsync(DeserializeBytes<ShellExecuteProcessPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
                                                 WriteSuccess(result);
                                                 break;
                                             }
 
                                         case PipeCommand.GetUserFocusModeState:
-                                            {
-                                                WriteSuccess(GetUserFocusModeState());
-                                                break;
-                                            }
+                                            WriteSuccess(GetUserFocusModeState());
+                                            break;
 
                                         case PipeCommand.GetUserToastNotificationMode:
-                                            {
-                                                WriteSuccess(GetUserToastNotificationMode());
-                                                break;
-                                            }
+                                            WriteSuccess(GetUserToastNotificationMode());
+                                            break;
 
                                         default:
-                                            {
-                                                throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
-                                            }
+                                            throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
                                     }
                                 }
                                 catch (Exception ex) when (ex.Message is not null)
@@ -563,15 +525,18 @@ namespace PSADT.ClientServer
                     }
                     finally
                     {
-                        closeAppsDialogState?.Dispose();
-                        closeAppsDialogState = null;
+                        if (closeAppsDialogState is not null)
+                        {
+                            await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
+                            closeAppsDialogState = null;
+                        }
                     }
                     return (int)ClientExitCode.Success;
                 }
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
+                throw new ClientException("Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
         }
 
@@ -588,56 +553,56 @@ namespace PSADT.ClientServer
         /// error conditions.</returns>
         /// <exception cref="ClientException">Thrown if required arguments are missing, invalid, or if the specified arguments do not correspond to a
         /// supported operation.</exception>
-        private static int EnterStandaloneMode(string[] argv)
+        private static async Task<int> EnterStandaloneModeAsync(string[] argv)
         {
             // Parse the arguments and execute the requested operation.
             foreach (string arg in argv)
             {
-                if (arg is "/ShowModalDialog" or "/smd")
+                if (arg.Equals("/ShowModalDialog", StringComparison.Ordinal) || arg.Equals("/smd", StringComparison.Ordinal))
                 {
-                    Console.WriteLine(ShowModalDialog(ArgvToDictionary(argv), argv: argv));
+                    Console.WriteLine(await ShowModalDialogAsync(ArgvToDictionary(argv), argv: argv).ConfigureAwait(false));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetProcessWindowInfo" or "/gpwi")
+                if (arg.Equals("/GetProcessWindowInfo", StringComparison.Ordinal) || arg.Equals("/gpwi", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetUserNotificationState" or "/guns")
+                if (arg.Equals("/GetUserNotificationState", StringComparison.Ordinal) || arg.Equals("/guns", StringComparison.Ordinal))
                 {
-                    Console.WriteLine(SerializeToString(ShellUtilities.GetUserNotificationState()));
+                    Console.WriteLine(SerializeToString(DesktopUtilities.GetUserNotificationState()));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetForegroundWindowProcessId" or "/gfwpi")
+                if (arg.Equals("/GetForegroundWindowProcessId", StringComparison.Ordinal) || arg.Equals("/gfwpi", StringComparison.Ordinal))
                 {
-                    Console.WriteLine(SerializeToString(ShellUtilities.GetForegroundWindowProcessId()));
+                    Console.WriteLine(SerializeToString(DesktopUtilities.GetForegroundWindowProcessId()));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/RefreshDesktopAndEnvironmentVariables" or "/rdaev")
+                if (arg.Equals("/RefreshDesktopAndEnvironmentVariables", StringComparison.Ordinal) || arg.Equals("/rdaev", StringComparison.Ordinal))
                 {
-                    ShellUtilities.RefreshDesktopAndEnvironmentVariables();
-                    Console.WriteLine(SerializeToString(true));
+                    DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/MinimizeAllWindows" or "/maw")
+                if (arg.Equals("/MinimizeAllWindows", StringComparison.Ordinal) || arg.Equals("/maw", StringComparison.Ordinal))
                 {
-                    ShellUtilities.MinimizeAllWindows();
-                    Console.WriteLine(SerializeToString(true));
+                    DesktopUtilities.MinimizeAllWindows();
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/RestoreAllWindows" or "/raw")
+                if (arg.Equals("/RestoreAllWindows", StringComparison.Ordinal) || arg.Equals("/raw", StringComparison.Ordinal))
                 {
-                    ShellUtilities.RestoreAllWindows();
-                    Console.WriteLine(SerializeToString(true));
+                    DesktopUtilities.RestoreAllWindows();
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/SendKeys" or "/sk")
+                if (arg.Equals("/SendKeys", StringComparison.Ordinal) || arg.Equals("/sk", StringComparison.Ordinal))
                 {
-                    SendKeys(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
-                    Console.WriteLine(SerializeToString(true));
+                    await DialogManager.SendKeysAsync(DeserializeString<SendKeysOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))).ConfigureAwait(false);
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetEnvironmentVariable" or "/gev")
+                if (arg.Equals("/GetEnvironmentVariable", StringComparison.Ordinal) || arg.Equals("/gev", StringComparison.Ordinal))
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
                     {
@@ -646,7 +611,7 @@ namespace PSADT.ClientServer
                     Console.WriteLine(SerializeToString(EnvironmentUtilities.GetEnvironmentVariable(variable, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/SetEnvironmentVariable" or "/sev")
+                if (arg.Equals("/SetEnvironmentVariable", StringComparison.Ordinal) || arg.Equals("/sev", StringComparison.Ordinal))
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
                     {
@@ -669,64 +634,64 @@ namespace PSADT.ClientServer
                         throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable, append, remove);
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/RemoveEnvironmentVariable" or "/rev")
+                if (arg.Equals("/RemoveEnvironmentVariable", StringComparison.Ordinal) || arg.Equals("/rev", StringComparison.Ordinal))
                 {
                     if (!ArgvToDictionary(argv).TryGetValue("Variable", out string? variable) || string.IsNullOrWhiteSpace(variable))
                     {
                         throw new ClientException("A required Variable was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.RemoveEnvironmentVariable(variable, EnvironmentVariableTarget.User);
-                    Console.WriteLine(SerializeToString(true));
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/SilentRestart" or "/sr")
+                if (arg.Equals("/SilentRestart", StringComparison.Ordinal) || arg.Equals("/sr", StringComparison.Ordinal))
                 {
-                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, out int delayValue))
+                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, NumberStyles.Integer, CultureInfo.InvariantCulture, out int delayValue))
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
-                    Thread.Sleep(delayValue * 1000);
-                    DeviceUtilities.RestartComputer();
-                    Console.WriteLine(SerializeToString(true));
+                    await Task.Delay(delayValue * 1000).ConfigureAwait(false);
+                    await DeviceUtilities.RestartComputer().ConfigureAwait(false);
+                    Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetLastInputTime" or "/glit")
+                if (arg.Equals("/GetLastInputTime", StringComparison.Ordinal) || arg.Equals("/glit", StringComparison.Ordinal))
                 {
-                    Console.WriteLine(ShellUtilities.GetLastInputTime().Ticks);
+                    Console.WriteLine(DesktopUtilities.GetLastInputTime().Ticks);
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/TokenBroker" or "/tb")
+                if (arg.Equals("/TokenBroker", StringComparison.Ordinal) || arg.Equals("/tb", StringComparison.Ordinal))
                 {
-                    BrokerTokenForCaller(ArgvToDictionary(argv));
+                    await BrokerTokenForCaller(ArgvToDictionary(argv)).ConfigureAwait(false);
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GroupPolicyUpdate" or "/gpu")
+                if (arg.Equals("/GroupPolicyUpdate", StringComparison.Ordinal) || arg.Equals("/gpu", StringComparison.Ordinal))
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || string.IsNullOrWhiteSpace(forceStr) || !bool.TryParse(forceStr, out bool force))
                     {
                         throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
-                    using ProcessResult result = GroupPolicyUpdate(force);
+                    using ProcessResult result = await GroupPolicyUpdateAsync(force).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/ShellExecuteProcess" or "/sep")
+                if (arg.Equals("/ShellExecuteProcess", StringComparison.Ordinal) || arg.Equals("/sep", StringComparison.Ordinal))
                 {
-                    using ProcessResult result = ShellExecuteProcess(DeserializeString<UserShellExecuteOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))));
+                    using ProcessResult result = await ShellExecuteProcessAsync(DeserializeString<UserShellExecuteOptions>(GetOptionsFromArguments(ArgvToDictionary(argv)))).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetUserFocusModeState" or "/gufms")
+                if (arg.Equals("/GetUserFocusModeState", StringComparison.Ordinal) || arg.Equals("/gufms", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(GetUserFocusModeState()));
                     return (int)ClientExitCode.Success;
                 }
-                else if (arg is "/GetUserToastNotificationMode" or "/gutnm")
+                if (arg.Equals("/GetUserToastNotificationMode", StringComparison.Ordinal) || arg.Equals("/gutnm", StringComparison.Ordinal))
                 {
                     Console.WriteLine(SerializeToString(GetUserToastNotificationMode()));
                     return (int)ClientExitCode.Success;
@@ -750,34 +715,18 @@ namespace PSADT.ClientServer
         /// configured for execution blocking.</param>
         /// <returns>A serialized string representing the result of the modal dialog, such as the selected button text or other
         /// relevant outcome information.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the method is configured to block execution but fails to launch the specified process.</exception>"
         /// <exception cref="ClientException">Thrown if a required argument is missing or invalid, such as when 'DialogType' or 'DialogStyle' is not
         /// specified or is invalid, or if the dialog type is not supported.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code is deliberately synchronous.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code can deliberately short circuit.")]
-        private static string ShowModalDialog(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
+        private static async Task<string> ShowModalDialogAsync(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
-                // Set up the required variables.
-                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0];
-                const string ifeoPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
-                string fileName = Path.GetFileName(filePath); string ifeoName = Path.GetFileNameWithoutExtension(filePath) + ".ifeo";
-
-                // Rename the IFEO subkey, start the process asynchronously, and then rename it back.
-                RegistryUtilities.RenameRegistryKey(ifeoPath, fileName, ifeoName);
-                ProcessHandle handle;
-                try
-                {
-                    handle = ProcessManager.LaunchAsync(new(filePath, command.Length > 1 ? command.Skip(1) : null, Environment.CurrentDirectory)) ?? throw new InvalidOperationException("Failed to launch the process.");
-                }
-                finally
-                {
-                    RegistryUtilities.RenameRegistryKey(ifeoPath, ifeoName, fileName);
-                }
-
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
-                using (ProcessResult result = handle.Task.GetAwaiter().GetResult())
+                string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0]; IEnumerable<string>? argumentList = command.Length > 1 ? command.Skip(1) : null;
+                using (ProcessResult result = await (ProcessManager.LaunchAsync(new(filePath, argumentList, Environment.CurrentDirectory, bypassIfeo: true)) ?? throw new InvalidOperationException("Failed to launch the process.")).ConfigureAwait(false))
                 {
                     Environment.Exit(result.ExitCode);
                 }
@@ -789,7 +738,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("A required DialogType was not specified on the command line.", ClientExitCode.NoDialogType);
             }
-            if (!Enum.TryParse(dialogTypeArg, true, out DialogType dialogType))
+            if (!Enum.TryParse(dialogTypeArg, ignoreCase: true, out DialogType dialogType))
             {
                 throw new ClientException($"The specified DialogType of [{dialogTypeArg}] is invalid.", ClientExitCode.InvalidDialog);
             }
@@ -799,7 +748,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("A required DialogStyle was not specified on the command line.", ClientExitCode.NoDialogStyle);
             }
-            if (!Enum.TryParse(dialogStyleArg, true, out DialogStyle dialogStyle))
+            if (!Enum.TryParse(dialogStyleArg, ignoreCase: true, out DialogStyle dialogStyle))
             {
                 throw new ClientException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
             }
@@ -814,9 +763,9 @@ namespace PSADT.ClientServer
                 DialogType.InputDialog => DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments)),
                 DialogType.ListSelectionDialog => DataSerialization.DeserializeFromString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments)),
                 DialogType.RestartDialog => DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog)
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog),
             };
-            return SerializeToString(InvokeModalDialog(dialogType, dialogStyle, options, closeAppsDialogState));
+            return SerializeToString(await InvokeModalDialogAsync(dialogType, dialogStyle, options, closeAppsDialogState).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -831,8 +780,7 @@ namespace PSADT.ClientServer
         /// <param name="dialogStyle">The visual style or presentation mode to use for the dialog. This parameter is required for dialog types
         /// that support styling.</param>
         /// <param name="options">An options object containing configuration data specific to the selected dialog type. The object must be of
-        /// the appropriate type for the dialog (for example, <see cref="CloseAppsDialogOptions"/> for <see
-        /// cref="DialogType.CloseAppsDialog"/>).</param>
+        /// the appropriate type for the dialog.</param>
         /// <param name="closeAppsDialogState">An optional state object required when displaying a CloseAppsDialog. Must be of type <see
         /// cref="CloseAppsDialogState"/> if <paramref name="dialogType"/> is <see cref="DialogType.CloseAppsDialog"/>;
         /// otherwise, this parameter is ignored.</param>
@@ -841,39 +789,19 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static object InvokeModalDialog(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
+        private static async Task<object> InvokeModalDialogAsync(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
         {
             return dialogType switch
             {
-                DialogType.CloseAppsDialog => options is CloseAppsDialogOptions closeAppsOptions ? DialogManager.ShowCloseAppsDialog(dialogStyle, closeAppsOptions, (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.DialogBox => options is DialogBoxOptions dialogBoxOptions ? DialogManager.ShowDialogBox(dialogBoxOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.HelpConsole => options is HelpConsoleOptions helpConsoleOptions ? DialogManager.ShowHelpConsole(helpConsoleOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.InputDialog => options is InputDialogOptions inputDialogOptions ? DialogManager.ShowInputDialog(dialogStyle, inputDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.CustomDialog => options is CustomDialogOptions customDialogOptions ? DialogManager.ShowCustomDialog(dialogStyle, customDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.ListSelectionDialog => options is ListSelectionDialogOptions listSelectionDialogOptions ? DialogManager.ShowListSelectionDialog(dialogStyle, listSelectionDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.RestartDialog => options is RestartDialogOptions restartDialogOptions ? DialogManager.ShowRestartDialog(dialogStyle, restartDialogOptions) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog)
+                DialogType.CloseAppsDialog => options is CloseAppsDialogOptions closeAppsOptions ? await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, closeAppsOptions, (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.DialogBox => options is DialogBoxOptions dialogBoxOptions ? await DialogManager.ShowDialogBoxAsync(dialogBoxOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.HelpConsole => options is HelpConsoleOptions helpConsoleOptions ? await DialogManager.ShowHelpConsoleAsync(helpConsoleOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.InputDialog => options is InputDialogOptions inputDialogOptions ? await DialogManager.ShowInputDialogAsync(dialogStyle, inputDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.CustomDialog => options is CustomDialogOptions customDialogOptions ? await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.ListSelectionDialog => options is ListSelectionDialogOptions listSelectionDialogOptions ? await DialogManager.ShowListSelectionDialogAsync(dialogStyle, listSelectionDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.RestartDialog => options is RestartDialogOptions restartDialogOptions ? await DialogManager.ShowRestartDialogAsync(dialogStyle, restartDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog),
             };
-        }
-
-        /// <summary>
-        /// Sends a sequence of keystrokes to the specified window using the provided options.
-        /// </summary>
-        /// <remarks>This method brings the target window to the foreground before sending the keystrokes.
-        /// The keystrokes are sent synchronously and may not be processed if the window is not ready to receive
-        /// input.</remarks>
-        /// <param name="options">An object that specifies the target window handle and the keys to send. The window must be enabled to
-        /// receive input.</param>
-        /// <exception cref="ClientException">Thrown if the target window is disabled, such as when a modal dialog is shown.</exception>
-        private static void SendKeys(SendKeysOptions options)
-        {
-            HWND hwnd = (HWND)options.WindowHandle;
-            WindowTools.BringWindowToFront(hwnd);
-            if (!NativeMethods.IsWindowEnabled(hwnd))
-            {
-                throw new ClientException("Unable to send keys to window because it may be disabled due to a modal dialog being shown.", ClientExitCode.SendKeysWindowNotEnabled);
-            }
-            System.Windows.Forms.SendKeys.SendWait(options.Keys);
         }
 
         /// <summary>
@@ -891,7 +819,8 @@ namespace PSADT.ClientServer
         /// values must be non-null and non-whitespace.</param>
         /// <exception cref="ClientException">Thrown if the caller is not running as the Local System account, or if any required argument is missing,
         /// invalid, or cannot be parsed.</exception>
-        private static void BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
+        private static async Task BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we're running as the SYSTEM account before proceeding.
             if (!AccountUtilities.CallerIsLocalSystem)
@@ -922,7 +851,7 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("A required ElevatedTokenType was not specified on the command line.", ClientExitCode.InvalidArguments);
             }
-            if (!Enum.TryParse(elevatedTokenTypeArg, true, out ElevatedTokenType elevatedTokenType))
+            if (!Enum.TryParse(elevatedTokenTypeArg, ignoreCase: true, out ElevatedTokenType elevatedTokenType))
             {
                 throw new ClientException($"The specified ElevatedTokenType of [{elevatedTokenType}] is invalid.", ClientExitCode.InvalidArguments);
             }
@@ -935,15 +864,15 @@ namespace PSADT.ClientServer
 
             // Connect to the named pipe server.
             using NamedPipeClientStream pipe = new(".", pipeName, PipeDirection.InOut, PipeOptions.None);
-            pipe.Connect();
+            await pipe.ConnectAsync().ConfigureAwait(false);
 
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
-            using (SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(sessionId, elevatedTokenType, uiAccess))
-            using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, false, processId))
+            using (SafeFileHandle hPrimaryToken = await TokenManager.GetUserPrimaryTokenAsync(sessionId, elevatedTokenType, uiAccess).ConfigureAwait(false))
+            using (SafeFileHandle hSourceProcess = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, processId))
             using (SafeProcessHandle hCurrentProcess = NativeMethods.GetCurrentProcess())
             {
-                _ = NativeMethods.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
+                _ = NativeMethods.DuplicateHandle(hCurrentProcess, hPrimaryToken, hSourceProcess, out hDupToken, 0, bInheritHandle: false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_SAME_ACCESS);
             }
 
             // Write the duplicated token to the pipe.
@@ -951,14 +880,14 @@ namespace PSADT.ClientServer
             {
                 if (IntPtr.Size == 8)
                 {
-                    pipe.WriteByte(8); pipe.Write(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt64()), 0, 8);
+                    pipe.WriteByte(8); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt64()), 0, 8).ConfigureAwait(false);
                 }
                 else
                 {
-                    pipe.WriteByte(4); pipe.Write(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt32()), 0, 4);
+                    pipe.WriteByte(4); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt32()), 0, 4).ConfigureAwait(false);
                 }
             }
-            pipe.Flush(); pipe.WaitForPipeDrain();
+            await pipe.FlushAsync().ConfigureAwait(false); pipe.WaitForPipeDrain();
         }
 
         /// <summary>
@@ -967,8 +896,8 @@ namespace PSADT.ClientServer
         /// <param name="force">A value indicating whether to force the update, reapplying all policy settings even if they have not
         /// changed. If <see langword="true"/>, all settings are reapplied.</param>
         /// <returns>A <see cref="ProcessResult"/> object that contains the results of the Group Policy update operation.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code is deliberately synchronous.")]
-        internal static ProcessResult GroupPolicyUpdate(bool force)
+        /// <exception cref="ClientException">Thrown if the Group Policy update process fails to launch.</exception>
+        private static async Task<ProcessResult> GroupPolicyUpdateAsync(bool force)
         {
             // Build out argument list for gpupdate.exe.
             List<string> argumentList = ["/Target:User"];
@@ -978,28 +907,26 @@ namespace PSADT.ClientServer
             }
 
             // Set up the process and return its result.
-            ProcessLaunchInfo launchInfo = new(
-                Path.Join(Environment.SystemDirectory, "gpupdate.exe"),
-                argumentList,
-                standardInput: ["N"],
-                createNoWindow: true
-            );
-            return ProcessManager.LaunchAsync(launchInfo) is not ProcessHandle handle
+            return ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "gpupdate.exe"), argumentList, standardInput: ["N"], createNoWindow: true)) is not ProcessHandle handle
                 ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
-                : handle.Task.GetAwaiter().GetResult();
+                : await handle.ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Executes a process using the specified shell execution options and returns the result synchronously.
+        /// Executes a process using the specified shell execution options and returns the result asynchronously.
         /// </summary>
         /// <param name="options">The options that define how the process should be launched, including executable path, arguments, and user
         /// context.</param>
         /// <returns>A ProcessResult object containing the outcome of the executed process. If the process could not be started,
         /// returns a result indicating success with a default code.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code is deliberately synchronous.")]
-        internal static ProcessResult ShellExecuteProcess(UserShellExecuteOptions options)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "It's either this or a 'Dispose objects before losing scope' warning on the ternary.")]
+        private static async Task<ProcessResult> ShellExecuteProcessAsync(UserShellExecuteOptions options)
         {
-            return ProcessManager.LaunchAsync(options.ToLaunchInfo())?.Task.GetAwaiter().GetResult() ?? new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
+            if (ProcessManager.LaunchAsync(options.ToLaunchInfo()) is not ProcessHandle handle)
+            {
+                return new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
+            }
+            return await handle.ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1009,9 +936,9 @@ namespace PSADT.ClientServer
         /// notifications and other interruptions. The return value indicates whether focus mode is currently active for
         /// the user, or if the state could not be determined due to an error or unsupported environment.</remarks>
         /// <returns>1 if focus mode is active; 0 if focus mode is inactive; -1 if the focus mode state could not be determined.</returns>
-        internal static int GetUserFocusModeState()
+        private static int GetUserFocusModeState()
         {
-            return !ShellUtilities.TryGetFocusSessionActive(out bool active) ? -1 : active ? 1 : 0;
+            return !ShellUtilities.TryGetFocusSessionActive(out bool? active) || !active.HasValue ? -1 : active.Value ? 1 : 0;
         }
 
         /// <summary>
@@ -1021,9 +948,9 @@ namespace PSADT.ClientServer
         /// retrieved. Callers should check for this value to handle such cases appropriately.</remarks>
         /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
         /// mode. Returns a value of -1 if the mode cannot be determined.</returns>
-        internal static ToastNotificationMode GetUserToastNotificationMode()
+        private static int GetUserToastNotificationMode()
         {
-            return !ShellUtilities.TryGetNotificationMode(out ToastNotificationMode mode) ? (ToastNotificationMode)(-1) : mode;
+            return !NotificationsUtilities.TryGetNotificationMode(out ToastNotificationMode mode) ? -1 : (int)mode;
         }
 
         /// <summary>
@@ -1037,6 +964,7 @@ namespace PSADT.ClientServer
         /// followed by its corresponding value as a separate argument.</param>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
         /// arguments.</returns>
+        /// <exception cref="ClientException">Thrown if any argument key is not followed by a valid value, such as when the value is null, empty, whitespace, or resembles another key.</exception>"
         private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
         {
             // Loop through arguments and match argument names to their values.
@@ -1047,7 +975,7 @@ namespace PSADT.ClientServer
                 {
                     continue;
                 }
-                string key = argv[i].Substring(1).Trim();
+                string key = argv[i][1..].Trim();
                 string? value = (i + 1 < argv.Length) ? argv[i + 1].Trim() : null;
                 if (value is null || string.IsNullOrWhiteSpace(value) || value.StartsWith("-") || value.StartsWith("/"))
                 {
@@ -1059,25 +987,19 @@ namespace PSADT.ClientServer
             // Check whether an ArgumentsDictionary was provided.
             if (arguments.TryGetValue("ArgumentsDictionary", out string? argvDictValue) || arguments.TryGetValue("ArgV", out argvDictValue))
             {
+                // Assume it's a registry key if it starts with HKEY, otherwise assume it's a file path or literal string.
                 if (argvDictValue.StartsWith("HKEY", StringComparison.Ordinal))
                 {
                     // Provided value is a registry key path.
                     int lastBackslashIndex = argvDictValue.LastIndexOf('\\');
-                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue.Substring(0, lastBackslashIndex));
-                    return registryKey.GetValue(argvDictValue.Substring(lastBackslashIndex + 1), null) is not string argvDictContent
+                    using RegistryKey registryKey = RegistryUtilities.GetRegistryKeyForPath(argvDictValue[..lastBackslashIndex]);
+                    return registryKey.GetValue(argvDictValue[(lastBackslashIndex + 1)..], defaultValue: null) is not string argvDictContent
                         ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
                         : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }
-                else if (File.Exists(argvDictValue))
-                {
-                    // Provided value is a file path.
-                    return DeserializeString<ReadOnlyDictionary<string, string>>(File.ReadAllText(argvDictValue));
-                }
-                else
-                {
-                    // Assume anything else is a literal Base64-encoded string.
-                    return DeserializeString<ReadOnlyDictionary<string, string>>(argvDictValue);
-                }
+                return File.Exists(argvDictValue)
+                    ? DeserializeString<ReadOnlyDictionary<string, string>>(File.ReadAllText(argvDictValue))
+                    : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictValue);
             }
 
             // This data should never change once read, so return read-only.
@@ -1099,7 +1021,7 @@ namespace PSADT.ClientServer
             return !arguments.TryGetValue("Options", out string? options)
                 ? throw new ClientException("The required options were not specified on the command line.", ClientExitCode.NoOptions)
                 : string.IsNullOrWhiteSpace(options)
-                ? throw new ClientException($"The specified options are null or invalid.", ClientExitCode.InvalidOptions)
+                ? throw new ClientException("The specified options are null or invalid.", ClientExitCode.InvalidOptions)
                 : options;
         }
 
@@ -1119,7 +1041,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
+                throw new ClientException("An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
         }
 
@@ -1138,7 +1060,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
+                throw new ClientException("An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
         }
 
@@ -1158,7 +1080,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
+                throw new ClientException("An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
         }
 
@@ -1178,7 +1100,7 @@ namespace PSADT.ClientServer
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                throw new ClientException($"An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
+                throw new ClientException("An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
         }
 

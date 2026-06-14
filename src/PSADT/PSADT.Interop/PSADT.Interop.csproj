@@ -1,14 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>PSADT.Interop</RootNamespace>
     <AssemblyName>PSADT.Interop</AssemblyName>
     <Product>PSAppDeployToolkit Win32 Native Methods Library</Product>
     <AssemblyTitle>PSAppDeployToolkit Win32 Native Methods Library</AssemblyTitle>
     <AssemblyDescription>This assembly provides Win32 library access to all areas of PSAppDeployToolkit.</AssemblyDescription>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <NoWarn>SYSLIB1045;SYSLIB1054</NoWarn>
   </PropertyGroup>
 
@@ -20,24 +18,57 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.275">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.150">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.9" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.28000.1839" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.287">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="[10.0.5,10.0.6)" />
   </ItemGroup>
 
   <PropertyGroup>
+    <MeziantouPolyfill_IncludedPolyfills>
+      M:System.ArgumentException.Throw|
+      M:System.ArgumentNullException.Throw|
+      M:System.ArgumentOutOfRangeException.Throw|
+      M:System.Diagnostics.Process.WaitForExitAsync|
+      M:System.Int32.TryParse|
+      M:System.IO.Path.IsPathFullyQualified|
+      M:System.IO.Path.Join|
+      M:System.ObjectDisposedException.Throw|
+      M:System.String.Contains|
+      M:System.String.EndsWith|
+      M:System.String.GetHashCode|
+      M:System.String.IndexOf|
+      M:System.String.Join|
+      M:System.String.Replace|
+      M:System.String.StartsWith|
+      M:System.Text.Encoding.GetString|
+      M:System.Threading.CancellationTokenSource.CancelAsync|
+      M:System.Threading.Tasks.Task.WaitAsync|
+      T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
+      T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
+      T:System.Diagnostics.StackTraceHiddenAttribute|
+      T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
+      T:System.Runtime.CompilerServices.ModuleInitializerAttribute|
+    </MeziantouPolyfill_IncludedPolyfills>
+    <DefineConstants>$(DefineConstants);MEZIANTOU_POLYFILL_SKIP_MICROSOFT_CODEANALYSIS_EMBEDDEDATTRIBUTE</DefineConstants>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 </Project>

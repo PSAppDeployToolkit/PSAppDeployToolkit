@@ -12,41 +12,41 @@
         /// <summary>
         /// Represents the CloseAppsDialog type.
         /// </summary>
-        CloseAppsDialog,
+        CloseAppsDialog = 0,
 
         /// <summary>
         /// Represents the CustomDialog type.
         /// </summary>
-        CustomDialog,
+        CustomDialog = 1,
 
         /// <summary>
         /// Represents a Windows 9x-style message box.
         /// </summary>
-        DialogBox,
+        DialogBox = 2,
 
         /// <summary>
         /// Provides methods for displaying help information in the console.
         /// </summary>
-        HelpConsole,
+        HelpConsole = 3,
 
         /// <summary>
         /// Represents the InputDialog type.
         /// </summary>
-        InputDialog,
+        InputDialog = 4,
 
         /// <summary>
         /// Represents the ListSelectionDialog type.
         /// </summary>
-        ListSelectionDialog,
+        ListSelectionDialog = 5,
 
         /// <summary>
         /// Represents the ProgressDialog type.
         /// </summary>
-        ProgressDialog,
+        ProgressDialog = 6,
 
         /// <summary>
         /// Represents the RestartDialog type.
         /// </summary>
-        RestartDialog,
+        RestartDialog = 7,
     }
 }

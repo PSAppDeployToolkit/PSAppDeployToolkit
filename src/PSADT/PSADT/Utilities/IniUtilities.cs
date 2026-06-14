@@ -35,13 +35,13 @@ namespace PSADT.Utilities
             uint len;
             try
             {
-                len = NativeMethods.GetPrivateProfileString(section, key, null, buffer, filepath);
+                len = NativeMethods.GetPrivateProfileString(section, key, lpDefault: null, buffer, filepath);
             }
             catch (FileNotFoundException)
             {
                 return null;
             }
-            return buffer.Slice(0, (int)len).Trim().ToString();
+            return buffer[..(int)len].Trim().ToString();
         }
 
         /// <summary>
@@ -84,9 +84,11 @@ namespace PSADT.Utilities
         /// <summary>
         /// Gets all key/value pairs in a section of an INI file.
         /// </summary>
-        /// <param name="section">The section name</param>
         /// <param name="filepath">Path to the INI file</param>
+        /// <param name="section">The section name</param>
         /// <returns>OrderedDictionary of key/value pairs in the section</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified section does not exist in the INI file.</exception>
+        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section.</exception>"
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static OrderedDictionary? GetSection(string filepath, string section)
         {
@@ -109,21 +111,21 @@ namespace PSADT.Utilities
             }
 
             OrderedDictionary dictionary = [];
-            foreach (string entry in buffer.Slice(0, (int)res).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
+            foreach (string entry in buffer[..(int)res].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries))
             {
                 if (string.IsNullOrWhiteSpace(entry))
                 {
                     continue;
                 }
 
-                int separatorIndex = entry.IndexOf('=');
+                int separatorIndex = entry.IndexOf('=', StringComparison.OrdinalIgnoreCase);
                 if (separatorIndex <= 0)
                 {
                     continue;
                 }
 
-                string key = entry.Substring(0, separatorIndex);
-                string value = entry.Substring(separatorIndex + 1);
+                string key = entry[..separatorIndex];
+                string value = entry[(separatorIndex + 1)..];
                 if (dictionary.Contains(key))
                 {
                     dictionary[key] = value;
@@ -141,24 +143,26 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="filepath">Path to the INI file</param>
         /// <returns>Array of section names</returns>
+        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section names.</exception>"
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536]; uint len = NativeMethods.GetPrivateProfileSectionNames(buffer, filepath);
-            string[] sections = buffer.Slice(0, (int)len).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries);
+            string[] sections = buffer[..(int)len].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries);
             return sections.Length == 0 ? throw new InvalidDataException("No sections found in the INI file.") : new(sections);
         }
 
         /// <summary>
         /// Writes multiple key/value pairs to a section in an INI file.
         /// </summary>
+        /// <param name="filepath">Path to the INI file</param>
         /// <param name="section">The section name</param>
         /// <param name="content">INI content to write</param>
-        /// <param name="filepath">Path to the INI file</param>
+        /// <exception cref="ArgumentException">Thrown if the content contains invalid keys or values.</exception>
         public static void WriteSection(string filepath, string section, IDictionary? content)
         {
             if (content is null)
             {
-                _ = NativeMethods.WritePrivateProfileSection(section, null, filepath);
+                _ = NativeMethods.WritePrivateProfileSection(section, lpString: null, filepath);
                 return;
             }
             StringBuilder entries = new();
@@ -168,15 +172,15 @@ namespace PSADT.Utilities
                 {
                     if (entry.Key is not (string or ValueType))
                     {
-                        throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.");
+                        throw new ArgumentException($"Invalid key type: [{entry.Key?.GetType()?.FullName}]. Keys must be of type string, numeric, or boolean.", nameof(content));
                     }
                     if (entry.Key?.ToString()?.Trim() is not string key || string.IsNullOrWhiteSpace(key))
                     {
-                        throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]");
+                        throw new ArgumentException($"Invalid key in content: Key cannot be null, empty, or whitespace. Original key type: [{entry.Key?.GetType()?.FullName}]", nameof(content));
                     }
                     if (entry.Value is not (string or ValueType or null))
                     {
-                        throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.");
+                        throw new ArgumentException($"Invalid value type: [{entry.Value.GetType().FullName}] for key '{entry.Key}'. Values must be null, string, numeric, or boolean.", nameof(content));
                     }
                     _ = entries.Append(key);
                     _ = entries.Append('=');

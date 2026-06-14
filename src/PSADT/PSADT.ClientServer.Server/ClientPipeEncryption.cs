@@ -14,6 +14,7 @@ namespace PSADT.ClientServer
     /// prove they have derived the same shared secret.
     /// </para>
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal sealed class ClientPipeEncryption : PipeEncryption<ClientPipeEncryption>
     {
         /// <inheritdoc />

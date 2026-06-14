@@ -11,6 +11,7 @@ namespace PSADT.UserInterface
     /// [accent], [bold], and [italic] for text styling. These tags can be nested and combined to achieve cumulative
     /// formatting effects. The regular expression is compiled to improve performance during repeated parsing
     /// operations.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class DialogText
     {
         /// <summary>
@@ -25,13 +26,13 @@ namespace PSADT.UserInterface
         /// </item> </list> The regular expression is compiled for improved performance during repeated use and supports
         /// nested tag combinations.</remarks>
         internal static readonly Regex FormattingRegex = new(
-            @"(?<UrlLinkSimple>\[url\](?<UrlLinkSimpleContent>.+?)\[/url\])" + @"|" +
-            @"(?<UrlLinkDescriptive>\[url=(?<UrlLinkUrl>[^\]]+)\](?<UrlLinkDescription>.+?)\[/url\])" + @"|" +
-            @"(?<OpenAccent>\[accent\])" + @"|" +
-            @"(?<CloseAccent>\[/accent\])" + @"|" +
-            @"(?<OpenBold>\[bold\])" + @"|" +
-            @"(?<CloseBold>\[/bold\])" + @"|" +
-            @"(?<OpenItalic>\[italic\])" + @"|" +
+            @"(?<UrlLinkSimple>\[url\](?<UrlLinkSimpleContent>.+?)\[/url\])" + "|" +
+            @"(?<UrlLinkDescriptive>\[url=(?<UrlLinkUrl>[^\]]+)\](?<UrlLinkDescription>.+?)\[/url\])" + "|" +
+            @"(?<OpenAccent>\[accent\])" + "|" +
+            @"(?<CloseAccent>\[/accent\])" + "|" +
+            @"(?<OpenBold>\[bold\])" + "|" +
+            @"(?<CloseBold>\[/bold\])" + "|" +
+            @"(?<OpenItalic>\[italic\])" + "|" +
             @"(?<CloseItalic>\[/italic\])",
             RegexOptions.Compiled);
     }

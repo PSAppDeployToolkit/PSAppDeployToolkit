@@ -45,9 +45,9 @@ namespace PSADT.UserInterface.DialogResults
             // Only compare instances of the exact same type, not derived types.
             return obj switch
             {
-                CustomDialogResult other when other.GetType() == GetType() => Result == other.Result,
+                CustomDialogResult other when other.GetType() == GetType() => Result.Equals(other.Result, StringComparison.Ordinal),
                 string str when GetType() == typeof(CustomDialogResult) => Result.Equals(str, StringComparison.OrdinalIgnoreCase),
-                _ => false
+                _ => false,
             };
         }
 
@@ -71,7 +71,7 @@ namespace PSADT.UserInterface.DialogResults
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
-            return Result.GetHashCode();
+            return Result.GetHashCode(StringComparison.Ordinal);
         }
 
         /// <summary>

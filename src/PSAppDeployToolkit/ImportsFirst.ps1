@@ -20,6 +20,7 @@ https://psappdeploytoolkit.com
 
 #>
 
+
 #-----------------------------------------------------------------------------
 #
 # MARK: Module Initialization Code
@@ -86,13 +87,20 @@ try
     # Store build information pertaining to this module's state.
     New-Variable -Name Module -Option Constant -Force -Value ([ordered]@{
             Manifest = Import-LocalizedData -BaseDirectory ([System.Management.Automation.WildcardPattern]::Escape($PSScriptRoot)) -FileName PSAppDeployToolkit.psd1
-            Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]][System.String[]]("$PSScriptRoot\lib\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\PSADT.dll", "$PSScriptRoot\lib\PSADT.UserInterface.dll", "$PSScriptRoot\lib\PSADT.ClientServer.Server.dll")
+            Assemblies = [System.Collections.ObjectModel.ReadOnlyCollection[System.String]]$(if (!$PSVersionTable.PSEdition.Equals('Desktop'))
+                {
+                    "$PSScriptRoot\lib\net8.0\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net8.0\PSADT.Interop.dll", "$PSScriptRoot\lib\net8.0\PSADT.dll", "$PSScriptRoot\lib\net8.0\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net8.0\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net8.0\Microsoft.Windows.SDK.NET.dll", "$PSScriptRoot\lib\net8.0\PSADT.WindowsRuntime.dll"
+                }
+                else
+                {
+                    "$PSScriptRoot\lib\net472\PSAppDeployToolkit.dll", "$PSScriptRoot\lib\net472\PSADT.Interop.dll", "$PSScriptRoot\lib\net472\PSADT.dll", "$PSScriptRoot\lib\net472\PSADT.UserInterface.dll", "$PSScriptRoot\lib\net472\PSADT.ClientServer.Server.dll", "$PSScriptRoot\lib\net472\PSADT.WindowsRuntime.dll"
+                })
             Compiled = $MyInvocation.MyCommand.Name.Equals('PSAppDeployToolkit.psm1')
             Signed = (Get-AuthenticodeSignature -LiteralPath $MyInvocation.MyCommand.Path).Status.Equals([System.Management.Automation.SignatureStatus]::Valid)
         }).AsReadOnly()
 
     # Import our assemblies, factoring in whether they're on a network share or not.
-    $Module.Assemblies | & {
+    $(if ($PSVersionTable.PSEdition.Equals('Desktop')) { "$PSScriptRoot\lib\net472\System.Collections.Immutable.dll" } $Module.Assemblies) | & {
         begin
         {
             # Cache loaded assemblies to test whether they're already loaded.
@@ -104,7 +112,6 @@ try
             # Add in system assemblies.
             Add-Type -AssemblyName @(
                 'System.ServiceProcess'
-                'System.Windows.Forms'
             )
         }
 
@@ -140,11 +147,20 @@ try
             # If loading from an SMB path, load unsafely. This is OK because in signed (release) modules, we're validating the signature above.
             if ($isNetworkLocation)
             {
-                [System.Reflection.Assembly]::UnsafeLoadFrom($_)
+                $null = [System.Reflection.Assembly]::UnsafeLoadFrom($_)
             }
             else
             {
                 Add-Type -LiteralPath $_
+            }
+        }
+
+        end
+        {
+            # Prime the pump for WinRT on Windows PowerShell 5.1.
+            if ($PSVersionTable.PSEdition.Equals('Desktop'))
+            {
+                $null = [Windows.UI.Notifications.ToastNotificationMode, Windows.UI.Notifications, ContentType = WindowsRuntime]
             }
         }
     }
@@ -153,8 +169,8 @@ try
     if ($Module.Compiled)
     {
         $FunctionPaths = [System.Collections.Generic.List[System.String]]::new()
-        $PrivateFuncs = [System.Collections.Generic.List[System.String]]::new()
-        $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
+        $PrivateFuncs = [System.Collections.Generic.HashSet[System.String]]::new()
+        $null = $MyInvocation.MyCommand.ScriptBlock.Ast.EndBlock.Statements | & {
             process
             {
                 if ($_ -is [System.Management.Automation.Language.FunctionDefinitionAst])
@@ -169,7 +185,7 @@ try
             }
         }
         New-Variable -Name FunctionPaths -Option Constant -Value $FunctionPaths.AsReadOnly() -Force
-        New-Variable -Name PrivateFuncs -Option Constant -Value $PrivateFuncs.AsReadOnly() -Force
+        New-Variable -Name PrivateFuncs -Option Constant -Value ([System.Collections.Frozen.FrozenSet]::ToFrozenSet($PrivateFuncs, $null)) -Force
         Remove-Item -LiteralPath $FunctionPaths -Force -ErrorAction Ignore
     }
 }

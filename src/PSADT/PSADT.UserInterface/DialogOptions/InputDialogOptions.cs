@@ -97,14 +97,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// <summary>
         /// The initial text to be displayed in the input field.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly string? InitialInputText;
 
         /// <summary>
         /// Indicates whether the input should be masked (for passwords or sensitive data).
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "This needs to be a field for the DataContractSerializer.")]
         [DataMember]
         public readonly bool SecureInput;
     }

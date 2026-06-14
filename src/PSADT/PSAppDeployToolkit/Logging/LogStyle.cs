@@ -9,11 +9,11 @@
         /// <summary>
         /// The log format uses PSAppDeployToolkit's legacy logging style.
         /// </summary>
-        Legacy,
+        Legacy = 0,
 
         /// <summary>
         /// The log format uses the Configuration Manager trace logging style.
         /// </summary>
-        CMTrace,
+        CMTrace = 1,
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
@@ -24,19 +25,20 @@ namespace PSADT.ClientServer
     /// <remarks>The <see cref="ServerInstance"/> class facilitates communication between a server and a client
     /// process through anonymous pipes. It manages the lifecycle of the client process, handles input and output
     /// streams, and provides methods to send commands and retrieve responses. This class implements <see
-    /// cref="IDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
-    /// of <see cref="ServerInstance"/>, calling <see cref="Open"/> to start the client-server communication, and
+    /// cref="IAsyncDisposable"/> to ensure proper cleanup of resources. <para> Typical usage involves creating an instance
+    /// of <see cref="ServerInstance"/>, calling <see cref="OpenAsync"/> to start the client-server communication, and
     /// using a number of predefined methods to send commands to the client. Once the communication is
-    /// complete, the <see cref="Dispose()"/> method should be called to release resources. </para></remarks>
-    public sealed record ServerInstance : IDisposable
+    /// complete, the <see cref="DisposeAsync()"/> method should be called to release resources. </para></remarks>
+    public sealed record ServerInstance : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication
         /// infrastructure using anonymous pipes.
         /// </summary>
+        /// <param name="runAsActiveUser">Specifies whether the server instance should run as the active user.</param>
         /// <remarks>This constructor creates the instance with the specified user session information.
         /// All communication infrastructure (pipes, encryption, cancellation tokens) is initialized inline.
-        /// Call <see cref="Open"/> to start the client process and begin communication.</remarks>
+        /// Call <see cref="OpenAsync"/> to start the client process and begin communication.</remarks>
         public ServerInstance(RunAsActiveUser runAsActiveUser)
         {
             ArgumentNullException.ThrowIfNull(runAsActiveUser);
@@ -48,10 +50,10 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method launches the client process, performs key exchange for encrypted communication,
         /// and ensures that the client process is ready to receive commands before returning.</remarks>
-        /// <exception cref="ObjectDisposedException">Thrown if the instance has been disposed.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the server instance already has an associated client process.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the opened client process returns an invalid response.</exception>
         /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
-        public void Open()
+        public async Task OpenAsync()
         {
             // Don't re-open if there's already a client process associated with this instance.
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -67,7 +69,7 @@ namespace PSADT.ClientServer
                 nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
                 nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
                 _clientProcess = ClientServerUtilities.StartClientOperation(
-                    ["/ClientServer", "-InputPipe", $"{outputServerClientSafePipeHandle}", "-OutputPipe", $"{inputServerClientSafePipeHandle}", "-LogPipe", $"{logServerClientSafePipeHandle}"],
+                    ["/ClientServer", "-InputPipe", $"{((long)outputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-OutputPipe", $"{((long)inputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-LogPipe", $"{((long)logServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}"],
                     RunAsActiveUser,
                     [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],
                     _clientProcessCts.Token
@@ -101,7 +103,7 @@ namespace PSADT.ClientServer
             {
                 if (opened is null || !opened.Value)
                 {
-                    Dispose();
+                    await DisposeAsync().ConfigureAwait(false);
                 }
             }
 
@@ -130,6 +132,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Prompts the user to close any running applications that may interfere with the installation process.
         /// </summary>
+        /// <param name="promptToCloseTimeout">The timeout duration for the prompt to close applications.</param>
         /// <remarks>This method invokes a prompt to the user and returns their response. Ensure that the
         /// environment allows user interaction before calling this method.</remarks>
         /// <returns><see langword="true"/> if the user agrees to close the applications; otherwise, <see langword="false"/>.</returns>
@@ -227,7 +230,7 @@ namespace PSADT.ClientServer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DialogBoxResult ShowDialogBox(DialogBoxOptions options)
         {
-            return ShowModalDialog<DialogBoxResult>(DialogType.DialogBox, 0, options);
+            return ShowModalDialog<DialogBoxResult>(DialogType.DialogBox, DialogStyle.Classic, options);
         }
 
         /// <summary>
@@ -547,11 +550,11 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Gets the current toast notification mode for the user session.
         /// </summary>
-        /// <returns>A value of the <see cref="ToastNotificationMode"/> enumeration that indicates the user's toast notification
+        /// <returns>A value of the <see cref="int"/> enumeration that indicates the user's toast notification
         /// mode.</returns>
-        public ToastNotificationMode GetUserToastNotificationMode()
+        public int GetUserToastNotificationMode()
         {
-            return Invoke<ToastNotificationMode>(PipeCommand.GetUserToastNotificationMode);
+            return Invoke<int>(PipeCommand.GetUserToastNotificationMode);
         }
 
         /// <summary>
@@ -574,8 +577,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method gracefully closes the client process if it is running, waits for
         /// the log writer task to complete, and disposes all pipes, encryption objects, and cancellation
         /// token sources. Once disposed, the instance should not be used further.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This code needs to operate synchronously and wait for things to close in the appropriate order.")]
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             // Check we're not already done.
             if (_disposed)
@@ -598,7 +600,7 @@ namespace PSADT.ClientServer
                         // Failed to gracefully close the process, so cancel it.
                         if (!_clientProcessCts.IsCancellationRequested)
                         {
-                            _clientProcessCts.Cancel();
+                            await _clientProcessCts.CancelAsync().ConfigureAwait(false);
                         }
                     }
                 }
@@ -606,42 +608,33 @@ namespace PSADT.ClientServer
                 // We either closed or cancelled the process. Wait for that to occur.
                 try
                 {
-                    _clientProcess.Task.GetAwaiter().GetResult().Dispose();
+                    (await _clientProcess.ConfigureAwait(false)).Dispose();
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
                     // Expected when the process faulted before disposal.
-                }
-
-                // Wait for the task to fully complete, then dispose its resources.
-                while (!_clientProcess.Task.IsCompleted)
-                {
-                    Thread.Sleep(1);
                 }
                 _clientProcess.Task.Dispose();
                 _clientProcess = null;
             }
 
             // Cancel the log writer and wait for it to finish.
-            _logWriterTaskCts.Cancel();
-            try
+            await _logWriterTaskCts.CancelAsync().ConfigureAwait(false);
+            if (_logWriterTask is not null)
             {
-                _logWriterTask?.GetAwaiter().GetResult();
-            }
-            catch (TaskCanceledException)
-            {
-                // Expected when disposing the server instance.
+                await _logWriterTask.ConfigureAwait(false);
+                _logWriterTask.Dispose();
+                _logWriterTask = null;
             }
 
             // Dispose all infrastructure.
-            _logWriterTask?.Dispose();
             _clientProcessCts.Dispose();
             _logWriterTaskCts.Dispose();
             _logEncryption.Dispose();
             _ioEncryption.Dispose();
-            _logServer.Dispose();
-            _inputServer.Dispose();
-            _outputServer.Dispose();
+            _logServer.Close();
+            _inputServer.Close();
+            _outputServer.Close();
 
             // Unregister the process exit handler and mark as disposed.
             AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
@@ -668,7 +661,7 @@ namespace PSADT.ClientServer
         /// <typeparam name="TResult">The expected return type from the client.</typeparam>
         /// <param name="command">The command to execute.</param>
         /// <returns>The result from the client, deserialized to type <typeparamref name="TResult"/>.</returns>
-        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         private TResult Invoke<TResult>(PipeCommand command)
         {
@@ -691,7 +684,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method sends the command and payload to the client, reads the response,
         /// and returns the strongly-typed result. The request format is: [1-byte command][serialized payload].
         /// The response format uses a single byte discriminator:
-        /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or 
+        /// <see cref="ResponseMarker.Success"/> (followed by serialized result) or
         /// <see cref="ResponseMarker.Error"/> (followed by serialized exception).</remarks>
         /// <typeparam name="TPayload">The payload type, which must implement <see cref="IClientServerPayload"/>.</typeparam>
         /// <typeparam name="TResult">The expected return type from the client.</typeparam>
@@ -724,7 +717,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <typeparam name="T">The expected return type from the client.</typeparam>
         /// <returns>The result from the client, deserialized to type <typeparamref name="T"/>.</returns>
-        /// <exception cref="InvalidDataException">Thrown when there is an I/O error communicating with the client.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the client process returns an invalid or empty response.</exception>
         /// <exception cref="ServerException">Thrown when the client returns an error or no data.</exception>
         private T ReadResponse<T>()
         {
@@ -754,6 +747,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This method reads each line from the log stream until the end of the stream is
         /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
+        /// <exception cref="ServerException">Thrown when an error occurs while reading from the log stream.</exception>
         private void ReadLog()
         {
             // Read the log stream until cancellation is requested or the end of the stream is reached.
@@ -798,11 +792,12 @@ namespace PSADT.ClientServer
         /// directly.</remarks>
         /// <param name="sender">The source of the event, typically the current application domain.</param>
         /// <param name="e">An object that contains the event data.</param>
-        private void ProcessExit_Handler(object? sender, EventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is necessary here.")]
+        private async void ProcessExit_Handler(object? sender, EventArgs e)
         {
             if (!_disposed)
             {
-                Dispose();
+                await DisposeAsync().ConfigureAwait(false);
             }
         }
 
@@ -831,7 +826,7 @@ namespace PSADT.ClientServer
         /// Represents an asynchronous operation that retrieves the result of a client process.
         /// </summary>
         /// <remarks>The task encapsulates the execution of a client process and provides access to its
-        /// result, which may be null if the process does not produce a result or if <see cref="Open"/> has not
+        /// result, which may be null if the process does not produce a result or if <see cref="OpenAsync"/> has not
         /// been called yet.</remarks>
         private ProcessHandle? _clientProcess;
 
@@ -839,7 +834,7 @@ namespace PSADT.ClientServer
         /// Represents the task responsible for writing log entries asynchronously.
         /// </summary>
         /// <remarks>This field holds a reference to the current logging task, if one is active. It may
-        /// be null if <see cref="Open"/> has not been called yet.</remarks>
+        /// be null if <see cref="OpenAsync"/> has not been called yet.</remarks>
         private Task? _logWriterTask;
 
         /// <summary>

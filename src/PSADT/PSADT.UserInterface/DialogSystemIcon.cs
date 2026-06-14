@@ -8,51 +8,51 @@
         /// <summary>
         /// Icon for generic application
         /// </summary>
-        Application,
+        Application = 0,
 
         /// <summary>
         /// Icon for asterisk
         /// </summary>
-        Asterisk,
+        Asterisk = 1,
 
         /// <summary>
         /// Icon for error
         /// </summary>
-        Error,
+        Error = 2,
 
         /// <summary>
         /// Icon for exclamation
         /// </summary>
-        Exclamation,
+        Exclamation = 3,
 
         /// <summary>
         /// Icon for hand
         /// </summary>
-        Hand,
+        Hand = 4,
 
         /// <summary>
         /// Icon for information
         /// </summary>
-        Information,
+        Information = 5,
 
         /// <summary>
         /// Icon for question
         /// </summary>
-        Question,
+        Question = 6,
 
         /// <summary>
         /// Icon for shield
         /// </summary>
-        Shield,
+        Shield = 7,
 
         /// <summary>
         /// Icon for stop
         /// </summary>
-        Warning,
+        Warning = 8,
 
         /// <summary>
         /// Icon for the Windows logo
         /// </summary>
-        WinLogo,
+        WinLogo = 9,
     }
 }

@@ -89,10 +89,11 @@ namespace PSADT.SMBIOS
         /// <returns>A read-only list of <see cref="SmbiosTablePosition"/> objects, each representing the position and length of
         /// a found structure.</returns>
         /// <exception cref="SmbiosTypeNotFoundException">Thrown if no SMBIOS structures of the specified <paramref name="targetType"/> are found in the buffer.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal static IReadOnlyList<SmbiosTablePosition> GetStructureOffsets(ReadOnlySpan<byte> buffer, SmbiosType targetType)
         {
             // Loop through the data and find all instances of the target structure.
-            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
+            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             List<SmbiosTablePosition> offsets = []; int offset = 8;
             while (offset < buffer.Length - 4)
             {
@@ -121,6 +122,7 @@ namespace PSADT.SMBIOS
         /// <param name="targetType">The SMBIOS structure type to search for.</param>
         /// <param name="parser">Function to parse the structure from the buffer.</param>
         /// <returns>The parsed structure or null if not found.</returns>
+        /// <exception cref="NotSupportedException">Thrown if multiple SMBIOS structures of the specified type are found in the buffer.</exception>"
         internal static T ParseStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
         {
             // Get all structures that match the target type.
@@ -151,6 +153,10 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Extracts a string from the SMBIOS string section.
         /// </summary>
+        /// <param name="buffer">The SMBIOS buffer containing the string data.</param>
+        /// <param name="stringTableOffset">The offset to the string table within the buffer.</param>
+        /// <param name="stringIndex">The 1-based index of the string to retrieve.</param>
+        /// <returns>The requested string, or null if the index is 0 or the string is not found.</returns>
         internal static string? GetSmbiosString(ReadOnlySpan<byte> buffer, int stringTableOffset, byte stringIndex)
         {
             // SMBIOS string indices are 1-based; 0 means no string.
@@ -208,6 +214,7 @@ namespace PSADT.SMBIOS
         /// <param name="buffer">The SMBIOS buffer containing version data.</param>
         /// <returns>SMBIOS version information if valid; otherwise throws exception.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S125:Sections of code should not be commented out", Justification = "This is an example struct that I'd like to leave here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private static SmbiosVersionInfo ParseSmbiosVersion(ReadOnlySpan<byte> buffer)
         {
             /*
@@ -221,7 +228,7 @@ namespace PSADT.SMBIOS
                 BYTE    SMBIOSTableData[];
             };
             */
-            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8);
+            ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
             byte major = buffer[1]; byte minor = buffer[2]; byte dmiRevision = buffer[3];
             SmbiosEntryPointType entryPointType = major >= 3 ? SmbiosEntryPointType.Smbios3x : SmbiosEntryPointType.Smbios2x;
             return new(major, minor, dmiRevision, entryPointType);

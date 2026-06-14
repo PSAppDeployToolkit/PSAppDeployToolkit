@@ -56,6 +56,21 @@ function Private:Import-ADTConfig
                         break
                     }
                 }
+                if ($_.($asset.Key) -match '^\\?\.\.\\')
+                {
+                    $_.($asset.Key) = [System.IO.Path]::Combine($BaseDirectory[-1], $_.($asset.Key) -replace '^\\?\.\.\\')
+                }
+            }
+            elseif ($_.($asset.Key) -match '^\\?\.\.')
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The config value [$($_.($asset.Key))] is invalid without a ScriptDirectory specified.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidData
+                    ErrorId = 'RelativePathWithoutScriptDirectory'
+                    TargetObject = $_.($asset.Key)
+                    RecommendedAction = "Review your configuration and try again."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
             }
         }
     }

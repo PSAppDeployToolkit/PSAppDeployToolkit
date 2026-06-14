@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PSADT.UserInterface.TestHarness</RootNamespace>
+    <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
+    <Product>PSAppDeployToolkit User Interface Test Harness</Product>
+    <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
+    <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
+    <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
+    <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.ClientServer.Client.Compatible\PSADT.ClientServer.Client.Compatible.csproj" />
+    <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher.Compatible\PSADT.ClientServer.Client.Launcher.Compatible.csproj" />
+    <ProjectReference Include="..\PSADT.ClientServer.Client.Launcher\PSADT.ClientServer.Client.Launcher.csproj" />
+    <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
+    <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
+    <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+    <ProjectReference Include="..\PSAppDeployToolkit\PSAppDeployToolkit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>

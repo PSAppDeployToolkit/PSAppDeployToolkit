@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -37,6 +38,8 @@ namespace PSAppDeployToolkit.Logging
         /// <param name="logFileDirectory">The log file directory.</param>
         /// <param name="logFileName">The log file name.</param>
         /// <param name="logStyle">The type of log.</param>
+        /// <exception cref="InvalidProgramException">Thrown when the logging operation encounters an unexpected state.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the provided dictionary contains a null key or a null value.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static IReadOnlyList<LogEntry> WriteLogEntry(IReadOnlyList<string> message, HostLogStreamType hostLogStreamType, bool debugMessage, LogSeverity? severity = null, string? source = null, string? scriptSection = null, string? logFileDirectory = null, string? logFileName = null, LogStyle? logStyle = null)
         {
@@ -69,14 +72,14 @@ namespace PSAppDeployToolkit.Logging
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
-            StackFrame[] stackFrames = [.. new StackTrace(true).GetFrames().Skip(1)]; string callerFileName, callerSource;
+            StackFrame[] stackFrames = [.. new StackTrace(fNeedFileInfo: true).GetFrames().Skip(1)]; string callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
-                StackFrame invoker = stackFrames.First(static f => !f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
+                StackFrame invoker = stackFrames.First(static f => f.GetMethod()?.DeclaringType?.FullName is string fullName && !DeclaringTypeRegex.IsMatch(fullName));
                 if (invoker.GetFileName() is null)
                 {
-                    invoker = stackFrames.Last(static f => f.GetMethod()?.DeclaringType?.FullName?.StartsWith("PSADT", StringComparison.Ordinal) == true);
+                    invoker = stackFrames.Last(static f => f.GetMethod()?.DeclaringType?.FullName is string fullName && DeclaringTypeRegex.IsMatch(fullName));
                 }
                 callerFileName = invoker.GetFileName() ?? "<Unavailable>";
                 callerSource = invoker.GetMethod() is MethodBase method && method.DeclaringType is Type declaringType
@@ -126,7 +129,7 @@ namespace PSAppDeployToolkit.Logging
             // Write out all messages to disk if configured/permitted to do so.
             if (canLogToDisk)
             {
-                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), true, LogEncoding);
+                using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), append: true, LogEncoding);
                 if (logStyle.Value == LogStyle.CMTrace)
                 {
                     foreach (LogEntry logEntry in logEntries)
@@ -149,7 +152,7 @@ namespace PSAppDeployToolkit.Logging
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
-                    ReadOnlyDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
+                    FrozenDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
                     bool colouredOutput = severity != LogSeverity.Info;
                     if (colouredOutput)
                     {
@@ -189,12 +192,12 @@ namespace PSAppDeployToolkit.Logging
         /// </summary>
         /// <remarks>This regular expression can be used to identify or filter files commonly used for
         /// logging purposes based on their extensions. The match is case-sensitive by default.</remarks>
-        public static readonly Regex LogFileNameRegex = new(@"\.(log|logx|txt|out)$", RegexOptions.Compiled);
+        public static readonly Regex LogFileNameRegex = new(@"\.(log|logx|txt|out)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Gets the session's default log file encoding.
         /// </summary>
-        internal static readonly UTF8Encoding LogEncoding = new(true, true);
+        internal static readonly UTF8Encoding LogEncoding = new(encoderShouldEmitUTF8Identifier: true, throwOnInvalidBytes: true);
 
         /// <summary>
         /// Gets the log divider string.
@@ -204,12 +207,12 @@ namespace PSAppDeployToolkit.Logging
         /// <summary>
         /// Gets the log severity colors.
         /// </summary>
-        private static readonly ReadOnlyCollection<ReadOnlyDictionary<string, ConsoleColor>> LogSeverityColors = new(
+        private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Green } }),
-            new(new Dictionary<string, ConsoleColor> { }),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Yellow } }),
-            new(new Dictionary<string, ConsoleColor> { { "ForegroundColor", ConsoleColor.Red } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Green } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase)),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Yellow } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Red } }),
         ]);
 
         /// <summary>
@@ -228,7 +231,7 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches commands in the following formats: - "Write-Log" or
         /// "Write-ADTLogEntry" - "&lt;ScriptBlock&gt;" optionally followed by "&lt;tag&gt;" This regex is optimized for performance
         /// using the <see cref="RegexOptions.Compiled"/> option.</remarks>
-        private static readonly Regex CallerCommandRegex = new(@"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
+        private static readonly Regex CallerCommandRegex = new(@"^(Write-(Log|ADTLogEntry)|<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Represents a compiled regular expression used to match script block patterns.
@@ -236,13 +239,18 @@ namespace PSAppDeployToolkit.Logging
         /// <remarks>The regular expression matches strings that begin with "&lt;ScriptBlock&gt;" and optionally
         /// include an additional tag. This is useful for identifying specific script block structures in
         /// text.</remarks>
-        private static readonly Regex CallerScriptBlockRegex = new(@"^(<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled);
+        private static readonly Regex CallerScriptBlockRegex = new(@"^(<ScriptBlock>(<\w+>)?)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         /// <summary>
         /// Represents a compiled regular expression used to match caller script locations.
         /// </summary>
         /// <remarks>The regular expression matches strings that begin and end with angle brackets (e.g.,
         /// "&lt;example&gt;"). This is typically used to identify script locations in a specific format.</remarks>
-        private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled);
+        private static readonly Regex CallerScriptLocationRegex = new("^<.+>$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+        /// <summary>
+        /// Represents a compiled regular expression used to match declaring types in stack frames that belong to the PSAppDeployToolkit or ADT namespaces.
+        /// </summary>
+        private static readonly Regex DeclaringTypeRegex = new(@"^PS(AppDeployToolkit|ADT)\..+$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
     }
 }

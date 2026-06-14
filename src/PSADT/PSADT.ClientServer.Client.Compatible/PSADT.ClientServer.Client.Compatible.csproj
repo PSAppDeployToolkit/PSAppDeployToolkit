@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
-    <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
     <AssemblyName>PSADT.ClientServer.Client.Compatible</AssemblyName>
     <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
@@ -20,7 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\PSADT.ClientServer.Client\PSADT.ClientServer.Client.csproj" />
     <ProjectReference Include="..\PSADT.ClientServer.Server\PSADT.ClientServer.Server.csproj" />
-    <ProjectReference Include="..\PSADT.UserInterface\PSADT.UserInterface.csproj" />
+    <ProjectReference Include="..\PSADT.UserInterface.Interfaces\PSADT.UserInterface.Interfaces.csproj" />
+    <ProjectReference Include="..\PSADT.WindowsRuntime\PSADT.WindowsRuntime.csproj" />
     <ProjectReference Include="..\PSADT\PSADT.csproj" />
   </ItemGroup>
 </Project>

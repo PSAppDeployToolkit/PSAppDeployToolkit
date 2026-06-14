@@ -20,6 +20,14 @@ function Confirm-ADTScriptIntegrity
         }
         Complete-ADTModuleBuildFunction
     }
+    catch [System.NullReferenceException]
+    {
+        Write-ADTBuildLogEntry -Message "The call to [Invoke-ScriptAnalyzer] threw a NullReferenceException type." -ForegroundColor DarkRed
+        Write-ADTBuildLogEntry -Message $_.Exception.ToString() -ForegroundColor DarkRed
+        Write-ADTBuildLogEntry -Message $_.ScriptStackTrace -ForegroundColor DarkRed
+        Complete-ADTModuleBuildFunction -ErrorRecord $_
+        throw
+    }
     catch
     {
         Complete-ADTModuleBuildFunction -ErrorRecord $_

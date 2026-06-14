@@ -24,7 +24,7 @@ namespace PSADT.SafeHandles
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SafeFreeBSTRHandle Alloc(string str)
         {
-            return new(Marshal.StringToBSTR(str), true);
+            return new(Marshal.StringToBSTR(str), ownsHandle: true);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace PSADT.SafeHandles
         /// <returns>true if the handle was released successfully; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

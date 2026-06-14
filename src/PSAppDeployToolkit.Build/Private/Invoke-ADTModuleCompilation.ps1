@@ -109,10 +109,23 @@ function Invoke-ADTModuleCompilation
             Write-ADTBuildLogEntry "Replacing debug DLLs with release DLL files."
             foreach ($buildItem in $Script:ModuleConstants.DotNetBuildItems)
             {
-                $sourcePath = [System.IO.Path]::Combine([System.Management.Automation.WildcardPattern]::Escape($buildItem.BinaryPath.Replace('Debug', 'Release')), '*')
-                foreach ($destPath in $buildItem.OutputPath.Replace($Script:ModuleConstants.Paths.ModuleSource, $Script:ModuleConstants.Paths.ModuleOutput))
+                foreach ($outputPath in $buildItem.PathMap.GetEnumerator())
                 {
-                    Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
+                    $dest = $outputPath.Value.Replace($Script:ModuleConstants.Paths.ModuleSource, $Script:ModuleConstants.Paths.ModuleOutput)
+                    Copy-Item -Path $outputPath.Key.Replace('Debug', 'Release') -Destination $dest -Recurse -Force
+                    Get-ChildItem -LiteralPath $dest -Filter runtimes | Remove-Item -Recurse -Force
+                    Get-ChildItem -LiteralPath $dest -Filter *.xml | Remove-Item
+                    if (!$dest.EndsWith('net472'))
+                    {
+                        Get-ChildItem -LiteralPath $buildItem.SourcePath -Filter *.deps.json -Recurse | & { process { if ($_.FullName.Contains('Release') -and !$_.Name.Contains('Harness')) { return $_ } } } | Copy-Item -Destination $dest -Force
+                    }
+                }
+                if ($buildItem.PublishItems)
+                {
+                    foreach ($publishItem in $buildItem.PublishItems.Values.GetEnumerator().GetEnumerator())
+                    {
+                        Copy-Item -Path $publishItem.Key -Destination $publishItem.Value.Replace($Script:ModuleConstants.Paths.ModuleSource, $Script:ModuleConstants.Paths.ModuleOutput) -Force
+                    }
                 }
             }
 

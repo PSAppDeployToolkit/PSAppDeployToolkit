@@ -40,15 +40,15 @@ namespace PSAppDeployToolkit.Logging
             ArgumentException.ThrowIfNullOrWhiteSpace(callerFileName);
             ArgumentException.ThrowIfNullOrWhiteSpace(callerSource);
             Timestamp = timeStamp;
-            Message = message.Replace("\0", null).TrimEnd();
+            Message = message.Replace("\0", newValue: null, StringComparison.OrdinalIgnoreCase).TrimEnd();
             Severity = severity;
             Source = source;
             ScriptSection = scriptSection;
             DebugMessage = debugMessage;
-            CallerFileName = !callerFileName.StartsWith("<") ? new(callerFileName) : null;
+            CallerFileName = !callerFileName.StartsWith('<') ? new(callerFileName) : null;
             CallerSource = callerSource;
             LegacyLogLine = $"[{timeStamp:O}]{(scriptSection is not null ? $" [{scriptSection}]" : null)} [{source}] [{severity}] :: {Message}";
-            CMTraceLogLine = $"<![LOG[{(scriptSection is not null && Message != LogUtilities.LogDivider ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n') ? (string.Join(Environment.NewLine, Message.Split(["\r\n", "\n"], StringSplitOptions.None).Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m.Substring(start)) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
+            CMTraceLogLine = $"<![LOG[{(scriptSection is not null && !Message.Equals(LogUtilities.LogDivider, StringComparison.OrdinalIgnoreCase) ? $"[{scriptSection}] :: " : null)}{(Message.Contains('\n', StringComparison.OrdinalIgnoreCase) ? (string.Join(Environment.NewLine, Message.Split(["\r\n", "\n"], StringSplitOptions.None).Select(static m => string.IsNullOrWhiteSpace(m) ? LeadingSpaceString : CMTraceFirstChar.Match(m).Index is int start && start > 0 ? string.Concat(new(LeadingSpaceChar, start), m[start..]) : m)) + Environment.NewLine) : Message)}]LOG]!><time=\"{timeStamp.ToString(@"HH\:mm\:ss.fff", CultureInfo.InvariantCulture)}{(TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes >= 0 ? $"+{TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture)}" : TimeZoneInfo.Local.BaseUtcOffset.TotalMinutes.ToString(CultureInfo.InvariantCulture))}\" date=\"{timeStamp.ToString("M-dd-yyyy", CultureInfo.InvariantCulture)}\" component=\"{source}\" context=\"{AccountUtilities.CallerUsername}\" type=\"{(uint)severity}\" thread=\"{AccountUtilities.CallerProcessId}\" file=\"{callerFileName}\">";
         }
 
         /// <summary>

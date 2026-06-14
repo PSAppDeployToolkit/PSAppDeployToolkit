@@ -19,6 +19,7 @@
  */
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using PSADT.Interop;
@@ -62,6 +63,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets the raw 16-bit hotkey value.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         public ushort Value
         {
             get
@@ -120,7 +122,7 @@ namespace PSADT.ShortcutManagement
             {
                 >= 'A' and <= 'Z' => (byte)upperKey,
                 >= '0' and <= '9' => (byte)upperKey,
-                _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Key must be A-Z or 0-9.")
+                _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Key must be A-Z or 0-9."),
             };
             Control = control;
             Shift = shift;
@@ -142,16 +144,15 @@ namespace PSADT.ShortcutManagement
             bool control = false, shift = false, alt = false; byte keyCode = 0;
             foreach (string part in parts.Select(static part => part.Trim()))
             {
-                string upper = part.ToUpperInvariant();
-                if (upper is "CTRL" or "CONTROL")
+                if (part.Equals("Ctrl", StringComparison.OrdinalIgnoreCase) || part.Equals("Control", StringComparison.OrdinalIgnoreCase))
                 {
                     control = true;
                 }
-                else if (upper is "SHIFT")
+                else if (part.Equals("Shift", StringComparison.OrdinalIgnoreCase))
                 {
                     shift = true;
                 }
-                else if (upper is "ALT")
+                else if (part.Equals("Alt", StringComparison.OrdinalIgnoreCase))
                 {
                     alt = true;
                 }
@@ -169,6 +170,9 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Parses a key name into a virtual key code.
         /// </summary>
+        /// <param name="keyName">The name of the key to parse.</param>
+        /// <returns>The virtual key code corresponding to the key name.</returns>
+        /// <exception cref="ArgumentException">Thrown when the key name is not recognized.</exception>
         private static byte ParseKeyCode(string keyName)
         {
             // Single character (A-Z, 0-9).
@@ -180,12 +184,12 @@ namespace PSADT.ShortcutManagement
                 {
                     >= 'A' and <= 'Z' => (byte)c,
                     >= '0' and <= '9' => (byte)c,
-                    _ => throw new ArgumentException($"Unknown key: '{keyName}'")
+                    _ => throw new ArgumentException("Unknown key.", nameof(keyName)),
                 };
             }
 
             // Function keys.
-            if (upper.Length >= 2 && upper.Length <= 3 && upper[0] == 'F' && int.TryParse(upper.AsSpan(1).ToString(), out int fNum) && fNum >= 1 && fNum <= 24)
+            if (upper.Length >= 2 && upper.Length <= 3 && upper[0] == 'F' && int.TryParse(upper.AsSpan(1), CultureInfo.InvariantCulture, out int fNum) && fNum >= 1 && fNum <= 24)
             {
                 return (byte)(0x70 + fNum - 1);
             }
@@ -208,7 +212,7 @@ namespace PSADT.ShortcutManagement
                 "DOWN" => 0x28,
                 "LEFT" => 0x25,
                 "RIGHT" => 0x27,
-                _ => throw new ArgumentException($"Unknown key: '{keyName}'")
+                _ => throw new ArgumentException("Unknown key.", nameof(keyName)),
             };
         }
 
@@ -223,10 +227,10 @@ namespace PSADT.ShortcutManagement
             HOTKEYF modifiers = (HOTKEYF)((value >> 8) & 0xFF);
             return new(
                 keyCode: keyCode,
-                control: (modifiers & HOTKEYF.HOTKEYF_CONTROL) != 0,
-                shift: (modifiers & HOTKEYF.HOTKEYF_SHIFT) != 0,
-                alt: (modifiers & HOTKEYF.HOTKEYF_ALT) != 0,
-                extended: (modifiers & HOTKEYF.HOTKEYF_EXT) != 0
+                control: modifiers.HasFlag(HOTKEYF.HOTKEYF_CONTROL),
+                shift: modifiers.HasFlag(HOTKEYF.HOTKEYF_SHIFT),
+                alt: modifiers.HasFlag(HOTKEYF.HOTKEYF_ALT),
+                extended: modifiers.HasFlag(HOTKEYF.HOTKEYF_EXT)
             );
         }
 
@@ -299,6 +303,8 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets a human-readable name for a virtual key code.
         /// </summary>
+        /// <param name="keyCode">The virtual key code to get the name for.</param>
+        /// <returns>A string representing the name of the key corresponding to the given virtual key code. If the key code is not recognized, it returns a hexadecimal representation of the key code.</returns>
         private static string GetKeyName(byte keyCode)
         {
             return keyCode switch
@@ -308,10 +314,10 @@ namespace PSADT.ShortcutManagement
                 >= 0x30 and <= 0x39 => ((char)keyCode).ToString(),
 
                 // Handle function keys (F1=0x70 to F24=0x87).
-                >= 0x70 and <= 0x87 => $"F{1 + (keyCode - 0x70)}",
+                >= 0x70 and <= 0x87 => $"F{(1 + (keyCode - 0x70)).ToString(CultureInfo.InvariantCulture)}",
 
                 // Handle numpad keys (Num0=0x60 to Num9=0x69).
-                >= 0x60 and <= 0x69 => $"Num{keyCode - 0x60}",
+                >= 0x60 and <= 0x69 => $"Num{(keyCode - 0x60).ToString(CultureInfo.InvariantCulture)}",
 
                 // Handle common special keys.
                 0x20 => "Space",
@@ -338,7 +344,7 @@ namespace PSADT.ShortcutManagement
                 0xBD => "-",
                 0xBC => ",",
                 0xBE => ".",
-                _ => $"0x{keyCode:X2}"
+                _ => $"0x{keyCode:X2}",
             };
         }
     }

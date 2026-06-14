@@ -127,9 +127,13 @@ namespace PSADT.Utilities
         /// contains the '=' character, exceeds length limits, or if both <paramref name="append"/> and <paramref
         /// name="remove"/> are <see langword="true"/>. Also thrown if attempting to append or remove with a null
         /// <paramref name="value"/>.</exception>
+        /// <exception cref="FormatException">Thrown if the variable name or value contains invalid characters or formats.</exception>
+        /// <exception cref="NotSupportedException">Thrown if both <paramref name="append"/> and <paramref name="remove"/> are <see langword="true"/>, or if <paramref name="target"/> is <see cref="EnvironmentVariableTarget.Process"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the registry key for the specified target cannot be opened, or if <paramref name="target"/> is
         /// <see cref="EnvironmentVariableTarget.Process"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="variable"/> exceeds length limits or if <paramref name="target"/> is an invalid enum value.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable, bool append, bool remove)
         {
             // Use the built-in method for process-level variables.
@@ -145,12 +149,12 @@ namespace PSADT.Utilities
                 ArgumentException.ThrowIfNullOrWhiteSpace(value);
             }
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 1024);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 1024, nameof(variable));
             if (variable[0] == '\0')
             {
                 throw new FormatException("The first char in the variable is a null character.");
             }
-            if (variable.Contains("="))
+            if (variable.Contains('=', StringComparison.OrdinalIgnoreCase))
             {
                 throw new FormatException("Environment variable name cannot contain equal character.");
             }
@@ -194,7 +198,7 @@ namespace PSADT.Utilities
             {
                 // Append the new value to the existing one if the existing value does not already contain it.
                 ArgumentNullException.ThrowIfNull(value);
-                string? existingValue = GetEnvironmentVariable(variable);
+                string existingValue = GetEnvironmentVariable(variable) ?? string.Empty;
                 if (!string.IsNullOrWhiteSpace(existingValue) && !existingValue.Contains(value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = existingValue + Path.PathSeparator + value;
@@ -219,7 +223,7 @@ namespace PSADT.Utilities
                     }
                 case EnvironmentVariableTarget.User:
                     {
-                        ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 255);
+                        ArgumentOutOfRangeException.ThrowIfGreaterThan(variable.Length, 255, nameof(variable));
                         using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Environment", writable: true) ?? throw new InvalidOperationException("Could not open registry key for user environment variables.");
                         if (value is null)
                         {
@@ -238,7 +242,7 @@ namespace PSADT.Utilities
             }
 
             // Refresh environment variables in the current process.
-            ShellUtilities.RefreshEnvironmentVariables();
+            DesktopUtilities.RefreshEnvironmentVariables();
         }
 
         /// <summary>
@@ -251,7 +255,7 @@ namespace PSADT.Utilities
         public static void RemoveEnvironmentVariable(string variable)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
-            Environment.SetEnvironmentVariable(variable, null);
+            Environment.SetEnvironmentVariable(variable, value: null);
         }
 
         /// <summary>
@@ -265,7 +269,20 @@ namespace PSADT.Utilities
         public static void RemoveEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(variable);
-            Environment.SetEnvironmentVariable(variable, null, target);
+            Environment.SetEnvironmentVariable(variable, value: null, target);
+        }
+
+        /// <summary>
+        /// Expands environment variable references in the specified string and returns the resulting string.
+        /// </summary>
+        /// <param name="name">The string containing environment variable references to expand.</param>
+        /// <returns>The string with environment variable references expanded, or <see langword="null"/> if the result is null or whitespace.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Allowed here as it's our safe wrapper.")]
+        public static string? ExpandEnvironmentVariables(string name)
+        {
+            return Environment.ExpandEnvironmentVariables(name) is not string ret || string.IsNullOrWhiteSpace(ret)
+                ? null
+                : ret;
         }
     }
 }

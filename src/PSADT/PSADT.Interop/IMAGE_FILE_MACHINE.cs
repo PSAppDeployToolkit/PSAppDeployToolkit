@@ -11,26 +11,6 @@
     public enum IMAGE_FILE_MACHINE : ushort
     {
         /// <summary>
-        /// Alpha
-        /// </summary>
-        IMAGE_FILE_MACHINE_AXP64 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_AXP64,
-
-        /// <summary>
-        /// x86
-        /// </summary>
-        IMAGE_FILE_MACHINE_I386 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_I386,
-
-        /// <summary>
-        /// Itanium
-        /// </summary>
-        IMAGE_FILE_MACHINE_IA64 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_IA64,
-
-        /// <summary>
-        /// AMD64
-        /// </summary>
-        IMAGE_FILE_MACHINE_AMD64 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_AMD64,
-
-        /// <summary>
         /// Unknown
         /// </summary>
         IMAGE_FILE_MACHINE_UNKNOWN = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_UNKNOWN,
@@ -39,6 +19,11 @@
         /// Target host
         /// </summary>
         IMAGE_FILE_MACHINE_TARGET_HOST = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_TARGET_HOST,
+
+        /// <summary>
+        /// x86
+        /// </summary>
+        IMAGE_FILE_MACHINE_I386 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_I386,
 
         /// <summary>
         /// R3000
@@ -121,9 +106,19 @@
         IMAGE_FILE_MACHINE_POWERPCFP = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_POWERPCFP,
 
         /// <summary>
+        /// Itanium
+        /// </summary>
+        IMAGE_FILE_MACHINE_IA64 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_IA64,
+
+        /// <summary>
         /// MIPS16
         /// </summary>
         IMAGE_FILE_MACHINE_MIPS16 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_MIPS16,
+
+        /// <summary>
+        /// Alpha
+        /// </summary>
+        IMAGE_FILE_MACHINE_AXP64 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_AXP64,
 
         /// <summary>
         /// Alpha64
@@ -154,6 +149,11 @@
         /// EBC
         /// </summary>
         IMAGE_FILE_MACHINE_EBC = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_EBC,
+
+        /// <summary>
+        /// AMD64
+        /// </summary>
+        IMAGE_FILE_MACHINE_AMD64 = Windows.Win32.System.SystemInformation.IMAGE_FILE_MACHINE.IMAGE_FILE_MACHINE_AMD64,
 
         /// <summary>
         /// M32R

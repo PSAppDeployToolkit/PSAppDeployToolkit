@@ -55,7 +55,7 @@ namespace PSADT.Interop.SafeHandles
         /// <summary>
         /// Releases the handle.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>true if the handle was released successfully; otherwise, false.</returns>
         protected override bool ReleaseHandle()
         {
             if (handle == default || IntPtr.Zero == handle)

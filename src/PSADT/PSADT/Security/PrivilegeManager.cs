@@ -25,27 +25,21 @@ namespace PSADT.Security
         /// <param name="attributes">Optional attributes used to filter the privileges. If specified, only privileges matching the given <see
         /// cref="TOKEN_PRIVILEGES_ATTRIBUTES"/> will be included in the result.</param>
         /// <returns>A <see cref="ReadOnlyCollection{T}"/> containing the privileges associated with the token.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if a privilege name retrieved from the token cannot be mapped to a known <see cref="SE_PRIVILEGE"/>
-        /// value.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if a privilege name retrieved from the token cannot be mapped to a known <see cref="SE_PRIVILEGE"/> value.</exception>
         private static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(SafeFileHandle token, TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
             // Internal worker function to retrieve the privilege name from the token attributes.
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
                 _ = NativeMethods.LookupPrivilegeName(attr.Luid, buffer, out uint retLength);
-                ReadOnlySpan<char> refBuf = buffer.Slice(0, (int)retLength).Trim();
-                if (refBuf.IsEmpty)
-                {
-                    throw new InvalidProgramException($"Privilege name for LUID: {attr.Luid} is empty.");
-                }
-                string privilegeName = refBuf.ToString();
-                return !Enum.TryParse(privilegeName, true, out SE_PRIVILEGE privilege)
+                string privilegeName = buffer[..(int)retLength].Trim().ToString();
+                return !Enum.TryParse(privilegeName, ignoreCase: true, out SE_PRIVILEGE privilege)
                     ? throw new InvalidProgramException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.")
                     : privilege;
             }
 
             // Get the size of the buffer required to hold the token privileges.
-            _ = NativeMethods.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, null, out uint returnLength);
+            _ = NativeMethods.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, TokenInformation: null, out uint returnLength);
             Span<byte> buffer = stackalloc byte[(int)returnLength];
 
             // Retrieve the token privileges and filter them based on the specified attributes before returning them.
@@ -58,7 +52,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
                 {
-                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer.Slice(bufferOffset + (increment * i)).AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
                     if ((attr.Attributes & attributes) == attributes)
                     {
                         privileges.Add(GetPrivilege(in attr, charSpan));
@@ -69,7 +63,7 @@ namespace PSADT.Security
             {
                 for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
                 {
-                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer.Slice(bufferOffset + (increment * i)).AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
                     privileges.Add(GetPrivilege(in attr, charSpan));
                 }
             }
@@ -179,7 +173,7 @@ namespace PSADT.Security
             tp.Privileges[0] = new()
             {
                 Luid = luid,
-                Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED
+                Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED,
             };
             _ = NativeMethods.AdjustTokenPrivileges(token, tp);
         }

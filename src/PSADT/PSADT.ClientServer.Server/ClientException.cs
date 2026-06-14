@@ -12,8 +12,9 @@ namespace PSADT.ClientServer
     /// program execution, with an optional exit code that is set to the <see cref="Exception.HResult"/> property.
     /// This allows the exception to convey both the error details and a numeric code that can be used for
     /// programmatic handling or process termination.</remarks>
-    [Serializable]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
+    [Serializable]
     internal sealed class ClientException : InvalidOperationException
     {
         /// <summary>
@@ -29,7 +30,7 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClientException"/> class with a specified error message, 
+        /// Initializes a new instance of the <see cref="ClientException"/> class with a specified error message,
         /// a reference to the inner exception that caused this exception, and an exit code.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>

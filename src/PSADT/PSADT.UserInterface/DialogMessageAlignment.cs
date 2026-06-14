@@ -8,16 +8,16 @@
         /// <summary>
         /// Aligns the message text to the left
         /// </summary>
-        Left,
+        Left = 0,
 
         /// <summary>
         /// Aligns the message text to the center
         /// </summary>
-        Center,
+        Center = 1,
 
         /// <summary>
         /// Aligns the message text to the right
         /// </summary>
-        Right,
+        Right = 2,
     }
 }

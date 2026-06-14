@@ -652,28 +652,19 @@ function New-ADTTemplate
                     {
                         foreach ($section in $sectionsToProcess)
                         {
-                            $sbParamName = $section.Replace('-', [System.Management.Automation.Language.NullString]::Value) + 'ScriptBlock'
-
                             # Find the variable assignment in the AST (e.g. $PreInstall = { ... }).
-                            $sbAssignment = $scriptAst.Find({
+                            $sbAst = $scriptAst.Find({
                                     param ($ast)
-                                    $ast -is [System.Management.Automation.Language.AssignmentStatementAst] -and
-                                    ($ast.Left | Get-Member -Name VariablePath) -and
-                                    $ast.Left.VariablePath.UserPath -eq $section
+                                    $ast -is [System.Management.Automation.Language.ScriptBlockExpressionAst] -and
+                                    $ast.Parent -is [System.Management.Automation.Language.CommandAst] -and
+                                    $ast.Parent.CommandElements[0] -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                                    $ast.Parent.CommandElements[0].Value.Equals('New-Variable') -and
+                                    ((($nameParam = $ast.Parent.CommandElements | & { process { if (($_ -is [System.Management.Automation.Language.CommandParameterAst]) -and ($_.ParameterName.Equals('Name'))) { return $_ } } }) | Measure-Object).Count -eq 1) -and
+                                    $ast.Parent.CommandElements[$ast.Parent.CommandElements.IndexOf($nameParam) + 1].Value.Equals($section)
                                 }, $true)
-                            if (!$sbAssignment)
-                            {
-                                $naerParams = @{
-                                    Exception = [System.InvalidOperationException]::new("Variable '`$$section' not found in template script.")
-                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
-                                    ErrorId = 'TemplateVariableNotFound'
-                                    TargetObject = $sbParamName
-                                }
-                                throw (New-ADTErrorRecord @naerParams)
-                            }
 
                             # Get the scriptblock expression on the right-hand side.
-                            $sbAst = $sbAssignment.Right.Expression
+                            $sbParamName = $section.Replace('-', [System.Management.Automation.Language.NullString]::Value) + 'ScriptBlock'
                             if ($sbAst -isnot [System.Management.Automation.Language.ScriptBlockExpressionAst])
                             {
                                 $naerParams = @{
@@ -685,13 +676,11 @@ function New-ADTTemplate
                                 throw (New-ADTErrorRecord @naerParams)
                             }
 
-                            $scriptText = '{' + [System.Environment]::NewLine + (ConvertTo-ADTScriptBody -ScriptBlock $PSBoundParameters[$sbParamName]) + [System.Environment]::NewLine + '}'
-
                             # Replace the entire scriptblock expression (including braces) with the user's content.
                             $scriptReplacements.Add([PSCustomObject]@{
                                     Start = $sbAst.Extent.StartOffset
                                     End = $sbAst.Extent.EndOffset
-                                    Value = $scriptText
+                                    Value = '{' + [System.Environment]::NewLine + (ConvertTo-ADTScriptBody -ScriptBlock $PSBoundParameters[$sbParamName]) + [System.Environment]::NewLine + '}'
                                 })
                         }
                     }

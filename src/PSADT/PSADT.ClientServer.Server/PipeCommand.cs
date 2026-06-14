@@ -8,141 +8,141 @@
         /// <summary>
         /// Opens the client-server communication channel.
         /// </summary>
-        Open,
+        Open = 0,
 
         /// <summary>
         /// Closes the client-server communication channel.
         /// </summary>
-        Close,
+        Close = 1,
 
         /// <summary>
         /// Initializes the close applications dialog with process definitions.
         /// </summary>
-        InitCloseAppsDialog,
+        InitCloseAppsDialog = 2,
 
         /// <summary>
         /// Prompts the user to close running applications.
         /// </summary>
-        PromptToCloseApps,
+        PromptToCloseApps = 3,
 
         /// <summary>
         /// Displays a modal dialog of a specified type.
         /// </summary>
-        ShowModalDialog,
+        ShowModalDialog = 4,
 
         /// <summary>
         /// Displays a progress dialog.
         /// </summary>
-        ShowProgressDialog,
+        ShowProgressDialog = 5,
 
         /// <summary>
         /// Checks if a progress dialog is currently open.
         /// </summary>
-        ProgressDialogOpen,
+        ProgressDialogOpen = 6,
 
         /// <summary>
         /// Updates an existing progress dialog.
         /// </summary>
-        UpdateProgressDialog,
+        UpdateProgressDialog = 7,
 
         /// <summary>
         /// Closes the progress dialog.
         /// </summary>
-        CloseProgressDialog,
+        CloseProgressDialog = 8,
 
         /// <summary>
         /// Creates a new notification icon.
         /// </summary>
-        ShowNotifyIcon,
+        ShowNotifyIcon = 9,
 
         /// <summary>
         /// Checks if a notification icon is currently open.
         /// </summary>
-        NotifyIconOpen,
+        NotifyIconOpen = 10,
 
         /// <summary>
         /// Updates an existing notification icon.
         /// </summary>
-        UpdateNotifyIcon,
+        UpdateNotifyIcon = 11,
 
         /// <summary>
         /// Displays a balloon tip notification.
         /// </summary>
-        ShowBalloonTip,
+        ShowBalloonTip = 12,
 
         /// <summary>
         /// Closes the active notification icon.
         /// </summary>
-        CloseNotifyIcon,
+        CloseNotifyIcon = 13,
 
         /// <summary>
         /// Minimizes all windows on the desktop.
         /// </summary>
-        MinimizeAllWindows,
+        MinimizeAllWindows = 14,
 
         /// <summary>
         /// Restores all minimized windows.
         /// </summary>
-        RestoreAllWindows,
+        RestoreAllWindows = 15,
 
         /// <summary>
         /// Sends keystrokes to a window.
         /// </summary>
-        SendKeys,
+        SendKeys = 16,
 
         /// <summary>
         /// Retrieves information about process windows.
         /// </summary>
-        GetProcessWindowInfo,
+        GetProcessWindowInfo = 17,
 
         /// <summary>
         /// Refreshes the desktop and environment variables.
         /// </summary>
-        RefreshDesktopAndEnvironmentVariables,
+        RefreshDesktopAndEnvironmentVariables = 18,
 
         /// <summary>
         /// Gets the current user notification state.
         /// </summary>
-        GetUserNotificationState,
+        GetUserNotificationState = 19,
 
         /// <summary>
         /// Gets the process ID of the foreground window.
         /// </summary>
-        GetForegroundWindowProcessId,
+        GetForegroundWindowProcessId = 20,
 
         /// <summary>
         /// Gets the value of an environment variable.
         /// </summary>
-        GetEnvironmentVariable,
+        GetEnvironmentVariable = 21,
 
         /// <summary>
         /// Sets the value of an environment variable.
         /// </summary>
-        SetEnvironmentVariable,
+        SetEnvironmentVariable = 22,
 
         /// <summary>
         /// Removes an environment variable.
         /// </summary>
-        RemoveEnvironmentVariable,
+        RemoveEnvironmentVariable = 23,
 
         /// <summary>
         /// Performs gpupdate.exe for the user.
         /// </summary>
-        GroupPolicyUpdate,
+        GroupPolicyUpdate = 24,
 
         /// <summary>
         /// Performs a ShellExecuteEx invocation for the user.
         /// </summary>
-        ShellExecuteProcess,
+        ShellExecuteProcess = 25,
 
         /// <summary>
         /// Gets the current focus mode state for the user.
         /// </summary>
-        GetUserFocusModeState,
+        GetUserFocusModeState = 26,
 
         /// <summary>
         /// Gets the current toast notification mode for the user.
         /// </summary>
-        GetUserToastNotificationMode,
+        GetUserToastNotificationMode = 27,
     }
 }

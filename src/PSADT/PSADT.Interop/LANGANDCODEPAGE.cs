@@ -9,6 +9,7 @@ namespace PSADT.Interop
     /// <remarks>This structure is used to specify a language and code page pair, typically in
     /// scenarios involving localization or encoding. The language identifier corresponds to a specific language or
     /// locale, while the code page identifier specifies the character encoding.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct LANGANDCODEPAGE
     {

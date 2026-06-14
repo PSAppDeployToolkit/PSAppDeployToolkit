@@ -8,21 +8,21 @@
         /// <summary>
         /// The deployment mode is automatically determined based on the environment.
         /// </summary>
-        Auto,
+        Auto = 0,
 
         /// <summary>
         /// The deployment is interactive, requiring user interaction.
         /// </summary>
-        Interactive,
+        Interactive = 1,
 
         /// <summary>
         /// The deployment is non-interactive, not requiring user interaction.
         /// </summary>
-        NonInteractive,
+        NonInteractive = 2,
 
         /// <summary>
         /// The deployment is silent, with no user interface displayed.
         /// </summary>
-        Silent
+        Silent = 3,
     }
 }

@@ -35,6 +35,6 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Rack Unit (U/OU)
         /// </summary>
-        OU = 0x01
+        OU = 0x01,
     }
 }

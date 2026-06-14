@@ -32,6 +32,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Reads the SMBIOS System Information (Type 1) structure.
         /// </summary>
+        /// <param name="buffer">The buffer containing the SMBIOS data.</param>
         /// <returns>The system information.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SystemInformation Get(ReadOnlySpan<byte> buffer = default)
@@ -42,6 +43,9 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Parses a System Information (Type 1) structure.
         /// </summary>
+        /// <param name="buffer">The buffer containing the SMBIOS data.</param>
+        /// <param name="structureOffset">The offset of the structure within the buffer.</param>
+        /// <param name="structureLength">The length of the structure in bytes.</param>
         private static SystemInformation Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
             // UUID (SMBIOS 2.1+). 16 bytes at offset 0x08. "Not present" if all 00h or all FFh.
@@ -72,6 +76,8 @@ namespace PSADT.SMBIOS
         /// SMBIOS stores the UUID in mixed-endian form that matches Guid(byte[]) expectations
         /// (Data1, Data2, Data3 little-endian; Data4 as-is). No byte swapping is required.
         /// </summary>
+        /// <param name="raw16">The raw 16-byte UUID from the SMBIOS structure.</param>
+        /// <returns>The parsed <see cref="Guid"/> if present; otherwise, <see langword="null"/>.</returns>
         private static Guid? ParseSmbiosUuid(ReadOnlySpan<byte> raw16)
         {
             // Treat all-zeros or all-0xFF as "not present"
@@ -155,6 +161,16 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemInformation"/> class.
         /// </summary>
+        /// <param name="structureLength">The length of the structure in bytes.</param>
+        /// <param name="handle">The handle (unique identifier) for this structure.</param>
+        /// <param name="manufacturer">The system manufacturer name.</param>
+        /// <param name="productName">The system product name.</param>
+        /// <param name="version">The system version.</param>
+        /// <param name="serialNumber">The system serial number.</param>
+        /// <param name="uuid">The system UUID (null if not present).</param>
+        /// <param name="wakeUpType">The system wake-up type.</param>
+        /// <param name="skuNumber">The system SKU number.</param>
+        /// <param name="family">The system family.</param>
         private SystemInformation(
             byte structureLength,
             ushort handle,

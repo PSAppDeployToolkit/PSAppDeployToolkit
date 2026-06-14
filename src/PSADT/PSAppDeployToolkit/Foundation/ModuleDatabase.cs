@@ -20,13 +20,14 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="database">The PowerShell object representing the database to initialize. This parameter cannot be null.</param>
         /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="database"/> parameter is null.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void Init(PSObject database)
         {
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.Command.Equals('PSAppDeployToolkit.psm1') -and $_.InvocationInfo.MyCommand.ScriptBlock.Module.Name.Equals('PSAppDeployToolkit')) { return $_ } } }").Invoke().Count.Equals(1))
             {
                 throw new InvalidOperationException("The InternalDatabase class can only be initialized from within the PSAppDeployToolkit module.");
             }
-            ArgumentNullException.ThrowIfNull(database); ArgumentOutOfRangeException.ThrowIfZero(database.Properties.Count());
+            ArgumentNullException.ThrowIfNull(database); ArgumentOutOfRangeException.ThrowIfZero(database.Properties.Count(), nameof(database));
             _database = database;
         }
 
@@ -36,6 +37,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>Call this method to release the current database and prepare for reinitialization.
         /// After calling this method, any operations that depend on the database instance may fail until it is
         /// reinitialized.</remarks>
+        /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>"
         public static void Clear()
         {
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.ScriptName -and ($_.ScriptName.EndsWith('PSAppDeployToolkit\\PSAppDeployToolkit.psm1') -or $_.ScriptName.EndsWith('PSAppDeployToolkit\\ImportsLast.ps1'))) { return $_ } } }").Invoke().Count.Equals(1))
@@ -144,7 +146,7 @@ namespace PSAppDeployToolkit.Foundation
         {
             return !(_database?.Properties["Sessions"].Value is List<DeploymentSession> sessionList && sessionList.Count > 0)
                 ? throw new InvalidOperationException("Please ensure that [Open-ADTSession] is called before using any PSAppDeployToolkit functions.")
-                : sessionList[sessionList.Count - 1];
+                : sessionList[^1];
         }
 
         /// <summary>

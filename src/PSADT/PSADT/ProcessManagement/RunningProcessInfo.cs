@@ -24,11 +24,12 @@ namespace PSADT.ProcessManagement
         /// <remarks>This method identifies running processes by comparing their names and command-line arguments against the provided process definitions. If a process definition includes a filter, only processes that satisfy the filter are included in the result. Processes that cannot be accessed due to insufficient privileges are skipped.</remarks>
         /// <param name="processDefinitions">An array of <see cref="ProcessDefinition"/> objects that define the processes to search for. Each definition specifies the name, optional description, and an optional filter to match processes.</param>
         /// <returns>A read-only list of <see cref="RunningProcessInfo"/> objects representing the processes that match the given definitions. The list is ordered by the description of the running processes.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static IReadOnlyList<RunningProcessInfo> Get(IReadOnlyList<ProcessDefinition> processDefinitions)
         {
             // Set up some caches for performance.
             ArgumentNullException.ThrowIfNull(processDefinitions);
-            ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count);
+            ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count, nameof(processDefinitions));
             ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.MakeNtPathLookupTable();
             Dictionary<Process, string[]> processArgvMap = [];
 
@@ -101,8 +102,8 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            string[] processNames = [.. processDefinitions.Select(static p => (Path.IsPathFullyQualified(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name).ToUpperInvariant())];
-            Process[] allProcesses = [.. Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName.ToUpperInvariant()))]; List<RunningProcessInfo> runningProcesses = [];
+            string[] processNames = [.. processDefinitions.Select(static p => Path.IsPathFullyQualified(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name)];
+            Process[] allProcesses = [.. Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName, StringComparer.OrdinalIgnoreCase))]; List<RunningProcessInfo> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
             {
                 // Loop through each process and check if it matches the definition.
@@ -180,7 +181,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return an ordered list of running processes to the caller.
-            return new ReadOnlyCollection<RunningProcessInfo>([.. runningProcesses.OrderBy(static runningProcess => runningProcess.Description)]);
+            return new ReadOnlyCollection<RunningProcessInfo>([.. runningProcesses.OrderBy(static runningProcess => runningProcess.Description, StringComparer.OrdinalIgnoreCase)]);
         }
 
         /// <summary>

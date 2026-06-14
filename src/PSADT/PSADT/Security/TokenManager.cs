@@ -43,9 +43,8 @@ namespace PSADT.Security
         /// the handle when it is no longer needed.</returns>
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
-        internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        /// <exception cref="InvalidProgramException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
+        internal static async System.Threading.Tasks.Task<SafeFileHandle> GetUserPrimaryTokenAsync(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
         {
             // Confirm that the caller is an administrator.
             if (!AccountUtilities.CallerIsAdmin)
@@ -66,7 +65,13 @@ namespace PSADT.Security
                 PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
                 string pipeName = $"PSADT.ClientServer.Client_TokenBroker_{CryptographicUtilities.SecureNewGuid()}";
                 PipeSecurity pipeSecurity = new(); pipeSecurity.AddAccessRule(new(AccountUtilities.LocalSystemSid, PipeAccessRights.CreateNewInstance | PipeAccessRights.ReadWrite, AccessControlType.Allow));
-                using NamedPipeServerStream pipe = CreateNamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+                #pragma warning disable format
+                #if !NETFRAMEWORK
+                await using NamedPipeServerStream pipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+                #else
+                using NamedPipeServerStream pipe = new(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+                #endif
+                #pragma warning restore format
 
                 // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
                 ITaskService servicePtr = (ITaskService)new TaskScheduler();
@@ -74,7 +79,7 @@ namespace PSADT.Security
                 {
                     // Set up the task as required.
                     using SafeFreeBSTRHandle folderName = SafeFreeBSTRHandle.Alloc(@"\");
-                    servicePtr.Connect(null, null, null, null);
+                    servicePtr.Connect(serverName: null, user: null, domain: null, password: null);
                     servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
                     try
                     {
@@ -93,59 +98,69 @@ namespace PSADT.Security
                                         IPrincipal principal = taskDefinition.Principal;
                                         try
                                         {
-                                            using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
-                                            using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(ClientServerUtilities.ClientLauncherCompatiblePath.FullName);
-                                            using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
-                                            bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
+                                            ITaskSettings settings = taskDefinition.Settings;
                                             try
                                             {
-                                                // Register and start the task, then delete it. It'll keep running until it exits.
-                                                using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
-                                                userId.DangerousAddRef(ref userIdAddRef);
-                                                path.DangerousAddRef(ref pathAddRef);
-                                                args.DangerousAddRef(ref argsAddRef);
-                                                principal.UserId = (BSTR)userId.DangerousGetHandle();
-                                                principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
-                                                principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
-                                                execAction.Path = (BSTR)path.DangerousGetHandle();
-                                                execAction.Arguments = (BSTR)args.DangerousGetHandle();
-                                                rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, null, null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, null, out IRegisteredTask task);
+                                                using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
+                                                using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(ClientServerUtilities.ClientLauncherCompatiblePath.FullName);
+                                                using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
+                                                bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                                 try
                                                 {
-                                                    // Wait for the token broker to connect while task is in scope for error reporting.
-                                                    // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
-                                                    task.Run(null, out IRunningTask runningTask);
-                                                    _ = Marshal.FinalReleaseComObject(runningTask);
+                                                    // Register and start the task, then delete it. It'll keep running until it exits.
+                                                    using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
+                                                    userId.DangerousAddRef(ref userIdAddRef);
+                                                    path.DangerousAddRef(ref pathAddRef);
+                                                    args.DangerousAddRef(ref argsAddRef);
+                                                    settings.StopIfGoingOnBatteries = false;
+                                                    settings.DisallowStartIfOnBatteries = false;
+                                                    principal.UserId = (BSTR)userId.DangerousGetHandle();
+                                                    principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                                                    principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
+                                                    execAction.Path = (BSTR)path.DangerousGetHandle();
+                                                    execAction.Arguments = (BSTR)args.DangerousGetHandle();
+                                                    rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, userId: null, password: null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, sddl: null, out IRegisteredTask task);
                                                     try
                                                     {
-                                                        using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
-                                                        pipe.WaitForConnectionAsync(cts.Token).GetAwaiter().GetResult();
+                                                        // Wait for the token broker to connect while task is in scope for error reporting.
+                                                        // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
+                                                        task.Run(@params: null, out IRunningTask runningTask);
+                                                        _ = Marshal.FinalReleaseComObject(runningTask);
+                                                        try
+                                                        {
+                                                            using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
+                                                            await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
+                                                        }
+                                                        catch (OperationCanceledException)
+                                                        {
+                                                            throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                        }
                                                     }
-                                                    catch (OperationCanceledException)
+                                                    finally
                                                     {
-                                                        throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                        rootFolder.DeleteTask(taskName, 0);
+                                                        _ = Marshal.FinalReleaseComObject(task);
                                                     }
                                                 }
                                                 finally
                                                 {
-                                                    rootFolder.DeleteTask(taskName, 0);
-                                                    _ = Marshal.FinalReleaseComObject(task);
+                                                    if (userIdAddRef)
+                                                    {
+                                                        userId.DangerousRelease();
+                                                    }
+                                                    if (pathAddRef)
+                                                    {
+                                                        path.DangerousRelease();
+                                                    }
+                                                    if (argsAddRef)
+                                                    {
+                                                        args.DangerousRelease();
+                                                    }
                                                 }
                                             }
                                             finally
                                             {
-                                                if (userIdAddRef)
-                                                {
-                                                    userId.DangerousRelease();
-                                                }
-                                                if (pathAddRef)
-                                                {
-                                                    path.DangerousRelease();
-                                                }
-                                                if (argsAddRef)
-                                                {
-                                                    args.DangerousRelease();
-                                                }
+                                                _ = Marshal.FinalReleaseComObject(settings);
                                             }
                                         }
                                         finally
@@ -196,37 +211,35 @@ namespace PSADT.Security
 
                 // Read the token from the pipe.
                 byte[] tokenBuf = new byte[tokenLength];
-                if (pipe.Read(tokenBuf, 0, tokenLength) != tokenLength)
+                if (await pipe.ReadAsync(tokenBuf, 0, tokenLength).ConfigureAwait(false) != tokenLength)
                 {
                     throw new InvalidProgramException("Invalid token received from the token broker.");
                 }
 
                 // Return the token handle.
-                return new(tokenBuf.AsReadOnlyStructure<nint>(), true);
+                return new(tokenBuf.AsReadOnlyStructure<nint>(), ownsHandle: true);
             }
-            else
+
+            // When we're local system, we can just get the primary token for the user.
+            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
+            _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
+            using (hUserToken)
             {
-                // When we're local system, we can just get the primary token for the user.
-                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);
-                _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
-                using (hUserToken)
+                if (elevatedTokenType != ElevatedTokenType.None)
                 {
-                    if (elevatedTokenType != ElevatedTokenType.None)
+                    try
                     {
-                        try
+                        return GetLinkedPrimaryToken(hUserToken, uiAccess);
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
                         {
-                            return GetLinkedPrimaryToken(hUserToken, uiAccess);
-                        }
-                        catch (Exception ex) when (ex.Message is not null)
-                        {
-                            if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
-                            {
-                                throw new UnauthorizedAccessException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
-                            }
+                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                         }
                     }
-                    return GetPrimaryToken(hUserToken, uiAccess);
                 }
+                return GetPrimaryToken(hUserToken, uiAccess);
             }
         }
 
@@ -239,9 +252,10 @@ namespace PSADT.Security
         /// <param name="tokenHandle">A handle to the security token. This handle must have the necessary access rights to allow duplication.</param>
         /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
+        /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>"
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
-            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
+            _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, lpTokenAttributes: null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);
             if (uiAccess)
             {
                 if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTcbPrivilege))
@@ -272,7 +286,7 @@ namespace PSADT.Security
             Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<TOKEN_LINKED_TOKEN>()];
             _ = NativeMethods.GetTokenInformation(tokenHandle, TOKEN_INFORMATION_CLASS.TokenLinkedToken, buffer, out _);
             ref readonly TOKEN_LINKED_TOKEN tokenLinkedToken = ref buffer.AsReadOnlyStructure<TOKEN_LINKED_TOKEN>();
-            return new(tokenLinkedToken.LinkedToken, true);
+            return new(tokenLinkedToken.LinkedToken, ownsHandle: true);
         }
 
         /// <summary>
@@ -312,54 +326,6 @@ namespace PSADT.Security
                 return GetPrimaryToken(tokenHandle, uiAccess);
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Creates a new instance of a named pipe server stream with the specified configuration parameters.
-        /// </summary>
-        /// <remarks>This method allows fine-grained control over the creation of a named pipe server,
-        /// including security, buffer sizes, and transmission mode. The caller is responsible for managing the lifetime
-        /// and disposal of the returned stream. The pipe name must not conflict with existing named pipes on the
-        /// system.</remarks>
-        /// <param name="pipeName">The name of the pipe to create. This value must be unique on the system and cannot be null or empty.</param>
-        /// <param name="direction">The direction of the pipe, indicating whether the pipe supports reading, writing, or both.</param>
-        /// <param name="maxNumberOfServerInstances">The maximum number of server instances that can simultaneously share the same pipe name. Must be greater
-        /// than zero.</param>
-        /// <param name="transmissionMode">The transmission mode for the pipe, specifying how data is transmitted through the pipe (byte or message
-        /// mode).</param>
-        /// <param name="options">Pipe options that modify the behavior of the pipe, such as asynchronous operation or write-through.</param>
-        /// <param name="inBufferSize">The size, in bytes, of the input buffer for the pipe. Must be a positive integer.</param>
-        /// <param name="outBufferSize">The size, in bytes, of the output buffer for the pipe. Must be a positive integer.</param>
-        /// <param name="pipeSecurity">An optional PipeSecurity object that specifies access control for the pipe. If null, default security is
-        /// applied.</param>
-        /// <returns>A NamedPipeServerStream instance configured with the specified parameters and ready to accept client
-        /// connections.</returns>
-        private static NamedPipeServerStream CreateNamedPipeServerStream(string pipeName, PipeDirection direction, int maxNumberOfServerInstances, PipeTransmissionMode transmissionMode, PipeOptions options, int inBufferSize, int outBufferSize, PipeSecurity pipeSecurity)
-        {
-#if NETFRAMEWORK
-            if (typeof(NamedPipeServerStream).GetConstructor([typeof(string), typeof(PipeDirection), typeof(int), typeof(PipeTransmissionMode), typeof(PipeOptions), typeof(int), typeof(int), typeof(PipeSecurity)]) is System.Reflection.ConstructorInfo ctor)
-            {
-                return ctor.Invoke([pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity]) is not object stream
-                    ? throw new InvalidProgramException("Failed to create named pipe server stream.")
-                    : (NamedPipeServerStream)stream;
-            }
-            if (Type.GetType("System.IO.Pipes.NamedPipeServerStreamAcl, System.IO.Pipes.AccessControl", throwOnError: true) is not Type aclType)
-            {
-                throw new TypeLoadException("Failed to load System.IO.Pipes.NamedPipeServerStreamAcl.");
-            }
-            if (aclType.GetMethod("Create", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static) is not System.Reflection.MethodInfo createMethod)
-            {
-                throw new MissingMethodException(aclType.FullName, "Create");
-            }
-            object[] invokeArgs = createMethod.GetParameters().Length == 10
-                ? [pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity, Enum.ToObject(createMethod.GetParameters()[8].ParameterType, 0), Enum.ToObject(createMethod.GetParameters()[9].ParameterType, 0)]
-                : [pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity];
-            return createMethod.Invoke(null, invokeArgs) is not object aclStream
-                ? throw new InvalidProgramException("Failed to create named pipe server stream.")
-                : (NamedPipeServerStream)aclStream;
-#else
-            return NamedPipeServerStreamAcl.Create(pipeName, direction, maxNumberOfServerInstances, transmissionMode, options, inBufferSize, outBufferSize, pipeSecurity);
-#endif
         }
     }
 }

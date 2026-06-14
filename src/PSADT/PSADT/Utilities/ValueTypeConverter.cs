@@ -184,62 +184,62 @@ namespace PSADT.Utilities
             /// <summary>
             /// A signed byte.
             /// </summary>
-            SByte,
+            SByte = 0,
 
             /// <summary>
             /// An unsigned byte.
             /// </summary>
-            Byte,
+            Byte = 1,
 
             /// <summary>
             /// A signed 16-bit integer.
             /// </summary>
-            Short,
+            Short = 2,
 
             /// <summary>
             /// An unsigned 16-bit integer.
             /// </summary>
-            Int16,
+            Int16 = 3,
 
             /// <summary>
             /// A signed 32-bit integer.
             /// </summary>
-            UShort,
+            UShort = 4,
 
             /// <summary>
             /// An unsigned 32-bit integer.
             /// </summary>
-            UInt16,
+            UInt16 = 5,
 
             /// <summary>
             /// A signed 32-bit integer.
             /// </summary>
-            Int,
+            Int = 6,
 
             /// <summary>
             /// An unsigned 32-bit integer.
             /// </summary>
-            Int32,
+            Int32 = 7,
 
             /// <summary>
             /// A signed 64-bit integer.
             /// </summary>
-            UInt,
+            UInt = 8,
 
             /// <summary>
             /// An unsigned 64-bit integer.
             /// </summary>
-            UInt32,
+            UInt32 = 9,
 
             /// <summary>
             /// A signed 64-bit integer.
             /// </summary>
-            ULong,
+            ULong = 10,
 
             /// <summary>
             /// An unsigned 64-bit integer.
             /// </summary>
-            UInt64,
+            UInt64 = 11,
         }
     }
 }

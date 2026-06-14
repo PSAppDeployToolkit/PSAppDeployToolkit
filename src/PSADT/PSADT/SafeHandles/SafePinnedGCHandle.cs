@@ -22,7 +22,7 @@ namespace PSADT.SafeHandles
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SafePinnedGCHandle Alloc<T>(T[] value) where T : unmanaged
         {
-            return new(GCHandle.Alloc(value, GCHandleType.Pinned), Unsafe.SizeOf<T>() * value.Length, true);
+            return new(GCHandle.Alloc(value, GCHandleType.Pinned), Unsafe.SizeOf<T>() * value.Length, ownsHandle: true);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace PSADT.SafeHandles
         /// <returns>Always returns <see langword="true"/>, indicating that the handle was released successfully.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

@@ -35,9 +35,13 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="arguments">The argument value to validate.</param>
         /// <param name="engineIntrinsics">Provides access to the PowerShell engine APIs.</param>
-        /// <exception cref="ValidationMetadataException">
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the method is called from outside the PSAppDeployToolkit module context.
+        /// </exception>
+        /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="arguments"/> is a collection that contains duplicate elements.
         /// </exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
             // Verify the provided input before proceeding.

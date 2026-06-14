@@ -45,7 +45,7 @@ namespace PSADT.Tests.SMBIOS
         [Fact]
         public void Get_ParsesCompleteStructure()
         {
-            Guid expectedUuid = Guid.Parse("00112233-4455-6677-8899-AABBCCDDEEFF");
+            Guid expectedUuid = new(0x112233, 0x4455, 0x6677, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF) /* 00112233-4455-6677-8899-AABBCCDDEEFF */;
             byte[] formatted = new byte[23];
             formatted[0] = 1; // Manufacturer index
             formatted[1] = 2; // Product index
@@ -228,7 +228,7 @@ namespace PSADT.Tests.SMBIOS
         [Fact]
         public void Get_ParsesUuidWhenWakeUpTypeMissing()
         {
-            Guid expectedUuid = Guid.Parse("11223344-5566-7788-99AA-BBCCDDEEFF00");
+            Guid expectedUuid = new(0x11223344, 0x5566, 0x7788, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x0) /* 11223344-5566-7788-99AA-BBCCDDEEFF00 */;
             byte[] formatted = new byte[20]; // Structure length 24
             formatted[0] = 1;
             formatted[1] = 2;
@@ -290,8 +290,7 @@ namespace PSADT.Tests.SMBIOS
         /// short to be valid.
         /// </summary>
         /// <remarks>This test ensures that the SystemInformation.Get method correctly validates the
-        /// length of the input buffer and provides an appropriate error message when the buffer does not meet the
-        /// minimum required size.</remarks>
+        /// length of the input buffer and reports the parameter that does not meet the minimum required size.</remarks>
         [Fact]
         public void Get_ThrowsWhenStructureTooShort()
         {
@@ -304,7 +303,7 @@ namespace PSADT.Tests.SMBIOS
                     "Manufacturer"));
 
             ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => SystemInformation.Get(buffer));
-            Assert.Contains("must be greater than", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("structureLength", ex.ParamName);
         }
     }
 }

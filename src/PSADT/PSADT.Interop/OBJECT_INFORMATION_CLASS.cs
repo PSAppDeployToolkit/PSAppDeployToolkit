@@ -33,27 +33,27 @@
         /// Indicates that the handle information includes flag details for the associated object.
         /// Data type: OBJECT_HANDLE_FLAG_INFORMATION
         /// </summary>
-        ObjectHandleFlagInformation,
+        ObjectHandleFlagInformation = 4,
 
         /// <summary>
         /// Represents session-related information for an object, such as authentication details or session state (requires SeTcbPrivilege).
         /// </summary>
-        ObjectSessionInformation,
+        ObjectSessionInformation = 5,
 
         /// <summary>
         /// Represents information about an object session, including details relevant to the object's current state or
         /// context (requires SeTcbPrivilege).
         /// </summary>
-        ObjectSessionObjectInformation,
+        ObjectSessionObjectInformation = 6,
 
         /// <summary>
         /// Provides trace information related to object set references for diagnostic or logging purposes.
         /// </summary>
-        ObjectSetRefTraceInformation,
+        ObjectSetRefTraceInformation = 7,
 
         /// <summary>
         /// Represents the maximum object information class supported by the system.
         /// </summary>
-        MaxObjectInfoClass,
+        MaxObjectInfoClass = 8,
     }
 }

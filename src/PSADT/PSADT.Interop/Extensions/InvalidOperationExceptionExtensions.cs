@@ -232,7 +232,7 @@ namespace System
             [StackTraceHidden]
             public static void ThrowIfNullOrInvalid<T>([NotNull] T handle, string message) where T : SafeHandle
             {
-                if (handle is null || handle.IsClosed || handle.IsInvalid)
+                if (handle?.IsClosed != false || handle.IsInvalid)
                 {
                     throw new InvalidOperationException(message);
                 }

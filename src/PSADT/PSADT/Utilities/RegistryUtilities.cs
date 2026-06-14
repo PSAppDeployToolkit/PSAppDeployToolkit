@@ -25,7 +25,7 @@ namespace PSADT.Utilities
         public static DateTime GetRegistryKeyLastWriteTime(string fullKeyPath)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(fullKeyPath);
-            _ = NativeMethods.RegQueryInfoKey(hKey, null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
+            _ = NativeMethods.RegQueryInfoKey(hKey, lpClass: null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
             return lastWriteTime.ToDateTime();
         }
 
@@ -40,7 +40,7 @@ namespace PSADT.Utilities
         /// <param name="newKeyName">The new name for the subkey. This cannot be null or empty.</param>
         public static void RenameRegistryKey(string keyPath, string? subKeyName, string newKeyName)
         {
-            using SafeRegistryHandle hKey = OpenRegistryKey(keyPath, REG_SAM_FLAGS.KEY_READ | REG_SAM_FLAGS.KEY_WRITE);
+            using SafeRegistryHandle hKey = OpenRegistryKey(keyPath);
             _ = NativeMethods.RegRenameKey(hKey, subKeyName, newKeyName);
         }
 
@@ -56,15 +56,16 @@ namespace PSADT.Utilities
         /// <returns>A read-only <see cref="RegistryKey"/> object representing the specified registry key.</returns>
         /// <exception cref="FormatException">Thrown if <paramref name="keyPath"/> is null, empty, not in a valid format, specifies an unrecognized hive,
         /// or if the specified registry key does not exist.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the specified registry key does not exist.</exception>
         internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable = false)
         {
-            keyPath = keyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null);
-            int firstBackslashIndex = keyPath.IndexOf('\\');
+            keyPath = keyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", newValue: null, StringComparison.OrdinalIgnoreCase);
+            int firstBackslashIndex = keyPath.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
             if (firstBackslashIndex == -1)
             {
                 throw new FormatException("Invalid registry key format.");
             }
-            string hiveName = keyPath.Substring(0, firstBackslashIndex);
+            string hiveName = keyPath[..firstBackslashIndex];
             RegistryKey baseKey = hiveName switch
             {
                 "HKEY_LOCAL_MACHINE" or "HKLM" => Registry.LocalMachine,
@@ -74,7 +75,7 @@ namespace PSADT.Utilities
                 "HKEY_CURRENT_CONFIG" or "HKCC" => Registry.CurrentConfig,
                 _ => throw new FormatException($"Invalid registry hive: {hiveName}"),
             };
-            return baseKey.OpenSubKey(keyPath.Substring(firstBackslashIndex + 1), writable) ?? throw new InvalidOperationException("The specified registry key does not exist."); ;
+            return baseKey.OpenSubKey(keyPath[(firstBackslashIndex + 1)..], writable) ?? throw new InvalidOperationException("The specified registry key does not exist.");
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace PSADT.Utilities
         {
             // Split hive and subkey so we know what root hive we're accessing.
             ArgumentException.ThrowIfNullOrWhiteSpace(fullKeyPath);
-            string[] parts = fullKeyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", null).Split(['\\'], 2);
+            string[] parts = fullKeyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", newValue: null, StringComparison.OrdinalIgnoreCase).Split(['\\'], 2);
             if (parts.Length < 2)
             {
                 throw new FormatException("Invalid registry key format.");
@@ -119,11 +120,11 @@ namespace PSADT.Utilities
         {
             return hiveName switch
             {
-                "HKEY_LOCAL_MACHINE" => new(HKEY.HKEY_LOCAL_MACHINE, false),
-                "HKEY_CURRENT_USER" => new(HKEY.HKEY_CURRENT_USER, false),
-                "HKEY_CLASSES_ROOT" => new(HKEY.HKEY_CLASSES_ROOT, false),
-                "HKEY_USERS" => new(HKEY.HKEY_USERS, false),
-                "HKEY_CURRENT_CONFIG" => new(HKEY.HKEY_CURRENT_CONFIG, false),
+                "HKEY_LOCAL_MACHINE" => new(HKEY.HKEY_LOCAL_MACHINE, ownsHandle: false),
+                "HKEY_CURRENT_USER" => new(HKEY.HKEY_CURRENT_USER, ownsHandle: false),
+                "HKEY_CLASSES_ROOT" => new(HKEY.HKEY_CLASSES_ROOT, ownsHandle: false),
+                "HKEY_USERS" => new(HKEY.HKEY_USERS, ownsHandle: false),
+                "HKEY_CURRENT_CONFIG" => new(HKEY.HKEY_CURRENT_CONFIG, ownsHandle: false),
                 _ => throw new FormatException($"Invalid registry hive: {hiveName}"),
             };
         }

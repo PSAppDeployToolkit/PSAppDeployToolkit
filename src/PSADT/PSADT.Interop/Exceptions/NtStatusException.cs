@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Collections.Frozen;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -19,6 +19,7 @@ namespace PSADT.Interop.Exceptions
     /// The exception that is thrown for NTSTATUS error codes returned from Windows NT native API calls.
     /// </summary>
     [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "NTSTATUS value is required for this exception type")]
+    [SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "NTSTATUS value is required for this exception type")]
     [Serializable]
     internal class NtStatusException : ExternalException
     {
@@ -79,12 +80,12 @@ namespace PSADT.Interop.Exceptions
             Span<char> buffer = new char[short.MaxValue];
             try
             {
-                return $"{Regex.Replace(buffer.Slice(0, (int)NativeMethods.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)).ToString(), @"\{.+\}", string.Empty).Trim().TrimEnd('.')}. {messageSuffix}";
+                return $"{FormatMessageRemovalRegex.Replace(buffer[..(int)NativeMethods.FormatMessage(FormatMessageFlags, NtDllHandle, unchecked((uint)ntStatus.Value), buffer)].ToString(), string.Empty).Trim().TrimEnd('.')}. {messageSuffix}";
             }
             catch (Win32Exception)
             {
                 // Use the Win32Exception message only if it's valid.
-                if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error && ExceptionUtilities.GetMessageForWin32Error(win32Error, true) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error"))
+                if (ExceptionUtilities.WIN32_FROM_NT(ntStatus) is WIN32_ERROR win32Error && ExceptionUtilities.GetMessageForWin32Error(win32Error, disableSuffix: true) is string message && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("Unknown error", StringComparison.Ordinal))
                 {
                     return $"{message} {messageSuffix}";
                 }
@@ -106,7 +107,12 @@ namespace PSADT.Interop.Exceptions
         /// of the NTSTATUS enumeration, allowing for efficient lookup of the string representation of NTSTATUS values.
         /// This can be useful for debugging, logging, or displaying human-readable status codes.</remarks>
         [SuppressMessage("Major Code Smell", "S3011:Reflection should not be used to increase accessibility of classes, methods, or fields", Justification = "The non-public static fields of the NTSTATUS enumeration are accessed to create a mapping of NTSTATUS values to their names.")]
-        private static readonly ReadOnlyDictionary<NTSTATUS, string> NtStatusValueNameMap = new(typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => field.Name != "STATUS_SUCCESS").GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name));
+        private static readonly FrozenDictionary<NTSTATUS, string> NtStatusValueNameMap = typeof(NTSTATUS).GetFields(BindingFlags.NonPublic | BindingFlags.Static).Where(static field => !"STATUS_SUCCESS".Equals(field.Name, StringComparison.Ordinal)).GroupBy(static field => (NTSTATUS)(field.GetValue(null) ?? throw new InvalidProgramException($"Failed to get value for '{field.Name}' field."))).ToDictionary(static g => g.Key, static g => g.First().Name).ToFrozenDictionary();
+
+        /// <summary>
+        /// A regular expression used to remove insert placeholders (e.g., "{0}", "{1}") from the messages returned by FormatMessage. This is necessary because the FORMAT_MESSAGE_IGNORE_INSERTS flag is used, which leaves the placeholders in the message string. The regex matches any substring that starts with '{', followed by one or more characters, and ends with '}', effectively identifying all insert placeholders for removal.
+        /// </summary>
+        private static readonly Regex FormatMessageRemovalRegex = new(@"\{.+\}", RegexOptions.Compiled);
 
         /// <summary>
         /// Defines the options for formatting messages retrieved from the system or a specified module.

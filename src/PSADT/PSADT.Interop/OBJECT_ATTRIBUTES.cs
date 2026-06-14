@@ -7,6 +7,8 @@ namespace PSADT.Interop
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type on this enum is correct.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "These values are precisely as they're defined in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1237:[deprecated] Use bit shift operator", Justification = "This one makes no sense here since we're mirroring a CsWin32 enum.")]
     [Flags]
     public enum OBJECT_ATTRIBUTES : uint
     {

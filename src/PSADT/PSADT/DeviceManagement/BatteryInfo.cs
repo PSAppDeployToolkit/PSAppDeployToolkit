@@ -8,7 +8,7 @@ namespace PSADT.DeviceManagement
     /// <summary>
     /// Provides information about the device's battery and power state.
     /// </summary>
-    /// <remarks>The <see cref="BatteryInfo"/> class encapsulates details about the battery's charge status, 
+    /// <remarks>The <see cref="BatteryInfo"/> class encapsulates details about the battery's charge status,
     /// remaining life, power line status, and other related properties. It is designed to retrieve and expose
     /// system-level information about the device's power and battery state. <para> Use the <see cref="Get"/> method to
     /// obtain an instance of <see cref="BatteryInfo"/> populated with the current battery and power-related data.
@@ -41,6 +41,7 @@ namespace PSADT.DeviceManagement
         /// Gets the current status of the AC power line.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This setup is to replicate the WinForms implementation.")]
         public PowerLineStatus ACPowerLineStatus
         {
             get
@@ -54,6 +55,7 @@ namespace PSADT.DeviceManagement
         /// Represents the current charge status of the device's battery.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This setup is to replicate the WinForms implementation.")]
         public BatteryChargeStatus BatteryChargeStatus
         {
             get
@@ -72,6 +74,7 @@ namespace PSADT.DeviceManagement
         /// Represents the current battery life percentage of a device.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This setup is to replicate the WinForms implementation.")]
         public bool BatterySaverEnabled
         {
             get
@@ -86,6 +89,7 @@ namespace PSADT.DeviceManagement
         /// life cannot be determined.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This setup is to replicate the WinForms implementation.")]
         public TimeSpan? BatteryLifeRemaining
         {
             get
@@ -99,6 +103,7 @@ namespace PSADT.DeviceManagement
         /// Gets the estimated full lifetime of the battery.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This setup is to replicate the WinForms implementation.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This setup is to replicate the WinForms implementation.")]
         public TimeSpan? BatteryFullLifetime
         {
             get

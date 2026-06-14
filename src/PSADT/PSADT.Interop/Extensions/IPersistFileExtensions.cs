@@ -11,6 +11,7 @@ namespace PSADT.Interop.Extensions
     /// </summary>
     /// <remarks>This static class contains methods that extend the functionality of IPersistFile, allowing
     /// developers to more easily retrieve and manage file names associated with IPersistFile instances.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class IPersistFileExtensions
     {
         /// <summary>
@@ -25,7 +26,7 @@ namespace PSADT.Interop.Extensions
         {
             @this.GetCurFile(out PWSTR ppszFileNameLocal);
             ppszFileName = !ppszFileNameLocal.IsNull()
-                ? new(ppszFileNameLocal, true)
+                ? new(ppszFileNameLocal, ownsHandle: true)
                 : null;
         }
     }

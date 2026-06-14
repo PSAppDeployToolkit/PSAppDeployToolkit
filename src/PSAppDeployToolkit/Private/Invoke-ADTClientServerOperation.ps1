@@ -200,7 +200,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Return the client process's result to the caller.
-        if ($clientResult = $clientProcess.Task.GetAwaiter().GetResult())
+        if ($clientResult = $clientProcess.GetAwaiter().GetResult())
         {
             return $clientResult
         }
@@ -249,7 +249,7 @@ function Private:Invoke-ADTClientServerOperation
             $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User)
             try
             {
-                $Script:ADT.ClientServerProcess.Open()
+                $null = $Script:ADT.ClientServerProcess.OpenAsync().GetAwaiter().GetResult()
             }
             catch
             {
@@ -269,13 +269,13 @@ function Private:Invoke-ADTClientServerOperation
                         ErrorId = 'ClientServerProcessOpenFailure'
                         TargetObject = $clientServerClientProcessResult
                     }
-                    $Script:ADT.ClientServerProcess.Dispose()
+                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
                 else
                 {
-                    $Script:ADT.ClientServerProcess.Dispose()
+                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
@@ -409,7 +409,7 @@ function Private:Invoke-ADTClientServerOperation
                     }
                     HelpConsole
                     {
-                        [System.Int32]
+                        [PSADT.UserInterface.DialogResults.DialogBoxResult]
                         break
                     }
                     InputDialog
@@ -507,7 +507,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             GetUserToastNotificationMode
             {
-                [PSADT.Interop.ToastNotificationMode]
+                [System.Int32]
                 break
             }
             SilentRestart
@@ -616,7 +616,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).Task.GetAwaiter().GetResult()
+                [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).GetAwaiter().GetResult()
             }
         }
         finally

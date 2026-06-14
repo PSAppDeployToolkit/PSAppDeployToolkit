@@ -44,6 +44,8 @@ namespace PSAppDeployToolkit.Foundation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "CA1505:Avoid unmaintainable code", Justification = "This is unfortunately unavoidable.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "This exception type is fine here.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S3366:\"this\" should not be exposed from constructors", Justification = "This is deliberate, unfortunately.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0014:Do not raise System.ApplicationException type", Justification = "This exception type is fine here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
         public DeploymentSession(IReadOnlyDictionary<string, object>? parameters = null, bool? noExitOnClose = null, bool? compatibilityMode = null)
         {
             try
@@ -263,7 +265,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion Initialization
                 #region DetectDefaultWim
 
 
@@ -291,7 +293,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion DetectDefaultWim
                 #region DetectDefaultMsi
 
 
@@ -365,7 +367,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Last())))];
+                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries)[^1])))];
                             if (msiExecList.Length > 0)
                             {
                                 AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
@@ -395,7 +397,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion DetectDefaultMsi
                 #region SetAppProperties
 
 
@@ -423,7 +425,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion SetAppProperties
                 #region SetInstallProperties
 
 
@@ -432,21 +434,21 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     InstallTitle = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor} " : null)}{AppName} {AppVersion}".Trim();
                 }
-                InstallTitle = Regex.Replace(InstallTitle, @"\s{2,}", string.Empty);
+                InstallTitle = DoubleSpaceRegex.Replace(InstallTitle, string.Empty);
 
                 // Build the Installation Name.
-                if (string.IsNullOrWhiteSpace(InstallName))
+                if (InstallName is null || string.IsNullOrWhiteSpace(InstallName))
                 {
                     InstallName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor}_" : null)}{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
                 }
-                InstallName = invalidChars.Replace(Regex.Replace(InstallName!.Trim('_').Replace(" ", null), "_+", "_"), string.Empty);
+                InstallName = invalidChars.Replace(DoubleUnderscoreRegex.Replace(InstallName.Trim('_').Replace(" ", newValue: null, StringComparison.OrdinalIgnoreCase), "_"), string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
                 RegKeyDeferHistory = $@"{RegKeyDeferBase}\{InstallName}";
 
 
-                #endregion
+                #endregion SetInstallProperties
                 #region InitLogging
 
 
@@ -457,7 +459,7 @@ namespace PSAppDeployToolkit.Foundation
                     DirectoryInfo logTempFolder = new(Path.Join(adtEnv.EnvTemp.FullName, $"{InstallName}_{DeploymentType}"));
                     if (logTempFolder.Exists)
                     {
-                        logTempFolder.Delete(true);
+                        logTempFolder.Delete(recursive: true);
                     }
                     LogPath = new(Directory.CreateDirectory(logTempFolder.FullName).FullName);
                 }
@@ -470,7 +472,7 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
-                    LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", null))).FullName);
+                    LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", newValue: null, StringComparison.OrdinalIgnoreCase))).FullName);
 
                     // Check how many hierarchy levels to keep based on configuration.
                     DirectoryInfo[] hierarchyDirectories = [.. LogPath.Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath.FullName, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
@@ -480,7 +482,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         foreach (DirectoryInfo directory in hierarchyDirectories.Take(hierarchyDirectoriesCount - logMaxHierarchy))
                         {
-                            directory.Delete(true);
+                            directory.Delete(recursive: true);
                         }
                     }
                 }
@@ -505,14 +507,14 @@ namespace PSAppDeployToolkit.Foundation
                         // Get new log file path.
                         string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
                         string logFileExtension = LogUtilities.LogFileNameRegex.Match(LogName).Value;
-                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", null);
+                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.OrdinalIgnoreCase);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Join(LogPath.FullName, archiveLogFileName);
 
                         // Log message about archiving the log file.
                         if (logFileSizeExceeded)
                         {
-                            WriteLogEntry($"Maximum log file size [{logMaxSize} MB] reached. Rename log file to [{archiveLogFileName}].", LogSeverity.Warning);
+                            WriteLogEntry($"Maximum log file size [{logMaxSize.ToString(CultureInfo.InvariantCulture)} MB] reached. Rename log file to [{archiveLogFileName}].", LogSeverity.Warning);
                         }
 
                         // Rename the file.
@@ -521,7 +523,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Start new log file and log message about archiving the old log file.
                         if (logFileSizeExceeded)
                         {
-                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize} MB] was reached.", LogSeverity.Warning);
+                            WriteLogEntry($"Previous log file was renamed to [{archiveLogFileName}] because maximum log file size of [{logMaxSize.ToString(CultureInfo.InvariantCulture)} MB] was reached.", LogSeverity.Warning);
                         }
 
                         // Get all log files sorted by last write time.
@@ -546,7 +548,7 @@ namespace PSAppDeployToolkit.Foundation
                 // Flush our log buffer out to disk.
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
-                    using StreamWriter logFileWriter = new(Path.Join(LogPath.FullName, LogName), true, LogUtilities.LogEncoding);
+                    using StreamWriter logFileWriter = new(Path.Join(LogPath.FullName, LogName), append: true, LogUtilities.LogEncoding);
                     foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
                     {
                         logFileWriter.WriteLine(line);
@@ -558,7 +560,7 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"[{InstallName}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())} started.");
 
 
-                #endregion
+                #endregion InitLogging
                 #region LogScriptInfo
 
 
@@ -567,11 +569,11 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     WriteLogEntry($"[{InstallName}] script version is [{AppScriptVersion}].");
                 }
-                if ((AppScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && appScriptDate != "2000-12-31")
+                if ((AppScriptDate?.ToString("O").Split('T')[0] is string appScriptDate) && !"2000-12-31".Equals(appScriptDate, StringComparison.Ordinal))
                 {
                     WriteLogEntry($"[{InstallName}] script date is [{appScriptDate}].");
                 }
-                if (!string.IsNullOrWhiteSpace(AppScriptAuthor) && AppScriptAuthor != "<author name>")
+                if (!string.IsNullOrWhiteSpace(AppScriptAuthor) && !"<author name>".Equals(AppScriptAuthor, StringComparison.Ordinal))
                 {
                     WriteLogEntry($"[{InstallName}] script author is [{AppScriptAuthor}].");
                 }
@@ -583,14 +585,14 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (DeployAppScriptParameters?.Count > 0)
                     {
-                        WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(DeployAppScriptParameters).Replace("''", "'")}].");
+                        WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(DeployAppScriptParameters).Replace("''", "'", StringComparison.OrdinalIgnoreCase)}].");
                     }
                 }
                 PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
                 PSObject adtDurations = (PSObject)adtData.Properties["Durations"].Value;
                 WriteLogEntry($"[{appDeployToolkitName}] module version is [{appDeployMainScriptVersion}].");
-                WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds}] seconds.");
-                WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds}] seconds.");
+                WriteLogEntry($"[{appDeployToolkitName}] module imported in [{((TimeSpan)adtDurations.Properties["ModuleImport"].Value).TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds.");
+                WriteLogEntry($"[{appDeployToolkitName}] module initialized in [{((TimeSpan)adtDurations.Properties["ModuleInit"].Value).TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds.");
                 WriteLogEntry($"[{appDeployToolkitName}] module path is ['{adtEnv.AppDeployToolkitPath}'].");
                 if ((string[]?)adtDirectories.Properties["Config"].Value is { Length: > 0 } adtConfigDirs)
                 {
@@ -618,7 +620,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion LogScriptInfo
                 #region LogSystemInfo
 
 
@@ -641,7 +643,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion LogSystemInfo
                 #region LogUserInfo
 
 
@@ -650,7 +652,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     // Log details for all currently logged on users.
                     WriteLogEntry($"The following users are logged on to the system: [{string.Join(", ", usersLoggedOn.Select(static u => u.Value))}].");
-                    WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, adtEnv.LoggedOnUserSessions.Select(static s => $"{s}{Environment.NewLine}{Environment.NewLine}")).TrimEnd()}", false);
+                    WriteLogEntry($"Session information for all logged on users:{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, adtEnv.LoggedOnUserSessions.Select(static s => s + Environment.NewLine)).TrimEnd()}", writeHost: false);
 
                     // Check if the current process is running in the context of one of the logged on users.
                     if (adtEnv.CurrentLoggedOnUserSession is SessionInfo CurrentLoggedOnUserSession)
@@ -684,7 +686,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion LogUserInfo
                 #region LogLanguageInfo
 
 
@@ -699,7 +701,7 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"The following locale was used to import UI messages from the strings.psd1 files: [{adtData.Properties["Language"].Value}].");
 
 
-                #endregion
+                #endregion LogLanguageInfo
                 #region PerformConfigMgrTests
 
 
@@ -714,7 +716,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion PerformConfigMgrTests
                 #region SetDeploymentProperties
 
 
@@ -746,9 +748,9 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry("The WWAHost process is running, checking ESP User Account setup phase.");
                     if (runAsActiveUser?.SID is SecurityIdentifier userSid)
                     {
-                        if (wwaHostProcesses.FirstOrDefault(p => p.SessionId == runAsActiveUser.SessionId) is not null)
+                        if (wwaHostProcesses.Any(p => p.SessionId == runAsActiveUser.SessionId))
                         {
-                            PSObject? fsRegData = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], null, false).FirstOrDefault();
+                            PSObject? fsRegData = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get([$@"Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Enrollments\*\FirstSync\{userSid}"], providerSpecificPickList: null, literalPath: false).FirstOrDefault();
                             if (fsRegData is not null)
                             {
                                 if (fsRegData.Properties["IsSyncDone"]?.Value is null or 0)
@@ -825,7 +827,7 @@ namespace PSAppDeployToolkit.Foundation
                             }
                             else
                             {
-                                WriteLogEntry($"Session 0 detected, no users logged on but process running in user interactive mode.");
+                                WriteLogEntry("Session 0 detected, no users logged on but process running in user interactive mode.");
                             }
                         }
                         else
@@ -870,7 +872,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
                         else
                         {
-                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcesses.Select(static p => p.Process.ProcessName).Distinct())}'] were found to be running and will require closure.");
+                            WriteLogEntry($"The processes ['{string.Join("', '", runningProcesses.Select(static p => p.Process.ProcessName).Distinct(StringComparer.OrdinalIgnoreCase))}'] were found to be running and will require closure.");
                         }
                     }
                     else
@@ -900,7 +902,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
                 else
                 {
-                    WriteLogEntry($"No processes were specified as requiring closure, not adjusting DeployMode as DeployAppScriptVersion is less than [4.2.0].");
+                    WriteLogEntry("No processes were specified as requiring closure, not adjusting DeployMode as DeployAppScriptVersion is less than [4.2.0].");
                 }
 
                 // If we're still in Auto mode, then set the deployment mode to Interactive.
@@ -925,14 +927,14 @@ namespace PSAppDeployToolkit.Foundation
                 WriteLogEntry($"Deployment type is [{DeploymentType}].");
 
 
-                #endregion
+                #endregion SetDeploymentProperties
                 #region TestSessionViability
 
 
                 // Check current permissions and exit if not running with Administrator rights.
                 if (Settings.HasFlag(DeploymentSettings.RequireAdmin) && !isAdmin)
                 {
-                    throw new UnauthorizedAccessException($"This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
+                    throw new UnauthorizedAccessException("This deployment requires administrative permissions and the current user is not an Administrator, or PowerShell is not elevated. Please re-run the deployment script as an Administrator and try again.");
                 }
 
                 // Throw if the process is 32-bit on a 64-bit OS.
@@ -944,11 +946,11 @@ namespace PSAppDeployToolkit.Foundation
                 // Check if the caller explicitly wants interactivity but we can't do it.
                 if (DeployMode != DeployMode.Silent && runAsActiveUser is null && !isProcessUserInteractive)
                 {
-                    throw new NotSupportedException($"This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
+                    throw new NotSupportedException("This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
 
 
-                #endregion
+                #endregion TestSessionViability
                 #region Finalization
 
 
@@ -984,7 +986,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
 
-                #endregion
+                #endregion Finalization
             }
             catch (Exception ex) when (ex.Message is not null)
             {
@@ -997,7 +999,7 @@ namespace PSAppDeployToolkit.Foundation
         }
 
 
-        #endregion
+        #endregion Constructors.
         #region Public methods.
 
 
@@ -1005,7 +1007,10 @@ namespace PSAppDeployToolkit.Foundation
         /// Closes the session and releases resources.
         /// </summary>
         /// <returns>The exit code.</returns>
+        /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
         public int Close()
         {
             // Throw if this object has already been disposed.
@@ -1024,7 +1029,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Process resulting exit code.
-            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{Regex.Replace(InstallName, @"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].";
+            string deployString = $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallNameFormatterRegex.Replace(InstallName, "$0$0")}] {CultureInfo.InvariantCulture.TextInfo.ToLower(DeploymentType.ToString())}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds.ToString(CultureInfo.InvariantCulture)}] seconds with exit code [{ExitCode.ToString(CultureInfo.InvariantCulture)}].";
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
@@ -1076,7 +1081,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     // Get all archive files sorted by last write time.
                     FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
-                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", null));
+                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.OrdinalIgnoreCase));
 
                     // Keep only the max number of archive files.
                     int archiveFilesCount = archiveFiles.Length;
@@ -1089,8 +1094,8 @@ namespace PSAppDeployToolkit.Foundation
                     }
 
                     // Compression of the log files.
-                    ZipFile.CreateFromDirectory(LogPath.FullName, Path.Join(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, false);
-                    LogPath.Delete(true);
+                    ZipFile.CreateFromDirectory(LogPath.FullName, Path.Join(destArchiveFilePath.FullName, destArchiveFileName), CompressionLevel.Optimal, includeBaseDirectory: false);
+                    LogPath.Delete(recursive: true);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -1142,7 +1147,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(IReadOnlyList<string> message)
         {
-            _ = WriteLogEntry(message, false);
+            _ = WriteLogEntry(message, debugMessage: false);
         }
 
         /// <summary>
@@ -1153,7 +1158,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(IReadOnlyList<string> message, LogSeverity severity)
         {
-            _ = WriteLogEntry(message, false, severity);
+            _ = WriteLogEntry(message, debugMessage: false, severity);
         }
 
         /// <summary>
@@ -1163,7 +1168,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message)
         {
-            _ = WriteLogEntry([message], false);
+            _ = WriteLogEntry([message], debugMessage: false);
         }
 
         /// <summary>
@@ -1174,7 +1179,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity)
         {
-            _ = WriteLogEntry([message], false, severity);
+            _ = WriteLogEntry([message], debugMessage: false, severity);
         }
 
         /// <summary>
@@ -1186,7 +1191,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity, string source)
         {
-            _ = WriteLogEntry([message], false, severity, source);
+            _ = WriteLogEntry([message], debugMessage: false, severity, source);
         }
 
         /// <summary>
@@ -1197,7 +1202,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, bool writeHost)
         {
-            _ = WriteLogEntry([message], false, hostLogStreamType: GetHostLogStreamTypeMode(writeHost));
+            _ = WriteLogEntry([message], debugMessage: false, hostLogStreamType: GetHostLogStreamTypeMode(writeHost));
         }
 
         /// <summary>
@@ -1222,7 +1227,7 @@ namespace PSAppDeployToolkit.Foundation
                 return null;
             }
             WriteLogEntry("Getting deferral history...");
-            PSObject? history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, null).FirstOrDefault();
+            PSObject? history = ModuleDatabase.GetSessionState().InvokeProvider.Property.Get(RegKeyDeferHistory, providerSpecificPickList: null).FirstOrDefault();
             if (history is null)
             {
                 return null;
@@ -1241,8 +1246,8 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Sets the deferral history.
         /// </summary>
-        /// <param name="deferDeadline">The deferral deadline.</param>
         /// <param name="deferTimesRemaining">The deferral times remaining.</param>
+        /// <param name="deferDeadline">The deferral deadline.</param>
         /// <param name="deferRunInterval">The interval as a TimeSpan before prompting the user again after a deferral.</param>
         /// <param name="deferRunIntervalLastTime">The timestamp of the last deferRunInterval.</param>
         public void SetDeferHistory(uint? deferTimesRemaining, DateTime? deferDeadline, TimeSpan? deferRunInterval, DateTime? deferRunIntervalLastTime)
@@ -1258,7 +1263,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     CreateDeferHistoryPath();
                 }
-                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], key, kind.ToString(), value, true, true);
+                _ = moduleSessionState.InvokeProvider.Property.New([RegKeyDeferHistory], key, kind.ToString(), value, force: true, literalPath: true);
             }
 
             // Test each property and set it if it exists.
@@ -1288,7 +1293,7 @@ namespace PSAppDeployToolkit.Foundation
             if (!string.IsNullOrWhiteSpace(RegKeyDeferHistory) && TestDeferHistoryPath())
             {
                 WriteLogEntry("Removing deferral history...");
-                ModuleDatabase.GetSessionState().InvokeProvider.Item.Remove(RegKeyDeferHistory, true);
+                ModuleDatabase.GetSessionState().InvokeProvider.Item.Remove(RegKeyDeferHistory, recurse: true);
             }
         }
 
@@ -1382,7 +1387,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Add the mounted WIM files.
         /// </summary>
-        /// <param>The WIM file to add to the list for dismounting upon session closure.</param>
+        /// <param name="wimFile">The WIM file to add to the list for dismounting upon session closure.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMountedWimFile(FileInfo wimFile)
         {
@@ -1390,7 +1395,7 @@ namespace PSAppDeployToolkit.Foundation
         }
 
 
-        #endregion
+        #endregion Public methods.
         #region Private methods.
 
 
@@ -1406,6 +1411,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Writes a divider if one hasn't been written already.
         /// </summary>
+        /// <param name="written">A reference to a boolean indicating whether a divider has already been written.</param>
         private void WriteInitialDivider(ref bool written)
         {
             if (written)
@@ -1439,7 +1445,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TestDeferHistoryPath()
         {
-            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, true, true);
+            return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, force: true, literalPath: true);
         }
 
         /// <summary>
@@ -1448,7 +1454,7 @@ namespace PSAppDeployToolkit.Foundation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateDeferHistoryPath()
         {
-            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, null, null, true);
+            _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, itemTypeName: null, content: null, force: true);
         }
 
         /// <summary>
@@ -1465,7 +1471,7 @@ namespace PSAppDeployToolkit.Foundation
                 return;
             }
             WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
-            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive.Name, null);
+            _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive.Name, lpTargetPath: null);
         }
 
         /// <summary>
@@ -1476,7 +1482,7 @@ namespace PSAppDeployToolkit.Foundation
         /// are complete.</remarks>
         private void DismountWimFiles()
         {
-            if (MountedWimFiles.Count <= 0)
+            if (MountedWimFiles.Count == 0)
             {
                 return;
             }
@@ -1530,7 +1536,7 @@ namespace PSAppDeployToolkit.Foundation
         }
 
 
-        #endregion
+        #endregion Private methods.
         #region Public properties.
 
 
@@ -1725,7 +1731,7 @@ namespace PSAppDeployToolkit.Foundation
         public string InstallPhase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); } = "Initialization";
 
 
-        #endregion
+        #endregion Public properties.
         #region Private fields.
 
 
@@ -1812,9 +1818,24 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Array of all possible drive letters in reverse order.
         /// </summary>
-        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new(@"Z:"), new(@"Y:"), new(@"X:"), new(@"W:"), new(@"V:"), new(@"U:"), new(@"T:"), new(@"S:"), new(@"R:"), new(@"Q:"), new(@"P:"), new(@"O:"), new(@"N:"), new(@"M:"), new(@"L:"), new(@"K:"), new(@"J:"), new(@"I:"), new(@"H:"), new(@"G:"), new(@"F:"), new(@"E:"), new(@"D:"), new(@"C:"), new(@"B:"), new(@"A:")]);
+        private static readonly ReadOnlyCollection<DriveInfo> DriveLetters = new([new("Z:"), new("Y:"), new("X:"), new("W:"), new("V:"), new("U:"), new("T:"), new("S:"), new("R:"), new("Q:"), new("P:"), new("O:"), new("N:"), new("M:"), new("L:"), new("K:"), new("J:"), new("I:"), new("H:"), new("G:"), new("F:"), new("E:"), new("D:"), new("C:"), new("B:"), new("A:")]);
+
+        /// <summary>
+        /// A regular expression used to replace multiple consecutive whitespace characters with a single space. This is useful for normalizing log messages and other strings that may contain irregular spacing, ensuring consistent formatting in the output.
+        /// </summary>
+        private static readonly Regex DoubleSpaceRegex = new(@"\s{2,}", RegexOptions.Compiled);
+
+        /// <summary>
+        /// A regular expression used to replace multiple consecutive underscore characters with a single underscore. This can be helpful for normalizing strings that may contain multiple underscores, such as file names or identifiers, ensuring consistent formatting in the output.
+        /// </summary>
+        private static readonly Regex DoubleUnderscoreRegex = new("_+", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Formats the InstallName property when closing out of the active DeploymentSession.
+        /// </summary>
+        private static readonly Regex InstallNameFormatterRegex = new(@"(?<!\{)\{(?!\{)|(?<!\})\}(?!\})", RegexOptions.Compiled);
 
 
-        #endregion
+        #endregion Private fields.
     }
 }

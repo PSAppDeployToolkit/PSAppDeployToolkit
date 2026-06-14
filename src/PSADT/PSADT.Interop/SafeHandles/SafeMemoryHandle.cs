@@ -57,6 +57,7 @@ namespace PSADT.Interop.SafeHandles
         /// <typeparam name="T">The value type to interpret the memory as. Must be an unmanaged structure.</typeparam>
         /// <param name="offset">The byte offset from the start of the handle at which to read the structure. Defaults to 0.</param>
         /// <returns>A reference to the structure of type <typeparamref name="T"/> at the specified offset.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the size of the structure exceeds the remaining length of the memory region at the specified offset.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         internal ref readonly T AsReadOnlyStructure<T>(int offset = 0) where T : unmanaged
         {
@@ -217,13 +218,14 @@ namespace PSADT.Interop.SafeHandles
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="data"/> parameter is null.</exception>
         /// <exception cref="ArgumentException">Thrown if the <paramref name="data"/> parameter is empty, or if the combined length of <paramref
         /// name="data"/> and <paramref name="startIndex"/> exceeds the allocated memory length.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         internal TSelf Write(byte[] data, int startIndex = 0)
         {
             InvalidOperationException.ThrowIfNullOrInvalid(this, "The called upon SafeMemoryHandle instance is invalid.");
             ArgumentNullException.ThrowIfNull(data);
-            ArgumentOutOfRangeException.ThrowIfZero(data.Length);
+            ArgumentOutOfRangeException.ThrowIfZero(data.Length, nameof(data));
             ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + startIndex, Length);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length + startIndex, Length, nameof(data));
             Marshal.Copy(data, startIndex, handle, data.Length - startIndex);
             return (TSelf)this;
         }

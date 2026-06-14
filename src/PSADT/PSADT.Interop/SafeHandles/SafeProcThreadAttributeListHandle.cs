@@ -16,6 +16,7 @@ namespace PSADT.Interop.SafeHandles
     /// unmanaged resources are released reliably. It is intended for use with native interop scenarios where process or
     /// thread attributes must be specified. The handle is released automatically when the object is disposed or
     /// finalized.</remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal sealed class SafeProcThreadAttributeListHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         /// <summary>
@@ -29,15 +30,15 @@ namespace PSADT.Interop.SafeHandles
         {
             ArgumentOutOfRangeException.ThrowIfZero(count);
             nuint lpSize = default; _ = Initialize(default, count, ref lpSize);
-            nint handle = Marshal.AllocHGlobal((int)lpSize);
+            nint hGlobal = Marshal.AllocHGlobal((int)lpSize);
             try
             {
-                _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)handle, count, ref lpSize);
-                return new(handle, true);
+                _ = Initialize((LPPROC_THREAD_ATTRIBUTE_LIST)hGlobal, count, ref lpSize);
+                return new(hGlobal, ownsHandle: true);
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                Marshal.FreeHGlobal(handle);
+                Marshal.FreeHGlobal(hGlobal);
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
             }
@@ -122,7 +123,7 @@ namespace PSADT.Interop.SafeHandles
         /// already in its default state.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

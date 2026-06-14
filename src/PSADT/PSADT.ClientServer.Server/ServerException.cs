@@ -11,8 +11,9 @@ namespace PSADT.ClientServer
     /// <remarks>This exception is typically thrown to indicate an error condition specific to server-side
     /// operations. It extends <see cref="InvalidOperationException"/> to provide additional context for server-related
     /// errors.</remarks>
-    [Serializable]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "The constructors we have are fine for our internal usage.")]
+    [Serializable]
     internal sealed class ServerException : InvalidOperationException
     {
         /// <summary>

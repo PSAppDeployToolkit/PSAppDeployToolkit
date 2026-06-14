@@ -19,6 +19,7 @@ namespace PSADT.Interop.Extensions
         /// <param name="span">The read-only span of bytes to interpret as a structure of type T. The span must be at least as large as the
         /// size of T.</param>
         /// <returns>A reference to the structure of type T at the start of the span.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the provided span is too small to contain a structure of type T.</exception>"
         internal static ref readonly T AsReadOnlyStructure<T>(this ReadOnlySpan<byte> span) where T : unmanaged
         {
             if (Unsafe.SizeOf<T>() > span.Length)
@@ -44,7 +45,7 @@ namespace PSADT.Interop.Extensions
             {
                 throw new FormatException("The provided span does not contain a null-terminated Unicode string.");
             }
-            ReadOnlySpan<char> stringSpan = span.Slice(0, nullTerminator).Trim();
+            ReadOnlySpan<char> stringSpan = span[..nullTerminator].Trim();
             return !stringSpan.IsWhiteSpace() ? stringSpan.ToString() : null;
         }
 

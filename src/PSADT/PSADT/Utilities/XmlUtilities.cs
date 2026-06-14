@@ -66,7 +66,7 @@ namespace PSADT.Utilities
         private static readonly XmlReaderSettings SafeReaderSettings = new()
         {
             DtdProcessing = DtdProcessing.Prohibit,
-            XmlResolver = null
+            XmlResolver = null,
         };
     }
 }

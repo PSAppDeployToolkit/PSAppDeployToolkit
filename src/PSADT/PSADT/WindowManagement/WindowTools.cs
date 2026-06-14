@@ -16,7 +16,7 @@ namespace PSADT.WindowManagement
         internal static ReadOnlyCollection<HWND> EnumWindows()
         {
             List<HWND> windows = [];
-            _ = NativeMethods.EnumWindows((hWnd, lParam) =>
+            _ = NativeMethods.EnumWindows((hWnd, _) =>
             {
                 if (hWnd != HWND.Null)
                 {
@@ -38,7 +38,7 @@ namespace PSADT.WindowManagement
             if (textLength > 0)
             {
                 Span<char> buffer = stackalloc char[textLength + 1];
-                string text = buffer.Slice(0, NativeMethods.GetWindowText(hWnd, buffer)).Trim().ToString();
+                string text = buffer[..NativeMethods.GetWindowText(hWnd, buffer)].Trim().ToString();
                 if (!string.IsNullOrWhiteSpace(text))
                 {
                     return text;
@@ -68,17 +68,17 @@ namespace PSADT.WindowManagement
             // Bring the window to the foreground.
             uint currentThreadId = PInvoke.GetCurrentThreadId();
             uint windowThreadId = NativeMethods.GetWindowThreadProcessId(hWnd, out _);
-            _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, true);
+            _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, fAttach: true);
             try
             {
                 _ = NativeMethods.BringWindowToTop(hWnd);
-                _ = NativeMethods.SetForegroundWindow(hWnd, true);
+                _ = NativeMethods.SetForegroundWindow(hWnd, noThrowOnFailure: true);
                 _ = NativeMethods.SetActiveWindow(hWnd);
                 _ = NativeMethods.SetFocus(hWnd);
             }
             finally
             {
-                _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, false);
+                _ = NativeMethods.AttachThreadInput(currentThreadId, windowThreadId, fAttach: false);
             }
         }
 

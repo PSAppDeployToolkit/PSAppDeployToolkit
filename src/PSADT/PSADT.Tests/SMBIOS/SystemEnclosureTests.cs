@@ -280,15 +280,14 @@ namespace PSADT.Tests.SMBIOS
         /// Verifies that the Get method throws an ArgumentOutOfRangeException when the provided structure is too short.
         /// </summary>
         /// <remarks>This test ensures that SystemEnclosure.Get enforces input length requirements and
-        /// provides an appropriate error message when the input buffer does not meet the minimum expected
-        /// size.</remarks>
+        /// reports the parameter that does not meet the minimum expected size.</remarks>
         [Fact]
         public void Get_ThrowsWhenStructureTooShort()
         {
             byte[] formatted = [1, 0, 0, 0];
             byte[] buffer = BuildEnclosure(formatted, "M");
             ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(() => SystemEnclosure.Get(buffer));
-            Assert.Contains("must be greater than", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("structureLength", ex.ParamName);
         }
 
         /// <summary>

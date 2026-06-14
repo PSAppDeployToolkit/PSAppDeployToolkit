@@ -8,6 +8,9 @@ namespace PSADT.Interop
     /// </summary>
     /// <remarks>https://learn.microsoft.com/en-us/windows/win32/secmgmt/policy-object-access-rights</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2217:Do not mark enums with FlagsAttribute", Justification = "This is a bitfield...")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There's no zero value in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1157:Composite enum value contains undefined flag", Justification = "Again, this is how it's represented in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0062:Non-flags enums should not be marked with \"FlagsAttribute\"", Justification = "Again, this is how it's represented in the Win32 API.")]
     [Flags]
     internal enum LSA_POLICY_ACCESS : uint
     {
@@ -15,6 +18,11 @@ namespace PSADT.Interop
         /// This access type is needed to read the target system's miscellaneous security policy information. This includes the default quota, auditing, server state and role information, and trust information. This access type is also needed to enumerate trusted domains, accounts, and privileges.
         /// </summary>
         POLICY_VIEW_LOCAL_INFORMATION = Windows.Win32.PInvoke.POLICY_VIEW_LOCAL_INFORMATION,
+
+        /// <summary>
+        /// This access type is needed to view audit trail or audit requirements information.
+        /// </summary>
+        POLICY_VIEW_AUDIT_INFORMATION = Windows.Win32.PInvoke.POLICY_VIEW_AUDIT_INFORMATION,
 
         /// <summary>
         /// This access type is needed to view sensitive information, such as the names of accounts established for trusted domain relationships.
@@ -27,9 +35,9 @@ namespace PSADT.Interop
         POLICY_TRUST_ADMIN = Windows.Win32.PInvoke.POLICY_TRUST_ADMIN,
 
         /// <summary>
-        /// Set the default system quotas that are applied to user accounts.
+        /// This access type is needed to create a new Account object.
         /// </summary>
-        POLICY_SET_DEFAULT_QUOTA_LIMITS = Windows.Win32.PInvoke.POLICY_SET_DEFAULT_QUOTA_LIMITS,
+        POLICY_CREATE_ACCOUNT = Windows.Win32.PInvoke.POLICY_CREATE_ACCOUNT,
 
         /// <summary>
         /// This access type is needed to create a new Private Data object.
@@ -37,9 +45,14 @@ namespace PSADT.Interop
         POLICY_CREATE_SECRET = Windows.Win32.PInvoke.POLICY_CREATE_SECRET,
 
         /// <summary>
-        /// This access type is needed to create a new Account object.
+        /// Not yet supported.
         /// </summary>
-        POLICY_CREATE_ACCOUNT = Windows.Win32.PInvoke.POLICY_CREATE_ACCOUNT,
+        POLICY_CREATE_PRIVILEGE = Windows.Win32.PInvoke.POLICY_CREATE_PRIVILEGE,
+
+        /// <summary>
+        /// Set the default system quotas that are applied to user accounts.
+        /// </summary>
+        POLICY_SET_DEFAULT_QUOTA_LIMITS = Windows.Win32.PInvoke.POLICY_SET_DEFAULT_QUOTA_LIMITS,
 
         /// <summary>
         /// This access type is needed to update the auditing requirements of the system.
@@ -52,11 +65,6 @@ namespace PSADT.Interop
         POLICY_AUDIT_LOG_ADMIN = Windows.Win32.PInvoke.POLICY_AUDIT_LOG_ADMIN,
 
         /// <summary>
-        /// This access type is needed to view audit trail or audit requirements information.
-        /// </summary>
-        POLICY_VIEW_AUDIT_INFORMATION = Windows.Win32.PInvoke.POLICY_VIEW_AUDIT_INFORMATION,
-
-        /// <summary>
         /// This access type is needed to modify the server state or role (master/replica) information.It is also needed to change the replica source and account name information.
         /// </summary>
         POLICY_SERVER_ADMIN = Windows.Win32.PInvoke.POLICY_SERVER_ADMIN,
@@ -65,11 +73,6 @@ namespace PSADT.Interop
         /// This access type is needed to translate between names and SIDs.
         /// </summary>
         POLICY_LOOKUP_NAMES = Windows.Win32.PInvoke.POLICY_LOOKUP_NAMES,
-
-        /// <summary>
-        /// Not yet supported.
-        /// </summary>
-        POLICY_CREATE_PRIVILEGE = Windows.Win32.PInvoke.POLICY_CREATE_PRIVILEGE,
 
         /// <summary>
         /// Represents a generic read access right that combines standard read permissions with the ability to view audit information and retrieve private policy information.

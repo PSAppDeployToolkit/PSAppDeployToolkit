@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using PSADT.Interop;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
@@ -45,7 +46,7 @@ namespace PSADT.DeviceManagement
                 try
                 {
                     Guid iid = typeof(IAudioSessionManager2).GUID;
-                    microphoneDevice.Activate(in iid, CLSCTX.CLSCTX_INPROC_SERVER, null, out object sessionManager);
+                    microphoneDevice.Activate(in iid, CLSCTX.CLSCTX_INPROC_SERVER, pActivationParams: null, out object sessionManager);
                     try
                     {
                         IAudioSessionEnumerator sessionEnumerator = ((IAudioSessionManager2)sessionManager).GetSessionEnumerator();
@@ -107,12 +108,13 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
-        [SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This synchronous stop operation must wait for the polling task to complete before releasing resources.")]
+        /// <exception cref="InvalidOperationException">Thrown if the attempt to restart the computer fails or if shutdown.exe returns a non-zero exit code.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the 'Environment.Exit()' method does not terminate the process as expected.</exception>
         [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
-        internal static void RestartComputer()
+        internal static async Task RestartComputer()
         {
-            using (ProcessResult result = ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true))?.Task.GetAwaiter().GetResult() ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer."))
+            using (ProcessResult result = await (ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true)) ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.")).ConfigureAwait(false))
             {
                 if (result.ExitCode != 0)
                 {

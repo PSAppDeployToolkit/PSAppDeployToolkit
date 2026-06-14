@@ -113,7 +113,19 @@ function Test-ADTServiceExists
 
     begin
     {
+        # Initialise the function and confirm no wildcards have been provided for the UseCIM pathway.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+        if ([System.Management.Automation.WildcardPattern]::ContainsWildcardCharacters($Name))
+        {
+            $naerParams = @{
+                Exception = [System.InvalidOperationException]::new("The [-UseCIM] parameter does not support wildcard patterns in [-Name]. Use an exact service name, or omit [-UseCIM] to allow wildcard matching.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                ErrorId = 'UseCimModeNoWildcardSupport'
+                TargetObject = $Name
+                RecommendedAction = "Validate your input and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
     }
 
     process
@@ -125,9 +137,8 @@ function Test-ADTServiceExists
                 # Access via CIM/WMI if specifically asked.
                 if ($UseCIM)
                 {
-                    Write-ADTLogEntry -Message 'The parameter [-UseCIM] is deprecated and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
-
                     # If nothing is returned from Win32_Service, check Win32_BaseService.
+                    Write-ADTLogEntry -Message 'The parameter [-UseCIM] is deprecated and will be removed in PSAppDeployToolkit 4.3.0.' -Severity Warning
                     if (!($ServiceObject = Get-CimInstance -ClassName Win32_Service -Filter "Name = '$Name'"))
                     {
                         $ServiceObject = Get-CimInstance -ClassName Win32_BaseService -Filter "Name = '$Name'"

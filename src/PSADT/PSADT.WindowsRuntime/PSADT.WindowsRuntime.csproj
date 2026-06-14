@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0-windows10.0.22621.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PSADT.WindowsRuntime</RootNamespace>
+    <AssemblyName>PSADT.WindowsRuntime</AssemblyName>
+    <Product>PSAppDeployToolkit Windows Runtime (WinRT) Interface Library</Product>
+    <AssemblyTitle>PSAppDeployToolkit Windows Runtime (WinRT) Interface Library</AssemblyTitle>
+    <AssemblyDescription>This assembly provides access to Windows Runtime (WinRT) interfaces for PSAppDeployToolkit.</AssemblyDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
+    <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.28000.1839" />
+  </ItemGroup>
+</Project>

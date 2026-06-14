@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using PSADT.ProcessManagement;
 using PSAppDeployToolkit.Logging;
 
@@ -12,7 +13,8 @@ namespace PSADT.UserInterface.DialogState
     /// <remarks>This type is used internally to manage the lifecycle of processes that need to be closed. It
     /// provides functionality for tracking running processes and managing countdown operations related to process
     /// closure.</remarks>
-    internal sealed record CloseAppsDialogState : BaseDialogState, IDisposable
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
+    internal sealed record CloseAppsDialogState : BaseDialogState, IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogState"/> class with the specified processes to close.
@@ -29,6 +31,11 @@ namespace PSADT.UserInterface.DialogState
             }
             LogAction = (message, severity) => logAction(message, severity, "Show-ADTInstallationWelcome");
         }
+
+        /// <summary>
+        /// Tracks whether this instance has been disposed.
+        /// </summary>
+        internal bool _disposed;
 
         /// <summary>
         /// Represents a service that manages and provides information about running processes.
@@ -48,16 +55,24 @@ namespace PSADT.UserInterface.DialogState
         /// <summary>
         /// Represents a delegate used for logging operations with severity.
         /// </summary>
-        /// <remarks>This delegate is intended for internal use only.When invoked, it writes the 
+        /// <remarks>This delegate is intended for internal use only.When invoked, it writes the
         /// provided message with the specified severity to the configured logging destination.</remarks>
         internal readonly Action<string, LogSeverity> LogAction;
 
         /// <summary>
         /// Disposes of the resources used by the <see cref="CloseAppsDialogState"/> record.
         /// </summary>
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            RunningProcessService?.Dispose();
+            if (_disposed)
+            {
+                return;
+            }
+            if (RunningProcessService is not null)
+            {
+                await RunningProcessService.DisposeAsync().ConfigureAwait(false);
+            }
+            _disposed = true;
         }
     }
 }

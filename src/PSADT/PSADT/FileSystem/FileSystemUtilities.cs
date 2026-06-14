@@ -32,43 +32,65 @@ namespace PSADT.FileSystem
     public static class FileSystemUtilities
     {
         /// <summary>
-        /// Gets the security descriptor for the specified file.
+        /// Gets the security descriptor for the specified file. This is here for PowerShell 7.
         /// </summary>
         /// <param name="fileInfo">The file to get the security descriptor for.</param>
         /// <returns>The security descriptor for the file.</returns>
         public static FileSecurity GetAccessControl(FileInfo fileInfo)
         {
-            return FileSystemAclExtensions.GetAccessControl(fileInfo);
+            return fileInfo.GetAccessControl();
         }
 
         /// <summary>
-        /// Gets the access control security for a directory.
+        /// Gets the security descriptor for the specified file. This is here for PowerShell 7.
+        /// </summary>
+        /// <param name="fileInfo">The file to get the security descriptor for.</param>
+        /// <param name="includeSections">Specifies which sections of the security descriptor to include.</param>
+        /// <returns>The security descriptor for the file.</returns>
+        public static FileSecurity GetAccessControl(FileInfo fileInfo, AccessControlSections includeSections)
+        {
+            return fileInfo.GetAccessControl(includeSections);
+        }
+
+        /// <summary>
+        /// Gets the access control security for a directory. This is here for PowerShell 7.
         /// </summary>
         /// <param name="directoryInfo">The directory to get security information for.</param>
         /// <returns>The security descriptor for the specified directory.</returns>
         public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo)
         {
-            return FileSystemAclExtensions.GetAccessControl(directoryInfo);
+            return directoryInfo.GetAccessControl();
         }
 
         /// <summary>
-        /// Sets the security access control for a file.
+        /// Gets the access control security for a directory. This is here for PowerShell 7.
+        /// </summary>
+        /// <param name="directoryInfo">The directory to get security information for.</param>
+        /// <param name="includeSections">Specifies which sections of the security descriptor to include.</param>
+        /// <returns>The security descriptor for the specified directory.</returns>
+        public static DirectorySecurity GetAccessControl(DirectoryInfo directoryInfo, AccessControlSections includeSections)
+        {
+            return directoryInfo.GetAccessControl(includeSections);
+        }
+
+        /// <summary>
+        /// Sets the security access control for a file. This is here for PowerShell 7.
         /// </summary>
         /// <param name="fileInfo">The file to modify.</param>
         /// <param name="fileSecurity">The security access control to apply.</param>
         public static void SetAccessControl(FileInfo fileInfo, FileSecurity fileSecurity)
         {
-            FileSystemAclExtensions.SetAccessControl(fileInfo, fileSecurity);
+            fileInfo.SetAccessControl(fileSecurity);
         }
 
         /// <summary>
-        /// Sets access control information for the specified directory.
+        /// Sets access control information for the specified directory. This is here for PowerShell 7.
         /// </summary>
         /// <param name="directoryInfo">The directory for which to set access control information.</param>
         /// <param name="directorySecurity">The access control information to apply to the directory.</param>
         public static void SetAccessControl(DirectoryInfo directoryInfo, DirectorySecurity directorySecurity)
         {
-            FileSystemAclExtensions.SetAccessControl(directoryInfo, directorySecurity);
+            directoryInfo.SetAccessControl(directorySecurity);
         }
 
         /// <summary>
@@ -98,6 +120,7 @@ namespace PSADT.FileSystem
         /// validation of the path (URIs will be returned as relative as a result).
         /// Returns false if the path specified is relative to the current drive or working directory.
         /// </summary>
+        /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
         /// <remarks>
         /// Handles paths that use the alternate directory separator.  It is a frequent mistake to
         /// assume that rooted paths <see cref="Path.IsPathRooted(string)"/> are not relative.  This isn't the case.
@@ -120,6 +143,7 @@ namespace PSADT.FileSystem
         /// validation of the path (URIs will be returned as relative as a result).
         /// Returns false if the path specified is relative to the current drive or working directory.
         /// </summary>
+        /// <param name="path">The file path to validate. Cannot be <see langword="null"/> or empty.</param>
         /// <remarks>
         /// Handles paths that use the alternate directory separator.  It is a frequent mistake to
         /// assume that rooted paths <see cref="Path.IsPathRooted(string)"/> are not relative.  This isn't the case.
@@ -157,9 +181,9 @@ namespace PSADT.FileSystem
             ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
             static string TrimTrailingSeparators(string path)
             {
-                while (path.Length > 3 && (path.EndsWith("\\") || path.EndsWith("/")))
+                while (path.Length > 3 && (path.EndsWith('\\') || path.EndsWith('/')))
                 {
-                    path = path.Substring(0, path.Length - 1);
+                    path = path[..^1];
                 }
                 return path;
             }
@@ -169,7 +193,7 @@ namespace PSADT.FileSystem
             using BlockingCollection<string> queue = [(rootPath = TrimTrailingSeparators(Path.GetFullPath(rootPath))).ThrowIfDirectoryDoesNotExist()];
             int workerCount = Math.Max(4, Math.Min(Environment.ProcessorCount * 2, 32));
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
-            _ = Parallel.For(0, workerCount, workerIndex =>
+            _ = Parallel.For(0, workerCount, __ =>
             {
                 foreach (string dir in queue.GetConsumingEnumerable())
                 {
@@ -196,16 +220,16 @@ namespace PSADT.FileSystem
                             {
                                 // Validate the file name and skip "." and ".." entries.
                                 string name = data.cFileName.ToString();
-                                if (name is "." or "..")
+                                if (name.Equals(".", StringComparison.OrdinalIgnoreCase) || name.Equals("..", StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
                                 }
 
                                 // Check if this is a directory or a file. For directories, we add them to the queue for processing. For files, we add their size to the total.
-                                if (((FileAttributes)data.dwFileAttributes & FileAttributes.Directory) != 0)
+                                if (((FileAttributes)data.dwFileAttributes).HasFlag(FileAttributes.Directory))
                                 {
                                     // Skip reparse points (e.g. symbolic links, junctions, mount points) to avoid potential cycles.
-                                    if (((FileAttributes)data.dwFileAttributes & FileAttributes.ReparsePoint) != 0)
+                                    if (((FileAttributes)data.dwFileAttributes).HasFlag(FileAttributes.ReparsePoint))
                                     {
                                         continue;
                                     }
@@ -271,21 +295,21 @@ namespace PSADT.FileSystem
 
             // Set up the required flags for CreateFile, then see if we can open the file.
             FILE_SHARE_MODE dwShareMode = FILE_SHARE_MODE.FILE_SHARE_NONE;
-            if ((desiredAccess & FileSystemRights.Read) == FileSystemRights.Read)
+            if (desiredAccess.HasFlag(FileSystemRights.Read))
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_READ;
             }
-            if ((desiredAccess & FileSystemRights.Write) == FileSystemRights.Write)
+            if (desiredAccess.HasFlag(FileSystemRights.Write))
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_WRITE;
             }
-            if ((desiredAccess & FileSystemRights.Delete) == FileSystemRights.Delete)
+            if (desiredAccess.HasFlag(FileSystemRights.Delete))
             {
                 dwShareMode |= FILE_SHARE_MODE.FILE_SHARE_DELETE;
             }
             try
             {
-                using SafeFileHandle hFile = NativeMethods.CreateFile(path.FullName, desiredAccess, dwShareMode, null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
+                using SafeFileHandle hFile = NativeMethods.CreateFile(path.FullName, desiredAccess, dwShareMode, lpSecurityAttributes: null, FILE_CREATION_DISPOSITION.OPEN_EXISTING, FileAttributes.Normal);
                 return !hFile.IsInvalid;
             }
             catch
@@ -405,7 +429,7 @@ namespace PSADT.FileSystem
             using (ppDacl)
             using (ppSacl)
             {
-                _ = NativeMethods.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, false);
+                _ = NativeMethods.TreeResetNamedSecurityInfo(path, SE_OBJECT_TYPE.SE_FILE_OBJECT, setSiFlags, ppsidOwner, ppsidGroup, ppDacl, ppSacl, KeepExplicit: false);
             }
         }
 
@@ -474,7 +498,7 @@ namespace PSADT.FileSystem
         /// <returns>A read-only dictionary where each key is an NT device path and each value is the associated drive letter.</returns>
         internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
         {
-            Dictionary<string, string> lookupTable = new() { { @"\Device\Mup", @"\" } };
+            Dictionary<string, string> lookupTable = new(StringComparer.OrdinalIgnoreCase) { { @"\Device\Mup", @"\" } };
             Span<char> targetPath = stackalloc char[1024]; targetPath.Clear();
             foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
             {
@@ -488,7 +512,7 @@ namespace PSADT.FileSystem
                     continue;
                     throw;
                 }
-                foreach (string path in targetPath.Slice(0, (int)length).ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(path => path.Length > 0 && !lookupTable.ContainsKey(path)))
+                foreach (string path in targetPath[..(int)length].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(path => path.Length > 0 && !lookupTable.ContainsKey(path)))
                 {
                     lookupTable.Add(path, driveLetter);
                 }
@@ -514,6 +538,7 @@ namespace PSADT.FileSystem
         /// has on the file or directory.</returns>
         /// <exception cref="DirectoryNotFoundException">Thrown if the specified path refers to a directory that does not exist.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified path refers to a file that does not exist.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         private static FileSystemRights GetEffectiveAccess(FileSystemInfo path, SafeHandle token, FileSystemRights desiredAccessMask, AuthzInitializeContext AuthzInitializeContext)
         {
             // Validate that the path exists.
@@ -525,10 +550,7 @@ namespace PSADT.FileSystem
                 {
                     throw new DirectoryNotFoundException($"The specified directory does not exist: {path.FullName}");
                 }
-                else
-                {
-                    throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
-                }
+                throw new FileNotFoundException($"The specified file does not exist: {path.FullName}", path.FullName);
             }
 
             // Retrieve the security descriptor for the file.

@@ -29,17 +29,10 @@ dotnet_analyzer_diagnostic.category-Usage.severity = error
 # Enforce BannedApiAnalyzers symbol blocking.
 dotnet_diagnostic.RS0030.severity = error
 
-# Disable severities we can't address while dual-targeting.
-dotnet_diagnostic.IDE0056.severity = none
-dotnet_diagnostic.IDE0057.severity = none
-dotnet_diagnostic.CA1307.severity = none
-dotnet_diagnostic.CA1310.severity = none
-dotnet_diagnostic.CA1847.severity = none
-dotnet_diagnostic.CA1866.severity = none
-
 # Explicitly enable what `latest-all` doesn't enable.
 dotnet_diagnostic.CA1017.severity = error
 dotnet_diagnostic.CA1045.severity = error
+dotnet_diagnostic.CA1051.severity = error
 dotnet_diagnostic.CA1005.severity = error
 dotnet_diagnostic.CA1014.severity = error
 dotnet_diagnostic.CA1060.severity = error
@@ -54,8 +47,22 @@ dotnet_diagnostic.S107.severity = none
 dotnet_diagnostic.S109.severity = none
 dotnet_diagnostic.S1067.severity = none
 dotnet_diagnostic.S1121.severity = none
-dotnet_diagnostic.S1449.severity = none
 dotnet_diagnostic.S1659.severity = none
 dotnet_diagnostic.S3358.severity = none
-dotnet_diagnostic.S3458.severity = none
 dotnet_diagnostic.S3869.severity = none
+
+# Roslynator defaults.
+dotnet_analyzer_diagnostic.category-roslynator.severity = error
+roslynator_compiler_diagnostic_fixes.enabled = true
+roslynator_refactorings.enabled = true
+
+# Disable Roslynator rules we don't want to deal with.
+dotnet_diagnostic.RCS1181.severity = none
+dotnet_diagnostic.RCS1238.severity = none
+dotnet_diagnostic.RCS1242.severity = none
+
+# Disable Meziantou.Analyzer rules we don't want to deal with.
+dotnet_diagnostic.MA0009.severity = none
+dotnet_diagnostic.MA0012.severity = none
+dotnet_diagnostic.MA0051.severity = none
+dotnet_diagnostic.MA0110.severity = none

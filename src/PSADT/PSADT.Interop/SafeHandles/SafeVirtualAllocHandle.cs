@@ -27,7 +27,7 @@ namespace PSADT.Interop.SafeHandles
         {
             unsafe
             {
-                return new((nint)PInvoke.VirtualAlloc(null, (nuint)length, allocationType, protect), length, true);
+                return new((nint)PInvoke.VirtualAlloc(lpAddress: null, (nuint)length, allocationType, protect), length, ownsHandle: true);
             }
         }
 
@@ -56,7 +56,7 @@ namespace PSADT.Interop.SafeHandles
         /// exception is thrown.</returns>
         protected override bool ReleaseHandle()
         {
-            if (default == handle)
+            if (handle == default)
             {
                 return true;
             }

@@ -31,8 +31,8 @@
         ProcThreadAttributeSafeOpenPromptOriginClaim = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeSafeOpenPromptOriginClaim,
         ProcThreadAttributeDesktopAppPolicy = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeDesktopAppPolicy,
         ProcThreadAttributeBnoIsolation = 19U,  // in PROC_THREAD_BNOISOLATION_ATTRIBUTE
-        ProcThreadAttributeIsolationManifest = 23U,  // in HANDLE (HPCON)  // Since rs5 (Windows 10 1809)
         ProcThreadAttributePseudoConsole = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributePseudoConsole,
+        ProcThreadAttributeIsolationManifest = 23U,  // in HANDLE (HPCON)  // Since rs5 (Windows 10 1809)
         ProcThreadAttributeMitigationAuditPolicy = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeMitigationAuditPolicy,
         ProcThreadAttributeMachineType = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeMachineType,
         ProcThreadAttributeComponentFilter = Windows.Win32.System.Threading.PROC_THREAD_ATTRIBUTE_NUM.ProcThreadAttributeComponentFilter,

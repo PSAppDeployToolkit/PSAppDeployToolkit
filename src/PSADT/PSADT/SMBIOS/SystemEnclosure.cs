@@ -33,6 +33,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Reads the SMBIOS System Enclosure (Type 3) structure.
         /// </summary>
+        /// <param name="buffer">Optional buffer containing the raw SMBIOS data. If not provided, the method will attempt to read directly from the system's SMBIOS tables.</param>
         /// <returns>The system enclosure information.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SystemEnclosure Get(ReadOnlySpan<byte> buffer = default)
@@ -43,6 +44,9 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Parses a System Enclosure (Type 3) structure.
         /// </summary>
+        /// <param name="buffer">The buffer containing the raw SMBIOS data.</param>
+        /// <param name="structureOffset">The offset within the buffer where the structure begins.</param>
+        /// <param name="structureLength">The length of the structure in bytes.</param>
         private static SystemEnclosure Parse(ReadOnlySpan<byte> buffer, int structureOffset, byte structureLength)
         {
             // OemDefined value, if present and non-zero.
@@ -279,6 +283,27 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemEnclosure"/> class.
         /// </summary>
+        /// <param name="structureLength">The length of the SMBIOS structure.</param>
+        /// <param name="handle">The handle of the SMBIOS structure.</param>
+        /// <param name="manufacturer">The manufacturer of the system enclosure.</param>
+        /// <param name="typeAndLock">The type and lock status of the system enclosure.</param>
+        /// <param name="version">The version of the system enclosure.</param>
+        /// <param name="serialNumber">The serial number of the system enclosure.</param>
+        /// <param name="assetTag">The asset tag of the system enclosure.</param>
+        /// <param name="bootUpState">The boot-up state of the system enclosure.</param>
+        /// <param name="powerSupplyState">The power supply state of the system enclosure.</param>
+        /// <param name="thermalState">The thermal state of the system enclosure.</param>
+        /// <param name="securityStatus">The chassis security status of the system enclosure.</param>
+        /// <param name="oemDefined">The OEM-defined information of the system enclosure.</param>
+        /// <param name="height">The height of the system enclosure in rack units.</param>
+        /// <param name="numberOfPowerCords">The number of power cords of the system enclosure.</param>
+        /// <param name="containedElementCount">The number of contained element records in the system enclosure.</param>
+        /// <param name="containedElementRecordLength">The length of each contained element record in bytes.</param>
+        /// <param name="containedElementRecords">The contained element records (raw bytes per record, length equals ContainedElementRecordLength).</param>
+        /// <param name="containedElements">The contained elements (typed records when record length >= 3).</param>
+        /// <param name="skuNumber">The SKU number of the system enclosure.</param>
+        /// <param name="rackType">The rack type of the system enclosure.</param>
+        /// <param name="rackHeight">The rack height of the system enclosure.</param>
         private SystemEnclosure(
             byte structureLength,
             ushort handle,
@@ -362,7 +387,7 @@ namespace PSADT.SMBIOS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int? GetRackUnits()
         {
-            return Height.HasValue ? Height.Value : RackHeight.HasValue ? RackHeight.Value : null;
+            return Height ?? RackHeight;
         }
 
         /// <summary>

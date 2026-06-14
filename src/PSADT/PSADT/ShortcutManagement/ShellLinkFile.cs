@@ -115,15 +115,6 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="ShellLinkFile"/> class.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ~ShellLinkFile()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
         /// Gets shortcut info for the current <see cref="ShellLinkFile"/>.
         /// </summary>
         /// <returns>
@@ -170,7 +161,7 @@ namespace PSADT.ShortcutManagement
             {
                 throw new InvalidOperationException("Cannot overwrite a shortcut file that was loaded with read-only access. Use Load(filePath, STGM.STGM_READWRITE) to enable modifications.");
             }
-            ((IPersistFile)_shellLink).Save(filePath, true);
+            ((IPersistFile)_shellLink).Save(filePath, fRemember: true);
         }
 
         /// <summary>
@@ -332,7 +323,7 @@ namespace PSADT.ShortcutManagement
         /// // Set hotkey using WScript.Shell-compatible string format
         /// shortcut.Hotkey = "ALT+CTRL+F";
         /// shortcut.Hotkey = "Ctrl+Shift+Q";
-        /// 
+        ///
         /// // Read and display hotkey
         /// Console.WriteLine(shortcut.Hotkey); // Output: "Ctrl+Shift+Q"
         /// </code>
@@ -1116,7 +1107,7 @@ namespace PSADT.ShortcutManagement
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool GetFlag(SHELL_LINK_DATA_FLAGS flag)
         {
-            return (GetFlags() & flag) != 0;
+            return (GetFlags() & flag) != SHELL_LINK_DATA_FLAGS.SLDF_DEFAULT;
         }
 
         /// <summary>
@@ -1143,7 +1134,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         public void Dispose()
         {
-            Dispose(true); GC.SuppressFinalize(this);
+            Dispose(disposing: true);
         }
 
         /// <summary>
@@ -1175,7 +1166,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <remarks>Use this property to determine if modifications to the storage are allowed. When <see
         /// langword="true"/>, attempts to write or update the storage will not be permitted.</remarks>
-        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) == 0;
+        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) == Interop.STGM.STGM_DIRECT;
 
         /// <summary>
         /// Indicates whether the object has been disposed.

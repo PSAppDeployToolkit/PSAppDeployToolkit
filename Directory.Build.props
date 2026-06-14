@@ -17,11 +17,18 @@
     <AnalysisLevel>latest-all</AnalysisLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Platforms>AnyCPU</Platforms>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
     <EmbedAllSources>false</EmbedAllSources>
     <EmbedUntrackedSources>false</EmbedUntrackedSources>
     <StaticAnalysisCodeType>General</StaticAnalysisCodeType>
+  </PropertyGroup>
+
+  <!-- Debug symbol generation must be configured early so SDK targets derive symbol output/copy state correctly. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'PSADT.Interop'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'PSADT.Interop'">
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <!-- Common company/product metadata -->
@@ -43,18 +50,21 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
 
-  <!-- ARM64 preference for .NET Framework -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PreferNativeArm64>true</PreferNativeArm64>
-  </PropertyGroup>
-
   <!-- Banned API analyzer -->
   <ItemGroup>
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.102">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.6.0">
+    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.7.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

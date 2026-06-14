@@ -55,7 +55,7 @@ namespace PSADT.AccountManagement
                 {
                     // If the username is available, add it to the list and skip to the next SID.
                     using RegistryKey? info = Registry.LocalMachine.OpenSubKey($@"{GroupPolicyDataStorePath}\{sid}\{index}");
-                    if (info?.GetValue("szName", null) is string username && !string.IsNullOrWhiteSpace(username))
+                    if (info?.GetValue("szName", defaultValue: null) is string username && !string.IsNullOrWhiteSpace(username))
                     {
                         accountInfoList.Add(new(new(username.Trim()), new(sid))); break;
                     }
@@ -73,9 +73,10 @@ namespace PSADT.AccountManagement
         /// langword="null"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="username"/> is <see langword="null"/> or if <paramref name="sid"/> is <see
         /// langword="null"/>.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private GroupPolicyAccountInfo(NTAccount username, SecurityIdentifier sid)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(username.Value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(username.Value, nameof(username));
             Username = username;
             SID = sid;
         }

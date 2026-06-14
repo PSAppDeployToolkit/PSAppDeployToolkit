@@ -9,6 +9,7 @@ namespace PSADT.Interop.Extensions
     /// Provides extension methods for the IUniformResourceLocatorW interface to facilitate working with uniform
     /// resource locator (URL) objects.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class IUniformResourceLocatorWExtensions
     {
         /// <summary>
@@ -22,7 +23,7 @@ namespace PSADT.Interop.Extensions
         {
             @this.GetURL(out PWSTR ppszURLLocal);
             ppszURL = !ppszURLLocal.IsNull()
-                ? new(ppszURLLocal, true)
+                ? new(ppszURLLocal, ownsHandle: true)
                 : null;
         }
     }

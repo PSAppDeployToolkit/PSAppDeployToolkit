@@ -12,16 +12,16 @@
         /// <summary>
         /// Specifies that a base token is to be retrieved.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// Specifies that a linked admin token should be retrieved if possible and available.
         /// </summary>
-        HighestAvailable,
+        HighestAvailable = 1,
 
         /// <summary>
         /// Specifies that a linked admin token must be retrieved, throwing if unable to do so.
         /// </summary>
-        HighestMandatory,
+        HighestMandatory = 2,
     }
 }

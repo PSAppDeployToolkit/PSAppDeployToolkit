@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace PSADT.ProcessManagement
@@ -25,7 +26,7 @@ namespace PSADT.ProcessManagement
             {
                 using (launchState)
                 {
-                    return await launchState.GetProcessResultAsync().ConfigureAwait(false);
+                    return await launchState.ConfigureAwait(false);
                 }
             }
             Process = launchState.Process;
@@ -59,5 +60,30 @@ namespace PSADT.ProcessManagement
         /// result of a process. The task is read-only and should be awaited to retrieve the <see
         /// cref="ProcessResult"/>.</remarks>
         public Task<ProcessResult> Task { get; }
+
+        /// <summary>
+        /// Gets an awaiter for the process completion task.
+        /// </summary>
+        /// <returns>An awaiter for the process result.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TaskAwaiter<ProcessResult> GetAwaiter()
+        {
+            return Task.GetAwaiter();
+        }
+
+        /// <summary>
+        /// Configures an awaiter used to await this process handle.
+        /// </summary>
+        /// <param name="continueOnCapturedContext">
+        /// <see langword="true"/> to attempt to marshal the continuation back to the original context captured;
+        /// otherwise, <see langword="false"/>.
+        /// </param>
+        /// <returns>A configured task awaitable.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
+        {
+            return Task.ConfigureAwait(continueOnCapturedContext);
+        }
     }
 }
