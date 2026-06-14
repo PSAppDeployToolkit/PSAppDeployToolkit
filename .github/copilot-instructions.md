@@ -55,3 +55,8 @@ The main build dependency is a current .NET SDK. Visual Studio is recommended fo
 - `PSADT.Interop` contains Win32 interop and CsWin32-generated symbols.
 - `PSADT` contains core C# utilities.
 - `PSAppDeployToolkit` contains PowerShell-facing C# types.
+
+## API Usage Guidelines
+
+- Expect accurate, well-researched answers about Windows APIs and COM interfaces. Do not fabricate API names or suggest hacky workarounds when proper documented APIs exist (e.g., Appx COM interfaces for reading package identity).
+- Acknowledge uncertainty rather than inventing answers.

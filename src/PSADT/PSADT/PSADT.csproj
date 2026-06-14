@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
 

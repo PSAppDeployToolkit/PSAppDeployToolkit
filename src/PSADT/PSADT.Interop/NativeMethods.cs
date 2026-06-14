@@ -4345,6 +4345,23 @@ namespace PSADT.Interop
         }
 
         /// <summary>
+        /// Creates and initializes a stream object that is associated with a specified file. The stream object can be used
+        /// to read from or write to the file.
+        /// </summary>
+        /// <param name="pszFile">The path of the file to be associated with the stream object.</param>
+        /// <param name="grfMode">The access mode for the stream object.</param>
+        /// <param name="dwAttributes">The file attributes for the file.</param>
+        /// <param name="fCreate">Indicates whether to create the file if it does not exist.</param>
+        /// <param name="pstmTemplate">A pointer to an existing stream object to be used as a template.</param>
+        /// <param name="ppstm">When this method returns, contains the interface pointer to the stream object.</param>
+        /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
+        internal static HRESULT SHCreateStreamOnFileEx(string pszFile, STGM grfMode, FileAttributes dwAttributes, BOOL fCreate, [Optional] IStream? pstmTemplate, out IStream ppstm)
+        {
+            HRESULT res = PInvoke.SHCreateStreamOnFileEx(pszFile.ThrowIfFileDoesNotExist(), (uint)grfMode, (uint)dwAttributes, fCreate, pstmTemplate, out ppstm);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+        }
+
+        /// <summary>
         /// Lookup table for system information class struct sizes.
         /// </summary>
         internal static readonly FrozenDictionary<SYSTEM_INFORMATION_CLASS, int> SystemInfoClassSizes = FrozenDictionary.ToFrozenDictionary(new Dictionary<SYSTEM_INFORMATION_CLASS, int>
