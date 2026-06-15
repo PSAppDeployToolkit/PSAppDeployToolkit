@@ -171,10 +171,9 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Store the process information.
-                    RunningProcessInfo runningProcess = new(process, procDescription, argv[0], argv.Skip(1), sid);
-                    if (!ProcessUtilities.HasProcessExited(process) && ((processDefinition.Filter is null) || processDefinition.Filter(runningProcess)))
+                    if (!ProcessUtilities.HasProcessExited(process))
                     {
-                        runningProcesses.Add(runningProcess);
+                        runningProcesses.Add(new(process, procDescription, argv[0], argv.Skip(1), sid));
                     }
                 }
             }

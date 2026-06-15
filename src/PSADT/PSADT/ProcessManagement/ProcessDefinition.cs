@@ -118,12 +118,6 @@ namespace PSADT.ProcessManagement
         public readonly string? Description;
 
         /// <summary>
-        /// Gets the filter script for the process.
-        /// </summary>
-        [IgnoreDataMember]
-        public readonly Func<RunningProcessInfo, bool>? Filter;
-
-        /// <summary>
         /// Gets the regular expression for the process name, if the name contains wildcard characters.
         /// </summary>
         [IgnoreDataMember]
