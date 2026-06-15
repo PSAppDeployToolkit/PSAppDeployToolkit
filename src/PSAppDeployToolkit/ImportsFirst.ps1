@@ -118,7 +118,7 @@ try
         process
         {
             # Test whether the assembly is already loaded.
-            if (($existingAssembly = $domainAssemblies | & { process { if (!$_.IsDynamic -and [System.IO.Path]::GetFileName($_.Location).Equals([System.IO.Path]::GetFileName($args[0]))) { return $_ } } } $_ | Select-Object -First 1))
+            if (!$_.EndsWith('\System.Collections.Immutable.dll') -and ($existingAssembly = $domainAssemblies | & { process { if (!$_.IsDynamic -and [System.IO.Path]::GetFileName($_.Location).Equals([System.IO.Path]::GetFileName($args[0]))) { return $_ } } } $_ | Select-Object -First 1))
             {
                 # Test the loaded assembly for SHA256 hash equality, returning early if the assembly is OK.
                 if (!(Get-FileHash -LiteralPath $existingAssembly.Location).Hash.Equals((Get-FileHash -LiteralPath $_).Hash))
