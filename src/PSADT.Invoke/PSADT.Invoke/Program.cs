@@ -149,18 +149,19 @@ namespace PSADT.Invoke
         private static void WriteDebugMessage(string debugMessage, bool isError = false)
         {
             // Log only when we're in debug mode.
-            if (inDebugMode)
+            if (!inDebugMode)
             {
-                if (isError)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Error.WriteLine(debugMessage);
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.WriteLine(debugMessage);
-                }
+                return;
+            }
+            if (isError)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine(debugMessage);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine(debugMessage);
             }
         }
 
@@ -173,14 +174,15 @@ namespace PSADT.Invoke
         /// <param name="argv">The list of command-line arguments to inspect and modify. Cannot be null.</param>
         private static void ConfigureDebugMode(List<string> argv)
         {
-            if (argv.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
+            if (!argv.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
             {
-                if (!inDebugMode && Environment.UserInteractive)
-                {
-                    inDebugMode = NativeMethods.AllocConsole();
-                }
-                _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+                return;
             }
+            if (!inDebugMode && Environment.UserInteractive)
+            {
+                inDebugMode = NativeMethods.AllocConsole();
+            }
+            _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
