@@ -46,7 +46,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Expander_StyleApplies_RootBorderFound()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Expander_ChevronPath_ExistsWithRotateTransformOnParent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -95,7 +95,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Expander_Expanded_ContentVisibilityIsVisible()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -115,7 +115,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Expander_HeaderBorder_CornerRadius4()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

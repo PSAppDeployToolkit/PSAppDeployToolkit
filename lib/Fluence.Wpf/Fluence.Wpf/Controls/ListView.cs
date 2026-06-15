@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ItemAnimationsEnabled),
                 typeof(bool),
                 typeof(ListView),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets whether item animations are enabled.
@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Controls
                 nameof(HoverHighlightEnabled),
                 typeof(bool),
                 typeof(ListView),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets whether hover highlighting is enabled.
@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Controls
                 nameof(EmptyContent),
                 typeof(object),
                 typeof(ListView),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Content displayed when the list has no items.
@@ -161,13 +161,13 @@ namespace Fluence.Wpf.Controls
                 "ParentIsItemSelectable",
                 typeof(bool),
                 typeof(ListView),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Sets the parent list's <see cref="IsItemSelectable"/> value on an item container for template triggers.
         /// </summary>
         /// <param name="element">The item container that receives the mirrored selection state.</param>
-        /// <param name="value"><c>true</c> when the parent list allows item selection; otherwise <c>false</c>.</param>
+        /// <param name="value"><see langword="true"/> when the parent list allows item selection; otherwise <see langword="false"/>.</param>
         public static void SetParentIsItemSelectable(DependencyObject element, bool value)
         {
             element.SetValue(ParentIsItemSelectableProperty, value);
@@ -177,7 +177,7 @@ namespace Fluence.Wpf.Controls
         /// Gets whether the parent list allows item selection (for template triggers).
         /// </summary>
         /// <param name="element">The item container that stores the mirrored selection state.</param>
-        /// <returns><c>true</c> when the parent list allows item selection; otherwise <c>false</c>.</returns>
+        /// <returns><see langword="true"/> when the parent list allows item selection; otherwise <see langword="false"/>.</returns>
         public static bool GetParentIsItemSelectable(DependencyObject element)
         {
             return (bool)element.GetValue(ParentIsItemSelectableProperty);
@@ -191,7 +191,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsItemSelectable),
                 typeof(bool),
                 typeof(ListView),
-                new FrameworkPropertyMetadata(true, OnIsItemSelectableChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnIsItemSelectableChanged));
 
         /// <summary>
         /// Gets or sets whether items can be selected and show hover/selection visuals.
@@ -237,11 +237,11 @@ namespace Fluence.Wpf.Controls
             }
             DoubleAnimation opacityAnim = new(container.Opacity, 0, RemoveDuration)
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
             };
             DoubleAnimation slideAnim = new(0, -12, RemoveDuration)
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
             };
             opacityAnim.Completed += (s, e) =>
             {
@@ -304,11 +304,11 @@ namespace Fluence.Wpf.Controls
             container.RenderTransform = new TranslateTransform(0, 12); container.Opacity = 0;
             DoubleAnimation opacityAnim = new(0, 1, InsertDuration)
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
             };
             DoubleAnimation slideAnim = new(12, 0, InsertDuration)
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
             };
             container.BeginAnimation(OpacityProperty, opacityAnim);
             container.RenderTransform.BeginAnimation(TranslateTransform.YProperty, slideAnim);

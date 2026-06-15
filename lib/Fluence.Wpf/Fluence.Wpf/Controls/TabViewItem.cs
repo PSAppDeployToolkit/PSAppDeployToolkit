@@ -51,7 +51,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsClosable),
                 typeof(bool),
                 typeof(TabViewItem),
-                new PropertyMetadata(true));
+                new PropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Identifies the <see cref="Icon"/> dependency property.
@@ -61,7 +61,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(TabViewItem),
-                new PropertyMetadata(null));
+                new PropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Identifies the <see cref="CloseRequested"/> routed event.

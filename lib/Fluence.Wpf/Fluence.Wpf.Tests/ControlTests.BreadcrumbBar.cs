@@ -28,6 +28,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -51,7 +52,7 @@ namespace Fluence.Wpf.Tests
                 MouseButtonEventArgs args = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
                     RoutedEvent = MouseLeftButtonDownEvent,
-                    Source = this
+                    Source = this,
                 };
                 OnMouseLeftButtonDown(args);
             }
@@ -61,7 +62,7 @@ namespace Fluence.Wpf.Tests
                 MouseButtonEventArgs args = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
                     RoutedEvent = MouseLeftButtonUpEvent,
-                    Source = this
+                    Source = this,
                 };
                 OnMouseLeftButtonUp(args);
             }
@@ -70,7 +71,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void BreadcrumbBar_DefaultStyle_GeneratesBreadcrumbBarItemContainers()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -96,9 +97,9 @@ namespace Fluence.Wpf.Tests
                         Controls.BreadcrumbBarItem? container =
                             bar.ItemContainerGenerator.ContainerFromIndex(index) as Controls.BreadcrumbBarItem;
                         Assert.IsNotNull(container,
-                            string.Format("The container at index {0} must be a BreadcrumbBarItem.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The container at index {0} must be a BreadcrumbBarItem.", index));
                         Assert.AreEqual(crumbs[index], container.Content,
-                            string.Format("The container at index {0} must carry its bound item as content.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The container at index {0} must carry its bound item as content.", index));
                     }
                 }
                 finally
@@ -111,7 +112,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void BreadcrumbBar_LastItem_HidesChevronAndUsesPrimaryTypography()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -136,31 +137,31 @@ namespace Fluence.Wpf.Tests
                         Controls.BreadcrumbBarItem? ancestor =
                             bar.ItemContainerGenerator.ContainerFromIndex(index) as Controls.BreadcrumbBarItem;
                         Assert.IsNotNull(ancestor,
-                            string.Format("The ancestor container at index {0} must be a BreadcrumbBarItem.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The ancestor container at index {0} must be a BreadcrumbBarItem.", index));
                         Assert.IsFalse(ancestor.IsLastItem,
-                            string.Format("The ancestor crumb at index {0} must not report IsLastItem.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must not report IsLastItem.", index));
 
                         Controls.FontIcon? chevron = FindVisualChildByName<Controls.FontIcon>(ancestor, "ChevronIcon");
                         Assert.IsNotNull(chevron,
-                            string.Format("The ancestor crumb at index {0} must render its chevron separator.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must render its chevron separator.", index));
                         Assert.AreEqual(Visibility.Visible, chevron.Visibility,
-                            string.Format("The chevron of the ancestor crumb at index {0} must be visible.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must be visible.", index));
 
                         // WinUI BreadcrumbBarChevronLeftToRight is E974 painted in
                         // BreadcrumbBarNormalForegroundBrush (TextFillColorPrimaryBrush).
                         Assert.AreEqual("", chevron.Glyph,
-                            string.Format("The chevron of the ancestor crumb at index {0} must use the WinUI E974 glyph.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must use the WinUI E974 glyph.", index));
                         SolidColorBrush? chevronForeground = chevron.Foreground as SolidColorBrush;
                         Assert.IsNotNull(chevronForeground,
-                            string.Format("The chevron of the ancestor crumb at index {0} must use a solid foreground brush.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must use a solid foreground brush.", index));
                         Assert.AreEqual(primaryBrush.Color, chevronForeground.Color,
-                            string.Format("The chevron of the ancestor crumb at index {0} must use the primary text fill.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The chevron of the ancestor crumb at index {0} must use the primary text fill.", index));
 
                         SolidColorBrush? ancestorForeground = ancestor.Foreground as SolidColorBrush;
                         Assert.IsNotNull(ancestorForeground,
-                            string.Format("The ancestor crumb at index {0} must use a solid foreground brush.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must use a solid foreground brush.", index));
                         Assert.AreEqual(primaryBrush.Color, ancestorForeground.Color,
-                            string.Format("The ancestor crumb at index {0} must use the primary text fill at rest, matching WinUI.", index));
+                            string.Format(CultureInfo.InvariantCulture, "The ancestor crumb at index {0} must use the primary text fill at rest, matching WinUI.", index));
                     }
 
                     Controls.BreadcrumbBarItem? last =
@@ -196,9 +197,10 @@ namespace Fluence.Wpf.Tests
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 500, Height = 200 };
-                Controls.BreadcrumbBar bar = new();
-                string[] crumbs = ["Home", "Documents", "Design"];
-                bar.ItemsSource = crumbs;
+                Controls.BreadcrumbBar bar = new()
+                {
+                    ItemsSource = (string[])["Home", "Documents", "Design"],
+                };
 
                 try
                 {
@@ -367,7 +369,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void BreadcrumbBar_ThemeCycle_CrumbBrushesResolve()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -383,7 +385,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),
@@ -396,15 +398,16 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void BreadcrumbBar_AutomationPeer_ReportsGroupClassNameAndName()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 Window window = new() { Width = 500, Height = 200 };
-                Controls.BreadcrumbBar bar = new();
-                string[] crumbs = ["Home", "Documents"];
-                bar.ItemsSource = crumbs;
+                Controls.BreadcrumbBar bar = new()
+                {
+                    ItemsSource = (string[])["Home", "Documents"],
+                };
                 AutomationProperties.SetName(bar, "Navigation breadcrumb");
 
                 try

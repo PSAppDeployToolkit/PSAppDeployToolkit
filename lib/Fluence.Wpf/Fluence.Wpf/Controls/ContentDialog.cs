@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Title),
                 typeof(object),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the title shown at the top of the dialog.
@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Controls
                 nameof(TitleTemplate),
                 typeof(DataTemplate),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the template used to display <see cref="Title"/>.
@@ -135,7 +135,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PrimaryButtonText),
                 typeof(string),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(string.Empty, null, CoerceButtonText));
+                new FrameworkPropertyMetadata(string.Empty, propertyChangedCallback: null, CoerceButtonText));
 
         /// <summary>
         /// Gets or sets the text of the primary button. The button is collapsed while the
@@ -155,7 +155,7 @@ namespace Fluence.Wpf.Controls
                 nameof(SecondaryButtonText),
                 typeof(string),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(string.Empty, null, CoerceButtonText));
+                new FrameworkPropertyMetadata(string.Empty, propertyChangedCallback: null, CoerceButtonText));
 
         /// <summary>
         /// Gets or sets the text of the secondary button. The button is collapsed while the
@@ -175,7 +175,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CloseButtonText),
                 typeof(string),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(string.Empty, null, CoerceButtonText));
+                new FrameworkPropertyMetadata(string.Empty, propertyChangedCallback: null, CoerceButtonText));
 
         /// <summary>
         /// Gets or sets the text of the close button. The button is collapsed while the
@@ -215,7 +215,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsPrimaryButtonEnabled),
                 typeof(bool),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets a value indicating whether the primary button is enabled.
@@ -234,7 +234,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsSecondaryButtonEnabled),
                 typeof(bool),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets a value indicating whether the secondary button is enabled.
@@ -253,7 +253,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PrimaryButtonCommand),
                 typeof(ICommand),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the command executed when the primary button is invoked and the
@@ -273,7 +273,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PrimaryButtonCommandParameter),
                 typeof(object),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the parameter passed to <see cref="PrimaryButtonCommand"/>.
@@ -292,7 +292,7 @@ namespace Fluence.Wpf.Controls
                 nameof(SecondaryButtonCommand),
                 typeof(ICommand),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the command executed when the secondary button is invoked and the
@@ -312,7 +312,7 @@ namespace Fluence.Wpf.Controls
                 nameof(SecondaryButtonCommandParameter),
                 typeof(object),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the parameter passed to <see cref="SecondaryButtonCommand"/>.
@@ -331,7 +331,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CloseButtonCommand),
                 typeof(ICommand),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the command executed when the close button is invoked (or the dialog
@@ -352,7 +352,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CloseButtonCommandParameter),
                 typeof(object),
                 typeof(ContentDialog),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the parameter passed to <see cref="CloseButtonCommand"/>.
@@ -422,8 +422,8 @@ namespace Fluence.Wpf.Controls
             // a panel that spans the title bar and the content, so the dialog dims and blocks the
             // entire window (including title-bar content such as a search box). Fall back to the
             // content adorner layer for plain windows, whose client area carries no extra chrome.
-            System.Windows.Controls.Panel? overlayHost =
-                (owner as Control)?.Template?.FindName(DialogOverlayHostPart, owner) as System.Windows.Controls.Panel;
+            Panel? overlayHost =
+                (owner as Control)?.Template?.FindName(DialogOverlayHostPart, owner) as Panel;
 
             UIElement? adornedContent = null;
             AdornerLayer? adornerLayer = null;
@@ -567,6 +567,8 @@ namespace Fluence.Wpf.Controls
         /// inside the dialog, so chrome outside the content adorner (such as a title-bar search
         /// box) cannot be clicked or focused while the dialog is modal.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The mouse button event data.</param>
         private void OnOwnerPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (_showCompletionSource is null)
@@ -589,6 +591,8 @@ namespace Fluence.Wpf.Controls
         /// while the dialog is modal. Key input sourced inside the dialog is left alone so the
         /// dialog's own Tab cycle and key handling keep working.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The key event data.</param>
         private void OnOwnerPreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (_showCompletionSource is null)
@@ -609,6 +613,8 @@ namespace Fluence.Wpf.Controls
         /// closes while the dialog is open, so the pending <see cref="ShowAsync"/> task always
         /// completes.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private void OnOwnerClosed(object? sender, EventArgs e)
         {
             CloseDialog(ContentDialogResult.None);
@@ -674,6 +680,8 @@ namespace Fluence.Wpf.Controls
         /// Walks the visual (and, for non-visual sources, logical) tree from
         /// <paramref name="source"/> upward to determine whether it sits inside this dialog.
         /// </summary>
+        /// <param name="source">The starting point for the tree walk.</param>
+        /// <returns>True if the source is within the dialog; otherwise, false.</returns>
         private bool IsWithinDialog(DependencyObject source)
         {
             DependencyObject? current = source;
@@ -701,6 +709,7 @@ namespace Fluence.Wpf.Controls
         /// Resolves the window that hosts the modal overlay: the active window first, then
         /// the application main window.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when no active or main window can be resolved.</exception>
         private static Window ResolveOwnerWindow()
         {
             Application application = Application.Current
@@ -742,6 +751,10 @@ namespace Fluence.Wpf.Controls
         /// Runs the shared command-button pipeline: raises the button's click event, and when
         /// not canceled executes the button's command and closes the dialog with the given result.
         /// </summary>
+        /// <param name="clickHandler">The button's click event handler to raise.</param>
+        /// <param name="command">The command to execute if the click is not canceled.</param>
+        /// <param name="commandParameter">The parameter to pass to the command.</param>
+        /// <param name="result">The result to close the dialog with.</param>
         private void HandleButtonInvoked(
             EventHandler<ContentDialogButtonClickEventArgs>? clickHandler,
             ICommand? command,
@@ -755,7 +768,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (command is not null && command.CanExecute(commandParameter))
+            if (command?.CanExecute(commandParameter) == true)
             {
                 command.Execute(commandParameter);
             }
@@ -811,7 +824,7 @@ namespace Fluence.Wpf.Controls
                 ContentDialogButton.None or _ => null,
             };
 
-            if (defaultButton is not null && defaultButton.IsEnabled && defaultButton.Visibility == Visibility.Visible)
+            if (defaultButton?.IsEnabled == true && defaultButton.Visibility == Visibility.Visible)
             {
                 _ = defaultButton.Focus();
                 return;
@@ -825,6 +838,7 @@ namespace Fluence.Wpf.Controls
         /// the pending <see cref="ShowAsync"/> task with <paramref name="result"/>, and
         /// raises <see cref="Closed"/>.
         /// </summary>
+        /// <param name="result">The result to close the dialog with.</param>
         private void CloseDialog(ContentDialogResult result)
         {
             if (_showCompletionSource is null)
@@ -912,8 +926,8 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="element">The element to detach.</param>
         /// <exception cref="InvalidOperationException">
-        /// The parent is not a <see cref="System.Windows.Controls.Panel"/>, a
-        /// <see cref="System.Windows.Controls.Decorator"/> (which includes Border), or a
+        /// The parent is not a <see cref="Panel"/>, a
+        /// <see cref="Decorator"/> (which includes Border), or a
         /// <see cref="ContentControl"/>.
         /// </exception>
         private static void DetachFromParent(FrameworkElement element)
@@ -924,11 +938,11 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (parent is System.Windows.Controls.Panel panel)
+            if (parent is Panel panel)
             {
                 panel.Children.Remove(element);
             }
-            else if (parent is System.Windows.Controls.Decorator decorator)
+            else if (parent is Decorator decorator)
             {
                 decorator.Child = null;
             }
@@ -1021,7 +1035,7 @@ namespace Fluence.Wpf.Controls
         /// The full-window overlay host panel (a window template's <c>PART_DialogOverlayHost</c>)
         /// when the dialog is hosted above the whole window rather than in the content adorner layer.
         /// </summary>
-        private System.Windows.Controls.Panel? _overlayHostPanel;
+        private Panel? _overlayHostPanel;
 
         /// <summary>
         /// Hosts the smoke layer and the centered dialog inside the owner window's adorner

@@ -48,18 +48,18 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_PausedMode_TracksCautionBrushAcrossThemeChange()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
 
                 FluenceProgressBar progressBar = new()
                 {
                     Width = 240,
                     Height = 24,
                     Value = 50,
-                    ProgressMode = ProgressBarMode.Paused
+                    ProgressMode = ProgressBarMode.Paused,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsNotNull(initialExpected, "SystemFillColorCautionBrush must resolve in light theme.");
                 Assert.AreEqual(initialExpected.Color, initialColor, "Paused ProgressBar should start on the caution brush.");
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                 DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush? expected = app?.TryFindResource("SystemFillColorCautionBrush") as SolidColorBrush;
@@ -98,7 +98,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_DefaultStyle_UsesWinUiThinTrackMetrics()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -107,7 +107,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    Value = 50
+                    Value = 50,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -132,7 +132,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_ReturningToStandardMode_RestoresAccentBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -142,7 +142,7 @@ namespace Fluence.Wpf.Tests
                     Width = 240,
                     Height = 24,
                     Value = 50,
-                    ProgressMode = ProgressBarMode.Error
+                    ProgressMode = ProgressBarMode.Error,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -168,7 +168,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_IndicatorHost_IsClippedToRoundedGeometry()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -177,7 +177,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    ProgressMode = ProgressBarMode.Indeterminate
+                    ProgressMode = ProgressBarMode.Indeterminate,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -205,7 +205,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_IndeterminateBars_UseWinUiWidthRatios()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -214,7 +214,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    ProgressMode = ProgressBarMode.Indeterminate
+                    ProgressMode = ProgressBarMode.Indeterminate,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -241,7 +241,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_IsIndeterminate_ShowsIndeterminateBars()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -250,7 +250,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    Value = 50
+                    Value = 50,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -294,13 +294,13 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_ShowError_UsesCriticalBrush()
         {
-            AssertProgressBarStatePrimitiveBrush(bar => bar.ShowError = true, "SystemFillColorCriticalBrush");
+            AssertProgressBarStatePrimitiveBrush(static bar => bar.ShowError = true, "SystemFillColorCriticalBrush");
         }
 
         [TestMethod]
         public void ProgressBar_ShowPaused_UsesCautionBrush()
         {
-            AssertProgressBarStatePrimitiveBrush(bar => bar.ShowPaused = true, "SystemFillColorCautionBrush");
+            AssertProgressBarStatePrimitiveBrush(static bar => bar.ShowPaused = true, "SystemFillColorCautionBrush");
         }
 
         [TestMethod]
@@ -315,7 +315,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    IsIndeterminate = true
+                    IsIndeterminate = true,
                 };
                 WpfContentControl host = new() { Content = progressBar };
                 Window w = new() { Content = host, Width = 300, Height = 120 };
@@ -358,14 +358,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_IndeterminateMode_SetsIsIndeterminate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
                 FluenceProgressBar progressBar = new()
                 {
-                    ProgressMode = ProgressBarMode.Indeterminate
+                    ProgressMode = ProgressBarMode.Indeterminate,
                 };
                 Assert.IsTrue(progressBar.IsIndeterminate,
                     "ProgressMode.Indeterminate must map onto the inherited IsIndeterminate primitive.");
@@ -387,7 +387,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    Value = 50
+                    Value = 50,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();
@@ -422,7 +422,7 @@ namespace Fluence.Wpf.Tests
                     Width = 240,
                     Height = 24,
                     Value = 50,
-                    ProgressMode = mode
+                    ProgressMode = mode,
                 };
                 Window w = new() { Content = progressBar, Width = 300, Height = 120 };
                 w.Show();

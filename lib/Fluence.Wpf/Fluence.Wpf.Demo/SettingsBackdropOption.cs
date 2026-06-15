@@ -29,56 +29,23 @@
 namespace Fluence.Wpf.Demo
 {
     /// <summary>
-    /// Theme choices shown on the demo Settings page.
-    /// </summary>
-    public enum SettingsThemeOption
-    {
-        /// <summary>Follow the operating system app theme.</summary>
-        System,
-
-        /// <summary>Use the light application theme.</summary>
-        Light,
-
-        /// <summary>Use the dark application theme.</summary>
-        Dark,
-
-        /// <summary>Use the high contrast application theme.</summary>
-        HighContrast
-    }
-
-    /// <summary>
-    /// Navigation layout choices shown on the demo Settings page.
-    /// </summary>
-    public enum SettingsNavigationOption
-    {
-        /// <summary>Use a horizontal top navigation strip.</summary>
-        Top,
-
-        /// <summary>Use the expanded left navigation pane.</summary>
-        Left,
-
-        /// <summary>Use the compact left navigation pane.</summary>
-        LeftCompact
-    }
-
-    /// <summary>
     /// Backdrop choices shown on the demo Settings page.
     /// </summary>
     public enum SettingsBackdropOption
     {
         /// <summary>Let Fluence choose the best available backdrop.</summary>
-        Auto,
+        Auto = 0,
 
         /// <summary>Use the Mica backdrop.</summary>
-        Mica,
+        Mica = 1,
 
         /// <summary>Use the Acrylic backdrop.</summary>
-        Acrylic,
+        Acrylic = 2,
 
         /// <summary>Use the tabbed Mica backdrop.</summary>
-        Tabbed,
+        Tabbed = 3,
 
         /// <summary>Use a solid window background.</summary>
-        None
+        None = 4,
     }
 }

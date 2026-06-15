@@ -68,10 +68,10 @@ namespace Fluence.Wpf.Tests
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
             app?.Resources.MergedDictionaries.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             ResourceDictionary demoShared = new()
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
             app?.Resources.MergedDictionaries.Add(demoShared);
         }
@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ThemedButton_HasCrispLayoutRoundingSetters()
         {
-            RunOnFreshStaThread(delegate
+            RunOnFreshStaThread(static delegate
             {
                 Application? app = EnsureApplicationSta();
                 MergeThemeAndGeneric(app);
@@ -98,7 +98,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ThemedTextBox_HasCrispLayoutRoundingSetters()
         {
-            RunOnFreshStaThread(delegate
+            RunOnFreshStaThread(static delegate
             {
                 Application? app = EnsureApplicationSta();
                 MergeThemeAndGeneric(app);
@@ -112,14 +112,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void CrispRendering_PreservedAcrossThemeSwitches()
         {
-            RunOnFreshStaThread(delegate
+            RunOnFreshStaThread(static delegate
             {
                 Application? app = EnsureApplicationSta();
                 MergeThemeAndGeneric(app);
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
                     CheckBox checkBox = new();
                     _ = new Window { Content = checkBox };

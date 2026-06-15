@@ -49,7 +49,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_DisplayKindStates_GroupExists()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -67,7 +67,7 @@ namespace Fluence.Wpf.Tests
                 {
                     foreach (object? g in groups)
                     {
-                        if (g is VisualStateGroup vsg && vsg.Name == "DisplayKindStates")
+                        if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", System.StringComparison.Ordinal))
                         { found = true; break; }
                     }
                 }
@@ -79,7 +79,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_DefaultState_IsDot()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -104,7 +104,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_ValueSet_ShowsBadgeBorder()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -125,7 +125,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_ValueBadge_UsesStableScreenshotPillMetrics()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -171,7 +171,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_DisplayKindStates_HasAllFourStates()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -187,7 +187,7 @@ namespace Fluence.Wpf.Tests
                 {
                     foreach (object? g in groups)
                     {
-                        if (g is VisualStateGroup vsg && vsg.Name == "DisplayKindStates") { dkg = vsg; break; }
+                        if (g is VisualStateGroup vsg && string.Equals(vsg.Name, "DisplayKindStates", System.StringComparison.Ordinal)) { dkg = vsg; break; }
                     }
                 }
                 Assert.IsNotNull(dkg, "DisplayKindStates group must exist.");

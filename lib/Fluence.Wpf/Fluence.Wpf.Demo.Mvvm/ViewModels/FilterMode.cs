@@ -36,16 +36,16 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         /// <summary>
         /// Show all tasks.
         /// </summary>
-        All,
+        All = 0,
 
         /// <summary>
         /// Show only incomplete tasks.
         /// </summary>
-        Pending,
+        Pending = 1,
 
         /// <summary>
         /// Show only completed tasks.
         /// </summary>
-        Completed
+        Completed = 2,
     }
 }

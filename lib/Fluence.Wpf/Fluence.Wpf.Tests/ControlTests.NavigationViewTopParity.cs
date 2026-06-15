@@ -28,6 +28,7 @@
 
 using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using FluentButton = Fluence.Wpf.Controls.Button;
@@ -42,7 +43,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_InFluenceWindow_LeftAndTopCoerceTitleBarExtension()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -50,14 +51,14 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 640,
                     Height = 420,
-                    ExtendsContentIntoTitleBar = false
+                    ExtendsContentIntoTitleBar = false,
                 };
 
                 try
                 {
                     NavigationView nav = new()
                     {
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Home" });
                     window.Content = nav;
@@ -89,7 +90,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_TopMode_CoercesPaneOpenAndToggleHidden()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -103,7 +104,7 @@ namespace Fluence.Wpf.Tests
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                         IsPaneOpen = false,
-                        IsPaneToggleButtonVisible = true
+                        IsPaneToggleButtonVisible = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Home" });
                     window.Content = nav;
@@ -137,7 +138,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_TopMode_KeepsItemIconAndTextVisibleWithoutScrollViewer()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -149,17 +150,17 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 640,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     NavigationViewItem item = new()
                     {
                         Content = "Home",
-                        Icon = new FontIcon { Glyph = "\uE80F" }
+                        Icon = new FontIcon { Glyph = "\uE80F" },
                     };
                     NavigationViewItem second = new()
                     {
                         Content = "Design",
-                        Icon = new FontIcon { Glyph = "\uE790" }
+                        Icon = new FontIcon { Glyph = "\uE790" },
                     };
                     _ = nav.Items.Add(item);
                     _ = nav.Items.Add(second);
@@ -246,7 +247,7 @@ namespace Fluence.Wpf.Tests
                         Width = 300,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-                        PaneFooter = new WpfStackPanel { Width = 88, Height = 36 }
+                        PaneFooter = new WpfStackPanel { Width = 88, Height = 36 },
                     };
                     NavigationViewItem first = new() { Content = "Home", Icon = new FontIcon { Glyph = "\uE80F" } };
                     NavigationViewItem last = new() { Content = "Diagnostics", Icon = new FontIcon { Glyph = "\uE8A7", IconFontSize = 20 } };
@@ -295,7 +296,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsTrue(overflowButton.ContextMenu.Items.Count > 0,
                         "Top pane overflow menu should contain hidden navigation items.");
 
-                    FluentMenuItem? overflowItem = overflowButton.ContextMenu.Items[overflowButton.ContextMenu.Items.Count - 1] as FluentMenuItem;
+                    FluentMenuItem? overflowItem = overflowButton.ContextMenu.Items[^1] as FluentMenuItem;
                     Assert.IsNotNull(overflowItem, "Overflow entries should be lightweight Fluence MenuItem rows.");
                     Assert.AreEqual(280.0, overflowItem.MinWidth, 0.01,
                         "Overflow entries should use the wider WinUI-style flyout row width.");
@@ -330,7 +331,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_TopMode_ReservesOverflowButtonByMovingLastFittingItemToMenu()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -342,7 +343,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 220,
                         Height = 240,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     NavigationViewItem first = new() { Content = "One", Icon = new FontIcon { Glyph = "\uE80F" } };
                     NavigationViewItem second = new() { Content = "Two", Icon = new FontIcon { Glyph = "\uE790" } };
@@ -372,7 +373,7 @@ namespace Fluence.Wpf.Tests
                     double overflowLeft = GetNavigationElementX(overflowButton, nav);
                     Assert.IsTrue(overflowLeft >= secondRight + 4.0 - 1.5,
                         "The overflow button should be laid out after the last visible item without overlapping it. "
-                        + "overflowLeft=" + overflowLeft + ", secondRight=" + secondRight + ".");
+                        + "overflowLeft=" + overflowLeft.ToString(format: null, CultureInfo.InvariantCulture) + ", secondRight=" + secondRight.ToString(format: null, CultureInfo.InvariantCulture) + ".");
 
                     Assert.IsNotNull(overflowButton.ContextMenu, "Top pane overflow button should own a menu for collapsed items.");
                     Assert.AreEqual(1, overflowButton.ContextMenu.Items.Count,
@@ -395,7 +396,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_TopMode_OverflowButtonStaysLeftOfClippedItem()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -407,7 +408,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 212,
                         Height = 240,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     NavigationViewItem first = new() { Content = "One", Icon = new FontIcon { Glyph = "\uE80F" } };
                     NavigationViewItem second = new() { Content = "Two", Icon = new FontIcon { Glyph = "\uE790" } };

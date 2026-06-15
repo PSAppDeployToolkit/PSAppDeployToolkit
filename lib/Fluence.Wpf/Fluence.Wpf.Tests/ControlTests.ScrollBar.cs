@@ -28,6 +28,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -62,7 +63,7 @@ namespace Fluence.Wpf.Tests
             {
                 foreach (VisualState candidate in group.States)
                 {
-                    if (candidate.Name == stateName)
+                    if (string.Equals(candidate.Name, stateName, System.StringComparison.Ordinal))
                     {
                         state = candidate;
                         break;
@@ -81,14 +82,15 @@ namespace Fluence.Wpf.Tests
             foreach (Timeline timeline in state.Storyboard.Children)
             {
                 if (timeline is not DoubleAnimationUsingKeyFrames animation ||
-                    Storyboard.GetTargetName(animation) != targetName ||
-                    Storyboard.GetTargetProperty(animation).Path != targetProperty)
+                    !string.Equals(Storyboard.GetTargetName(animation), targetName, System.StringComparison.Ordinal) ||
+                    !string.Equals(Storyboard.GetTargetProperty(animation).Path, targetProperty, System.StringComparison.Ordinal))
                 {
                     continue;
                 }
 
                 Assert.AreEqual(expectedValue, animation.KeyFrames[0].Value, 0.01,
                     string.Format(
+                        CultureInfo.InvariantCulture,
                         "State {0} must set {1}.{2} to {3}.",
                         stateName,
                         targetName,
@@ -98,6 +100,7 @@ namespace Fluence.Wpf.Tests
             }
 
             Assert.Fail(string.Format(
+                CultureInfo.InvariantCulture,
                 "State {0} must animate {1}.{2}.",
                 stateName,
                 targetName,
@@ -107,7 +110,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_ScrollViewerTemplate_ContainsBothScrollBarParts()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -118,13 +121,13 @@ namespace Fluence.Wpf.Tests
                     Height = 100,
                     VerticalScrollBarVisibility = ScrollBarVisibility.Visible,
                     HorizontalScrollBarVisibility = ScrollBarVisibility.Visible,
-                    Style = app?.TryFindResource("ScrollViewerStyle") as Style
+                    Style = app?.TryFindResource("ScrollViewerStyle") as Style,
                 };
 
                 StackPanel sp = new();
                 for (int i = 0; i < 30; i++)
                 {
-                    _ = sp.Children.Add(new TextBlock { Text = "Item " + i, Height = 20, Width = 400 });
+                    _ = sp.Children.Add(new TextBlock { Text = "Item " + i.ToString(format: null, CultureInfo.InvariantCulture), Height = 20, Width = 400 });
                 }
                 sv.Content = sp;
 
@@ -156,7 +159,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_VSM_MouseIndicator_ExpandsVerticalWidth()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -170,7 +173,7 @@ namespace Fluence.Wpf.Tests
                     Value = 0,
                     ViewportSize = 10,
                     Width = 12,
-                    Height = 200
+                    Height = 200,
                 };
 
                 Window window = new() { Width = 60, Height = 300, Content = sb };
@@ -182,7 +185,7 @@ namespace Fluence.Wpf.Tests
 
                     // GoToState with useTransitions=false: DiscreteDoubleKeyFrame at
                     // KeyTime=0 applies the final value immediately.
-                    bool stateApplied = VisualStateManager.GoToState(sb, "MouseIndicator", false);
+                    bool stateApplied = VisualStateManager.GoToState(sb, "MouseIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Assert.IsTrue(stateApplied,
@@ -202,7 +205,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_VSM_NoIndicator_CollapsesVerticalWidth()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -216,7 +219,7 @@ namespace Fluence.Wpf.Tests
                     Value = 0,
                     ViewportSize = 10,
                     Width = 12,
-                    Height = 200
+                    Height = 200,
                 };
 
                 Window window = new() { Width = 60, Height = 300, Content = sb };
@@ -227,10 +230,10 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
                     // Expand to MouseIndicator first, then collapse back.
-                    _ = VisualStateManager.GoToState(sb, "MouseIndicator", false);
+                    _ = VisualStateManager.GoToState(sb, "MouseIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    bool stateApplied = VisualStateManager.GoToState(sb, "NoIndicator", false);
+                    bool stateApplied = VisualStateManager.GoToState(sb, "NoIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Assert.IsTrue(stateApplied,
@@ -250,7 +253,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_VSM_MouseIndicator_ExpandsHorizontalHeight()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -264,7 +267,7 @@ namespace Fluence.Wpf.Tests
                     Value = 0,
                     ViewportSize = 10,
                     Height = 12,
-                    Width = 200
+                    Width = 200,
                 };
 
                 Window window = new() { Width = 300, Height = 60, Content = sb };
@@ -274,7 +277,7 @@ namespace Fluence.Wpf.Tests
                     _ = sb.ApplyTemplate();
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
-                    bool stateApplied = VisualStateManager.GoToState(sb, "MouseIndicator", false);
+                    bool stateApplied = VisualStateManager.GoToState(sb, "MouseIndicator", useTransitions: false);
                     DrainDispatcher(WpfTestSta.Dispatcher);
 
                     Assert.IsTrue(stateApplied,
@@ -294,7 +297,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_DefaultLayout_ReservesExpandedSlotWithCompactIndicator()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -307,7 +310,7 @@ namespace Fluence.Wpf.Tests
                     Maximum = 100,
                     Value = 0,
                     ViewportSize = 10,
-                    Height = 200
+                    Height = 200,
                 };
 
                 Window window = new() { Width = 60, Height = 300, Content = sb };
@@ -349,7 +352,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_Disabled_OpacityReducedOrElementDisabled()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -363,7 +366,7 @@ namespace Fluence.Wpf.Tests
                     Value = 0,
                     ViewportSize = 10,
                     Width = 12,
-                    Height = 200
+                    Height = 200,
                 };
 
                 Window window = new() { Width = 60, Height = 300, Content = sb };
@@ -394,7 +397,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_ThemeCycle_BrushesResolveAfterEachSwitch()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -405,12 +408,12 @@ namespace Fluence.Wpf.Tests
                     "ScrollBarCompactThumbSize",
                     "ScrollViewerScrollBarMargin",
                     "ControlStrongFillColorDefaultBrush",
-                    "SubtleFillColorSecondaryBrush"
+                    "SubtleFillColorSecondaryBrush",
                 ];
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),

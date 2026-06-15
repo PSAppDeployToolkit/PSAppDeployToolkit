@@ -70,7 +70,7 @@ namespace Fluence.Wpf.Controls
                 typeof(bool?),
                 typeof(TreeViewItem),
                 new FrameworkPropertyMetadata(
-                    false,
+                    defaultValue: false,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     OnIsSelectionCheckedChanged));
 
@@ -109,11 +109,11 @@ namespace Fluence.Wpf.Controls
 
             if (owner.SelectionMode == TreeViewSelectionMode.None)
             {
-                SetCurrentValue(IsSelectedProperty, false);
+                SetCurrentValue(IsSelectedProperty, value: false);
             }
             else if (owner.SelectionMode == TreeViewSelectionMode.Multiple)
             {
-                SetCurrentValue(IsSelectionCheckedProperty, true);
+                SetCurrentValue(IsSelectionCheckedProperty, value: true);
             }
         }
 
@@ -150,7 +150,7 @@ namespace Fluence.Wpf.Controls
 
             if (owner.SelectionMode != TreeViewSelectionMode.Multiple && IsSelectionChecked != false)
             {
-                SetCurrentValue(IsSelectionCheckedProperty, false);
+                SetCurrentValue(IsSelectionCheckedProperty, value: false);
             }
         }
 
@@ -172,7 +172,7 @@ namespace Fluence.Wpf.Controls
             {
                 if (isChecked != false && !item._isKeyboardSelectionToggle)
                 {
-                    item.SetCurrentValue(IsSelectionCheckedProperty, false);
+                    item.SetCurrentValue(IsSelectionCheckedProperty, value: false);
                 }
 
                 return;

@@ -41,21 +41,21 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Button_AccentDisabled_DarkTheme_UsesVisibleDisabledAccentTokens()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                     AssertDisabledAccentButtonUsesDarkTokens();
                 }
                 finally
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
@@ -64,7 +64,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Button_AccentDisabled_DarkThemeWithoutAccentRefresh_UsesVisibleDisabledAccentTokens()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -72,13 +72,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
 
                     AssertDisabledAccentButtonUsesDarkTokens();
                 }
                 finally
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Button_ExplicitToolTip_IsNotClearedByTruncationFallback()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 160,
                     Content = "Save",
-                    ToolTip = toolTip
+                    ToolTip = toolTip,
                 };
 
                 try
@@ -121,7 +121,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Button_IconOnly_CentersGlyphAndRestoresGapWithContent()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -130,7 +130,7 @@ namespace Fluence.Wpf.Tests
                 {
                     MinWidth = 32,
                     Padding = new Thickness(8, 4, 8, 4),
-                    Icon = new Fluent.FontIcon { Glyph = "", IconFontSize = 14 }
+                    Icon = new Fluent.FontIcon { Glyph = "", IconFontSize = 14 },
                 };
 
                 try
@@ -167,11 +167,11 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Button_Appearances_ApplyWinUiRestBrushesAndBorders()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 Fluent.Button standard = new() { Content = "Standard" };
@@ -184,7 +184,7 @@ namespace Fluence.Wpf.Tests
 
                 Window window = new()
                 {
-                    Content = panel
+                    Content = panel,
                 };
 
                 try
@@ -233,7 +233,7 @@ namespace Fluence.Wpf.Tests
                 "SubtleFillColorTransparentBrush",
                 "SubtleFillColorSecondaryBrush",
                 "SubtleFillColorTertiaryBrush",
-                "TextFillColorDisabledBrush"
+                "TextFillColorDisabledBrush",
             ];
 
             foreach (string resource in requiredStateResources)
@@ -263,7 +263,7 @@ namespace Fluence.Wpf.Tests
                 Width = 100,
                 Appearance = ControlAppearance.Accent,
                 Content = "Add",
-                IsEnabled = false
+                IsEnabled = false,
             };
 
             try
@@ -346,7 +346,7 @@ namespace Fluence.Wpf.Tests
             Assert.IsTrue(secondIndex >= 0, "Button trigger should contain condition: " + secondCondition);
             int endIndex = xaml.IndexOf("</MultiTrigger>", secondIndex, StringComparison.Ordinal);
             Assert.IsTrue(endIndex >= 0, "Button trigger should close after the requested conditions.");
-            return xaml.Substring(firstIndex, endIndex - firstIndex);
+            return xaml[firstIndex..endIndex];
         }
     }
 }

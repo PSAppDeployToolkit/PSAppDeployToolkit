@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 using Fluence.Wpf.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Globalization;
 using System.Windows.Media;
 
 namespace Fluence.Wpf.Tests
@@ -169,14 +170,14 @@ namespace Fluence.Wpf.Tests
                 totalG += dG;
                 totalH += dH;
 
-                TestContext?.WriteLine($"{fix.Name,-26} | {dCurrent,7} | {dF,5} | {dG,5} | {dH,5}");
+                TestContext?.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-26} | {1,7} | {2,5} | {3,5} | {4,5}", fix.Name, dCurrent, dF, dG, dH));
             }
 
             TestContext?.WriteLine("---------------------------+---------+-------+-------+-------");
-            TestContext?.WriteLine($"{"TOTAL (lower = better)",-26} | {totalCurrent,7} | {totalF,5} | {totalG,5} | {totalH,5}");
+            TestContext?.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0,-26} | {1,7} | {2,5} | {3,5} | {4,5}", "TOTAL (lower = better)", totalCurrent, totalF, totalG, totalH));
             TestContext?.WriteLine("");
             int stops = Fixtures.Length * 6;
-            TestContext?.WriteLine($"Mean per stop ({stops} stops):  | {totalCurrent / (double)stops,7:F1} | {totalF / (double)stops,5:F1} | {totalG / (double)stops,5:F1} | {totalH / (double)stops,5:F1}");
+            TestContext?.WriteLine(string.Format(CultureInfo.InvariantCulture, "Mean per stop ({0} stops):  | {1,7:F1} | {2,5:F1} | {3,5:F1} | {4,5:F1}", stops, totalCurrent / (double)stops, totalF / (double)stops, totalG / (double)stops, totalH / (double)stops));
 
             Assert.IsTrue(Fixtures.Length > 0);
         }
@@ -244,7 +245,7 @@ namespace Fluence.Wpf.Tests
             if (s < 0.05)
             {
                 // Achromatic input: stay grey at targetL.
-                byte g = (byte)Math.Round(targetL * 255);
+                byte g = (byte)Math.Round(targetL * 255, MidpointRounding.ToEven);
                 return Color.FromArgb(0xFF, g, g, g);
             }
             return HslToRgb(h, 1.0, targetL);
@@ -280,7 +281,7 @@ namespace Fluence.Wpf.Tests
             const double Epsilon = 1e-9;
             if (s < Epsilon)
             {
-                byte v = (byte)Math.Round(l * 255);
+                byte v = (byte)Math.Round(l * 255, MidpointRounding.ToEven);
                 return Color.FromArgb(0xFF, v, v, v);
             }
             double q = l < 0.5 ? l * (1 + s) : l + s - (l * s);
@@ -290,20 +291,20 @@ namespace Fluence.Wpf.Tests
             double g = HueToRgb(p, q, hk);
             double b = HueToRgb(p, q, hk - (1.0 / 3.0));
             return Color.FromArgb(0xFF,
-                (byte)Math.Round(r * 255),
-                (byte)Math.Round(g * 255),
-                (byte)Math.Round(b * 255));
+                (byte)Math.Round(r * 255, MidpointRounding.ToEven),
+                (byte)Math.Round(g * 255, MidpointRounding.ToEven),
+                (byte)Math.Round(b * 255, MidpointRounding.ToEven));
         }
 
         private static double HueToRgb(double p, double q, double t)
         {
             if (t < 0)
             {
-                t += 1;
+                t++;
             }
             if (t > 1)
             {
-                t -= 1;
+                t--;
             }
             return t < 1.0 / 6.0
                 ? p + ((q - p) * 6 * t)

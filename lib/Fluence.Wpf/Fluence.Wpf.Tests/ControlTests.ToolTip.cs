@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToolTip_DefaultStyle_BackgroundBrushResolves()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -58,7 +58,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToolTip_DefaultStyle_BorderBrushResolves()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -72,7 +72,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToolTip_DefaultStyle_StyleRegisteredWithCorrectProperties()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -85,7 +85,7 @@ namespace Fluence.Wpf.Tests
                 ToolTip tt = new()
                 {
                     Content = "Test",
-                    Style = style
+                    Style = style,
                 };
 
                 // FontSize and MaxWidth are ordinary DPs - they resolve via Style.Apply.
@@ -98,7 +98,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToolTip_ThemeCycle_BrushesResolveAfterEachSwitch()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -107,7 +107,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),

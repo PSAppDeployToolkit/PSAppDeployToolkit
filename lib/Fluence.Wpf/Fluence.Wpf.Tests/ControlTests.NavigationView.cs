@@ -139,14 +139,14 @@ namespace Fluence.Wpf.Tests
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.Mica, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.Mica, updateAccent: true);
 
-                Fluence.Wpf.Demo.MainWindow mw = new()
+                Demo.MainWindow mw = new()
                 {
                     ShowInTaskbar = false,
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Left = -10000,
-                    Top = -10000
+                    Top = -10000,
                 };
                 try
                 {
@@ -173,7 +173,7 @@ namespace Fluence.Wpf.Tests
 
                     foreach (double width in new[] { 96.0, 160.0, 240.0, 320.0 })
                     {
-                        paneColumn!.BeginAnimation(ColumnDefinition.WidthProperty, null);
+                        paneColumn!.BeginAnimation(ColumnDefinition.WidthProperty, animation: null);
                         paneColumn.Width = new GridLength(width);
                         mw.UpdateLayout();
                         double footerIconX = footerIcon!.TransformToAncestor(nav).Transform(new Point(0, 0)).X;
@@ -195,7 +195,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_PaneDisplayMode_Left_RendersVerticalPane()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -207,7 +207,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Two" });
@@ -234,7 +234,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_PaneDisplayMode_Top_RendersHorizontalPane()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -246,7 +246,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Two" });
@@ -273,15 +273,15 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_PaneItemsScrollViewer_UsesFluentScrollViewerStyle()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 try
                 {
-                    AssertPaneItemsScrollViewerUsesFluentStyle(NavigationViewPaneDisplayMode.Left, true);
-                    AssertPaneItemsScrollViewerUsesFluentStyle(NavigationViewPaneDisplayMode.LeftCompact, false);
+                    AssertPaneItemsScrollViewerUsesFluentStyle(NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
+                    AssertPaneItemsScrollViewerUsesFluentStyle(NavigationViewPaneDisplayMode.LeftCompact, isPaneOpen: false);
                 }
                 finally
                 {
@@ -307,7 +307,7 @@ namespace Fluence.Wpf.Tests
                     NavigationViewItem footer = new()
                     {
                         Content = "Settings",
-                        Icon = new FontIcon { Glyph = "\uE713", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE713", IconFontSize = 20 },
                     };
                     NavigationView nav = new()
                     {
@@ -315,7 +315,7 @@ namespace Fluence.Wpf.Tests
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
                         IsPaneOpen = false,
-                        PaneFooter = footer
+                        PaneFooter = footer,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -351,7 +351,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftClosedPaneItemsKeepFullIconWidth()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -363,14 +363,14 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Messages",
                         Icon = new FontIcon { Glyph = "\uE8BD", IconFontSize = 20 },
-                        IsSelected = true
+                        IsSelected = true,
                     };
                     NavigationView nav = new()
                     {
                         Width = 420,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                        IsPaneOpen = false
+                        IsPaneOpen = false,
                     };
                     _ = nav.Items.Add(messages);
                     window.Content = nav;
@@ -405,7 +405,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftCompact_ClosedPaneItemsKeepFullIconWidth()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -417,14 +417,14 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Messages",
                         Icon = new FontIcon { Glyph = "\uE8BD", IconFontSize = 20 },
-                        IsSelected = true
+                        IsSelected = true,
                     };
                     NavigationView nav = new()
                     {
                         Width = 420,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
-                        IsPaneOpen = false
+                        IsPaneOpen = false,
                     };
                     _ = nav.Items.Add(messages);
                     window.Content = nav;
@@ -459,7 +459,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftPaneToggleGlyph_IsOffsetToAlignWithItemIcons()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -471,7 +471,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 420,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -498,7 +498,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftChrome_BackPrecedesPaneToggle()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -512,7 +512,7 @@ namespace Fluence.Wpf.Tests
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                         IsBackButtonVisible = true,
-                        IsBackEnabled = true
+                        IsBackEnabled = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -554,7 +554,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftMode_DefaultFontIconSizeIs16()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -567,7 +567,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 420,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One", Icon = icon });
                     window.Content = nav;
@@ -592,7 +592,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationViewItem_Template_RendersInfoBadge()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -605,7 +605,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Section",
                         Icon = new FontIcon { Glyph = "\uE8FD", IconFontSize = 20 },
-                        InfoBadge = badge
+                        InfoBadge = badge,
                     };
 
                     window.Content = item;
@@ -638,7 +638,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_SelectedItem_UpdatesOnItemClick()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -651,7 +651,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-                        SelectionFollowsFocus = false
+                        SelectionFollowsFocus = false,
                     };
                     NavigationViewItem item0 = new() { Content = "Zero" };
                     NavigationViewItem item1 = new() { Content = "One" };
@@ -695,7 +695,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     NavigationViewItem item0 = new() { Content = "Zero" };
                     NavigationViewItem item1 = new() { Content = "One" };
@@ -709,7 +709,7 @@ namespace Fluence.Wpf.Tests
 
                     List<string> calls = [];
                     NavigationViewItemInvokedEventArgs? invokedArgs = null;
-                    nav.ItemInvoked += delegate (object? sender, NavigationViewItemInvokedEventArgs e)
+                    nav.ItemInvoked += (sender, e) =>
                     {
                         invokedArgs = e;
                         calls.Add("invoked:" + e.InvokedItemContainer.Content);
@@ -754,7 +754,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_SelectionFollowsFocus_True_SelectsOnFocus()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -767,7 +767,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-                        SelectionFollowsFocus = true
+                        SelectionFollowsFocus = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Zero" });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
@@ -799,7 +799,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_SelectionFollowsFocus_False_DoesNotSelectOnFocus()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -812,7 +812,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-                        SelectionFollowsFocus = false
+                        SelectionFollowsFocus = false,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Zero" });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
@@ -844,7 +844,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_IsBackButtonVisible_False_HidesBackButton()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -857,7 +857,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         IsBackButtonVisible = false,
-                        IsBackEnabled = true
+                        IsBackEnabled = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     window.Content = nav;
@@ -884,7 +884,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_IsBackEnabled_False_CollapsesBackButton()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -897,7 +897,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         IsBackButtonVisible = true,
-                        IsBackEnabled = false
+                        IsBackEnabled = false,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     window.Content = nav;
@@ -929,7 +929,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftModes_ForcePaneToggleVisible()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -939,7 +939,7 @@ namespace Fluence.Wpf.Tests
                     NavigationViewPaneDisplayMode[] modes =
                     [
                         NavigationViewPaneDisplayMode.Left,
-                        NavigationViewPaneDisplayMode.LeftCompact
+                        NavigationViewPaneDisplayMode.LeftCompact,
                     ];
 
                     foreach (NavigationViewPaneDisplayMode mode in modes)
@@ -953,7 +953,7 @@ namespace Fluence.Wpf.Tests
                                 Width = 400,
                                 Height = 320,
                                 PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-                                IsPaneToggleButtonVisible = false
+                                IsPaneToggleButtonVisible = false,
                             };
                             _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                             window.Content = nav;
@@ -1012,7 +1012,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         IsBackButtonVisible = true,
-                        IsBackEnabled = true
+                        IsBackEnabled = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     window.Content = nav;
@@ -1043,7 +1043,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_ThemeSwitch_UpdatesBrushes()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1055,7 +1055,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     window.Content = nav;
@@ -1063,12 +1063,12 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     DrainDispatcher(window.Dispatcher);
                     Assert.IsTrue(application?.Resources.MergedDictionaries.Count > 0);
                     Color lightBase = (Color)application.Resources.MergedDictionaries[0]["SolidBackgroundFillColorBase"];
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     DrainDispatcher(window.Dispatcher);
                     Color darkBase = (Color)application.Resources.MergedDictionaries[0]["SolidBackgroundFillColorBase"];
 
@@ -1090,7 +1090,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_SharedIndicator_ExistsInTemplate_AndVisibleWhenSelected()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1102,7 +1102,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     NavigationViewItem item0 = new() { Content = "One" };
                     NavigationViewItem item1 = new() { Content = "Two" };
@@ -1139,7 +1139,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_PreTemplateSelection_PositionsSharedIndicatorAfterTemplateApplied()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1151,12 +1151,12 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     NavigationViewItem item = new()
                     {
                         Content = "Home",
-                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
                     };
                     _ = nav.Items.Add(item);
                     nav.SelectedItem = item;
@@ -1198,12 +1198,12 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Home",
-                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
                     });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Child", IsChildItem = true });
                     window.Content = nav;
@@ -1246,7 +1246,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftMode_SharedIndicator_AnimatesBetweenSelections()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1258,17 +1258,17 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Home",
-                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
                     });
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Settings",
-                        Icon = new FontIcon { Glyph = "\uE713", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE713", IconFontSize = 20 },
                     });
                     window.Content = nav;
                     window.Show();
@@ -1321,17 +1321,17 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Parent",
-                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
                     });
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Child",
-                        IsChildItem = true
+                        IsChildItem = true,
                     });
                     window.Content = nav;
                     window.Show();
@@ -1353,7 +1353,7 @@ namespace Fluence.Wpf.Tests
                     Point departPosition = nav.CalculateDepartPositionForTesting(
                         new Point(parentX, parentY),
                         parentItem,
-                        false,
+topMode: false,
                         1.0);
                     Assert.AreEqual(parentX, departPosition.X, 0.5,
                         "The downward depart leg should keep the parent item's X until the indicator fades out.");
@@ -1398,17 +1398,17 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Parent",
-                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
                     });
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Child",
-                        IsChildItem = true
+                        IsChildItem = true,
                     });
                     window.Content = nav;
                     window.Show();
@@ -1430,7 +1430,7 @@ namespace Fluence.Wpf.Tests
                     Point departPosition = nav.CalculateDepartPositionForTesting(
                         new Point(childX, childY),
                         childItem,
-                        false,
+topMode: false,
                         -1.0);
                     Assert.AreEqual(childX, departPosition.X, 0.5,
                         "The upward depart leg should keep the child item's X until the indicator fades out.");
@@ -1475,12 +1475,12 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem
                     {
                         Content = "Home",
-                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 }
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
                     });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "No icon top-level" });
                     window.Content = nav;
@@ -1521,7 +1521,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationViewItem_FocusVisual_StaysInsideItemBounds()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1565,7 +1565,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_SharedIndicator_HidesWhenSelectionCleared()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1577,7 +1577,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -1614,7 +1614,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_TopMode_SharedIndicator_VisibleWhenSelected()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1626,7 +1626,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 600,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Alpha" });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Beta" });
@@ -1658,7 +1658,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_FullThemeCycle_NoExceptions()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1670,7 +1670,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     window.Content = nav;
@@ -1683,12 +1683,12 @@ namespace Fluence.Wpf.Tests
                         ApplicationTheme.Light,
                         ApplicationTheme.Dark,
                         ApplicationTheme.HighContrast,
-                        ApplicationTheme.Auto
+                        ApplicationTheme.Auto,
                     ];
 
                     for (int i = 0; i < themes.Length; i++)
                     {
-                        ApplicationThemeManager.Apply(themes[i], BackdropType.None, true);
+                        ApplicationThemeManager.Apply(themes[i], BackdropType.None, updateAccent: true);
                         DrainDispatcher(window.Dispatcher);
                         nav.UpdateLayout();
 
@@ -1712,7 +1712,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_PaneModeSwitch_IndicatorSurvives()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1724,7 +1724,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 600,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Two" });
@@ -1761,7 +1761,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_PaneCollapse_IndicatorSurvives()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1774,7 +1774,7 @@ namespace Fluence.Wpf.Tests
                         Width = 400,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                        IsPaneOpen = true
+                        IsPaneOpen = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -1817,7 +1817,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationViewItem_DisabledState_ChangesForeground()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1829,7 +1829,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     NavigationViewItem item = new() { Content = "Disabled" };
                     _ = nav.Items.Add(item);
@@ -1862,7 +1862,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_Left_PaneClosedInitially_ContentStartsAt48px_Inline()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1875,7 +1875,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                        IsPaneOpen = false
+                        IsPaneOpen = false,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -1905,7 +1905,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_Left_ContentStarts42pxBelowWindowTop()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1918,7 +1918,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                        IsPaneOpen = true
+                        IsPaneOpen = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -1948,7 +1948,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_Left_HeaderContentUsesAutoHeight()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -1962,7 +1962,7 @@ namespace Fluence.Wpf.Tests
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                         IsPaneOpen = true,
-                        Header = new System.Windows.Controls.Border { Width = 100, Height = 20 }
+                        Header = new System.Windows.Controls.Border { Width = 100, Height = 20 },
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -1992,7 +1992,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_Left_PaneToggle_ResizesPushingContent()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2005,7 +2005,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                        IsPaneOpen = true
+                        IsPaneOpen = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2058,7 +2058,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                        IsPaneOpen = true
+                        IsPaneOpen = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2119,7 +2119,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
-                        IsPaneOpen = true
+                        IsPaneOpen = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2151,7 +2151,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftCompact_HeaderContentUsesAutoHeight()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2165,7 +2165,7 @@ namespace Fluence.Wpf.Tests
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
                         IsPaneOpen = true,
-                        Header = new System.Windows.Controls.Border { Width = 100, Height = 20 }
+                        Header = new System.Windows.Controls.Border { Width = 100, Height = 20 },
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2196,7 +2196,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftCompact_PaneClosed_ContentStartsAt48px_Inline()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2209,7 +2209,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
-                        IsPaneOpen = false
+                        IsPaneOpen = false,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2238,7 +2238,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_LeftCompact_BackEnabledClosedPane_KeepsPaneToggleVisible()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2254,7 +2254,7 @@ namespace Fluence.Wpf.Tests
                         IsPaneOpen = true,
                         IsBackButtonVisible = true,
                         IsBackEnabled = true,
-                        IsPaneToggleButtonVisible = true
+                        IsPaneToggleButtonVisible = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2310,7 +2310,7 @@ namespace Fluence.Wpf.Tests
                         Width = 800,
                         Height = 480,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
-                        IsPaneOpen = true
+                        IsPaneOpen = true,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "One" });
                     window.Content = nav;
@@ -2353,7 +2353,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_ContentBackground_DefaultStyle_ResolvesToSolidBackgroundFillColorBase()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2365,7 +2365,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     window.Content = nav;
                     window.Show();
@@ -2396,7 +2396,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_Header_InPane_IsRendered_NotSelectable()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2408,7 +2408,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     NavigationViewItemHeader header = new() { Content = "Input" };
                     NavigationViewItem item = new() { Content = "Buttons" };
@@ -2442,7 +2442,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_BackButtonStates_BothStatesAccessible()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2456,8 +2456,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
 
                     // WI-3 B15: BackButtonStates VSM group must expose both states
-                    bool okVisible = VisualStateManager.GoToState(nav, "BackButtonVisible", false);
-                    bool okCollapsed = VisualStateManager.GoToState(nav, "BackButtonCollapsed", false);
+                    bool okVisible = VisualStateManager.GoToState(nav, "BackButtonVisible", useTransitions: false);
+                    bool okCollapsed = VisualStateManager.GoToState(nav, "BackButtonCollapsed", useTransitions: false);
 
                     Assert.IsTrue(okVisible, "GoToState('BackButtonVisible') must succeed - BackButtonStates VSM group required.");
                     Assert.IsTrue(okCollapsed, "GoToState('BackButtonCollapsed') must succeed.");
@@ -2476,7 +2476,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_IsBackButtonVisible_True_ShowsBackButton()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2513,7 +2513,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_ContentBackground_ResolvesToSolidBackgroundFillColorBaseBrush_AcrossThemes()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2525,21 +2525,21 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 640,
                         Height = 400,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     window.Content = nav;
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     DrainDispatcher(window.Dispatcher);
                     Assert.IsNotNull(nav.ContentBackground,
                         "ContentBackground must resolve under Light theme.");
                     Assert.IsNotNull(application?.TryFindResource("NavigationViewContentBackgroundBrush"),
                         "NavigationViewContentBackgroundBrush must resolve under Light theme.");
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     DrainDispatcher(window.Dispatcher);
                     Assert.IsNotNull(nav.ContentBackground,
                         "ContentBackground must resolve under Dark theme.");
@@ -2575,7 +2575,7 @@ namespace Fluence.Wpf.Tests
             // be Transparent (or null) so the DWM Mica/Acrylic backdrop shows through. The
             // WI-3 B15 commit wrongly set them to LayerFillColorAltBrush, which blocked the
             // backdrop entirely. This test asserts the reverted state is preserved.
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2588,7 +2588,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     winLeft.Content = nav;
@@ -2614,7 +2614,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     winCompact.Content = nav;
@@ -2640,7 +2640,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 600,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
                     };
                     _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
                     winTop.Content = nav;
@@ -2668,6 +2668,8 @@ namespace Fluence.Wpf.Tests
         /// Asserts that <paramref name="brush"/> is null, Brushes.Transparent, or a
         /// SolidColorBrush whose alpha channel is zero - i.e. effectively transparent.
         /// </summary>
+        /// <param name="brush">The brush to check for transparency.</param>
+        /// <param name="message">The message to display if the assertion fails.</param>
         private static void AssertBrushIsTransparentOrNull(Brush brush, string message)
         {
             if (brush is null)
@@ -2702,7 +2704,7 @@ namespace Fluence.Wpf.Tests
                     Width = 640,
                     Height = 420,
                     PaneDisplayMode = mode,
-                    IsPaneOpen = isPaneOpen
+                    IsPaneOpen = isPaneOpen,
                 };
                 _ = nav.Items.Add(new NavigationViewItem { Content = "Item" });
 
@@ -2742,7 +2744,7 @@ namespace Fluence.Wpf.Tests
             // producing two visible accent pills on the selected item. The pane-level
             // indicator is canonical (WinUI 3) and is wired in NavigationView.cs; the
             // per-item one must NOT exist in the template.
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -2753,7 +2755,7 @@ namespace Fluence.Wpf.Tests
                     NavigationViewItem item = new()
                     {
                         Content = "Item",
-                        IsSelected = true
+                        IsSelected = true,
                     };
                     window.Content = item;
                     window.Width = 240;

@@ -52,7 +52,7 @@ namespace Fluence.Wpf.Controls
 
             FocusableProperty.OverrideMetadata(
                 typeof(NavigationViewItemHeader),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
         }
     }
 }

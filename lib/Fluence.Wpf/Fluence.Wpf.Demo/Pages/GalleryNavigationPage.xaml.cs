@@ -35,254 +35,244 @@ namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GalleryNavigationPage : UserControl
     {
-        private const string LeftNavigationViewXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Navigation.LeftNavigationView""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <Border
-        Height=""320"">
-        <ui:NavigationView
-            PaneDisplayMode=""Left"">
-            <ui:NavigationView.PaneHeader>
-                <TextBlock
-                    Margin=""12,8""
-                    Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-                    Text=""Navigation"" />
-            </ui:NavigationView.PaneHeader>
-            <ui:NavigationViewItem
-                Content=""Home""
-                IsSelected=""True"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE80F;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content=""Files"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE8B7;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content=""Reports"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE9D9;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-            </ui:NavigationViewItem>
-        </ui:NavigationView>
-    </Border>
-</UserControl>
-";
+        private const string LeftNavigationViewXamlSource = "<UserControl\n" +
+                                                            "    x:Class=\"Fluence.Wpf.Demo.Pages.Navigation.LeftNavigationView\"\n" +
+                                                            "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                            "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                            "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                            "    <Border\n" +
+                                                            "        Height=\"320\">\n" +
+                                                            "        <ui:NavigationView\n" +
+                                                            "            PaneDisplayMode=\"Left\">\n" +
+                                                            "            <ui:NavigationView.PaneHeader>\n" +
+                                                            "                <TextBlock\n" +
+                                                            "                    Margin=\"12,8\"\n" +
+                                                            "                    Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                            "                    Text=\"Navigation\" />\n" +
+                                                            "            </ui:NavigationView.PaneHeader>\n" +
+                                                            "            <ui:NavigationViewItem\n" +
+                                                            "                Content=\"Home\"\n" +
+                                                            "                IsSelected=\"True\">\n" +
+                                                            "                <ui:NavigationViewItem.Icon>\n" +
+                                                            "                    <ui:FontIcon Glyph=\"&#xE80F;\" IconFontSize=\"16\" />\n" +
+                                                            "                </ui:NavigationViewItem.Icon>\n" +
+                                                            "            </ui:NavigationViewItem>\n" +
+                                                            "            <ui:NavigationViewItem Content=\"Files\">\n" +
+                                                            "                <ui:NavigationViewItem.Icon>\n" +
+                                                            "                    <ui:FontIcon Glyph=\"&#xE8B7;\" IconFontSize=\"16\" />\n" +
+                                                            "                </ui:NavigationViewItem.Icon>\n" +
+                                                            "            </ui:NavigationViewItem>\n" +
+                                                            "            <ui:NavigationViewItem Content=\"Reports\">\n" +
+                                                            "                <ui:NavigationViewItem.Icon>\n" +
+                                                            "                    <ui:FontIcon Glyph=\"&#xE9D9;\" IconFontSize=\"16\" />\n" +
+                                                            "                </ui:NavigationViewItem.Icon>\n" +
+                                                            "            </ui:NavigationViewItem>\n" +
+                                                            "        </ui:NavigationView>\n" +
+                                                            "    </Border>\n" +
+                                                            "</UserControl>\n";
 
-        private const string LeftNavigationViewCSharpSource = @"using System.Windows.Controls;
+        private const string LeftNavigationViewCSharpSource = "using System.Windows.Controls;\n" +
+                                                              "\n" +
+                                                              "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                              "{\n" +
+                                                              "    public partial class LeftNavigationView : UserControl\n" +
+                                                              "    {\n" +
+                                                              "        public LeftNavigationView()\n" +
+                                                              "        {\n" +
+                                                              "            InitializeComponent();\n" +
+                                                              "        }\n" +
+                                                              "    }\n" +
+                                                              "}\n";
+        private const string TopNavigationViewXamlSource = "<UserControl\n" +
+                                                           "    x:Class=\"Fluence.Wpf.Demo.Pages.Navigation.TopNavigationView\"\n" +
+                                                           "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                           "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                           "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                           "    <Border\n" +
+                                                           "        Height=\"240\">\n" +
+                                                           "        <ui:NavigationView\n" +
+                                                           "            Header=\"Insights\"\n" +
+                                                           "            PaneDisplayMode=\"Top\">\n" +
+                                                           "            <ui:NavigationViewItem\n" +
+                                                           "                Content=\"Overview\"\n" +
+                                                           "                IsSelected=\"True\">\n" +
+                                                           "                <ui:NavigationViewItem.Icon>\n" +
+                                                           "                    <ui:FontIcon Glyph=\"&#xE9D2;\" IconFontSize=\"16\" />\n" +
+                                                           "                </ui:NavigationViewItem.Icon>\n" +
+                                                           "            </ui:NavigationViewItem>\n" +
+                                                           "            <ui:NavigationViewItem Content=\"Activity\">\n" +
+                                                           "                <ui:NavigationViewItem.Icon>\n" +
+                                                           "                    <ui:FontIcon Glyph=\"&#xE7F4;\" IconFontSize=\"16\" />\n" +
+                                                           "                </ui:NavigationViewItem.Icon>\n" +
+                                                           "            </ui:NavigationViewItem>\n" +
+                                                           "            <ui:NavigationViewItem Content=\"Settings\">\n" +
+                                                           "                <ui:NavigationViewItem.Icon>\n" +
+                                                           "                    <ui:FontIcon Glyph=\"&#xE713;\" IconFontSize=\"16\" />\n" +
+                                                           "                </ui:NavigationViewItem.Icon>\n" +
+                                                           "            </ui:NavigationViewItem>\n" +
+                                                           "        </ui:NavigationView>\n" +
+                                                           "    </Border>\n" +
+                                                           "</UserControl>\n";
 
-namespace Fluence.Wpf.Demo.Pages.Navigation
-{
-    public partial class LeftNavigationView : UserControl
-    {
-        public LeftNavigationView()
-        {
-            InitializeComponent();
-        }
-    }
-}
-";
-        private const string TopNavigationViewXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Navigation.TopNavigationView""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <Border
-        Height=""240"">
-        <ui:NavigationView
-            Header=""Insights""
-            PaneDisplayMode=""Top"">
-            <ui:NavigationViewItem
-                Content=""Overview""
-                IsSelected=""True"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE9D2;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content=""Activity"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE7F4;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content=""Settings"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE713;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-            </ui:NavigationViewItem>
-        </ui:NavigationView>
-    </Border>
-</UserControl>
-";
+        private const string TopNavigationViewCSharpSource = "using System.Windows.Controls;\n" +
+                                                             "\n" +
+                                                             "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                             "{\n" +
+                                                             "    public partial class TopNavigationView : UserControl\n" +
+                                                             "    {\n" +
+                                                             "        public TopNavigationView()\n" +
+                                                             "        {\n" +
+                                                             "            InitializeComponent();\n" +
+                                                             "        }\n" +
+                                                             "    }\n" +
+                                                             "}\n";
+        private const string CompactNavigationViewXamlSource = "<UserControl\n" +
+                                                               "    x:Class=\"Fluence.Wpf.Demo.Pages.Navigation.CompactNavigationView\"\n" +
+                                                               "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                               "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                               "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                               "    <StackPanel>\n" +
+                                                               "        <Border\n" +
+                                                               "            Height=\"300\"\n" +
+                                                               "            Margin=\"0,0,0,12\"\n" +
+                                                               "            BorderBrush=\"{DynamicResource CardStrokeColorDefaultBrush}\"\n" +
+                                                               "            BorderThickness=\"1\">\n" +
+                                                               "            <ui:NavigationView\n" +
+                                                               "                x:Name=\"CompactNavigationDemo\"\n" +
+                                                               "                IsBackButtonVisible=\"True\"\n" +
+                                                               "                IsBackEnabled=\"{Binding IsChecked, ElementName=BackEnabledToggle}\"\n" +
+                                                               "                IsPaneToggleButtonVisible=\"True\"\n" +
+                                                               "                IsPaneOpen=\"False\"\n" +
+                                                               "                PaneDisplayMode=\"LeftCompact\">\n" +
+                                                               "                <ui:NavigationView.PaneFooter>\n" +
+                                                               "                    <ui:NavigationViewItem Content=\"Settings\">\n" +
+                                                               "                        <ui:NavigationViewItem.Icon>\n" +
+                                                               "                            <ui:FontIcon Glyph=\"&#xE713;\" IconFontSize=\"16\" />\n" +
+                                                               "                        </ui:NavigationViewItem.Icon>\n" +
+                                                               "                    </ui:NavigationViewItem>\n" +
+                                                               "                </ui:NavigationView.PaneFooter>\n" +
+                                                               "                <ui:NavigationViewItem\n" +
+                                                               "                    Content=\"Dashboard\"\n" +
+                                                               "                    IsSelected=\"True\">\n" +
+                                                               "                    <ui:NavigationViewItem.Icon>\n" +
+                                                               "                        <ui:FontIcon Glyph=\"&#xE80F;\" IconFontSize=\"16\" />\n" +
+                                                               "                    </ui:NavigationViewItem.Icon>\n" +
+                                                               "                </ui:NavigationViewItem>\n" +
+                                                               "                <ui:NavigationViewItem Content=\"Messages\">\n" +
+                                                               "                    <ui:NavigationViewItem.Icon>\n" +
+                                                               "                        <ui:FontIcon Glyph=\"&#xE8BD;\" IconFontSize=\"16\" />\n" +
+                                                               "                    </ui:NavigationViewItem.Icon>\n" +
+                                                               "                </ui:NavigationViewItem>\n" +
+                                                               "            </ui:NavigationView>\n" +
+                                                               "        </Border>\n" +
+                                                               "            <ui:CheckBox\n" +
+                                                               "                x:Name=\"BackEnabledToggle\"\n" +
+                                                               "                Content=\"Back enabled\"\n" +
+                                                               "                IsChecked=\"True\" />\n" +
+                                                               "    </StackPanel>\n" +
+                                                               "</UserControl>\n";
 
-        private const string TopNavigationViewCSharpSource = @"using System.Windows.Controls;
+        private const string CompactNavigationViewCSharpSource = "using System.Windows.Controls;\n" +
+                                                                 "\n" +
+                                                                 "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                                 "{\n" +
+                                                                 "    public partial class CompactNavigationView : UserControl\n" +
+                                                                 "    {\n" +
+                                                                 "        public CompactNavigationView()\n" +
+                                                                 "        {\n" +
+                                                                 "            InitializeComponent();\n" +
+                                                                 "        }\n" +
+                                                                 "    }\n" +
+                                                                 "}\n";
+        private const string InfoBadgeNavigationXamlSource = "<UserControl\n" +
+                                                             "    x:Class=\"Fluence.Wpf.Demo.Pages.Navigation.InfoBadgeNavigation\"\n" +
+                                                             "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                             "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                             "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\"\n" +
+                                                             "    xmlns:uicore=\"clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf\">\n" +
+                                                             "    <Border Height=\"260\">\n" +
+                                                             "        <ui:NavigationView\n" +
+                                                             "            Header=\"Inbox\"\n" +
+                                                             "            IsPaneOpen=\"True\"\n" +
+                                                             "            PaneDisplayMode=\"Left\">\n" +
+                                                             "            <ui:NavigationViewItem\n" +
+                                                             "                Content=\"Inbox\"\n" +
+                                                             "                IsSelected=\"True\">\n" +
+                                                             "                <ui:NavigationViewItem.Icon>\n" +
+                                                             "                    <ui:FontIcon Glyph=\"&#xE715;\" IconFontSize=\"16\" />\n" +
+                                                             "                </ui:NavigationViewItem.Icon>\n" +
+                                                             "                <ui:NavigationViewItem.InfoBadge>\n" +
+                                                             "                    <ui:InfoBadge Value=\"12\" />\n" +
+                                                             "                </ui:NavigationViewItem.InfoBadge>\n" +
+                                                             "            </ui:NavigationViewItem>\n" +
+                                                             "            <ui:NavigationViewItem Content=\"Approvals\">\n" +
+                                                             "                <ui:NavigationViewItem.Icon>\n" +
+                                                             "                    <ui:FontIcon Glyph=\"&#xE73E;\" IconFontSize=\"16\" />\n" +
+                                                             "                </ui:NavigationViewItem.Icon>\n" +
+                                                             "                <ui:NavigationViewItem.InfoBadge>\n" +
+                                                             "                    <ui:InfoBadge BadgeStyle=\"{x:Static uicore:InfoBadgeStyle.Caution}\" />\n" +
+                                                             "                </ui:NavigationViewItem.InfoBadge>\n" +
+                                                             "            </ui:NavigationViewItem>\n" +
+                                                             "            <ui:NavigationViewItem Content=\"Alerts\">\n" +
+                                                             "                <ui:NavigationViewItem.Icon>\n" +
+                                                             "                    <ui:FontIcon Glyph=\"&#xE7BA;\" IconFontSize=\"16\" />\n" +
+                                                             "                </ui:NavigationViewItem.Icon>\n" +
+                                                             "                <ui:NavigationViewItem.InfoBadge>\n" +
+                                                             "                    <ui:InfoBadge BadgeStyle=\"{x:Static uicore:InfoBadgeStyle.Critical}\" Value=\"2\" />\n" +
+                                                             "                </ui:NavigationViewItem.InfoBadge>\n" +
+                                                             "            </ui:NavigationViewItem>\n" +
+                                                             "        </ui:NavigationView>\n" +
+                                                             "    </Border>\n" +
+                                                             "</UserControl>\n";
 
-namespace Fluence.Wpf.Demo.Pages.Navigation
-{
-    public partial class TopNavigationView : UserControl
-    {
-        public TopNavigationView()
-        {
-            InitializeComponent();
-        }
-    }
-}
-";
-        private const string CompactNavigationViewXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Navigation.CompactNavigationView""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <StackPanel>
-        <Border
-            Height=""300""
-            Margin=""0,0,0,12""
-            BorderBrush=""{DynamicResource CardStrokeColorDefaultBrush}""
-            BorderThickness=""1"">
-            <ui:NavigationView
-                x:Name=""CompactNavigationDemo""
-                IsBackButtonVisible=""True""
-                IsBackEnabled=""{Binding IsChecked, ElementName=BackEnabledToggle}""
-                IsPaneToggleButtonVisible=""True""
-                IsPaneOpen=""False""
-                PaneDisplayMode=""LeftCompact"">
-                <ui:NavigationView.PaneFooter>
-                    <ui:NavigationViewItem Content=""Settings"">
-                        <ui:NavigationViewItem.Icon>
-                            <ui:FontIcon Glyph=""&#xE713;"" IconFontSize=""16"" />
-                        </ui:NavigationViewItem.Icon>
-                    </ui:NavigationViewItem>
-                </ui:NavigationView.PaneFooter>
-                <ui:NavigationViewItem
-                    Content=""Dashboard""
-                    IsSelected=""True"">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Glyph=""&#xE80F;"" IconFontSize=""16"" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content=""Messages"">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Glyph=""&#xE8BD;"" IconFontSize=""16"" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView>
-        </Border>
-            <ui:CheckBox
-                x:Name=""BackEnabledToggle""
-                Content=""Back enabled""
-                IsChecked=""True"" />
-    </StackPanel>
-</UserControl>
-";
+        private const string InfoBadgeNavigationCSharpSource = "using System.Windows.Controls;\n" +
+                                                               "\n" +
+                                                               "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                               "{\n" +
+                                                               "    public partial class InfoBadgeNavigation : UserControl\n" +
+                                                               "    {\n" +
+                                                               "        public InfoBadgeNavigation()\n" +
+                                                               "        {\n" +
+                                                               "            InitializeComponent();\n" +
+                                                               "        }\n" +
+                                                               "    }\n" +
+                                                               "}\n";
 
-        private const string CompactNavigationViewCSharpSource = @"using System.Windows.Controls;
+        private const string BreadcrumbBarXamlSource = "<UserControl\n" +
+                                                       "    x:Class=\"Fluence.Wpf.Demo.Pages.Navigation.BreadcrumbTrail\"\n" +
+                                                       "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                       "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                       "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                       "    <ui:BreadcrumbBar x:Name=\"Trail\" ItemClicked=\"Trail_ItemClicked\" />\n" +
+                                                       "</UserControl>\n";
 
-namespace Fluence.Wpf.Demo.Pages.Navigation
-{
-    public partial class CompactNavigationView : UserControl
-    {
-        public CompactNavigationView()
-        {
-            InitializeComponent();
-        }
-    }
-}
-";
-        private const string InfoBadgeNavigationXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Navigation.InfoBadgeNavigation""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf""
-    xmlns:uicore=""clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"">
-    <Border Height=""260"">
-        <ui:NavigationView
-            Header=""Inbox""
-            IsPaneOpen=""True""
-            PaneDisplayMode=""Left"">
-            <ui:NavigationViewItem
-                Content=""Inbox""
-                IsSelected=""True"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE715;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-                <ui:NavigationViewItem.InfoBadge>
-                    <ui:InfoBadge Value=""12"" />
-                </ui:NavigationViewItem.InfoBadge>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content=""Approvals"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE73E;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-                <ui:NavigationViewItem.InfoBadge>
-                    <ui:InfoBadge BadgeStyle=""{x:Static uicore:InfoBadgeStyle.Caution}"" />
-                </ui:NavigationViewItem.InfoBadge>
-            </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content=""Alerts"">
-                <ui:NavigationViewItem.Icon>
-                    <ui:FontIcon Glyph=""&#xE7BA;"" IconFontSize=""16"" />
-                </ui:NavigationViewItem.Icon>
-                <ui:NavigationViewItem.InfoBadge>
-                    <ui:InfoBadge BadgeStyle=""{x:Static uicore:InfoBadgeStyle.Critical}"" Value=""2"" />
-                </ui:NavigationViewItem.InfoBadge>
-            </ui:NavigationViewItem>
-        </ui:NavigationView>
-    </Border>
-</UserControl>
-";
-
-        private const string InfoBadgeNavigationCSharpSource = @"using System.Windows.Controls;
-
-namespace Fluence.Wpf.Demo.Pages.Navigation
-{
-    public partial class InfoBadgeNavigation : UserControl
-    {
-        public InfoBadgeNavigation()
-        {
-            InitializeComponent();
-        }
-    }
-}
-";
-
-        private const string BreadcrumbBarXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Navigation.BreadcrumbTrail""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <ui:BreadcrumbBar x:Name=""Trail"" ItemClicked=""Trail_ItemClicked"" />
-</UserControl>
-";
-
-        private const string BreadcrumbBarCSharpSource = @"using System.Collections.ObjectModel;
-using System.Windows.Controls;
-using Fluence.Wpf;
-
-namespace Fluence.Wpf.Demo.Pages.Navigation
-{
-    public partial class BreadcrumbTrail : UserControl
-    {
-        private readonly ObservableCollection<string> _path =
-            [""Home"", ""Documents"", ""Design"", ""Specs""];
-
-        public BreadcrumbTrail()
-        {
-            InitializeComponent();
-            Trail.ItemsSource = _path;
-        }
-
-        private void Trail_ItemClicked(object sender, BreadcrumbBarItemClickedEventArgs e)
-        {
-            // Trim the path back to the clicked crumb.
-            for (int i = _path.Count - 1; i > e.Index; i--)
-            {
-                _path.RemoveAt(i);
-            }
-        }
-    }
-}
-";
+        private const string BreadcrumbBarCSharpSource = "using System.Collections.ObjectModel;\n" +
+                                                         "using System.Windows.Controls;\n" +
+                                                         "using Fluence.Wpf;\n" +
+                                                         "\n" +
+                                                         "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                         "{\n" +
+                                                         "    public partial class BreadcrumbTrail : UserControl\n" +
+                                                         "    {\n" +
+                                                         "        private readonly ObservableCollection<string> _path =\n" +
+                                                         "            [\"Home\", \"Documents\", \"Design\", \"Specs\"];\n" +
+                                                         "\n" +
+                                                         "        public BreadcrumbTrail()\n" +
+                                                         "        {\n" +
+                                                         "            InitializeComponent();\n" +
+                                                         "            Trail.ItemsSource = _path;\n" +
+                                                         "        }\n" +
+                                                         "\n" +
+                                                         "        private void Trail_ItemClicked(object sender, BreadcrumbBarItemClickedEventArgs e)\n" +
+                                                         "        {\n" +
+                                                         "            // Trim the path back to the clicked crumb.\n" +
+                                                         "            for (int i = _path.Count - 1; i > e.Index; i--)\n" +
+                                                         "            {\n" +
+                                                         "                _path.RemoveAt(i);\n" +
+                                                         "            }\n" +
+                                                         "        }\n" +
+                                                         "    }\n" +
+                                                         "}\n";
 
         private readonly System.Collections.ObjectModel.ObservableCollection<string> _breadcrumbPath =
             ["Home", "Documents", "Design", "Specs"];
@@ -305,39 +295,37 @@ namespace Fluence.Wpf.Demo.Pages.Navigation
             Loaded += GalleryNavigationPage_Loaded;
         }
 
-        private const string PipsPagerXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Navigation.CarouselPager""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <ui:PipsPager
-        x:Name=""Pager""
-        NextButtonVisibility=""Visible""
-        NumberOfPages=""8""
-        PreviousButtonVisibility=""Visible""
-        SelectedIndexChanged=""Pager_SelectedIndexChanged"" />
-</UserControl>
-";
+        private const string PipsPagerXamlSource = "<UserControl\n" +
+                                                   "    x:Class=\"Fluence.Wpf.Demo.Pages.Navigation.CarouselPager\"\n" +
+                                                   "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                   "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                   "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                   "    <ui:PipsPager\n" +
+                                                   "        x:Name=\"Pager\"\n" +
+                                                   "        NextButtonVisibility=\"Visible\"\n" +
+                                                   "        NumberOfPages=\"8\"\n" +
+                                                   "        PreviousButtonVisibility=\"Visible\"\n" +
+                                                   "        SelectedIndexChanged=\"Pager_SelectedIndexChanged\" />\n" +
+                                                   "</UserControl>\n";
 
-        private const string PipsPagerCSharpSource = @"using System.Windows.Controls;
-using Fluence.Wpf;
-
-namespace Fluence.Wpf.Demo.Pages.Navigation
-{
-    public partial class CarouselPager : UserControl
-    {
-        public CarouselPager()
-        {
-            InitializeComponent();
-        }
-
-        private void Pager_SelectedIndexChanged(object sender, PipsPagerSelectedIndexChangedEventArgs e)
-        {
-            // e.NewIndex is the zero-based page to show.
-        }
-    }
-}
-";
+        private const string PipsPagerCSharpSource = "using System.Windows.Controls;\n" +
+                                                     "using Fluence.Wpf;\n" +
+                                                     "\n" +
+                                                     "namespace Fluence.Wpf.Demo.Pages.Navigation\n" +
+                                                     "{\n" +
+                                                     "    public partial class CarouselPager : UserControl\n" +
+                                                     "    {\n" +
+                                                     "        public CarouselPager()\n" +
+                                                     "        {\n" +
+                                                     "            InitializeComponent();\n" +
+                                                     "        }\n" +
+                                                     "\n" +
+                                                     "        private void Pager_SelectedIndexChanged(object sender, PipsPagerSelectedIndexChangedEventArgs e)\n" +
+                                                     "        {\n" +
+                                                     "            // e.NewIndex is the zero-based page to show.\n" +
+                                                     "        }\n" +
+                                                     "    }\n" +
+                                                     "}\n";
 
         private void DemoPipsPager_SelectedIndexChanged(object sender, Fluence.Wpf.PipsPagerSelectedIndexChangedEventArgs e)
         {
@@ -418,7 +406,7 @@ namespace Fluence.Wpf.Demo.Pages.Navigation
             {
                 Margin = new Thickness(0, 6, 0, 0),
                 Text = description,
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
             };
             descriptionBlock.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorSecondaryBrush");
             _ = panel.Children.Add(descriptionBlock);
@@ -430,7 +418,7 @@ namespace Fluence.Wpf.Demo.Pages.Navigation
             TextBlock textBlock = new()
             {
                 Margin = new Thickness(20),
-                Text = text
+                Text = text,
             };
             textBlock.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorPrimaryBrush");
             return textBlock;

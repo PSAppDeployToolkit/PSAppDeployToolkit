@@ -101,7 +101,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IconSource),
                 typeof(object),
                 typeof(InfoBadge),
-                new FrameworkPropertyMetadata(null, OnIconSourceChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnIconSourceChanged));
 
         /// <summary>
         /// Gets or sets an icon element to display inside the badge (overrides Value text).
@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Controls
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            UpdateDisplayKindState(false);
+            UpdateDisplayKindState(useTransitions: false);
         }
 
         private static void OnIconSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

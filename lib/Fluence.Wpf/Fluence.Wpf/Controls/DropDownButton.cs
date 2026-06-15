@@ -63,7 +63,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Flyout),
                 typeof(object),
                 typeof(DropDownButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content displayed in the dropdown popup.
@@ -82,7 +82,7 @@ namespace Fluence.Wpf.Controls
                 nameof(FlyoutTemplate),
                 typeof(DataTemplate),
                 typeof(DropDownButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the <see cref="DataTemplate"/> used to render <see cref="Flyout"/>.

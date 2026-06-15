@@ -38,7 +38,7 @@ namespace Fluence.Wpf.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
@@ -50,10 +50,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Apply_Light_TextBrushIsDarkOnLight()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
                 Color? textColor = app.Resources["TextFillColorPrimary"] as Color?;
                 Assert.IsNotNull(textColor, "TextFillColorPrimary should be defined");
@@ -68,10 +68,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Apply_Dark_TextBrushIsLightOnDark()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
 
                 Color? textColor = app.Resources["TextFillColorPrimary"] as Color?;
                 Assert.IsNotNull(textColor, "TextFillColorPrimary should be defined");
@@ -86,10 +86,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Apply_HighContrast_UsesSystemColors()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
 
                 SolidColorBrush? brush = app.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush;
                 Assert.IsNotNull(brush, "TextFillColorPrimaryBrush should be defined");
@@ -107,7 +107,7 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Changed += handler;
                 try
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                     Assert.AreEqual(1, eventCount, "Changed event should fire exactly once");
                 }
                 finally
@@ -128,8 +128,8 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Changed += handler;
                 try
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
                     Assert.AreEqual(2, eventCount, "Changed event should fire exactly twice");
                 }
                 finally
@@ -142,17 +142,17 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FiveSwitches_DictionaryCountStable()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 int initialCount = app.Resources.MergedDictionaries.Count;
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
 
                 int finalCount = app.Resources.MergedDictionaries.Count;
                 Assert.AreEqual(initialCount, finalCount, "Dictionary count should remain stable after multiple switches");

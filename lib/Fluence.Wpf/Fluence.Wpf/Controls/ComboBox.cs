@@ -57,7 +57,7 @@ namespace Fluence.Wpf.Controls
                 nameof(SelectedContent),
                 typeof(object),
                 typeof(ComboBox),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         private static readonly DependencyPropertyKey SelectedTextPropertyKey =
             DependencyProperty.RegisterReadOnly(
@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PlaceholderText),
                 typeof(string),
                 typeof(ComboBox),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the placeholder text displayed when no item is selected.
@@ -155,7 +155,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(ComboBox),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the icon displayed in the combo box.
@@ -190,7 +190,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsDropDownOpenedUpward),
                 typeof(bool),
                 typeof(ComboBox),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsDropDownOpenedUpward"/> dependency property.
@@ -213,7 +213,7 @@ namespace Fluence.Wpf.Controls
             base.OnApplyTemplate();
             _popup = GetTemplateChild(PART_Popup) as Popup;
             UpdateSelectedContent();
-            UpdateFocusState(false);
+            UpdateFocusState(useTransitions: false);
             if (SelectedIndex == -1 && Items.Count > 0 && !IsSelectedIndexExplicitlySet())
             {
                 _ = Dispatcher.BeginInvoke(TryAutoSelectFirstItem, DispatcherPriority.Loaded);
@@ -254,14 +254,14 @@ namespace Fluence.Wpf.Controls
         protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
-            UpdateFocusState(true);
+            UpdateFocusState(useTransitions: true);
         }
 
         /// <inheritdoc />
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            UpdateFocusState(true);
+            UpdateFocusState(useTransitions: true);
         }
 
         private void UpdateFocusState(bool useTransitions)

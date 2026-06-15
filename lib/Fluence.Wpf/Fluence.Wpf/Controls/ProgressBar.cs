@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Controls
                 new FrameworkPropertyMetadata(typeof(ProgressBar)));
             IsIndeterminateProperty.OverrideMetadata(
                 typeof(ProgressBar),
-                new FrameworkPropertyMetadata(false, OnIsIndeterminateChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsIndeterminateChanged));
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowError),
                 typeof(bool),
                 typeof(ProgressBar),
-                new FrameworkPropertyMetadata(false, OnStatePrimitiveChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnStatePrimitiveChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether the progress bar reports an error state. When set, the
@@ -143,7 +143,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowPaused),
                 typeof(bool),
                 typeof(ProgressBar),
-                new FrameworkPropertyMetadata(false, OnStatePrimitiveChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnStatePrimitiveChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether the progress bar reports a paused state. When set (and
@@ -202,7 +202,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowStepMarkers),
                 typeof(bool),
                 typeof(ProgressBar),
-                new FrameworkPropertyMetadata(true, OnLayoutPropertyChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnLayoutPropertyChanged));
 
         /// <summary>
         /// Gets or sets whether step markers are shown in StepProgress mode.
@@ -262,7 +262,7 @@ namespace Fluence.Wpf.Controls
             _track?.SizeChanged += OnSizeChanged;
             _indicatorHost?.SizeChanged += OnSizeChanged;
             ApplyProgressMode();
-            UpdateFillWidth(false);
+            UpdateFillWidth(animate: false);
             RefreshIndeterminateLayout();
             UpdateIndicatorHostClip();
         }
@@ -278,20 +278,20 @@ namespace Fluence.Wpf.Controls
         protected override void OnMinimumChanged(double oldMinimum, double newMinimum)
         {
             base.OnMinimumChanged(oldMinimum, newMinimum);
-            UpdateFillWidth(false);
+            UpdateFillWidth(animate: false);
         }
 
         /// <inheritdoc />
         protected override void OnMaximumChanged(double oldMaximum, double newMaximum)
         {
             base.OnMaximumChanged(oldMaximum, newMaximum);
-            UpdateFillWidth(false);
+            UpdateFillWidth(animate: false);
         }
 
         private static void OnLayoutPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ProgressBar bar = (ProgressBar)d;
-            bar.UpdateFillWidth(false);
+            bar.UpdateFillWidth(animate: false);
             bar.RefreshIndeterminateLayout();
             bar.UpdateIndicatorHostClip();
         }
@@ -317,7 +317,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
             bar.ApplyProgressMode();
-            bar.UpdateFillWidth(false);
+            bar.UpdateFillWidth(animate: false);
         }
 
         private static void OnStatePrimitiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -341,6 +341,8 @@ namespace Fluence.Wpf.Controls
         /// Re-applies the resolved visual state when the control (re)enters a live visual tree,
         /// restarting the indeterminate animation that <see cref="OnUnloaded"/> stopped.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             ApplyProgressMode();
@@ -350,6 +352,8 @@ namespace Fluence.Wpf.Controls
         /// Stops the repeat-forever indeterminate animation when the control leaves the visual
         /// tree so closed windows do not leak rooted animation clocks.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             StopIndeterminate();
@@ -387,6 +391,7 @@ namespace Fluence.Wpf.Controls
         /// primitives never writes back to <see cref="ProgressMode"/>, and <see cref="_syncingMode"/>
         /// suppresses the primitive callbacks so the resolver runs exactly once per mode change.
         /// </summary>
+        /// <param name="mode">The progress bar mode to synchronize from.</param>
         private void SyncPrimitivesFromMode(ProgressBarMode mode)
         {
             if (_syncingMode)
@@ -432,7 +437,7 @@ namespace Fluence.Wpf.Controls
                 _fill.Visibility = Visibility.Visible;
                 _indeterminateBar.Visibility = Visibility.Collapsed;
                 _ = _indeterminateBar2?.Visibility = Visibility.Collapsed;
-                _ = Dispatcher.BeginInvoke(() => UpdateFillWidth(false), DispatcherPriority.Loaded);
+                _ = Dispatcher.BeginInvoke(() => UpdateFillWidth(animate: false), DispatcherPriority.Loaded);
             }
             else
             {
@@ -495,7 +500,7 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames bar1Animation = new()
             {
                 Duration = new Duration(TimeSpan.FromSeconds(2.0)),
-                RepeatBehavior = RepeatBehavior.Forever
+                RepeatBehavior = RepeatBehavior.Forever,
             };
             _ = bar1Animation.KeyFrames.Add(new DiscreteDoubleKeyFrame(trackWidth * -0.4, KeyTime.FromTimeSpan(TimeSpan.Zero)));
             _ = bar1Animation.KeyFrames.Add(new SplineDoubleKeyFrame(trackWidth * 1.2, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(1.5)), new KeySpline(0.4, 0.0, 0.6, 1.0)));
@@ -508,7 +513,7 @@ namespace Fluence.Wpf.Controls
                 DoubleAnimationUsingKeyFrames bar2Animation = new()
                 {
                     Duration = new Duration(TimeSpan.FromSeconds(2.0)),
-                    RepeatBehavior = RepeatBehavior.Forever
+                    RepeatBehavior = RepeatBehavior.Forever,
                 };
                 _ = bar2Animation.KeyFrames.Add(new DiscreteDoubleKeyFrame(trackWidth * -0.9, KeyTime.FromTimeSpan(TimeSpan.Zero)));
                 _ = bar2Animation.KeyFrames.Add(new DiscreteDoubleKeyFrame(trackWidth * -0.9, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.75))));
@@ -522,12 +527,12 @@ namespace Fluence.Wpf.Controls
         {
             if (_indeterminateTranslate is not null)
             {
-                _indeterminateTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+                _indeterminateTranslate.BeginAnimation(TranslateTransform.XProperty, animation: null);
                 _indeterminateTranslate.X = 0;
             }
             if (_indeterminateTranslate2 is not null)
             {
-                _indeterminateTranslate2.BeginAnimation(TranslateTransform.XProperty, null);
+                _indeterminateTranslate2.BeginAnimation(TranslateTransform.XProperty, animation: null);
                 _indeterminateTranslate2.X = 0;
             }
         }
@@ -569,7 +574,7 @@ namespace Fluence.Wpf.Controls
             if (!animate)
             {
                 _fillAnimationVersion++;
-                _fill.BeginAnimation(WidthProperty, null);
+                _fill.BeginAnimation(WidthProperty, animation: null);
                 _fill.Width = targetWidth;
                 return;
             }
@@ -588,14 +593,14 @@ namespace Fluence.Wpf.Controls
             if (Math.Abs(fromWidth - targetWidth) < 0.1)
             {
                 _fillAnimationVersion++;
-                _fill.BeginAnimation(WidthProperty, null);
+                _fill.BeginAnimation(WidthProperty, animation: null);
                 _fill.Width = targetWidth;
                 return;
             }
 
             _fillAnimationVersion++;
             int animationVersion = _fillAnimationVersion;
-            _fill.BeginAnimation(WidthProperty, null);
+            _fill.BeginAnimation(WidthProperty, animation: null);
             _fill.Width = fromWidth;
 
             // WinUI RepositionThemeAnimation approximation: a single 367 ms spline keyframe with
@@ -604,14 +609,14 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames animation = new()
             {
                 Duration = new Duration(TimeSpan.FromMilliseconds(367)),
-                FillBehavior = FillBehavior.Stop
+                FillBehavior = FillBehavior.Stop,
             };
             _ = animation.KeyFrames.Add(new SplineDoubleKeyFrame(targetWidth, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(367)), new KeySpline(0.1, 0.9, 0.2, 1.0)));
             animation.Completed += delegate
             {
                 if (animationVersion == _fillAnimationVersion && _fill is not null)
                 {
-                    _fill.BeginAnimation(WidthProperty, null);
+                    _fill.BeginAnimation(WidthProperty, animation: null);
                     _fill.Width = targetWidth;
                 }
             };

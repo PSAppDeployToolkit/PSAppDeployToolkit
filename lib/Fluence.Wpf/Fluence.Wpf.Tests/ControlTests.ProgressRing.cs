@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -51,7 +52,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Defaults_AreCanonical()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -72,7 +73,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Template_ContainsDeterminateArcPart()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -95,7 +96,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Indeterminate_TemplateContainsAnimatedArc()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -136,7 +137,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_TemplateSettings_AtWidth32_MatchWinUiFormula()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -159,7 +160,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_TemplateSettings_AtWidth64_DropAdditiveTerm()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -186,7 +187,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Determinate_PathDataIsPopulatedForNonZeroValue()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -198,7 +199,7 @@ namespace Fluence.Wpf.Tests
                     Height = 64,
                     Value = 50,
                     Minimum = 0,
-                    Maximum = 100
+                    Maximum = 100,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -216,7 +217,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Determinate_PathDataIsNullWhenValueIsZero()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -228,7 +229,7 @@ namespace Fluence.Wpf.Tests
                     Height = 64,
                     Value = 0,
                     Minimum = 0,
-                    Maximum = 100
+                    Maximum = 100,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -246,7 +247,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_SwitchToIndeterminate_ClearsArcGeometry()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -256,7 +257,7 @@ namespace Fluence.Wpf.Tests
                     IsIndeterminate = false,
                     Width = 64,
                     Height = 64,
-                    Value = 75
+                    Value = 75,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -278,7 +279,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_SwitchToDeterminate_ClearsIndeterminateArcGeometry()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -288,7 +289,7 @@ namespace Fluence.Wpf.Tests
                     IsIndeterminate = true,
                     Width = 64,
                     Height = 64,
-                    Value = 75
+                    Value = 75,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -312,7 +313,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Unloaded_ClearsIndeterminateArcGeometry()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -322,7 +323,7 @@ namespace Fluence.Wpf.Tests
                     IsIndeterminate = true,
                     Width = 64,
                     Height = 64,
-                    IsActive = true
+                    IsActive = true,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -348,7 +349,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_Foreground_ResolvesToAccentFillColorDefaultBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -373,7 +374,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_PausedState_UsesCautionBrushForBothArcs()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -384,7 +385,7 @@ namespace Fluence.Wpf.Tests
                     IsActive = true,
                     IsIndeterminate = true,
                     Width = 64,
-                    Height = 64
+                    Height = 64,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -410,11 +411,11 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_PausedState_TracksCautionBrushAcrossThemeChange()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
 
                 ProgressRing ring = new()
                 {
@@ -422,7 +423,7 @@ namespace Fluence.Wpf.Tests
                     IsActive = true,
                     IsIndeterminate = true,
                     Width = 64,
-                    Height = 64
+                    Height = 64,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -438,7 +439,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsNotNull(initialExpected, "SystemFillColorCautionBrush must resolve in light theme.");
                 Assert.AreEqual(initialExpected.Color, initialColor, "Paused ProgressRing should start on the caution brush.");
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                 DrainDispatcher(w.Dispatcher);
 
                 SolidColorBrush? expected = app?.TryFindResource("SystemFillColorCautionBrush") as SolidColorBrush;
@@ -456,7 +457,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_IndeterminateAnimation_UsesArcPulseAndRotationModel()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 DoubleAnimationUsingKeyFrames sweep =
                     InvokePrivateAnimationFactory<DoubleAnimationUsingKeyFrames>("CreateIndeterminateSweepAnimation");
@@ -470,11 +471,11 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual(RepeatBehavior.Forever, sweep.RepeatBehavior);
                 AssertKeyFrames(sweep,
                 [
-                    0.0, 0.5, 0.0
+                    0.0, 0.5, 0.0,
                 ]);
                 AssertKeyFramePercents(sweep,
                 [
-                    0.0, 0.5, 1.0
+                    0.0, 0.5, 1.0,
                 ]);
 
                 // Rotation: the template transform spins 90 -> 1170 degrees (three full
@@ -493,7 +494,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_PausedState_RendersStaticIndeterminateArc()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -504,7 +505,7 @@ namespace Fluence.Wpf.Tests
                     IsActive = true,
                     IsIndeterminate = true,
                     Width = 64,
-                    Height = 64
+                    Height = 64,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -546,7 +547,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_ErrorState_UsesCriticalBrushThroughThemeCycle()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -558,7 +559,7 @@ namespace Fluence.Wpf.Tests
                     IsIndeterminate = false,
                     Width = 64,
                     Height = 64,
-                    Value = 50
+                    Value = 50,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -590,7 +591,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_ShowError_ColorsArcsWithCriticalBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -601,7 +602,7 @@ namespace Fluence.Wpf.Tests
                     IsActive = true,
                     IsIndeterminate = true,
                     Width = 64,
-                    Height = 64
+                    Height = 64,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -635,7 +636,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_ShowPaused_RendersStaticCautionHalfArc()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -646,7 +647,7 @@ namespace Fluence.Wpf.Tests
                     IsActive = true,
                     IsIndeterminate = true,
                     Width = 64,
-                    Height = 64
+                    Height = 64,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -682,7 +683,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_ProgressStateAlias_MapsOntoStateFlags()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -692,7 +693,7 @@ namespace Fluence.Wpf.Tests
                     IsActive = true,
                     IsIndeterminate = true,
                     Width = 64,
-                    Height = 64
+                    Height = 64,
                 };
                 Window w = new() { Content = ring, Width = 200, Height = 200 };
                 w.Show();
@@ -731,7 +732,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressRing_ThemeCycle_TemplateRemainsApplied()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -764,7 +765,7 @@ namespace Fluence.Wpf.Tests
         {
             MethodInfo? method = typeof(ProgressRing).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
             Assert.IsNotNull(method, "ProgressRing should expose private factory: " + methodName);
-            T? animation = method.Invoke(null, null) as T;
+            T? animation = method.Invoke(null, parameters: null) as T;
             Assert.IsNotNull(animation, methodName + " should return " + typeof(T).Name + ".");
             return animation;
         }
@@ -802,7 +803,7 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(expectedValues.Length, animation.KeyFrames.Count, "Unexpected keyframe count.");
             for (int i = 0; i < expectedValues.Length; i++)
             {
-                Assert.AreEqual(expectedValues[i], animation.KeyFrames[i].Value, 0.01, "Unexpected keyframe value at index " + i);
+                Assert.AreEqual(expectedValues[i], animation.KeyFrames[i].Value, 0.01, "Unexpected keyframe value at index " + i.ToString(CultureInfo.InvariantCulture));
                 Assert.IsInstanceOfType(animation.KeyFrames[i], typeof(LinearDoubleKeyFrame),
                     "ProgressRing indeterminate keyframes should be linear.");
             }
@@ -813,8 +814,8 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(expectedPercents.Length, animation.KeyFrames.Count, "Unexpected keyframe count.");
             for (int i = 0; i < expectedPercents.Length; i++)
             {
-                Assert.AreEqual(KeyTimeType.Percent, animation.KeyFrames[i].KeyTime.Type, "KeyTime should be percent at index " + i);
-                Assert.AreEqual(expectedPercents[i], animation.KeyFrames[i].KeyTime.Percent, 0.001, "Unexpected keyframe percent at index " + i);
+                Assert.AreEqual(KeyTimeType.Percent, animation.KeyFrames[i].KeyTime.Type, "KeyTime should be percent at index " + i.ToString(format: null, CultureInfo.InvariantCulture));
+                Assert.AreEqual(expectedPercents[i], animation.KeyFrames[i].KeyTime.Percent, 0.001, "Unexpected keyframe percent at index " + i.ToString(format: null, CultureInfo.InvariantCulture));
             }
         }
     }

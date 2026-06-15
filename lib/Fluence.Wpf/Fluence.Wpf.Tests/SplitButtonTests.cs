@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
 
         private static void Drain(Dispatcher dispatcher)
         {
-            dispatcher.Invoke(new Action(delegate { }), DispatcherPriority.ApplicationIdle);
+            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ApplicationIdle);
         }
 
         private static void MergeGeneric(Application? application)
@@ -73,10 +73,10 @@ namespace Fluence.Wpf.Tests
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
             application?.Resources.MergedDictionaries.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             application?.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             });
         }
 
@@ -85,7 +85,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Defaults_AreWinUiCanon()
         {
-            RunOnSta(() =>
+            RunOnSta(static () =>
             {
                 SplitButton button = new();
 
@@ -107,7 +107,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void IsFlyoutOpen_IsReadOnlyDp()
         {
-            RunOnSta(() =>
+            RunOnSta(static () =>
             {
                 // Direct SetValue on the public IsFlyoutOpenProperty must fail: only the
                 // internal PropertyKey may mutate it. Guard against accidental promotion
@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Tests
                 bool threw = false;
                 try
                 {
-                    button.SetValue(SplitButton.IsFlyoutOpenProperty, true);
+                    button.SetValue(SplitButton.IsFlyoutOpenProperty, value: true);
                 }
                 catch (InvalidOperationException)
                 {
@@ -128,14 +128,14 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        #endregion
+        #endregion Defaults and DPs
 
         #region Template parts
 
         [TestMethod]
         public void Template_ExposesPrimarySecondaryAndPopupParts()
         {
-            RunOnSta(() =>
+            RunOnSta(static () =>
             {
                 Application? application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
@@ -147,7 +147,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Action",
                         Flyout = new System.Windows.Controls.TextBlock { Text = "Flyout content" },
-                        Width = 140
+                        Width = 140,
                     };
                     window.Content = splitButton;
                     window.Width = 200;
@@ -180,7 +180,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        #endregion
+        #endregion Template parts
 
         #region Primary click
 
@@ -198,7 +198,7 @@ namespace Fluence.Wpf.Tests
                     SplitButton splitButton = new()
                     {
                         Content = "Action",
-                        Width = 140
+                        Width = 140,
                     };
                     int clickCount = 0;
                     splitButton.Click += (s, e) => clickCount++;
@@ -243,13 +243,13 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     int executed = 0;
-                    RelayCommand command = new(p => executed++);
+                    RelayCommand command = new(_ => executed++);
 
                     SplitButton splitButton = new()
                     {
                         Content = "Action",
                         Command = command,
-                        Width = 140
+                        Width = 140,
                     };
 
                     window.Content = splitButton;
@@ -276,14 +276,14 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        #endregion
+        #endregion Primary click
 
         #region Flyout open / close
 
         [TestMethod]
         public void SecondaryButtonChecked_OpensPopupAndFlipsIsFlyoutOpen()
         {
-            RunOnSta(() =>
+            RunOnSta(static () =>
             {
                 Application? application = WpfTestSta.EnsureApplication();
                 MergeGeneric(application);
@@ -295,7 +295,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Action",
                         Flyout = new System.Windows.Controls.TextBlock { Text = "Hello" },
-                        Width = 140
+                        Width = 140,
                     };
 
                     window.Content = splitButton;
@@ -338,14 +338,14 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        #endregion
+        #endregion Flyout open / close
 
         #region Automation
 
         [TestMethod]
         public void AutomationPeer_IsSplitButton_WithInvokeAndExpandCollapse()
         {
-            RunOnSta(() =>
+            RunOnSta(static () =>
             {
                 SplitButton splitButton = new();
                 AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(splitButton);
@@ -361,7 +361,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        #endregion
+        #endregion Automation
 
         private sealed class RelayCommand(Action<object?> execute) : ICommand
         {

@@ -72,7 +72,7 @@ namespace Fluence.Wpf.Controls
     /// </remarks>
     [TemplatePart(Name = PART_PreviousButton, Type = typeof(System.Windows.Controls.Primitives.ButtonBase))]
     [TemplatePart(Name = PART_NextButton, Type = typeof(System.Windows.Controls.Primitives.ButtonBase))]
-    [TemplatePart(Name = PART_PipsHost, Type = typeof(System.Windows.Controls.Panel))]
+    [TemplatePart(Name = PART_PipsHost, Type = typeof(Panel))]
     public class PipsPager : Control
     {
         // Template part names. These must match the names used in the default control template.
@@ -85,7 +85,7 @@ namespace Fluence.Wpf.Controls
 
         private System.Windows.Controls.Primitives.ButtonBase? _previousButton;
         private System.Windows.Controls.Primitives.ButtonBase? _nextButton;
-        private System.Windows.Controls.Panel? _pipsHost;
+        private Panel? _pipsHost;
 
         // Page index of the first pip currently realized in PART_PipsHost; -1 until built.
         private int _windowStart = -1;
@@ -249,7 +249,7 @@ namespace Fluence.Wpf.Controls
 
             _previousButton = GetTemplateChild(PART_PreviousButton) as System.Windows.Controls.Primitives.ButtonBase;
             _nextButton = GetTemplateChild(PART_NextButton) as System.Windows.Controls.Primitives.ButtonBase;
-            _pipsHost = GetTemplateChild(PART_PipsHost) as System.Windows.Controls.Panel;
+            _pipsHost = GetTemplateChild(PART_PipsHost) as Panel;
             _windowStart = -1;
 
             _previousButton?.Click += OnPreviousButtonClick;
@@ -308,6 +308,7 @@ namespace Fluence.Wpf.Controls
                 : proposed > lastIndex ? lastIndex : baseValue;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0091:Sender should be 'this' for instance events", Justification = "The method is static.")]
         private static void OnSelectedPageIndexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             PipsPager pager = (PipsPager)d;

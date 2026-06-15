@@ -45,16 +45,16 @@ namespace Fluence.Wpf
         /// <summary>
         /// Gets the data item that was invoked.
         /// </summary>
-        public object InvokedItem { get; private set; } = invokedItem;
+        public object InvokedItem { get; } = invokedItem;
 
         /// <summary>
         /// Gets the navigation item container that was invoked.
         /// </summary>
-        public NavigationViewItem InvokedItemContainer { get; private set; } = invokedItemContainer;
+        public NavigationViewItem InvokedItemContainer { get; } = invokedItemContainer;
 
         /// <summary>
         /// Gets a value indicating whether the settings entry was invoked.
         /// </summary>
-        public bool IsSettingsInvoked { get; private set; } = isSettingsInvoked;
+        public bool IsSettingsInvoked { get; } = isSettingsInvoked;
     }
 }

@@ -36,16 +36,16 @@ namespace Fluence.Wpf
         /// <summary>
         /// Normal active progress rendered with the accent brush.
         /// </summary>
-        Normal,
+        Normal = 0,
 
         /// <summary>
         /// Paused progress rendered with the system caution brush.
         /// </summary>
-        Paused,
+        Paused = 1,
 
         /// <summary>
         /// Error progress rendered with the system critical brush.
         /// </summary>
-        Error,
+        Error = 2,
     }
 }

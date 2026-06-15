@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void AppBarButton_DefaultStyle_AppliesCompactChromeAndLabelTooltip()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -388,7 +388,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void CommandBarFlyoutPresenter_ThemeCycle_SurfaceBrushesResolve()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -406,7 +406,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),
@@ -448,13 +448,13 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(1.0, pressScale.ScaleX, 0.001, "The backplate must rest at 1.0 scale.");
 
                     // Press: the Button.xaml press-scale storyboard settles at 0.98.
-                    button.SetPressed(true);
+                    button.SetPressed(pressed: true);
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
                             () => pressScale.ScaleX <= 0.98 && pressScale.ScaleY <= 0.98),
                         "Pressing must animate the backplate down to the 0.98 press scale.");
 
                     // Release: the release storyboard restores 1.0.
-                    button.SetPressed(false);
+                    button.SetPressed(pressed: false);
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
                             () => pressScale.ScaleX >= 1.0 && pressScale.ScaleY >= 1.0),
                         "Releasing must animate the backplate back to 1.0 scale.");

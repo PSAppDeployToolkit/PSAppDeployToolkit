@@ -28,6 +28,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -55,7 +56,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_DefaultStyle_AppliesAndTemplatePartsResolve()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -101,7 +102,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_FivePages_RendersFivePips()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -124,13 +125,13 @@ namespace Fluence.Wpf.Tests
                     {
                         WpfToggleButton? pip = GetPipAt(host, offset);
                         Assert.IsNotNull(pip,
-                            string.Format("The pip at offset {0} must be a ToggleButton.", offset));
+                            string.Format(CultureInfo.InvariantCulture, "The pip at offset {0} must be a ToggleButton.", offset));
                         Assert.AreEqual(offset == 0, pip.IsChecked,
-                            string.Format("Only the selected (first) pip must be checked; offset {0}.", offset));
+                            string.Format(CultureInfo.InvariantCulture, "Only the selected (first) pip must be checked; offset {0}.", offset));
                         Assert.AreEqual(
-                            string.Format("Page {0}", offset + 1),
+                            string.Format(CultureInfo.InvariantCulture, "Page {0}", offset + 1),
                             AutomationProperties.GetName(pip),
-                            string.Format("The pip at offset {0} must carry its accessible page name.", offset));
+                            string.Format(CultureInfo.InvariantCulture, "The pip at offset {0} must carry its accessible page name.", offset));
                     }
                 }
                 finally
@@ -204,7 +205,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_NavigationButtons_ChangeSelectionAndRespectBounds()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -265,7 +266,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_MaxVisiblePips_WindowsAroundSelection()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -362,7 +363,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_VerticalOrientation_StacksPipsVerticallyAndSwapsChevrons()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -420,7 +421,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_ButtonVisibilityEnum_ControlsNavigationButtonVisibility()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -474,7 +475,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_ArrowKeys_MoveSelectionWhileFocusIsInside()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -534,7 +535,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_ThemeCycle_PipBrushesResolve()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -552,7 +553,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),
@@ -726,7 +727,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PipsPager_AutomationPeer_ReportsGroupClassNameAndName()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

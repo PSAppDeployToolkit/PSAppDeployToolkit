@@ -28,6 +28,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -51,7 +52,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void DesignTimeResources_AreCurrent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AssertCurrent(ApplicationTheme.Light);
@@ -68,13 +69,14 @@ namespace Fluence.Wpf.Tests.Theming
             string actual = Normalize(File.ReadAllText(path));
 
             Assert.AreEqual(expected, actual, string.Format(
+                CultureInfo.InvariantCulture,
                 "{0} is out of date with the theme engine. Run the RegenerateDesignTimeResources test and re-commit.",
                 Path.GetFileName(path)));
         }
 
         private static string Normalize(string text)
         {
-            return text.Replace("\r\n", "\n");
+            return text.Replace("\r\n", "\n", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -86,7 +88,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void DesignTimeResources_Load_RepresentativeKeysResolve()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AssertLoads("DesignTime.Light.xaml");
@@ -128,7 +130,7 @@ namespace Fluence.Wpf.Tests.Theming
         [Ignore("Maintainer-only: writes the committed DesignTime.{Light,Dark}.xaml files. Run manually after an intentional engine change.")]
         public void RegenerateDesignTimeResources()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 DesignTimeResourceWriter.WriteToDisk(ApplicationTheme.Light);

@@ -46,7 +46,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabView_PART_ScrollBackButton_ExistsInTemplate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -67,7 +67,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabView_PART_ScrollForwardButton_ExistsInTemplate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -88,7 +88,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabView_PART_TabContentScroller_ExistsInTemplate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -108,7 +108,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabView_ScrollButtons_HiddenWhenNoTabOverflow()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Controls
                 nameof(MirroredWhenRightToLeft),
                 typeof(bool),
                 typeof(FontIcon),
-                new FrameworkPropertyMetadata(false, OnMirroredWhenRightToLeftChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnMirroredWhenRightToLeftChanged));
 
         /// <summary>
         /// Gets or sets whether the glyph is horizontally flipped when
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Controls
                 nameof(EnableTransitions),
                 typeof(bool),
                 typeof(FontIcon),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets whether high-quality bitmap scaling is used during transitions.
@@ -180,7 +180,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsSpinning),
                 typeof(bool),
                 typeof(FontIcon),
-                new FrameworkPropertyMetadata(false, OnIsSpinningChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsSpinningChanged));
 
         /// <summary>
         /// Gets or sets whether the icon continuously spins.
@@ -253,7 +253,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            rotate.BeginAnimation(RotateTransform.AngleProperty, null);
+            rotate.BeginAnimation(RotateTransform.AngleProperty, animation: null);
 
             if (!IsSpinning)
             {
@@ -266,7 +266,7 @@ namespace Fluence.Wpf.Controls
                 From = 0,
                 To = 360,
                 Duration = new Duration(TimeSpan.FromSeconds(1.1)),
-                RepeatBehavior = RepeatBehavior.Forever
+                RepeatBehavior = RepeatBehavior.Forever,
             };
             rotate.BeginAnimation(RotateTransform.AngleProperty, animation, HandoffBehavior.SnapshotAndReplace);
         }

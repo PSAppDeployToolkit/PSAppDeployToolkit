@@ -42,7 +42,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_UpButton_Click_IncrementsValueBySmallChange()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -55,7 +55,7 @@ namespace Fluence.Wpf.Tests
                         Value = 5,
                         SmallChange = 1,
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
-                        Width = 160
+                        Width = 160,
                     };
                     window.Content = numberBox;
                     window.Width = 240;
@@ -95,7 +95,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_DownButton_Click_DecrementsValueBySmallChange()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -108,7 +108,7 @@ namespace Fluence.Wpf.Tests
                         Value = 5,
                         SmallChange = 1,
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
-                        Width = 160
+                        Width = 160,
                     };
                     window.Content = numberBox;
                     window.Width = 240;
@@ -149,7 +149,7 @@ namespace Fluence.Wpf.Tests
             // a quick press-release updates the value. With the default ClickMode=Release
             // the internal RepeatButton timer only raises Click after Delay elapses
             // (~250 ms on most systems), which users perceive as "the button is broken."
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Value = 0,
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
-                        Width = 160
+                        Width = 160,
                     };
                     window.Content = numberBox;
                     window.Width = 240;
@@ -195,7 +195,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_SpinButtons_AreNotTabStops()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -206,7 +206,7 @@ namespace Fluence.Wpf.Tests
                     Fluent.NumberBox numberBox = new()
                     {
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
-                        Width = 160
+                        Width = 160,
                     };
                     window.Content = numberBox;
                     window.Width = 240;
@@ -243,7 +243,7 @@ namespace Fluence.Wpf.Tests
             // WI-3 A7: WinUI canonical SpinPanel margin is "0,1,2,1" (2px right inset from
             // border edge).  Before this fix Fluence used "0,1,0,1" which butted the buttons
             // flush against the right border of the control.
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -254,7 +254,7 @@ namespace Fluence.Wpf.Tests
                     Fluent.NumberBox numberBox = new()
                     {
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
-                        Width = 160
+                        Width = 160,
                     };
                     window.Content = numberBox;
                     window.Width = 240;
@@ -290,7 +290,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_CompactSpinPanel_ReservesLayoutWhenHidden()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -301,7 +301,7 @@ namespace Fluence.Wpf.Tests
                     Fluent.NumberBox numberBox = new()
                     {
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Compact,
-                        Width = 180
+                        Width = 180,
                     };
                     window.Content = numberBox;
                     window.Width = 260;
@@ -352,13 +352,13 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_DirectValue_ClampsPositiveInfinityToMaximum()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Fluent.NumberBox numberBox = new()
                 {
                     Minimum = 0,
                     Maximum = 5,
-                    Value = double.PositiveInfinity
+                    Value = double.PositiveInfinity,
                 };
 
                 Assert.AreEqual(5.0, numberBox.Value,
@@ -369,13 +369,13 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_DirectValue_NormalizesReversedRangeBeforeClamping()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Fluent.NumberBox numberBox = new()
                 {
                     Minimum = 10,
                     Maximum = 0,
-                    Value = 12
+                    Value = 12,
                 };
 
                 Assert.AreEqual(10.0, numberBox.Value,
@@ -386,7 +386,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_Click_ClampsToMaximum()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -401,7 +401,7 @@ namespace Fluence.Wpf.Tests
                         Value = 5,
                         SmallChange = 1,
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
-                        Width = 160
+                        Width = 160,
                     };
                     window.Content = numberBox;
                     window.Width = 240;

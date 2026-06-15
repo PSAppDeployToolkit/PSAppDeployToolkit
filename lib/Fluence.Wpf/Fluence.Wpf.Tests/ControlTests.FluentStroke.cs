@@ -46,7 +46,7 @@ namespace Fluence.Wpf.Tests
                 MouseButtonEventArgs args = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
                     RoutedEvent = MouseLeftButtonDownEvent,
-                    Source = this
+                    Source = this,
                 };
                 OnMouseLeftButtonDown(args);
             }
@@ -56,7 +56,7 @@ namespace Fluence.Wpf.Tests
                 MouseButtonEventArgs args = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
                     RoutedEvent = MouseLeftButtonUpEvent,
-                    Source = this
+                    Source = this,
                 };
                 OnMouseLeftButtonUp(args);
             }
@@ -77,7 +77,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Ring",
                         Width = 200,
-                        Height = 40
+                        Height = 40,
                     };
                     window.Content = radio;
                     window.Width = 240;
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Content = "Disabled ring",
                         Width = 200,
-                        Height = 40
+                        Height = 40,
                     };
                     window.Content = radio;
                     window.Width = 240;
@@ -179,7 +179,7 @@ namespace Fluence.Wpf.Tests
                         IsChecked = true,
                         IsHitTestVisible = false,
                         Width = 200,
-                        Height = 40
+                        Height = 40,
                     };
                     window.Content = checkBox;
                     window.Width = 240;
@@ -232,7 +232,7 @@ namespace Fluence.Wpf.Tests
                         IsClickable = true,
                         Content = "Home",
                         Width = 200,
-                        Height = 120
+                        Height = 120,
                     };
                     window.Content = card;
                     window.Width = 240;
@@ -284,7 +284,7 @@ namespace Fluence.Wpf.Tests
                         IsClickable = false,
                         Content = "Static",
                         Width = 200,
-                        Height = 120
+                        Height = 120,
                     };
                     window.Content = card;
                     window.Width = 240;
@@ -333,7 +333,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 640,
                         Height = 400,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     _ = nav.Items.Add(new Controls.NavigationViewItem { Content = "Home" });
                     window.Content = nav;
@@ -401,7 +401,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 640,
                         Height = 400,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact,
                     };
                     _ = nav.Items.Add(new Controls.NavigationViewItem { Content = "Home" });
                     window.Content = nav;
@@ -467,7 +467,7 @@ namespace Fluence.Wpf.Tests
                     Controls.NavigationView nav = new()
                     {
                         Width = 400,
-                        Height = 320
+                        Height = 320,
                     };
                     _ = nav.Items.Add(new Controls.NavigationViewItem { Content = "Item" });
                     window.Content = nav;

@@ -40,7 +40,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_DefaultSelectionModeIsSingleWithLiveSelectedItems()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_MultipleSelectionShowsCheckboxAndSyncsSelectedItems()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Tests
                     FluentTreeViewItem second = new() { Header = "Second" };
                     FluentTreeView treeView = new()
                     {
-                        SelectionMode = TreeViewSelectionMode.Multiple
+                        SelectionMode = TreeViewSelectionMode.Multiple,
                     };
                     _ = treeView.Items.Add(first);
                     _ = treeView.Items.Add(second);
@@ -125,7 +125,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_MultipleSelectionSpaceTogglesItemCheckState()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
                     FluentTreeViewItem item = new() { Header = "Contracts" };
                     FluentTreeView treeView = new()
                     {
-                        SelectionMode = TreeViewSelectionMode.Multiple
+                        SelectionMode = TreeViewSelectionMode.Multiple,
                     };
                     _ = treeView.Items.Add(item);
                     window.Content = treeView;
@@ -188,7 +188,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_NoneSelectionHidesCheckboxAndClearsSelection()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -199,7 +199,7 @@ namespace Fluence.Wpf.Tests
                     FluentTreeViewItem item = new() { Header = "Leaf" };
                     FluentTreeView treeView = new()
                     {
-                        SelectionMode = TreeViewSelectionMode.Multiple
+                        SelectionMode = TreeViewSelectionMode.Multiple,
                     };
                     _ = treeView.Items.Add(item);
                     window.Content = treeView;
@@ -239,7 +239,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_MultipleSelectionCascadesAndComputesParentState()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -257,7 +257,7 @@ namespace Fluence.Wpf.Tests
 
                     FluentTreeView treeView = new()
                     {
-                        SelectionMode = TreeViewSelectionMode.Multiple
+                        SelectionMode = TreeViewSelectionMode.Multiple,
                     };
                     _ = treeView.Items.Add(parent);
                     window.Content = treeView;

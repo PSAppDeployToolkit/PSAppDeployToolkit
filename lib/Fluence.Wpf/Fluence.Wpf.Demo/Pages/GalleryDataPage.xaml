@@ -151,6 +151,44 @@
 
 
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ui:ListBox
+                        x:Name="SingleSelectListBox"
+                        Height="180"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                        <ui:ListBoxItem Content="Documents" IsSelected="True" />
+                        <ui:ListBoxItem Content="Pictures" />
+                        <ui:ListBoxItem Content="Music" />
+                        <ui:ListBoxItem Content="Videos" />
+                        <ui:ListBoxItem Content="Downloads" />
+                    </ui:ListBox>
+                    <ui:ListBox
+                        x:Name="MultiSelectListBox"
+                        Grid.Column="2"
+                        Height="180"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        SelectionMode="Extended">
+                        <ui:ListBoxItem Content="Critical" IsSelected="True" />
+                        <ui:ListBoxItem Content="Error" IsSelected="True" />
+                        <ui:ListBoxItem Content="Warning" />
+                        <ui:ListBoxItem Content="Information" />
+                        <ui:ListBoxItem Content="Verbose" />
+                    </ui:ListBox>
+                </Grid>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ListBox for compact selection lists; set SelectionMode to Extended to allow selecting multiple items." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <ui:PersonPicture
                         Width="56"
@@ -188,7 +226,7 @@
             <local:DemoSampleControl SampleDescription="Use PersonPicture to represent people and contact status in data-heavy views." />
 
 
-            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
                 <UniformGrid Columns="2">
                     <ui:Card
                         MinHeight="110"

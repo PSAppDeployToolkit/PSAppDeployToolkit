@@ -54,7 +54,7 @@ namespace Fluence.Wpf.Helpers
                 pixels[i + 2] = gray; // R
                 pixels[i + 3] = 12;   // A  (~5 % opacity per pixel)
             }
-            BitmapSource bitmap = BitmapSource.Create(size, size, 96, 96, PixelFormats.Bgra32, null, pixels, stride);
+            BitmapSource bitmap = BitmapSource.Create(size, size, 96, 96, PixelFormats.Bgra32, palette: null, pixels, stride);
             bitmap.Freeze();
 
             ImageBrush brush = new(bitmap)
@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Helpers
                 TileMode = TileMode.Tile,
                 Viewport = new Rect(0, 0, size, size),
                 ViewportUnits = BrushMappingMode.Absolute,
-                Stretch = Stretch.None
+                Stretch = Stretch.None,
             };
             brush.Freeze();
             _cachedBrush = brush;

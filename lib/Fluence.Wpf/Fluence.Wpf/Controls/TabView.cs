@@ -79,7 +79,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsAddTabButtonVisible),
                 typeof(bool),
                 typeof(TabView),
-                new PropertyMetadata(true));
+                new PropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Identifies the <see cref="TabWidthMode"/> dependency property.

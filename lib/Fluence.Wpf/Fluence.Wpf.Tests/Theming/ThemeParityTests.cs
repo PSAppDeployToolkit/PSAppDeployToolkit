@@ -72,6 +72,8 @@ namespace Fluence.Wpf.Tests.Theming
         /// Applies <paramref name="theme"/> with a pinned accent and returns a map of every
         /// resolved string key to its Color and/or Brush color value.
         /// </summary>
+        /// <param name="theme">The theme to apply.</param>
+        /// <returns>A dictionary mapping string keys to their resolved Color and Brush values.</returns>
         internal static IReadOnlyDictionary<string, (Color color, Color brush)> CaptureResolved(ApplicationTheme theme)
         {
             WpfTestSta.Dispatcher!.Invoke(() =>
@@ -89,8 +91,8 @@ namespace Fluence.Wpf.Tests.Theming
                 // twins, would drift. Routing through the deterministic-chrome path makes this
                 // parity check hermetic, and the same machine-independent values are already
                 // covered by DesignTimeResourceTests.
-                FluenceThemeEngine.SetDeterministicChromeForTesting(true);
-                ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                FluenceThemeEngine.SetDeterministicChromeForTesting(enabled: true);
+                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
             });
 
@@ -154,7 +156,7 @@ namespace Fluence.Wpf.Tests.Theming
                 IReadOnlyDictionary<string, (Color color, Color brush)> map = CaptureResolved(theme);
                 string dir = Path.Combine(FindRepoRoot(), "data", "theme-golden");
                 _ = Directory.CreateDirectory(dir);
-                List<string> lines = [.. map.Keys.OrderBy(k => k, StringComparer.Ordinal)
+                List<string> lines = [.. map.Keys.Order(StringComparer.Ordinal)
                     .Select(k => string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}",
                         k, Hex(map[k].color), Hex(map[k].brush)))];
                 File.WriteAllLines(Path.Combine(dir, theme + ".txt"), lines);
@@ -176,7 +178,7 @@ namespace Fluence.Wpf.Tests.Theming
             // Custom(#0078D4) must use the generated ramp: Light2 must equal what the generator produces.
             Color customBase = Color.FromRgb(0x00, 0x78, 0xD4);
             AccentPalette custom = AccentResolver.Resolve(AccentIntent.FromCustom(customBase));
-            Fluence.Wpf.Helpers.HsvColorHelper.GenerateAccentRampWinaccent(customBase,
+            Helpers.HsvColorHelper.GenerateAccentRampWinaccent(customBase,
                 out _, out Color l2, out _, out _, out _, out _);
             Assert.AreEqual(l2, custom.Light2, "Custom accent must use the generated ramp, unchanged.");
         }
@@ -193,8 +195,8 @@ namespace Fluence.Wpf.Tests.Theming
                 IReadOnlyDictionary<string, (Color color, Color brush)> actual = CaptureResolved(theme);
                 string goldenPath = Path.Combine(AppContext.BaseDirectory, "Theming", "golden", theme + ".txt");
                 Dictionary<string, (string, string)> golden = File.ReadAllLines(goldenPath)
-                    .Select(l => l.Split('|'))
-                    .ToDictionary(a => a[0], a => (a[1], a[2]), StringComparer.Ordinal);
+                    .Select(static l => l.Split('|'))
+                    .ToDictionary(static a => a[0], static a => (a[1], a[2]), StringComparer.Ordinal);
 
                 List<string> drift = [];
                 foreach (KeyValuePair<string, (string, string)> kv in golden)
@@ -206,13 +208,13 @@ namespace Fluence.Wpf.Tests.Theming
                     }
                     string gc = Hex(got.color);
                     string gb = Hex(got.brush);
-                    if (gc != kv.Value.Item1 || gb != kv.Value.Item2)
+                    if (!string.Equals(gc, kv.Value.Item1, StringComparison.Ordinal) || !string.Equals(gb, kv.Value.Item2, StringComparison.Ordinal))
                     {
                         drift.Add(string.Format(CultureInfo.InvariantCulture, "{0} golden=({1},{2}) actual=({3},{4})",
                             kv.Key, kv.Value.Item1, kv.Value.Item2, gc, gb));
                     }
                 }
-                Assert.AreEqual(0, drift.Count, theme + " drift:\n" + string.Join("\n", drift));
+                Assert.AreEqual(0, drift.Count, theme + " drift:\n" + string.Join('\n', drift));
             }
         }
 
@@ -225,14 +227,14 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void HighContrast_HighlightDerivedBrushes_BindToLiveSystemHighlight()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication()!;
                 app.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
-                FluenceThemeEngine.SetDeterministicChromeForTesting(true);
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, true);
+                FluenceThemeEngine.SetDeterministicChromeForTesting(enabled: true);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 Color highlight = SystemColors.HighlightColor;
@@ -254,14 +256,14 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void ApplyTheme_Alone_UsesSystemAccentPalette()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Application.Current!.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 ApplicationThemeManager.Apply(ApplicationTheme.Dark); // no ApplySystemAccent call
-                if (Fluence.Wpf.Helpers.RegistryHelper.TryGetAccentPalette(out Color[]? p) && p is not null)
+                if (Helpers.RegistryHelper.TryGetAccentPalette(out Color[]? p) && p is not null)
                 {
                     SolidColorBrush brush = (SolidColorBrush)Application.Current.Resources["AccentFillColorDefaultBrush"];
                     Assert.AreEqual(p[1], brush.Color, "Apply(theme) alone must use the OS palette Light2 in Dark.");
@@ -293,7 +295,7 @@ namespace Fluence.Wpf.Tests.Theming
                 try
                 {
                     // First touch of the theme system.
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                 }
                 finally
                 {

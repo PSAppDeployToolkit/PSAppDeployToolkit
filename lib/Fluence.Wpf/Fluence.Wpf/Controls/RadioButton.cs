@@ -57,7 +57,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Description),
                 typeof(string),
                 typeof(RadioButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the description text displayed below the radio button content.

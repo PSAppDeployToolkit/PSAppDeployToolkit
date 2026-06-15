@@ -36,21 +36,21 @@ namespace Fluence.Wpf
         /// <summary>
         /// No validation state applied.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// Input is valid.
         /// </summary>
-        Success,
+        Success = 1,
 
         /// <summary>
         /// Non-blocking validation warning.
         /// </summary>
-        Warning,
+        Warning = 2,
 
         /// <summary>
         /// Blocking validation error.
         /// </summary>
-        Error,
+        Error = 3,
     }
 }

@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Card_DefaultVariant_HasElevationShadowOnOuterBorder()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -72,7 +72,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Card_SubtleVariant_NoElevationShadow()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -94,7 +94,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Card_OutlinedVariant_NoElevationShadow()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Card_FilledVariant_NoElevationShadow()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -138,7 +138,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Card_DefaultVariant_ShadowHasCorrectProfile()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

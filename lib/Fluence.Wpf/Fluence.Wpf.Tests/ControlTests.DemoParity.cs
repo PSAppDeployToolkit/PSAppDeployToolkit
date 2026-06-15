@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryInputsPage_SliderSamplesIncludeHorizontalAndVerticalTicks()
         {
-            RunDemoPageTest(() => new GalleryInputsPage(), window =>
+            RunDemoPageTest(static () => new GalleryInputsPage(), static window =>
             {
                 Controls.Slider? horizontal = FindVisualChildByName<Controls.Slider>(window, "HorizontalTickSlider");
                 Controls.Slider? vertical = FindVisualChildByName<Controls.Slider>(window, "VerticalTickSlider");
@@ -56,7 +56,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryButtonsPage_RepeatButtonIncrementsNearbyCountText()
         {
-            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            RunDemoPageTest(static () => new GalleryButtonsPage(), static window =>
             {
                 Controls.RepeatButton? button = FindVisualChildByName<Controls.RepeatButton>(window, "RepeatCounterButton");
                 TextBlock? count = FindVisualChildByName<TextBlock>(window, "RepeatButtonCountText");
@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySelectionPage_CheckBoxSamplesMatchWinUIGalleryStates()
         {
-            RunDemoPageTest(() => new GallerySelectionPage(), window =>
+            RunDemoPageTest(static () => new GallerySelectionPage(), static window =>
             {
                 Controls.CheckBox? twoState = FindVisualChildByName<Controls.CheckBox>(window, "TwoStateCheckBox");
                 Controls.CheckBox? threeState = FindVisualChildByName<Controls.CheckBox>(window, "ThreeStateCheckBox");
@@ -114,7 +114,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySelectionPage_RatingAndRequestedToggleSamplesArePresent()
         {
-            RunDemoPageTest(() => new GallerySelectionPage(), window =>
+            RunDemoPageTest(static () => new GallerySelectionPage(), static window =>
             {
                 Controls.RatingControl? rating = FindVisualChildByName<Controls.RatingControl>(window, "RatingSample");
                 Controls.RatingControl? readOnlyRating = FindVisualChildByName<Controls.RatingControl>(window, "ReadOnlyRatingSample");
@@ -154,7 +154,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryTreesPage_IncludesMultipleSelectionTreeView()
         {
-            RunDemoPageTest(() => new GalleryTreesPage(), window =>
+            RunDemoPageTest(static () => new GalleryTreesPage(), static window =>
             {
                 Controls.TreeView? treeView = FindVisualChildByName<Controls.TreeView>(window, "MultiSelectTreeView");
 
@@ -166,7 +166,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryLayoutPage_ExpanderStartsCollapsed()
         {
-            RunDemoPageTest(() => new GalleryLayoutPage(), window =>
+            RunDemoPageTest(static () => new GalleryLayoutPage(), static window =>
             {
                 Controls.Expander? expander = FindVisualChildByName<Controls.Expander>(window, "AdvancedOptionsExpander");
 
@@ -176,22 +176,44 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void GalleryDataPage_ListBoxSamplesExposeSelectionModes()
+        {
+            RunDemoPageTest(static () => new GalleryDataPage(), static window =>
+            {
+                Controls.ListBox? singleSelect = FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox");
+                Controls.ListBox? multiSelect = FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox");
+
+                Assert.IsNotNull(singleSelect, "Data page should include a single-selection ListBox sample.");
+                Assert.IsNotNull(multiSelect, "Data page should include a multi-selection ListBox sample.");
+                Assert.AreEqual(SelectionMode.Single, singleSelect.SelectionMode,
+                    "The first ListBox sample should keep the default single selection mode.");
+                Assert.AreEqual(SelectionMode.Extended, multiSelect.SelectionMode,
+                    "The second ListBox sample should demonstrate extended multi-selection.");
+                Assert.IsTrue(singleSelect.Items.Count > 0, "Single-selection ListBox sample should contain items.");
+                Assert.IsTrue(multiSelect.SelectedItems.Count >= 2,
+                    "Multi-selection ListBox sample should start with multiple items selected.");
+            });
+        }
+
+        [TestMethod]
         public void GalleryDataAndTreeSamplesExposeThemedBorders()
         {
-            RunDemoPageTest(() => new GalleryDataPage(), window =>
+            RunDemoPageTest(static () => new GalleryDataPage(), static window =>
             {
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SimpleListView"), "SimpleListView");
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "RichListView"), "RichListView");
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "SingleSelectListBox"), "SingleSelectListBox");
+                AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListBox>(window, "MultiSelectListBox"), "MultiSelectListBox");
             });
 
-            RunDemoPageTest(() => new GalleryDataBindingPage(), window =>
+            RunDemoPageTest(static () => new GalleryDataBindingPage(), static window =>
             {
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "BoundListView"), "BoundListView");
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "SelectionModeListView"), "SelectionModeListView");
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.ListView>(window, "DataTemplateListView"), "DataTemplateListView");
             });
 
-            RunDemoPageTest(() => new GalleryTreesPage(), window =>
+            RunDemoPageTest(static () => new GalleryTreesPage(), static window =>
             {
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "HierarchyTreeView"), "HierarchyTreeView");
                 AssertControlHasThemedBorder(FindVisualChildByName<Controls.TreeView>(window, "SelectionTreeView"), "SelectionTreeView");
@@ -222,7 +244,7 @@ namespace Fluence.Wpf.Tests
         {
             foreach (Controls.RepeatButton repeatButton in FindVisualChildren<Controls.RepeatButton>(root))
             {
-                if ((repeatButton.Content as string) == content)
+                if (string.Equals(repeatButton.Content as string, content, StringComparison.Ordinal))
                 {
                     return repeatButton;
                 }
@@ -242,7 +264,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 900,
                     Height = 700,
-                    Content = page
+                    Content = page,
                 };
 
                 try

@@ -159,7 +159,7 @@ namespace Fluence.Wpf.Controls
                 _selectedItems.Clear();
                 if (item.IsSelectionChecked != false)
                 {
-                    item.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, false);
+                    item.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, value: false);
                 }
 
                 return;
@@ -173,7 +173,7 @@ namespace Fluence.Wpf.Controls
                 if (isSelected == true)
                 {
                     _ = _selectedItems.Add(selectedItem);
-                    item.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, true);
+                    item.SetCurrentValue(System.Windows.Controls.TreeViewItem.IsSelectedProperty, value: true);
                 }
 
                 return;
@@ -277,7 +277,7 @@ namespace Fluence.Wpf.Controls
                 TreeView? treeView = FindOwningTreeView(container);
                 if (treeView is not null && treeView.SelectionMode != TreeViewSelectionMode.Multiple)
                 {
-                    container.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, false);
+                    container.SetCurrentValue(TreeViewItem.IsSelectionCheckedProperty, value: false);
                 }
 
                 container.CoerceSelectionForOwner(treeView);
@@ -356,7 +356,7 @@ namespace Fluence.Wpf.Controls
                 0 => false,
                 _ when checkedCount == childCount => true,
                 _ when checkedCount == 0 && !hasPartialChild => false,
-                _ => null
+                _ => null,
             };
         }
 

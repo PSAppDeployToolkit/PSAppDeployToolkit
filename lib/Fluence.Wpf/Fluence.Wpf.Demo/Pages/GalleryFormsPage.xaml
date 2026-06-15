@@ -17,6 +17,57 @@
 
 
             <ContentControl x:Name="DemoSampleSlot01DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:TimePicker
+                        x:Name="DemoTimePicker"
+                        Header="Reminder time"
+                        MinuteIncrement="5"
+                        PlaceholderText="Pick a time"
+                        SelectedTimeChanged="DemoTimePicker_SelectedTimeChanged" />
+                    <TextBlock
+                        x:Name="TimePickerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="No time selected" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use TimePicker for choosing a time from hour, minute, and AM/PM columns in a flyout." />
+
+
+            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:DatePicker
+                        x:Name="DemoDatePicker"
+                        Header="Due date"
+                        PlaceholderText="Pick a date"
+                        SelectedDateChanged="DemoDatePicker_SelectedDateChanged" />
+                    <TextBlock
+                        x:Name="DatePickerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="No date selected" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use DatePicker for choosing a date from day, month, and year columns in a flyout." />
+
+
+            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
+                    <ui:ColorPicker
+                        x:Name="DemoColorPicker"
+                        ColorChanged="DemoColorPicker_ColorChanged"
+                        IsAlphaEnabled="True" />
+                    <TextBlock
+                        x:Name="ColorPickerResultLabel"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Color: #FFFF0000" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with hue, alpha, and hex input." />
+
+
+            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
                 <StackPanel MaxWidth="480" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Email" />
                     <ui:TextBox
@@ -48,7 +99,7 @@
                     </StackPanel>
                 </StackPanel>
             </ContentControl>
-            <ContentControl x:Name="DemoSampleSlot01OutputContentHost" Visibility="Collapsed">
+            <ContentControl x:Name="DemoSampleSlot04OutputContentHost" Visibility="Collapsed">
                 <ui:InfoBar
                     x:Name="SignInStatusBar"
                     Title="Ready"
@@ -60,7 +111,7 @@
             <local:DemoSampleControl SampleDescription="Use a compact form for account access, with clear labels and a primary action." />
 
 
-            <ContentControl x:Name="DemoSampleSlot02DemoContentHost" Visibility="Collapsed">
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
                 <StackPanel MaxWidth="560" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Contact email" />
                     <ui:TextBox Margin="{DynamicResource DemoControlBottomGapMargin}" PlaceholderText="name@example.com" />
@@ -109,7 +160,7 @@
             <local:DemoSampleControl SampleDescription="Combine contact, shipping, and quantity fields when a form needs several related decisions." />
 
 
-            <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
                 <StackPanel MaxWidth="560" HorizontalAlignment="Left">
                     <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Display name" />
                     <ui:TextBox Margin="{DynamicResource DemoControlBottomGapMargin}" Text="Avery Stone" />
@@ -133,7 +184,7 @@
                         Content="Save settings" />
                 </StackPanel>
             </ContentControl>
-            <ContentControl x:Name="DemoSampleSlot03OutputContentHost" Visibility="Collapsed">
+            <ContentControl x:Name="DemoSampleSlot06OutputContentHost" Visibility="Collapsed">
                 <ui:InfoBar
                     x:Name="SettingsSavedBar"
                     Title="Saved"
@@ -143,57 +194,6 @@
                     Severity="{x:Static uicore:InfoBarSeverity.Success}" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use form controls to edit a small set of preferences and show confirmation after saving." />
-
-
-            <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">
-                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
-                    <ui:DatePicker
-                        x:Name="DemoDatePicker"
-                        Header="Due date"
-                        PlaceholderText="Pick a date"
-                        SelectedDateChanged="DemoDatePicker_SelectedDateChanged" />
-                    <TextBlock
-                        x:Name="DatePickerResultLabel"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="No date selected" />
-                </ui:StackPanel>
-            </ContentControl>
-            <local:DemoSampleControl SampleDescription="Use DatePicker for choosing a date from day, month, and year columns in a flyout." />
-
-
-            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
-                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
-                    <ui:TimePicker
-                        x:Name="DemoTimePicker"
-                        Header="Reminder time"
-                        MinuteIncrement="5"
-                        PlaceholderText="Pick a time"
-                        SelectedTimeChanged="DemoTimePicker_SelectedTimeChanged" />
-                    <TextBlock
-                        x:Name="TimePickerResultLabel"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="No time selected" />
-                </ui:StackPanel>
-            </ContentControl>
-            <local:DemoSampleControl SampleDescription="Use TimePicker for choosing a time from hour, minute, and AM/PM columns in a flyout." />
-
-
-            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
-                <ui:StackPanel HorizontalAlignment="Left" Spacing="8">
-                    <ui:ColorPicker
-                        x:Name="DemoColorPicker"
-                        ColorChanged="DemoColorPicker_ColorChanged"
-                        IsAlphaEnabled="True" />
-                    <TextBlock
-                        x:Name="ColorPickerResultLabel"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="Color: #FFFF0000" />
-                </ui:StackPanel>
-            </ContentControl>
-            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with hue, alpha, and hex input." />
         </StackPanel>
     </ui:SmoothScrollViewer>
 </UserControl>

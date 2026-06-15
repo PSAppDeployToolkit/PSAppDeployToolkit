@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Demo.Pages
             new("Subtitle", "Display, SemiBold", "20/28 epx", "SubtitleTextBlockStyle"),
             new("Title", "Display, SemiBold", "28/36 epx", "TitleTextBlockStyle"),
             new("Title Large", "Display, SemiBold", "40/52 epx", "TitleLargeTextBlockStyle"),
-            new("Display", "Display, SemiBold", "68/92 epx", "DisplayTextBlockStyle")
+            new("Display", "Display, SemiBold", "68/92 epx", "DisplayTextBlockStyle"),
         ];
 
         public GalleryTypographyPage()
@@ -90,7 +90,7 @@ namespace Fluence.Wpf.Demo.Pages
                 {
                     CornerRadius = new CornerRadius(6),
                     IsHitTestVisible = false,
-                    Margin = new Thickness(0, 2, 0, 2)
+                    Margin = new Thickness(0, 2, 0, 2),
                 };
                 background.SetResourceReference(Border.BackgroundProperty, "SubtleFillColorSecondaryBrush");
                 Grid.SetRow(background, rowIndex);
@@ -112,7 +112,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Margin = margin,
                 Text = text,
                 TextWrapping = TextWrapping.Wrap,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
             };
             textBlock.SetResourceReference(StyleProperty, styleKey);
             return textBlock;
@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Tag = styleKey,
                 ToolTip = "Copy style key",
                 VerticalAlignment = VerticalAlignment.Center,
-                Width = 40
+                Width = 40,
             };
             AutomationProperties.SetName(button, "Copy " + styleKey);
             button.Click += CopyStyleKey_Click;
@@ -169,13 +169,13 @@ namespace Fluence.Wpf.Demo.Pages
 
         private sealed class TypographyRow(string example, string variableFont, string sizeAndLineHeight, string styleKey)
         {
-            public string Example { get; private set; } = example;
+            public string Example { get; } = example;
 
-            public string VariableFont { get; private set; } = variableFont;
+            public string VariableFont { get; } = variableFont;
 
-            public string SizeAndLineHeight { get; private set; } = sizeAndLineHeight;
+            public string SizeAndLineHeight { get; } = sizeAndLineHeight;
 
-            public string StyleKey { get; private set; } = styleKey;
+            public string StyleKey { get; } = styleKey;
         }
     }
 }

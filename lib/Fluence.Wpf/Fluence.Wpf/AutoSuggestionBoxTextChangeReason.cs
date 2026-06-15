@@ -37,16 +37,16 @@ namespace Fluence.Wpf
         /// <summary>
         /// The user edited the text.
         /// </summary>
-        UserInput,
+        UserInput = 0,
 
         /// <summary>
         /// The text was changed programmatically.
         /// </summary>
-        ProgrammaticChange,
+        ProgrammaticChange = 1,
 
         /// <summary>
         /// A suggestion was chosen and the text was updated from it.
         /// </summary>
-        SuggestionChosen,
+        SuggestionChosen = 2,
     }
 }

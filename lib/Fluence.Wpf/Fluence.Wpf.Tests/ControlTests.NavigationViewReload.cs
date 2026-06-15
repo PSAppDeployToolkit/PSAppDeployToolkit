@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ namespace Fluence.Wpf.Tests
                     {
                         Width = 400,
                         Height = 320,
-                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
                     };
                     NavigationViewItem home = new() { Content = "Home", Icon = new FontIcon { Glyph = "" } };
                     NavigationViewItem files = new() { Content = "Files", Icon = new FontIcon { Glyph = "" } };

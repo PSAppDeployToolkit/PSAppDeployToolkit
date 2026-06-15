@@ -77,7 +77,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ContentDialog_DefaultStyle_AppliesAndTemplatePartsFound()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -143,7 +143,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public void ContentDialog_DeclaredAsWindowContentChild_CollapsedAtRestAndShowsViaShowAsync()
+        public void ContentDialog_DeclaredAsWindowContentChild_CollapsedAtRestAndShowsViaShow()
         {
             RunOnStaThread(() =>
             {
@@ -521,7 +521,7 @@ namespace Fluence.Wpf.Tests
                         0,
                         Key.Escape)
                     {
-                        RoutedEvent = UIElement.PreviewKeyDownEvent
+                        RoutedEvent = UIElement.PreviewKeyDownEvent,
                     });
 
                     bool completed = WaitUntil(window.Dispatcher, 2000, () => dialogTask.IsCompleted);
@@ -592,7 +592,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ContentDialog_SmokeFillBrush_ResolvesAcrossThemeCycle()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -815,8 +815,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    System.Windows.Controls.Panel? host =
-                        window.Template?.FindName("PART_DialogOverlayHost", window) as System.Windows.Controls.Panel;
+                    Panel? host =
+                        window.Template?.FindName("PART_DialogOverlayHost", window) as Panel;
                     Assert.IsNotNull(host, "FluenceWindow template must expose the full-window PART_DialogOverlayHost.");
 
                     Controls.ContentDialog dialog = new()

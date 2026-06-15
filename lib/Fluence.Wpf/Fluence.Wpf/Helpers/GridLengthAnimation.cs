@@ -78,7 +78,7 @@ namespace Fluence.Wpf.Helpers
                 nameof(EasingFunction),
                 typeof(IEasingFunction),
                 typeof(GridLengthAnimation),
-                new PropertyMetadata(null));
+                new PropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the starting value of the animation.
@@ -120,6 +120,8 @@ namespace Fluence.Wpf.Helpers
         /// <param name="defaultDestinationValue">Default destination (unused; <see cref="To"/> wins).</param>
         /// <param name="animationClock">Clock providing the normalised progress.</param>
         /// <returns>The interpolated current <see cref="GridLength"/>.</returns>
+        /// <exception cref="InvalidOperationException">If <see cref="From"/> or <see cref="To"/> is not in pixels.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="animationClock"/> is <see langword="null"/>.</exception>
         public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, AnimationClock animationClock)
         {
             // If From is left at its Auto sentinel (the common "To-only" case), start

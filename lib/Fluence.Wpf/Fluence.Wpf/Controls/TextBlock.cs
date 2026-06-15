@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
             _partTextBlock.Text = Text ?? string.Empty;
-            TextBlockExtensions.SetTypography(_partTextBlock, Typography);
+            _partTextBlock.SetTypography(Typography);
             _partTextBlock.TextWrapping = TextWrapping;
             _partTextBlock.TextTrimming = TextTrimming;
         }

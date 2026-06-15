@@ -86,7 +86,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsExpanded),
                 typeof(bool),
                 typeof(CommandBarFlyoutPresenter),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Gets or sets a value indicating whether the secondary (overflow) command area below
@@ -163,7 +163,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void UpdateMoreButtonVisibility()
         {
-            bool hasSecondaryCommands = Owner is not null && Owner.SecondaryCommands.Count > 0;
+            bool hasSecondaryCommands = Owner?.SecondaryCommands.Count > 0;
             _moreButton?.SetCurrentValue(VisibilityProperty, hasSecondaryCommands ? Visibility.Visible : Visibility.Collapsed);
         }
 
@@ -192,7 +192,7 @@ namespace Fluence.Wpf.Controls
         {
             // WinUI reopens a CommandBarFlyout in its collapsed state unless AlwaysExpanded is
             // set; AlwaysExpanded is omitted for v1, so the overflow always collapses on close.
-            SetCurrentValue(IsExpandedProperty, false);
+            SetCurrentValue(IsExpandedProperty, value: false);
         }
 
         /// <summary>

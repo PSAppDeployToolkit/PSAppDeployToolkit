@@ -26,11 +26,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
+using System.Windows.Media;
 using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Theming;
-using System;
-using System.Windows;
-using System.Windows.Media;
 
 namespace Fluence.Wpf
 {
@@ -113,7 +112,7 @@ namespace Fluence.Wpf
 
         internal static ApplicationTheme ResolveTheme(ApplicationTheme theme)
         {
-            return Theming.ThemeResolver.Resolve(theme);
+            return ThemeResolver.Resolve(theme);
         }
 
         internal static ApplicationTheme GetResolvedTheme()
@@ -126,7 +125,7 @@ namespace Fluence.Wpf
             if (Changed is not null)
             {
                 Color accent = ApplicationAccentColorManager.SystemAccentColor;
-                Changed(null, new ThemeChangedEventArgs(resolvedTheme, accent));
+                Changed(sender: null, new ThemeChangedEventArgs(resolvedTheme, accent));
             }
         }
 
@@ -148,77 +147,5 @@ namespace Fluence.Wpf
 
         // Flag to prevent re-entrant calls to Apply().
         private static bool _isApplying;
-    }
-
-    internal static class TabKeyboardNavigation
-    {
-        private static bool _registered;
-
-        internal static void EnsureRegistered()
-        {
-            if (_registered)
-            {
-                return;
-            }
-
-            EventManager.RegisterClassHandler(
-                typeof(System.Windows.Controls.TabItem),
-                UIElement.PreviewKeyDownEvent,
-                new System.Windows.Input.KeyEventHandler(OnTabItemPreviewKeyDown));
-            _registered = true;
-        }
-
-        private static void OnTabItemPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key != System.Windows.Input.Key.Tab)
-            {
-                return;
-            }
-
-            System.Windows.Input.ModifierKeys modifiers = System.Windows.Input.Keyboard.Modifiers;
-            if ((modifiers & ~System.Windows.Input.ModifierKeys.Shift) != 0)
-            {
-                return;
-            }
-
-            if (sender is not System.Windows.Controls.TabItem tabItem)
-            {
-                return;
-            }
-
-            System.Windows.Controls.ItemsControl? owner =
-                System.Windows.Controls.ItemsControl.ItemsControlFromItemContainer(tabItem);
-            if (owner is not System.Windows.Controls.TabControl tabControl)
-            {
-                return;
-            }
-
-            int currentIndex = tabControl.ItemContainerGenerator.IndexFromContainer(tabItem);
-            if (currentIndex < 0)
-            {
-                return;
-            }
-
-            int direction = (modifiers & System.Windows.Input.ModifierKeys.Shift) == System.Windows.Input.ModifierKeys.Shift ? -1 : 1;
-            int nextIndex = currentIndex + direction;
-            if (nextIndex < 0 || nextIndex >= tabControl.Items.Count)
-            {
-                return;
-            }
-
-            System.Windows.Controls.TabItem? nextTabItem =
-                tabControl.ItemContainerGenerator.ContainerFromIndex(nextIndex) as System.Windows.Controls.TabItem;
-            nextTabItem ??= tabControl.Items[nextIndex] as System.Windows.Controls.TabItem;
-            if (nextTabItem is null)
-            {
-                return;
-            }
-
-            object item = tabControl.ItemContainerGenerator.ItemFromContainer(nextTabItem);
-            tabControl.SelectedItem = item != DependencyProperty.UnsetValue ? item : nextTabItem;
-            _ = nextTabItem.Focus();
-            _ = System.Windows.Input.Keyboard.Focus(nextTabItem);
-            e.Handled = true;
-        }
     }
 }

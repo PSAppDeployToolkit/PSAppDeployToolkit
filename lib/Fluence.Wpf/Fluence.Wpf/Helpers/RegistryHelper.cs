@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads the active Windows theme file name from <c>HKCU\...\Themes\CurrentTheme</c>,
         /// strips the directory and extension, and returns the lowercased base name. Returns
-        /// <c>null</c> when the value is missing or empty. Used by <c>ResolveTheme</c> as a
+        /// <see langword="null"/> when the value is missing or empty. Used by <c>ResolveTheme</c> as a
         /// defensive dual-fallback ahead of <c>AppsUseLightTheme</c> so that named Windows 11
         /// themes (e.g. <c>themea.theme</c>) and high-contrast variants are recognised.
         /// </summary>
@@ -115,6 +115,7 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads DWM AccentColor (ABGR DWORD) used for the active titlebar when ColorPrevalence is on.
         /// </summary>
+        /// <param name="color">The accent color as a <see cref="Color"/> struct. Returns transparent black if the registry value is missing or invalid.</param>
         internal static bool TryGetDwmAccentColor(out Color color)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
@@ -135,6 +136,7 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads DWM AccentColorInactive (ABGR DWORD) for the inactive titlebar.
         /// </summary>
+        /// <param name="color">The accent color as a <see cref="Color"/> struct. Returns transparent black if the registry value is missing or invalid.</param>
         internal static bool TryGetDwmAccentColorInactive(out Color color)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
@@ -155,6 +157,8 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads DWM ColorizationColor (ARGB) and ColorizationColorBalance for Win10 border blending.
         /// </summary>
+        /// <param name="colorizationColor">The colorization color as a <see cref="Color"/> struct. Returns transparent black if the registry value is missing or invalid.</param>
+        /// <param name="balance">The colorization balance as an <see cref="int"/>. Returns 0 if the registry value is missing or invalid.</param>
         internal static bool TryGetColorizationBalance(out Color colorizationColor, out int balance)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);

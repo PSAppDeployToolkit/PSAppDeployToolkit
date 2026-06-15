@@ -69,18 +69,18 @@ namespace Fluence.Wpf.Demo
         {
             if (mode == NavigationViewPaneDisplayMode.Top)
             {
-                SetPaneState(NavigationViewPaneDisplayMode.Top, true);
+                SetPaneState(NavigationViewPaneDisplayMode.Top, isPaneOpen: true);
                 RaiseChanged();
                 return;
             }
 
             if (mode == NavigationViewPaneDisplayMode.Left)
             {
-                SetPaneState(NavigationViewPaneDisplayMode.Left, true);
+                SetPaneState(NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
             }
             else
             {
-                SetPaneState(mode, false);
+                SetPaneState(mode, isPaneOpen: false);
             }
 
             RaiseChanged();

@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Controls
             "IsPressed",
             typeof(bool),
             typeof(NavigationViewItem),
-            new FrameworkPropertyMetadata(false));
+            new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the read-only <see cref="IsPressed"/> dependency property.
@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Controls
             "Icon",
             typeof(object),
             typeof(NavigationViewItem),
-            new PropertyMetadata(null, OnIconChanged));
+            new PropertyMetadata(defaultValue: null, OnIconChanged));
 
         /// <summary>
         /// Identifies the <see cref="InfoBadge"/> dependency property.
@@ -71,7 +71,7 @@ namespace Fluence.Wpf.Controls
             "InfoBadge",
             typeof(object),
             typeof(NavigationViewItem),
-            new PropertyMetadata(null));
+            new PropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Identifies the <see cref="IsChildItem"/> dependency property.
@@ -80,7 +80,7 @@ namespace Fluence.Wpf.Controls
             "IsChildItem",
             typeof(bool),
             typeof(NavigationViewItem),
-            new FrameworkPropertyMetadata(false));
+            new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Initializes static members of the NavigationViewItem class and overrides the default style metadata.
@@ -143,7 +143,7 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            SetValue(IsPressedPropertyKey, true);
+            SetValue(IsPressedPropertyKey, value: true);
             _ = Mouse.Capture(this, CaptureMode.SubTree);
             base.OnMouseLeftButtonDown(e);
         }
@@ -151,8 +151,8 @@ namespace Fluence.Wpf.Controls
         /// <inheritdoc />
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            SetValue(IsPressedPropertyKey, false);
-            _ = Mouse.Capture(null);
+            SetValue(IsPressedPropertyKey, value: false);
+            _ = Mouse.Capture(element: null);
             base.OnMouseLeftButtonUp(e);
         }
 
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Controls
         {
             if (IsPressed)
             {
-                SetValue(IsPressedPropertyKey, false);
+                SetValue(IsPressedPropertyKey, value: false);
             }
             base.OnMouseLeave(e);
         }

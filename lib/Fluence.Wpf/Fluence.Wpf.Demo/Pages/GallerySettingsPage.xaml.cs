@@ -89,8 +89,8 @@ namespace Fluence.Wpf.Demo.Pages
             UpdatePageContentWidth(SettingsScrollViewer.ActualWidth);
             SyncSelections();
             UpdateThemeStateLabel(ApplicationThemeManager.CurrentTheme);
-            WindowChromeToggle_Changed(null, null);
-            CaptionVisibilityCombo_SelectionChanged(null, null);
+            WindowChromeToggle_Changed(sender: null, e: null);
+            CaptionVisibilityCombo_SelectionChanged(sender: null, e: null);
         }
 
         private void GallerySettingsPage_Unloaded(object sender, RoutedEventArgs e)
@@ -325,7 +325,7 @@ namespace Fluence.Wpf.Demo.Pages
         {
             ProcessStartInfo startInfo = new(RepositoryUri.AbsoluteUri)
             {
-                UseShellExecute = true
+                UseShellExecute = true,
             };
             _ = Process.Start(startInfo);
         }

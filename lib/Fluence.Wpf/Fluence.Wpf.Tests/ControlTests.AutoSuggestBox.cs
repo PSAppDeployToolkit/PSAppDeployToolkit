@@ -43,7 +43,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void AutoSuggestBox_DefaultStyle_AppliesTemplateParts()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -189,8 +189,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(popup, "PART_SuggestionsPopup must be present in the template.");
                     Assert.IsNotNull(list, "PART_SuggestionsList must be present in the template.");
 
-                    List<string> items = ["Apple", "Banana", "Cherry"];
-                    box.ItemsSource = items;
+                    box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
 
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
@@ -229,8 +228,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(popup, "PART_SuggestionsPopup must be present in the template.");
                     Assert.IsNotNull(list, "PART_SuggestionsList must be present in the template.");
 
-                    List<string> items = ["Apple", "Banana", "Cherry"];
-                    box.ItemsSource = items;
+                    box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The suggestion popup must open before the keyboard scenario.");
@@ -328,8 +326,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(textBox, "PART_TextBox must be present in the template.");
                     Assert.IsNotNull(popup, "PART_SuggestionsPopup must be present in the template.");
 
-                    List<string> items = ["Apple", "Banana", "Cherry"];
-                    box.ItemsSource = items;
+                    box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The suggestion popup must open before the Escape scenario.");
@@ -375,8 +372,7 @@ namespace Fluence.Wpf.Tests
                     // Type "ap" (UserInput baseline), then open the list.
                     textBox.Text = "ap";
                     DrainDispatcher(window.Dispatcher);
-                    List<string> items = ["Apple", "Banana", "Cherry"];
-                    box.ItemsSource = items;
+                    box.ItemsSource = (List<string>)["Apple", "Banana", "Cherry"];
                     box.IsSuggestionListOpen = true;
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The suggestion popup must open before the navigation scenario.");
@@ -481,7 +477,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void AutoSuggestBox_SurfaceBrushes_ResolveAfterThemeCycle()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -509,7 +505,7 @@ namespace Fluence.Wpf.Tests
                 0,
                 key)
             {
-                RoutedEvent = UIElement.PreviewKeyDownEvent
+                RoutedEvent = UIElement.PreviewKeyDownEvent,
             });
         }
     }

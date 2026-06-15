@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ListView_SelectionIndicator_PresentInItemTemplate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ListView_SelectionIndicator_WidthIsCanonical()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -101,7 +101,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ListView_SelectionIndicator_CornerRadiusIsCanonical()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -126,7 +126,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ListView_SelectionIndicator_BackgroundIsAccentBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -169,7 +169,7 @@ namespace Fluence.Wpf.Tests
                     Width = 300,
                     Height = 180,
                     ItemsSource = items,
-                    ItemAnimationsEnabled = true
+                    ItemAnimationsEnabled = true,
                 };
                 Window w = new() { Content = lv, Width = 360, Height = 240 };
                 w.Show();

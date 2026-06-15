@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("On accent primary", "Text over accent fill.", "TextOnAccentFillColorPrimaryBrush"),
                     new("On accent secondary", "Secondary text over accent fill.", "TextOnAccentFillColorSecondaryBrush"),
                     new("On accent disabled", "Disabled text over accent fill.", "TextOnAccentFillColorDisabledBrush"),
-                    new("Selected text", "Selected text over accent selection.", "TextOnAccentFillColorSelectedTextBrush")
+                    new("Selected text", "Selected text over accent selection.", "TextOnAccentFillColorSelectedTextBrush"),
                 ]),
             new(
                 "Fill",
@@ -101,7 +101,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("On image default", "Controls over imagery.", "ControlOnImageFillColorDefaultBrush"),
                     new("On image secondary", "Hovered controls over imagery.", "ControlOnImageFillColorSecondaryBrush"),
                     new("On image tertiary", "Pressed controls over imagery.", "ControlOnImageFillColorTertiaryBrush"),
-                    new("On image disabled", "Disabled controls over imagery.", "ControlOnImageFillColorDisabledBrush")
+                    new("On image disabled", "Disabled controls over imagery.", "ControlOnImageFillColorDisabledBrush"),
                 ]),
             new(
                 "Stroke",
@@ -125,7 +125,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Surface stroke", "Default surface outline.", "SurfaceStrokeColorDefaultBrush"),
                     new("Flyout stroke", "Popup and flyout outline.", "SurfaceStrokeColorFlyoutBrush"),
                     new("Inverse surface stroke", "Inverse surface outline.", "SurfaceStrokeColorInverseBrush"),
-                    new("Divider stroke", "Inline dividers.", "DividerStrokeColorDefaultBrush")
+                    new("Divider stroke", "Inline dividers.", "DividerStrokeColorDefaultBrush"),
                 ]),
             new(
                 "Background",
@@ -156,7 +156,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Solid base alt", "Alternative base surface.", "SolidBackgroundFillColorBaseAltBrush"),
                     new("Navigation content", "Navigation content background.", "NavigationViewContentBackgroundBrush"),
                     new("Acrylic default", "Default acrylic fallback.", "AcrylicBackgroundFillColorDefaultBrush"),
-                    new("Acrylic base", "Base acrylic fallback.", "AcrylicBackgroundFillColorBaseBrush")
+                    new("Acrylic base", "Base acrylic fallback.", "AcrylicBackgroundFillColorBaseBrush"),
                 ]),
             new(
                 "Signal",
@@ -178,7 +178,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Critical background", "Critical background.", "SystemFillColorCriticalBackgroundBrush"),
                     new("Neutral background", "Neutral background.", "SystemFillColorNeutralBackgroundBrush"),
                     new("Solid attention background", "Opaque attention background.", "SystemFillColorSolidAttentionBackgroundBrush"),
-                    new("Solid neutral background", "Opaque neutral background.", "SystemFillColorSolidNeutralBackgroundBrush")
+                    new("Solid neutral background", "Opaque neutral background.", "SystemFillColorSolidNeutralBackgroundBrush"),
                 ]),
             new(
                 "High Contrast",
@@ -194,8 +194,8 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Highlight", "System selection background.", "SystemColorHighlightColorBrush"),
                     new("Highlight text", "System selection foreground.", "SystemColorHighlightTextColorBrush"),
                     new("Hotlight", "System link color.", "SystemColorHotlightColorBrush"),
-                    new("Gray text", "System disabled text.", "SystemColorGrayTextColorBrush")
-                ])
+                    new("Gray text", "System disabled text.", "SystemColorGrayTextColorBrush"),
+                ]),
         ];
 
         public GalleryColorsPage()
@@ -213,7 +213,7 @@ namespace Fluence.Wpf.Demo.Pages
                 {
                     Header = Sections[i].Title,
                     Content = CreateSection(Sections[i]),
-                    Tag = "ColorSectionTab"
+                    Tag = "ColorSectionTab",
                 };
                 _ = ColorSectionTabs.Items.Add(tabItem);
             }
@@ -227,7 +227,7 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 Margin = new Thickness(0, 20, 0, 0),
                 Orientation = Orientation.Vertical,
-                Spacing = 20
+                Spacing = 20,
             };
             if (section.IsTextSection)
             {
@@ -245,7 +245,7 @@ namespace Fluence.Wpf.Demo.Pages
             FluenceStackPanel examples = new()
             {
                 Orientation = Orientation.Vertical,
-                Spacing = 20
+                Spacing = 20,
             };
 
             _ = examples.Children.Add(CreateTextExampleGroup(
@@ -258,7 +258,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Text / Primary", "Rest or hover.", "TextFillColorPrimaryBrush"),
                     new("Text / Secondary", "Body text and supporting details.", "TextFillColorSecondaryBrush"),
                     new("Text / Tertiary", "Pressed or low emphasis.", "TextFillColorTertiaryBrush"),
-                    new("Text / Disabled", "Disabled only.", "TextFillColorDisabledBrush")
+                    new("Text / Disabled", "Disabled only.", "TextFillColorDisabledBrush"),
                 ]));
 
             _ = examples.Children.Add(CreateTextExampleGroup(
@@ -271,7 +271,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Accent Text / Primary", "Rest or hover.", "AccentTextFillColorPrimaryBrush"),
                     new("Accent Text / Secondary", "Secondary accent text.", "AccentTextFillColorSecondaryBrush"),
                     new("Accent Text / Tertiary", "Pressed accent text.", "AccentTextFillColorTertiaryBrush"),
-                    new("Accent Text / Disabled", "Disabled accent text.", "AccentTextFillColorDisabledBrush")
+                    new("Accent Text / Disabled", "Disabled accent text.", "AccentTextFillColorDisabledBrush"),
                 ]));
 
             _ = examples.Children.Add(CreateTextExampleGroup(
@@ -284,7 +284,7 @@ namespace Fluence.Wpf.Demo.Pages
                     new("Text on Accent / Primary", "Rest or hover.", "TextOnAccentFillColorPrimaryBrush"),
                     new("Text on Accent / Secondary", "Pressed only.", "TextOnAccentFillColorSecondaryBrush"),
                     new("Text on Accent / Disabled", "Disabled only.", "TextOnAccentFillColorDisabledBrush"),
-                    new("Text on Accent / Selected Text", "Highlighted text in text entry experiences.", "TextOnAccentFillColorSelectedTextBrush")
+                    new("Text on Accent / Selected Text", "Highlighted text in text entry experiences.", "TextOnAccentFillColorSelectedTextBrush"),
                 ]));
 
             _ = examples.Children.Add(CreateTextSectionAdditionalTokens());
@@ -296,14 +296,14 @@ namespace Fluence.Wpf.Demo.Pages
             ColorToken[] additionalTokens =
             [
                 new("Placeholder text", "Input placeholder content.", "TextPlaceholderColorBrush"),
-                new("Inverse text", "Text placed on inverse surfaces.", "TextFillColorInverseBrush")
+                new("Inverse text", "Text placed on inverse surfaces.", "TextFillColorInverseBrush"),
             ];
 
             FluenceBorder panel = new()
             {
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8)
+                CornerRadius = new CornerRadius(8),
             };
             panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
@@ -311,7 +311,7 @@ namespace Fluence.Wpf.Demo.Pages
             FluenceStackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
-                Spacing = 12
+                Spacing = 12,
             };
             _ = stack.Children.Add(CreateText("Additional text tokens", "BodyStrongTextBlockStyle", "TextFillColorPrimaryBrush"));
             _ = stack.Children.Add(CreateTokenRows(additionalTokens));
@@ -331,7 +331,7 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8)
+                CornerRadius = new CornerRadius(8),
             };
             panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
@@ -339,12 +339,12 @@ namespace Fluence.Wpf.Demo.Pages
             FluenceStackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
-                Spacing = 12
+                Spacing = 12,
             };
             TextBlock titleBlock = CreateText(title, "BodyStrongTextBlockStyle", "TextFillColorPrimaryBrush");
             titleBlock.Tag = "ColorExampleTitle";
             _ = stack.Children.Add(titleBlock);
-            _ = stack.Children.Add(CreateText(description, null, "TextFillColorSecondaryBrush"));
+            _ = stack.Children.Add(CreateText(description, styleKey: null, "TextFillColorSecondaryBrush"));
             _ = stack.Children.Add(CreateTextPreviewSurface(title, exampleForegroundKey, exampleBackgroundKey, exampleBorderKey));
             _ = stack.Children.Add(CreateTokenRows(tokens));
             panel.Child = stack;
@@ -362,7 +362,7 @@ namespace Fluence.Wpf.Demo.Pages
                 MinHeight = 104,
                 Padding = new Thickness(18),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8)
+                CornerRadius = new CornerRadius(8),
             };
             preview.SetResourceReference(Border.BackgroundProperty, backgroundKey);
             preview.SetResourceReference(Border.BorderBrushProperty, borderKey);
@@ -373,7 +373,7 @@ namespace Fluence.Wpf.Demo.Pages
                 FontSize = 42,
                 FontWeight = FontWeights.SemiBold,
                 Tag = title + " Preview",
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
             };
             sample.SetResourceReference(TextBlock.ForegroundProperty, foregroundKey);
             preview.Child = sample;
@@ -387,7 +387,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Margin = new Thickness(0, 36, 0, 8),
                 Padding = new Thickness(12),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8)
+                CornerRadius = new CornerRadius(8),
             };
             panel.SetResourceReference(Border.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
@@ -395,10 +395,10 @@ namespace Fluence.Wpf.Demo.Pages
             FluenceStackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
-                Spacing = 8
+                Spacing = 8,
             };
             _ = stack.Children.Add(CreateText(section.Title + " resources", "BodyStrongTextBlockStyle", "TextFillColorPrimaryBrush"));
-            _ = stack.Children.Add(CreateText(section.Description, null, "TextFillColorSecondaryBrush"));
+            _ = stack.Children.Add(CreateText(section.Description, styleKey: null, "TextFillColorSecondaryBrush"));
             _ = stack.Children.Add(CreatePreviewSurface(section));
             panel.Child = stack;
             return panel;
@@ -411,7 +411,7 @@ namespace Fluence.Wpf.Demo.Pages
                 MinHeight = 92,
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8)
+                CornerRadius = new CornerRadius(8),
             };
             preview.SetResourceReference(Border.BackgroundProperty, section.ExampleBackgroundKey);
             preview.SetResourceReference(Border.BorderBrushProperty, section.ExampleBorderKey);
@@ -422,7 +422,7 @@ namespace Fluence.Wpf.Demo.Pages
                 FontSize = 18,
                 FontWeight = FontWeights.SemiBold,
                 TextWrapping = TextWrapping.Wrap,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
             };
             textBlock.SetResourceReference(TextBlock.ForegroundProperty, section.ExampleForegroundKey);
             preview.Child = textBlock;
@@ -434,7 +434,7 @@ namespace Fluence.Wpf.Demo.Pages
             FluenceStackPanel rows = new()
             {
                 Orientation = Orientation.Vertical,
-                Spacing = 4
+                Spacing = 4,
             };
 
             for (int start = 0; start < tokens.Length; start += TokensPerRow)
@@ -443,7 +443,7 @@ namespace Fluence.Wpf.Demo.Pages
                 UniformGrid rowGrid = new()
                 {
                     Columns = count,
-                    Rows = 1
+                    Rows = 1,
                 };
 
                 for (int offset = 0; offset < count; offset++)
@@ -455,7 +455,7 @@ namespace Fluence.Wpf.Demo.Pages
                 {
                     CornerRadius = new CornerRadius(8),
                     Child = rowGrid,
-                    Tag = "ColorTokenRow"
+                    Tag = "ColorTokenRow",
                 };
                 _ = rows.Children.Add(rowBorder);
             }
@@ -472,7 +472,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Margin = new Thickness(2),
                 BorderThickness = new Thickness(1),
                 CornerRadius = cornerRadius,
-                Tag = token.ResourceKey
+                Tag = token.ResourceKey,
             };
             tile.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             tile.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
@@ -481,21 +481,21 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 Margin = new Thickness(10),
                 Orientation = Orientation.Vertical,
-                Spacing = 8
+                Spacing = 8,
             };
 
             Border swatch = new()
             {
                 Height = 78,
                 BorderThickness = new Thickness(1),
-                CornerRadius = cornerRadius
+                CornerRadius = cornerRadius,
             };
             swatch.SetResourceReference(Border.BackgroundProperty, token.ResourceKey);
             swatch.SetResourceReference(Border.BorderBrushProperty, "DividerStrokeColorDefaultBrush");
             _ = content.Children.Add(swatch);
 
             _ = content.Children.Add(CreateTokenDetails(token));
-            _ = content.Children.Add(CreateText(token.Description, null, "TextFillColorSecondaryBrush", 12));
+            _ = content.Children.Add(CreateText(token.Description, styleKey: null, "TextFillColorSecondaryBrush", 12));
             _ = content.Children.Add(CreateResourceKeyRow(token.ResourceKey));
             tile.Child = content;
             return tile;
@@ -511,7 +511,7 @@ namespace Fluence.Wpf.Demo.Pages
                 (1, _) => new CornerRadius(outerRadius),
                 (_, 0) => new CornerRadius(outerRadius, innerRadius, innerRadius, outerRadius),
                 _ when index == count - 1 => new CornerRadius(innerRadius, outerRadius, outerRadius, innerRadius),
-                _ => new CornerRadius(innerRadius)
+                _ => new CornerRadius(innerRadius),
             };
         }
 
@@ -521,7 +521,7 @@ namespace Fluence.Wpf.Demo.Pages
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            TextBlock title = CreateText(token.Title, null, "TextFillColorPrimaryBrush", 13);
+            TextBlock title = CreateText(token.Title, styleKey: null, "TextFillColorPrimaryBrush", 13);
             title.FontWeight = FontWeights.SemiBold;
             title.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(title, 0);
@@ -535,7 +535,7 @@ namespace Fluence.Wpf.Demo.Pages
                 MinWidth = 28,
                 Padding = new Thickness(6, 3, 6, 3),
                 Tag = token.ResourceKey,
-                ToolTip = "Copy " + token.ResourceKey
+                ToolTip = "Copy " + token.ResourceKey,
             };
             copyButton.Click += CopyTokenButton_Click;
             Grid.SetColumn(copyButton, 1);
@@ -546,7 +546,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateResourceKeyRow(string resourceKey)
         {
-            TextBlock resourceText = CreateText(resourceKey, null, "TextFillColorTertiaryBrush", 12);
+            TextBlock resourceText = CreateText(resourceKey, styleKey: null, "TextFillColorTertiaryBrush", 12);
             resourceText.FontFamily = new FontFamily("Cascadia Mono, Consolas");
             resourceText.TextWrapping = TextWrapping.Wrap;
             return resourceText;
@@ -557,7 +557,7 @@ namespace Fluence.Wpf.Demo.Pages
             TextBlock textBlock = new()
             {
                 Text = text,
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
             };
             textBlock.SetResourceReference(TextBlock.ForegroundProperty, foregroundKey);
 
@@ -579,7 +579,7 @@ namespace Fluence.Wpf.Demo.Pages
             Clipboard.SetText(SampleMarkup);
         }
 
-        private void CopyTokenButton_Click(object sender, RoutedEventArgs e)
+        private static void CopyTokenButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FluenceButton { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
             {

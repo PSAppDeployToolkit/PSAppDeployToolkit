@@ -44,7 +44,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ContextMenu_DefaultStyle_StyleRegistered()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -58,7 +58,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ContextMenu_DefaultStyle_BackgroundAndBorderBrushResolve()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -73,7 +73,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ContextMenu_DefaultStyle_HasDropShadowSetterTrue()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -106,7 +106,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MenuItem_DefaultStyle_StyleRegistered()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -120,7 +120,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MenuItem_DefaultStyle_HoverBrushResolves()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -135,7 +135,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MenuItem_DefaultStyle_FontSize14()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -156,7 +156,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ContextMenu_ThemeCycle_BrushesResolveAfterEachSwitch()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -167,12 +167,12 @@ namespace Fluence.Wpf.Tests
                     "SurfaceStrokeColorFlyoutBrush",
                     "SubtleFillColorSecondaryBrush",
                     "SubtleFillColorTertiaryBrush",
-                    "DividerStrokeColorDefaultBrush"
+                    "DividerStrokeColorDefaultBrush",
                 ];
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),

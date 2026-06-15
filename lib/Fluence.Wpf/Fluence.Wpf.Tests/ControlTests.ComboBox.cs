@@ -49,7 +49,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_FocusedStates_GroupExistsInTemplate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Tests
                 IList groups = VisualStateManager.GetVisualStateGroups(root);
                 bool hasFocusedStates = groups
                     .Cast<VisualStateGroup>()
-                    .Any(g => g.Name == "FocusedStates");
+                    .Any(static g => string.Equals(g.Name, "FocusedStates", System.StringComparison.Ordinal));
                 Assert.IsTrue(hasFocusedStates,
                     "ComboBox template root must have a FocusedStates VSM group per WI-3 C18.");
                 w.Close();
@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_EditableFocusedStates_GroupExistsInTemplate()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -92,7 +92,7 @@ namespace Fluence.Wpf.Tests
                 IList groups = VisualStateManager.GetVisualStateGroups(root);
                 bool hasEditableFocusedStates = groups
                     .Cast<VisualStateGroup>()
-                    .Any(g => g.Name == "EditableFocusedStates");
+                    .Any(static g => string.Equals(g.Name, "EditableFocusedStates", System.StringComparison.Ordinal));
                 Assert.IsTrue(hasEditableFocusedStates,
                     "ComboBox template root must have an EditableFocusedStates VSM group per WI-3 C18.");
                 w.Close();
@@ -102,7 +102,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_FocusedState_DoesNotShowFocusAccentLine()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -113,7 +113,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                bool transitioned = VisualStateManager.GoToState(cb, "Focused", false);
+                bool transitioned = VisualStateManager.GoToState(cb, "Focused", useTransitions: false);
                 Assert.IsTrue(transitioned, "GoToState('Focused') must return true.");
                 DrainDispatcher(w.Dispatcher);
 
@@ -130,7 +130,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_UnfocusedState_FocusAccentLineIsHidden()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -142,9 +142,9 @@ namespace Fluence.Wpf.Tests
                 DrainDispatcher(w.Dispatcher);
 
                 // Focused first, then Unfocused
-                _ = VisualStateManager.GoToState(cb, "Focused", false);
+                _ = VisualStateManager.GoToState(cb, "Focused", useTransitions: false);
                 DrainDispatcher(w.Dispatcher);
-                bool transitioned = VisualStateManager.GoToState(cb, "Unfocused", false);
+                bool transitioned = VisualStateManager.GoToState(cb, "Unfocused", useTransitions: false);
                 Assert.IsTrue(transitioned, "GoToState('Unfocused') must return true.");
                 DrainDispatcher(w.Dispatcher);
 
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_InitialTemplate_DoesNotShowFocusAccentLine()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -187,7 +187,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_ThemeCycle_FocusedStateKeepsAccentLineHidden()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -204,7 +204,7 @@ namespace Fluence.Wpf.Tests
                 w.UpdateLayout();
                 DrainDispatcher(w.Dispatcher);
 
-                bool transitioned = VisualStateManager.GoToState(cb, "Focused", false);
+                bool transitioned = VisualStateManager.GoToState(cb, "Focused", useTransitions: false);
                 Assert.IsTrue(transitioned, "GoToState('Focused') must return true after theme cycle.");
                 DrainDispatcher(w.Dispatcher);
 

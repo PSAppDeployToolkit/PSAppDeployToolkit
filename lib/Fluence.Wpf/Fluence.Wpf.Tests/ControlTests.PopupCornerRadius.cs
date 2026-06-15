@@ -45,7 +45,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_DropdownCornerRadius_DefaultEqualsOverlayCornerRadius()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_DropdownCornerRadius_ValueIs8()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -89,7 +89,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DropDownButton_DropdownCornerRadius_DefaultEqualsOverlayCornerRadius()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -110,7 +110,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DropDownButton_DropdownCornerRadius_ValueIs8()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

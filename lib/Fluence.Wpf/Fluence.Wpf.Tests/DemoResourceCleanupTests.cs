@@ -29,6 +29,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 
 namespace Fluence.Wpf.Tests
@@ -39,15 +40,15 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DesignTimeResourceDictionaries_Load()
         {
-            DemoTestHost.RunOnSta(delegate
+            DemoTestHost.RunOnSta(static delegate
             {
                 ResourceDictionary library = new()
                 {
-                    Source = new Uri("/Fluence.Wpf;component/Properties/DesignTimeResources.xaml", UriKind.Relative)
+                    Source = new Uri("/Fluence.Wpf;component/Properties/DesignTimeResources.xaml", UriKind.Relative),
                 };
                 ResourceDictionary demo = new()
                 {
-                    Source = new Uri("/Fluence.Wpf.Demo;component/Properties/DesignTimeResources.xaml", UriKind.Relative)
+                    Source = new Uri("/Fluence.Wpf.Demo;component/Properties/DesignTimeResources.xaml", UriKind.Relative),
                 };
 
                 // Brushes are built at runtime by FluenceThemeEngine and are not present in design-time
@@ -62,7 +63,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoThemeStartup_AppendsDemoStylesAfterFluenceDictionaries()
         {
-            DemoTestHost.RunOnSta(delegate
+            DemoTestHost.RunOnSta(static delegate
             {
                 Application application = WpfTestSta.EnsureApplication() ?? throw new InvalidOperationException("WPF application was not created.");
                 try
@@ -81,7 +82,7 @@ namespace Fluence.Wpf.Tests
                     for (int i = 0; i < 3; i++)
                     {
                         Assert.IsFalse(IsDemoSharedStyles(dictionaries[i]),
-                            "Fluence theme slot " + i + " should not be occupied by demo styles.");
+                            "Fluence theme slot " + i.ToString(CultureInfo.InvariantCulture) + " should not be occupied by demo styles.");
                     }
 
                     Assert.IsTrue(IsDemoSharedStyles(dictionaries[3]),
@@ -106,8 +107,7 @@ namespace Fluence.Wpf.Tests
 
         private static bool IsDemoSharedStyles(ResourceDictionary dictionary)
         {
-            return dictionary.Source is not null &&
-                dictionary.Source.OriginalString.IndexOf("DemoSharedStyles.xaml", StringComparison.OrdinalIgnoreCase) >= 0;
+            return dictionary.Source?.OriginalString.IndexOf("DemoSharedStyles.xaml", StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }
