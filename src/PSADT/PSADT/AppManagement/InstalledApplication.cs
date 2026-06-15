@@ -21,6 +21,7 @@ namespace PSADT.AppManagement
         /// <param name="psParentPath">The registry key for the subkey's parent.</param>
         /// <param name="psChildName">The registry subkey for uninstalling the application.</param>
         /// <param name="productCode">The product code for the application.</param>
+        /// <param name="upgradeCode">The upgrade code for the application.</param>
         /// <param name="displayName">The display name of the application.</param>
         /// <param name="displayVersion">The version of the application.</param>
         /// <param name="uninstallString">The uninstall string used to remove the application.</param>
@@ -39,6 +40,7 @@ namespace PSADT.AppManagement
             string psParentPath,
             string psChildName,
             Guid? productCode,
+            Guid? upgradeCode,
             string displayName,
             string? displayVersion,
             string? uninstallString,
@@ -77,6 +79,7 @@ namespace PSADT.AppManagement
             PSParentPath = psParentPath;
             PSChildName = psChildName;
             ProductCode = productCode;
+            UpgradeCode = upgradeCode;
             DisplayName = displayName;
             DisplayVersion = displayVersion;
             UninstallString = uninstallString;
@@ -149,6 +152,11 @@ namespace PSADT.AppManagement
         /// Gets the product code for the application.
         /// </summary>
         public Guid? ProductCode { get; }
+
+        /// <summary>
+        /// Gets the upgrade code for the application.
+        /// </summary>
+        public Guid? UpgradeCode { get; }
 
         /// <summary>
         /// Gets the display name of the application.

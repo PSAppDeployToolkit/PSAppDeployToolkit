@@ -175,6 +175,31 @@ function Get-ADTApplication
 
         # Define compiled regex for use throughout main loop.
         $updatesAndHotFixesRegex = [System.Text.RegularExpressions.Regex]::new('((?i)kb\d+|(Cumulative|Security) Update|Hotfix)', [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor [System.Text.RegularExpressions.RegexOptions]::Compiled)
+        $msiUpgradeCodeLookupTable = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Installer\UpgradeCodes\* | Get-ItemProperty | & {
+            begin
+            {
+                # Open lookup table dictionary for returning at the end.
+                $dict = [System.Collections.Generic.Dictionary[System.Guid, System.Guid]]::new()
+            }
+
+            process
+            {
+                # Loop through the provided ItemProperty and convert out the packed GUIDs.
+                foreach ($property in $_.PSObject.Properties)
+                {
+                    if (!$property.Name.StartsWith('PS'))
+                    {
+                        $dict.Add([PSADT.WindowsInstaller.MsiUtilities]::DecompressPackedGuid($property.Name), [PSADT.WindowsInstaller.MsiUtilities]::DecompressPackedGuid($_.PSChildName))
+                    }
+                }
+            }
+
+            end
+            {
+                # Return a readonly dictionary to the caller.
+                return [System.Collections.ObjectModel.ReadOnlyDictionary[System.Guid, System.Guid]]::new($dict)
+            }
+        }
     }
 
     process
@@ -241,6 +266,12 @@ function Get-ADTApplication
                         continue
                     }
 
+                    # Get the MSI upgrade code if available.
+                    $appUpgradeGuid = if ($appMsiGuid)
+                    {
+                        $msiUpgradeCodeLookupTable[$appMsiGuid]
+                    }
+
                     # Determine the install date. If the key has a valid property, we use it. If not, we get the LastWriteDate for the key from the registry.
                     if (![System.DateTime]::TryParseExact($item.GetValue('InstallDate', $null), 'yyyyMMdd', [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::None, [ref]$installDate))
                     {
@@ -297,6 +328,7 @@ function Get-ADTApplication
                         $item.PSParentPath,
                         $item.PSChildName,
                         $appMsiGuid,
+                        $appUpgradeGuid,
                         $appDisplayName,
                         $appProperties['DisplayVersion'],
                         $uninstallString,
