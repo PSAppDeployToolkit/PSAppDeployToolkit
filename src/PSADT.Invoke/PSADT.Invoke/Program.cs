@@ -139,6 +139,26 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
+        /// Enables debug mode if the "/Debug" command-line argument is present and removes it from the argument list.
+        /// </summary>
+        /// <remarks>Debug mode is enabled only if the application is running in an interactive user
+        /// environment. This method modifies the provided argument list by removing all instances of the "/Debug"
+        /// argument, regardless of case.</remarks>
+        /// <param name="argv">The list of command-line arguments to inspect and modify. Cannot be null.</param>
+        private static void ConfigureDebugMode(List<string> argv)
+        {
+            if (!argv.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+            if (!inDebugMode && Environment.UserInteractive)
+            {
+                inDebugMode = NativeMethods.AllocConsole();
+            }
+            _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
         /// Writes a debug message to the console output or error stream when debug mode is enabled.
         /// </summary>
         /// <remarks>This method has no effect if debug mode is not enabled. When isError is set to true,
@@ -163,26 +183,6 @@ namespace PSADT.Invoke
             {
                 Console.WriteLine(debugMessage);
             }
-        }
-
-        /// <summary>
-        /// Enables debug mode if the "/Debug" command-line argument is present and removes it from the argument list.
-        /// </summary>
-        /// <remarks>Debug mode is enabled only if the application is running in an interactive user
-        /// environment. This method modifies the provided argument list by removing all instances of the "/Debug"
-        /// argument, regardless of case.</remarks>
-        /// <param name="argv">The list of command-line arguments to inspect and modify. Cannot be null.</param>
-        private static void ConfigureDebugMode(List<string> argv)
-        {
-            if (!argv.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
-            {
-                return;
-            }
-            if (!inDebugMode && Environment.UserInteractive)
-            {
-                inDebugMode = NativeMethods.AllocConsole();
-            }
-            _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
