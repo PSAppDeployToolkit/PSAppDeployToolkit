@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.System.Threading;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.Invoke
 {
@@ -41,14 +43,19 @@ namespace PSADT.Invoke
             // Internal worker to prevent access to array-based argv.
             static int MainImpl(List<string> argv)
             {
-                // Configure debug mode if /Debug is specified.
+                // Configure debug mode if /Debug is specified, then commence.
                 ConfigureDebugMode(argv);
-
-                // Announce commencement and begin.
-                WriteDebugMessage("Preparing for PSAppDeployToolkit invocation.");
                 try
                 {
+                    // Display help if being asked to do so.
+                    if (argv.Contains("/?", StringComparer.OrdinalIgnoreCase) || argv.Contains("/Help", StringComparer.OrdinalIgnoreCase))
+                    {
+                        WriteHelpInformation();
+                        return 1;
+                    }
+
                     // Establish the PowerShell process start information.
+                    WriteDebugMessage("Preparing for PSAppDeployToolkit invocation.");
                     ProcessStartInfo processStartInfo = new()
                     {
                         FileName = GetPowerShellPath(argv),
@@ -287,7 +294,7 @@ namespace PSADT.Invoke
             }
 
             // Determine the path to the script to invoke.
-            string adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location)}.ps1";
+            string adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(AssemblyInfo.Location)}.ps1";
             int fileIndex = Array.FindIndex(argv.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
@@ -382,9 +389,69 @@ namespace PSADT.Invoke
         }
 
         /// <summary>
+        /// Displays the help message and exits the application.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when assembly information cannot be retrieved.</exception>
+        private static void WriteHelpInformation()
+        {
+            // Set up the help information then display a modal message box if not in debug mode, otherwise write to the console.
+            string helpVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new InvalidOperationException("Failed to retrieve assembly version information.");
+            string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new InvalidOperationException("Failed to retrieve assembly title information.")} {new Version(helpVersion.Substring(0, helpVersion.IndexOf('+')))}";
+            string helpMessage = string.Join(Environment.NewLine,
+            [
+                helpTitle,
+                "",
+                AssemblyInfo.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? throw new InvalidOperationException("Failed to retrieve assembly copyright information."),
+                "",
+                "Usage:",
+                "",
+                "  Invoke-AppDeployToolkit.exe",
+                "",
+                "  Invoke-AppDeployToolkit.exe [-DeploymentScriptParameter]",
+                "",
+                "  Invoke-AppDeployToolkit.exe [/32] [/File <FileName>] [/Debug] [-DeploymentScriptParameter]",
+                "",
+                "  Invoke-AppDeployToolkit.exe [/Core] [/File <FileName>] [/Debug] [-DeploymentScriptParameter]",
+                "",
+                "Available Options:",
+                "",
+                "  /32",
+                "  Forces the deployment to use a 32-bit Windows PowerShell instance on 64-bit systems.",
+                "",
+                "  /Core",
+                "  Forces the deployment to use PowerShell 7, throwing if PowerShell 7 is not installed.",
+                "",
+                "  /File",
+                "  Specifies a PowerShell script file to run. By default, a script named after the executable is used.",
+                "",
+                "  /Debug",
+                "  Allocates a console for debugging purposes. Do not use this switch on production deployments.",
+                "",
+                "  -DeploymentScriptParameter",
+                "  Zero or more parameters to pass to the deployment script.",
+                "",
+                "  /?, /Help",
+                "  Displays this help message.",
+            ]);
+            if (!inDebugMode)
+            {
+                _ = PInvoke.SetProcessDPIAware(); _ = NativeMethods.MessageBox(hWnd: null, helpMessage, helpTitle, MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_DEFBUTTON1 | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | MESSAGEBOX_STYLE.MB_ICONINFORMATION);
+            }
+            else
+            {
+                WriteDebugMessage($"{helpMessage}\n");
+            }
+        }
+
+        /// <summary>
         /// Determines if the application is in debug mode.
         /// </summary>
         private static bool inDebugMode = Debugger.IsAttached;
+
+        /// <summary>
+        /// The <see cref="Assembly"/> containing the <see cref="Program"/> type.
+        /// </summary>
+        private static readonly Assembly AssemblyInfo = typeof(Program).Assembly;
 
         /// <summary>
         /// The current path of the executing assembly.

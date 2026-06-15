@@ -2,8 +2,10 @@
 FreeConsole
 GetConsoleWindow
 GetCurrentProcessId
+MessageBox
 NtQueryInformationProcess
 OpenProcess
 PROCESS_BASIC_INFORMATION
 RtlNtStatusToDosError
+SetProcessDPIAware
 STATUS_SUCCESS

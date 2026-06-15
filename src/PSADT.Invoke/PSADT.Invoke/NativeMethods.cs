@@ -1,9 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Windows.Wdk.System.Threading;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PSADT.Invoke
 {
@@ -110,6 +112,37 @@ namespace PSADT.Invoke
         {
             BOOL res = Windows.Win32.PInvoke.FreeConsole();
             return !res ? throw new Win32Exception() : res;
+        }
+
+        /// <summary>
+        /// Displays a message box with the specified text, caption, and style, and returns the user's response.
+        /// </summary>
+        /// <remarks>This method wraps the Windows API <c>MessageBox</c> function and provides additional
+        /// error handling. Ensure that the calling thread has a message loop if the message box is displayed in a GUI
+        /// application.</remarks>
+        /// <param name="hWnd">A handle to the owner window of the message box. Pass <see langword="null"/> to display the message box
+        /// without an owner.</param>
+        /// <param name="lpText">The text to display in the message box. Cannot be <see langword="null"/> or empty.</param>
+        /// <param name="lpCaption">The caption to display in the title bar of the message box. Cannot be <see langword="null"/> or empty.</param>
+        /// <param name="uType">The style of the message box, specified as a combination of <see cref="MESSAGEBOX_STYLE"/> flags.</param>
+        /// <returns>A <see cref="MESSAGEBOX_RESULT"/> value indicating the button pressed by the user in response to the message
+        /// box.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpText"/> is <see langword="null"/> or empty, or if <paramref name="lpCaption"/>
+        /// is <see langword="null"/> or empty.</exception>
+        /// <exception cref="Win32Exception">Thrown if the message box fails to display due to a Windows API error.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value defined.")]
+        internal static MESSAGEBOX_RESULT MessageBox(HWND? hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType)
+        {
+            if (string.IsNullOrWhiteSpace(lpText))
+            {
+                throw new ArgumentNullException(nameof(lpText), "Message text cannot be null or empty.");
+            }
+            if (string.IsNullOrWhiteSpace(lpCaption))
+            {
+                throw new ArgumentNullException(nameof(lpCaption), "Caption cannot be null or empty.");
+            }
+            MESSAGEBOX_RESULT res = Windows.Win32.PInvoke.MessageBox(hWnd ?? HWND.Null, lpText, lpCaption, uType);
+            return res == 0 ? throw new Win32Exception() : res;
         }
     }
 }
