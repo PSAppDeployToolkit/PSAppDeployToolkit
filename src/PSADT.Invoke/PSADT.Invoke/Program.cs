@@ -362,14 +362,14 @@ namespace PSADT.Invoke
         private static bool inDebugMode = Debugger.IsAttached;
 
         /// <summary>
-        /// The default path to PowerShell.
-        /// </summary>
-        private static readonly string pwshDefaultPath = $@"{Environment.SystemDirectory}{Path.DirectorySeparatorChar}WindowsPowerShell\v1.0\PowerShell.exe";
-
-        /// <summary>
         /// The current path of the executing assembly.
         /// </summary>
         private static readonly string currentPath = AppDomain.CurrentDomain.BaseDirectory;
+
+        /// <summary>
+        /// The default path to PowerShell.
+        /// </summary>
+        private static readonly string pwshDefaultPath = $@"{Environment.SystemDirectory}{Path.DirectorySeparatorChar}WindowsPowerShell\v1.0\PowerShell.exe";
 
         /// <summary>
         /// The default arguments to pass to PowerShell.
