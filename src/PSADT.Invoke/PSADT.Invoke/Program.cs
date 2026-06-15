@@ -348,10 +348,27 @@ namespace PSADT.Invoke
             int processId = (int)PInvoke.GetCurrentProcessId();
             List<Process> processes = [];
             List<int> processesIds = [];
-            while (!processesIds.Contains(processId = GetParentProcessId(processId)))
+            while (true)
             {
-                // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
+                // Attempt to get the parent process ID. If this fails (e.g., process has exited or can't access parent), break the loop.
+                try
+                {
+                    processId = GetParentProcessId(processId);
+                }
+                catch
+                {
+                    break;
+                    throw;
+                }
+
+                // Check for circular reference to prevent infinite loop in case of unexpected system behavior.
+                if (processesIds.Contains(processId))
+                {
+                    break;
+                }
                 processesIds.Add(processId);
+
+                // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
                 try
                 {
                     processes.Add(Process.GetProcessById(processId));
