@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace PSADT.ProcessManagement
 {
@@ -16,8 +18,23 @@ namespace PSADT.ProcessManagement
         /// <param name="name">The name of the process.</param>
         public ProcessDefinition(string name)
         {
+            // Set name property first and foremost.
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             Name = name;
+
+            // Set all calculated fields based on the name.
+            if (NameIsFullyQualifiedPath())
+            {
+                ProcessName = Path.GetFileNameWithoutExtension(Name);
+            }
+            if (Name.Contains('*', StringComparison.OrdinalIgnoreCase))
+            {
+                NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                if (ProcessName is not null)
+                {
+                    ProcessNameRegex = new($"^{Regex.Escape(ProcessName).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                }
+            }
         }
 
         /// <summary>
@@ -46,10 +63,53 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Determines whether the process definition's name is a fully qualified path, which can be used to distinguish between process definitions that specify a process name with or without a path component.
+        /// </summary>
+        /// <returns><see langword="true"/> if the process definition's name is a fully qualified path; otherwise, <see langword="false"/>.</returns>
+        public bool NameIsFullyQualifiedPath()
+        {
+            return Path.IsPathFullyQualified(Name);
+        }
+
+        /// <summary>
+        /// Determines whether the specified input matches the process definition's name, taking into account potential wildcard characters in the name and performing a case-insensitive comparison.
+        /// </summary>
+        /// <param name="input">The input string to compare against the process definition's name.</param>
+        /// <returns><see langword="true"/> if the input matches the process definition's name; otherwise, <see langword="false"/>.</returns>
+        public bool IsNameMatch(string input)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(input);
+            return NameRegex is null ? Name.Equals(input, StringComparison.OrdinalIgnoreCase) : NameRegex.IsMatch(input);
+        }
+
+        /// <summary>
+        /// Determines whether the specified process name matches the process definition's name or process name (if the name is a fully qualified path), taking into account potential wildcard characters in the name and performing a case-insensitive comparison.
+        /// </summary>
+        /// <param name="processName">The process name to compare against the process definition's name.</param>
+        /// <returns><see langword="true"/> if the process name matches the process definition's name; otherwise, <see langword="false"/>.</returns>
+        public bool ProcessNameIsMatch(string processName)
+        {
+            ArgumentNullException.ThrowIfNull(processName);
+            return ProcessNameRegex is not null
+                ? ProcessNameRegex.IsMatch(processName)
+                : NameRegex is not null
+                ? NameRegex.IsMatch(processName)
+                : ProcessName is not null
+                ? ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase)
+                : Name.Equals(processName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Gets the name of the process.
         /// </summary>
         [DataMember]
         public readonly string Name;
+
+        /// <summary>
+        /// Gets the process name without the path component, if the process definition's name is a fully qualified path.
+        /// </summary>
+        [IgnoreDataMember]
+        private readonly string? ProcessName;
 
         /// <summary>
         /// Gets the description of the process.
@@ -62,5 +122,17 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [IgnoreDataMember]
         public readonly Func<RunningProcessInfo, bool>? Filter;
+
+        /// <summary>
+        /// Gets the regular expression for the process name, if the name contains wildcard characters.
+        /// </summary>
+        [IgnoreDataMember]
+        private readonly Regex? NameRegex;
+
+        /// <summary>
+        /// Gets the regular expression for the process name without the path component, if the process definition's name is a fully qualified path and contains wildcard characters.
+        /// </summary>
+        [IgnoreDataMember]
+        private readonly Regex? ProcessNameRegex;
     }
 }

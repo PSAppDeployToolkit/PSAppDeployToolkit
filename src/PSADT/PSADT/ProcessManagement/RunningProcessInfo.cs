@@ -102,15 +102,14 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            string[] processNames = [.. processDefinitions.Select(static p => Path.IsPathFullyQualified(p.Name) ? Path.GetFileNameWithoutExtension(p.Name) : p.Name)];
-            Process[] allProcesses = [.. Process.GetProcesses().Where(p => processNames.Contains(p.ProcessName, StringComparer.OrdinalIgnoreCase))]; List<RunningProcessInfo> runningProcesses = [];
+            Process[] allProcesses = [.. Process.GetProcesses().Where(p => processDefinitions.Any(pd => pd.ProcessNameIsMatch(p.ProcessName)))]; List<RunningProcessInfo> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
             {
                 // Loop through each process and check if it matches the definition.
                 foreach (Process process in allProcesses)
                 {
                     // Skip this process if it doesn't match the name.
-                    if (!Path.IsPathFullyQualified(processDefinition.Name) && !process.ProcessName.Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                    if (!processDefinition.ProcessNameIsMatch(process.ProcessName))
                     {
                         continue;
                     }
@@ -143,7 +142,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Continue if this isn't our process or it's ended since we cached it.
-                    if (Path.IsPathFullyQualified(processDefinition.Name) && !argv[0].Equals(processDefinition.Name, StringComparison.OrdinalIgnoreCase))
+                    if (processDefinition.NameIsFullyQualifiedPath() && !processDefinition.IsNameMatch(argv[0]))
                     {
                         continue;
                     }
