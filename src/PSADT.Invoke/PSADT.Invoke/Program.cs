@@ -38,98 +38,104 @@ namespace PSADT.Invoke
         /// <exception cref="InvalidOperationException">Thrown if the PowerShell process fails to start or if specified command-line arguments are invalid. The exception message provides details about the failure.</exception>
         private static int Main(string[] argv)
         {
-            // Configure debug mode if /Debug is specified.
-            List<string> cliArguments = argv.ToList().ConvertAll(static x => x.Trim());
-            ConfigureDebugMode(cliArguments);
-
-            // Announce commencement and begin.
-            WriteDebugMessage("Preparing for PSAppDeployToolkit invocation.");
-            try
+            // Internal worker to prevent access to array-based argv.
+            static int MainImpl(List<string> argv)
             {
-                // Establish the PowerShell process start information.
-                ProcessStartInfo processStartInfo = new()
-                {
-                    FileName = GetPowerShellPath(cliArguments),
-                    Arguments = GetPowerShellArguments(cliArguments),
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    WorkingDirectory = currentPath,
-                    RedirectStandardOutput = inDebugMode,
-                    RedirectStandardError = inDebugMode,
-                    UseShellExecute = !inDebugMode,
-                    CreateNoWindow = true,
-                };
-                WriteDebugMessage($"PowerShell Path: [{processStartInfo.FileName}]");
-                WriteDebugMessage($"PowerShell Args: [{processStartInfo.Arguments}]");
-                WriteDebugMessage($"Working Directory: [{processStartInfo.WorkingDirectory}]");
+                // Configure debug mode if /Debug is specified.
+                ConfigureDebugMode(argv);
 
-                // Null out PSModulePath to prevent any module conflicts.
-                // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
-                Environment.SetEnvironmentVariable("PSModulePath", value: null);
-
-                // Invoke the given script as per the StartInfo.
+                // Announce commencement and begin.
+                WriteDebugMessage("Preparing for PSAppDeployToolkit invocation.");
                 try
                 {
-                    // Redirect the output and error streams if we're debugging, then start.
-                    using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
-                    if (inDebugMode)
+                    // Establish the PowerShell process start information.
+                    ProcessStartInfo processStartInfo = new()
                     {
-                        process.ErrorDataReceived += (sender, e) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(e.Data))
-                            {
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.Error.WriteLine(e.Data);
-                                Console.ResetColor();
-                            }
-                        };
-                        process.OutputDataReceived += (sender, e) =>
-                        {
-                            if (!string.IsNullOrWhiteSpace(e.Data))
-                            {
-                                Console.WriteLine(e.Data);
-                            }
-                        };
-                    }
-                    WriteDebugMessage("Commencing invocation.\n");
-                    if (!process.Start())
-                    {
-                        throw new InvalidOperationException("Failed to start the PowerShell process.");
-                    }
+                        FileName = GetPowerShellPath(argv),
+                        Arguments = GetPowerShellArguments(argv),
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        WorkingDirectory = currentPath,
+                        RedirectStandardOutput = inDebugMode,
+                        RedirectStandardError = inDebugMode,
+                        UseShellExecute = !inDebugMode,
+                        CreateNoWindow = true,
+                    };
+                    WriteDebugMessage($"PowerShell Path: [{processStartInfo.FileName}]");
+                    WriteDebugMessage($"PowerShell Args: [{processStartInfo.Arguments}]");
+                    WriteDebugMessage($"Working Directory: [{processStartInfo.WorkingDirectory}]");
 
-                    // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
-                    if (inDebugMode)
+                    // Null out PSModulePath to prevent any module conflicts.
+                    // https://github.com/PowerShell/PowerShell/issues/18530#issuecomment-1325691850
+                    Environment.SetEnvironmentVariable("PSModulePath", value: null);
+
+                    // Invoke the given script as per the StartInfo.
+                    try
                     {
-                        process.BeginOutputReadLine();
-                        process.BeginErrorReadLine();
+                        // Redirect the output and error streams if we're debugging, then start.
+                        using Process process = new() { StartInfo = processStartInfo, EnableRaisingEvents = inDebugMode };
+                        if (inDebugMode)
+                        {
+                            process.ErrorDataReceived += (sender, e) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(e.Data))
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.Error.WriteLine(e.Data);
+                                    Console.ResetColor();
+                                }
+                            };
+                            process.OutputDataReceived += (sender, e) =>
+                            {
+                                if (!string.IsNullOrWhiteSpace(e.Data))
+                                {
+                                    Console.WriteLine(e.Data);
+                                }
+                            };
+                        }
+                        WriteDebugMessage("Commencing invocation.\n");
+                        if (!process.Start())
+                        {
+                            throw new InvalidOperationException("Failed to start the PowerShell process.");
+                        }
+
+                        // If we're debugging, begin reading the output and error streams, then exit with the process's exit code.
+                        if (inDebugMode)
+                        {
+                            process.BeginOutputReadLine();
+                            process.BeginErrorReadLine();
+                        }
+                        process.WaitForExit();
+                        return process.ExitCode;
                     }
-                    process.WaitForExit();
-                    return process.ExitCode;
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
+                        WriteDebugMessage($"{errorMessage} {ex}", isError: true);
+                        if (!inDebugMode)
+                        {
+                            Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                        }
+                        return 60011;
+                    }
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
+                    const string errorMessage = "Error while preparing to invoke deployment script.";
                     WriteDebugMessage($"{errorMessage} {ex}", isError: true);
                     if (!inDebugMode)
                     {
                         Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
                     }
-                    return 60011;
+                    return 60010;
                 }
-            }
-            catch (Exception ex) when (ex.Message is not null)
-            {
-                const string errorMessage = "Error while preparing to invoke deployment script.";
-                WriteDebugMessage($"{errorMessage} {ex}", isError: true);
-                if (!inDebugMode)
+                finally
                 {
-                    Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                    CloseDebugMode();
                 }
-                return 60010;
             }
-            finally
-            {
-                CloseDebugMode();
-            }
+
+            // Clean up any input and invoke the main implementation.
+            return MainImpl([.. argv.Select(static x => x.Trim())]);
         }
 
         /// <summary>
@@ -164,16 +170,16 @@ namespace PSADT.Invoke
         /// <remarks>Debug mode is enabled only if the application is running in an interactive user
         /// environment. This method modifies the provided argument list by removing all instances of the "/Debug"
         /// argument, regardless of case.</remarks>
-        /// <param name="cliArguments">The list of command-line arguments to inspect and modify. Cannot be null.</param>
-        private static void ConfigureDebugMode(List<string> cliArguments)
+        /// <param name="argv">The list of command-line arguments to inspect and modify. Cannot be null.</param>
+        private static void ConfigureDebugMode(List<string> argv)
         {
-            if (cliArguments.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
+            if (argv.Exists(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase)))
             {
                 if (!inDebugMode && Environment.UserInteractive)
                 {
                     inDebugMode = NativeMethods.AllocConsole();
                 }
-                _ = cliArguments.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
+                _ = argv.RemoveAll(static x => x.Equals("/Debug", StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -203,25 +209,25 @@ namespace PSADT.Invoke
         /// </summary>
         /// <remarks>If neither "/32" nor "/Core" is specified, and the parent process is PowerShell Core,
         /// the method returns the path of the parent process's executable. The method modifies <paramref
-        /// name="cliArguments"/> by removing any recognized mode arguments to prevent them from being passed to the
+        /// name="argv"/> by removing any recognized mode arguments to prevent them from being passed to the
         /// PowerShell script.</remarks>
-        /// <param name="cliArguments">A list of command-line arguments that may include PowerShell mode specifiers such as "/32" for x86 mode or
+        /// <param name="argv">A list of command-line arguments that may include PowerShell mode specifiers such as "/32" for x86 mode or
         /// "/Core" for PowerShell Core. The list is modified to remove any recognized mode arguments.</param>
         /// <returns>The full file system path to the selected PowerShell executable. Returns the path for PowerShell Core if
         /// "/Core" is specified, the x86 Windows PowerShell path if "/32" is specified, or the default PowerShell path
         /// otherwise.</returns>
-        /// <exception cref="ArgumentException">Thrown if both "/32" and "/Core" arguments are present in <paramref name="cliArguments"/>, as this
+        /// <exception cref="ArgumentException">Thrown if both "/32" and "/Core" arguments are present in <paramref name="argv"/>, as this
         /// combination is not supported.</exception>
         /// <exception cref="InvalidOperationException">Thrown if the "/Core" argument is specified but PowerShell Core is not found on the system.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "It's OK here as we don't have access to our library.")]
-        private static string GetPowerShellPath(List<string> cliArguments)
+        private static string GetPowerShellPath(List<string> argv)
         {
             // Confirm /32 and /Core both haven't been passed as it's not supported.
-            bool x32Specified = cliArguments.Exists(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
-            bool coreSpecified = cliArguments.Exists(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+            bool x32Specified = argv.Exists(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+            bool coreSpecified = argv.Exists(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
             if (x32Specified && coreSpecified)
             {
-                throw new ArgumentException("The use of both [/32] and [/Core] on the command line is not supported.", nameof(cliArguments));
+                throw new ArgumentException("The use of both [/32] and [/Core] on the command line is not supported.", nameof(argv));
             }
 
             // Check if we're using PowerShell Core (7).
@@ -233,7 +239,7 @@ namespace PSADT.Invoke
                     throw new InvalidOperationException("The [/Core] parameter was specified, but PowerShell Core was not found on this system.");
                 }
                 WriteDebugMessage("The [/Core] parameter was specified on the command line. Running using PowerShell 7...");
-                _ = cliArguments.RemoveAll(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
+                _ = argv.RemoveAll(static x => x.Equals("/Core", StringComparison.OrdinalIgnoreCase));
                 pwshExecutablePath = pwshCorePath;
             }
 
@@ -242,7 +248,7 @@ namespace PSADT.Invoke
             {
                 // Remove the /32 command line argument so that it is not passed to PowerShell script
                 WriteDebugMessage("The [/32] parameter was specified on the command line. Running in forced x86 PowerShell mode...");
-                _ = cliArguments.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
+                _ = argv.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64", StringComparison.OrdinalIgnoreCase))
                 {
                     pwshExecutablePath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.SystemX86)}{Path.DirectorySeparatorChar}WindowsPowerShell\v1.0\PowerShell.exe";
@@ -263,43 +269,43 @@ namespace PSADT.Invoke
         /// instead of -Command to ensure compatibility with PowerShell 3.0 and higher, particularly for correct exit
         /// code propagation. The returned argument string wraps script invocation in a try/catch block to preserve
         /// error handling semantics.</remarks>
-        /// <param name="cliArguments">The list of command-line arguments to be passed to the PowerShell script. Must not include the -Command
+        /// <param name="argv">The list of command-line arguments to be passed to the PowerShell script. Must not include the -Command
         /// parameter. The list might be modified by this method.</param>
         /// <returns>A string containing the complete set of arguments to be supplied to PowerShell.exe, including the script
         /// path and any additional arguments.</returns>
-        /// <exception cref="ArgumentException">Thrown if the -Command parameter is present in the <paramref name="cliArguments"/> list. Use the -File
+        /// <exception cref="ArgumentException">Thrown if the -Command parameter is present in the <paramref name="argv"/> list. Use the -File
         /// parameter instead to ensure proper exit code handling.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified PowerShell script file cannot be found at the resolved path.</exception>
-        private static string GetPowerShellArguments(List<string> cliArguments)
+        private static string GetPowerShellArguments(List<string> argv)
         {
             // Check for the App Deploy Script file being specified.
-            if (cliArguments.Exists(static x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
+            if (argv.Exists(static x => x.StartsWith("-Command", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException("The [-Command] parameter was specified on the command line. Please use the [-File] parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.", nameof(cliArguments));
+                throw new ArgumentException("The [-Command] parameter was specified on the command line. Please use the [-File] parameter instead, which will properly handle exit codes with PowerShell 3.0 and higher.", nameof(argv));
             }
 
             // Determine the path to the script to invoke.
             string adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(typeof(Program).Assembly.Location)}.ps1";
-            int fileIndex = Array.FindIndex(cliArguments.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
+            int fileIndex = Array.FindIndex(argv.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
-                adtFrontendPath = cliArguments[fileIndex + 1].Replace("\"", newValue: null);
+                adtFrontendPath = argv[fileIndex + 1].Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
                     adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{adtFrontendPath}";
                 }
-                cliArguments.RemoveAt(fileIndex + 1);
-                cliArguments.RemoveAt(fileIndex);
+                argv.RemoveAt(fileIndex + 1);
+                argv.RemoveAt(fileIndex);
                 WriteDebugMessage("The [-File] parameter was specified on command line. Passing command line untouched...");
             }
-            else if (cliArguments.Exists(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
+            else if (argv.Exists(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)))
             {
-                adtFrontendPath = cliArguments.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", newValue: null);
+                adtFrontendPath = argv.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
                     adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{adtFrontendPath}";
                 }
-                cliArguments.RemoveAt(cliArguments.FindIndex(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
+                argv.RemoveAt(argv.FindIndex(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
                 WriteDebugMessage("Using script (.ps1) file directly specified on the command line...");
             }
             else
@@ -314,7 +320,7 @@ namespace PSADT.Invoke
             }
 
             // Return the full arguments we give to PowerShell.exe (Note that we use -Command resolve issues with WDAC and Constrained Language Mode).
-            return $"{pwshDefaultArgs} -Command \"try {{ & '{adtFrontendPath}'{(cliArguments.Count > 0 ? $" {string.Join(" ", cliArguments)}" : null)} }} catch {{ throw }}; exit $Global:LASTEXITCODE\"";
+            return $"{pwshDefaultArgs} -Command \"try {{ & '{adtFrontendPath}'{(argv.Count > 0 ? $" {string.Join(" ", argv)}" : null)} }} catch {{ throw }}; exit $Global:LASTEXITCODE\"";
         }
 
         /// <summary>
