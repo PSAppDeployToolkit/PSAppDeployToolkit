@@ -2995,14 +2995,8 @@ namespace PSADT.Interop
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetImageList(SHIL_SIZE iImageList, out IImageList ppvObj)
         {
-            Guid riid = typeof(IImageList).GUID;
-            HRESULT res = PInvoke.SHGetImageList((int)iImageList, in riid, out object ppvObjLocal);
-            if (res != HRESULT.S_OK)
-            {
-                throw ExceptionUtilities.GetException(res);
-            }
-            ppvObj = (IImageList)ppvObjLocal;
-            return res;
+            HRESULT res = PInvoke.SHGetImageList((int)iImageList, out ppvObj);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
@@ -4036,16 +4030,10 @@ namespace PSADT.Interop
         /// <param name="factory">When this method returns, contains the created factory object cast to the specified interface type.</param>
         /// <returns>An HRESULT value indicating whether the factory was created successfully. Returns S_OK if successful;
         /// otherwise, an error code.</returns>
-        internal static HRESULT DWriteCreateFactory<T>(DWRITE_FACTORY_TYPE factoryType, out T factory)
+        internal static HRESULT DWriteCreateFactory<T>(DWRITE_FACTORY_TYPE factoryType, out T factory) where T : class
         {
-            Guid riid = typeof(T).GUID;
-            HRESULT res = PInvoke.DWriteCreateFactory(factoryType, riid, out object factoryLocal);
-            if (res != HRESULT.S_OK)
-            {
-                throw ExceptionUtilities.GetException(res);
-            }
-            factory = (T)factoryLocal;
-            return res;
+            HRESULT res = PInvoke.DWriteCreateFactory(factoryType, out factory);
+            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
         }
 
         /// <summary>
