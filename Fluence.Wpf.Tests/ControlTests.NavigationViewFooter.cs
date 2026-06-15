@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,14 +43,14 @@ namespace Fluence.Wpf.Tests
             footer = new NavigationViewItem
             {
                 Content = "Settings",
-                Icon = new FontIcon { Glyph = "", IconFontSize = 16 }
+                Icon = new FontIcon { Glyph = "", IconFontSize = 16 },
             };
             NavigationView nav = new()
             {
                 Width = 600,
                 Height = 400,
                 PaneDisplayMode = mode,
-                IsPaneOpen = isPaneOpen
+                IsPaneOpen = isPaneOpen,
             };
             _ = nav.Items.Add(new NavigationViewItem { Content = "Home", Icon = new FontIcon { Glyph = "" } });
             _ = nav.Items.Add(new NavigationViewItem { Content = "Docs", Icon = new FontIcon { Glyph = "" } });
@@ -61,14 +61,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_FooterItem_ResolvesOwningNavigationView()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, true);
+                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
@@ -100,7 +100,7 @@ namespace Fluence.Wpf.Tests
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, true);
+                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     nav.SelectedIndex = 0;
                     window.Content = nav;
                     window.Show();
@@ -133,14 +133,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_MainSelection_ClearsFooterSelection()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, true);
+                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
@@ -170,14 +170,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_FooterSelectionIndicator_BecomesVisibleOnFooterSelection()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, true);
+                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
@@ -216,8 +216,7 @@ namespace Fluence.Wpf.Tests
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, true);
-                    window.Content = nav;
+                    window.Content = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
                     // Settle until the footer item has stretched to the asserted pane width.
@@ -243,15 +242,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_FooterItem_IconCentered_InLeftCompactClosed()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.LeftCompact, false);
-                    window.Content = nav;
+                    window.Content = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.LeftCompact, isPaneOpen: false);
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
                     WaitForAnimationAndDrain(window.Dispatcher, 300);
@@ -279,21 +277,20 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationView_Automation_GetSelection_ReportsFooterSelection()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
                 try
                 {
-                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, true);
+                    NavigationView nav = CreateNavWithFooterItem(out NavigationViewItem footer, NavigationViewPaneDisplayMode.Left, isPaneOpen: true);
                     window.Content = nav;
                     window.Show();
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    NavigationViewAutomationPeer peer = new(nav);
-                    ISelectionProvider selectionProvider = peer;
+                    ISelectionProvider selectionProvider = (NavigationViewAutomationPeer)new(nav);
                     Assert.AreEqual(0, selectionProvider.GetSelection().Length,
                         "With nothing selected, the automation peer should report an empty selection.");
 

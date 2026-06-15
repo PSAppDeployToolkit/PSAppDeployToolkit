@@ -100,7 +100,7 @@ namespace Fluence.Wpf.Controls
                 typeof(DateTime?),
                 typeof(DatePicker),
                 new FrameworkPropertyMetadata(
-                    null,
+defaultValue: null,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     OnSelectedDateChanged));
 
@@ -160,7 +160,7 @@ namespace Fluence.Wpf.Controls
                 nameof(DayVisible),
                 typeof(bool),
                 typeof(DatePicker),
-                new FrameworkPropertyMetadata(true, OnFieldVisibilityChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnFieldVisibilityChanged));
 
         /// <summary>
         /// Gets or sets whether the day segment and selector column are shown.
@@ -179,7 +179,7 @@ namespace Fluence.Wpf.Controls
                 nameof(MonthVisible),
                 typeof(bool),
                 typeof(DatePicker),
-                new FrameworkPropertyMetadata(true, OnFieldVisibilityChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnFieldVisibilityChanged));
 
         /// <summary>
         /// Gets or sets whether the month segment and selector column are shown.
@@ -198,7 +198,7 @@ namespace Fluence.Wpf.Controls
                 nameof(YearVisible),
                 typeof(bool),
                 typeof(DatePicker),
-                new FrameworkPropertyMetadata(true, OnFieldVisibilityChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnFieldVisibilityChanged));
 
         /// <summary>
         /// Gets or sets whether the year segment and selector column are shown.
@@ -217,7 +217,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Header),
                 typeof(object),
                 typeof(DatePicker),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the optional header content shown above the field.
@@ -316,6 +316,7 @@ namespace Fluence.Wpf.Controls
             UpdateFieldText();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0091:Sender should be 'this' for instance events", Justification = "The method is static.")]
         private static void OnSelectedDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             DatePicker picker = (DatePicker)d;
@@ -339,6 +340,8 @@ namespace Fluence.Wpf.Controls
         /// Quoted literals inside exotic patterns are not skipped; for short date patterns
         /// they do not contain the d/M/y specifier characters in practice.
         /// </summary>
+        /// <param name="format">The <see cref="DateTimeFormatInfo"/> to evaluate.</param>
+        /// <returns>A list of <see cref="DateField"/> values in the order they appear in the short date pattern.</returns>
         private static List<DateField> GetCultureOrderedFields(DateTimeFormatInfo format)
         {
             List<DateField> ordered = [];
@@ -382,6 +385,10 @@ namespace Fluence.Wpf.Controls
         /// culture-formatted numbers, the month as the culture's full Gregorian month name
         /// (see <see cref="GetGregorianFormat"/>).
         /// </summary>
+        /// <param name="field">The field to format.</param>
+        /// <param name="date">The date to format.</param>
+        /// <param name="culture">The culture to use for formatting.</param>
+        /// <returns>The formatted string for the specified field.</returns>
         private static string FormatSegment(DateField field, DateTime date, CultureInfo culture)
         {
             return field == DateField.Day
@@ -398,6 +405,8 @@ namespace Fluence.Wpf.Controls
         /// otherwise pair Gregorian numbers with the names of a different calendar. Falls back
         /// to the invariant format for the rare culture without an optional Gregorian calendar.
         /// </summary>
+        /// <param name="culture">The culture to evaluate.</param>
+        /// <returns>The <see cref="DateTimeFormatInfo"/> pinned to the Gregorian calendar.</returns>
         private static DateTimeFormatInfo GetGregorianFormat(CultureInfo culture)
         {
             DateTimeFormatInfo format = culture.DateTimeFormat;
@@ -423,6 +432,8 @@ namespace Fluence.Wpf.Controls
         /// Returns the WinUI 3 star-width weight for a field column (78* for day and year,
         /// 132* for the wider month column).
         /// </summary>
+        /// <param name="field">The field to evaluate.</param>
+        /// <returns>The star-width weight for the specified field.</returns>
         private static double GetFieldStarWidth(DateField field)
         {
             return field == DateField.Month ? 132 : 78;
@@ -431,6 +442,8 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Builds the day column items 1..<paramref name="dayCount"/>.
         /// </summary>
+        /// <param name="dayCount">The number of days to generate.</param>
+        /// <returns>A list of day numbers from 1 to <paramref name="dayCount"/>.</returns>
         private static List<int> BuildDayItems(int dayCount)
         {
             List<int> days = [];
@@ -445,6 +458,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Scrolls the selector's current selection into view when it is a ListBox.
         /// </summary>
+        /// <param name="selector">The selector to scroll.</param>
         private static void ScrollSelectionIntoView(Selector? selector)
         {
             if (selector is System.Windows.Controls.ListBox listBox && listBox.SelectedItem is not null)
@@ -461,7 +475,7 @@ namespace Fluence.Wpf.Controls
             }
 
             PopulateSelectorColumns();
-            _popup.SetCurrentValue(Popup.IsOpenProperty, true);
+            _popup.SetCurrentValue(Popup.IsOpenProperty, value: true);
 
             // Item containers exist only after the popup child's first layout pass, so defer
             // the focus move to Loaded priority (below Render) like the other in-tree
@@ -487,6 +501,8 @@ namespace Fluence.Wpf.Controls
         /// <see cref="OnFlyoutButtonClick"/>. Accept, cancel, and Escape closes do not arm it,
         /// so programmatic close-and-reopen flows stay instant.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private void OnPopupClosed(object? sender, EventArgs e)
         {
             if (_popupSelfClosing)
@@ -515,9 +531,11 @@ namespace Fluence.Wpf.Controls
         /// path). Enter is left alone while a flyout command button has keyboard focus so the
         /// button's native click handling wins.
         /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private void OnPopupPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Handled || _popup is null || !_popup.IsOpen)
+            if (e.Handled || _popup?.IsOpen != true)
             {
                 return;
             }
@@ -549,7 +567,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void MoveFocusIntoPopup()
         {
-            if (_popup is null || !_popup.IsOpen)
+            if (_popup?.IsOpen != true)
             {
                 return;
             }
@@ -710,32 +728,32 @@ namespace Fluence.Wpf.Controls
 
         private void ClosePopup()
         {
-            if (_popup is not null && _popup.IsOpen)
+            if (_popup?.IsOpen == true)
             {
                 // Closing through the control's own pipeline must not arm the light-dismiss
                 // reopen lockout; Popup.Closed is raised synchronously from the set below.
                 _popupSelfClosing = true;
-                _popup.SetCurrentValue(Popup.IsOpenProperty, false);
+                _popup.SetCurrentValue(Popup.IsOpenProperty, value: false);
             }
         }
 
         private int GetPendingDay()
         {
-            return _dayList is not null && _dayList.SelectedIndex >= 0
+            return _dayList?.SelectedIndex >= 0
                 ? _dayList.SelectedIndex + 1
                 : _flyoutBaseDate.Day;
         }
 
         private int GetPendingMonth()
         {
-            return _monthList is not null && _monthList.SelectedIndex >= 0
+            return _monthList?.SelectedIndex >= 0
                 ? _monthList.SelectedIndex + 1
                 : _flyoutBaseDate.Month;
         }
 
         private int GetPendingYear()
         {
-            return _yearList is not null && _yearList.SelectedIndex >= 0
+            return _yearList?.SelectedIndex >= 0
                 ? _populatedMinYear + _yearList.SelectedIndex
                 : _flyoutBaseDate.Year;
         }
@@ -743,6 +761,8 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Returns the selector column belonging to <paramref name="field"/>.
         /// </summary>
+        /// <param name="field">The field to evaluate.</param>
+        /// <returns>The selector column for the specified field.</returns>
         private Selector? GetSelector(DateField field)
         {
             return field == DateField.Day
@@ -825,6 +845,7 @@ namespace Fluence.Wpf.Controls
         /// sit in the Auto columns between them) to the WinUI star weights, zeroing columns
         /// beyond the visible field count.
         /// </summary>
+        /// <param name="fields">The list of visible fields in culture order.</param>
         private void ApplySegmentColumnWidths(List<DateField> fields)
         {
             if (_segmentsHost is null || _segmentsHost.ColumnDefinitions.Count < 5)
@@ -882,6 +903,8 @@ namespace Fluence.Wpf.Controls
         /// Collapses the selector column for <paramref name="field"/> when it is not in the
         /// visible field set.
         /// </summary>
+        /// <param name="field">The field to evaluate.</param>
+        /// <param name="visibleFields">The list of visible fields in culture order.</param>
         private void HideSelectorIfAbsent(DateField field, List<DateField> visibleFields)
         {
             if (!visibleFields.Contains(field))
@@ -992,13 +1015,13 @@ namespace Fluence.Wpf.Controls
         private enum DateField
         {
             /// <summary>The day-of-month field.</summary>
-            Day,
+            Day = 0,
 
             /// <summary>The month field.</summary>
-            Month,
+            Month = 1,
 
             /// <summary>The year field.</summary>
-            Year,
+            Year = 2,
         }
     }
 }

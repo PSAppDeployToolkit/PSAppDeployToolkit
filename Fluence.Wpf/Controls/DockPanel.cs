@@ -64,7 +64,7 @@ namespace Fluence.Wpf.Controls
                 nameof(LastChildFill),
                 typeof(bool),
                 typeof(DockPanel),
-                new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsArrange));
+                new FrameworkPropertyMetadata(defaultValue: true, FrameworkPropertyMetadataOptions.AffectsArrange));
 
         /// <summary>
         /// Gets or sets whether the last child element stretches to fill the remaining space.
@@ -102,9 +102,7 @@ namespace Fluence.Wpf.Controls
 
                 child.Measure(available);
                 Size desired = child.DesiredSize;
-                Dock dock = System.Windows.Controls.DockPanel.GetDock(child);
-
-                switch (dock)
+                switch (System.Windows.Controls.DockPanel.GetDock(child))
                 {
                     case Dock.Left:
                     case Dock.Right:

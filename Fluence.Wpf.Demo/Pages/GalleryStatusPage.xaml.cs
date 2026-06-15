@@ -35,419 +35,409 @@ namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GalleryStatusPage : UserControl
     {
-        private const string ProgressBarValueXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Status.ProgressBarValue""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf""
-    xmlns:uicore=""clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"">
-    <StackPanel>
-        <ui:ProgressBar
-            x:Name=""StandardProgressBar""
-            Height=""8""
-            Margin=""0,0,0,12""
-            HorizontalAlignment=""Stretch""
-            Maximum=""100""
-            Minimum=""0""
-            Value=""{Binding Value, Source={x:Reference ProgressValueNumberBox}}"" />
-        <ui:NumberBox
-            x:Name=""ProgressValueNumberBox""
-            Header=""Value""
-            HorizontalAlignment=""Center""
-            VerticalAlignment=""Center""
-            Maximum=""100""
-            Minimum=""0""
-            SmallChange=""5""
-            SpinButtonPlacementMode=""{x:Static uicore:SpinButtonPlacementMode.Inline}""
-            Value=""50"" />
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width=""*"" />
-                <ColumnDefinition Width=""16"" />
-                <ColumnDefinition Width=""*"" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column=""0"">
-                <TextBlock
-                    Margin=""0,0,0,6""
-                    Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-                    Text=""Paused"" />
-                <ui:ProgressBar
-                    Height=""8""
-                    HorizontalAlignment=""Stretch""
-                    Maximum=""100""
-                    Minimum=""0""
-                    ProgressMode=""Paused""
-                    Value=""62"" />
-            </StackPanel>
-            <StackPanel Grid.Column=""2"">
-                <TextBlock
-                    Margin=""0,0,0,6""
-                    Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-                    Text=""Failure"" />
-                <ui:ProgressBar
-                    Height=""8""
-                    HorizontalAlignment=""Stretch""
-                    Maximum=""100""
-                    Minimum=""0""
-                    ProgressMode=""Error""
-                    Value=""78"" />
-            </StackPanel>
-        </Grid>
-    </StackPanel>
-</UserControl>
-";
+        private const string ProgressBarValueXamlSource = "<UserControl\n" +
+                                                          "    x:Class=\"Fluence.Wpf.Demo.Pages.Status.ProgressBarValue\"\n" +
+                                                          "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                          "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                          "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\"\n" +
+                                                          "    xmlns:uicore=\"clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf\">\n" +
+                                                          "    <StackPanel>\n" +
+                                                          "        <ui:ProgressBar\n" +
+                                                          "            x:Name=\"StandardProgressBar\"\n" +
+                                                          "            Height=\"8\"\n" +
+                                                          "            Margin=\"0,0,0,12\"\n" +
+                                                          "            HorizontalAlignment=\"Stretch\"\n" +
+                                                          "            Maximum=\"100\"\n" +
+                                                          "            Minimum=\"0\"\n" +
+                                                          "            Value=\"{Binding Value, Source={x:Reference ProgressValueNumberBox}}\" />\n" +
+                                                          "        <ui:NumberBox\n" +
+                                                          "            x:Name=\"ProgressValueNumberBox\"\n" +
+                                                          "            Header=\"Value\"\n" +
+                                                          "            HorizontalAlignment=\"Center\"\n" +
+                                                          "            VerticalAlignment=\"Center\"\n" +
+                                                          "            Maximum=\"100\"\n" +
+                                                          "            Minimum=\"0\"\n" +
+                                                          "            SmallChange=\"5\"\n" +
+                                                          "            SpinButtonPlacementMode=\"{x:Static uicore:SpinButtonPlacementMode.Inline}\"\n" +
+                                                          "            Value=\"50\" />\n" +
+                                                          "        <Grid>\n" +
+                                                          "            <Grid.ColumnDefinitions>\n" +
+                                                          "                <ColumnDefinition Width=\"*\" />\n" +
+                                                          "                <ColumnDefinition Width=\"16\" />\n" +
+                                                          "                <ColumnDefinition Width=\"*\" />\n" +
+                                                          "            </Grid.ColumnDefinitions>\n" +
+                                                          "            <StackPanel Grid.Column=\"0\">\n" +
+                                                          "                <TextBlock\n" +
+                                                          "                    Margin=\"0,0,0,6\"\n" +
+                                                          "                    Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                          "                    Text=\"Paused\" />\n" +
+                                                          "                <ui:ProgressBar\n" +
+                                                          "                    Height=\"8\"\n" +
+                                                          "                    HorizontalAlignment=\"Stretch\"\n" +
+                                                          "                    Maximum=\"100\"\n" +
+                                                          "                    Minimum=\"0\"\n" +
+                                                          "                    ProgressMode=\"Paused\"\n" +
+                                                          "                    Value=\"62\" />\n" +
+                                                          "            </StackPanel>\n" +
+                                                          "            <StackPanel Grid.Column=\"2\">\n" +
+                                                          "                <TextBlock\n" +
+                                                          "                    Margin=\"0,0,0,6\"\n" +
+                                                          "                    Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                          "                    Text=\"Failure\" />\n" +
+                                                          "                <ui:ProgressBar\n" +
+                                                          "                    Height=\"8\"\n" +
+                                                          "                    HorizontalAlignment=\"Stretch\"\n" +
+                                                          "                    Maximum=\"100\"\n" +
+                                                          "                    Minimum=\"0\"\n" +
+                                                          "                    ProgressMode=\"Error\"\n" +
+                                                          "                    Value=\"78\" />\n" +
+                                                          "            </StackPanel>\n" +
+                                                          "        </Grid>\n" +
+                                                          "    </StackPanel>\n" +
+                                                          "</UserControl>\n";
 
-        private const string ProgressBarValueCSharpSource = @"using System.Windows.Controls;
+        private const string ProgressBarValueCSharpSource = "using System.Windows.Controls;\n" +
+                                                            "\n" +
+                                                            "namespace Fluence.Wpf.Demo.Pages.Status\n" +
+                                                            "{\n" +
+                                                            "    public partial class ProgressBarValue : UserControl\n" +
+                                                            "    {\n" +
+                                                            "        public ProgressBarValue()\n" +
+                                                            "        {\n" +
+                                                            "            InitializeComponent();\n" +
+                                                            "        }\n" +
+                                                            "\n" +
+                                                            "    }\n" +
+                                                            "}\n";
+        private const string ProgressBarIndeterminateXamlSource = "<UserControl\n" +
+                                                                  "    x:Class=\"Fluence.Wpf.Demo.Pages.Status.ProgressBarIndeterminate\"\n" +
+                                                                  "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                                  "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                                  "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                                  "    <StackPanel>\n" +
+                                                                  "        <ui:ProgressBar\n" +
+                                                                  "            x:Name=\"IndeterminateProgressBar\"\n" +
+                                                                  "            Height=\"8\"\n" +
+                                                                  "            Margin=\"0,0,0,12\"\n" +
+                                                                  "            HorizontalAlignment=\"Stretch\"\n" +
+                                                                  "            ProgressMode=\"Indeterminate\" />\n" +
+                                                                  "        <StackPanel Orientation=\"Horizontal\">\n" +
+                                                                  "            <ui:ToggleSwitch\n" +
+                                                                  "                x:Name=\"IndeterminateToggle\"\n" +
+                                                                  "                Margin=\"0,0,12,0\"\n" +
+                                                                  "                Checked=\"IndeterminateToggle_Toggled\"\n" +
+                                                                  "                HorizontalAlignment=\"Center\"\n" +
+                                                                  "                VerticalAlignment=\"Center\"\n" +
+                                                                  "                IsChecked=\"True\"\n" +
+                                                                  "                OffContent=\"On / Off\"\n" +
+                                                                  "                OnContent=\"On / Off\"\n" +
+                                                                  "                Unchecked=\"IndeterminateToggle_Toggled\" />\n" +
+                                                                  "        </StackPanel>\n" +
+                                                                  "    </StackPanel>\n" +
+                                                                  "</UserControl>\n";
 
-namespace Fluence.Wpf.Demo.Pages.Status
-{
-    public partial class ProgressBarValue : UserControl
-    {
-        public ProgressBarValue()
-        {
-            InitializeComponent();
-        }
+        private const string ProgressBarIndeterminateCSharpSource = "using System.Windows;\n" +
+                                                                    "using System.Windows.Controls;\n" +
+                                                                    "using Fluence.Wpf;\n" +
+                                                                    "\n" +
+                                                                    "namespace Fluence.Wpf.Demo.Pages.Status\n" +
+                                                                    "{\n" +
+                                                                    "    public partial class ProgressBarIndeterminate : UserControl\n" +
+                                                                    "    {\n" +
+                                                                    "        public ProgressBarIndeterminate()\n" +
+                                                                    "        {\n" +
+                                                                    "            InitializeComponent();\n" +
+                                                                    "        }\n" +
+                                                                    "\n" +
+                                                                    "        private void IndeterminateToggle_Toggled(object sender, RoutedEventArgs e)\n" +
+                                                                    "        {\n" +
+                                                                    "            if (IndeterminateProgressBar is null || IndeterminateToggle is null)\n" +
+                                                                    "            {\n" +
+                                                                    "                return;\n" +
+                                                                    "            }\n" +
+                                                                    "\n" +
+                                                                    "            IndeterminateProgressBar.ProgressMode = IndeterminateToggle.IsChecked == true\n" +
+                                                                    "                ? ProgressBarMode.Indeterminate\n" +
+                                                                    "                : ProgressBarMode.Standard;\n" +
+                                                                    "        }\n" +
+                                                                    "    }\n" +
+                                                                    "}\n";
+        private const string ProgressBarStepsXamlSource = "<UserControl\n" +
+                                                          "    x:Class=\"Fluence.Wpf.Demo.Pages.Status.ProgressBarSteps\"\n" +
+                                                          "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                          "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                          "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                          "    <StackPanel>\n" +
+                                                          "        <ui:ProgressBar\n" +
+                                                          "            x:Name=\"StepProgressBar\"\n" +
+                                                          "            Height=\"8\"\n" +
+                                                          "            Margin=\"0,0,0,12\"\n" +
+                                                          "            HorizontalAlignment=\"Stretch\"\n" +
+                                                          "            CurrentStep=\"1\"\n" +
+                                                          "            ProgressMode=\"StepProgress\"\n" +
+                                                          "            Steps=\"10\" />\n" +
+                                                          "        <StackPanel Orientation=\"Horizontal\">\n" +
+                                                          "            <ui:Button\n" +
+                                                          "                Margin=\"0,0,12,0\"\n" +
+                                                          "                Click=\"ProgressStep_Click\"\n" +
+                                                          "                Content=\"Back\"\n" +
+                                                          "                Tag=\"Back\" />\n" +
+                                                          "            <ui:Button\n" +
+                                                          "                Margin=\"0,0,16,0\"\n" +
+                                                          "                Appearance=\"Accent\"\n" +
+                                                          "                Click=\"ProgressStep_Click\"\n" +
+                                                          "                Content=\"Next\"\n" +
+                                                          "                Tag=\"Next\" />\n" +
+                                                          "            <TextBlock\n" +
+                                                          "                x:Name=\"StepLabel\"\n" +
+                                                          "                VerticalAlignment=\"Center\"\n" +
+                                                          "                Foreground=\"{DynamicResource TextFillColorPrimaryBrush}\"\n" +
+                                                          "                Text=\"Step 1 of 10\" />\n" +
+                                                          "        </StackPanel>\n" +
+                                                          "    </StackPanel>\n" +
+                                                          "</UserControl>\n";
 
-    }
-}
-";
-        private const string ProgressBarIndeterminateXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Status.ProgressBarIndeterminate""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <StackPanel>
-        <ui:ProgressBar
-            x:Name=""IndeterminateProgressBar""
-            Height=""8""
-            Margin=""0,0,0,12""
-            HorizontalAlignment=""Stretch""
-            ProgressMode=""Indeterminate"" />
-        <StackPanel Orientation=""Horizontal"">
-            <ui:ToggleSwitch
-                x:Name=""IndeterminateToggle""
-                Margin=""0,0,12,0""
-                Checked=""IndeterminateToggle_Toggled""
-                HorizontalAlignment=""Center""
-                VerticalAlignment=""Center""
-                IsChecked=""True""
-                OffContent=""On / Off""
-                OnContent=""On / Off""
-                Unchecked=""IndeterminateToggle_Toggled"" />
-        </StackPanel>
-    </StackPanel>
-</UserControl>
-";
+        private const string ProgressBarStepsCSharpSource = "using System;\n" +
+                                                            "using System.Windows;\n" +
+                                                            "using System.Windows.Controls;\n" +
+                                                            "\n" +
+                                                            "namespace Fluence.Wpf.Demo.Pages.Status\n" +
+                                                            "{\n" +
+                                                            "    public partial class ProgressBarSteps : UserControl\n" +
+                                                            "    {\n" +
+                                                            "        public ProgressBarSteps()\n" +
+                                                            "        {\n" +
+                                                            "            InitializeComponent();\n" +
+                                                            "        }\n" +
+                                                            "\n" +
+                                                            "        private void ProgressStep_Click(object sender, RoutedEventArgs e)\n" +
+                                                            "        {\n" +
+                                                            "            string tag = sender is FrameworkElement button && button.Tag is not null ? button.Tag.ToString() : string.Empty;\n" +
+                                                            "\n" +
+                                                            "            if (string.Equals(tag, \"Next\", StringComparison.OrdinalIgnoreCase))\n" +
+                                                            "            {\n" +
+                                                            "                if (StepProgressBar.CurrentStep < StepProgressBar.Steps)\n" +
+                                                            "                {\n" +
+                                                            "                    StepProgressBar.CurrentStep++;\n" +
+                                                            "                }\n" +
+                                                            "            }\n" +
+                                                            "            else if (StepProgressBar.CurrentStep > 0)\n" +
+                                                            "            {\n" +
+                                                            "                StepProgressBar.CurrentStep--;\n" +
+                                                            "            }\n" +
+                                                            "\n" +
+                                                            "            StepLabel.Text = string.Format(\"Step {0} of {1}\", StepProgressBar.CurrentStep, StepProgressBar.Steps);\n" +
+                                                            "        }\n" +
+                                                            "    }\n" +
+                                                            "}\n";
+        private const string ProgressRingsXamlSource = "<UserControl\n" +
+                                                       "    x:Class=\"Fluence.Wpf.Demo.Pages.Status.ProgressRings\"\n" +
+                                                       "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                       "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                       "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\"\n" +
+                                                       "    xmlns:uicore=\"clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf\">\n" +
+                                                       "    <Grid HorizontalAlignment=\"Stretch\">\n" +
+                                                       "        <Grid.ColumnDefinitions>\n" +
+                                                       "            <ColumnDefinition Width=\"*\" />\n" +
+                                                       "            <ColumnDefinition Width=\"*\" />\n" +
+                                                       "            <ColumnDefinition Width=\"*\" />\n" +
+                                                       "            <ColumnDefinition Width=\"*\" />\n" +
+                                                       "        </Grid.ColumnDefinitions>\n" +
+                                                       "        <Grid.RowDefinitions>\n" +
+                                                       "            <RowDefinition Height=\"Auto\" />\n" +
+                                                       "            <RowDefinition Height=\"Auto\" />\n" +
+                                                       "            <RowDefinition Height=\"Auto\" />\n" +
+                                                       "        </Grid.RowDefinitions>\n" +
+                                                       "\n" +
+                                                       "        <ui:ProgressRing\n" +
+                                                       "            x:Name=\"IndeterminateProgressRing\"\n" +
+                                                       "            Grid.Row=\"0\"\n" +
+                                                       "            Grid.Column=\"0\"\n" +
+                                                       "            Width=\"48\"\n" +
+                                                       "            Height=\"48\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            IsActive=\"True\"\n" +
+                                                       "            IsIndeterminate=\"True\" />\n" +
+                                                       "        <ui:ToggleSwitch\n" +
+                                                       "            Grid.Row=\"1\"\n" +
+                                                       "            Grid.Column=\"0\"\n" +
+                                                       "            Margin=\"0,12,0,0\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            VerticalAlignment=\"Center\"\n" +
+                                                       "            IsChecked=\"{Binding IsActive, ElementName=IndeterminateProgressRing, Mode=TwoWay}\"\n" +
+                                                       "            OffContent=\"On / Off\"\n" +
+                                                       "            OnContent=\"On / Off\" />\n" +
+                                                       "        <TextBlock\n" +
+                                                       "            x:Name=\"IndeterminateProgressRingLabel\"\n" +
+                                                       "            Grid.Row=\"2\"\n" +
+                                                       "            Grid.Column=\"0\"\n" +
+                                                       "            Margin=\"0,8,0,0\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                       "            Text=\"Indeterminate\" />\n" +
+                                                       "\n" +
+                                                       "        <ui:ProgressRing\n" +
+                                                       "            x:Name=\"DeterminateProgressRing\"\n" +
+                                                       "            Grid.Row=\"0\"\n" +
+                                                       "            Grid.Column=\"1\"\n" +
+                                                       "            Width=\"48\"\n" +
+                                                       "            Height=\"48\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            IsActive=\"True\"\n" +
+                                                       "            IsIndeterminate=\"False\"\n" +
+                                                       "            Maximum=\"100\"\n" +
+                                                       "            Minimum=\"0\"\n" +
+                                                       "            Value=\"50\" />\n" +
+                                                       "        <ui:NumberBox\n" +
+                                                       "            x:Name=\"ProgressRingValueBox\"\n" +
+                                                       "            Grid.Row=\"1\"\n" +
+                                                       "            Grid.Column=\"1\"\n" +
+                                                       "            Width=\"132\"\n" +
+                                                       "            Margin=\"0,24,0,0\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            VerticalAlignment=\"Center\"\n" +
+                                                       "            Maximum=\"100\"\n" +
+                                                       "            Minimum=\"1\"\n" +
+                                                       "            SmallChange=\"1\"\n" +
+                                                       "            SpinButtonPlacementMode=\"{x:Static uicore:SpinButtonPlacementMode.Inline}\"\n" +
+                                                       "            Value=\"{Binding Value, ElementName=DeterminateProgressRing, Mode=TwoWay}\" />\n" +
+                                                       "        <TextBlock\n" +
+                                                       "            x:Name=\"DeterminateProgressRingLabel\"\n" +
+                                                       "            Grid.Row=\"2\"\n" +
+                                                       "            Grid.Column=\"1\"\n" +
+                                                       "            Margin=\"0,8,0,0\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                       "            Text=\"Determinate\" />\n" +
+                                                       "\n" +
+                                                       "        <ui:ProgressRing\n" +
+                                                       "            x:Name=\"PausedProgressRing\"\n" +
+                                                       "            Grid.Row=\"0\"\n" +
+                                                       "            Grid.Column=\"2\"\n" +
+                                                       "            Width=\"48\"\n" +
+                                                       "            Height=\"48\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            IsActive=\"True\"\n" +
+                                                       "            IsIndeterminate=\"False\"\n" +
+                                                       "            Maximum=\"100\"\n" +
+                                                       "            Minimum=\"0\"\n" +
+                                                       "            ProgressState=\"{x:Static uicore:ProgressRingState.Paused}\"\n" +
+                                                       "            Value=\"80\" />\n" +
+                                                       "        <TextBlock\n" +
+                                                       "            Grid.Row=\"2\"\n" +
+                                                       "            Grid.Column=\"2\"\n" +
+                                                       "            Margin=\"0,8,0,0\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                       "            Text=\"Paused\" />\n" +
+                                                       "\n" +
+                                                       "        <ui:ProgressRing\n" +
+                                                       "            x:Name=\"ErrorProgressRing\"\n" +
+                                                       "            Grid.Row=\"0\"\n" +
+                                                       "            Grid.Column=\"3\"\n" +
+                                                       "            Width=\"48\"\n" +
+                                                       "            Height=\"48\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            IsActive=\"True\"\n" +
+                                                       "            IsIndeterminate=\"False\"\n" +
+                                                       "            Maximum=\"100\"\n" +
+                                                       "            Minimum=\"0\"\n" +
+                                                       "            ProgressState=\"{x:Static uicore:ProgressRingState.Error}\"\n" +
+                                                       "            Value=\"80\" />\n" +
+                                                       "        <TextBlock\n" +
+                                                       "            Grid.Row=\"2\"\n" +
+                                                       "            Grid.Column=\"3\"\n" +
+                                                       "            Margin=\"0,8,0,0\"\n" +
+                                                       "            HorizontalAlignment=\"Center\"\n" +
+                                                       "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                       "            Text=\"Error\" />\n" +
+                                                       "    </Grid>\n" +
+                                                       "</UserControl>\n";
 
-        private const string ProgressBarIndeterminateCSharpSource = @"using System.Windows;
-using System.Windows.Controls;
-using Fluence.Wpf;
+        private const string ProgressRingsCSharpSource = "using System.Windows.Controls;\n" +
+                                                         "\n" +
+                                                         "namespace Fluence.Wpf.Demo.Pages.Status\n" +
+                                                         "{\n" +
+                                                         "    public partial class ProgressRings : UserControl\n" +
+                                                         "    {\n" +
+                                                         "        public ProgressRings()\n" +
+                                                         "        {\n" +
+                                                         "            InitializeComponent();\n" +
+                                                         "        }\n" +
+                                                         "\n" +
+                                                         "    }\n" +
+                                                         "}\n";
+        private const string InfoBarsXamlSource = "<UserControl\n" +
+                                                  "    x:Class=\"Fluence.Wpf.Demo.Pages.Status.InfoBars\"\n" +
+                                                  "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                  "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                  "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                  "    <StackPanel>\n" +
+                                                  "        <ui:InfoBar\n" +
+                                                  "            x:Name=\"InfoBarInformational\"\n" +
+                                                  "            Title=\"Informational\"\n" +
+                                                  "            Margin=\"0,0,0,8\"\n" +
+                                                  "            HorizontalAlignment=\"Stretch\"\n" +
+                                                  "            IsOpen=\"True\"\n" +
+                                                  "            Message=\"This is a general information message.\"\n" +
+                                                  "            Severity=\"Informational\" />\n" +
+                                                  "        <ui:InfoBar\n" +
+                                                  "            x:Name=\"InfoBarSuccess\"\n" +
+                                                  "            Title=\"Success\"\n" +
+                                                  "            Margin=\"0,0,0,8\"\n" +
+                                                  "            HorizontalAlignment=\"Stretch\"\n" +
+                                                  "            IsOpen=\"True\"\n" +
+                                                  "            Message=\"The operation completed successfully.\"\n" +
+                                                  "            Severity=\"Success\" />\n" +
+                                                  "        <ui:InfoBar\n" +
+                                                  "            x:Name=\"InfoBarWarning\"\n" +
+                                                  "            Title=\"Warning\"\n" +
+                                                  "            Margin=\"0,0,0,8\"\n" +
+                                                  "            HorizontalAlignment=\"Stretch\"\n" +
+                                                  "            IsOpen=\"True\"\n" +
+                                                  "            Message=\"Proceed with caution.\"\n" +
+                                                  "            Severity=\"Warning\" />\n" +
+                                                  "        <ui:InfoBar\n" +
+                                                  "            x:Name=\"InfoBarError\"\n" +
+                                                  "            Title=\"Error\"\n" +
+                                                  "            Margin=\"0,0,0,8\"\n" +
+                                                  "            HorizontalAlignment=\"Stretch\"\n" +
+                                                  "            IsOpen=\"True\"\n" +
+                                                  "            Message=\"Something went wrong.\"\n" +
+                                                  "            Severity=\"Error\">\n" +
+                                                  "            <ui:InfoBar.ActionButton>\n" +
+                                                  "                <ui:Button Appearance=\"Accent\" Content=\"Retry\" />\n" +
+                                                  "            </ui:InfoBar.ActionButton>\n" +
+                                                  "        </ui:InfoBar>\n" +
+                                                  "        <ui:Button\n" +
+                                                  "            Margin=\"0,4,0,0\"\n" +
+                                                  "            HorizontalAlignment=\"Left\"\n" +
+                                                  "            Click=\"ResetInfoBars_Click\"\n" +
+                                                  "            Content=\"Reset All InfoBars\" />\n" +
+                                                  "    </StackPanel>\n" +
+                                                  "</UserControl>\n";
 
-namespace Fluence.Wpf.Demo.Pages.Status
-{
-    public partial class ProgressBarIndeterminate : UserControl
-    {
-        public ProgressBarIndeterminate()
-        {
-            InitializeComponent();
-        }
-
-        private void IndeterminateToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (IndeterminateProgressBar is null || IndeterminateToggle is null)
-            {
-                return;
-            }
-
-            IndeterminateProgressBar.ProgressMode = IndeterminateToggle.IsChecked == true
-                ? ProgressBarMode.Indeterminate
-                : ProgressBarMode.Standard;
-        }
-    }
-}
-";
-        private const string ProgressBarStepsXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Status.ProgressBarSteps""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <StackPanel>
-        <ui:ProgressBar
-            x:Name=""StepProgressBar""
-            Height=""8""
-            Margin=""0,0,0,12""
-            HorizontalAlignment=""Stretch""
-            CurrentStep=""1""
-            ProgressMode=""StepProgress""
-            Steps=""10"" />
-        <StackPanel Orientation=""Horizontal"">
-            <ui:Button
-                Margin=""0,0,12,0""
-                Click=""ProgressStep_Click""
-                Content=""Back""
-                Tag=""Back"" />
-            <ui:Button
-                Margin=""0,0,16,0""
-                Appearance=""Accent""
-                Click=""ProgressStep_Click""
-                Content=""Next""
-                Tag=""Next"" />
-            <TextBlock
-                x:Name=""StepLabel""
-                VerticalAlignment=""Center""
-                Foreground=""{DynamicResource TextFillColorPrimaryBrush}""
-                Text=""Step 1 of 10"" />
-        </StackPanel>
-    </StackPanel>
-</UserControl>
-";
-
-        private const string ProgressBarStepsCSharpSource = @"using System;
-using System.Windows;
-using System.Windows.Controls;
-
-namespace Fluence.Wpf.Demo.Pages.Status
-{
-    public partial class ProgressBarSteps : UserControl
-    {
-        public ProgressBarSteps()
-        {
-            InitializeComponent();
-        }
-
-        private void ProgressStep_Click(object sender, RoutedEventArgs e)
-        {
-            string tag = sender is FrameworkElement button && button.Tag is not null ? button.Tag.ToString() : string.Empty;
-
-            if (string.Equals(tag, ""Next"", StringComparison.OrdinalIgnoreCase))
-            {
-                if (StepProgressBar.CurrentStep < StepProgressBar.Steps)
-                {
-                    StepProgressBar.CurrentStep++;
-                }
-            }
-            else if (StepProgressBar.CurrentStep > 0)
-            {
-                StepProgressBar.CurrentStep--;
-            }
-
-            StepLabel.Text = string.Format(""Step {0} of {1}"", StepProgressBar.CurrentStep, StepProgressBar.Steps);
-        }
-    }
-}
-";
-        private const string ProgressRingsXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Status.ProgressRings""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf""
-    xmlns:uicore=""clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"">
-    <Grid HorizontalAlignment=""Stretch"">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width=""*"" />
-            <ColumnDefinition Width=""*"" />
-            <ColumnDefinition Width=""*"" />
-            <ColumnDefinition Width=""*"" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height=""Auto"" />
-            <RowDefinition Height=""Auto"" />
-            <RowDefinition Height=""Auto"" />
-        </Grid.RowDefinitions>
-
-        <ui:ProgressRing
-            x:Name=""IndeterminateProgressRing""
-            Grid.Row=""0""
-            Grid.Column=""0""
-            Width=""48""
-            Height=""48""
-            HorizontalAlignment=""Center""
-            IsActive=""True""
-            IsIndeterminate=""True"" />
-        <ui:ToggleSwitch
-            Grid.Row=""1""
-            Grid.Column=""0""
-            Margin=""0,12,0,0""
-            HorizontalAlignment=""Center""
-            VerticalAlignment=""Center""
-            IsChecked=""{Binding IsActive, ElementName=IndeterminateProgressRing, Mode=TwoWay}""
-            OffContent=""On / Off""
-            OnContent=""On / Off"" />
-        <TextBlock
-            x:Name=""IndeterminateProgressRingLabel""
-            Grid.Row=""2""
-            Grid.Column=""0""
-            Margin=""0,8,0,0""
-            HorizontalAlignment=""Center""
-            Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-            Text=""Indeterminate"" />
-
-        <ui:ProgressRing
-            x:Name=""DeterminateProgressRing""
-            Grid.Row=""0""
-            Grid.Column=""1""
-            Width=""48""
-            Height=""48""
-            HorizontalAlignment=""Center""
-            IsActive=""True""
-            IsIndeterminate=""False""
-            Maximum=""100""
-            Minimum=""0""
-            Value=""50"" />
-        <ui:NumberBox
-            x:Name=""ProgressRingValueBox""
-            Grid.Row=""1""
-            Grid.Column=""1""
-            Width=""132""
-            Margin=""0,24,0,0""
-            HorizontalAlignment=""Center""
-            VerticalAlignment=""Center""
-            Maximum=""100""
-            Minimum=""1""
-            SmallChange=""1""
-            SpinButtonPlacementMode=""{x:Static uicore:SpinButtonPlacementMode.Inline}""
-            Value=""{Binding Value, ElementName=DeterminateProgressRing, Mode=TwoWay}"" />
-        <TextBlock
-            x:Name=""DeterminateProgressRingLabel""
-            Grid.Row=""2""
-            Grid.Column=""1""
-            Margin=""0,8,0,0""
-            HorizontalAlignment=""Center""
-            Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-            Text=""Determinate"" />
-
-        <ui:ProgressRing
-            x:Name=""PausedProgressRing""
-            Grid.Row=""0""
-            Grid.Column=""2""
-            Width=""48""
-            Height=""48""
-            HorizontalAlignment=""Center""
-            IsActive=""True""
-            IsIndeterminate=""False""
-            Maximum=""100""
-            Minimum=""0""
-            ProgressState=""{x:Static uicore:ProgressRingState.Paused}""
-            Value=""80"" />
-        <TextBlock
-            Grid.Row=""2""
-            Grid.Column=""2""
-            Margin=""0,8,0,0""
-            HorizontalAlignment=""Center""
-            Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-            Text=""Paused"" />
-
-        <ui:ProgressRing
-            x:Name=""ErrorProgressRing""
-            Grid.Row=""0""
-            Grid.Column=""3""
-            Width=""48""
-            Height=""48""
-            HorizontalAlignment=""Center""
-            IsActive=""True""
-            IsIndeterminate=""False""
-            Maximum=""100""
-            Minimum=""0""
-            ProgressState=""{x:Static uicore:ProgressRingState.Error}""
-            Value=""80"" />
-        <TextBlock
-            Grid.Row=""2""
-            Grid.Column=""3""
-            Margin=""0,8,0,0""
-            HorizontalAlignment=""Center""
-            Foreground=""{DynamicResource TextFillColorSecondaryBrush}""
-            Text=""Error"" />
-    </Grid>
-</UserControl>
-";
-
-        private const string ProgressRingsCSharpSource = @"using System.Windows.Controls;
-
-namespace Fluence.Wpf.Demo.Pages.Status
-{
-    public partial class ProgressRings : UserControl
-    {
-        public ProgressRings()
-        {
-            InitializeComponent();
-        }
-
-    }
-}
-";
-        private const string InfoBarsXamlSource = @"<UserControl
-    x:Class=""Fluence.Wpf.Demo.Pages.Status.InfoBars""
-    xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
-    xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
-    xmlns:ui=""clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"">
-    <StackPanel>
-        <ui:InfoBar
-            x:Name=""InfoBarInformational""
-            Title=""Informational""
-            Margin=""0,0,0,8""
-            HorizontalAlignment=""Stretch""
-            IsOpen=""True""
-            Message=""This is a general information message.""
-            Severity=""Informational"" />
-        <ui:InfoBar
-            x:Name=""InfoBarSuccess""
-            Title=""Success""
-            Margin=""0,0,0,8""
-            HorizontalAlignment=""Stretch""
-            IsOpen=""True""
-            Message=""The operation completed successfully.""
-            Severity=""Success"" />
-        <ui:InfoBar
-            x:Name=""InfoBarWarning""
-            Title=""Warning""
-            Margin=""0,0,0,8""
-            HorizontalAlignment=""Stretch""
-            IsOpen=""True""
-            Message=""Proceed with caution.""
-            Severity=""Warning"" />
-        <ui:InfoBar
-            x:Name=""InfoBarError""
-            Title=""Error""
-            Margin=""0,0,0,8""
-            HorizontalAlignment=""Stretch""
-            IsOpen=""True""
-            Message=""Something went wrong.""
-            Severity=""Error"">
-            <ui:InfoBar.ActionButton>
-                <ui:Button Appearance=""Accent"" Content=""Retry"" />
-            </ui:InfoBar.ActionButton>
-        </ui:InfoBar>
-        <ui:Button
-            Margin=""0,4,0,0""
-            HorizontalAlignment=""Left""
-            Click=""ResetInfoBars_Click""
-            Content=""Reset All InfoBars"" />
-    </StackPanel>
-</UserControl>
-";
-
-        private const string InfoBarsCSharpSource = @"using System.Windows;
-using System.Windows.Controls;
-
-namespace Fluence.Wpf.Demo.Pages.Status
-{
-    public partial class InfoBars : UserControl
-    {
-        public InfoBars()
-        {
-            InitializeComponent();
-        }
-
-        private void ResetInfoBars_Click(object sender, RoutedEventArgs e)
-        {
-            InfoBarInformational.IsOpen = true;
-            InfoBarSuccess.IsOpen = true;
-            InfoBarWarning.IsOpen = true;
-            InfoBarError.IsOpen = true;
-        }
-    }
-}
-";
+        private const string InfoBarsCSharpSource = "using System.Windows;\n" +
+                                                    "using System.Windows.Controls;\n" +
+                                                    "\n" +
+                                                    "namespace Fluence.Wpf.Demo.Pages.Status\n" +
+                                                    "{\n" +
+                                                    "    public partial class InfoBars : UserControl\n" +
+                                                    "    {\n" +
+                                                    "        public InfoBars()\n" +
+                                                    "        {\n" +
+                                                    "            InitializeComponent();\n" +
+                                                    "        }\n" +
+                                                    "\n" +
+                                                    "        private void ResetInfoBars_Click(object sender, RoutedEventArgs e)\n" +
+                                                    "        {\n" +
+                                                    "            InfoBarInformational.IsOpen = true;\n" +
+                                                    "            InfoBarSuccess.IsOpen = true;\n" +
+                                                    "            InfoBarWarning.IsOpen = true;\n" +
+                                                    "            InfoBarError.IsOpen = true;\n" +
+                                                    "        }\n" +
+                                                    "    }\n" +
+                                                    "}\n";
 
         public GalleryStatusPage()
         {
@@ -467,7 +457,7 @@ namespace Fluence.Wpf.Demo.Pages.Status
         private void GalleryStatusPage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= GalleryStatusPage_Loaded;
-            IndeterminateToggle_Toggled(null, null);
+            IndeterminateToggle_Toggled(sender: null, e: null);
         }
 
         private void IndeterminateToggle_Toggled(object? sender, RoutedEventArgs? e)

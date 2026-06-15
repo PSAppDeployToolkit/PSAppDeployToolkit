@@ -47,7 +47,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TeachingTip_DefaultStyle_AppliesAndTemplatePartsFound()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -834,7 +834,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TeachingTip_ThemeCycle_SurfaceBrushesResolve()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -849,7 +849,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
                         Assert.IsNotNull(app?.TryFindResource(key),

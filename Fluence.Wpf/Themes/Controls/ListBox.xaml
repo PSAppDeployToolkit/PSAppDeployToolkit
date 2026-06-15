@@ -34,18 +34,19 @@
                                 TextElement.FontFamily="{TemplateBinding FontFamily}"
                                 TextElement.FontSize="{TemplateBinding FontSize}"
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
+                            <!--  WI-3 C20: WinUI canonical 3×16 accent bar, CornerRadius=1.5, matching ListViewItem.  -->
                             <Border
                                 x:Name="SelectionIndicator"
                                 Width="3"
                                 Height="16"
-                                Margin="0,0,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Background="{DynamicResource AccentFillColorDefaultBrush}"
                                 CornerRadius="1.5"
-                                Opacity="0">
+                                Opacity="0"
+                                RenderTransformOrigin="0.5,0.5">
                                 <Border.RenderTransform>
-                                    <ScaleTransform x:Name="IndicatorScale" CenterY="0.5" ScaleY="0.6" />
+                                    <TranslateTransform x:Name="SelectionIndicatorTranslate" X="-4" />
                                 </Border.RenderTransform>
                             </Border>
                         </Grid>
@@ -63,7 +64,41 @@
                         </MultiTrigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="HoverOverlay" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="1" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <!--  WI-3 C20: canonical ControlFastOutSlowIn easing (KeySpline 0.8,0,0,1).  -->
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicator" Storyboard.TargetProperty="Opacity">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="SelectionIndicatorTranslate" Storyboard.TargetProperty="X">
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="SelectionIndicator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.12" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="SelectionIndicatorTranslate"
+                                            Storyboard.TargetProperty="X"
+                                            To="-4"
+                                            Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -74,8 +109,14 @@
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
-                            <Setter TargetName="SelectionIndicator" Property="Opacity" Value="0" />
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsEnabled" Value="False" />
+                                <Condition Property="IsSelected" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="SelectionIndicator" Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}" />
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

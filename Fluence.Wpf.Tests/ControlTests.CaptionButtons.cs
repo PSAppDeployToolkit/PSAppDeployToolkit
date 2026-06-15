@@ -57,10 +57,10 @@ namespace Fluence.Wpf.Tests
                 Top = -20000,
                 ExtendsContentIntoTitleBar = true,
                 WindowStartupLocation = WindowStartupLocation.Manual,
-                ShowInTaskbar = false
+                ShowInTaskbar = false,
             };
             window.Show();
-            _ = window.Dispatcher.Invoke(DispatcherPriority.Loaded, new Action(delegate { }));
+            _ = window.Dispatcher.Invoke(DispatcherPriority.Loaded, new Action(static delegate { }));
             return window;
         }
 
@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FluenceWindow_CaptionButtons_AllFourBindToCanonicalSystemCommands()
         {
-            RunOnStaThread(delegate
+            RunOnStaThread(static delegate
             {
                 _ = EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
@@ -109,7 +109,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FluenceWindow_CaptionButtons_ReflowIntoRightAlignedSlots()
         {
-            RunOnStaThread(delegate
+            RunOnStaThread(static delegate
             {
                 _ = EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FluenceWindow_MinimizeCommand_TransitionsToMinimized()
         {
-            RunOnStaThread(delegate
+            RunOnStaThread(static delegate
             {
                 _ = EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
@@ -174,7 +174,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(WindowState.Normal, window.WindowState,
                         "Baseline: FluenceWindow should start in WindowState.Normal.");
 
-                    SystemCommands.MinimizeWindowCommand.Execute(null, window);
+                    SystemCommands.MinimizeWindowCommand.Execute(parameter: null, window);
                     DrainDispatcher(window.Dispatcher);
 
                     Assert.AreEqual(WindowState.Minimized, window.WindowState,
@@ -195,7 +195,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FluenceWindow_MaximizeCommand_TransitionsToMaximized()
         {
-            RunOnStaThread(delegate
+            RunOnStaThread(static delegate
             {
                 _ = EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
@@ -207,7 +207,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(WindowState.Normal, window.WindowState,
                         "Baseline: FluenceWindow should start in WindowState.Normal.");
 
-                    SystemCommands.MaximizeWindowCommand.Execute(null, window);
+                    SystemCommands.MaximizeWindowCommand.Execute(parameter: null, window);
                     DrainDispatcher(window.Dispatcher);
 
                     Assert.AreEqual(WindowState.Maximized, window.WindowState,
@@ -223,7 +223,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FluenceWindow_RestoreCommand_TransitionsMaximizedToNormal()
         {
-            RunOnStaThread(delegate
+            RunOnStaThread(static delegate
             {
                 _ = EnsureApplication();
                 _ = MergeGenericDictionary(Application.Current);
@@ -237,7 +237,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(WindowState.Maximized, window.WindowState,
                         "Baseline: window should be Maximized before Restore is exercised.");
 
-                    SystemCommands.RestoreWindowCommand.Execute(null, window);
+                    SystemCommands.RestoreWindowCommand.Execute(parameter: null, window);
                     DrainDispatcher(window.Dispatcher);
 
                     Assert.AreEqual(WindowState.Normal, window.WindowState,
@@ -265,7 +265,7 @@ namespace Fluence.Wpf.Tests
                     bool closingFired = false;
                     window.Closing += delegate { closingFired = true; };
 
-                    SystemCommands.CloseWindowCommand.Execute(null, window);
+                    SystemCommands.CloseWindowCommand.Execute(parameter: null, window);
                     // OnCloseWindow calls SystemCommands.CloseWindow(this) which posts
                     // WM_SYSCOMMAND/SC_CLOSE via PostMessage. Block at Background priority
                     // so the Win32 message pump processes the queued message and close

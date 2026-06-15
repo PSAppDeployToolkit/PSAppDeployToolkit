@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Controls
             // Animate an internal DP rather than repeatedly calling ScrollTo* from the
             // wheel handler. The DP callback performs the actual scroll, while the target
             // offset lets quick wheel input coalesce into a single eased destination.
-            bool isHorizontal = (Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift;
+            bool isHorizontal = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
             double delta = e.Delta * 0.6;
             if (isHorizontal)
             {
@@ -160,7 +160,7 @@ namespace Fluence.Wpf.Controls
             {
                 To = to,
                 Duration = ScrollDuration,
-                EasingFunction = SharedEase
+                EasingFunction = SharedEase,
             };
             animation.Freeze();
             BeginAnimation(property, animation, HandoffBehavior.SnapshotAndReplace);

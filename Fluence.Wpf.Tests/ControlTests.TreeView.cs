@@ -27,6 +27,7 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -50,7 +51,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_DefaultStyle_Applies()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -76,7 +77,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_TemplateParts_Present()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -102,7 +103,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_Expander_VisibleWhenHasChildren()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -128,7 +129,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_Expander_CollapsedWhenNoChildren()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -152,7 +153,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_IsExpanded_MakesChildrenVisible()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -185,7 +186,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_SelectedState_ChangesBackground()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -221,7 +222,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_HoverTriggers_AreScopedToHeaderBorder()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -242,7 +243,7 @@ namespace Fluence.Wpf.Tests
                 {
                     if (triggerBase is Trigger trigger && trigger.Property == UIElement.IsMouseOverProperty)
                     {
-                        if (trigger.SourceName == "ItemBorder")
+                        if (trigger.SourceName.Equals("ItemBorder", StringComparison.Ordinal))
                         {
                             hasHeaderHoverTrigger = true;
                         }
@@ -258,7 +259,7 @@ namespace Fluence.Wpf.Tests
                         {
                             if (condition.Property == UIElement.IsMouseOverProperty)
                             {
-                                if (condition.SourceName == "ItemBorder")
+                                if (condition.SourceName.Equals("ItemBorder", StringComparison.Ordinal))
                                 {
                                     hasHeaderHoverTrigger = true;
                                 }
@@ -283,7 +284,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeView_ThemeCycle_StyleRemainsApplied()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -309,7 +310,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TreeViewItem_ChevronGlyph_PresentInExpander()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

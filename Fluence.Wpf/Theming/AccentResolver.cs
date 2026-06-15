@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,10 @@ namespace Fluence.Wpf.Theming
         /// <summary>
         /// Returns an <see cref="AccentPalette"/> for the given <paramref name="intent"/>.
         /// </summary>
+        /// <param name="intent">The <see cref="AccentIntent"/> to resolve.</param>
         internal static AccentPalette Resolve(AccentIntent intent)
         {
-            if (intent.IsSystem && RegistryHelper.TryGetAccentPalette(out Color[]? p) && p is not null && p.Length >= 7)
+            if (intent.IsSystem && RegistryHelper.TryGetAccentPalette(out Color[]? p) && p?.Length >= 7)
             {
                 // OS palette order: [Light3, Light2, Light1, Accent, Dark1, Dark2, Dark3, (8th reserved)].
                 // The length guard is defensive: a short or malformed registry blob falls through to

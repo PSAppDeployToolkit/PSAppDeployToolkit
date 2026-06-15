@@ -45,7 +45,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Menu_StyleApplies_BackgroundIsTransparent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -70,7 +70,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Menu_StyleApplies_BorderThicknessIsZero()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -92,7 +92,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Menu_AcceptsMenuItemItems()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -118,7 +118,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Menu_ThemeCycle_BackgroundRemainsTransparent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

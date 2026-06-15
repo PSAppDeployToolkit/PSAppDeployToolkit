@@ -29,6 +29,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -40,7 +41,7 @@ namespace Fluence.Wpf.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
@@ -52,21 +53,21 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RepeatedThemeSwitches_NoDictionaryAccumulation()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 int baselineCount = app.Resources.MergedDictionaries.Count;
 
                 for (int i = 0; i < 10; i++)
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 }
 
                 int finalCount = app.Resources.MergedDictionaries.Count;
                 Assert.AreEqual(baselineCount, finalCount,
-                    string.Format("Dictionary count should remain at {0}, but was {1} after 20 switches",
+                    string.Format(CultureInfo.InvariantCulture, "Dictionary count should remain at {0}, but was {1} after 20 switches",
                         baselineCount, finalCount));
             });
         }
@@ -74,13 +75,13 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ThemeSlotIsReused()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 int countAfterFirst = app.Resources.MergedDictionaries.Count;
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
                 int countAfterSecond = app.Resources.MergedDictionaries.Count;
 
                 Assert.AreEqual(countAfterFirst, countAfterSecond,
@@ -91,16 +92,16 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void AllThemeVariants_SameSlotCount()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 int lightCount = app.Resources.MergedDictionaries.Count;
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: false);
                 int darkCount = app.Resources.MergedDictionaries.Count;
 
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: false);
                 int hcCount = app.Resources.MergedDictionaries.Count;
 
                 Assert.AreEqual(lightCount, darkCount, "Light and Dark should use same slot count");
@@ -111,10 +112,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FirstApply_LoadsThreeDictionaries()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
 
                 Assert.AreEqual(3, app.Resources.MergedDictionaries.Count,
                     "Initial Apply should load exactly 3 dictionaries ([0] computed, [1] Typography, [2] Generic).");
@@ -124,10 +125,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Apply_UsesThreeSlots_ReplacesComputedSlotOnChange()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Collection<ResourceDictionary> dicts = app.Resources.MergedDictionaries;
                 Assert.AreEqual(3, dicts.Count, "Three slots after the first Apply.");
 
@@ -135,7 +136,7 @@ namespace Fluence.Wpf.Tests
                 object typography = dicts[1];
                 object generic = dicts[2];
 
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
 
                 Assert.AreNotSame(slot0, dicts[0], "Computed slot [0] is replaced on theme change.");
                 Assert.AreSame(typography, dicts[1], "Typography slot [1] identity is stable across theme change.");
@@ -146,10 +147,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void AccentUpdate_DoesNotChangeDictionaryCount()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 int countBefore = app.Resources.MergedDictionaries.Count;
 
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
@@ -163,12 +164,12 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void AllBrushKeys_Resolve_AfterLightDarkHcCycle()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
 
                 string[] keyBrushNames =
                 [
@@ -176,7 +177,7 @@ namespace Fluence.Wpf.Tests
                     "AccentFillColorDefaultBrush",
                     "SubtleFillColorSecondaryBrush",
                     "ControlStrokeColorDefaultBrush",
-                    "CardBackgroundFillColorDefaultBrush"
+                    "CardBackgroundFillColorDefaultBrush",
                 ];
 
                 foreach (string? key in keyBrushNames)
@@ -190,10 +191,10 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InitialApply_SlotsAreComputedTypographyGeneric_InOrder()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application app = Application.Current;
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, false);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 Collection<ResourceDictionary> dictionaries = app.Resources.MergedDictionaries;
 
                 Assert.AreEqual(3, dictionaries.Count);

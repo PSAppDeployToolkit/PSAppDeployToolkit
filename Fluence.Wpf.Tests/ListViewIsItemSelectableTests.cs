@@ -71,13 +71,13 @@ namespace Fluence.Wpf.Tests
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
             application?.Resources.MergedDictionaries.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
-            ResourceDictionary? genericDictionary = dictionaries?.Count > 0 ? dictionaries[dictionaries.Count - 1] : null;
+            ResourceDictionary? genericDictionary = dictionaries?.Count > 0 ? dictionaries[^1] : null;
 
             ResourceDictionary demoShared = new()
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
             application?.Resources.MergedDictionaries.Add(demoShared);
 
@@ -86,13 +86,13 @@ namespace Fluence.Wpf.Tests
 
         private static void DrainDispatcher(Dispatcher dispatcher)
         {
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
         }
 
         [TestMethod]
         public void IsItemSelectable_DefaultIsTrue()
         {
-            RunOnFreshStaThread(() =>
+            RunOnFreshStaThread(static () =>
             {
                 FluenceListView lv = new();
                 Assert.IsTrue(lv.IsItemSelectable);
@@ -102,11 +102,11 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void IsItemSelectable_False_ClearsSelectionWhenSet()
         {
-            RunOnFreshStaThread(() =>
+            RunOnFreshStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
                 FluenceListView lv = new() { Width = 260, Height = 120 };
                 _ = lv.Items.Add("a");
@@ -140,17 +140,17 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void IsItemSelectable_False_SelectedIndexStaysMinusOne_AfterDirectSet()
         {
-            RunOnFreshStaThread(() =>
+            RunOnFreshStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
                 FluenceListView lv = new()
                 {
                     Width = 260,
                     Height = 120,
-                    IsItemSelectable = false
+                    IsItemSelectable = false,
                 };
                 _ = lv.Items.Add("a");
 
@@ -179,17 +179,17 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void IsItemSelectable_False_ContainerIsNotFocusable()
         {
-            RunOnFreshStaThread(() =>
+            RunOnFreshStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
                 FluenceListView lv = new()
                 {
                     Width = 260,
                     Height = 120,
-                    IsItemSelectable = false
+                    IsItemSelectable = false,
                 };
                 _ = lv.Items.Add("a");
 
@@ -219,17 +219,17 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void IsItemSelectable_True_ContainerIsFocusable()
         {
-            RunOnFreshStaThread(() =>
+            RunOnFreshStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
                 FluenceListView lv = new()
                 {
                     Width = 260,
                     Height = 120,
-                    IsItemSelectable = true
+                    IsItemSelectable = true,
                 };
                 _ = lv.Items.Add("a");
 
@@ -259,7 +259,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ItemAnimationsEnabled_IndependentOfIsItemSelectable()
         {
-            RunOnFreshStaThread(() =>
+            RunOnFreshStaThread(static () =>
             {
                 FluenceListView lv = new() { IsItemSelectable = false, ItemAnimationsEnabled = true };
                 Assert.IsFalse(lv.IsItemSelectable);

@@ -37,6 +37,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
     /// <remarks>
     /// Initializes a new task with the given title.
     /// </remarks>
+    /// <param name="title">The title of the task.</param>
     public partial class TaskItemViewModel(string title) : ObservableObject
     {
         /// <summary>

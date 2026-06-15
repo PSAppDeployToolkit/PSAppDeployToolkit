@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ProfilePicture),
                 typeof(ImageSource),
                 typeof(PersonPicture),
-                new FrameworkPropertyMetadata(null, OnProfilePictureChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnProfilePictureChanged));
 
         /// <summary>
         /// Gets or sets the profile photo image source.
@@ -160,7 +160,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsGroup),
                 typeof(bool),
                 typeof(PersonPicture),
-                new FrameworkPropertyMetadata(false, OnIsGroupChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsGroupChanged));
 
         /// <summary>
         /// Gets or sets whether the avatar represents a group rather than an individual.
@@ -200,7 +200,7 @@ namespace Fluence.Wpf.Controls
                 nameof(BadgeGlyph),
                 typeof(string),
                 typeof(PersonPicture),
-                new FrameworkPropertyMetadata(null, OnBadgeChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnBadgeChanged));
 
         /// <summary>
         /// Gets or sets a Segoe Fluent Icons glyph shown in the badge.
@@ -315,7 +315,7 @@ namespace Fluence.Wpf.Controls
                     _badgeText.Text = string.Empty;
                 }
             }
-            _ = VisualStateManager.GoToState(this, hasBadge ? StateBadgeWithoutImageSource : StateNoBadge, true);
+            _ = VisualStateManager.GoToState(this, hasBadge ? StateBadgeWithoutImageSource : StateNoBadge, useTransitions: true);
         }
 
         private string? GetInitials()
@@ -323,13 +323,13 @@ namespace Fluence.Wpf.Controls
             // Explicit initials take precedence.
             if (!string.IsNullOrWhiteSpace(Initials))
             {
-                return Initials.Length > 2 ? Initials.Substring(0, 2).ToUpperInvariant() : Initials.ToUpperInvariant();
+                return Initials.Length > 2 ? Initials[..2].ToUpperInvariant() : Initials.ToUpperInvariant();
             }
 
             // Derive from DisplayName: take first character of up to two words.
             string[] parts = (DisplayName ?? string.Empty).Trim().Split(InitialsSeparators, StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 1
-                ? (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpperInvariant()
+                ? (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpperInvariant()
                 : parts.Length == 1
                 ? parts[0][0].ToString().ToUpperInvariant()
                 : null;

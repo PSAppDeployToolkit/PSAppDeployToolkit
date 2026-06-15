@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ namespace Fluence.Wpf.Theming
         // Color keys whose canonical brush twin drops the "Color" suffix (e.g. ApplicationBackgroundColor
         // -> ApplicationBackgroundBrush, not ApplicationBackgroundColorBrush). BrushFactory skips the
         // auto-twin for these keys; SpecialBrushes.Add emits the correctly-named brush instead.
-        private static readonly System.Collections.Generic.HashSet<string> NoAutoTwinKeys =
+        private static readonly HashSet<string> NoAutoTwinKeys =
             new(System.StringComparer.Ordinal) { "ApplicationBackgroundColor" };
 
         /// <summary>
@@ -50,6 +50,7 @@ namespace Fluence.Wpf.Theming
         /// Color keys in the suppress-auto-twin list are published as Color tokens only; their
         /// brush twin uses an irregular name and is emitted by <see cref="SpecialBrushes"/>.
         /// </summary>
+        /// <param name="colors">The dictionary of color tokens to build brushes for.</param>
         internal static ResourceDictionary Build(IReadOnlyDictionary<string, Color> colors)
         {
             ResourceDictionary d = [];

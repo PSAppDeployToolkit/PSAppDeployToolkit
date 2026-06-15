@@ -36,21 +36,21 @@ namespace Fluence.Wpf
         /// <summary>
         /// No themed border styling.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// Card-style border and background.
         /// </summary>
-        Card,
+        Card = 1,
 
         /// <summary>
         /// Subtle outline suitable for grouped content.
         /// </summary>
-        Subtle,
+        Subtle = 2,
 
         /// <summary>
         /// Thin divider line between sections.
         /// </summary>
-        Divider,
+        Divider = 3,
     }
 }

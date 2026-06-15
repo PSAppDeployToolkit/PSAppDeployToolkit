@@ -48,9 +48,12 @@ namespace Fluence.Wpf.Theming
         /// Adds and/or overrides the special brushes and shared resources on
         /// <paramref name="dict"/>. <paramref name="colors"/> is the computed color map for the
         /// resolved <paramref name="theme"/>; brush colors are resolved against it so they track
-        /// the active palette without any <see cref="System.Windows.DynamicResourceExtension"/>
+        /// the active palette without any <see cref="DynamicResourceExtension"/>
         /// indirection.
         /// </summary>
+        /// <param name="dict">The resource dictionary to populate.</param>
+        /// <param name="colors">The computed color map for the resolved theme.</param>
+        /// <param name="theme">The resolved application theme.</param>
         internal static void Add(ResourceDictionary dict, IReadOnlyDictionary<string, Color> colors, ApplicationTheme theme)
         {
             AddSharedTokens(dict);
@@ -89,6 +92,7 @@ namespace Fluence.Wpf.Theming
         /// <summary>
         /// Theme-independent layout, shadow, and focus tokens. These never change with theme or accent.
         /// </summary>
+        /// <param name="dict">The resource dictionary to populate.</param>
         private static void AddSharedTokens(ResourceDictionary dict)
         {
             dict["ControlCornerRadius"] = new CornerRadius(4);
@@ -113,7 +117,7 @@ namespace Fluence.Wpf.Theming
         /// <summary>
         /// Builds the two-border control focus visual (outer + inner stroke, 4 px radius),
         /// the WinUI 3 <c>DefaultControlFocusVisualStyle</c>. The border brushes are
-        /// resolved via <see cref="System.Windows.DynamicResourceExtension"/> so they re-evaluate
+        /// resolved via <see cref="DynamicResourceExtension"/> so they re-evaluate
         /// against whichever computed dictionary is active.
         /// </summary>
         private static Style BuildControlFocusVisualStyle()
@@ -169,6 +173,8 @@ namespace Fluence.Wpf.Theming
         /// stop colors come from the computed control-stroke tokens. Definitions (start/end points,
         /// transform, stop offsets) match the WinUI 3 elevation borders.
         /// </summary>
+        /// <param name="dict">The resource dictionary to populate.</param>
+        /// <param name="colors">The computed color map for the resolved theme.</param>
         private static void AddElevationBorderBrushes(ResourceDictionary dict, IReadOnlyDictionary<string, Color> colors)
         {
             // ControlElevationBorderBrush / TextControlElevationBorderBrush: identical absolute
@@ -201,6 +207,8 @@ namespace Fluence.Wpf.Theming
         /// vertically about its centre, with stops at 0.33 (<paramref name="stop33"/>) and 1.0
         /// (<paramref name="stop100"/>).
         /// </summary>
+        /// <param name="stop33">The color for the 0.33 stop.</param>
+        /// <param name="stop100">The color for the 1.0 stop.</param>
         private static LinearGradientBrush AbsoluteFlippedGradient(Color stop33, Color stop100)
         {
             ScaleTransform flip = new() { CenterY = 0.5, ScaleY = -1 };
@@ -226,6 +234,7 @@ namespace Fluence.Wpf.Theming
         /// the computed palette, not the HC SystemColors). A re-Apply on <c>WM_SETTINGCHANGE</c>
         /// refreshes the snapshot when the HC variant changes.
         /// </summary>
+        /// <param name="dict">The resource dictionary to populate.</param>
         private static void AddHighContrastBrushes(ResourceDictionary dict)
         {
             Color window = SystemColors.WindowColor;
@@ -401,6 +410,7 @@ namespace Fluence.Wpf.Theming
         /// SystemColor aliases consumed by the WinUI Gallery color guidance page. These resolve to
         /// live <see cref="SystemColors"/> in every theme (bound to SystemColors keys unconditionally).
         /// </summary>
+        /// <param name="dict">The resource dictionary to populate.</param>
         private static void AddSystemColorAliases(ResourceDictionary dict)
         {
             dict["SystemColorWindowTextColorBrush"] = Solid(SystemColors.WindowTextColor);

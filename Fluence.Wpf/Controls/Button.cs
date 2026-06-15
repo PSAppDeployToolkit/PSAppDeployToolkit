@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(Button),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the icon displayed in the button.

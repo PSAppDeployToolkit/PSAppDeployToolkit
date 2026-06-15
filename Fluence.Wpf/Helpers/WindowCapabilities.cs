@@ -34,6 +34,11 @@ namespace Fluence.Wpf.Helpers
     /// snapshot for the duration of one <c>ApplyWindowShell</c> pass rather than querying the OS
     /// on every individual attribute write.
     /// </summary>
+    /// <param name="supportsSystemBackdropType">Whether the current OS build supports the <c>SystemBackdropType</c> attribute.</param>
+    /// <param name="supportsMicaEffect">Whether the current OS build supports the legacy Mica effect.</param>
+    /// <param name="supportsRoundedCorners">Whether the current OS build supports rounded corners.</param>
+    /// <param name="supportsCaptionColor">Whether the current OS build supports setting the caption color.</param>
+    /// <param name="supportsBorderColor">Whether the current OS build supports setting the border color.</param>
     internal sealed class WindowCapabilities(
         bool supportsSystemBackdropType,
         bool supportsMicaEffect,
@@ -48,7 +53,7 @@ namespace Fluence.Wpf.Helpers
         /// <see langword="true"/>, the canonical <c>DWMSBT_*</c> values must be used instead of
         /// the legacy <c>DWMWA_MICA_EFFECT</c> attribute.
         /// </summary>
-        internal bool SupportsSystemBackdropType { get; private set; } = supportsSystemBackdropType;
+        internal bool SupportsSystemBackdropType { get; } = supportsSystemBackdropType;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports the legacy Mica toggle
@@ -58,28 +63,28 @@ namespace Fluence.Wpf.Helpers
         /// <see langword="true"/>, <see cref="SupportsSystemBackdropType"/> wins and this is
         /// <see langword="false"/>.
         /// </summary>
-        internal bool SupportsMicaEffect { get; private set; } = supportsMicaEffect;
+        internal bool SupportsMicaEffect { get; } = supportsMicaEffect;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports the DWM rounded-corner preference
         /// (<c>DWMWA_WINDOW_CORNER_PREFERENCE</c>, attribute 33). <see langword="true"/> on any
         /// Windows 11 build (build 22000+); <see langword="false"/> on Windows 10.
         /// </summary>
-        internal bool SupportsRoundedCorners { get; private set; } = supportsRoundedCorners;
+        internal bool SupportsRoundedCorners { get; } = supportsRoundedCorners;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports setting the DWM caption color via
         /// <c>DWMWA_CAPTION_COLOR</c> (attribute 35). <see langword="true"/> on any Windows 11
         /// build; <see langword="false"/> on Windows 10.
         /// </summary>
-        internal bool SupportsCaptionColor { get; private set; } = supportsCaptionColor;
+        internal bool SupportsCaptionColor { get; } = supportsCaptionColor;
 
         /// <summary>
         /// Gets a value indicating whether the OS supports setting the DWM border color via
         /// <c>DWMWA_BORDER_COLOR</c> (attribute 34). <see langword="true"/> on any Windows 11
         /// build; <see langword="false"/> on Windows 10.
         /// </summary>
-        internal bool SupportsBorderColor { get; private set; } = supportsBorderColor;
+        internal bool SupportsBorderColor { get; } = supportsBorderColor;
 
         /// <summary>
         /// Gets a <see cref="WindowCapabilities"/> snapshot for the current OS build by

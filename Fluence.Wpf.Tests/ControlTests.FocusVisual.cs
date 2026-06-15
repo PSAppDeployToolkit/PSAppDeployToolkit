@@ -56,14 +56,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_DefaultControlFocusVisualStyle_ResolvesInAllThemes()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
                 {
                     _ = MergeGenericDictionary(app);
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
                     Style? style = app?.TryFindResource("DefaultControlFocusVisualStyle") as Style;
                     Assert.IsNotNull(style,
@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_PerControlKeys_RemovedFromDictionary()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -96,7 +96,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_Button_FocusVisualStyleIsSharedResource()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -118,7 +118,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_CheckBox_FocusVisualStyleIsSharedResource()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -140,7 +140,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_RadioButton_FocusVisualStyleIsSharedResource()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_ToggleButton_FocusVisualStyleIsSharedResource()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -184,7 +184,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_TabItem_UsesCollectionFocusStyleWithRightBreathingRoom()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -220,7 +220,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabControl_TabKeySelectsNextHeaderThenContinuesOut()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -228,7 +228,7 @@ namespace Fluence.Wpf.Tests
                 WpfTabControl tabControl = new()
                 {
                     Width = 320,
-                    Height = 140
+                    Height = 140,
                 };
                 _ = tabControl.Items.Add(new WpfTabItem { Header = "First", Content = new WpfTextBlock { Text = "One" } });
                 _ = tabControl.Items.Add(new WpfTabItem { Header = "Second", Content = new WpfTextBlock { Text = "Two" } });
@@ -288,7 +288,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabView_TabKeySelectsNextHeaderThenContinuesOut()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -299,7 +299,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 340,
                     Height = 150,
-                    IsAddTabButtonVisible = false
+                    IsAddTabButtonVisible = false,
                 };
                 _ = tabView.Items.Add(first);
                 _ = tabView.Items.Add(second);
@@ -367,7 +367,7 @@ namespace Fluence.Wpf.Tests
             KeyEventArgs args = new(Keyboard.PrimaryDevice, source, 0, Key.Tab)
             {
                 RoutedEvent = UIElement.PreviewKeyDownEvent,
-                Source = target
+                Source = target,
             };
             target.RaiseEvent(args);
             return args;
@@ -376,7 +376,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FocusVisual_NavigationViewItem_PointerInvokeDoesNotMoveKeyboardFocus()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -388,7 +388,7 @@ namespace Fluence.Wpf.Tests
                     Width = 320,
                     Height = 220,
                     PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
-                    SelectionFollowsFocus = false
+                    SelectionFollowsFocus = false,
                 };
                 _ = nav.Items.Add(first);
                 _ = nav.Items.Add(second);
@@ -411,7 +411,7 @@ namespace Fluence.Wpf.Tests
                         MouseButton.Left)
                     {
                         RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
-                        Source = second
+                        Source = second,
                     };
                     second.RaiseEvent(mouseArgs);
                     DrainDispatcher(w.Dispatcher);

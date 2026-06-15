@@ -27,4 +27,19 @@
     <Resource Include="Resources\SegoeFluentIcons.tsv" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.151">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MeziantouPolyfill_IncludedPolyfills>
+      M:System.String.Replace|
+      T:System.Threading.Lock|
+    </MeziantouPolyfill_IncludedPolyfills>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
 </Project>

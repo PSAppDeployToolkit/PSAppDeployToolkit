@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Tests
             ApplicationAccentColorManager.ResetForTesting();
             app?.Resources.MergedDictionaries.Clear();
 
-            ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+            ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
         }
 
         // ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ControlCornerRadius_PresentInLightTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -90,7 +90,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ControlCornerRadius_PresentInDarkTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Dark, app);
@@ -104,7 +104,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ControlCornerRadius_PresentInHighContrastTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.HighContrast, app);
@@ -122,7 +122,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void OverlayCornerRadius_PresentInLightTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void OverlayCornerRadius_PresentInDarkTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Dark, app);
@@ -150,7 +150,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void OverlayCornerRadius_PresentInHighContrastTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.HighContrast, app);
@@ -168,7 +168,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FlyoutShadowEffect_PresentInAllThemes()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
@@ -186,7 +186,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FlyoutShadowEffect_HasExpectedProperties()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -206,7 +206,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DefaultControlFocusVisualStyle_PresentInAllThemes()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
@@ -228,14 +228,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void CornerRadiusTokens_SurviveFullThemeCycle()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     object? cr = app?.TryFindResource("ControlCornerRadius");
                     object? or_ = app?.TryFindResource("OverlayCornerRadius");
                     Assert.IsNotNull(cr, "ControlCornerRadius must survive theme switch to: " + theme);
@@ -255,7 +255,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DefaultCollectionFocusVisualStyle_PresentInLightTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -270,7 +270,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DefaultCollectionFocusVisualStyle_PresentInDarkTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Dark, app);
@@ -283,7 +283,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DefaultCollectionFocusVisualStyle_PresentInHighContrastTheme()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.HighContrast, app);

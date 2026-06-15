@@ -26,13 +26,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Fluence.Wpf.Demo.Mvvm.ViewModels
 {
@@ -91,7 +92,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         {
             get
             {
-                int total = _allTasks.Count; int done = _allTasks.Count(t => t.IsCompleted);
+                int total = _allTasks.Count; int done = _allTasks.Count(static t => t.IsCompleted);
                 return total == 0 ? "No tasks" : string.Format(CultureInfo.CurrentCulture, "{0} of {1} completed", done, total);
             }
         }
@@ -100,7 +101,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         /// Progress bar value 0-100 based on completion ratio.
         /// </summary>
         public double ProgressValue => _allTasks.Count != 0
-            ? (double)_allTasks.Count(t => t.IsCompleted) / _allTasks.Count * 100
+            ? (double)_allTasks.Count(static t => t.IsCompleted) / _allTasks.Count * 100
             : 0;
 
         // ---------------------------------------------------------------
@@ -164,6 +165,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         /// Removes a specific task. Bound in the DataTemplate via
         /// <c>RelativeSource AncestorType=Window</c> with <c>CommandParameter="{Binding}"</c>.
         /// </summary>
+        /// <param name="item">The task item to remove.</param>
         [RelayCommand]
         private void Delete(TaskItemViewModel item)
         {
@@ -178,7 +180,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         [RelayCommand]
         private void ClearCompleted()
         {
-            foreach (TaskItemViewModel t in _allTasks.Where(t => t.IsCompleted).ToList())
+            foreach (TaskItemViewModel t in _allTasks.Where(static t => t.IsCompleted).ToList())
             {
                 t.PropertyChanged -= OnItemPropertyChanged;
                 _ = _allTasks.Remove(t);
@@ -199,7 +201,7 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         // Propagate IsCompleted change on any item → rebuild filter + derived props.
         private void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(TaskItemViewModel.IsCompleted))
+            if (nameof(TaskItemViewModel.IsCompleted).Equals(e.PropertyName, StringComparison.Ordinal))
             {
                 Refresh();
             }
@@ -212,8 +214,8 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
         {
             IEnumerable<TaskItemViewModel> view = ActiveFilter switch
             {
-                FilterMode.Pending => _allTasks.Where(t => !t.IsCompleted),
-                FilterMode.Completed => _allTasks.Where(t => t.IsCompleted),
+                FilterMode.Pending => _allTasks.Where(static t => !t.IsCompleted),
+                FilterMode.Completed => _allTasks.Where(static t => t.IsCompleted),
                 FilterMode.All or _ => _allTasks,
             };
             DisplayedTasks = new ObservableCollection<TaskItemViewModel>(view);

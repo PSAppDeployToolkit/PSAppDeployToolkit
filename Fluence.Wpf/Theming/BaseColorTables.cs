@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@ namespace Fluence.Wpf.Theming
         /// Returns a dictionary of Color keys for the given <paramref name="theme"/>,
         /// combining shared tokens and per-theme overrides.
         /// </summary>
+        /// <param name="theme">The theme to load.</param>
         internal static Dictionary<string, Color> Load(ApplicationTheme theme)
         {
             Dictionary<string, Color> map = new(StringComparer.Ordinal);
@@ -63,6 +64,7 @@ namespace Fluence.Wpf.Theming
         /// defined here in code rather than duplicated across the per-theme XAML tables. Seeded
         /// before the per-theme table so a future theme could still override them.
         /// </summary>
+        /// <param name="map">The color table to seed.</param>
         private static void AddSharedColors(Dictionary<string, Color> map)
         {
             map["WindowCloseButtonBackgroundPointerOver"] = Color.FromArgb(0xFF, 0xC4, 0x2B, 0x1C);

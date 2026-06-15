@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_DefaultStyle_Applies()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -68,7 +68,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_DefaultMaxRating_GeneratesFiveStars()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -89,7 +89,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_Value_UpdatesFilledStars()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -106,7 +106,7 @@ namespace Fluence.Wpf.Tests
                 int filledCount = 0;
                 foreach (WpfTextBlock star in panel.Children)
                 {
-                    if (star.Text == "\uE735")
+                    if (string.Equals(star.Text, "\uE735", System.StringComparison.Ordinal))
                     {
                         filledCount++;
                     }
@@ -121,7 +121,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_FilledStars_UseAccentBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -150,7 +150,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_EmptyStars_UseSecondaryTextBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -178,7 +178,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_Caption_ShowsWhenSet()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -201,7 +201,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_Caption_CollapsedWhenEmpty()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -222,7 +222,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_Value_CoercedToMaxRating()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -245,7 +245,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RatingControl_ThemeCycle_StyleRemainsApplied()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

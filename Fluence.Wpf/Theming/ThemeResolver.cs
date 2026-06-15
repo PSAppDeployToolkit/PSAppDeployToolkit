@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using Fluence.Wpf.Helpers;
 
 namespace Fluence.Wpf.Theming
@@ -41,6 +42,7 @@ namespace Fluence.Wpf.Theming
         /// When <paramref name="theme"/> is <see cref="ApplicationTheme.Auto"/> the active Windows
         /// theme file and registry settings are consulted to determine Light, Dark, or HighContrast.
         /// </summary>
+        /// <param name="theme">The theme to resolve.</param>
         internal static ApplicationTheme Resolve(ApplicationTheme theme)
         {
             if (theme != ApplicationTheme.Auto)
@@ -58,28 +60,28 @@ namespace Fluence.Wpf.Theming
             // named themes (themea.theme ... themed.theme) and HC variants are recognised.
             // If the filename is unknown or absent, fall through to AppsUseLightTheme.
             string? themeFile = RegistryHelper.GetCurrentThemeFileNameLowerInvariant();
-            if (themeFile is not null && themeFile.Length > 0)
+            if (themeFile?.Length > 0)
             {
-                if (themeFile.Contains("hc1")
-                    || themeFile.Contains("hc2")
-                    || themeFile.Contains("hcblack")
-                    || themeFile.Contains("hcwhite"))
+                if (themeFile.Contains("hc1", StringComparison.Ordinal)
+                    || themeFile.Contains("hc2", StringComparison.Ordinal)
+                    || themeFile.Contains("hcblack", StringComparison.Ordinal)
+                    || themeFile.Contains("hcwhite", StringComparison.Ordinal))
                 {
                     // Defensive backstop in case SystemParameters.HighContrast is unset
                     // mid-transition: a Windows HC theme filename always means HighContrast.
                     return ApplicationTheme.HighContrast;
                 }
-                if (themeFile.Contains("dark"))
+                if (themeFile.Contains("dark", StringComparison.Ordinal))
                 {
                     return ApplicationTheme.Dark;
                 }
-                if (themeFile.Contains("aero")
-                    || themeFile.Contains("basic")
-                    || themeFile.Contains("aerolite")
-                    || themeFile.StartsWith("themea")
-                    || themeFile.StartsWith("themeb")
-                    || themeFile.StartsWith("themec")
-                    || themeFile.StartsWith("themed"))
+                if (themeFile.Contains("aero", StringComparison.Ordinal)
+                    || themeFile.Contains("basic", StringComparison.Ordinal)
+                    || themeFile.Contains("aerolite", StringComparison.Ordinal)
+                    || themeFile.StartsWith("themea", StringComparison.Ordinal)
+                    || themeFile.StartsWith("themeb", StringComparison.Ordinal)
+                    || themeFile.StartsWith("themec", StringComparison.Ordinal)
+                    || themeFile.StartsWith("themed", StringComparison.Ordinal))
                 {
                     return ApplicationTheme.Light;
                 }

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,10 @@ namespace Fluence.Wpf.Theming
         /// </summary>
         internal static event EventHandler<EventArgs>? Published;
 
-        /// <summary>Sets the accent intent that the next <see cref="Apply"/> call will use.</summary>
+        /// <summary>
+        /// Sets the accent intent that the next <see cref="Apply"/> call will use.
+        /// </summary>
+        /// <param name="intent">The accent intent to set.</param>
         internal static void SetAccentIntent(AccentIntent intent)
         {
             _intent = intent;
@@ -81,6 +84,7 @@ namespace Fluence.Wpf.Theming
         /// Resolves the theme and accent, builds the computed dictionary, and publishes it into
         /// application resources.
         /// </summary>
+        /// <param name="request">The requested application theme.</param>
         internal static void Apply(ApplicationTheme request)
         {
             ApplicationTheme theme = ThemeResolver.Resolve(request);
@@ -90,7 +94,7 @@ namespace Fluence.Wpf.Theming
 
             ResourceDictionary dict = BuildComputedDictionary(theme, palette);
             Publish(dict);
-            Published?.Invoke(null, EventArgs.Empty);
+            Published?.Invoke(sender: null, EventArgs.Empty);
         }
 
         /// <summary>
@@ -102,6 +106,8 @@ namespace Fluence.Wpf.Theming
         /// (elevation gradients, High-Contrast SystemColors brushes, ScrollBar track, accent
         /// overrides) plus the shared layout/shadow/focus tokens. No brush XAML is merged.
         /// </summary>
+        /// <param name="theme">The application theme to use.</param>
+        /// <param name="palette">The accent palette to use.</param>
         private static ResourceDictionary BuildComputedDictionary(ApplicationTheme theme, AccentPalette palette)
         {
             Dictionary<string, Color> colors = ColorMap.Build(theme, palette, deterministicChrome: _deterministicChromeForTesting);
@@ -128,11 +134,12 @@ namespace Fluence.Wpf.Theming
         /// Runs the same <see cref="ColorMap.Build"/> -> <see cref="BrushFactory.Build"/> ->
         /// <see cref="SpecialBrushes.Add"/> sequence as the live pipeline so the snapshot stays
         /// faithful to runtime. It deliberately omits <c>AcrylicNoiseBrush</c> (a runtime-generated
-        /// <see cref="System.Windows.Media.ImageBrush"/>), which the live
+        /// <see cref="ImageBrush"/>), which the live
         /// <see cref="BuildComputedDictionary"/> appends after the fact. Only
         /// <see cref="ApplicationTheme.Light"/> and <see cref="ApplicationTheme.Dark"/> are
         /// supported; high contrast is out of scope for design-time previews.
         /// </remarks>
+        /// <param name="theme">The application theme to use.</param>
         internal static ResourceDictionary BuildStandalone(ApplicationTheme theme)
         {
             AccentPalette palette = AccentResolver.Resolve(AccentIntent.FromCustom(Color.FromRgb(0x00, 0x78, 0xD4)));
@@ -175,7 +182,7 @@ namespace Fluence.Wpf.Theming
             for (int i = dicts.Count - 1; i >= 0; i--)
             {
                 string s = dicts[i].Source?.OriginalString.ToLowerInvariant() ?? string.Empty;
-                if (s.Contains("fluence.wpf;component") && s.Contains("themes/"))
+                if (s.Contains("fluence.wpf;component", StringComparison.Ordinal) && s.Contains("themes/", StringComparison.Ordinal))
                 {
                     dicts.RemoveAt(i);
                 }
@@ -189,6 +196,7 @@ namespace Fluence.Wpf.Theming
         /// rebuild would read live OS personalization (HKCU DWM ColorPrevalence / AccentColor) and
         /// drift on machines that show the accent color on title bars.
         /// </summary>
+        /// <param name="enabled">Whether to enable deterministic chrome for testing.</param>
         internal static void SetDeterministicChromeForTesting(bool enabled)
         {
             _deterministicChromeForTesting = enabled;

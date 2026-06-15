@@ -56,7 +56,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsLastItem),
                 typeof(bool),
                 typeof(BreadcrumbBarItem),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsLastItem"/> dependency property.
@@ -80,7 +80,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsPressed),
                 typeof(bool),
                 typeof(BreadcrumbBarItem),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsPressed"/> dependency property.

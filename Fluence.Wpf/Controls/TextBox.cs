@@ -91,7 +91,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PlaceholderEnabled),
                 typeof(bool),
                 typeof(TextBox),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets whether the placeholder text is enabled.
@@ -110,7 +110,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(TextBox),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the icon displayed in the text box.
@@ -148,7 +148,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ClearButtonEnabled),
                 typeof(bool),
                 typeof(TextBox),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets whether the clear button is shown when the text box has content and focus.
@@ -294,7 +294,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
             counter.Visibility = Visibility.Visible;
-            counter.Text = string.Format(CultureInfo.CurrentCulture, "{0}/{1}", Text is not null ? Text.Length : 0, MaxLength);
+            counter.Text = string.Format(CultureInfo.CurrentCulture, "{0}/{1}", Text?.Length ?? 0, MaxLength);
         }
 
         private void UpdateHelperText()

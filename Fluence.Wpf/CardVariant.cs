@@ -36,20 +36,20 @@ namespace Fluence.Wpf
         /// <summary>
         /// Default card elevation and stroke.
         /// </summary>
-        Default,
+        Default = 0,
 
         /// <summary>
         /// Outlined card with transparent fill.
         /// </summary>
-        Outlined,
+        Outlined = 1,
         /// <summary>
         /// Solid filled card surface.
         /// </summary>
-        Filled,
+        Filled = 2,
 
         /// <summary>
         /// Low-contrast subtle card surface.
         /// </summary>
-        Subtle,
+        Subtle = 3,
     }
 }

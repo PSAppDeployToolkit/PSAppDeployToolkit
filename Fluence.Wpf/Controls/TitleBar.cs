@@ -91,7 +91,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Identifies the <see cref="IsBackButtonVisible"/> dependency property.
@@ -101,7 +101,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsBackButtonVisible),
                 typeof(bool),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsPaneToggleButtonVisible"/> dependency property.
@@ -111,7 +111,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsPaneToggleButtonVisible),
                 typeof(bool),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsCompact"/> dependency property.
@@ -121,7 +121,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsCompact),
                 typeof(bool),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="LeftHeader"/> dependency property.
@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Controls
                 nameof(LeftHeader),
                 typeof(object),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Identifies the <see cref="RightHeader"/> dependency property.
@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Controls
                 nameof(RightHeader),
                 typeof(object),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Identifies the <see cref="CustomContent"/> dependency property.
@@ -151,7 +151,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CustomContent),
                 typeof(object),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null, OnCustomContentChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnCustomContentChanged));
 
         /// <summary>
         /// Identifies the <see cref="BackCommand"/> dependency property.
@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Controls
                 nameof(BackCommand),
                 typeof(ICommand),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null, OnBackCommandChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnBackCommandChanged));
 
         /// <summary>
         /// Identifies the <see cref="BackCommandParameter"/> dependency property.
@@ -171,7 +171,7 @@ namespace Fluence.Wpf.Controls
                 nameof(BackCommandParameter),
                 typeof(object),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null, OnBackCommandParameterChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnBackCommandParameterChanged));
 
         /// <summary>
         /// Identifies the <see cref="PaneToggleCommand"/> dependency property.
@@ -181,7 +181,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PaneToggleCommand),
                 typeof(ICommand),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null, OnPaneToggleCommandChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnPaneToggleCommandChanged));
 
         /// <summary>
         /// Identifies the <see cref="PaneToggleCommandParameter"/> dependency property.
@@ -191,9 +191,9 @@ namespace Fluence.Wpf.Controls
                 nameof(PaneToggleCommandParameter),
                 typeof(object),
                 typeof(TitleBar),
-                new FrameworkPropertyMetadata(null, OnPaneToggleCommandParameterChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnPaneToggleCommandParameterChanged));
 
-        #endregion
+        #endregion Dependency properties
 
         #region Static constructor
 
@@ -207,7 +207,7 @@ namespace Fluence.Wpf.Controls
                 new FrameworkPropertyMetadata(typeof(TitleBar)));
         }
 
-        #endregion
+        #endregion Static constructor
 
         #region Constructor
 
@@ -220,7 +220,7 @@ namespace Fluence.Wpf.Controls
             Unloaded += OnUnloaded;
         }
 
-        #endregion
+        #endregion Constructor
 
         #region CLR events
 
@@ -234,7 +234,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         public event EventHandler? PaneToggleRequested;
 
-        #endregion
+        #endregion CLR events
 
         #region CLR property wrappers
 
@@ -359,7 +359,7 @@ namespace Fluence.Wpf.Controls
             set => SetValue(PaneToggleCommandParameterProperty, value);
         }
 
-        #endregion
+        #endregion CLR property wrappers
 
         #region Template application
 
@@ -392,7 +392,7 @@ namespace Fluence.Wpf.Controls
             }
         }
 
-        #endregion
+        #endregion Template application
 
         #region Protected virtual event raisers
 
@@ -414,7 +414,7 @@ namespace Fluence.Wpf.Controls
             PaneToggleRequested?.Invoke(this, e);
         }
 
-        #endregion
+        #endregion Protected virtual event raisers
 
         #region DP changed callbacks
 
@@ -459,7 +459,7 @@ namespace Fluence.Wpf.Controls
             ((TitleBar)d).UpdatePaneToggleButtonCommandState();
         }
 
-        #endregion
+        #endregion DP changed callbacks
 
         #region Loaded / Unloaded lifecycle
 
@@ -477,7 +477,7 @@ namespace Fluence.Wpf.Controls
             UnsubscribePaneToggleCommand(PaneToggleCommand);
         }
 
-        #endregion
+        #endregion Loaded / Unloaded lifecycle
 
         #region Button click handlers
 
@@ -509,7 +509,7 @@ namespace Fluence.Wpf.Controls
             UpdatePaneToggleButtonCommandState();
         }
 
-        #endregion
+        #endregion Button click handlers
 
         #region Command state helpers
 
@@ -539,7 +539,7 @@ namespace Fluence.Wpf.Controls
 
         private static bool CanExecuteCommand(ICommand command, object parameter)
         {
-            return command is null || command.CanExecute(parameter);
+            return command?.CanExecute(parameter) != false;
         }
 
         private static void SubscribeCommand(ICommand? command, EventHandler handler)
@@ -592,7 +592,7 @@ namespace Fluence.Wpf.Controls
             _isPaneToggleCommandSubscribed = false;
         }
 
-        #endregion
+        #endregion Command state helpers
 
         #region Private fields
 
@@ -601,6 +601,6 @@ namespace Fluence.Wpf.Controls
         private bool _isBackCommandSubscribed;
         private bool _isPaneToggleCommandSubscribed;
 
-        #endregion
+        #endregion Private fields
     }
 }

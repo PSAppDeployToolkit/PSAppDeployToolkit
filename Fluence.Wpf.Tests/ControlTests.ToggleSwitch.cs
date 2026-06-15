@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_StyleApplies_SwitchThumbFound()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_DefaultState_ThumbWidth12()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -92,7 +92,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_Checked_ThumbTranslateIs20()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -112,7 +112,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_Unchecked_ThumbTranslateIsZero()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -132,7 +132,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_ProgrammaticToggle_AnimatesKnobToCheckedSide()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -158,7 +158,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_DragInput_ExpandsThumbAndCommitsCheckedState()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -176,7 +176,7 @@ namespace Fluence.Wpf.Tests
 
                 DragStartedEventArgs started = new(0, 0)
                 {
-                    RoutedEvent = Thumb.DragStartedEvent
+                    RoutedEvent = Thumb.DragStartedEvent,
                 };
                 input.RaiseEvent(started);
                 WaitForAnimationAndDrain(w.Dispatcher, 120);
@@ -185,14 +185,14 @@ namespace Fluence.Wpf.Tests
 
                 DragDeltaEventArgs delta = new(20, 0)
                 {
-                    RoutedEvent = Thumb.DragDeltaEvent
+                    RoutedEvent = Thumb.DragDeltaEvent,
                 };
                 input.RaiseEvent(delta);
                 Assert.AreEqual(20.0, tx.X, 0.5, "Dragging to the right should move the knob to the checked side.");
 
                 DragCompletedEventArgs completed = new(20, 0, false)
                 {
-                    RoutedEvent = Thumb.DragCompletedEvent
+                    RoutedEvent = Thumb.DragCompletedEvent,
                 };
                 input.RaiseEvent(completed);
                 Assert.AreEqual(true, ts.IsChecked, "Completing a right-side drag should commit the checked state.");
@@ -208,7 +208,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_ClickReleaseThroughCaptureLoss_CommitsCheckedState()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -223,13 +223,13 @@ namespace Fluence.Wpf.Tests
 
                 MouseButtonEventArgs pressed = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
                 {
-                    RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent
+                    RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
                 };
                 input.RaiseEvent(pressed);
 
                 MouseEventArgs lostCapture = new(Mouse.PrimaryDevice, 0)
                 {
-                    RoutedEvent = UIElement.LostMouseCaptureEvent
+                    RoutedEvent = UIElement.LostMouseCaptureEvent,
                 };
                 input.RaiseEvent(lostCapture);
 
@@ -247,7 +247,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ToggleSwitch_DragReleaseThroughCaptureLoss_CommitsNearestState()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -263,20 +263,20 @@ namespace Fluence.Wpf.Tests
 
                 DragStartedEventArgs started = new(0, 0)
                 {
-                    RoutedEvent = Thumb.DragStartedEvent
+                    RoutedEvent = Thumb.DragStartedEvent,
                 };
                 input.RaiseEvent(started);
 
                 DragDeltaEventArgs delta = new(20, 0)
                 {
-                    RoutedEvent = Thumb.DragDeltaEvent
+                    RoutedEvent = Thumb.DragDeltaEvent,
                 };
                 input.RaiseEvent(delta);
                 Assert.AreEqual(20.0, tx.X, 0.5, "Dragging to the right should move the knob to the checked side.");
 
                 MouseEventArgs lostCapture = new(Mouse.PrimaryDevice, 0)
                 {
-                    RoutedEvent = UIElement.LostMouseCaptureEvent
+                    RoutedEvent = UIElement.LostMouseCaptureEvent,
                 };
                 input.RaiseEvent(lostCapture);
 

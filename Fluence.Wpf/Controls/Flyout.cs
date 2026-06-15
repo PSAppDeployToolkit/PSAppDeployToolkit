@@ -47,7 +47,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Content),
                 typeof(object),
                 typeof(Flyout),
-                new PropertyMetadata(null));
+                new PropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content shown in the flyout.
@@ -74,7 +74,7 @@ namespace Fluence.Wpf.Controls
                 nameof(FlyoutPresenterStyle),
                 typeof(Style),
                 typeof(Flyout),
-                new PropertyMetadata(null, OnFlyoutPresenterStyleChanged));
+                new PropertyMetadata(defaultValue: null, OnFlyoutPresenterStyleChanged));
 
         /// <summary>
         /// Gets or sets the style applied to the <see cref="FlyoutPresenter"/> that hosts

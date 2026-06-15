@@ -63,16 +63,16 @@ namespace Fluence.Wpf.Tests
         public void TitleBar_Template_ExposesNavigationButtons()
         {
             RunWithTitleBar(
-                delegate
+                static delegate
                 {
                     return new Fluent.TitleBar
                     {
                         Title = "Fluence",
                         IsBackButtonVisible = true,
-                        IsPaneToggleButtonVisible = true
+                        IsPaneToggleButtonVisible = true,
                     };
                 },
-                titleBar =>
+                static titleBar =>
                 {
                     WpfButton backButton = GetTemplateButton(titleBar, "PART_BackButton");
                     WpfButton paneToggleButton = GetTemplateButton(titleBar, "PART_PaneToggleButton");
@@ -92,16 +92,16 @@ namespace Fluence.Wpf.Tests
         public void TitleBar_BackButton_UsesCompactSlot()
         {
             RunWithTitleBar(
-                delegate
+                static delegate
                 {
                     return new Fluent.TitleBar
                     {
                         Title = "Fluence",
                         IsBackButtonVisible = true,
-                        IsPaneToggleButtonVisible = true
+                        IsPaneToggleButtonVisible = true,
                     };
                 },
-                titleBar =>
+                static titleBar =>
                 {
                     WpfButton backButton = GetTemplateButton(titleBar, "PART_BackButton");
                     WpfButton paneToggleButton = GetTemplateButton(titleBar, "PART_PaneToggleButton");
@@ -128,7 +128,7 @@ namespace Fluence.Wpf.Tests
         public void TitleBar_PaneToggleClick_ExecutesCommandThenRaisesRequested()
         {
             object parameter = new();
-            RecordingCommand command = new(true);
+            RecordingCommand command = new(canExecute: true);
             int eventCount = 0;
             int commandCountObservedByEvent = -1;
 
@@ -139,7 +139,7 @@ namespace Fluence.Wpf.Tests
                     {
                         IsPaneToggleButtonVisible = true,
                         PaneToggleCommand = command,
-                        PaneToggleCommandParameter = parameter
+                        PaneToggleCommandParameter = parameter,
                     };
                 },
                 titleBar =>
@@ -167,7 +167,7 @@ namespace Fluence.Wpf.Tests
         public void TitleBar_BackButtonVisibilityAndCommand_Work()
         {
             object parameter = new();
-            RecordingCommand command = new(true);
+            RecordingCommand command = new(canExecute: true);
             int eventCount = 0;
 
             RunWithTitleBar(
@@ -176,7 +176,7 @@ namespace Fluence.Wpf.Tests
                     return new Fluent.TitleBar
                     {
                         BackCommand = command,
-                        BackCommandParameter = parameter
+                        BackCommandParameter = parameter,
                     };
                 },
                 titleBar =>
@@ -207,8 +207,8 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TitleBar_Unloaded_UnsubscribesCommandCanExecuteHandlers()
         {
-            RecordingCommand backCommand = new(true);
-            RecordingCommand paneToggleCommand = new(true);
+            RecordingCommand backCommand = new(canExecute: true);
+            RecordingCommand paneToggleCommand = new(canExecute: true);
 
             RunWithTitleBar(
                 delegate
@@ -218,7 +218,7 @@ namespace Fluence.Wpf.Tests
                         IsBackButtonVisible = true,
                         IsPaneToggleButtonVisible = true,
                         BackCommand = backCommand,
-                        PaneToggleCommand = paneToggleCommand
+                        PaneToggleCommand = paneToggleCommand,
                     };
                 },
                 titleBar =>
@@ -258,7 +258,7 @@ namespace Fluence.Wpf.Tests
                         Top = -20000,
                         WindowStartupLocation = WindowStartupLocation.Manual,
                         ShowInTaskbar = false,
-                        Content = titleBar
+                        Content = titleBar,
                     };
 
                     window.Show();
@@ -354,14 +354,14 @@ namespace Fluence.Wpf.Tests
             ApplicationAccentColorManager.ResetForTesting();
             application?.Resources.MergedDictionaries.Clear();
             application?.Resources.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             Collection<ResourceDictionary>? dictionaries = application?.Resources.MergedDictionaries;
-            return dictionaries?.Count > 0 ? dictionaries[dictionaries.Count - 1] : null;
+            return dictionaries?.Count > 0 ? dictionaries[^1] : null;
         }
 
         private static void DrainDispatcher(Dispatcher dispatcher)
         {
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
         }
 
         private static void ResetSharedWpfState()
@@ -376,9 +376,9 @@ namespace Fluence.Wpf.Tests
             }
 
             Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
-            _ = dispatcher.Invoke(DispatcherPriority.Loaded, new Action(delegate { }));
-            _ = dispatcher.Invoke(DispatcherPriority.ContextIdle, new Action(delegate { }));
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.Loaded, new Action(static delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.ContextIdle, new Action(static delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
 
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();

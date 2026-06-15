@@ -40,7 +40,7 @@ namespace Fluence.Wpf.Tests
     {
         private static void Drain(Dispatcher d)
         {
-            d.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+            d.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
         }
 
         private static Application? EnsureApp()
@@ -53,17 +53,17 @@ namespace Fluence.Wpf.Tests
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
             app?.Resources.MergedDictionaries.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             app?.Resources.MergedDictionaries.Add(new ResourceDictionary
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             });
         }
 
         [TestMethod]
         public void NumberBox_DefaultStyle_LoadsParts()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApp();
                 MergeGeneric(app);
@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NumberBox_Value_Roundtrips()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Controls.NumberBox box = new() { Value = 42.5 };
                 Assert.AreEqual(42.5, box.Value, 0.001);
@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Expander_CornerRadius_Default()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Controls.Expander ex = new();
                 Assert.AreEqual(new CornerRadius(4), ex.CornerRadius);
@@ -107,7 +107,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Expander_Template_Applies()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApp();
                 MergeGeneric(app);
@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DropDownButton_Template_HasFlyoutPresenterName()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApp();
                 MergeGeneric(app);
@@ -155,7 +155,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DropDownButton_FlyoutPresenter_StretchesForLeftAlignedItems()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApp();
                 MergeGeneric(app);
@@ -183,7 +183,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void SplitButton_FlyoutPresenter_StretchesForLeftAlignedItems()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApp();
                 MergeGeneric(app);
@@ -211,7 +211,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_Value_Roundtrips()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Controls.InfoBadge badge = new() { Value = 9 };
                 Assert.AreEqual(9, badge.Value);
@@ -221,7 +221,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBadge_Template_Applies()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApp();
                 MergeGeneric(app);
@@ -245,7 +245,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ListBox_GetContainerForItemOverride_ReturnsFluentListBoxItem()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Controls.ListBox list = new();
                 MethodInfo? m = typeof(Controls.ListBox).GetMethod(

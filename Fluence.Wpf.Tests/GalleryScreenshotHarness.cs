@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -166,8 +166,8 @@ namespace Fluence.Wpf.Tests
             DrawingVisual flattened = new();
             using (DrawingContext context = flattened.RenderOpen())
             {
-                context.DrawRectangle(background, null, bounds);
-                context.DrawRectangle(new VisualBrush(element), null, bounds);
+                context.DrawRectangle(background, pen: null, bounds);
+                context.DrawRectangle(new VisualBrush(element), pen: null, bounds);
             }
 
             SavePng(flattened, pixelWidth, pixelHeight, dpi, fullPath);
@@ -175,8 +175,8 @@ namespace Fluence.Wpf.Tests
 
         private static void SaveElementPng(FrameworkElement element, double scale, string fullPath)
         {
-            int pixelWidth = Math.Max(1, (int)Math.Round(element.ActualWidth * scale));
-            int pixelHeight = Math.Max(1, (int)Math.Round(element.ActualHeight * scale));
+            int pixelWidth = Math.Max(1, (int)Math.Round(element.ActualWidth * scale, MidpointRounding.ToEven));
+            int pixelHeight = Math.Max(1, (int)Math.Round(element.ActualHeight * scale, MidpointRounding.ToEven));
             double dpi = BaseDpi * scale;
 
             SaveFlattenedPng(element, pixelWidth, pixelHeight, dpi, fullPath);
@@ -189,7 +189,7 @@ namespace Fluence.Wpf.Tests
             application.Resources.MergedDictionaries.Clear();
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
-            ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+            ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
             if (includeDemoSharedStyles)
             {
                 application.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = DemoSharedStylesUri });
@@ -220,11 +220,11 @@ namespace Fluence.Wpf.Tests
         {
             window.Show();
             DrainDispatcher(window.Dispatcher);
-            ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+            ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
             DrainDispatcher(window.Dispatcher);
             PumpDispatcher(window.Dispatcher, AnimationSettleDelay);
             window.UpdateLayout();
-            _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(delegate { }));
+            _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(static delegate { }));
 
             SaveElementPng(window, ReferenceScale, fullPath);
         }
@@ -234,7 +234,7 @@ namespace Fluence.Wpf.Tests
             DispatcherFrame frame = new();
             DispatcherTimer timer = new(DispatcherPriority.Background, dispatcher)
             {
-                Interval = duration
+                Interval = duration,
             };
             timer.Tick += delegate
             {
@@ -255,6 +255,12 @@ namespace Fluence.Wpf.Tests
         /// with the navigation pane forced to <paramref name="paneMode"/>, writing
         /// <c>{outputName}-{themeSlug}.png</c>.
         /// </summary>
+        /// <param name="theme">The theme to apply.</param>
+        /// <param name="themeSlug">The slug representing the theme.</param>
+        /// <param name="route">The route to navigate to.</param>
+        /// <param name="paneMode">The navigation pane display mode.</param>
+        /// <param name="outputName">The name of the output file.</param>
+        /// <param name="outputDirectory">The directory to save the output file.</param>
         private static void CaptureGalleryShellAt(
             ApplicationTheme theme,
             string themeSlug,
@@ -263,7 +269,7 @@ namespace Fluence.Wpf.Tests
             string outputName,
             string outputDirectory)
         {
-            _ = ResetApplication(theme, true);
+            _ = ResetApplication(theme, includeDemoSharedStyles: true);
 
             DemoMainWindow? window = null;
             try
@@ -280,11 +286,11 @@ namespace Fluence.Wpf.Tests
                 }
 
                 window.NavigateTo(route);
-                ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                 DrainDispatcher(window.Dispatcher);
                 PumpDispatcher(window.Dispatcher, AnimationSettleDelay);
                 window.UpdateLayout();
-                _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(delegate { }));
+                _ = window.Dispatcher.Invoke(DispatcherPriority.Render, new Action(static delegate { }));
 
                 string fullPath = Path.Combine(outputDirectory, Invariant("{0}-{1}.png", outputName, themeSlug));
                 SaveElementPng(window, ReferenceScale, fullPath);
@@ -292,7 +298,7 @@ namespace Fluence.Wpf.Tests
             finally
             {
                 window?.Close();
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             }
         }
 
@@ -300,6 +306,7 @@ namespace Fluence.Wpf.Tests
         /// Reads the inline XAML here-string from <c>03-ControlsTour.ps1</c> so the captured window
         /// stays in lock-step with the script the screenshot documents.
         /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the XAML here-string cannot be located.</exception>
         private static string ExtractControlsTourXaml()
         {
             string scriptPath = Path.Combine(FindRepoRoot(), "Fluence.Wpf.Demo.PowerShell", "03-ControlsTour.ps1");
@@ -348,7 +355,7 @@ namespace Fluence.Wpf.Tests
 
         private static void CapturePowerShellControlsAt(ApplicationTheme theme, string themeSlug, string outputDirectory)
         {
-            _ = ResetApplication(theme, false);
+            _ = ResetApplication(theme, includeDemoSharedStyles: false);
 
             Window? window = null;
             try
@@ -363,7 +370,7 @@ namespace Fluence.Wpf.Tests
             finally
             {
                 window?.Close();
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             }
         }
 
@@ -371,14 +378,14 @@ namespace Fluence.Wpf.Tests
         private static void AddScreenshotTask(MvvmMainViewModel viewModel, string title, bool isCompleted)
         {
             viewModel.NewTaskText = title;
-            if (viewModel.AddCommand.CanExecute(null))
+            if (viewModel.AddCommand.CanExecute(parameter: null))
             {
-                viewModel.AddCommand.Execute(null);
+                viewModel.AddCommand.Execute(parameter: null);
             }
 
             if (isCompleted && viewModel.DisplayedTasks.Count > 0)
             {
-                viewModel.DisplayedTasks[viewModel.DisplayedTasks.Count - 1].IsCompleted = true;
+                viewModel.DisplayedTasks[^1].IsCompleted = true;
             }
         }
 
@@ -389,15 +396,15 @@ namespace Fluence.Wpf.Tests
                 return;
             }
 
-            AddScreenshotTask(viewModel, "Review theme dictionary slots", true);
-            AddScreenshotTask(viewModel, "Polish NavigationView samples", false);
-            AddScreenshotTask(viewModel, "Capture release screenshots", false);
-            AddScreenshotTask(viewModel, "Update API docs", true);
+            AddScreenshotTask(viewModel, "Review theme dictionary slots", isCompleted: true);
+            AddScreenshotTask(viewModel, "Polish NavigationView samples", isCompleted: false);
+            AddScreenshotTask(viewModel, "Capture release screenshots", isCompleted: false);
+            AddScreenshotTask(viewModel, "Update API docs", isCompleted: true);
         }
 
         private static void CaptureMvvmDemoAt(ApplicationTheme theme, string themeSlug, string outputDirectory)
         {
-            _ = ResetApplication(theme, false);
+            _ = ResetApplication(theme, includeDemoSharedStyles: false);
 
             MvvmMainWindow? window = null;
             try
@@ -411,7 +418,7 @@ namespace Fluence.Wpf.Tests
             finally
             {
                 window?.Close();
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             }
         }
 #endif
@@ -420,7 +427,7 @@ namespace Fluence.Wpf.Tests
         public void CaptureGalleryShellNavigationModes()
         {
             RequireScreenshotOptIn();
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 string output = EnsureOutputDirectory();
                 foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
@@ -436,7 +443,7 @@ namespace Fluence.Wpf.Tests
         public void CapturePowerShellControlsTour()
         {
             RequireScreenshotOptIn();
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 string output = EnsureOutputDirectory();
                 foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)
@@ -451,7 +458,7 @@ namespace Fluence.Wpf.Tests
         public void CaptureMvvmTaskManager()
         {
             RequireScreenshotOptIn();
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 string output = EnsureOutputDirectory();
                 foreach ((ApplicationTheme theme, string themeSlug) in DocumentationThemes)

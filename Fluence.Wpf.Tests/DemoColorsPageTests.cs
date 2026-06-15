@@ -32,6 +32,7 @@ using Fluence.Wpf.Demo.Pages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -53,13 +54,13 @@ namespace Fluence.Wpf.Tests
             "Stroke",
             "Background",
             "Signal",
-            "High Contrast"
+            "High Contrast",
         ];
 
         [TestMethod]
         public void GalleryColorsPage_NavigationRoute_LoadsConcretePage()
         {
-            WpfTestSta.Invoke(delegate
+            WpfTestSta.Invoke(static delegate
             {
                 _ = EnsureDemoTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -85,7 +86,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryColorsPage_UsesWinUiGalleryColorStructure()
         {
-            WpfTestSta.Invoke(delegate
+            WpfTestSta.Invoke(static delegate
             {
                 _ = EnsureDemoTheme();
                 GalleryColorsPage page = new();
@@ -104,7 +105,7 @@ namespace Fluence.Wpf.Tests
                     {
                         TabItem tabItem = (TabItem)colorTabs.Items[i];
                         Assert.AreEqual(SectionNames[i], tabItem.Header as string,
-                            "Unexpected Colors page section at index " + i + ".");
+                            "Unexpected Colors page section at index " + i.ToString(CultureInfo.InvariantCulture) + ".");
                     }
 
                     List<string> exampleTitles = [.. FindVisualChildren<System.Windows.Controls.TextBlock>(page)
@@ -163,7 +164,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryColorsPage_DynamicResourceKeys_ResolveAcrossThemes()
         {
-            WpfTestSta.Invoke(delegate
+            WpfTestSta.Invoke(static delegate
             {
                 Application application = EnsureDemoTheme();
                 GalleryColorsPage page = new();
@@ -177,13 +178,13 @@ namespace Fluence.Wpf.Tests
                     [
                         ApplicationTheme.Light,
                         ApplicationTheme.Dark,
-                        ApplicationTheme.HighContrast
+                        ApplicationTheme.HighContrast,
                     ];
 
                     List<string> unresolved = [];
                     foreach (ApplicationTheme theme in themes)
                     {
-                        ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                        ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                         ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                         foreach (string resourceKey in resourceKeys)
@@ -222,7 +223,7 @@ namespace Fluence.Wpf.Tests
                 "Foreground=\"#",
                 "WrapPanel",
                 "SectionSelectorHost",
-                "FluenceToggleButton"
+                "FluenceToggleButton",
             ];
 
             List<string> violations = [];
@@ -276,8 +277,7 @@ namespace Fluence.Wpf.Tests
         private static Application EnsureDemoTheme()
         {
             Application application = WpfTestSta.EnsureApplication() ?? throw new InvalidOperationException("WPF application was not created.");
-            Window[] windows = [.. application.Windows.Cast<Window>()];
-            foreach (Window window in windows)
+            foreach (Window window in (Window[])[.. application.Windows.Cast<Window>()])
             {
                 window.Content = null;
                 window.Close();
@@ -287,11 +287,11 @@ namespace Fluence.Wpf.Tests
             ApplicationAccentColorManager.ResetForTesting();
             application.Resources.MergedDictionaries.Clear();
             application.Resources.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
             ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
             ResourceDictionary demoShared = new()
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
             application.Resources.MergedDictionaries.Add(demoShared);
             return application;
@@ -306,7 +306,7 @@ namespace Fluence.Wpf.Tests
                 Width = 1200,
                 Height = 900,
                 WindowStartupLocation = WindowStartupLocation.Manual,
-                ShowInTaskbar = false
+                ShowInTaskbar = false,
             };
             window.Show();
             Drain(window.Dispatcher);
@@ -325,7 +325,7 @@ namespace Fluence.Wpf.Tests
                 Height = 720,
                 WindowStartupLocation = WindowStartupLocation.Manual,
                 ShowInTaskbar = false,
-                Content = content
+                Content = content,
             };
             window.Show();
             Drain(window.Dispatcher);
@@ -343,7 +343,7 @@ namespace Fluence.Wpf.Tests
 
         private static void Drain(Dispatcher dispatcher)
         {
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
         }
 
         private static T? FindByName<T>(DependencyObject? root, string name)

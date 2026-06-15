@@ -61,7 +61,7 @@ namespace Fluence.Wpf
         /// accessed or any instances are created.</remarks>
         static ApplicationAccentColorManager()
         {
-            FluenceThemeEngine.Published += (_, _) => AccentColorChanged?.Invoke(null, EventArgs.Empty);
+            FluenceThemeEngine.Published += static (_, _) => AccentColorChanged?.Invoke(sender: null, EventArgs.Empty);
         }
 
         /// <summary>

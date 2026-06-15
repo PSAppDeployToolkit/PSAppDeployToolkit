@@ -36,26 +36,26 @@ namespace Fluence.Wpf
         /// <summary>
         /// Accent-colored attention badge.
         /// </summary>
-        Attention,
+        Attention = 0,
 
         /// <summary>
         /// Informational badge.
         /// </summary>
-        Informational,
+        Informational = 1,
 
         /// <summary>
         /// Success (green) badge.
         /// </summary>
-        Success,
+        Success = 2,
 
         /// <summary>
         /// Critical (red) badge.
         /// </summary>
-        Critical,
+        Critical = 3,
 
         /// <summary>
         /// Caution (yellow) badge.
         /// </summary>
-        Caution,
+        Caution = 4,
     }
 }

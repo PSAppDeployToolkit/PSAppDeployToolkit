@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsReadOnly),
                 typeof(bool),
                 typeof(RatingControl),
-                new FrameworkPropertyMetadata(false, OnIsReadOnlyChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsReadOnlyChanged));
 
         /// <summary>
         /// Gets or sets whether the user can change the rating.
@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Controls
                     FontFamily = new FontFamily("Segoe Fluent Icons"),
                     FontSize = 20.0,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Text = "\uE734"
+                    Text = "\uE734",
                 };
                 if (i < count)
                 {
@@ -248,7 +248,7 @@ namespace Fluence.Wpf.Controls
             }
 
             // Clicking the already-set star clears the rating (WinUI 3 IsClearEnabled behaviour).
-            double newValue = ((int)Math.Round(Value) == index) ? 0.0 : index;
+            double newValue = ((int)Math.Round(Value, MidpointRounding.ToEven) == index) ? 0.0 : index;
             SetCurrentValue(ValueProperty, newValue);
         }
 
@@ -259,7 +259,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            int displayCount = _hoverIndex > 0 ? _hoverIndex : (int)Math.Round(Value);
+            int displayCount = _hoverIndex > 0 ? _hoverIndex : (int)Math.Round(Value, MidpointRounding.ToEven);
             for (int i = 0; i < _starsPanel.Children.Count; i++)
             {
                 if (_starsPanel.Children[i] is not WpfTextBlock star)

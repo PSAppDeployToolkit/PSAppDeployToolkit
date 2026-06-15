@@ -199,7 +199,7 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(BackdropType.None, effective);
         }
 
-        #endregion
+        #endregion ResolveEffectiveBackdrop - capability matrix
 
         #region BuildBackdropPlan - None
 
@@ -238,7 +238,7 @@ namespace Fluence.Wpf.Tests
                 "Windows 10 does not expose DWMWA_SYSTEMBACKDROP_TYPE - the plan must not attempt to set it.");
         }
 
-        #endregion
+        #endregion BuildBackdropPlan - None
 
         #region BuildBackdropPlan - Mica (legacy path on pre-22H2)
 
@@ -281,7 +281,7 @@ namespace Fluence.Wpf.Tests
                 "22H2 must use the canonical DWMWA_SYSTEMBACKDROP_TYPE path, not the legacy Mica attribute.");
         }
 
-        #endregion
+        #endregion BuildBackdropPlan - Mica (legacy path on pre-22H2)
 
         #region BuildBackdropPlan - Acrylic + Tabbed (SystemBackdropType mapping)
 
@@ -313,7 +313,7 @@ namespace Fluence.Wpf.Tests
                 "Tabbed must map to DWMSBT_TABBEDWINDOW.");
         }
 
-        #endregion
+        #endregion BuildBackdropPlan - Acrylic + Tabbed (SystemBackdropType mapping)
 
         #region BuildBackdropPlan - Immersive dark flag
 
@@ -342,7 +342,7 @@ namespace Fluence.Wpf.Tests
             Assert.IsFalse(plan.UseImmersiveDarkMode);
         }
 
-        #endregion
+        #endregion BuildBackdropPlan - Immersive dark flag
 
         #region GetCornerPreference - enum → DWMWCP_* mapping
 
@@ -376,7 +376,7 @@ namespace Fluence.Wpf.Tests
                 WindowPolicy.GetCornerPreference(CornerPreference.RoundSmall));
         }
 
-        #endregion
+        #endregion GetCornerPreference - enum → DWMWCP_* mapping
 
         #region CreateWindowChrome - canonical FluenceWindow chrome contract
 
@@ -428,7 +428,7 @@ namespace Fluence.Wpf.Tests
                 "WindowChrome.CornerRadius must be 0 - rounded corners are driven by DWMWA_WINDOW_CORNER_PREFERENCE, not the WPF chrome (WPF-side rounding would clip DWM's Mica).");
         }
 
-        #endregion
+        #endregion CreateWindowChrome - canonical FluenceWindow chrome contract
 
         #region GetResizeBorderThickness - maximised / non-resize matrix
 
@@ -470,7 +470,7 @@ namespace Fluence.Wpf.Tests
                 "ResizeMode.CanMinimize forbids drag-resize; the hit margin must be zero.");
         }
 
-        #endregion
+        #endregion GetResizeBorderThickness - maximised / non-resize matrix
 
         #region BuildFramePlan - accent border selection
 
@@ -533,7 +533,7 @@ namespace Fluence.Wpf.Tests
                 "Windows 10 does not expose DWMWA_BORDER_COLOR - the plan must keep the default sentinel rather than push an unsupported value.");
         }
 
-        #endregion
+        #endregion BuildFramePlan - accent border selection
 
         #region WindowCapabilities.Current - sanity
 
@@ -544,7 +544,7 @@ namespace Fluence.Wpf.Tests
             Assert.IsNotNull(caps, "WindowCapabilities.Current must always resolve - it shields callers from OS-version probing.");
         }
 
-        #endregion
+        #endregion WindowCapabilities.Current - sanity
 
         #region GetGlassFrameThickness - dual-path
 
@@ -598,6 +598,6 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(-1, t.Left, 1e-9, "Auto backdrop is treated as backdrop-active for chrome purposes.");
         }
 
-        #endregion
+        #endregion GetGlassFrameThickness - dual-path
     }
 }

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 
 using Fluence.Wpf.Theming;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
@@ -58,7 +59,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void ColorMap_Build_Light_ContainsAccentFillColorDefault()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -74,7 +75,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void ColorMap_Build_Dark_ContainsAccentFillColorDefault()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -89,7 +90,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void ColorMap_Build_Light_ContainsRawRampKeys()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -107,7 +108,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void ColorMap_Build_Light_ContainsTitleBarActiveColor()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -124,7 +125,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void ColorMap_Build_HighContrast_ContainsSystemAccentColor()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 AccentPalette p = MakeTestPalette();
@@ -145,10 +146,10 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void BrushFactory_Build_ProducesFrozenBrushForColorKey()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
-                Dictionary<string, Color> colors = new()
+                Dictionary<string, Color> colors = new(StringComparer.Ordinal)
                 {
                     ["TestColorA"] = Colors.Red,
                     ["TestColorB"] = Color.FromArgb(0x80, 0x00, 0x80, 0xFF),
@@ -169,11 +170,11 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void BrushFactory_Build_PreservesAlphaChannel()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Color semiTransparent = Color.FromArgb(0x80, 0xFF, 0x00, 0x00);
-                Dictionary<string, Color> colors = new() { ["AlphaColor"] = semiTransparent };
+                Dictionary<string, Color> colors = new(StringComparer.Ordinal) { ["AlphaColor"] = semiTransparent };
                 ResourceDictionary d = BrushFactory.Build(colors);
 
                 Color stored = (Color)d["AlphaColor"];
@@ -191,7 +192,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void BaseColorTables_Load_Light_ReturnsColors()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Dictionary<string, Color> m = BaseColorTables.Load(ApplicationTheme.Light);
@@ -206,7 +207,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void BaseColorTables_Load_Dark_ReturnsColors()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Dictionary<string, Color> m = BaseColorTables.Load(ApplicationTheme.Dark);
@@ -220,7 +221,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void BaseColorTables_Load_HighContrast_ReturnsColors()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 Dictionary<string, Color> m = BaseColorTables.Load(ApplicationTheme.HighContrast);
@@ -238,7 +239,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void FluenceThemeEngine_Apply_PublishesResourcesAndSetsState()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication()!;
                 app.Resources.MergedDictionaries.Clear();
@@ -259,7 +260,7 @@ namespace Fluence.Wpf.Tests.Theming
             });
 
             // Tear down after the smoke test so other fixtures see a clean state
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 Application.Current!.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();
@@ -275,7 +276,7 @@ namespace Fluence.Wpf.Tests.Theming
         [TestMethod]
         public void FluenceThemeEngine_Apply_ReplacesComputedSlotOnSecondCall()
         {
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 Application app = WpfTestSta.EnsureApplication()!;
                 app.Resources.MergedDictionaries.Clear();
@@ -298,7 +299,7 @@ namespace Fluence.Wpf.Tests.Theming
             });
 
             // Tear down
-            WpfTestSta.Dispatcher!.Invoke(() =>
+            WpfTestSta.Dispatcher!.Invoke(static () =>
             {
                 Application.Current!.Resources.MergedDictionaries.Clear();
                 ApplicationThemeManager.ResetForTesting();

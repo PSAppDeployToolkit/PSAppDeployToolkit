@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsActive),
                 typeof(bool),
                 typeof(ProgressRing),
-                new FrameworkPropertyMetadata(true, OnIsActiveChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnIsActiveChanged));
 
         /// <summary>
         /// Gets or sets whether the progress ring is active and visible.
@@ -131,7 +131,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsIndeterminate),
                 typeof(bool),
                 typeof(ProgressRing),
-                new FrameworkPropertyMetadata(true, OnIsIndeterminateChanged));
+                new FrameworkPropertyMetadata(defaultValue: true, OnIsIndeterminateChanged));
 
         /// <summary>
         /// Gets or sets whether the ring operates in indeterminate (spinning) mode.
@@ -252,7 +252,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowError),
                 typeof(bool),
                 typeof(ProgressRing),
-                new FrameworkPropertyMetadata(false, OnShowErrorChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnShowErrorChanged));
 
         /// <summary>
         /// Gets or sets whether the ring renders its arcs in the error state using the
@@ -277,7 +277,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowPaused),
                 typeof(bool),
                 typeof(ProgressRing),
-                new FrameworkPropertyMetadata(false, OnShowPausedChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnShowPausedChanged));
 
         /// <summary>
         /// Gets or sets whether the ring renders its arcs in the paused state using the
@@ -454,7 +454,7 @@ namespace Fluence.Wpf.Controls
                 // Completed callback will re-render the arc geometry we just cleared), then
                 // null out determinate arc data.  The code-driven sweep-fraction pulse and
                 // template rotation render the indeterminate arc when the control is active.
-                ring.BeginAnimation(AnimatedFractionProperty, null);
+                ring.BeginAnimation(AnimatedFractionProperty, animation: null);
                 _ = ring._arcPath?.Data = null;
                 ring.UpdateIndeterminateAnimationState();
             }
@@ -550,7 +550,7 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames animation = new()
             {
                 Duration = DeterminateAnimationDuration,
-                FillBehavior = FillBehavior.Stop
+                FillBehavior = FillBehavior.Stop,
             };
             _ = animation.KeyFrames.Add(
                 new SplineDoubleKeyFrame(
@@ -616,8 +616,8 @@ namespace Fluence.Wpf.Controls
 
         private void StopIndeterminateAnimation()
         {
-            BeginAnimation(IndeterminateSweepFractionProperty, null);
-            _indeterminateRotateTransform?.BeginAnimation(RotateTransform.AngleProperty, null);
+            BeginAnimation(IndeterminateSweepFractionProperty, animation: null);
+            _indeterminateRotateTransform?.BeginAnimation(RotateTransform.AngleProperty, animation: null);
             _isIndeterminateAnimationRunning = false;
             IndeterminateSweepFraction = 0.0;
             _ = _indeterminateRotateTransform?.Angle = IndeterminateRotationStartAngle;
@@ -631,7 +631,7 @@ namespace Fluence.Wpf.Controls
             DoubleAnimationUsingKeyFrames animation = new()
             {
                 Duration = IndeterminateAnimationDuration,
-                RepeatBehavior = RepeatBehavior.Forever
+                RepeatBehavior = RepeatBehavior.Forever,
             };
             AddLinearKeyFrame(animation, 0.0, 0.0);
             AddLinearKeyFrame(animation, IndeterminatePeakSweepFraction, 0.5);
@@ -643,14 +643,13 @@ namespace Fluence.Wpf.Controls
         {
             // Linear rotation of the template transform from 90 to 1170 degrees (three full
             // turns) per 2 second cycle, matching the arc-length pulse cadence.
-            DoubleAnimation animation = new()
+            return new()
             {
                 From = IndeterminateRotationStartAngle,
                 To = IndeterminateRotationEndAngle,
                 Duration = IndeterminateAnimationDuration,
-                RepeatBehavior = RepeatBehavior.Forever
+                RepeatBehavior = RepeatBehavior.Forever,
             };
-            return animation;
         }
 
         private static void AddLinearKeyFrame(DoubleAnimationUsingKeyFrames animation, double value, double percent)
@@ -698,7 +697,7 @@ namespace Fluence.Wpf.Controls
 
             // The arc always starts at the top (angle 0); the template rotate transform
             // provides the spin, so only the sweep length changes here.
-            RenderArc(_indeterminateArcPath, 0.0, IndeterminateSweepFraction * 360.0, false, 0);
+            RenderArc(_indeterminateArcPath, 0.0, IndeterminateSweepFraction * 360.0, deferForLayout: false, 0);
         }
 
         /// <summary>
@@ -748,7 +747,7 @@ namespace Fluence.Wpf.Controls
                 _arcPath.Data = null;
                 return;
             }
-            RenderArc(_arcPath, 0, fraction * 360.0, true, fraction);
+            RenderArc(_arcPath, 0, fraction * 360.0, deferForLayout: true, fraction);
         }
 
         private void RenderArc(Path path, double startAngle, double sweepAngle, bool deferForLayout, double deferredFraction)

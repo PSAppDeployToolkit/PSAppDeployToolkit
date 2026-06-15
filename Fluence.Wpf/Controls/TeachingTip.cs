@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Title),
                 typeof(string),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(string.Empty, null, CoerceText));
+                new FrameworkPropertyMetadata(string.Empty, propertyChangedCallback: null, CoerceText));
 
         /// <summary>
         /// Gets or sets the title shown at the top of the tip. The title is hidden while the
@@ -107,7 +107,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Subtitle),
                 typeof(string),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(string.Empty, null, CoerceText));
+                new FrameworkPropertyMetadata(string.Empty, propertyChangedCallback: null, CoerceText));
 
         /// <summary>
         /// Gets or sets the subtitle shown beneath <see cref="Title"/>. The subtitle is hidden
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Target),
                 typeof(FrameworkElement),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(null, OnPlacementInputChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnPlacementInputChanged));
 
         /// <summary>
         /// Gets or sets the element the tip is anchored to. When <see langword="null"/> the tip
@@ -147,7 +147,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsOpen),
                 typeof(bool),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(false, OnIsOpenChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsOpenChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether the tip is open. Setting
@@ -193,7 +193,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsLightDismissEnabled),
                 typeof(bool),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(false, OnIsLightDismissEnabledChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsLightDismissEnabledChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether clicking outside the tip dismisses it.
@@ -213,7 +213,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ActionButtonContent),
                 typeof(object),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content of the accent action button in the tip footer. The button
@@ -233,7 +233,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ActionButtonCommand),
                 typeof(ICommand),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the command executed when the action button is invoked, after the
@@ -253,7 +253,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ActionButtonCommandParameter),
                 typeof(object),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the parameter passed to <see cref="ActionButtonCommand"/>.
@@ -272,7 +272,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CloseButtonContent),
                 typeof(object),
                 typeof(TeachingTip),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content of the close button in the tip footer, matching the WinUI
@@ -373,7 +373,7 @@ namespace Fluence.Wpf.Controls
             base.OnPreviewKeyDown(e);
             if (!e.Handled && e.Key == Key.Escape && IsOpen)
             {
-                SetCurrentValue(IsOpenProperty, false);
+                SetCurrentValue(IsOpenProperty, value: false);
                 e.Handled = true;
             }
         }
@@ -399,7 +399,7 @@ namespace Fluence.Wpf.Controls
         private static void OnPlacementInputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             TeachingTip tip = (TeachingTip)d;
-            if (tip.HostPopup is not null && tip.HostPopup.IsOpen)
+            if (tip.HostPopup?.IsOpen == true)
             {
                 tip.ApplyPlacement(tip.HostPopup);
             }
@@ -436,6 +436,8 @@ namespace Fluence.Wpf.Controls
         /// Resolves <see cref="TeachingTipPlacementMode.Auto"/> to the concrete edge used for
         /// the popup placement and the beak position.
         /// </summary>
+        /// <param name="preferred">The preferred placement mode.</param>
+        /// <returns>The resolved placement mode.</returns>
         private static TeachingTipPlacementMode ResolvePlacement(TeachingTipPlacementMode preferred)
         {
             return preferred == TeachingTipPlacementMode.Auto
@@ -488,7 +490,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void ClosePopup()
         {
-            if (HostPopup is not null && HostPopup.IsOpen)
+            if (HostPopup?.IsOpen == true)
             {
                 HostPopup.IsOpen = false;
             }
@@ -503,6 +505,7 @@ namespace Fluence.Wpf.Controls
         /// <see cref="TeachingTipPlacementMode.Center"/> so the beak stays hidden. The resolved
         /// placement is recorded in <see cref="ActualPlacement"/>.
         /// </summary>
+        /// <param name="popup">The popup to which the placement is being applied.</param>
         private void ApplyPlacement(Popup popup)
         {
             FrameworkElement? target = Target;
@@ -546,6 +549,10 @@ namespace Fluence.Wpf.Controls
         /// target edge selected by <see cref="PreferredPlacement"/>, sharing the
         /// <see cref="FlyoutBase.GetEdgeCenteredPlacements"/> math with the flyout family.
         /// </summary>
+        /// <param name="popupSize">The size of the popup.</param>
+        /// <param name="targetSize">The size of the target element.</param>
+        /// <param name="offset">The offset to apply to the placement.</param>
+        /// <returns>An array of custom popup placements.</returns>
         private CustomPopupPlacement[] GetEdgePlacements(Size popupSize, Size targetSize, Point offset)
         {
             return FlyoutBase.GetEdgeCenteredPlacements(
@@ -560,6 +567,10 @@ namespace Fluence.Wpf.Controls
         /// bottom-right corner of the fallback placement target (the active window content),
         /// matching the WinUI default position for untargeted teaching tips.
         /// </summary>
+        /// <param name="popupSize">The size of the popup.</param>
+        /// <param name="targetSize">The size of the target element.</param>
+        /// <param name="offset">The offset to apply to the placement.</param>
+        /// <returns>An array of custom popup placements.</returns>
         private static CustomPopupPlacement[] GetBottomRightPlacements(Size popupSize, Size targetSize, Point offset)
         {
             Point bottomRight = new(
@@ -607,8 +618,8 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="element">The element to detach.</param>
         /// <exception cref="InvalidOperationException">
-        /// The parent is not a <see cref="System.Windows.Controls.Panel"/>, a
-        /// <see cref="System.Windows.Controls.Decorator"/> (which includes Border), or a
+        /// The parent is not a <see cref="Panel"/>, a
+        /// <see cref="Decorator"/> (which includes Border), or a
         /// <see cref="ContentControl"/>.
         /// </exception>
         private static void DetachFromParent(FrameworkElement element)
@@ -619,11 +630,11 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (parent is System.Windows.Controls.Panel panel)
+            if (parent is Panel panel)
             {
                 panel.Children.Remove(element);
             }
-            else if (parent is System.Windows.Controls.Decorator decorator)
+            else if (parent is Decorator decorator)
             {
                 decorator.Child = null;
             }
@@ -646,7 +657,7 @@ namespace Fluence.Wpf.Controls
                 // The popup closed outside the IsOpen pipeline (light dismiss); sync the
                 // property without clobbering a potential binding. The re-entrant changed
                 // callback finds the popup already closed and no-ops.
-                SetCurrentValue(IsOpenProperty, false);
+                SetCurrentValue(IsOpenProperty, value: false);
             }
 
             // Release the anchor so a closed tip does not pin the last placement target
@@ -660,7 +671,7 @@ namespace Fluence.Wpf.Controls
         {
             ActionButtonClick?.Invoke(this, EventArgs.Empty);
             ICommand? command = ActionButtonCommand;
-            if (command is not null && command.CanExecute(ActionButtonCommandParameter))
+            if (command?.CanExecute(ActionButtonCommandParameter) == true)
             {
                 command.Execute(ActionButtonCommandParameter);
             }
@@ -669,7 +680,7 @@ namespace Fluence.Wpf.Controls
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             CloseButtonClick?.Invoke(this, EventArgs.Empty);
-            SetCurrentValue(IsOpenProperty, false);
+            SetCurrentValue(IsOpenProperty, value: false);
         }
 
         /// <summary>

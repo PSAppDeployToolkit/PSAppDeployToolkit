@@ -36,16 +36,16 @@ namespace Fluence.Wpf
         /// <summary>
         /// Selection is disabled.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// A single item can be selected.
         /// </summary>
-        Single,
+        Single = 1,
 
         /// <summary>
         /// Multiple items can be selected with item check boxes.
         /// </summary>
-        Multiple
+        Multiple = 2,
     }
 }

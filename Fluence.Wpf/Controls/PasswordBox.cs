@@ -27,6 +27,7 @@
  */
 
 using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -118,7 +119,7 @@ namespace Fluence.Wpf.Controls
                 nameof(RevealButtonEnabled),
                 typeof(bool),
                 typeof(PasswordBox),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets whether the reveal button is enabled.
@@ -134,7 +135,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsPasswordRevealed),
                 typeof(bool),
                 typeof(PasswordBox),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsPasswordRevealed"/> dependency property.
@@ -216,7 +217,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowCapsLockIndicator),
                 typeof(bool),
                 typeof(PasswordBox),
-                new FrameworkPropertyMetadata(false, OnChromePropertyChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnChromePropertyChanged));
 
         /// <summary>
         /// Gets or sets whether the Caps Lock indicator is shown when Caps Lock is active.
@@ -236,7 +237,7 @@ namespace Fluence.Wpf.Controls
                 nameof(ShowPasswordStrength),
                 typeof(bool),
                 typeof(PasswordBox),
-                new FrameworkPropertyMetadata(false, OnChromePropertyChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnChromePropertyChanged));
 
         /// <summary>
         /// Gets or sets whether the password strength meter is displayed.
@@ -548,7 +549,7 @@ namespace Fluence.Wpf.Controls
 
             for (int i = 0; i < 4; i++)
             {
-                if (GetTemplateChild("PART_StrengthSegment" + i) is not System.Windows.Controls.Border segment)
+                if (GetTemplateChild("PART_StrengthSegment" + i.ToString(CultureInfo.InvariantCulture)) is not System.Windows.Controls.Border segment)
                 {
                     continue;
                 }

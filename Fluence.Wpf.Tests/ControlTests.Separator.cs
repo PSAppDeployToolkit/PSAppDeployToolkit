@@ -47,7 +47,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Separator_DefaultStyle_Applies()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -67,7 +67,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Separator_Height_IsOne()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -86,7 +86,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Separator_Background_UsesDividerStrokeColorDefaultBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -110,7 +110,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Separator_ThemeCycle_StyleRemainsApplied()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

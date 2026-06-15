@@ -30,6 +30,7 @@ using Fluence.Wpf.Demo.Pages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,7 +44,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryButtonsPage_EnableCheckBoxControlsOnlyVisibleButtonVariants()
         {
-            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            RunDemoPageTest(static () => new GalleryButtonsPage(), static window =>
             {
                 Controls.CheckBox? enable = FindVisualChildByName<Controls.CheckBox>(window, "ButtonEnableCheckBox");
                 Controls.Button? standard = FindFluentButtonByContent(window, "Standard");
@@ -74,7 +75,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryButtonsPage_SubtleButtonsUseWinUiTransparentRestBorderAndToggleButtonSampleIsRemoved()
         {
-            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            RunDemoPageTest(static () => new GalleryButtonsPage(), static window =>
             {
                 Controls.Button? subtle = FindFluentButtonByContent(window, "Subtle");
                 Controls.Button? refresh = FindFluentButtonByContent(window, "Refresh");
@@ -93,7 +94,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryIconsPage_FontIconDescriptionIsUniqueAndSampleRowIsCentered()
         {
-            RunDemoPageTest(() => new GalleryIconsPage(), window =>
+            RunDemoPageTest(static () => new GalleryIconsPage(), static window =>
             {
                 List<TextBlock> duplicateDescriptions = [.. FindVisualChildren<TextBlock>(window)
                     .Where(static text => string.Equals(
@@ -127,7 +128,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryButtonsPage_DemoContentPresenterCentersButtonGroups()
         {
-            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            RunDemoPageTest(static () => new GalleryButtonsPage(), static window =>
             {
                 List<DemoSampleControl> samples = [.. FindVisualChildren<DemoSampleControl>(window)];
                 Assert.IsTrue(samples.Count > 0, "Buttons page should render DemoSampleControl samples.");
@@ -147,7 +148,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySelectionPage_BasicRadioGroupStartsAtGroupLeftEdge()
         {
-            RunDemoPageTest(() => new GallerySelectionPage(), window =>
+            RunDemoPageTest(static () => new GallerySelectionPage(), static window =>
             {
                 Controls.RadioButton? optionA = FindRadioButtonByContent(window, "Option A");
                 Controls.RadioButton? optionB = FindRadioButtonByContent(window, "Option B");
@@ -170,7 +171,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryDataBindingPage_AddItemRailIsWider()
         {
-            RunDemoPageTest(() => new GalleryDataBindingPage(), window =>
+            RunDemoPageTest(static () => new GalleryDataBindingPage(), static window =>
             {
                 Controls.TextBox? newItemBox = FindVisualChildByName<Controls.TextBox>(window, "NewItemBox");
                 StackPanel? rightRailStack = newItemBox?.Parent as StackPanel;
@@ -187,7 +188,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryNavigationPage_CompactSampleShowsBackAndPaneToggleButtons()
         {
-            RunDemoPageTest(() => new GalleryNavigationPage(), window =>
+            RunDemoPageTest(static () => new GalleryNavigationPage(), static window =>
             {
                 Controls.NavigationView? compact = FindVisualChildByName<Controls.NavigationView>(window, "CompactNavigationDemo");
                 Controls.CheckBox? backEnabled = FindVisualChildByName<Controls.CheckBox>(window, "BackEnabledToggle");
@@ -199,8 +200,8 @@ namespace Fluence.Wpf.Tests
                 Assert.IsTrue(compact.IsPaneToggleButtonVisible,
                     "Compact navigation sample should explicitly show the pane toggle button.");
 
-                System.Windows.Controls.Button? back = compact.Template.FindName(Controls.NavigationView.PartBackButton, compact) as System.Windows.Controls.Button;
-                System.Windows.Controls.Button? paneToggle = compact.Template.FindName(Controls.NavigationView.PartPaneToggleButton, compact) as System.Windows.Controls.Button;
+                Button? back = compact.Template.FindName(Controls.NavigationView.PartBackButton, compact) as Button;
+                Button? paneToggle = compact.Template.FindName(Controls.NavigationView.PartPaneToggleButton, compact) as Button;
                 Assert.IsNotNull(back, "Compact NavigationView template should expose PART_BackButton.");
                 Assert.IsNotNull(paneToggle, "Compact NavigationView template should expose PART_PaneToggleButton.");
                 Assert.AreEqual(Visibility.Visible, back.Visibility,
@@ -226,7 +227,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryFormsPage_ActionsAlignAndOutputHasStableSpace()
         {
-            RunDemoPageTest(() => new GalleryFormsPage(), window =>
+            RunDemoPageTest(static () => new GalleryFormsPage(), static window =>
             {
                 Controls.Button? signIn = FindVisualChildByName<Controls.Button>(window, "SignInButton");
                 StackPanel? checkoutButtons = FindVisualChildByName<StackPanel>(window, "CheckoutButtonsPanel");
@@ -243,7 +244,7 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual(0.0, placeOrder.Margin.Left,
                     "First checkout action should align with the form fields.");
                 Assert.IsTrue(outputRegions.Count > 0, "Forms page should expose output regions.");
-                Assert.IsTrue(outputRegions.All(static region => region.MinWidth >= 220.0),
+                Assert.IsTrue(outputRegions.TrueForAll(static region => region.MinWidth >= 220.0),
                     "Output regions should reserve enough room for status text.");
             });
         }
@@ -251,25 +252,25 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryPages_RemoveRequestedOutputRegions()
         {
-            RunDemoPageTest(() => new GalleryInputsPage(), window =>
+            RunDemoPageTest(static () => new GalleryInputsPage(), static window =>
             {
                 Assert.IsNull(FindVisualChildByName<TextBlock>(window, "CharCountLabel"),
                     "Inputs TextBox sample should no longer expose a character-count output.");
             });
 
-            RunDemoPageTest(() => new GalleryDataBindingPage(), window =>
+            RunDemoPageTest(static () => new GalleryDataBindingPage(), static window =>
             {
                 Assert.IsNull(FindVisualChildByName<TextBlock>(window, "ItemCountLabel"),
                     "DataBinding first sample should no longer expose an item-count output.");
             });
 
-            RunDemoPageTest(() => new GalleryTreesPage(), window =>
+            RunDemoPageTest(static () => new GalleryTreesPage(), static window =>
             {
                 Assert.IsNull(FindVisualChildByName<TextBlock>(window, "TreeSelectionLabel"),
                     "Trees second sample should no longer expose a selection output.");
             });
 
-            RunDemoPageTest(() => new GalleryNavigationPage(), window =>
+            RunDemoPageTest(static () => new GalleryNavigationPage(), static window =>
             {
                 Assert.IsNull(FindVisualChildByName<TextBlock>(window, "CompactNavigationOutputText"),
                     "Navigation compact sample should no longer expose an output text region.");
@@ -279,7 +280,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryStatusPage_NumberBoxDrivesFirstProgressBar()
         {
-            RunDemoPageTest(() => new GalleryStatusPage(), window =>
+            RunDemoPageTest(static () => new GalleryStatusPage(), static window =>
             {
                 Controls.NumberBox? numberBox = FindVisualChildByName<Controls.NumberBox>(window, "ProgressValueNumberBox");
                 Controls.ProgressBar? progressBar = FindVisualChildByName<Controls.ProgressBar>(window, "StandardProgressBar");
@@ -335,7 +336,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryFormsPage_CheckoutFieldsUseStableNamesAndAlignOptionalInput()
         {
-            RunDemoPageTest(() => new GalleryFormsPage(), window =>
+            RunDemoPageTest(static () => new GalleryFormsPage(), static window =>
             {
                 Grid? checkoutGrid = FindVisualChildByName<Grid>(window, "CheckoutFieldsGrid");
                 Controls.NumberBox? quantity = FindVisualChildByName<Controls.NumberBox>(window, "QuantityNumberBox");
@@ -362,7 +363,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryDataPage_ListBackgroundsAndPersonPicturesUseExpectedAssets()
         {
-            RunDemoPageTest(() => new GalleryDataPage(), window =>
+            RunDemoPageTest(static () => new GalleryDataPage(), static window =>
             {
                 Border? simpleBackground = FindVisualChildByName<Border>(window, "SimpleListViewBackground");
                 Border? richBackground = FindVisualChildByName<Border>(window, "RichListViewBackground");
@@ -389,15 +390,13 @@ namespace Fluence.Wpf.Tests
                     "PersonPicture sample should be horizontally centered.");
                 Assert.AreEqual(VerticalAlignment.Center, personPicturePanel.VerticalAlignment,
                     "PersonPicture sample should be vertically centered.");
-                Assert.IsTrue(personPictures.Any(picture => picture.ProfilePicture is not null &&
-                    picture.ProfilePicture.ToString().IndexOf("PersonPictureMadisonButler.png", StringComparison.Ordinal) >= 0),
+                Assert.IsTrue(personPictures.Exists(static picture => picture.ProfilePicture?.ToString(CultureInfo.InvariantCulture).IndexOf("PersonPictureMadisonButler.png", StringComparison.Ordinal) >= 0),
                     "PersonPicture sample should include the Madison Butler portrait asset.");
-                Assert.IsFalse(personPictures.Any(picture => picture.ProfilePicture is not null &&
-                    picture.ProfilePicture.ToString().IndexOf("PersonPictureOscarWard.png", StringComparison.Ordinal) >= 0),
+                Assert.IsFalse(personPictures.Exists(static picture => picture.ProfilePicture?.ToString(CultureInfo.InvariantCulture).IndexOf("PersonPictureOscarWard.png", StringComparison.Ordinal) >= 0),
                     "PersonPicture sample should remove the extra Oscar Ward portrait.");
-                Assert.IsFalse(personPictures.Any(picture => !string.IsNullOrWhiteSpace(picture.Initials)),
+                Assert.IsFalse(personPictures.Exists(static picture => !string.IsNullOrWhiteSpace(picture.Initials)),
                     "PersonPicture sample should remove the initials fallback entry.");
-                Assert.IsFalse(personPictures.Any(static picture => picture.IsGroup),
+                Assert.IsFalse(personPictures.Exists(static picture => picture.IsGroup),
                     "PersonPicture sample should remove the invalid group glyph entry.");
             });
         }
@@ -405,7 +404,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryPages_RightRailControlsUseRequestedAlignment()
         {
-            RunDemoPageTest(() => new GalleryDataBindingPage(), window =>
+            RunDemoPageTest(static () => new GalleryDataBindingPage(), static window =>
             {
                 StackPanel? selectionRail = FindVisualChildByName<StackPanel>(window, "SelectionModeRail");
                 Assert.IsNotNull(selectionRail, "Data Binding selection sample should expose its right rail.");
@@ -413,7 +412,7 @@ namespace Fluence.Wpf.Tests
                     "Data Binding selection options should be vertically centered.");
             });
 
-            RunDemoPageTest(() => new GalleryTreesPage(), window =>
+            RunDemoPageTest(static () => new GalleryTreesPage(), static window =>
             {
                 StackPanel? treeExpansionActions = FindVisualChildByName<StackPanel>(window, "TreeExpansionActionsPanel");
                 Assert.IsNotNull(treeExpansionActions, "Tree expansion sample should expose the action button panel.");
@@ -425,7 +424,7 @@ namespace Fluence.Wpf.Tests
                     "Tree expansion buttons should be wider than the default compact command width.");
             });
 
-            RunDemoPageTest(() => new GalleryAccessibilityPage(), window =>
+            RunDemoPageTest(static () => new GalleryAccessibilityPage(), static window =>
             {
                 string[] buttonNames =
                 [
@@ -433,7 +432,7 @@ namespace Fluence.Wpf.Tests
                     "AutomationOpenFileButton",
                     "AutomationSaveButton",
                     "AutomationDeleteButton",
-                    "AutomationShareButton"
+                    "AutomationShareButton",
                 ];
 
                 foreach (string buttonName in buttonNames)
@@ -455,18 +454,18 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryNavigationPage_IconsAreDefaultSizeAndInfoBadgePaneStartsExpanded()
         {
-            RunDemoPageTest(() => new GalleryNavigationPage(), window =>
+            RunDemoPageTest(static () => new GalleryNavigationPage(), static window =>
             {
                 Controls.NavigationView? leftNavigation = FindVisualChildByName<Controls.NavigationView>(window, "LeftNavigationDemo");
                 Assert.IsNotNull(leftNavigation, "Navigation page should expose the left mode sample.");
 
                 List<Controls.FontIcon> leftIcons = [.. FindVisualChildren<Controls.FontIcon>(leftNavigation)];
                 Assert.IsTrue(leftIcons.Count >= 3, "Left navigation sample should expose item icons.");
-                Assert.IsTrue(leftIcons.All(icon => Math.Abs(icon.IconFontSize - 16d) < 0.1),
+                Assert.IsTrue(leftIcons.TrueForAll(static icon => Math.Abs(icon.IconFontSize - 16d) < 0.1),
                     "NavigationView item icons should align with the compact pane glyph size.");
 
                 Controls.NavigationView? badgeNavigation = FindVisualChildren<Controls.NavigationView>(window)
-                    .FirstOrDefault(nav => string.Equals(nav.Header as string, "Inbox", StringComparison.Ordinal));
+                    .FirstOrDefault(static nav => string.Equals(nav.Header as string, "Inbox", StringComparison.Ordinal));
                 Assert.IsNotNull(badgeNavigation, "Navigation page should expose the InfoBadge NavigationView sample.");
                 Assert.AreEqual(NavigationViewPaneDisplayMode.Left, badgeNavigation.PaneDisplayMode,
                     "InfoBadge NavigationView sample should start expanded.");
@@ -478,11 +477,11 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryTabsPage_PlacementSampleUsesLeftPlacementOnly()
         {
-            RunDemoPageTest(() => new GalleryTabsPage(), window =>
+            RunDemoPageTest(static () => new GalleryTabsPage(), static window =>
             {
                 Dictionary<string, TabItem> items = FindVisualChildren<TabItem>(window)
-                    .Where(item => item.Header is string)
-                    .ToDictionary(item => (string)item.Header);
+                    .Where(static item => item.Header is string)
+                    .ToDictionary(static item => (string)item.Header, StringComparer.Ordinal);
 
                 double infoWidth = GetExplicitHeaderWidth(items, "Inbox");
                 double archiveWidth = GetExplicitHeaderWidth(items, "Archive");
@@ -503,15 +502,15 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryLayoutPage_SeparatesStructuralPrimitiveSamples()
         {
-            RunDemoPageTest(() => new GalleryLayoutPage(), window =>
+            RunDemoPageTest(static () => new GalleryLayoutPage(), static window =>
             {
-                List<string> descriptions = [.. FindVisualChildren<DemoSampleControl>(window).Select(sample => sample.SampleDescription)];
+                List<string> descriptions = [.. FindVisualChildren<DemoSampleControl>(window).Select(static sample => sample.SampleDescription)];
 
-                Assert.IsTrue(descriptions.Any(description => description.IndexOf("Separator", StringComparison.OrdinalIgnoreCase) >= 0),
+                Assert.IsTrue(descriptions.Exists(static description => description.IndexOf("Separator", StringComparison.OrdinalIgnoreCase) >= 0),
                     "Layout page should have a dedicated Separator DemoSampleControl.");
-                Assert.IsTrue(descriptions.Any(description => description.IndexOf("DockPanel", StringComparison.OrdinalIgnoreCase) >= 0),
+                Assert.IsTrue(descriptions.Exists(static description => description.IndexOf("DockPanel", StringComparison.OrdinalIgnoreCase) >= 0),
                     "Layout page should have a dedicated DockPanel DemoSampleControl.");
-                Assert.IsTrue(descriptions.Any(description => description.IndexOf("Expander", StringComparison.OrdinalIgnoreCase) >= 0),
+                Assert.IsTrue(descriptions.Exists(static description => description.IndexOf("Expander", StringComparison.OrdinalIgnoreCase) >= 0),
                     "Layout page should have a dedicated Expander DemoSampleControl.");
 
                 Controls.Expander? dockPanelExpander = FindVisualChildByName<Controls.Expander>(window, "DockPanelOptionsExpander");
@@ -526,7 +525,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryAccessibilityPage_RtlSampleDefaultsOn()
         {
-            RunDemoPageTest(() => new GalleryAccessibilityPage(), window =>
+            RunDemoPageTest(static () => new GalleryAccessibilityPage(), static window =>
             {
                 Controls.ToggleSwitch? toggle = FindVisualChildByName<Controls.ToggleSwitch>(window, "RtlToggle");
                 Controls.Card? card = FindVisualChildByName<Controls.Card>(window, "RtlDemoCard");

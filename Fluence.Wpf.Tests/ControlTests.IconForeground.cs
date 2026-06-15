@@ -55,7 +55,7 @@ namespace Fluence.Wpf.Tests
                 Fluent.Button button = new()
                 {
                     Content = "Send",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new() { Content = button };
 
@@ -88,7 +88,7 @@ namespace Fluence.Wpf.Tests
                         "Disabled icon must not be double-dimmed; the disabled foreground brush carries the dim level.");
 
                     button.IsEnabled = true;
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Assert.IsTrue(
                         WaitUntil(window.Dispatcher, 2000, () => IconMatchesText(button, "MainContentPresenter")),
                         "Button icon must keep matching the text foreground after a Light to Dark theme switch.");
@@ -96,7 +96,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
@@ -105,7 +105,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Button_ExplicitIconForeground_LocalValueStillWins()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -114,7 +114,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Appearance = ControlAppearance.Accent,
                     Content = "Send",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724", Foreground = Brushes.Red }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724", Foreground = Brushes.Red },
                 };
                 Window window = new() { Content = button };
 
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(Colors.Red, GetIconForegroundColor(button),
                         "A consumer-set icon Foreground (local value) must beat the icon-follows-text wiring.");
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     DrainDispatcher(window.Dispatcher);
                     Assert.AreEqual(Colors.Red, GetIconForegroundColor(button),
                         "A consumer-set icon Foreground must survive a theme switch.");
@@ -135,7 +135,7 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     window.Close();
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
@@ -144,7 +144,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void HyperlinkButton_FontIconIcon_MatchesTextForeground_AtRestAndDisabled()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -152,7 +152,7 @@ namespace Fluence.Wpf.Tests
                 Fluent.HyperlinkButton link = new()
                 {
                     Content = "Learn more",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new() { Content = link };
 
@@ -189,7 +189,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void NavigationViewItem_FontIconIcon_MatchesTextForeground_RestSelectedAndDisabled()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -197,13 +197,13 @@ namespace Fluence.Wpf.Tests
                 Fluent.NavigationViewItem item = new()
                 {
                     Content = "Home",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new()
                 {
                     Content = item,
                     Width = 240,
-                    Height = 80
+                    Height = 80,
                 };
 
                 try
@@ -240,7 +240,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TabViewItem_FontIconIcon_MatchesTextForeground_UnselectedAndSelected()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -248,7 +248,7 @@ namespace Fluence.Wpf.Tests
                 Fluent.TabViewItem iconTab = new()
                 {
                     Header = "Details",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                 };
                 Fluent.TabView tabView = new();
                 _ = tabView.Items.Add(new Fluent.TabViewItem { Header = "First" });
@@ -258,7 +258,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Content = tabView,
                     Width = 420,
-                    Height = 200
+                    Height = 200,
                 };
 
                 try
@@ -294,7 +294,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MenuItem_CustomFontIconIcon_MatchesTextForeground_RestAndDisabled()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -302,13 +302,13 @@ namespace Fluence.Wpf.Tests
                 Fluent.MenuItem menuItem = new()
                 {
                     Header = "Open",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new()
                 {
                     Content = menuItem,
                     Width = 240,
-                    Height = 80
+                    Height = 80,
                 };
 
                 try
@@ -340,7 +340,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void InfoBar_CustomFontIconIcon_FollowsTextForeground_NotSeverityColor()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -351,14 +351,14 @@ namespace Fluence.Wpf.Tests
                     Message = "All changes were written.",
                     Severity = InfoBarSeverity.Error,
                     Icon = new Fluent.FontIcon { Glyph = "\uE724" },
-                    IsOpen = true
+                    IsOpen = true,
                 };
                 Fluent.InfoBar standard = new()
                 {
                     Title = "Failure",
                     Message = "Something broke.",
                     Severity = InfoBarSeverity.Error,
-                    IsOpen = true
+                    IsOpen = true,
                 };
                 StackPanel panel = new();
                 _ = panel.Children.Add(custom);
@@ -367,7 +367,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Content = panel,
                     Width = 420,
-                    Height = 220
+                    Height = 220,
                 };
 
                 try
@@ -408,7 +408,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Card_FontIconIcon_MatchesHeaderForeground_RestAndDisabled()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -417,13 +417,13 @@ namespace Fluence.Wpf.Tests
                 {
                     Header = "Storage",
                     Icon = new Fluent.FontIcon { Glyph = "\uE724" },
-                    Content = "Body"
+                    Content = "Body",
                 };
                 Window window = new()
                 {
                     Content = card,
                     Width = 320,
-                    Height = 200
+                    Height = 200,
                 };
 
                 try
@@ -455,14 +455,14 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ComboBox_FontIconIcon_MatchesTextForeground_RestAndDisabled()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
                 Fluent.ComboBox combo = new()
                 {
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                 };
                 _ = combo.Items.Add("First");
                 combo.SelectedIndex = 0;
@@ -470,7 +470,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Content = combo,
                     Width = 240,
-                    Height = 80
+                    Height = 80,
                 };
 
                 try
@@ -502,7 +502,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TextBox_FontIconIcon_MatchesTextForeground_RestAndDisabled()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
@@ -511,13 +511,13 @@ namespace Fluence.Wpf.Tests
                 {
                     Icon = new Fluent.FontIcon { Glyph = "\uE724" },
                     IconPlacement = ElementPlacement.Left,
-                    Text = "Value"
+                    Text = "Value",
                 };
                 Window window = new()
                 {
                     Content = textBox,
                     Width = 240,
-                    Height = 80
+                    Height = 80,
                 };
 
                 try
@@ -560,13 +560,13 @@ namespace Fluence.Wpf.Tests
                 {
                     Label = "Share",
                     Icon = new Fluent.FontIcon { Glyph = "\uE72A" },
-                    Style = (Style)Application.Current.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle")
+                    Style = (Style)Application.Current.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"),
                 };
                 Window secondaryWindow = new()
                 {
                     Content = secondary,
                     Width = 240,
-                    Height = 60
+                    Height = 60,
                 };
 
                 try
@@ -606,13 +606,13 @@ namespace Fluence.Wpf.Tests
                 Fluent.AppBarButton compact = new()
                 {
                     Label = "Copy",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE72A" }
+                    Icon = new Fluent.FontIcon { Glyph = "\uE72A" },
                 };
                 Window compactWindow = new()
                 {
                     Content = compact,
                     Width = 60,
-                    Height = 60
+                    Height = 60,
                 };
 
                 try
@@ -627,7 +627,7 @@ namespace Fluence.Wpf.Tests
                         "Compact AppBarButton icon at rest must match the control Foreground.");
 
                     // Switch to Dark theme; icon must re-resolve to the new Foreground brush value.
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Assert.IsTrue(
                         WaitUntil(compactWindow.Dispatcher, 2000, () =>
                             GetControlForegroundColor(compact) == GetIconForegroundColor(compact)),
@@ -636,13 +636,13 @@ namespace Fluence.Wpf.Tests
                 finally
                 {
                     compactWindow.Close();
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
                 }
             });
         }
 
-        private static Color GetControlForegroundColor(System.Windows.Controls.Control control)
+        private static Color GetControlForegroundColor(Control control)
         {
             SolidColorBrush? brush = control.Foreground as SolidColorBrush;
             Assert.IsNotNull(brush, "The control Foreground should be a SolidColorBrush.");

@@ -26,9 +26,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Helpers;
 using System;
 using System.Runtime.InteropServices;
+using Fluence.Wpf.Helpers;
 
 namespace Fluence.Wpf.Native
 {
@@ -39,7 +39,7 @@ namespace Fluence.Wpf.Native
     // "exceptional third-party interop" carve-out; no other file may use an inline pragma.
 #pragma warning disable SYSLIB1054
     /// <summary>
-    /// The native interop surface for <see cref="Fluence.Wpf.Controls.FluenceWindow"/> and its
+    /// The native interop surface for <see cref="Controls.FluenceWindow"/> and its
     /// policy/capability helpers: DWM backdrop and frame attributes, UxTheme caption suppression,
     /// immersive color queries, monitor and taskbar geometry, layered-window presentation, and the
     /// <c>RtlGetVersion</c> OS-build probe. Every method is best-effort and handle-safe so it can be
@@ -87,7 +87,11 @@ namespace Fluence.Wpf.Native
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsZoomed(IntPtr hWnd);
 
-        /// <summary>Returns whether <paramref name="hWnd"/> is a valid existing window handle.</summary>
+        /// <summary>
+        /// Returns whether <paramref name="hWnd"/> is a valid existing window handle.
+        /// </summary>
+        /// <param name="hWnd">The window handle to evaluate.</param>
+        /// <returns><see langword="true"/> if the handle is valid; otherwise, <see langword="false"/>.</returns>
         [DllImport(User32, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsWindow(IntPtr hWnd);
@@ -96,6 +100,13 @@ namespace Fluence.Wpf.Native
         /// Sends a window message with a timeout. Used by the tests to broadcast
         /// <c>WM_SETTINGCHANGE</c>/<c>ImmersiveColorSet</c> so the theme watcher re-reads the palette.
         /// </summary>
+        /// <param name="hWnd">The target window handle, or <see cref="HWND_BROADCAST"/> to send to all top-level windows.</param>
+        /// <param name="Msg">The message to send.</param>
+        /// <param name="wParam">The WPARAM to send.</param>
+        /// <param name="lParam">The LPARAM to send.</param>
+        /// <param name="fuFlags">The flags for the message.</param>
+        /// <param name="uTimeout">The timeout for the message.</param>
+        /// <param name="lpdwResult">The result of the message.</param>
         [DllImport(User32, SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr SendMessageTimeout(
             IntPtr hWnd,
@@ -106,86 +117,147 @@ namespace Fluence.Wpf.Native
             uint uTimeout,
             out IntPtr lpdwResult);
 
-        #endregion
+        #endregion P/Invoke declarations - User32 window styles and presentation
 
         #region P/Invoke declarations - Ntdll
 
         [DllImport(Ntdll, SetLastError = true)]
         private static extern int RtlGetVersion(ref OSVERSIONINFOEX versionInfo);
 
-        #endregion
+        #endregion P/Invoke declarations - Ntdll
 
         #region P/Invoke declarations - DWM
 
-        /// <summary>Sets a DWM window attribute from a 4-byte integer value.</summary>
+        /// <summary>
+        /// Sets a DWM window attribute from a 4-byte integer value.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="attr">The DWM attribute to set.</param>
+        /// <param name="attrValue">The value to set for the attribute.</param>
+        /// <param name="attrSize">The size of the attribute value.</param>
         [DllImport(Dwmapi, PreserveSig = true)]
         public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
-        /// <summary>Reads a DWM window attribute into a 4-byte integer value.</summary>
+        /// <summary>
+        /// Reads a DWM window attribute into a 4-byte integer value.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="attr">The DWM attribute to read.</param>
+        /// <param name="attrValue">The value of the attribute.</param>
+        /// <param name="attrSize">The size of the attribute value.</param>
         [DllImport(Dwmapi, PreserveSig = true)]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int attr, out int attrValue, int attrSize);
 
-        /// <summary>Extends the DWM frame into the client area using the supplied margins.</summary>
+        /// <summary>
+        /// Extends the DWM frame into the client area using the supplied margins.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="pMarInset">The margins to extend the frame into the client area.</param>
         [DllImport(Dwmapi, PreserveSig = true)]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS pMarInset);
 
-        /// <summary>Reads the current DWM colorization color and its opaque-blend flag.</summary>
+        /// <summary>
+        /// Reads the current DWM colorization color and its opaque-blend flag.
+        /// </summary>
+        /// <param name="pcrColorization">The colorization color.</param>
+        /// <param name="pfOpaqueBlend">Whether the colorization is opaque.</param>
         [DllImport(Dwmapi, PreserveSig = true)]
         public static extern int DwmGetColorizationColor(out uint pcrColorization, out bool pfOpaqueBlend);
 
-        /// <summary>Reports whether DWM desktop composition is enabled.</summary>
+        /// <summary>
+        /// Reports whether DWM desktop composition is enabled.
+        /// </summary>
+        /// <param name="pfEnabled">Whether DWM desktop composition is enabled.</param>
         [DllImport(Dwmapi, PreserveSig = true)]
         public static extern int DwmIsCompositionEnabled(out bool pfEnabled);
 
-        /// <summary>Reads the undocumented DWM colorization parameters (ordinal-127 export).</summary>
+        /// <summary>
+        /// Reads the undocumented DWM colorization parameters (ordinal-127 export).
+        /// </summary>
+        /// <param name="parameters">The colorization parameters.</param>
         [DllImport(Dwmapi, EntryPoint = "#127", PreserveSig = false)]
         public static extern void DwmGetColorizationParameters(out DWMCOLORIZATIONPARAMS parameters);
 
-        #endregion
+        #endregion P/Invoke declarations - DWM
 
         #region P/Invoke declarations - User32 geometry
 
-        /// <summary>Reads the screen rectangle of a window.</summary>
+        /// <summary>
+        /// Reads the screen rectangle of a window.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="lpRect">The screen rectangle of the window.</param>
         [DllImport(User32, SetLastError = true)]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 
-        /// <summary>Reads the client rectangle of a window.</summary>
+        /// <summary>
+        /// Reads the client rectangle of a window.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="lpRect">The client rectangle of the window.</param>
         [DllImport(User32, SetLastError = true)]
         public static extern bool GetClientRect(IntPtr hwnd, out RECT lpRect);
 
-        /// <summary>Returns the monitor handle for a window using the supplied fallback flags.</summary>
+        /// <summary>
+        /// Returns the monitor handle for a window using the supplied fallback flags.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="dwFlags">The fallback flags.</param>
         [DllImport(User32)]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
-        /// <summary>Fills <paramref name="lpmi"/> with the monitor and work-area rectangles.</summary>
+        /// <summary>
+        /// Fills <paramref name="lpmi"/> with the monitor and work-area rectangles.
+        /// </summary>
+        /// <param name="hMonitor">The handle to the monitor.</param>
+        /// <param name="lpmi">The monitor information structure to fill.</param>
         [DllImport(User32, CharSet = CharSet.Unicode)]
         public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
-        /// <summary>Acquires a device context for a window.</summary>
+        /// <summary>
+        /// Acquires a device context for a window.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
         [DllImport(User32, SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hwnd);
 
-        /// <summary>Releases a device context acquired with <see cref="GetDC"/>.</summary>
+        /// <summary>
+        /// Releases a device context acquired with <see cref="GetDC"/>.
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="hdc">The handle to the device context.</param>
         [DllImport(User32, SetLastError = true)]
         public static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
 
-        #endregion
+        #endregion P/Invoke declarations - User32 geometry
 
         #region P/Invoke declarations - Shell32
 
-        /// <summary>Sends an appbar message to the shell (taskbar state and position queries).</summary>
+        /// <summary>
+        /// Sends an appbar message to the shell (taskbar state and position queries).
+        /// </summary>
+        /// <param name="dwMessage">The appbar message to send.</param>
+        /// <param name="pData">The appbar data structure.</param>
         [DllImport(Shell32, SetLastError = true)]
         public static extern IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
 
-        #endregion
+        #endregion P/Invoke declarations - Shell32
 
         #region P/Invoke declarations - UxTheme immersive color set (undocumented ordinals)
 
-        /// <summary>Returns the number of immersive color sets.</summary>
+        /// <summary>
+        /// Returns the number of immersive color sets.
+        /// </summary>
         [DllImport(UxTheme, EntryPoint = "#94", CharSet = CharSet.Unicode)]
         public static extern uint GetImmersiveColorSetCount();
 
-        /// <summary>Reads an immersive color from a color set by type.</summary>
+        /// <summary>
+        /// Reads an immersive color from a color set by type.
+        /// </summary>
+        /// <param name="dwImmersiveColorSet">The immersive color set index.</param>
+        /// <param name="dwImmersiveColorType">The immersive color type index.</param>
+        /// <param name="bIgnoreHighContrast">Whether to ignore high contrast settings.</param>
+        /// <param name="dwHighContrastCacheMode">The high contrast cache mode.</param>
         [DllImport(UxTheme, EntryPoint = "#95", CharSet = CharSet.Unicode)]
         public static extern uint GetImmersiveColorFromColorSetEx(
             uint dwImmersiveColorSet,
@@ -193,19 +265,32 @@ namespace Fluence.Wpf.Native
             bool bIgnoreHighContrast,
             uint dwHighContrastCacheMode);
 
-        /// <summary>Resolves an immersive color type ordinal from its name.</summary>
+        /// <summary>
+        /// Resolves an immersive color type ordinal from its name.
+        /// </summary>
+        /// <param name="name">The name of the immersive color type.</param>
         [DllImport(UxTheme, EntryPoint = "#96", CharSet = CharSet.Unicode)]
         public static extern uint GetImmersiveColorTypeFromName(string name);
 
-        /// <summary>Returns the user's active immersive color-set preference index.</summary>
+        /// <summary>
+        /// Returns the user's active immersive color-set preference index.
+        /// </summary>
+        /// <param name="bForceCheckRegistry">Whether to force a registry check.</param>
+        /// <param name="bSkipCheckOnFail">Whether to skip the check on failure.</param>
         [DllImport(UxTheme, EntryPoint = "#98", CharSet = CharSet.Unicode)]
         public static extern uint GetImmersiveUserColorSetPreference(bool bForceCheckRegistry, bool bSkipCheckOnFail);
 
-        /// <summary>Sets a UxTheme non-client window theme attribute (caption suppression).</summary>
+        /// <summary>
+        /// Sets a UxTheme non-client window theme attribute (caption suppression).
+        /// </summary>
+        /// <param name="hwnd">The handle to the window.</param>
+        /// <param name="eAttribute">The attribute to set.</param>
+        /// <param name="pvAttribute">A reference to the attribute value.</param>
+        /// <param name="cbAttribute">The size of the attribute value.</param>
         [DllImport(UxTheme, ExactSpelling = true, PreserveSig = true)]
         public static extern int SetWindowThemeAttribute(IntPtr hwnd, int eAttribute, ref WTA_OPTIONS pvAttribute, uint cbAttribute);
 
-        #endregion
+        #endregion P/Invoke declarations - UxTheme immersive color set (undocumented ordinals)
 
         #region DWM attribute helpers
 
@@ -271,7 +356,7 @@ namespace Fluence.Wpf.Native
         /// <summary>
         /// Cloaks or uncloaks a window via <see cref="NativeConstants.DWMWA_CLOAK"/>. While cloaked,
         /// DWM keeps the window fully composed off-screen and does not present it. Retained as part
-        /// of the interop contract; <see cref="Fluence.Wpf.Controls.FluenceWindow"/> deliberately
+        /// of the interop contract; <see cref="Controls.FluenceWindow"/> deliberately
         /// does not cloak (its first-paint flash is solved by clearing the redirection surface), so
         /// the never-cloak invariant is asserted by the harden tests via
         /// <see cref="GetWindowCloakedState"/>. Any caller that does cloak MUST guarantee a matching
@@ -396,7 +481,7 @@ namespace Fluence.Wpf.Native
             return SetWindowAttribute(hwnd, NativeConstants.DWMWA_WINDOW_CORNER_PREFERENCE, NativeConstants.DWMWCP_ROUND);
         }
 
-        #endregion
+        #endregion DWM attribute helpers
 
         #region Window style and presentation helpers
 
@@ -443,7 +528,7 @@ namespace Fluence.Wpf.Native
             return hwnd != IntPtr.Zero && ShowWindow(hwnd, SW_RESTORE);
         }
 
-        #endregion
+        #endregion Window style and presentation helpers
 
         #region OS version and taskbar helpers
 
@@ -467,8 +552,7 @@ namespace Fluence.Wpf.Native
                 : new Version(
                     versionInfo.MajorVersion,
                     versionInfo.MinorVersion,
-                    versionInfo.BuildNumber,
-                    versionInfo.Revision);
+                    versionInfo.BuildNumber);
         }
 
         /// <summary>
@@ -515,6 +599,8 @@ namespace Fluence.Wpf.Native
         /// </summary>
         /// <param name="mmi">The min/max info whose maximized rect is adjusted in place.</param>
         /// <param name="edge">The auto-hide taskbar edge (one of the <c>ABE_*</c> values).</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3532:Empty \"default\" clauses should be removed", Justification = "This is deliberate.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1070:Remove redundant default switch section", Justification = "This is deliberate.")]
         public static void ApplyAutoHideTaskbarShift(ref MINMAXINFO mmi, uint edge)
         {
             switch (edge)
@@ -538,7 +624,7 @@ namespace Fluence.Wpf.Native
             }
         }
 
-        #endregion
+        #endregion OS version and taskbar helpers
     }
 #pragma warning restore SYSLIB1054
 }

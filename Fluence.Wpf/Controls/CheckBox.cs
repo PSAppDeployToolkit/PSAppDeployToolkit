@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Description),
                 typeof(string),
                 typeof(CheckBox),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the description text displayed below the check box content.

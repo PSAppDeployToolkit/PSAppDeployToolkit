@@ -36,21 +36,21 @@ namespace Fluence.Wpf
         /// <summary>
         /// Informational message requiring attention.
         /// </summary>
-        Informational,
+        Informational = 0,
 
         /// <summary>
         /// Operation completed successfully.
         /// </summary>
-        Success,
+        Success = 1,
 
         /// <summary>
         /// A non-critical warning condition.
         /// </summary>
-        Warning,
+        Warning = 2,
 
         /// <summary>
         /// A critical error condition.
         /// </summary>
-        Error,
+        Error = 3,
     }
 }

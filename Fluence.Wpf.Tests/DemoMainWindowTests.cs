@@ -70,7 +70,7 @@ namespace Fluence.Wpf.Tests
             new("navigation", typeof(GalleryNavigationPage)),
             new("tabs", typeof(GalleryTabsPage)),
             new("layout", typeof(GalleryLayoutPage)),
-            new("status", typeof(GalleryStatusPage))
+            new("status", typeof(GalleryStatusPage)),
         ];
 
         private static void RunOnSta(Action action)
@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_DirectNavigation_LoadsConcretePages()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -127,7 +127,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_InitialSelection_LoadsHomePageContent()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -151,7 +151,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryHomePage_BrandBannerImageSwitchesWithTheme()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryHomePage page = new();
@@ -164,7 +164,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-light.png", image.Tag as string,
                         "Light theme should use the light banner graphic.");
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
@@ -173,7 +173,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-dark.png", image.Tag as string,
                         "Dark theme should use the dark banner graphic.");
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
@@ -192,11 +192,11 @@ namespace Fluence.Wpf.Tests
         public void GalleryHomePage_UsesPngBannerResourcesAndGitHubLink()
         {
             string project = ReadRepositoryFile("Fluence.Wpf.Demo", "Fluence.Wpf.Demo.csproj");
-            StringAssert.Contains(project, "<Resource Include=\"Resources\\fluence-wpf-banner-*.png\" />");
-            StringAssert.Contains(project, "<Page Remove=\"Resources\\fluence-wpf-banner-*.xaml\" />");
+            StringAssert.Contains(project, "<Resource Include=\"Resources\\fluence-wpf-banner-*.png\" />", StringComparison.Ordinal);
+            StringAssert.Contains(project, "<Page Remove=\"Resources\\fluence-wpf-banner-*.xaml\" />", StringComparison.Ordinal);
 
             string homePage = ReadRepositoryFile("Fluence.Wpf.Demo", "Pages", "GalleryHomePage.xaml");
-            StringAssert.Contains(homePage, "https://github.com/sintaxasn/fluence.wpf");
+            StringAssert.Contains(homePage, "https://github.com/sintaxasn/fluence.wpf", StringComparison.Ordinal);
         }
 
         [TestMethod]
@@ -208,9 +208,9 @@ namespace Fluence.Wpf.Tests
             AssertProjectUsesIcon("Fluence.Wpf.Demo.Mvvm", "Fluence.Wpf.Demo.Mvvm.csproj", iconPath);
 
             StringAssert.Contains(ReadRepositoryFile("Fluence.Wpf.Demo", "MainWindow.xaml"),
-                "Icon=\"Resources/fluence-wpf-appicon-256.ico\"");
+                "Icon=\"Resources/fluence-wpf-appicon-256.ico\"", StringComparison.Ordinal);
             StringAssert.Contains(ReadRepositoryFile("Fluence.Wpf.Demo.Mvvm", "MainWindow.xaml"),
-                "Icon=\"Resources/fluence-wpf-appicon-256.ico\"");
+                "Icon=\"Resources/fluence-wpf-appicon-256.ico\"", StringComparison.Ordinal);
 
             Assert.IsTrue(File.Exists(GetRepositoryFilePath("Fluence.Wpf.Demo", "Resources", "fluence-wpf-appicon-256.ico")),
                 "The gallery demo icon should exist.");
@@ -221,7 +221,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_Search_NavigatesToGroupedConcretePage()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -243,7 +243,7 @@ namespace Fluence.Wpf.Tests
                         0,
                         Key.Enter)
                     {
-                        RoutedEvent = UIElement.PreviewKeyDownEvent
+                        RoutedEvent = UIElement.PreviewKeyDownEvent,
                     });
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -261,7 +261,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_BackRequested_WalksVisitedPagesInOrder()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -315,18 +315,18 @@ namespace Fluence.Wpf.Tests
         {
             List<DemoNavigationItem> items = [.. DemoNavigationCatalog.Items];
             Assert.IsGreaterThanOrEqualTo(1, items.Count, "Navigation catalog should contain at least one entry.");
-            Assert.AreEqual("Accessibility", items[items.Count - 1].Title,
+            Assert.AreEqual("Accessibility", items[^1].Title,
                 "Accessibility should be the final regular NavigationView item after Windowing moves into Settings.");
-            Assert.IsFalse(items.Any(item => string.Equals(item.Title, "Windowing", StringComparison.Ordinal)),
+            Assert.IsFalse(items.Exists(static item => string.Equals(item.Title, "Windowing", StringComparison.Ordinal)),
                 "Windowing should not remain as a regular NavigationView item.");
-            Assert.IsFalse(items.Any(item => string.Equals(item.Route, "window", StringComparison.Ordinal)),
+            Assert.IsFalse(items.Exists(static item => string.Equals(item.Route, "window", StringComparison.Ordinal)),
                 "The old Windowing route should be removed from the regular navigation catalog.");
         }
 
         [TestMethod]
         public void GalleryPages_UseSharedWinUiGalleryPageLayout()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 Style? scrollStyle = Application.Current?.TryFindResource("GalleryPageScrollViewerStyle") as Style;
@@ -358,7 +358,7 @@ namespace Fluence.Wpf.Tests
                     new GalleryTabsPage(),
                     new GalleryLayoutPage(),
                     new GalleryStatusPage(),
-                    new GallerySettingsPage()
+                    new GallerySettingsPage(),
                 ];
 
                 foreach (UserControl page in pages)
@@ -413,7 +413,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_TitleBarSearch_StaysVisibleWhenContentExtendsIntoTitleBar()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -440,7 +440,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_TitleBarSearch_IsCenteredInWindow()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -494,7 +494,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_UsesHorizontalNavigationChrome()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -573,7 +573,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_FirstGlyphTracksBackAvailability()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -632,7 +632,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_KeepsNavigationItemsBelowTitleBar()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -655,9 +655,9 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(firstItem, "DemoNav should contain a first navigation item.");
                     double? itemY = GetVisualY(firstItem, window);
                     Assert.IsTrue(itemY >= window.TitleBarHeight - 0.5,
-                        "The first navigation item should be below the extended title bar. itemY=" + itemY + ", titleBarHeight=" + window.TitleBarHeight);
+                        "The first navigation item should be below the extended title bar. itemY=" + itemY.Value.ToString(format: null, CultureInfo.InvariantCulture) + ", titleBarHeight=" + window.TitleBarHeight.ToString(CultureInfo.InvariantCulture));
                     Assert.IsTrue(itemY <= window.TitleBarHeight + 14.0,
-                        "The first navigation item should not keep the old extra title-bar spacer. itemY=" + itemY + ", titleBarHeight=" + window.TitleBarHeight);
+                        "The first navigation item should not keep the old extra title-bar spacer. itemY=" + itemY.Value.ToString(format: null, CultureInfo.InvariantCulture) + ", titleBarHeight=" + window.TitleBarHeight.ToString(CultureInfo.InvariantCulture));
                 }
                 finally
                 {
@@ -669,7 +669,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_TopPane_UsesNonExtendedTitleBarWithoutPaneToggleChrome()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -746,7 +746,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_SettingsFooter_NavigatesToSelectableSettingsPage()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -785,7 +785,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_SettingsFooter_CollapsesLabelWhenPaneClosed()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -833,7 +833,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_SettingsFooter_DoesNotForceTopPaneModeWhenOpened()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -877,7 +877,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_NavigationStyleCombo_TracksExternalIsPaneOpenChanges()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -923,7 +923,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_TopPane_OverflowButtonDoesNotOverlapTreesAtMinimumWidth()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -945,7 +945,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(overflowButton, "Top pane should expose the overflow button.");
                     Assert.AreEqual(Visibility.Visible, overflowButton.Visibility,
                         "The overflow button should be visible at the minimum demo width.");
-                    int visibleNavigationItems = nav.Items.OfType<NavigationViewItem>().Count(item => item.Visibility == Visibility.Visible);
+                    int visibleNavigationItems = nav.Items.OfType<NavigationViewItem>().Count(static item => item.Visibility == Visibility.Visible);
                     Assert.IsTrue(visibleNavigationItems > 1,
                         "Top pane should show every navigation item that fits before the overflow button would overlap the Top toggle status.");
                     NavigationViewItem? settings = FindByName<NavigationViewItem>(window, "SettingsNavigationItem");
@@ -985,7 +985,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_NavigationStyleCombo_SwitchesPaneModeAndKeepsContentLive()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1043,7 +1043,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_NavigationStyleCombo_FollowsShellPaneToggle()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1124,7 +1124,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryNavigationPage_CompactSamplePaneToggleOpensPane()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryNavigationPage page = new();
@@ -1168,7 +1168,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_TrimsTitleToSearchClearance()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1181,8 +1181,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
 
                     window.Width = 1200;
-                    window.SetUserShowIcon(true, window.Icon);
-                    window.SetUserShowTitle(true, "Fluence.Wpf Control Gallery Extended Title That Should Trim Before Search");
+                    window.SetUserShowIcon(show: true, window.Icon);
+                    window.SetUserShowTitle(show: true, "Fluence.Wpf Control Gallery Extended Title That Should Trim Before Search");
                     window.ExtendsContentIntoTitleBar = true;
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -1214,7 +1214,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_HidesTitleTextWhenItOverlapsSearch()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1230,8 +1230,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
 
-                    window.SetUserShowIcon(true, window.Icon);
-                    window.SetUserShowTitle(true, "Fluence.Wpf Control Gallery Extended Title That Should Not Overlap The Search Box");
+                    window.SetUserShowIcon(show: true, window.Icon);
+                    window.SetUserShowTitle(show: true, "Fluence.Wpf Control Gallery Extended Title That Should Not Overlap The Search Box");
                     window.ExtendsContentIntoTitleBar = true;
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -1265,7 +1265,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_DoesNotLetTitleOverlapSearchAtMinimumWidth()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1281,8 +1281,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
 
-                    window.SetUserShowIcon(true, window.Icon);
-                    window.SetUserShowTitle(true, "Fluence.Wpf Control Gallery Extended Title That Must Never Overlap Search");
+                    window.SetUserShowIcon(show: true, window.Icon);
+                    window.SetUserShowTitle(show: true, "Fluence.Wpf Control Gallery Extended Title That Must Never Overlap Search");
                     window.ExtendsContentIntoTitleBar = true;
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -1315,7 +1315,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_ExtendedTitleBar_RestoresTitleTextWhenSearchHasRoom()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1331,8 +1331,8 @@ namespace Fluence.Wpf.Tests
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
 
-                    window.SetUserShowIcon(true, window.Icon);
-                    window.SetUserShowTitle(true, "Fluence.Wpf Control Gallery Extended Title That Should Not Overlap The Search Box");
+                    window.SetUserShowIcon(show: true, window.Icon);
+                    window.SetUserShowTitle(show: true, "Fluence.Wpf Control Gallery Extended Title That Should Not Overlap The Search Box");
                     window.ExtendsContentIntoTitleBar = true;
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
@@ -1353,7 +1353,7 @@ namespace Fluence.Wpf.Tests
                     }
 
                     window.Width = 1200;
-                    window.SetUserShowTitle(true, "Fluence.Wpf");
+                    window.SetUserShowTitle(show: true, "Fluence.Wpf");
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
@@ -1378,7 +1378,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_TitleBarSearch_DoesNotShiftWhenChromeOptionsChange()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1389,13 +1389,13 @@ namespace Fluence.Wpf.Tests
 
                     double? initialX = GetVisualX(search, window);
 
-                    window.SetUserShowIcon(false, window.Icon);
+                    window.SetUserShowIcon(show: false, window.Icon);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Assert.AreEqual(initialX ?? double.MaxValue, GetVisualX(search, window) ?? double.MaxValue, 1.0,
                         "Search should not shift when the demo hides the icon.");
 
-                    window.SetUserShowTitle(false, window.Title);
+                    window.SetUserShowTitle(show: false, window.Title);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Assert.AreEqual(initialX ?? double.MaxValue, GetVisualX(search, window) ?? double.MaxValue, 1.0,
@@ -1419,7 +1419,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoSampleControl_ExpanderUsesInMemorySourceTabs()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 DemoSampleControl sample = new()
@@ -1427,7 +1427,7 @@ namespace Fluence.Wpf.Tests
                     SampleDescription = "Snippet",
                     XamlSource = "<ui:Button Content=\"Save\" />",
                     CSharpSource = "private void Save_Click(object sender, RoutedEventArgs e) { }",
-                    DemoContent = new WpfTextBlock { Text = "Visible sample" }
+                    DemoContent = new WpfTextBlock { Text = "Visible sample" },
                 };
 
                 Window window = CreateHostWindow(sample);
@@ -1468,7 +1468,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoSampleControl_SourceRendererPreservesIndentation()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 DemoSampleControl sample = new()
@@ -1476,7 +1476,7 @@ namespace Fluence.Wpf.Tests
                     SampleDescription = "Snippet",
                     XamlSource = "<Grid>\n    <TextBlock Text=\"Indented\" />\n</Grid>",
                     CSharpSource = "private void Save()\n{\n    string value = \"Indented\";\n}",
-                    DemoContent = new WpfTextBlock { Text = "Visible sample" }
+                    DemoContent = new WpfTextBlock { Text = "Visible sample" },
                 };
 
                 Window window = CreateHostWindow(sample);
@@ -1493,9 +1493,9 @@ namespace Fluence.Wpf.Tests
                     string renderedCSharp = GetSourceTabText(tabs, "C#");
 
                     StringAssert.Contains(renderedXaml, "    <TextBlock",
-                        "Rendered XAML source should preserve leading indentation.");
+StringComparison.Ordinal, "Rendered XAML source should preserve leading indentation.");
                     StringAssert.Contains(renderedCSharp, "    string value",
-                        "Rendered C# source should preserve leading indentation.");
+StringComparison.Ordinal, "Rendered C# source should preserve leading indentation.");
                 }
                 finally
                 {
@@ -1507,13 +1507,13 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoSampleControl_EmptyCSharpSourceAddsOnlyXamlTab()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 DemoSampleControl sample = new()
                 {
                     SampleDescription = "Snippet",
-                    XamlSource = "<ui:ToggleSwitch IsChecked=\"True\" />"
+                    XamlSource = "<ui:ToggleSwitch IsChecked=\"True\" />",
                 };
 
                 Window window = CreateHostWindow(sample);
@@ -1538,7 +1538,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void MainWindow_NonHomePagesExposeInlineSourceSamples()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 MainWindow window = CreateShownMainWindow();
@@ -1583,7 +1583,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryStatusPage_DeterminateProgressRingUsesNumberBoxBinding()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryStatusPage page = new();
@@ -1617,7 +1617,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryStatusPage_ProgressBarValueAllowsZero()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryStatusPage page = new();
@@ -1642,10 +1642,10 @@ namespace Fluence.Wpf.Tests
                         "ProgressBar value should update from the NumberBox at 0 percent.");
 
                     DemoSampleControl? sample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(control => control.XamlSource.Contains("ProgressBarValue"));
+                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressBarValue", StringComparison.Ordinal));
                     Assert.IsNotNull(sample, "Status page should expose the ProgressBar value source sample.");
-                    StringAssert.Contains(sample.XamlSource, "x:Name=\"ProgressValueNumberBox\"");
-                    StringAssert.Contains(sample.XamlSource, "Minimum=\"0\"");
+                    StringAssert.Contains(sample.XamlSource, "x:Name=\"ProgressValueNumberBox\"", StringComparison.Ordinal);
+                    StringAssert.Contains(sample.XamlSource, "Minimum=\"0\"", StringComparison.Ordinal);
                     Assert.AreEqual(-1, sample.XamlSource.IndexOf("Minimum=\"1\"", StringComparison.Ordinal),
                         "ProgressBar value source should not keep the stale NumberBox minimum.");
                 }
@@ -1659,7 +1659,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryStatusPage_SourceMatchesLiveStepAndRingValues()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryStatusPage page = new();
@@ -1667,14 +1667,14 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     DemoSampleControl? stepSample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(control => control.XamlSource.Contains("ProgressBarSteps"));
+                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressBarSteps", StringComparison.Ordinal));
                     DemoSampleControl? ringSample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(control => control.XamlSource.Contains("ProgressRings"));
+                        .FirstOrDefault(static control => control.XamlSource.Contains("ProgressRings", StringComparison.Ordinal));
                     Assert.IsNotNull(stepSample, "Status page should expose the step ProgressBar source sample.");
                     Assert.IsNotNull(ringSample, "Status page should expose the ProgressRing source sample.");
 
-                    StringAssert.Contains(stepSample.XamlSource, "Steps=\"10\"");
-                    StringAssert.Contains(stepSample.XamlSource, "Text=\"Step 1 of 10\"");
+                    StringAssert.Contains(stepSample.XamlSource, "Steps=\"10\"", StringComparison.Ordinal);
+                    StringAssert.Contains(stepSample.XamlSource, "Text=\"Step 1 of 10\"", StringComparison.Ordinal);
                     Assert.AreEqual(-1, stepSample.XamlSource.IndexOf("Steps=\"5\"", StringComparison.Ordinal),
                         "Step ProgressBar source should match the live ten-step sample.");
 
@@ -1682,12 +1682,12 @@ namespace Fluence.Wpf.Tests
                     int errorRingIndex = ringSample.XamlSource.IndexOf("x:Name=\"ErrorProgressRing\"", StringComparison.Ordinal);
                     Assert.IsGreaterThanOrEqualTo(0, pausedRingIndex, "ProgressRing source should include PausedProgressRing.");
                     Assert.IsTrue(errorRingIndex > pausedRingIndex, "ProgressRing source should place ErrorProgressRing after PausedProgressRing.");
-                    string pausedRingSource = ringSample.XamlSource.Substring(pausedRingIndex, errorRingIndex - pausedRingIndex);
+                    string pausedRingSource = ringSample.XamlSource[pausedRingIndex..errorRingIndex];
 
-                    StringAssert.Contains(pausedRingSource, "IsIndeterminate=\"False\"");
-                    StringAssert.Contains(pausedRingSource, "ProgressState=\"{x:Static uicore:ProgressRingState.Paused}\"");
-                    StringAssert.Contains(pausedRingSource, "Value=\"80\"");
-                    StringAssert.Contains(ringSample.XamlSource, "Value=\"80\"");
+                    StringAssert.Contains(pausedRingSource, "IsIndeterminate=\"False\"", StringComparison.Ordinal);
+                    StringAssert.Contains(pausedRingSource, "ProgressState=\"{x:Static uicore:ProgressRingState.Paused}\"", StringComparison.Ordinal);
+                    StringAssert.Contains(pausedRingSource, "Value=\"80\"", StringComparison.Ordinal);
+                    StringAssert.Contains(ringSample.XamlSource, "Value=\"80\"", StringComparison.Ordinal);
                     Assert.AreEqual(-1, ringSample.XamlSource.IndexOf("Value=\"70\"", StringComparison.Ordinal),
                         "ProgressRing source should match the live error-state value.");
                 }
@@ -1701,7 +1701,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryStatusPage_StepProgressBarAnimatesEdgeClicks()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryStatusPage page = new();
@@ -1724,16 +1724,16 @@ namespace Fluence.Wpf.Tests
                     backButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent, backButton));
                     WaitForAnimationAndDrain(window.Dispatcher, 340);
 
-                    AssertStepClickStartsAwayFromTarget(nextButton, progressBar, fill, track, window.Dispatcher, 1, true);
+                    AssertStepClickStartsAwayFromTarget(nextButton, progressBar, fill, track, window.Dispatcher, 1, forward: true);
                     WaitForAnimationAndDrain(window.Dispatcher, 340);
-                    AssertStepClickStartsAwayFromTarget(nextButton, progressBar, fill, track, window.Dispatcher, 2, true);
+                    AssertStepClickStartsAwayFromTarget(nextButton, progressBar, fill, track, window.Dispatcher, 2, forward: true);
                     WaitForAnimationAndDrain(window.Dispatcher, 340);
 
                     progressBar.CurrentStep = 9;
                     WaitForAnimationAndDrain(window.Dispatcher, 340);
-                    AssertStepClickStartsAwayFromTarget(nextButton, progressBar, fill, track, window.Dispatcher, 10, true);
+                    AssertStepClickStartsAwayFromTarget(nextButton, progressBar, fill, track, window.Dispatcher, 10, forward: true);
                     WaitForAnimationAndDrain(window.Dispatcher, 340);
-                    AssertStepClickStartsAwayFromTarget(backButton, progressBar, fill, track, window.Dispatcher, 9, false);
+                    AssertStepClickStartsAwayFromTarget(backButton, progressBar, fill, track, window.Dispatcher, 9, forward: false);
                 }
                 finally
                 {
@@ -1745,7 +1745,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryNavigationPage_CompactSourceMatchesLiveInteraction()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryNavigationPage page = new();
@@ -1753,17 +1753,17 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     DemoSampleControl? sample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(control => control.XamlSource.Contains("CompactNavigationView"));
+                        .FirstOrDefault(static control => control.XamlSource.Contains("CompactNavigationView", StringComparison.Ordinal));
                     Assert.IsNotNull(sample, "Navigation page should expose the compact NavigationView source sample.");
 
-                    StringAssert.Contains(sample.XamlSource, "IsBackEnabled=\"{Binding IsChecked, ElementName=BackEnabledToggle}\"");
-                    StringAssert.Contains(sample.XamlSource, "IsPaneToggleButtonVisible=\"True\"");
+                    StringAssert.Contains(sample.XamlSource, "IsBackEnabled=\"{Binding IsChecked, ElementName=BackEnabledToggle}\"", StringComparison.Ordinal);
+                    StringAssert.Contains(sample.XamlSource, "IsPaneToggleButtonVisible=\"True\"", StringComparison.Ordinal);
                     Assert.AreEqual(-1, sample.XamlSource.IndexOf("CompactPaneToggleButton", StringComparison.Ordinal),
                         "Compact Navigation source should use the built-in pane toggle only.");
                     Assert.AreEqual(-1, sample.CSharpSource.IndexOf("CompactPaneToggleButton_Click", StringComparison.Ordinal),
                         "Compact Navigation source should not contain a duplicate right-rail pane toggle handler.");
-                    StringAssert.Contains(sample.XamlSource, "<ui:NavigationViewItem");
-                    StringAssert.Contains(sample.XamlSource, "Content=\"Settings\"");
+                    StringAssert.Contains(sample.XamlSource, "<ui:NavigationViewItem", StringComparison.Ordinal);
+                    StringAssert.Contains(sample.XamlSource, "Content=\"Settings\"", StringComparison.Ordinal);
                     Assert.AreEqual(-1, sample.XamlSource.IndexOf("IsBackEnabled=\"False\"", StringComparison.Ordinal),
                         "Compact Navigation source should not hard-code back availability.");
                     Assert.AreEqual(-1, sample.XamlSource.IndexOf("Footer content", StringComparison.Ordinal),
@@ -1779,7 +1779,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryTabsPage_TabViewContentUsesLayerFillSurface()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryTabsPage page = new();
@@ -1807,10 +1807,10 @@ namespace Fluence.Wpf.Tests
                     AssertTabViewItemContentSurface(selectedTab);
 
                     DemoSampleControl? sample = FindAllVisualChildren<DemoSampleControl>(page)
-                        .FirstOrDefault(control => control.XamlSource.Contains("TabViewDocuments"));
+                        .FirstOrDefault(static control => control.XamlSource.Contains("TabViewDocuments", StringComparison.Ordinal));
                     Assert.IsNotNull(sample, "Tabs page should expose the TabView source sample.");
-                    StringAssert.Contains(sample.XamlSource, "LayerFillColorDefaultBrush");
-                    StringAssert.Contains(sample.CSharpSource, "LayerFillColorDefaultBrush");
+                    StringAssert.Contains(sample.XamlSource, "LayerFillColorDefaultBrush", StringComparison.Ordinal);
+                    StringAssert.Contains(sample.CSharpSource, "LayerFillColorDefaultBrush", StringComparison.Ordinal);
                 }
                 finally
                 {
@@ -1822,7 +1822,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryTypographyPage_TableUsesCompactRowSpacing()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryTypographyPage page = new();
@@ -1834,14 +1834,14 @@ namespace Fluence.Wpf.Tests
 
                     WpfTextBlock? firstBodyCell = table.Children
                         .OfType<WpfTextBlock>()
-                        .FirstOrDefault(textBlock => Grid.GetRow(textBlock) == 1 && Grid.GetColumn(textBlock) == 0);
+                        .FirstOrDefault(static textBlock => Grid.GetRow(textBlock) == 1 && Grid.GetColumn(textBlock) == 0);
                     Assert.IsNotNull(firstBodyCell, "Typography table should include a first body row cell.");
                     Assert.AreEqual(new Thickness(24, 8, 16, 8), firstBodyCell.Margin,
                         "Typography body cells should use reduced vertical row spacing.");
 
                     WpfBorder? firstShadedRow = table.Children
                         .OfType<WpfBorder>()
-                        .FirstOrDefault(border => Grid.GetRow(border) == 1);
+                        .FirstOrDefault(static border => Grid.GetRow(border) == 1);
                     Assert.IsNotNull(firstShadedRow, "Typography table should include shaded row backgrounds.");
                     Assert.AreEqual(new Thickness(0, 2, 0, 2), firstShadedRow.Margin,
                         "Typography shaded row background should match the compact vertical spacing.");
@@ -1856,7 +1856,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryTypographyPage_DirectTableKeepsCopyColumnWithoutSourceExpander()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryTypographyPage page = new();
@@ -1871,7 +1871,7 @@ namespace Fluence.Wpf.Tests
 
                     List<Controls.Button> copyButtons = [.. FindAllVisualChildren<Controls.Button>(table)];
                     Assert.IsNotEmpty(copyButtons, "Typography table should keep the copy column in the live table.");
-                    Assert.IsTrue(copyButtons.Any(static button => "BodyTextBlockStyle".Equals(button.Tag as string, StringComparison.Ordinal)),
+                    Assert.IsTrue(copyButtons.Exists(static button => "BodyTextBlockStyle".Equals(button.Tag as string, StringComparison.Ordinal)),
                         "Typography table should keep per-row style-key copy actions.");
                 }
                 finally
@@ -1884,7 +1884,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_UsesFullWidthSettingsRowsForWindowControls()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GallerySettingsPage page = new();
@@ -1937,7 +1937,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_CompactsControlsAtNarrowWidths()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GallerySettingsPage page = new();
@@ -1994,7 +1994,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_RainbowAccentSwatches_PreserveLogoColors()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GallerySettingsPage page = new();
@@ -2012,7 +2012,7 @@ namespace Fluence.Wpf.Tests
                         "#2BDE11",
                         "#09C4DE",
                         "#AA04DE",
-                        "#FF00E8"
+                        "#FF00E8",
                     ];
 
                     Assert.AreEqual(expected.Length, accentRow.Children.Count,
@@ -2031,7 +2031,7 @@ namespace Fluence.Wpf.Tests
                 }
                 finally
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     ApplicationAccentColorManager.ApplyApplicationAccent();
                     window.Close();
                 }
@@ -2041,7 +2041,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GallerySettingsPage_InvalidAccentSwatchTag_DoesNotChangeAccent()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GallerySettingsPage page = new();
@@ -2065,7 +2065,7 @@ namespace Fluence.Wpf.Tests
                 }
                 finally
                 {
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     ApplicationAccentColorManager.ApplyApplicationAccent();
                     window.Close();
                 }
@@ -2075,7 +2075,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryAccessibilityPage_KeyboardSamplesUseAlignedRows()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryAccessibilityPage page = new();
@@ -2091,38 +2091,14 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(8, primary.Children.Count,
                         "Primary keyboard sample should contain four controls per row.");
 
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is Controls.Button button && string.Equals(button.Content as string, "Button 1", StringComparison.Ordinal);
-                    }, 0, 0, "Button 1");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is Controls.Button button && string.Equals(button.Content as string, "Button 2", StringComparison.Ordinal);
-                    }, 0, 1, "Button 2");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is Controls.TextBox;
-                    }, 0, 2, "TextBox");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is Controls.ComboBox;
-                    }, 0, 3, "ComboBox");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is Controls.CheckBox;
-                    }, 1, 0, "CheckBox");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is ToggleSwitch;
-                    }, 1, 1, "ToggleSwitch");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is Controls.Slider;
-                    }, 1, 2, "Slider");
-                    AssertGridCell(primary, delegate (UIElement child)
-                    {
-                        return child is HyperlinkButton;
-                    }, 1, 3, "HyperlinkButton");
+                    AssertGridCell(primary, static child => child is Controls.Button button && string.Equals(button.Content as string, "Button 1", StringComparison.Ordinal), 0, 0, "Button 1");
+                    AssertGridCell(primary, static child => child is Controls.Button button && string.Equals(button.Content as string, "Button 2", StringComparison.Ordinal), 0, 1, "Button 2");
+                    AssertGridCell(primary, static child => child is Controls.TextBox, 0, 2, "TextBox");
+                    AssertGridCell(primary, static child => child is Controls.ComboBox, 0, 3, "ComboBox");
+                    AssertGridCell(primary, static child => child is Controls.CheckBox, 1, 0, "CheckBox");
+                    AssertGridCell(primary, static child => child is ToggleSwitch, 1, 1, "ToggleSwitch");
+                    AssertGridCell(primary, static child => child is Controls.Slider, 1, 2, "Slider");
+                    AssertGridCell(primary, static child => child is HyperlinkButton, 1, 3, "HyperlinkButton");
 
                     Grid? tabOrder = FindByName<Grid>(page, "KeyboardSupportExplicitOrderControls");
                     Assert.IsNotNull(tabOrder, "Explicit tab order sample should use an alignment grid.");
@@ -2148,7 +2124,7 @@ namespace Fluence.Wpf.Tests
                     List<DemoSampleControl> samples = [.. FindAllVisualChildren<DemoSampleControl>(page)];
                     Assert.AreEqual(4, samples.Count,
                         "Accessibility page should expose each discrete sample through DemoSampleControl.");
-                    Assert.IsTrue(samples.All(sample => !string.IsNullOrWhiteSpace(sample.XamlSource)),
+                    Assert.IsTrue(samples.TrueForAll(static sample => !string.IsNullOrWhiteSpace(sample.XamlSource)),
                         "Every accessibility sample should have inline XAML source.");
                     Assert.IsNull(FindByName<FrameworkElement>(page, "FocusAndTabOrderSourceLink"),
                         "Accessibility page should not keep legacy SourceLink placeholders.");
@@ -2177,7 +2153,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void GalleryIconsPage_IconCatalogIsScrollableAndVirtualized()
         {
-            RunOnSta(delegate
+            RunOnSta(static delegate
             {
                 EnsureTheme();
                 GalleryIconsPage page = new();
@@ -2214,7 +2190,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsLessThan(list.Items.Count / 2, realizedBeforeScroll, "Initial layout should not realize most icon rows.");
                     Assert.IsNull(list.ItemContainerGenerator.ContainerFromIndex(list.Items.Count - 1), "Last row should stay unrealized before scrolling.");
 
-                    list.ScrollIntoView(list.Items[list.Items.Count - 1]);
+                    list.ScrollIntoView(list.Items[^1]);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
@@ -2290,11 +2266,11 @@ namespace Fluence.Wpf.Tests
             ApplicationThemeManager.ResetForTesting();
             ApplicationAccentColorManager.ResetForTesting();
             application?.Resources.MergedDictionaries.Clear();
-            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+            ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
 
             ResourceDictionary demoShared = new()
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
             application?.Resources.MergedDictionaries.Add(demoShared);
         }
@@ -2302,8 +2278,8 @@ namespace Fluence.Wpf.Tests
         private static void AssertProjectUsesIcon(string projectDirectory, string projectFile, string iconPath)
         {
             string project = ReadRepositoryFile(projectDirectory, projectFile);
-            StringAssert.Contains(project, "<ApplicationIcon>" + iconPath + "</ApplicationIcon>");
-            StringAssert.Contains(project, "<Resource Include=\"" + iconPath + "\" />");
+            StringAssert.Contains(project, "<ApplicationIcon>" + iconPath + "</ApplicationIcon>", StringComparison.Ordinal);
+            StringAssert.Contains(project, "<Resource Include=\"" + iconPath + "\" />", StringComparison.Ordinal);
         }
 
         private static string GetRepositoryFilePath(params string[] relativeSegments)
@@ -2331,7 +2307,7 @@ namespace Fluence.Wpf.Tests
                 Width = 1200,
                 Height = 900,
                 WindowStartupLocation = WindowStartupLocation.Manual,
-                ShowInTaskbar = false
+                ShowInTaskbar = false,
             };
             window.Show();
             Drain(window.Dispatcher);
@@ -2350,7 +2326,7 @@ namespace Fluence.Wpf.Tests
                 Height = 720,
                 WindowStartupLocation = WindowStartupLocation.Manual,
                 ShowInTaskbar = false,
-                Content = content
+                Content = content,
             };
             window.Show();
             Drain(window.Dispatcher);
@@ -2406,7 +2382,7 @@ namespace Fluence.Wpf.Tests
 
         private static void Drain(Dispatcher dispatcher)
         {
-            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(delegate { }));
+            _ = dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(static delegate { }));
         }
 
         private static void WaitForAnimationAndDrain(Dispatcher dispatcher, int milliseconds)
@@ -2414,7 +2390,7 @@ namespace Fluence.Wpf.Tests
             DispatcherFrame frame = new();
             DispatcherTimer timer = new(DispatcherPriority.Background, dispatcher)
             {
-                Interval = TimeSpan.FromMilliseconds(milliseconds)
+                Interval = TimeSpan.FromMilliseconds(milliseconds),
             };
             timer.Tick += delegate
             {
@@ -2532,12 +2508,9 @@ namespace Fluence.Wpf.Tests
         private static T? FindByName<T>(DependencyObject? root, string name)
             where T : FrameworkElement
         {
-            if (root is FrameworkElement element)
+            if (root is FrameworkElement element && element.FindName(name) is T named)
             {
-                if (element.FindName(name) is T named)
-                {
-                    return named;
-                }
+                return named;
             }
 
             foreach (T item in FindAllVisualChildren<T>(root))
@@ -2634,9 +2607,9 @@ namespace Fluence.Wpf.Tests
 
         private sealed class DemoPageExpectation(string tag, Type pageType)
         {
-            public string Tag { get; private set; } = tag;
+            public string Tag { get; } = tag;
 
-            public Type PageType { get; private set; } = pageType;
+            public Type PageType { get; } = pageType;
         }
     }
 }

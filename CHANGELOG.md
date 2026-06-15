@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Gallery Data page: a dedicated `ListBox` sample showing the default single-selection list next to an `Extended` multi-selection list, closing the last demo coverage gap in the control catalog. Covered by `ControlTests.DemoParity.cs`.
+
+### Changed
+
+- Gallery Forms page: the TimePicker, DatePicker, and ColorPicker samples now lead the page, ahead of the sign-in, checkout, and settings form compositions.
+
+### Fixed
+
+- `ListBoxItem` selection indicator now renders at the canonical 3x16 size, vertically centered, matching `ListViewItem` (previously a `ScaleTransform` with an absolute `CenterY` left the bar at 60 percent height anchored near its top edge). The indicator also adopts the same 167 ms slide-in / 120 ms slide-out animation as `ListViewItem`, and a disabled selected item now shows the indicator with `AccentFillColorDisabledBrush` instead of hiding it. Covered by `ControlTests.ListBox.cs`.
+
 ## [0.8.0-preview] - 2026-06-10
 
 ### Added

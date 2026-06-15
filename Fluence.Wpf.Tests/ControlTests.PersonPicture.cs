@@ -49,7 +49,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_DefaultStyle_Applies()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_TemplateParts_Present()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -95,7 +95,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_NoData_ShowsPlaceholderGlyph()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -112,7 +112,7 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual("\uE77B", initialsText.Text,
                     "PersonPicture with no data must show contact glyph U+E77B.");
                 StringAssert.Contains(initialsText.FontFamily.Source, "Segoe Fluent Icons",
-                    "The contact glyph must use the icon font, not the text font.");
+                System.StringComparison.Ordinal, "The contact glyph must use the icon font, not the text font.");
                 w.Close();
             });
         }
@@ -120,7 +120,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_DisplayName_GeneratesInitials()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_ExplicitInitials_Override()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_IsGroup_ShowsPeopleGlyph()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -183,7 +183,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_BadgeNumber_MakesBadgeVisible()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_BadgeBackground_CoversNumberAndGlyphContent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -251,7 +251,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_NoBadge_BadgeCollapsed()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -272,7 +272,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_DefaultSize_Is40x40()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -293,7 +293,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PersonPicture_ThemeCycle_StyleRemainsApplied()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

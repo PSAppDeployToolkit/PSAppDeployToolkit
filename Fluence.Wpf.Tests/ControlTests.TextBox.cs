@@ -53,7 +53,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TextBox_PlaceholderTextBlock_UsesTertiaryBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -82,7 +82,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PasswordBox_PlaceholderTextBlock_UsesTertiaryBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -111,7 +111,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void PasswordBox_Unloaded_StopsCapsLockPollingTimer()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -130,7 +130,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsNotNull(startCapsPoll, "PasswordBox must expose the expected internal caps-poll start method.");
                 Assert.IsNotNull(capsPollTimer, "PasswordBox must keep the expected caps-poll timer field.");
 
-                _ = startCapsPoll.Invoke(pb, null);
+                _ = startCapsPoll.Invoke(pb, parameters: null);
                 Assert.IsNotNull(capsPollTimer.GetValue(pb), "The caps-poll timer should be active after polling starts.");
 
                 pb.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent, pb));
@@ -144,7 +144,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TextBox_PlaceholderTextBlock_ThemeCycle_StillTertiaryBrush()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -176,7 +176,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TextBox_ValidationLine_IsHiddenUntilFocused()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -185,7 +185,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     ValidationState = ValidationState.Error,
-                    Text = "Invalid value"
+                    Text = "Invalid value",
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();
@@ -213,7 +213,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void TextBox_HelperAndValidationText_UsesSevenPixelTopMarginAndCenteredContent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -222,7 +222,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     HelperText = "Helper text",
-                    Text = "Value"
+                    Text = "Value",
                 };
                 Window w = new() { Content = tb, Width = 320, Height = 120 };
                 w.Show();

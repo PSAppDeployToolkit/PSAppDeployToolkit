@@ -61,7 +61,7 @@ namespace Fluence.Wpf.Controls
     /// permutations are deliberately omitted. The spectrum is fixed to saturation on the
     /// x axis by value on the y axis at the selected hue, with hue on a horizontal slider.
     /// </remarks>
-    [TemplatePart(Name = PART_SpectrumImage, Type = typeof(System.Windows.Controls.Image))]
+    [TemplatePart(Name = PART_SpectrumImage, Type = typeof(Image))]
     [TemplatePart(Name = PART_SpectrumArea, Type = typeof(FrameworkElement))]
     [TemplatePart(Name = PART_SpectrumThumb, Type = typeof(FrameworkElement))]
     [TemplatePart(Name = PART_HueSlider, Type = typeof(RangeBase))]
@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Controls
         private static readonly Brush CheckerboardBrush = CreateCheckerboardBrush();
         private static readonly Brush HueRainbowBrush = CreateHueRainbowBrush();
 
-        private System.Windows.Controls.Image? _spectrumImage;
+        private Image? _spectrumImage;
         private FrameworkElement? _spectrumArea;
         private FrameworkElement? _spectrumThumb;
         private RangeBase? _hueSlider;
@@ -166,7 +166,7 @@ namespace Fluence.Wpf.Controls
                 nameof(PreviousColor),
                 typeof(Color?),
                 typeof(ColorPicker),
-                new FrameworkPropertyMetadata(null, OnPreviousColorChanged));
+                new FrameworkPropertyMetadata(defaultValue: null, OnPreviousColorChanged));
 
         /// <summary>
         /// Gets or sets the comparison color shown next to the current color in the preview
@@ -186,7 +186,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsAlphaEnabled),
                 typeof(bool),
                 typeof(ColorPicker),
-                new FrameworkPropertyMetadata(false, OnIsAlphaEnabledChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsAlphaEnabledChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether the alpha channel can be edited. When
@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsColorSpectrumVisible),
                 typeof(bool),
                 typeof(ColorPicker),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets a value indicating whether the saturation/value spectrum square is
@@ -229,7 +229,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsColorChannelTextInputVisible),
                 typeof(bool),
                 typeof(ColorPicker),
-                new FrameworkPropertyMetadata(true));
+                new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
         /// Gets or sets a value indicating whether the hex text input row is shown. The
@@ -341,7 +341,7 @@ namespace Fluence.Wpf.Controls
 
             base.OnApplyTemplate();
 
-            _spectrumImage = GetTemplateChild(PART_SpectrumImage) as System.Windows.Controls.Image;
+            _spectrumImage = GetTemplateChild(PART_SpectrumImage) as Image;
             _spectrumArea = GetTemplateChild(PART_SpectrumArea) as FrameworkElement;
             _spectrumThumb = GetTemplateChild(PART_SpectrumThumb) as FrameworkElement;
             _hueSlider = GetTemplateChild(PART_HueSlider) as RangeBase;
@@ -435,6 +435,10 @@ namespace Fluence.Wpf.Controls
         /// refreshes the visuals even when the RGB value is unchanged (the spectrum thumb
         /// and hue slider can move while the color stays the same, e.g. on the grey axis).
         /// </summary>
+        /// <param name="hue">0-360</param>
+        /// <param name="saturation">0-1</param>
+        /// <param name="value">0-1</param>
+        /// <param name="alpha">0-255</param>
         private void SetColorFromHsv(double hue, double saturation, double value, byte alpha)
         {
             _hue = Math.Max(0, Math.Min(360, hue));
@@ -464,6 +468,7 @@ namespace Fluence.Wpf.Controls
         /// spectrum thumb and hue slider do not jump while the color sits on the grey axis.
         /// WinUI's ColorPicker behaves the same way.
         /// </summary>
+        /// <param name="color">The color to synchronize from.</param>
         private void SyncHsvFromColor(Color color)
         {
             (double hue, double saturation, double value) = HsvColorHelper.RgbToHsv(color);
@@ -500,7 +505,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            _spectrumBitmap ??= new WriteableBitmap(SpectrumSize, SpectrumSize, 96, 96, PixelFormats.Bgra32, null);
+            _spectrumBitmap ??= new WriteableBitmap(SpectrumSize, SpectrumSize, 96, 96, PixelFormats.Bgra32, palette: null);
             byte[] pixels = _spectrumPixels ??= new byte[SpectrumSize * SpectrumSize * 4];
 
             Color hueColor = HsvColorHelper.HsvToRgb(_hue, 1, 1);
@@ -515,9 +520,9 @@ namespace Fluence.Wpf.Controls
                 for (int x = 0; x < SpectrumSize; x++)
                 {
                     double saturation = x / (double)(SpectrumSize - 1);
-                    pixels[index] = (byte)Math.Round(value * (255.0 - (saturation * (255.0 - hueBlue))));
-                    pixels[index + 1] = (byte)Math.Round(value * (255.0 - (saturation * (255.0 - hueGreen))));
-                    pixels[index + 2] = (byte)Math.Round(value * (255.0 - (saturation * (255.0 - hueRed))));
+                    pixels[index] = (byte)Math.Round(value * (255.0 - (saturation * (255.0 - hueBlue))), MidpointRounding.ToEven);
+                    pixels[index + 1] = (byte)Math.Round(value * (255.0 - (saturation * (255.0 - hueGreen))), MidpointRounding.ToEven);
+                    pixels[index + 2] = (byte)Math.Round(value * (255.0 - (saturation * (255.0 - hueRed))), MidpointRounding.ToEven);
                     pixels[index + 3] = 255;
                     index += 4;
                 }
@@ -525,7 +530,7 @@ namespace Fluence.Wpf.Controls
 
             _spectrumBitmap.WritePixels(new Int32Rect(0, 0, SpectrumSize, SpectrumSize), pixels, SpectrumSize * 4, 0);
             _spectrumBitmapHue = _hue;
-            _spectrumImage.SetCurrentValue(System.Windows.Controls.Image.SourceProperty, _spectrumBitmap);
+            _spectrumImage.SetCurrentValue(Image.SourceProperty, _spectrumBitmap);
         }
 
         /// <summary>
@@ -652,6 +657,7 @@ namespace Fluence.Wpf.Controls
         /// Internal so the test suite can drive the drag math deterministically; the mouse
         /// handlers funnel through here.
         /// </summary>
+        /// <param name="position">The point within the spectrum area to apply.</param>
         internal void ApplySpectrumPoint(Point position)
         {
             if (_spectrumArea is null)
@@ -732,7 +738,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            byte alpha = (byte)Math.Round(Math.Max(0, Math.Min(255, e.NewValue)));
+            byte alpha = (byte)Math.Round(Math.Max(0, Math.Min(255, e.NewValue)), MidpointRounding.ToEven);
             SetColorFromHsv(_hue, _saturation, _value, alpha);
         }
 
@@ -779,6 +785,9 @@ namespace Fluence.Wpf.Controls
         /// Parses <c>#RRGGBB</c> / <c>#AARRGGBB</c> (leading <c>#</c> optional). Six-digit
         /// input is treated as fully opaque.
         /// </summary>
+        /// <param name="text">The hex color string to parse.</param>
+        /// <param name="color">The parsed color if successful; otherwise, <see langword="default"/>.</param>
+        /// <returns><see langword="true"/> if the hex color string was successfully parsed; otherwise, <see langword="false"/>.</returns>
         private static bool TryParseHexColor(string text, out Color color)
         {
             color = default;
@@ -788,9 +797,9 @@ namespace Fluence.Wpf.Controls
             }
 
             string hex = text.Trim();
-            if (hex.StartsWith("#", StringComparison.Ordinal))
+            if (hex.StartsWith('#'.ToString(), StringComparison.Ordinal))
             {
-                hex = hex.Substring(1);
+                hex = hex[1..];
             }
 
             if (hex.Length is not (6 or 8))

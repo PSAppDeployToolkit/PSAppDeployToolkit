@@ -37,16 +37,16 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void StandardThemeCycle_ResolvesKeyBrushes()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 app?.Resources.MergedDictionaries.Clear();
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplySystemAccent();
 
-                ThemeTestHelpers.ApplyStandardThemeCycle(BackdropType.None, true);
+                ThemeTestHelpers.ApplyStandardThemeCycle(BackdropType.None, updateAccent: true);
                 ThemeTestHelpers.AssertKeyThemeBrushesResolve(app);
             });
         }
@@ -55,13 +55,13 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void VisualTreeHelper_GetDpi_ReturnsPositiveScale()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 _ = WpfTestSta.EnsureApplication();
                 ApplicationThemeManager.ResetForTesting();
                 ApplicationAccentColorManager.ResetForTesting();
                 Application.Current.Resources.MergedDictionaries.Clear();
-                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
 
                 Window window = new() { Width = 200, Height = 120 };
                 try
@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
                     Controls.Border panel = new() { Width = 10, Height = 10 };
                     window.Content = panel;
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Loaded);
                     DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(panel);
                     Assert.IsTrue(dpi.PixelsPerDip > 0, "DpiScale.PixelsPerDip should be positive.");
                 }

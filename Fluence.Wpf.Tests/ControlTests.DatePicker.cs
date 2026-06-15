@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DatePicker_DefaultStyle_AppliesTemplateParts()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -103,7 +103,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DatePicker_SelectedDate_UpdatesFieldSegmentsAndPlaceholder()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -420,7 +420,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DatePicker_AutomationPeer_ReportsNameFromDateOrPlaceholder()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -628,7 +628,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DatePicker_SurfaceBrushes_ResolveAfterThemeCycle()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -657,7 +657,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DatePicker_NonGregorianDefaultCulture_UsesGregorianMonthNames()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -711,6 +711,7 @@ namespace Fluence.Wpf.Tests
                     List<string> segments = [first.Text, second.Text, third.Text];
                     Assert.IsTrue(segments.Contains(expectedMonthName),
                         string.Format(
+                            CultureInfo.InvariantCulture,
                             "The month segment must show the Gregorian month name '{0}' (segments: {1}).",
                             expectedMonthName,
                             string.Join(" | ", segments)));
@@ -763,7 +764,7 @@ namespace Fluence.Wpf.Tests
 
                     // A light dismiss closes the popup outside the control's own pipeline,
                     // exactly like the StaysOpen=false dismissal on the field mousedown.
-                    popup.SetCurrentValue(Popup.IsOpenProperty, false);
+                    popup.SetCurrentValue(Popup.IsOpenProperty, value: false);
                     DrainDispatcher(window.Dispatcher);
 
                     // The click of the same press-release gesture must not reopen the flyout.

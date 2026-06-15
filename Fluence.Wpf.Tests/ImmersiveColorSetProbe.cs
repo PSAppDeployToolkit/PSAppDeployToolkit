@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 using Fluence.Wpf.Native;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Media;
 
 namespace Fluence.Wpf.Tests
@@ -85,11 +86,11 @@ namespace Fluence.Wpf.Tests
 
             TestContext?.WriteLine($"Type IDs: Base={typeBase} L1={typeLight1} L2={typeLight2} L3={typeLight3} D1={typeDark1} D2={typeDark2} D3={typeDark3}");
 
-            uint activeSet = NativeMethods.GetImmersiveUserColorSetPreference(false, false);
+            uint activeSet = NativeMethods.GetImmersiveUserColorSetPreference(bForceCheckRegistry: false, bSkipCheckOnFail: false);
             TestContext?.WriteLine($"Active set index (user's current): {activeSet}");
             TestContext?.WriteLine("");
 
-            uint validTypeId = 0xFFFFFFFF;
+            const uint validTypeId = 0xFFFFFFFF;
             if (typeBase == validTypeId || count == 0)
             {
                 Assert.Inconclusive("Immersive color APIs returned no data on this machine.");
@@ -114,19 +115,19 @@ namespace Fluence.Wpf.Tests
                     continue; // skip duplicates to keep the log readable
                 }
 
-                uint l1Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeLight1, true, 0);
-                uint l2Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeLight2, true, 0);
-                uint l3Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeLight3, true, 0);
-                uint d1Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark1, true, 0);
-                uint d2Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark2, true, 0);
-                uint d3Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark3, true, 0);
+                uint l1Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeLight1, bIgnoreHighContrast: true, 0);
+                uint l2Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeLight2, bIgnoreHighContrast: true, 0);
+                uint l3Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeLight3, bIgnoreHighContrast: true, 0);
+                uint d1Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark1, bIgnoreHighContrast: true, 0);
+                uint d2Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark2, bIgnoreHighContrast: true, 0);
+                uint d3Raw = NativeMethods.GetImmersiveColorFromColorSetEx(i, typeDark3, bIgnoreHighContrast: true, 0);
 
                 string activeMarker = (i == activeSet) ? "*" : " ";
                 TestContext?.WriteLine($"{i,3} | {Hex(baseColor)}{activeMarker}| {Hex(DecodeAbgrToRgb(l3Raw))} {Hex(DecodeAbgrToRgb(l2Raw))} {Hex(DecodeAbgrToRgb(l1Raw))} {Hex(baseColor)} {Hex(DecodeAbgrToRgb(d1Raw))} {Hex(DecodeAbgrToRgb(d2Raw))} {Hex(DecodeAbgrToRgb(d3Raw))}");
             }
 
             TestContext?.WriteLine("");
-            TestContext?.WriteLine($"Unique base colors: {seenBases.Count} (of {count} total sets, {duplicateBaseCount} skipped duplicates)");
+            TestContext?.WriteLine($"Unique base colors: {seenBases.Count} (of {count} total sets, {duplicateBaseCount.ToString(CultureInfo.InvariantCulture)} skipped duplicates)");
             TestContext?.WriteLine("");
 
             // Cross-check against our design.md candidate list.

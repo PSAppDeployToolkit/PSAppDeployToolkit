@@ -81,7 +81,7 @@ namespace Fluence.Wpf.Controls
                 nameof(OnContent),
                 typeof(object),
                 typeof(ToggleSwitch),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content displayed when the switch is on.
@@ -100,7 +100,7 @@ namespace Fluence.Wpf.Controls
                 nameof(OffContent),
                 typeof(object),
                 typeof(ToggleSwitch),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content displayed when the switch is off.
@@ -119,7 +119,7 @@ namespace Fluence.Wpf.Controls
                 nameof(OnContentTemplate),
                 typeof(DataTemplate),
                 typeof(ToggleSwitch),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the data template for the on-state content.
@@ -138,7 +138,7 @@ namespace Fluence.Wpf.Controls
                 nameof(OffContentTemplate),
                 typeof(DataTemplate),
                 typeof(ToggleSwitch),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the data template for the off-state content.
@@ -157,7 +157,7 @@ namespace Fluence.Wpf.Controls
                 nameof(HeaderContent),
                 typeof(object),
                 typeof(ToggleSwitch),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the header content displayed above the switch.
@@ -198,7 +198,7 @@ namespace Fluence.Wpf.Controls
                 _thumbInput.LostMouseCapture += OnThumbLostMouseCapture;
             }
 
-            UpdateKnobPosition(false);
+            UpdateKnobPosition(useAnimation: false);
         }
 
         /// <inheritdoc />
@@ -211,21 +211,21 @@ namespace Fluence.Wpf.Controls
         protected override void OnChecked(RoutedEventArgs e)
         {
             base.OnChecked(e);
-            UpdateKnobPosition(true);
+            UpdateKnobPosition(useAnimation: true);
         }
 
         /// <inheritdoc />
         protected override void OnUnchecked(RoutedEventArgs e)
         {
             base.OnUnchecked(e);
-            UpdateKnobPosition(true);
+            UpdateKnobPosition(useAnimation: true);
         }
 
         /// <inheritdoc />
         protected override void OnIndeterminate(RoutedEventArgs e)
         {
             base.OnIndeterminate(e);
-            UpdateKnobPosition(true);
+            UpdateKnobPosition(useAnimation: true);
         }
 
         private TranslateTransform? ResolveKnobTranslate()
@@ -237,7 +237,7 @@ namespace Fluence.Wpf.Controls
 
             if (_switchKnob.RenderTransform is TranslateTransform transform && !transform.IsFrozen)
             {
-                transform.BeginAnimation(TranslateTransform.XProperty, null);
+                transform.BeginAnimation(TranslateTransform.XProperty, animation: null);
                 return transform;
             }
 
@@ -251,7 +251,7 @@ namespace Fluence.Wpf.Controls
             _pendingClick = true;
             _dragStarted = false;
             _dragDistance = 0.0;
-            AnimateThumbSize(ThumbPressedWidth, ThumbPressedHeight, false);
+            AnimateThumbSize(ThumbPressedWidth, ThumbPressedHeight, clearWhenCompleted: false);
         }
 
         private void OnThumbPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -270,7 +270,7 @@ namespace Fluence.Wpf.Controls
             _pendingClick = true;
             _dragStarted = true;
             _dragDistance = 0.0;
-            AnimateThumbSize(ThumbPressedWidth, ThumbPressedHeight, false);
+            AnimateThumbSize(ThumbPressedWidth, ThumbPressedHeight, clearWhenCompleted: false);
             e.Handled = true;
         }
 
@@ -333,8 +333,8 @@ namespace Fluence.Wpf.Controls
             _pendingClick = false;
             _dragStarted = false;
             _dragDistance = 0.0;
-            UpdateKnobPosition(true);
-            AnimateThumbSize(GetReleasedThumbSize(), GetReleasedThumbSize(), true);
+            UpdateKnobPosition(useAnimation: true);
+            AnimateThumbSize(GetReleasedThumbSize(), GetReleasedThumbSize(), clearWhenCompleted: true);
         }
 
         private void CompleteThumbInteraction(bool nextChecked)
@@ -347,10 +347,10 @@ namespace Fluence.Wpf.Controls
             SetCurrentValue(IsCheckedProperty, nextChecked);
             if (currentChecked == nextChecked)
             {
-                UpdateKnobPosition(true);
+                UpdateKnobPosition(useAnimation: true);
             }
 
-            AnimateThumbSize(GetReleasedThumbSize(), GetReleasedThumbSize(), true);
+            AnimateThumbSize(GetReleasedThumbSize(), GetReleasedThumbSize(), clearWhenCompleted: true);
         }
 
         private void UpdateKnobPosition(bool useAnimation)
@@ -378,7 +378,7 @@ namespace Fluence.Wpf.Controls
             DoubleAnimation animation = new(currentOffset, targetOffset, TimeSpan.FromMilliseconds(KnobAnimationMilliseconds))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
-                FillBehavior = FillBehavior.Stop
+                FillBehavior = FillBehavior.Stop,
             };
 
             animation.Completed += delegate
@@ -388,7 +388,7 @@ namespace Fluence.Wpf.Controls
                     return;
                 }
 
-                _knobTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+                _knobTranslate.BeginAnimation(TranslateTransform.XProperty, animation: null);
                 _knobTranslate.X = targetOffset;
             };
 
@@ -403,7 +403,7 @@ namespace Fluence.Wpf.Controls
             }
 
             _knobAnimationGeneration++;
-            _knobTranslate.BeginAnimation(TranslateTransform.XProperty, null);
+            _knobTranslate.BeginAnimation(TranslateTransform.XProperty, animation: null);
             _knobTranslate.X = offset;
         }
 
@@ -418,12 +418,12 @@ namespace Fluence.Wpf.Controls
             DoubleAnimation widthAnimation = new(_switchThumb.Width, width, TimeSpan.FromMilliseconds(ThumbSizeAnimationMilliseconds))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
-                FillBehavior = clearWhenCompleted ? FillBehavior.Stop : FillBehavior.HoldEnd
+                FillBehavior = clearWhenCompleted ? FillBehavior.Stop : FillBehavior.HoldEnd,
             };
             DoubleAnimation heightAnimation = new(_switchThumb.Height, height, TimeSpan.FromMilliseconds(ThumbSizeAnimationMilliseconds))
             {
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
-                FillBehavior = clearWhenCompleted ? FillBehavior.Stop : FillBehavior.HoldEnd
+                FillBehavior = clearWhenCompleted ? FillBehavior.Stop : FillBehavior.HoldEnd,
             };
 
             if (clearWhenCompleted)
@@ -435,8 +435,8 @@ namespace Fluence.Wpf.Controls
                         return;
                     }
 
-                    _switchThumb.BeginAnimation(WidthProperty, null);
-                    _switchThumb.BeginAnimation(HeightProperty, null);
+                    _switchThumb.BeginAnimation(WidthProperty, animation: null);
+                    _switchThumb.BeginAnimation(HeightProperty, animation: null);
                 };
             }
 

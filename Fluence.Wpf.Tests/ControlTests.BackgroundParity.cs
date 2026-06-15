@@ -50,7 +50,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void SelectionControls_OffStateBackgrounds_UseWinUiAltFillRoles()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -68,7 +68,7 @@ namespace Fluence.Wpf.Tests
                 {
                     Content = panel,
                     Width = 320,
-                    Height = 180
+                    Height = 180,
                 };
 
                 try
@@ -139,7 +139,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ProgressBar_TrackBackground_UsesWinUiStrongStrokeRole()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -148,13 +148,13 @@ namespace Fluence.Wpf.Tests
                 {
                     Width = 240,
                     Height = 24,
-                    Value = 40
+                    Value = 40,
                 };
                 Window window = new()
                 {
                     Content = progressBar,
                     Width = 300,
-                    Height = 120
+                    Height = 120,
                 };
 
                 try
@@ -178,7 +178,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ScrollBar_RailBackground_UsesWinUiTrackFillRole()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -192,13 +192,13 @@ namespace Fluence.Wpf.Tests
                     Value = 0,
                     ViewportSize = 10,
                     Width = 12,
-                    Height = 200
+                    Height = 200,
                 };
                 Window window = new()
                 {
                     Content = scrollBar,
                     Width = 60,
-                    Height = 300
+                    Height = 300,
                 };
 
                 try
@@ -222,12 +222,12 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoSampleControl_Chrome_UsesWinUiGalleryBackgroundRoles()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
                 MergeDemoSharedStyles(application);
-                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
 
                 DemoSampleControl sample = new()
                 {
@@ -235,13 +235,13 @@ namespace Fluence.Wpf.Tests
                     DemoContent = new TextBlock { Text = "Body" },
                     OutputContent = new TextBlock { Text = "Output" },
                     RightRailContent = new CheckBox { Content = "Option" },
-                    XamlSource = "<Grid />"
+                    XamlSource = "<Grid />",
                 };
                 Window window = new()
                 {
                     Content = sample,
                     Width = 420,
-                    Height = 300
+                    Height = 300,
                 };
 
                 try
@@ -302,7 +302,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoSharedResources_DoNotShadowNativeFluenceSurfaceRoles()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -310,7 +310,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.Dark, ApplicationTheme.HighContrast })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
                     Assert.IsInstanceOfType(application?.TryFindResource("CardBackgroundFillColorDefault"), typeof(Color),
                         "Demo shared styles must not shadow the native CardBackgroundFillColorDefault color key under " + theme + ".");
@@ -322,7 +322,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void DemoSharedResources_NativeBrushesResolveInLightAndHighContrast()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -330,7 +330,7 @@ namespace Fluence.Wpf.Tests
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Light, ApplicationTheme.HighContrast })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
 
                     foreach (string key in GetNativeDemoSurfaceBrushKeys())
                     {
@@ -346,7 +346,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void BackgroundParityBrushes_ResolveAcrossThemesAndDeterministicAccent()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
@@ -403,12 +403,12 @@ namespace Fluence.Wpf.Tests
                 [
                     ApplicationTheme.Light,
                     ApplicationTheme.Dark,
-                    ApplicationTheme.HighContrast
+                    ApplicationTheme.HighContrast,
                 ];
 
                 foreach (ApplicationTheme theme in themes)
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                     foreach (string key in keys)
@@ -429,13 +429,13 @@ namespace Fluence.Wpf.Tests
                 "01-HelloWorld.ps1",
                 "02-ThemeAndAccent.ps1",
                 "03-ControlsTour.ps1",
-                "04-LoadXamlFile.ps1"
+                "04-LoadXamlFile.ps1",
             ];
             string[] retiredScriptNames =
             [
                 "Show-ControlsDemo.ps1",
                 "Show-ThemeDemo.ps1",
-                "Show-ProgressDemo.ps1"
+                "Show-ProgressDemo.ps1",
             ];
             List<string> violations = [];
 
@@ -505,7 +505,7 @@ namespace Fluence.Wpf.Tests
             string[] roots =
             [
                 Path.Combine(repoRoot, "Fluence.Wpf", "Themes", "Controls"),
-                Path.Combine(repoRoot, "Fluence.Wpf.Demo")
+                Path.Combine(repoRoot, "Fluence.Wpf.Demo"),
             ];
             List<string> violations = [];
 
@@ -558,7 +558,7 @@ namespace Fluence.Wpf.Tests
                     continue;
                 }
 
-                string value = source.Substring(valueStart, valueEnd - valueStart);
+                string value = source[valueStart..valueEnd];
                 if (!IsLiteralBackgroundValue(value) || value.Equals("Transparent", StringComparison.Ordinal))
                 {
                     continue;
@@ -642,7 +642,7 @@ namespace Fluence.Wpf.Tests
                 "CardBackgroundFillColorDefaultBrush",
                 "CardBackgroundFillColorSecondaryBrush",
                 "ControlFillColorDefaultBrush",
-                "TextFillColorSecondaryBrush"
+                "TextFillColorSecondaryBrush",
             ];
         }
 
@@ -650,7 +650,7 @@ namespace Fluence.Wpf.Tests
         {
             ResourceDictionary demoShared = new()
             {
-                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative)
+                Source = new Uri("/Fluence.Wpf.Demo;component/Resources/DemoSharedStyles.xaml", UriKind.Relative),
             };
             application?.Resources.MergedDictionaries.Add(demoShared);
         }
@@ -679,7 +679,7 @@ namespace Fluence.Wpf.Tests
                 "#2BDE11",
                 "#09C4DE",
                 "#AA04DE",
-                "#FF00E8"
+                "#FF00E8",
             ];
 
             foreach (string accentSwatch in accentSwatches)
@@ -702,7 +702,7 @@ namespace Fluence.Wpf.Tests
                     (path[root.Length] == Path.DirectorySeparatorChar || path[root.Length] == Path.AltDirectorySeparatorChar)
                     ? 1
                     : 0;
-                return path.Substring(root.Length + separatorLength);
+                return path[(root.Length + separatorLength)..];
             }
 
             return path;

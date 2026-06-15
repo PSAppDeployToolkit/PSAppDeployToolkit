@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target <see cref="System.Windows.Controls.TextBlock"/>.</param>
         /// <returns>The requested Fluent typography style.</returns>
-        public static FluentTypography GetTypography(DependencyObject obj)
+        public static FluentTypography GetTypography(this DependencyObject obj)
         {
             return (FluentTypography)obj.GetValue(TypographyProperty);
         }
@@ -75,7 +75,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target <see cref="System.Windows.Controls.TextBlock"/>.</param>
         /// <param name="value">The Fluent typography style to apply.</param>
-        public static void SetTypography(DependencyObject obj, FluentTypography value)
+        public static void SetTypography(this DependencyObject obj, FluentTypography value)
         {
             obj.SetValue(TypographyProperty, value);
         }
@@ -115,7 +115,7 @@ namespace Fluence.Wpf.Controls
             };
         }
 
-        #endregion
+        #endregion Typography
 
         #region TextTrimming
 
@@ -134,7 +134,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target <see cref="System.Windows.Controls.TextBlock"/>.</param>
         /// <returns>The requested text trimming mode.</returns>
-        public static TextTrimming GetTextTrimming(DependencyObject obj)
+        public static TextTrimming GetTextTrimming(this DependencyObject obj)
         {
             return (TextTrimming)obj.GetValue(TextTrimmingProperty);
         }
@@ -144,7 +144,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target <see cref="System.Windows.Controls.TextBlock"/>.</param>
         /// <param name="value">The text trimming mode to apply.</param>
-        public static void SetTextTrimming(DependencyObject obj, TextTrimming value)
+        public static void SetTextTrimming(this DependencyObject obj, TextTrimming value)
         {
             obj.SetValue(TextTrimmingProperty, value);
         }
@@ -158,7 +158,7 @@ namespace Fluence.Wpf.Controls
             textBlock.TextTrimming = (TextTrimming)e.NewValue;
         }
 
-        #endregion
+        #endregion TextTrimming
 
         #region IsTextSelectionEnabled
 
@@ -170,14 +170,14 @@ namespace Fluence.Wpf.Controls
                 "IsTextSelectionEnabled",
                 typeof(bool),
                 typeof(TextBlockExtensions),
-                new FrameworkPropertyMetadata(false, OnIsTextSelectionEnabledChanged));
+                new FrameworkPropertyMetadata(defaultValue: false, OnIsTextSelectionEnabledChanged));
 
         /// <summary>
         /// Gets the value of the <see cref="IsTextSelectionEnabledProperty"/> attached property for the specified object.
         /// </summary>
         /// <param name="obj">The target <see cref="System.Windows.Controls.TextBlock"/>.</param>
-        /// <returns><c>true</c> if selection is enabled; otherwise <c>false</c>.</returns>
-        public static bool GetIsTextSelectionEnabled(DependencyObject obj)
+        /// <returns><see langword="true"/> if selection is enabled; otherwise <see langword="false"/>.</returns>
+        public static bool GetIsTextSelectionEnabled(this DependencyObject obj)
         {
             return (bool)obj.GetValue(IsTextSelectionEnabledProperty);
         }
@@ -186,8 +186,8 @@ namespace Fluence.Wpf.Controls
         /// Sets the value of the <see cref="IsTextSelectionEnabledProperty"/> attached property for the specified object.
         /// </summary>
         /// <param name="obj">The target <see cref="System.Windows.Controls.TextBlock"/>.</param>
-        /// <param name="value"><c>true</c> to enable text selection; otherwise <c>false</c>.</param>
-        public static void SetIsTextSelectionEnabled(DependencyObject obj, bool value)
+        /// <param name="value"><see langword="true"/> to enable text selection; otherwise <see langword="false"/>.</param>
+        public static void SetIsTextSelectionEnabled(this DependencyObject obj, bool value)
         {
             obj.SetValue(IsTextSelectionEnabledProperty, value);
         }
@@ -256,19 +256,19 @@ namespace Fluence.Wpf.Controls
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 IsReadOnly = true,
                 CaretBrush = textBlock.Foreground,
-                SelectionBrush = SystemColors.HighlightBrush
+                SelectionBrush = SystemColors.HighlightBrush,
             };
             _ = overlay.SetBinding(System.Windows.Controls.TextBox.TextProperty, new Binding
             {
                 Path = new PropertyPath(System.Windows.Controls.TextBlock.TextProperty),
                 Source = textBlock,
-                Mode = BindingMode.OneWay
+                Mode = BindingMode.OneWay,
             });
             _ = grid.Children.Add(overlay);
             parent.Children.Insert(index, grid);
         }
 
-        #endregion
+        #endregion IsTextSelectionEnabled
 
         #region PlaceholderText
 
@@ -287,7 +287,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
         /// <returns>The placeholder text.</returns>
-        public static string GetPlaceholderText(DependencyObject obj)
+        public static string GetPlaceholderText(this DependencyObject obj)
         {
             return (string)obj.GetValue(PlaceholderTextProperty);
         }
@@ -297,12 +297,12 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
         /// <param name="value">The placeholder text to store.</param>
-        public static void SetPlaceholderText(DependencyObject obj, string value)
+        public static void SetPlaceholderText(this DependencyObject obj, string value)
         {
             obj.SetValue(PlaceholderTextProperty, value);
         }
 
-        #endregion
+        #endregion PlaceholderText
 
         #region ShowPlaceholder
 
@@ -314,14 +314,14 @@ namespace Fluence.Wpf.Controls
                 "ShowPlaceholder",
                 typeof(bool),
                 typeof(TextBlockExtensions),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Gets whether the placeholder should be shown.
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
-        /// <returns><c>true</c> when the placeholder should be shown; otherwise <c>false</c>.</returns>
-        public static bool GetShowPlaceholder(DependencyObject obj)
+        /// <returns><see langword="true"/> when the placeholder should be shown; otherwise <see langword="false"/>.</returns>
+        public static bool GetShowPlaceholder(this DependencyObject obj)
         {
             return (bool)obj.GetValue(ShowPlaceholderProperty);
         }
@@ -330,13 +330,13 @@ namespace Fluence.Wpf.Controls
         /// Sets whether the placeholder should be shown.
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
-        /// <param name="value"><c>true</c> to show the placeholder; otherwise <c>false</c>.</param>
-        public static void SetShowPlaceholder(DependencyObject obj, bool value)
+        /// <param name="value"><see langword="true"/> to show the placeholder; otherwise <see langword="false"/>.</param>
+        public static void SetShowPlaceholder(this DependencyObject obj, bool value)
         {
             obj.SetValue(ShowPlaceholderProperty, value);
         }
 
-        #endregion
+        #endregion ShowPlaceholder
 
         #region Icon
 
@@ -348,14 +348,14 @@ namespace Fluence.Wpf.Controls
                 "Icon",
                 typeof(object),
                 typeof(TextBlockExtensions),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets the icon for the specified element.
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
         /// <returns>The icon content.</returns>
-        public static object GetIcon(DependencyObject obj)
+        public static object GetIcon(this DependencyObject obj)
         {
             return obj.GetValue(IconProperty);
         }
@@ -365,12 +365,12 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
         /// <param name="value">The icon content to store.</param>
-        public static void SetIcon(DependencyObject obj, object value)
+        public static void SetIcon(this DependencyObject obj, object value)
         {
             obj.SetValue(IconProperty, value);
         }
 
-        #endregion
+        #endregion Icon
 
         #region IconPlacement
 
@@ -389,7 +389,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
         /// <returns>The requested icon placement.</returns>
-        public static ElementPlacement GetIconPlacement(DependencyObject obj)
+        public static ElementPlacement GetIconPlacement(this DependencyObject obj)
         {
             return (ElementPlacement)obj.GetValue(IconPlacementProperty);
         }
@@ -399,11 +399,11 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         /// <param name="obj">The target dependency object.</param>
         /// <param name="value">The icon placement to apply.</param>
-        public static void SetIconPlacement(DependencyObject obj, ElementPlacement value)
+        public static void SetIconPlacement(this DependencyObject obj, ElementPlacement value)
         {
             obj.SetValue(IconPlacementProperty, value);
         }
 
-        #endregion
+        #endregion IconPlacement
     }
 }

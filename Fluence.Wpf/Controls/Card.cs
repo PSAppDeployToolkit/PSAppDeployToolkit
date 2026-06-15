@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(Card),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the icon displayed in the card header.
@@ -116,7 +116,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Header),
                 typeof(object),
                 typeof(Card),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the header content of the card.
@@ -135,7 +135,7 @@ namespace Fluence.Wpf.Controls
                 nameof(HeaderTemplate),
                 typeof(DataTemplate),
                 typeof(Card),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the data template for the header content.
@@ -154,7 +154,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Footer),
                 typeof(object),
                 typeof(Card),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the footer content of the card.
@@ -173,7 +173,7 @@ namespace Fluence.Wpf.Controls
                 nameof(FooterTemplate),
                 typeof(DataTemplate),
                 typeof(Card),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the data template for the footer content.
@@ -192,7 +192,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsClickable),
                 typeof(bool),
                 typeof(Card),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Gets or sets whether the card responds to mouse click interactions.
@@ -208,7 +208,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsPressed),
                 typeof(bool),
                 typeof(Card),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsPressed"/> dependency property.

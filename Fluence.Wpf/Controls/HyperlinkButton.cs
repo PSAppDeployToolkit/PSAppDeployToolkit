@@ -68,7 +68,7 @@ namespace Fluence.Wpf.Controls
                 nameof(NavigateUri),
                 typeof(Uri),
                 typeof(HyperlinkButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the URI to navigate to when the button is clicked.
@@ -106,7 +106,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Icon),
                 typeof(object),
                 typeof(HyperlinkButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the icon displayed in the button.

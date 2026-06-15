@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Tests
             ApplicationAccentColorManager.ResetForTesting();
             app?.Resources.MergedDictionaries.Clear();
 
-            ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+            ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
         }
 
         // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void SystemBackdropType_Default_IsAuto()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -115,7 +115,7 @@ namespace Fluence.Wpf.Tests
         public void SystemBackdropType_CanSetAllValues()
         {
             // Verifies that the DP accepts all four BackdropType values without throwing.
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -140,7 +140,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ThemeCycle_LightDarkHcLight_KeyBrushesResolveAfterEachStep()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -154,12 +154,12 @@ namespace Fluence.Wpf.Tests
                     "SystemFillColorCriticalBrush",
                     "WindowCloseButtonBackgroundPointerOverBrush",
                     "WindowCloseButtonBackgroundPressedBrush",
-                    "WindowCloseButtonForegroundPointerOverBrush"
+                    "WindowCloseButtonForegroundPointerOverBrush",
                 ];
 
                 foreach (ApplicationTheme theme in new[] { ApplicationTheme.Dark, ApplicationTheme.HighContrast, ApplicationTheme.Light })
                 {
-                    ApplicationThemeManager.Apply(theme, BackdropType.None, true);
+                    ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in keys)
                     {
                         object? resource = app?.TryFindResource(key);
@@ -176,12 +176,12 @@ namespace Fluence.Wpf.Tests
             // HC theme maps SystemFillColorCriticalBrush to WindowTextColorKey (white on black).
             // Caption close-button chrome uses its own DynamicResource tokens; this guard keeps the
             // general critical brush available for controls that intentionally consume it.
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
 
-                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, true);
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
                 object? brush = app?.TryFindResource("SystemFillColorCriticalBrush");
                 Assert.IsNotNull(brush,
                     "SystemFillColorCriticalBrush must resolve in HighContrast theme.");
@@ -197,19 +197,19 @@ namespace Fluence.Wpf.Tests
         {
             string xaml = ReadRepositoryFile("Fluence.Wpf", "Themes", "Controls", "FluenceWindow.xaml");
 
-            StringAssert.Contains(xaml, "WindowCloseButtonBackgroundPointerOverBrush");
-            StringAssert.Contains(xaml, "WindowCloseButtonBackgroundPressedBrush");
-            StringAssert.Contains(xaml, "WindowCloseButtonForegroundPointerOverBrush");
+            StringAssert.Contains(xaml, "WindowCloseButtonBackgroundPointerOverBrush", StringComparison.Ordinal);
+            StringAssert.Contains(xaml, "WindowCloseButtonBackgroundPressedBrush", StringComparison.Ordinal);
+            StringAssert.Contains(xaml, "WindowCloseButtonForegroundPointerOverBrush", StringComparison.Ordinal);
 
-            Assert.IsFalse(xaml.Contains("WindowCloseFillColorHoverBrush"),
+            Assert.IsFalse(xaml.Contains("WindowCloseFillColorHoverBrush", StringComparison.Ordinal),
                 "FluenceWindow.xaml should consume the canonical close-button background token.");
-            Assert.IsFalse(xaml.Contains("WindowCloseFillColorPressedBrush"),
+            Assert.IsFalse(xaml.Contains("WindowCloseFillColorPressedBrush", StringComparison.Ordinal),
                 "FluenceWindow.xaml should consume the canonical close-button pressed token.");
-            Assert.IsFalse(xaml.Contains("WindowCloseForegroundHoverBrush"),
+            Assert.IsFalse(xaml.Contains("WindowCloseForegroundHoverBrush", StringComparison.Ordinal),
                 "FluenceWindow.xaml should consume the canonical close-button foreground token.");
-            Assert.IsFalse(xaml.Contains("SystemFillColorCriticalBrush"),
+            Assert.IsFalse(xaml.Contains("SystemFillColorCriticalBrush", StringComparison.Ordinal),
                 "Caption close-button hover must not use the general critical brush.");
-            Assert.IsFalse(xaml.Contains("#C42B1C") || xaml.Contains("#B4271C") || xaml.Contains("#FFFFFF"),
+            Assert.IsFalse(xaml.Contains("#C42B1C", StringComparison.Ordinal) || xaml.Contains("#B4271C", StringComparison.Ordinal) || xaml.Contains("#FFFFFF", StringComparison.Ordinal),
                 "Production control templates must not inline close-button hex colors.");
         }
 
@@ -219,7 +219,7 @@ namespace Fluence.Wpf.Tests
             // The three Windows close-button Color tokens are theme-independent - the Windows shell
             // uses the same red across Light, Dark, and HighContrast - so they are seeded in code by
             // BaseColorTables, not duplicated across per-theme XAML. BrushFactory emits the *Brush twins.
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -240,7 +240,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void FluenceWindow_DeclaresCaptionButtonTemplateParts()
         {
-            object[] attributes = typeof(FluenceWindow).GetCustomAttributes(typeof(TemplatePartAttribute), false);
+            object[] attributes = typeof(FluenceWindow).GetCustomAttributes(typeof(TemplatePartAttribute), inherit: false);
 
             AssertTemplatePart(attributes, "PART_MinimizeButton");
             AssertTemplatePart(attributes, "PART_MaximizeButton");
@@ -252,7 +252,7 @@ namespace Fluence.Wpf.Tests
         {
             foreach (object attribute in attributes)
             {
-                if (attribute is TemplatePartAttribute templatePath && templatePath.Name == name && templatePath.Type == typeof(System.Windows.Controls.Button))
+                if (attribute is TemplatePartAttribute templatePath && string.Equals(templatePath.Name, name, StringComparison.Ordinal) && templatePath.Type == typeof(System.Windows.Controls.Button))
                 {
                     return;
                 }
@@ -359,14 +359,14 @@ namespace Fluence.Wpf.Tests
         private static void DrainDispatcher()
         {
             WpfTestSta.Dispatcher?.Invoke(
-                new Action(() => { }),
+                new Action(static () => { }),
                 DispatcherPriority.ContextIdle);
         }
 
         [TestMethod]
         public void Constructor_DoesNotSubscribeToManagers()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -388,7 +388,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ShowThenClose_LeavesNoNetManagerSubscriptions()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -402,7 +402,7 @@ namespace Fluence.Wpf.Tests
                     ShowInTaskbar = false,
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Left = -10000,
-                    Top = -10000
+                    Top = -10000,
                 };
                 w.Show();
                 DrainDispatcher();
@@ -434,7 +434,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ShowThenDrain_NeverCloaksWindow()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -447,7 +447,7 @@ namespace Fluence.Wpf.Tests
                     SystemBackdropType = BackdropType.Mica,
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Left = -10000,
-                    Top = -10000
+                    Top = -10000,
                 };
                 try
                 {
@@ -455,7 +455,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher();
 
                     nint handle = new System.Windows.Interop.WindowInteropHelper(w).Handle;
-                    Assert.AreEqual(0, Fluence.Wpf.Native.NativeMethods.GetWindowCloakedState(handle),
+                    Assert.AreEqual(0, Native.NativeMethods.GetWindowCloakedState(handle),
                         "FluenceWindow must never DWM-cloak its window (DWMWA_CLOAKED == 0); the first-paint flash is solved by clearing the redirection surface, not by cloaking.");
                 }
                 finally
@@ -469,7 +469,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void RedirectionSurface_MatchesContentBackground_AcrossBackdropSwap()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -482,7 +482,7 @@ namespace Fluence.Wpf.Tests
                     SystemBackdropType = BackdropType.Mica,
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Left = -10000,
-                    Top = -10000
+                    Top = -10000,
                 };
                 try
                 {
@@ -527,7 +527,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void ShowThenClose_ReleasesHwndSourceHookAndThemeWatcherRegistration()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -541,7 +541,7 @@ namespace Fluence.Wpf.Tests
                     ShowInTaskbar = false,
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Left = -10000,
-                    Top = -10000
+                    Top = -10000,
                 };
                 w.Show();
                 DrainDispatcher();
@@ -563,7 +563,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void SystemThemeWatcher_AutoReleasesWatchedWindow_OnClose_WithoutExplicitUnWatch()
         {
-            RunOnStaThread(() =>
+            RunOnStaThread(static () =>
             {
                 Application? app = EnsureApp();
                 ResetAndApply(ApplicationTheme.Light, app);
@@ -577,7 +577,7 @@ namespace Fluence.Wpf.Tests
                     ShowInTaskbar = false,
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Left = -10000,
-                    Top = -10000
+                    Top = -10000,
                 };
                 SystemThemeWatcher.Watch(w);
                 Assert.AreEqual(baselineWatched + 1, GetWatchedWindowCount(),

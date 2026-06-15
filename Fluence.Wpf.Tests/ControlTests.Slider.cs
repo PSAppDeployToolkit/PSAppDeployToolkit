@@ -48,7 +48,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Slider_StyleApplies_PartTrackFound()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -67,7 +67,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Slider_DefaultState_ThumbScaleIsOne()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
@@ -97,7 +97,7 @@ namespace Fluence.Wpf.Tests
         [TestMethod]
         public void Slider_ThumbTemplate_HasEllipseAndInnerDot()
         {
-            WpfTestSta.Invoke(() =>
+            WpfTestSta.Invoke(static () =>
             {
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);

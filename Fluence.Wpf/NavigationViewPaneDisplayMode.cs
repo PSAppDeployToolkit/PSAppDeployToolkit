@@ -36,17 +36,17 @@ namespace Fluence.Wpf
         /// <summary>
         /// A vertical pane on the left side of the control.
         /// </summary>
-        Left,
+        Left = 0,
 
         /// <summary>
         /// A horizontal pane across the top of the control.
         /// </summary>
-        Top,
+        Top = 1,
 
         /// <summary>
         /// A compact vertical pane that starts collapsed (icons only, 48px) and
         /// expands as an overlay without pushing content.
         /// </summary>
-        LeftCompact,
+        LeftCompact = 2,
     }
 }

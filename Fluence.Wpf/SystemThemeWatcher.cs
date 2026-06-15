@@ -30,6 +30,7 @@ using Fluence.Wpf.Native;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -46,8 +47,8 @@ namespace Fluence.Wpf
         /// <summary>
         /// Begins watching the specified window for system theme and accent changes.
         /// </summary>
-        /// <param name="window">The WPF window to associate with the watcher. Must not be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="window"/> is <c>null</c>.</exception>
+        /// <param name="window">The WPF window to associate with the watcher. Must not be <see langword="null"/>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="window"/> is <see langword="null"/>.</exception>
         public static void Watch(Window window)
         {
             if (window is null)
@@ -83,7 +84,7 @@ namespace Fluence.Wpf
         /// Stops watching the specified window and removes Win32 hooks.
         /// </summary>
         /// <param name="window">The window previously passed to <see cref="Watch"/>.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="window"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="window"/> is <see langword="null"/>.</exception>
         public static void UnWatch(Window window)
         {
             if (window is null)
@@ -206,11 +207,12 @@ namespace Fluence.Wpf
         }
 
         /// <summary>
-        /// Returns <c>true</c> when a WM_SETTINGCHANGE lParam points to the Unicode string
+        /// Returns <see langword="true"/> when a WM_SETTINGCHANGE lParam points to the Unicode string
         /// <c>"ImmersiveColorSet"</c>, the canonical signal Personalization sends when the
         /// user changes the Windows accent or app/system theme. WPF's HwndSource uses the
         /// Unicode window-class variant, so the string is UTF-16 LE.
         /// </summary>
+        /// <param name="lParam">A pointer to a Unicode string containing the setting change information.</param>
         private static bool IsImmersiveColorSetBroadcast(IntPtr lParam)
         {
             if (lParam == IntPtr.Zero)
@@ -228,7 +230,7 @@ namespace Fluence.Wpf
             {
                 return;
             }
-            _ = Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            _ = Application.Current.Dispatcher.BeginInvoke(new Action(static () =>
             {
                 // Settings messages arrive on the HWND hook path. Re-enter through the
                 // Dispatcher so ResourceDictionary mutation stays on the WPF UI thread.
@@ -247,9 +249,9 @@ namespace Fluence.Wpf
         /// Represents a window being monitored for changes or events within the application.
         /// </summary>
         /// <param name="window">The window instance to be tracked by this object. Cannot be null.</param>
-        private class WatchedWindow(Window window)
+        private sealed class WatchedWindow(Window window)
         {
-            internal Window Window { get; private set; } = window;
+            internal Window Window { get; } = window;
             internal HwndSource? HwndSource { get; set; }
             internal bool IsHooked { get; set; }
         }
@@ -267,7 +269,7 @@ namespace Fluence.Wpf
         /// <remarks>Use this object with lock statements to ensure that critical sections are accessed by
         /// only one thread at a time. This helps prevent race conditions and ensures data consistency in multithreaded
         /// scenarios.</remarks>
-        private static readonly object _lock = new();
+        private static readonly Lock _lock = new();
 
         /// <summary>
         /// Stores the tick count representing the last time an update occurred.

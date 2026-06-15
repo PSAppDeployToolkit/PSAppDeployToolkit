@@ -39,6 +39,8 @@ namespace Fluence.Wpf.Tests
         /// <summary>
         /// Applies Light → Dark → High Contrast → Light with a stable backdrop.
         /// </summary>
+        /// <param name="backdrop">Backdrop to use for all themes.</param>
+        /// <param name="updateAccent">Whether to update the accent color for each theme.</param>
         internal static void ApplyStandardThemeCycle(
             BackdropType backdrop = BackdropType.None,
             bool updateAccent = true)

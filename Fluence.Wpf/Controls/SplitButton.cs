@@ -87,7 +87,7 @@ namespace Fluence.Wpf.Controls
             remove => RemoveHandler(ClickEvent, value);
         }
 
-        #endregion
+        #endregion Click routed event
 
         #region Command / CommandParameter / CommandTarget
 
@@ -99,7 +99,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Command),
                 typeof(ICommand),
                 typeof(SplitButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the command to invoke when the primary half is clicked.
@@ -118,7 +118,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CommandParameter),
                 typeof(object),
                 typeof(SplitButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the parameter passed to <see cref="Command"/>.
@@ -137,7 +137,7 @@ namespace Fluence.Wpf.Controls
                 nameof(CommandTarget),
                 typeof(IInputElement),
                 typeof(SplitButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the element that the command is raised on.
@@ -148,7 +148,7 @@ namespace Fluence.Wpf.Controls
             set => SetValue(CommandTargetProperty, value);
         }
 
-        #endregion
+        #endregion Command / CommandParameter / CommandTarget
 
         #region Flyout / FlyoutTemplate / DropdownCornerRadius
 
@@ -160,7 +160,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Flyout),
                 typeof(object),
                 typeof(SplitButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the content displayed in the secondary-half flyout popup.
@@ -179,7 +179,7 @@ namespace Fluence.Wpf.Controls
                 nameof(FlyoutTemplate),
                 typeof(DataTemplate),
                 typeof(SplitButton),
-                new FrameworkPropertyMetadata(null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: null));
 
         /// <summary>
         /// Gets or sets the <see cref="DataTemplate"/> used to render <see cref="Flyout"/>.
@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Controls
             set => SetValue(DropdownCornerRadiusProperty, value);
         }
 
-        #endregion
+        #endregion Flyout / FlyoutTemplate / DropdownCornerRadius
 
         #region CornerRadius
 
@@ -234,7 +234,7 @@ namespace Fluence.Wpf.Controls
             set => SetValue(CornerRadiusProperty, value);
         }
 
-        #endregion
+        #endregion CornerRadius
 
         #region Appearance
 
@@ -260,7 +260,7 @@ namespace Fluence.Wpf.Controls
             set => SetValue(AppearanceProperty, value);
         }
 
-        #endregion
+        #endregion Appearance
 
         #region IsFlyoutOpen (read-only)
 
@@ -269,7 +269,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsFlyoutOpen),
                 typeof(bool),
                 typeof(SplitButton),
-                new FrameworkPropertyMetadata(false));
+                new FrameworkPropertyMetadata(defaultValue: false));
 
         /// <summary>
         /// Identifies the <see cref="IsFlyoutOpen"/> dependency property.
@@ -282,7 +282,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         public bool IsFlyoutOpen => (bool)GetValue(IsFlyoutOpenProperty);
 
-        #endregion
+        #endregion IsFlyoutOpen (read-only)
 
         /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -343,13 +343,13 @@ namespace Fluence.Wpf.Controls
         private void OnSecondaryButtonChecked(object sender, RoutedEventArgs e)
         {
             _ = _popup?.IsOpen = true;
-            SetValue(IsFlyoutOpenPropertyKey, true);
+            SetValue(IsFlyoutOpenPropertyKey, value: true);
         }
 
         private void OnSecondaryButtonUnchecked(object sender, RoutedEventArgs e)
         {
             _ = _popup?.IsOpen = false;
-            SetValue(IsFlyoutOpenPropertyKey, false);
+            SetValue(IsFlyoutOpenPropertyKey, value: false);
         }
 
         private void OnPopupClosed(object? sender, EventArgs e)
@@ -361,7 +361,7 @@ namespace Fluence.Wpf.Controls
             }
             else
             {
-                SetValue(IsFlyoutOpenPropertyKey, false);
+                SetValue(IsFlyoutOpenPropertyKey, value: false);
             }
         }
 
