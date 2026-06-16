@@ -19,13 +19,13 @@ namespace PSAppDeployToolkit.Utilities
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
         /// <exception cref="FormatException">Thrown when the parser is unable to process the provided arguments.</exception>
-        public static IReadOnlyDictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
+        public static IDictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
         {
+            Dictionary<string, object> values = new(StringComparer.OrdinalIgnoreCase);
             if (!(remainingArguments?.Count > 0))
             {
-                return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                return values;
             }
-            Dictionary<string, object> values = new(StringComparer.OrdinalIgnoreCase);
             try
             {
                 string currentKey = string.Empty;
@@ -61,10 +61,10 @@ namespace PSAppDeployToolkit.Utilities
         /// <param name="exclusions">An array of keys to exclude from the conversion.</param>
         /// <returns>A string of PowerShell arguments representing the dictionary.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the provided dictionary contains a null key or a null value.</exception>
-        internal static string ConvertDictToPowerShellArgs(IReadOnlyDictionary<string, object> dict, IReadOnlyList<string>? exclusions = null)
+        internal static string ConvertDictToPowerShellArgs(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions = null)
         {
             // Internal iterator function to yield each argument.
-            static IEnumerable<string> ConvertDictToPowerShellArgsImpl(IReadOnlyDictionary<string, object> dict, IReadOnlyList<string>? exclusions = null)
+            static IEnumerable<string> ConvertDictToPowerShellArgsImpl(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions = null)
             {
                 // Iterate through each key-value pair in the dictionary.
                 foreach (KeyValuePair<string, object> entry in dict)

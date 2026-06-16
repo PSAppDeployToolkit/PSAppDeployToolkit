@@ -22,7 +22,7 @@ function Convert-ADTValuesFromRemainingArguments
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Generic.Dictionary[System.String, System.Object]
+        System.Collections.Generic.IDictionary[System.String, System.Object]
 
         Convert-ADTValuesFromRemainingArguments returns a dictionary of the processed input.
 
@@ -44,7 +44,7 @@ function Convert-ADTValuesFromRemainingArguments
     #>
 
     [CmdletBinding()]
-    [OutputType([System.Collections.Generic.Dictionary[System.String, System.Object]])]
+    [OutputType([System.Collections.Generic.IDictionary[System.String, System.Object]])]
     param
     (
         [Parameter(Mandatory = $true)]
