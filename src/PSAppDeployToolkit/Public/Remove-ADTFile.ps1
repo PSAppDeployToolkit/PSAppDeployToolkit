@@ -19,6 +19,9 @@ function Remove-ADTFile
     .PARAMETER LiteralPath
         Specifies the file on the filesystem to be removed. The value of `-LiteralPath` is used exactly as it is typed; no characters are interpreted as wildcards. Will accept an array of values.
 
+    .PARAMETER InputObject
+        A FileInfo object to remove. Available for pipelining.
+
     .PARAMETER Recurse
         Deletes the files in the specified location(s) and in all child items of the location(s).
 
@@ -75,6 +78,10 @@ function Remove-ADTFile
         [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject', ValueFromPipeline = $true)]
+        [ValidateNotNullOrEmpty()]
+        [System.IO.FileInfo]$InputObject,
+
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$Recurse
     )
@@ -87,29 +94,83 @@ function Remove-ADTFile
 
     process
     {
-        foreach ($Value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+        # Grab and cache all directories.
+        $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            # Resolve the specified path, if the path does not exist, display a warning instead of an error.
+            foreach ($path in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+            {
+                try
+                {
+                    try
+                    {
+                        $giParams = @{ $PSCmdlet.ParameterSetName = $path }
+                        if (!($items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
+                        {
+                            Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
+                            continue
+                        }
+                        return $items
+                    }
+                    catch [System.Management.Automation.ItemNotFoundException]
+                    {
+                        Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
+                        continue
+                    }
+                    catch [System.Management.Automation.DriveNotFoundException]
+                    {
+                        Write-ADTLogEntry -Message "Unable to resolve the path [$path] because the drive does not exist." -Severity Warning
+                        continue
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
+                }
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$path]."
+                    continue
+                }
+            }
+        }
+        else
+        {
+            $InputObject.Refresh(); if (!$InputObject.Exists)
+            {
+                Write-ADTLogEntry -Message "File [$InputObject] does not exist."
+                return
+            }
+            $InputObject.FullName
+        }
+
+        # Loop through each specified path.
+        foreach ($item in $files)
+        {
             try
             {
                 try
                 {
-                    $giParams = @{ $PSCmdlet.ParameterSetName = $Value }
-                    if (!($Items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
+                    if (Test-Path -LiteralPath $item -PathType Container)
                     {
-                        Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
-                        continue
+                        if (!$Recurse)
+                        {
+                            Write-ADTLogEntry -Message "Skipping folder [$item] because the Recurse switch was not specified."
+                            continue
+                        }
+                        Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$item]..."
+                        if ($PSCmdlet.ShouldProcess($item, 'Delete folder recursively'))
+                        {
+                            $null = Remove-Item -LiteralPath $item -Recurse:$Recurse -Force
+                        }
                     }
-                }
-                catch [System.Management.Automation.ItemNotFoundException]
-                {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because it does not exist." -Severity Warning
-                    continue
-                }
-                catch [System.Management.Automation.DriveNotFoundException]
-                {
-                    Write-ADTLogEntry -Message "Unable to resolve the path [$Value] because the drive does not exist." -Severity Warning
-                    continue
+                    else
+                    {
+                        Write-ADTLogEntry -Message "Deleting file in path [$item]..."
+                        if ($PSCmdlet.ShouldProcess($item, 'Delete file'))
+                        {
+                            $null = Remove-Item -LiteralPath $item -Recurse:$Recurse -Force
+                        }
+                    }
                 }
                 catch
                 {
@@ -118,48 +179,7 @@ function Remove-ADTFile
             }
             catch
             {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$Value]."
-                continue
-            }
-
-            # Delete specified path if it was successfully resolved.
-            try
-            {
-                foreach ($Item in $Items)
-                {
-                    try
-                    {
-                        if (Test-Path -LiteralPath $Item -PathType Container)
-                        {
-                            if (!$Recurse)
-                            {
-                                Write-ADTLogEntry -Message "Skipping folder [$Item] because the Recurse switch was not specified."
-                                continue
-                            }
-                            Write-ADTLogEntry -Message "Deleting file(s) recursively in path [$Item]..."
-                            if ($PSCmdlet.ShouldProcess($Item, 'Delete folder recursively'))
-                            {
-                                $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
-                            }
-                        }
-                        else
-                        {
-                            Write-ADTLogEntry -Message "Deleting file in path [$Item]..."
-                            if ($PSCmdlet.ShouldProcess($Item, 'Delete file'))
-                            {
-                                $null = Remove-Item -LiteralPath $Item -Recurse:$Recurse -Force
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        Write-Error -ErrorRecord $_
-                    }
-                }
-            }
-            catch
-            {
-                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete items in path [$Item]."
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to delete items in path [$item]."
             }
         }
     }
