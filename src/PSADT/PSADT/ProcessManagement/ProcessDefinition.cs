@@ -90,13 +90,10 @@ namespace PSADT.ProcessManagement
         public bool ProcessNameIsMatch(string processName)
         {
             ArgumentNullException.ThrowIfNull(processName);
-            return ProcessNameRegex is not null
-                ? ProcessNameRegex.IsMatch(processName)
-                : NameRegex is not null
-                ? NameRegex.IsMatch(processName)
-                : ProcessName is not null
-                ? ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase)
-                : Name.Equals(processName, StringComparison.OrdinalIgnoreCase);
+            return ProcessNameRegex?.IsMatch(processName)
+                ?? NameRegex?.IsMatch(processName)
+                ?? ProcessName?.Equals(processName, StringComparison.OrdinalIgnoreCase)
+                ?? Name.Equals(processName, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
