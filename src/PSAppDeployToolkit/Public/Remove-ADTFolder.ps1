@@ -95,7 +95,7 @@ function Remove-ADTFolder
         # Grab and cache all directories.
         $directories = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            foreach ($value in (Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly))
+            foreach ($value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
             {
                 $giParams = @{ $PSCmdlet.ParameterSetName = $value }
                 try

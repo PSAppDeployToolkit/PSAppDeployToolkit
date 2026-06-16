@@ -147,7 +147,7 @@ function Test-ADTServiceExists
                 else
                 {
                     # If the result is empty, it means the provided service is invalid.
-                    $gsParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+                    $gsParams = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters[$PSCmdlet.ParameterSetName] }
                     $ServiceObject = Get-Service @gsParams -ErrorAction Ignore
                 }
 

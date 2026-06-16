@@ -89,7 +89,7 @@ function Get-ADTExecutableInfo
         # Grab and cache all files.
         $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            $gciParams = @{ $PSCmdlet.ParameterSetName = Get-Variable -Name $PSCmdlet.ParameterSetName -ValueOnly }
+            $gciParams = @{ $PSCmdlet.ParameterSetName = $PSBoundParameters[$PSCmdlet.ParameterSetName] }
             Get-ChildItem @gciParams -File
         }
         else
