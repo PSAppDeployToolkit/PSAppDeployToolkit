@@ -11,7 +11,7 @@ function Remove-ADTFolder
         Remove folder and files if they exist.
 
     .DESCRIPTION
-        The `Remove-ADTFolder` function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-DisableRecursion` parameter is not specified.
+        The `Remove-ADTFolder` function removes a folder and all files within it, with or without recursion, in a given path. If the specified folder does not exist, it logs a warning instead of throwing an error. The function can also delete items recursively if the `-DisableRecursion` parameter is not specified. The `-OnlyIfEmpty` parameter removes the folder only when it contains no items other than folders that are themselves empty, or contain only empty folders.
 
     .PARAMETER Path
         A path to the folder to remove. Can contain wildcards.
@@ -24,6 +24,9 @@ function Remove-ADTFolder
 
     .PARAMETER DisableRecursion
         Disables recursion while deleting.
+
+    .PARAMETER OnlyIfEmpty
+        Removes the folder only if it contains no files and all nested folders are empty.
 
     .INPUTS
         None
@@ -45,6 +48,11 @@ function Remove-ADTFolder
 
         Deletes all files in the Temp\MyAppCache folder but does not delete any subfolders.
 
+    .EXAMPLE
+        Remove-ADTFolder -Path "$envTemp\MyAppCache" -OnlyIfEmpty
+
+        Deletes the Temp\MyAppCache folder only if it and all nested folders contain no files.
+
     .NOTES
         An active ADT session is NOT required to use this function.
 
@@ -61,27 +69,37 @@ function Remove-ADTFolder
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'LiteralPath', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(DefaultParameterSetName = 'Path', SupportsShouldProcess = $true)]
     param
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'Path')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'PathNoRecursion')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [SupportsWildcards()]
         [System.String[]]$Path,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPathNoRecursion')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
         [Alias('PSPath')]
         [System.String[]]$LiteralPath,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'InputObject', ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObjectNoRecursion', ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
         [System.IO.DirectoryInfo]$InputObject,
 
-        [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$DisableRecursion
+        [Parameter(Mandatory = $true, ParameterSetName = 'PathNoRecursion')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPathNoRecursion')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObjectNoRecursion')]
+        [System.Management.Automation.SwitchParameter]$DisableRecursion,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InputObject')]
+        [System.Management.Automation.SwitchParameter]$OnlyIfEmpty
     )
 
     begin
@@ -93,11 +111,23 @@ function Remove-ADTFolder
     process
     {
         # Grab and cache all directories.
-        $directories = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
+        $directoryParameterName = if ($PSCmdlet.ParameterSetName.StartsWith('Path'))
         {
-            foreach ($value in $PSBoundParameters[$PSCmdlet.ParameterSetName])
+            'Path'
+        }
+        elseif ($PSCmdlet.ParameterSetName.StartsWith('LiteralPath'))
+        {
+            'LiteralPath'
+        }
+        else
+        {
+            'InputObject'
+        }
+        $directories = if (!$directoryParameterName.Equals('InputObject'))
+        {
+            foreach ($value in $PSBoundParameters[$directoryParameterName])
             {
-                $giParams = @{ $PSCmdlet.ParameterSetName = $value }
+                $giParams = @{ $directoryParameterName = $value }
                 try
                 {
                     Get-Item @giParams -Force | & {
@@ -137,6 +167,40 @@ function Remove-ADTFolder
                     # With -Recurse, we can just send it and return early.
                     if (!$DisableRecursion)
                     {
+                        # If specified, make sure the directory is empty before proceeding, factoring in recursively empty directories.
+                        if ($OnlyIfEmpty)
+                        {
+                            Write-ADTLogEntry -Message "Deleting folder [$item] only if it and all child folders are empty..."
+                            [System.IO.DirectoryInfo[]]$directoriesByDepth = $($item; Get-ChildItem -LiteralPath $item.FullName -Directory -Recurse -Force) | Sort-Object -Property @{ Expression = { $_.FullName.Split(@([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)).Count } }, FullName -Descending
+                            $emptyDirectories = [System.Collections.Generic.HashSet[System.String]]::new([System.StringComparer]::OrdinalIgnoreCase)
+                            $nonEmptyFolders = foreach ($directory in $directoriesByDepth)
+                            {
+                                if (!([System.IO.FileSystemInfo[]]$childItems = Get-ChildItem -LiteralPath $directory.FullName -Force) -or ($childItems | & { process { if (($_ -is [System.IO.DirectoryInfo]) -and $emptyDirectories.Contains($_.FullName)) { return $_ } } } | Measure-Object).Count.Equals($childItems.Count))
+                                {
+                                    $null = $emptyDirectories.Add($directory.FullName)
+                                }
+                                else
+                                {
+                                    $directory
+                                }
+                            }
+                            if (!$emptyDirectories.Contains($item.FullName))
+                            {
+                                $naerParams = @{
+                                    Exception = [System.IO.IOException]::new("Folder [$item] is not empty.")
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
+                                    ErrorId = 'NonEmptyFolderError'
+                                    TargetObject = $nonEmptyFolders
+                                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+                            if ($PSCmdlet.ShouldProcess($item, 'Delete empty folder recursively'))
+                            {
+                                Invoke-ADTCommandWithRetries -Command $Script:CommandTable.'Remove-Item' -LiteralPath $item.FullName -Force -Recurse
+                            }
+                            continue
+                        }
                         Write-ADTLogEntry -Message "Deleting folder [$item] recursively..."
                         if ($PSCmdlet.ShouldProcess($item, 'Delete folder recursively'))
                         {
