@@ -160,7 +160,7 @@ try
             # Prime the pump for WinRT on Windows PowerShell 5.1.
             if ($PSVersionTable.PSEdition.Equals('Desktop'))
             {
-                $null = [Windows.UI.Notifications.ToastNotificationMode, Windows.UI.Notifications, ContentType = WindowsRuntime]
+                $null = [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime]
             }
         }
     }
