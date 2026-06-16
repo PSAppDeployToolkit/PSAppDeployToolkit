@@ -31,8 +31,11 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER WindowLocation
         The location of the dialog on the screen.
 
-    .PARAMETER CustomText
+    .PARAMETER CustomMessage
         Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
+
+    .PARAMETER CustomMessageText
+        Specifies a literal custom message to display, ignoring the custom message specified in the `strings.psd1` file.
 
     .PARAMETER NotTopMost
         Specifies whether the prompt shouldn't be topmost, above all other windows.
@@ -125,7 +128,13 @@ function Show-ADTInstallationRestartPrompt
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
-        [System.Management.Automation.SwitchParameter]$CustomText,
+        [Alias('CustomText')]
+        [System.Management.Automation.SwitchParameter]$CustomMessage,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$CustomMessageText,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NotTopMost,
@@ -275,9 +284,16 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('DialogAllowMove', !!$AllowMove)
                 }
-                if ($CustomText)
+                if ($CustomMessage)
                 {
-                    $dialogOptions.Add('CustomMessageText', $adtStrings.RestartPrompt.CustomMessage)
+                    if (!$PSBoundParameters.ContainsKey('CustomMessageText'))
+                    {
+                        $dialogOptions.Add('CustomMessageText', $adtStrings.RestartPrompt.CustomMessage)
+                    }
+                    else
+                    {
+                        $dialogOptions.Add('CustomMessageText', $CustomMessageText)
+                    }
                 }
                 if ($null -ne $adtConfig.UI.FluentAccentColor)
                 {
