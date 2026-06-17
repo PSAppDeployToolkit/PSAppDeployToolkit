@@ -286,7 +286,6 @@ namespace PSADT.Utilities
         /// <param name="result">When this method returns, contains the decoded name string if a matching record is found and successfully
         /// decoded; otherwise, null. This parameter is passed uninitialized.</param>
         /// <returns>true if a matching name record is found and successfully decoded; otherwise, false.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1134:Remove redundant statement", Justification = "We can't have an empty catch block.")]
         private static bool TryFindNameIdRecord(ReadOnlySpan<byte> nameTable, ushort count, ushort stringOffset, NAME_ID desiredNameId, ushort platformId, bool requireWindowsUnicode, ushort? languageId, out string? result)
         {
             // Attempt to decode the name string.
@@ -348,6 +347,7 @@ namespace PSADT.Utilities
                 catch (Exception ex) when (ex.Message is not null)
                 {
                     continue;
+                    throw;
                 }
             }
             result = null;
