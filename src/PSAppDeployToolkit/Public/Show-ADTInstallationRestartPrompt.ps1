@@ -31,6 +31,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER WindowLocation
         The location of the dialog on the screen.
 
+    .PARAMETER PersistPrompt
+        Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
+
     .PARAMETER CustomMessage
         Specify whether to display a custom message specified in the `strings.psd1` file. Custom message must be populated for each language section in the `strings.psd1` file.
 
@@ -125,6 +128,10 @@ function Show-ADTInstallationRestartPrompt
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogPosition]$WindowLocation,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [System.Management.Automation.SwitchParameter]$PersistPrompt,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
@@ -283,6 +290,10 @@ function Show-ADTInstallationRestartPrompt
                 if ($PSBoundParameters.ContainsKey('AllowMove'))
                 {
                     $dialogOptions.Add('DialogAllowMove', !!$AllowMove)
+                }
+                if ($PersistPrompt)
+                {
+                    $dialogOptions.Add('DialogPersistInterval', [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultPromptPersistInterval))
                 }
                 if ($CustomMessage)
                 {
