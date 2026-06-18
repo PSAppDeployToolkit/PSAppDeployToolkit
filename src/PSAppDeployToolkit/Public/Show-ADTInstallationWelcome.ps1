@@ -1190,7 +1190,7 @@ function Show-ADTInstallationWelcome
                         if ($AllowDefer)
                         {
                             # If there is deferral and closing apps is allowed but there are no apps to be closed, break the while loop.
-                            if ($AllowDeferCloseProcesses -and !$runningApps)
+                            if ($dialogOptions.ContinueOnProcessClosure -and !$runningApps)
                             {
                                 break
                             }
@@ -1228,7 +1228,7 @@ function Show-ADTInstallationWelcome
                         if ($promptResult.Equals([PSADT.UserInterface.DialogResults.CloseAppsDialogResult]::Continue))
                         {
                             # If the user has clicked OK, wait a few seconds for the process to terminate before evaluating the running processes again.
-                            if (!$AllowDeferCloseProcesses -and !($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
+                            if (!$dialogOptions.ContinueOnProcessClosure -and !($runningApps = Get-ADTRunningProcessesUserCanClose -InformationAction Ignore))
                             {
                                 Write-ADTLogEntry -Message 'The user selected to continue...'
                             }
