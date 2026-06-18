@@ -24,7 +24,7 @@ namespace PSADT.DeviceManagement
             // Helper function to determine if the OS is an Enterprise Multi-Session OS.
             static bool IsOperatingSystemEnterpriseMultiSessionOS(OS_PRODUCT_TYPE productType, string? editionId, string? productName)
             {
-                return productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER && ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase)) && productName is not null && !string.IsNullOrWhiteSpace(productName) && (productName.Contains("Virtual Desktops", StringComparison.OrdinalIgnoreCase) || productName.Contains("Multi-Session", StringComparison.OrdinalIgnoreCase));
+                return productType == OS_PRODUCT_TYPE.PRODUCT_DATACENTER_SERVER && ("EnterpriseMultiSession".Equals(editionId, StringComparison.OrdinalIgnoreCase) || "ServerRdsh".Equals(editionId, StringComparison.OrdinalIgnoreCase)) && (productName?.Contains("Virtual Desktops", StringComparison.OrdinalIgnoreCase) == true || productName?.Contains("Multi-Session", StringComparison.OrdinalIgnoreCase) == true);
             }
 
             // Get OS version information.

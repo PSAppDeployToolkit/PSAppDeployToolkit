@@ -154,7 +154,7 @@ namespace PSAppDeployToolkit.Foundation
                     foreach (string valueName in officeC2RKey.GetValueNames())
                     {
                         object? value = officeC2RKey.GetValue(valueName);
-                        if ((value is string str && !string.IsNullOrWhiteSpace(str)) || value is not string and not null)
+                        if (!string.IsNullOrWhiteSpace(value as string) || value is not string and not null)
                         {
                             officeVars.Add(valueName, value);
                         }
@@ -164,13 +164,13 @@ namespace PSAppDeployToolkit.Foundation
             }
             if (EnvOfficeVars is not null)
             {
-                if (EnvOfficeVars.TryGetValue("VersionToReport", out object? versionToReportObj) && versionToReportObj is string versionToReportStr && Version.TryParse(versionToReportStr, out Version? versionToReport))
+                if (EnvOfficeVars.TryGetValue("VersionToReport", out object? versionToReportObj) && Version.TryParse(versionToReportObj as string, out Version? versionToReport))
                 {
                     EnvOfficeVersion = versionToReport;
                 }
-                if (EnvOfficeVars.TryGetValue("Platform", out object? platformObj) && platformObj is string platformStr)
+                if (EnvOfficeVars.TryGetValue("Platform", out object? platform))
                 {
-                    EnvOfficeBitness = platformStr;
+                    EnvOfficeBitness = platform as string;
                 }
                 EnvOfficeChannel = (EnvOfficeVars.TryGetValue("UpdateChannel", out object? channelObj) && channelObj is string channelStr ? channelStr[(channelStr.LastIndexOf('/') + 1)..] : EnvOfficeVars.TryGetValue("CDNBaseUrl", out object? cdnBaseUrlObj) && cdnBaseUrlObj is string cdnBaseUrlStr ? cdnBaseUrlStr[(cdnBaseUrlStr.LastIndexOf('/') + 1)..] : null) switch
                 {

@@ -148,12 +148,12 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Calculate a description for the running application.
-                    string procDescription = processDefinition.Description is not null && !string.IsNullOrWhiteSpace(processDefinition.Description)
-                        ? processDefinition.Description
-                        : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]) is FileVersionInfo fileInfo && !string.IsNullOrWhiteSpace(fileInfo.FileDescription)
-                        ? fileInfo.FileDescription
-                        : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]) is ProcessVersionInfo procInfo && procInfo.FileDescription is not null && !string.IsNullOrWhiteSpace(procInfo.FileDescription)
-                        ? procInfo.FileDescription
+                    string description = processDefinition.Description is string defDescription && !string.IsNullOrWhiteSpace(defDescription)
+                        ? defDescription
+                        : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]).FileDescription is string fileDescription && !string.IsNullOrWhiteSpace(fileDescription)
+                        ? fileDescription
+                        : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]).FileDescription is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
+                        ? procDescription
                         : process.ProcessName;
 
                     // Grab the process owner if we can.
@@ -173,7 +173,7 @@ namespace PSADT.ProcessManagement
                     // Store the process information.
                     if (!ProcessUtilities.HasProcessExited(process))
                     {
-                        runningProcesses.Add(new(process, procDescription, argv[0], argv.Skip(1), sid));
+                        runningProcesses.Add(new(process, description, argv[0], argv.Skip(1), sid));
                     }
                 }
             }

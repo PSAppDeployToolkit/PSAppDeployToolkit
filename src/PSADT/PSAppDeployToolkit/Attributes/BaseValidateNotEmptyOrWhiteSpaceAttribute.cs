@@ -5,7 +5,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 
@@ -201,7 +200,7 @@ namespace PSAppDeployToolkit.Attributes
             if (value.GetType().GetInterfaces().FirstOrDefault(static iface => iface.IsGenericType && iface.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)) is Type iface)
             {
                 // Use reflection to get the Count property.
-                count = iface.GetProperty("Count") is PropertyInfo countProperty && countProperty.GetValue(value) is int countValue ? countValue : 0;
+                count = iface.GetProperty("Count")?.GetValue(value) as int? ?? 0;
                 return true;
             }
             count = 0;

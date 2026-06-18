@@ -621,17 +621,17 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Value was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    if (!arguments.TryGetValue("Expandable", out string? expandableStr) || string.IsNullOrWhiteSpace(expandableStr) || !bool.TryParse(expandableStr, out bool expandable))
+                    if (!arguments.TryGetValue("Expandable", out string? expandableStr) || !bool.TryParse(expandableStr, out bool expandable))
                     {
                         throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
-                    if (!arguments.TryGetValue("Append", out string? appendStr) || string.IsNullOrWhiteSpace(appendStr) || !bool.TryParse(appendStr, out bool append))
+                    if (!arguments.TryGetValue("Append", out string? appendStr) || !bool.TryParse(appendStr, out bool append))
                     {
-                        throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                        throw new ClientException("The 'Append' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
-                    if (!arguments.TryGetValue("Remove", out string? removeStr) || string.IsNullOrWhiteSpace(removeStr) || !bool.TryParse(removeStr, out bool remove))
+                    if (!arguments.TryGetValue("Remove", out string? removeStr) || !bool.TryParse(removeStr, out bool remove))
                     {
-                        throw new ClientException("The 'Expandable' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                        throw new ClientException("The 'Remove' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     EnvironmentUtilities.SetEnvironmentVariable(variable, value, EnvironmentVariableTarget.User, expandable, append, remove);
                     Console.WriteLine(SerializeToString(result: true));
@@ -649,7 +649,7 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/SilentRestart", StringComparison.Ordinal) || arg.Equals("/sr", StringComparison.Ordinal))
                 {
-                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || string.IsNullOrWhiteSpace(delayArg) || !int.TryParse(delayArg, NumberStyles.Integer, CultureInfo.InvariantCulture, out int delayValue))
+                    if (!ArgvToDictionary(argv).TryGetValue("Delay", out string? delayArg) || !int.TryParse(delayArg, NumberStyles.Integer, CultureInfo.InvariantCulture, out int delayValue))
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
@@ -671,7 +671,7 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/GroupPolicyUpdate", StringComparison.Ordinal) || arg.Equals("/gpu", StringComparison.Ordinal))
                 {
-                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || string.IsNullOrWhiteSpace(forceStr) || !bool.TryParse(forceStr, out bool force))
+                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || !bool.TryParse(forceStr, out bool force))
                     {
                         throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
@@ -722,7 +722,7 @@ namespace PSADT.ClientServer
         private static async Task<string> ShowModalDialogAsync(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
-            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionArg) && bool.TryParse(blockExecutionArg, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
+            if (arguments.TryGetValue("BlockExecution", out string? blockExecutionStr) && bool.TryParse(blockExecutionStr, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
             {
                 // Exit with the underlying process's exit code if available, otherwise exit with the BlockExecution button text.
                 string[] command = [.. argv.SkipWhile(static arg => !File.Exists(arg))]; string filePath = command[0]; IEnumerable<string>? argumentList = command.Length > 1 ? command.Skip(1) : null;
@@ -734,23 +734,23 @@ namespace PSADT.ClientServer
             }
 
             // Confirm we have a DialogType and that it's valid.
-            if (!arguments.TryGetValue("DialogType", out string? dialogTypeArg) || string.IsNullOrWhiteSpace(dialogTypeArg))
+            if (!arguments.TryGetValue("DialogType", out string? dialogTypeStr) || string.IsNullOrWhiteSpace(dialogTypeStr))
             {
                 throw new ClientException("A required DialogType was not specified on the command line.", ClientExitCode.NoDialogType);
             }
-            if (!Enum.TryParse(dialogTypeArg, ignoreCase: true, out DialogType dialogType))
+            if (!Enum.TryParse(dialogTypeStr, ignoreCase: true, out DialogType dialogType))
             {
-                throw new ClientException($"The specified DialogType of [{dialogTypeArg}] is invalid.", ClientExitCode.InvalidDialog);
+                throw new ClientException($"The specified DialogType of [{dialogTypeStr}] is invalid.", ClientExitCode.InvalidDialog);
             }
 
             // Confirm we've got a DialogStyle and that it's valid.
-            if (!arguments.TryGetValue("DialogStyle", out string? dialogStyleArg) || string.IsNullOrWhiteSpace(dialogStyleArg))
+            if (!arguments.TryGetValue("DialogStyle", out string? dialogStyleStr) || string.IsNullOrWhiteSpace(dialogStyleStr))
             {
                 throw new ClientException("A required DialogStyle was not specified on the command line.", ClientExitCode.NoDialogStyle);
             }
-            if (!Enum.TryParse(dialogStyleArg, ignoreCase: true, out DialogStyle dialogStyle))
+            if (!Enum.TryParse(dialogStyleStr, ignoreCase: true, out DialogStyle dialogStyle))
             {
-                throw new ClientException($"The specified DialogStyle of [{dialogStyleArg}] is invalid.", ClientExitCode.NoDialogStyle);
+                throw new ClientException($"The specified DialogStyle of [{dialogStyleStr}] is invalid.", ClientExitCode.NoDialogStyle);
             }
 
             // Deserialize the options to the correct type based on DialogType and show the dialog.
@@ -833,27 +833,27 @@ namespace PSADT.ClientServer
             {
                 throw new ClientException("The 'PipeName' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
-            if (!arguments.TryGetValue("ProcessId", out string? processIdStr) || string.IsNullOrWhiteSpace(processIdStr) || !uint.TryParse(processIdStr, out uint processId))
+            if (!arguments.TryGetValue("ProcessId", out string? processIdStr) || !uint.TryParse(processIdStr, out uint processId))
             {
                 throw new ClientException("The 'ProcessId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
-            if (!arguments.TryGetValue("SessionId", out string? sessionIdStr) || string.IsNullOrWhiteSpace(sessionIdStr) || !uint.TryParse(sessionIdStr, out uint sessionId))
+            if (!arguments.TryGetValue("SessionId", out string? sessionIdStr) || !uint.TryParse(sessionIdStr, out uint sessionId))
             {
                 throw new ClientException("The 'SessionId' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
-            if (!arguments.TryGetValue("UIAccess", out string? uiAccessStr) || string.IsNullOrWhiteSpace(uiAccessStr) || !bool.TryParse(uiAccessStr, out bool uiAccess))
+            if (!arguments.TryGetValue("UIAccess", out string? uiAccessStr) || !bool.TryParse(uiAccessStr, out bool uiAccess))
             {
                 throw new ClientException("The 'UIAccess' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
             }
 
             // Confirm we've got a ElevatedTokenType and that it's valid.
-            if (!arguments.TryGetValue("ElevatedTokenType", out string? elevatedTokenTypeArg) || string.IsNullOrWhiteSpace(elevatedTokenTypeArg))
+            if (!arguments.TryGetValue("ElevatedTokenType", out string? elevatedTokenTypeStr) || string.IsNullOrWhiteSpace(elevatedTokenTypeStr))
             {
                 throw new ClientException("A required ElevatedTokenType was not specified on the command line.", ClientExitCode.InvalidArguments);
             }
-            if (!Enum.TryParse(elevatedTokenTypeArg, ignoreCase: true, out ElevatedTokenType elevatedTokenType))
+            if (!Enum.TryParse(elevatedTokenTypeStr, ignoreCase: true, out ElevatedTokenType elevatedTokenType))
             {
-                throw new ClientException($"The specified ElevatedTokenType of [{elevatedTokenType}] is invalid.", ClientExitCode.InvalidArguments);
+                throw new ClientException($"The specified ElevatedTokenType of [{elevatedTokenTypeStr}] is invalid.", ClientExitCode.InvalidArguments);
             }
 
             // Confirm the session Id is greater than 0; we never want to broker SYSTEM tokens.
