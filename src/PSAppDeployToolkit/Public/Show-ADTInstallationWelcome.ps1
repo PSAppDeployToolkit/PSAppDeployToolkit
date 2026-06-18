@@ -1372,7 +1372,7 @@ function Show-ADTInstallationWelcome
                     }
 
                     # Close any remaining processes that are open that the user couldn't close.
-                    if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses }))
+                    if (($runningApps = if ($CloseProcesses) { Get-ADTRunningProcesses -ProcessObjects $CloseProcesses -InformationAction Ignore }))
                     {
                         # Force the processes to close silently, without prompting the user.
                         Write-ADTLogEntry -Message "Force closing application(s) ['$([System.String]::Join("', '", $runningApps.Description))'] that the user had no permissions to close."
