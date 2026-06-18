@@ -62,9 +62,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 ArgumentException.ThrowIfNullOrWhiteSpace(customMessageText);
             }
 
-            // Initialize the theme and accent color for the dialog based on the provided options, defaulting to automatic theming and accent if not specified.
-            ApplicationThemeManager.Apply(ApplicationTheme.Auto);
-
             // Initialize the window
             InitializeComponent();
 
@@ -78,7 +75,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 { ApplicationTheme.HighContrast, accentColorDark ?? accentColor },
                 { ApplicationTheme.Auto, accentColor },
             });
-            SetDialogAccent();
 
             // Set the language and flow direction for the dialog.
             Language = System.Windows.Markup.XmlLanguage.GetLanguage(options.Language.IetfLanguageTag);
@@ -165,8 +161,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 { ApplicationTheme.Auto, GetIcon(options.AppIconImage) },
 
             });
+
+            // Initialize the theme and accent color for the dialog based on the provided options, defaulting to automatic theming and accent if not specified.
             ApplicationThemeManager.Changed += ThemeManager_ActualThemeChanged;
-            SetDialogIcon();
+            ApplicationThemeManager.Apply(ApplicationTheme.Auto);
 
             // Set the expiry timer if specified.
             if (options.DialogExpiryDuration > TimeSpan.Zero)
@@ -425,8 +423,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThemeManager_ActualThemeChanged(object? sender, ThemeChangedEventArgs e)
         {
-            SetDialogAccent();
-            SetDialogIcon();
+            SetDialogAccent(e.Theme);
+            SetDialogIcon(e.Theme);
         }
 
         /// <summary>
@@ -770,9 +768,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <remarks>This method updates both the dialog's window icon and any associated UI element
         /// displaying the application icon.</remarks>
-        private void SetDialogIcon()
+        /// <param name="theme">The current application theme, used to determine which cached icon to apply to the dialog.</param>
+        private void SetDialogIcon(ApplicationTheme theme)
         {
-            AppIconImage.Source = _dialogBitmapCache[ApplicationThemeManager.CurrentTheme];
+            AppIconImage.Source = _dialogBitmapCache[theme];
             if (_appTaskbarIcon is null)
             {
                 Icon = AppIconImage.Source;
@@ -783,9 +782,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Applies the accent color to the dialog based on the current application theme. The accent color is retrieved
         /// from the dialog's accent color cache.
         /// </summary>
-        private void SetDialogAccent()
+        /// <param name="theme">The current application theme for which to apply the accent color. This parameter is used to look up the appropriate accent color from the cache.</param>
+        private void SetDialogAccent(ApplicationTheme theme)
         {
-            if (_dialogAccentCache[ApplicationThemeManager.CurrentTheme] is Color accentColor)
+            if (_dialogAccentCache[theme] is Color accentColor)
             {
                 ApplicationAccentColorManager.ApplyCustomAccent(accentColor);
             }
