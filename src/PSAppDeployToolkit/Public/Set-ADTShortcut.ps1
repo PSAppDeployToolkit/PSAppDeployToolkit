@@ -46,6 +46,9 @@ function Set-ADTShortcut
     .PARAMETER Hotkey
         Sets the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
+    .PARAMETER ClearArguments
+        Clears the arguments used against the target path.
+
     .PARAMETER Force
         Forces creation of the shortcut if one doesn't already exist at the `-LiteralPath` provided.
 
@@ -93,16 +96,18 @@ function Set-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTShortcut
     #>
 
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(DefaultParameterSetName = 'LiteralPath', SupportsShouldProcess = $true)]
     [OutputType([PSADT.ShortcutManagement.IShortcutLinkInfo])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0, ParameterSetName = 'LiteralPath_ClearArguments')]
         [PSAppDeployToolkit.Attributes.ValidateExtension('.lnk', '.url')]
         [Alias('Path')]
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject_ClearArguments')]
         [ValidateNotNull()]
         [PSADT.ShortcutManagement.IShortcutLinkInfo]$InputObject,
 
@@ -110,7 +115,8 @@ function Set-ADTShortcut
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$TargetPath,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'InputObject')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Arguments,
 
@@ -141,7 +147,12 @@ function Set-ADTShortcut
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Hotkey,
 
+        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath_ClearArguments')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject_ClearArguments')]
+        [System.Management.Automation.SwitchParameter]$ClearArguments,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath_ClearArguments')]
         [System.Management.Automation.SwitchParameter]$Force,
 
         [Parameter(Mandatory = $false)]
@@ -151,7 +162,7 @@ function Set-ADTShortcut
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ((($PSCmdlet.ParameterSetName -eq 'LiteralPath') -and ($PSBoundParameters.Count -eq 1)) -or $PSBoundParameters.Count -eq 0)
+        if ((($PSCmdlet.ParameterSetName.StartsWith('LiteralPath')) -and ($PSBoundParameters.Count -eq 1)) -or $PSBoundParameters.Count -eq 0)
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("At least one change must be specified.")
@@ -163,7 +174,7 @@ function Set-ADTShortcut
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         $exists = $true
-        if ($PSCmdlet.ParameterSetName -eq 'LiteralPath')
+        if ($PSCmdlet.ParameterSetName.StartsWith('LiteralPath'))
         {
             try
             {
@@ -207,7 +218,7 @@ function Set-ADTShortcut
         {
             try
             {
-                if ($PSCmdlet.ParameterSetName -eq 'InputObject')
+                if ($PSCmdlet.ParameterSetName.StartsWith('InputObject'))
                 {
                     $LiteralPath = $InputObject.FilePath
                 }
@@ -315,7 +326,11 @@ function Set-ADTShortcut
                         {
                             $shortcut.TargetPath = $TargetPath
                         }
-                        if ($PSBoundParameters.ContainsKey('Arguments'))
+                        if ($ClearArguments)
+                        {
+                            $shortcut.Arguments = [System.Management.Automation.Language.NullString]::Value
+                        }
+                        elseif ($PSBoundParameters.ContainsKey('Arguments'))
                         {
                             $shortcut.Arguments = $Arguments
                         }
