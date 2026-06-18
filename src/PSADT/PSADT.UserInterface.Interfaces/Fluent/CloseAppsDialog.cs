@@ -295,7 +295,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 ButtonLeft.IsEnabled = true;
-                if (_continueOnProcessClosure)
+
+                // Only auto-close once the window has been loaded; otherwise WPF throws
+                // "Cannot set Visibility... after a Window has closed" when ShowDialog() runs.
+                if (_continueOnProcessClosure && IsLoaded)
                 {
                     ButtonLeft.RaiseEvent(new(ButtonBase.ClickEvent));
                 }
@@ -331,6 +334,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Initialize the running process service and set up event handlers.
             _runningProcessService?.ProcessesToCloseChanged += RunningProcessService_ProcessesToCloseChanged;
+
+            // Defensive: if we entered the dialog with zero processes already and ContinueOnProcessClosure
+            // is set, fire the auto-continue now that the window is loaded. This is a backstop in case
+            // the upstream short-circuit in DialogManager is bypassed.
+            if (_continueOnProcessClosure && AppsToCloseCollection.Count == 0)
+            {
+                ButtonLeft.RaiseEvent(new(ButtonBase.ClickEvent));
+            }
         }
 
         /// <summary>

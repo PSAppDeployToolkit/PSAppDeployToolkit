@@ -123,10 +123,25 @@ namespace PSADT.UserInterface.Interfaces
             }
 
             // Announce whether there's apps to close.
-            IReadOnlyList<ProcessToClose>? procsRunning = state.RunningProcessService?.ProcessesToClose;
-            if (procsRunning?.Count > 0)
+            if (state.RunningProcessService is not null)
             {
-                state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", procsRunning.Select(static p => p.Description))}']...", LogSeverity.Info);
+                IReadOnlyList<ProcessToClose> processesToClose = state.RunningProcessService.ProcessesToClose;
+                if (processesToClose.Count == 0 && options.ContinueOnProcessClosure)
+                {
+                    // No processes are running and ContinueOnProcessClosure is set -> skip the dialog
+                    // entirely. Avoids constructing a WPF window only to immediately close it (which
+                    // also produced an InvalidOperationException prior to the CloseAppsDialog fix).
+                    state.LogAction("Previously detected running processes are no longer running.", LogSeverity.Info);
+                    if (stopProcessService)
+                    {
+                        await state.RunningProcessService.StopAsync().ConfigureAwait(false);
+                    }
+                    return CloseAppsDialogResult.Continue;
+                }
+                if (processesToClose.Count > 0)
+                {
+                    state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", processesToClose.Select(static p => p.Description))}']...", LogSeverity.Info);
+                }
             }
 
             // Announce the current countdown information.
@@ -137,7 +152,7 @@ namespace PSADT.UserInterface.Interfaces
                 {
                     elapsed = TimeSpan.Zero;
                 }
-                if (procsRunning?.Count > 0)
+                if (state.RunningProcessService?.ProcessesToClose.Count > 0)
                 {
                     state.LogAction($"Close applications countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info);
                 }
