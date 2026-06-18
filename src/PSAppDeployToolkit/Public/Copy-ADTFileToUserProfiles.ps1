@@ -123,7 +123,7 @@ function Copy-ADTFileToUserProfiles
         [System.String]$Destination,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Profile', 'AppData', 'LocalAppData', 'Desktop', 'Documents', 'StartMenu', 'Temp', 'OneDrive', 'OneDriveCommercial', 'Videos')]
+        [ValidateSet('Profile', 'AppData', 'LocalAppData', 'Desktop', 'Documents', 'StartMenu', 'Temp', 'OneDrive', 'OneDriveCommercial')]
         [System.String]$BasePath = 'Profile',
 
         [Parameter(Mandatory = $false)]
