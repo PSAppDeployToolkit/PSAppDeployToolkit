@@ -151,7 +151,7 @@ namespace PSADT.UserInterface.Interfaces
             CloseAppsDialogResult result = await ShowModalDialogAsync<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state).ConfigureAwait(false);
 
             // Perform some result logging before returning.
-            if ((options.CountdownDuration is not null) && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
+            if (options.CountdownDuration is not null && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
             {
                 if (result.Equals(CloseAppsDialogResult.Close))
                 {

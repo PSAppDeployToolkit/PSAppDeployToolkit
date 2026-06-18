@@ -193,7 +193,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             {
                 buttonRestartNow.PerformClick();
             }
-            else if ((minimizeDuration is not null) && (remaining <= minimizeDuration))
+            else if (minimizeDuration is not null && remaining <= minimizeDuration)
             {
                 buttonMinimize.Enabled = false;
                 RestoreWindow();

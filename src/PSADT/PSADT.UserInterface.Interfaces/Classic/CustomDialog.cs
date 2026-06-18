@@ -118,7 +118,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
 
                 // Set up the message.
-                if ((options.MessageAlignment is not null) && Enum.TryParse($"Top{options.MessageAlignment}", out ContentAlignment alignment))
+                if (options.MessageAlignment is not null && Enum.TryParse($"Top{options.MessageAlignment}", out ContentAlignment alignment))
                 {
                     labelMessage.TextAlign = alignment;
                 }

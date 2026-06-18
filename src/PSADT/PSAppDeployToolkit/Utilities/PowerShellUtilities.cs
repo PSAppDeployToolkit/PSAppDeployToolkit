@@ -35,7 +35,7 @@ namespace PSAppDeployToolkit.Utilities
                     {
                         continue;
                     }
-                    if ((argument is string str) && PowerShellParameterRegex.IsMatch(str))
+                    if (argument is string str && PowerShellParameterRegex.IsMatch(str))
                     {
                         currentKey = PowerShellParamTokenRegex.Replace(str, string.Empty);
                         values.Add(currentKey, new SwitchParameter(isPresent: true));
