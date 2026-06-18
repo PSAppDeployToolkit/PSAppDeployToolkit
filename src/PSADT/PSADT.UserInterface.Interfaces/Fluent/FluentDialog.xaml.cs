@@ -161,7 +161,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 { ApplicationTheme.Light, GetIcon(options.AppIconImage) },
                 { ApplicationTheme.Dark, GetIcon(options.AppIconDarkImage ?? options.AppIconImage) },
-                { ApplicationTheme.HighContrast, GetIcon(options.AppIconImage) },
+                { ApplicationTheme.HighContrast, GetIcon(options.AppIconDarkImage ?? options.AppIconImage) },
                 { ApplicationTheme.Auto, GetIcon(options.AppIconImage) },
 
             });
