@@ -3805,12 +3805,12 @@ namespace PSADT.Interop
         /// <param name="iField">The zero-based index of the field in the record. Must be within the bounds of the record's fields.</param>
         /// <returns>The integer value contained in the specified field. If the field does not contain an integer value, an
         /// exception is thrown.</returns>
-        internal static int MsiRecordGetInteger(SafeHandle hRecord, uint iField)
+        internal static int? MsiRecordGetInteger(SafeHandle hRecord, uint iField)
         {
             ArgumentException.ThrowIfNullOrInvalid(hRecord);
             int res = PInvoke.MsiRecordGetInteger(hRecord, iField);
             return res == unchecked((int)PInvoke.MSI_NULL_INTEGER)
-                ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_NO_MORE_ITEMS, "Field does not contain an integer value.")
+                ? null
                 : res;
         }
 

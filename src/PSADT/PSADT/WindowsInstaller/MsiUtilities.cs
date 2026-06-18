@@ -62,7 +62,7 @@ namespace PSADT.WindowsInstaller
         /// <returns>A read-only dictionary containing the key-value pairs from the specified table and columns, or null if no
         /// properties are found.</returns>
         /// <exception cref="InvalidDataException">Thrown if the specified table or column indices are not found in the database.</exception>
-        public static IReadOnlyDictionary<string, string>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, IReadOnlyList<string>? szTransformFiles = null)
+        public static IReadOnlyDictionary<string, object>? GetMsiTableDictionary(string szDatabasePath, string table, int keyColumn, int valueColumn, IReadOnlyList<string>? szTransformFiles = null)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
@@ -84,7 +84,7 @@ namespace PSADT.WindowsInstaller
             using (hView)
             {
                 _ = NativeMethods.MsiViewExecute(hView);
-                Dictionary<string, string> result = [];
+                Dictionary<string, object> result = [];
                 while (true)
                 {
                     using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);
@@ -92,12 +92,19 @@ namespace PSADT.WindowsInstaller
                     {
                         break;
                     }
-                    if (GetRecordString(hRecord, 1) is string key && GetRecordString(hRecord, 2) is string value)
+                    if (GetRecordString(hRecord, 1) is string key)
                     {
-                        result.Add(key, value);
+                        if (GetRecordInteger(hRecord, 2) is int intValue)
+                        {
+                            result.Add(key, intValue);
+                        }
+                        else if (GetRecordString(hRecord, 2) is string stringValue)
+                        {
+                            result.Add(key, stringValue);
+                        }
                     }
                 }
-                return result.Count > 0 ? new ReadOnlyDictionary<string, string>(result) : null;
+                return result.Count > 0 ? new ReadOnlyDictionary<string, object>(result) : null;
             }
         }
 
@@ -114,7 +121,7 @@ namespace PSADT.WindowsInstaller
         /// will be empty if the table contains no rows.</returns>
         /// <exception cref="InvalidDataException">Thrown if the specified table or column does not exist in the database.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
-        public static IReadOnlyList<string> GetMsiTableColumnValues(string szDatabasePath, string table, int column, IReadOnlyList<string>? szTransformFiles = null)
+        public static IReadOnlyList<object> GetMsiTableColumnValues(string szDatabasePath, string table, int column, IReadOnlyList<string>? szTransformFiles = null)
         {
             // Open the database, factoring in any transforms provided, then confirm the caller input is valid.
             using MsiCloseHandleSafeHandle hDatabase = OpenDatabase(szDatabasePath, szTransformFiles);
@@ -132,7 +139,7 @@ namespace PSADT.WindowsInstaller
             using (hView)
             {
                 _ = NativeMethods.MsiViewExecute(hView);
-                List<string> result = [];
+                List<object> result = [];
                 while (true)
                 {
                     using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);
@@ -140,12 +147,16 @@ namespace PSADT.WindowsInstaller
                     {
                         break;
                     }
-                    if (GetRecordString(hRecord, 1) is string value)
+                    if (GetRecordInteger(hRecord, 1) is int intValue)
                     {
-                        result.Add(value);
+                        result.Add(intValue);
+                    }
+                    else if (GetRecordString(hRecord, 1) is string stringValue)
+                    {
+                        result.Add(stringValue);
                     }
                 }
-                return new ReadOnlyCollection<string>(result);
+                return result.AsReadOnly();
             }
         }
 
@@ -657,6 +668,17 @@ namespace PSADT.WindowsInstaller
                 return null;
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Retrieves the integer value of the specified field from a Windows Installer record handle.
+        /// </summary>
+        /// <param name="hRecord">The handle to the record from which to obtain the integer value. This handle must be valid and not closed.</param>
+        /// <param name="field">The zero-based index of the field within the record whose integer value is to be retrieved.</param>
+        /// <returns>The integer value of the specified field if it exists; otherwise, null if the field is empty or not found.</returns>
+        private static int? GetRecordInteger(MsiCloseHandleSafeHandle hRecord, uint field)
+        {
+            return NativeMethods.MsiRecordGetInteger(hRecord, field);
         }
 
         /// <summary>

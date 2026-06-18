@@ -367,7 +367,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => p.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(p.Split(['|'], StringSplitOptions.RemoveEmptyEntries)[^1])))];
+                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => (p as string)?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(((string)p).Split(['|'], StringSplitOptions.RemoveEmptyEntries)[^1])))];
                             if (msiExecList.Length > 0)
                             {
                                 AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
@@ -376,18 +376,18 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Update our app variables with new values.
-                        IReadOnlyDictionary<string, string> msiProps = (DefaultMstFile is not null ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2))!;
+                        IReadOnlyDictionary<string, object> msiProps = (DefaultMstFile is not null ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2))!;
                         if (string.IsNullOrWhiteSpace(AppVendor))
                         {
-                            AppVendor = msiProps["Manufacturer"];
+                            AppVendor = msiProps["Manufacturer"] as string;
                         }
                         if (string.IsNullOrWhiteSpace(AppName))
                         {
-                            AppName = msiProps["ProductName"];
+                            AppName = msiProps["ProductName"] as string;
                         }
                         if (string.IsNullOrWhiteSpace(AppVersion))
                         {
-                            AppVersion = msiProps["ProductVersion"];
+                            AppVersion = msiProps["ProductVersion"] as string;
                         }
                         WriteLogEntry($"App Vendor [{msiProps["Manufacturer"]}].");
                         WriteLogEntry($"App Name [{msiProps["ProductName"]}].");

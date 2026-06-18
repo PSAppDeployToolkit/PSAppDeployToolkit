@@ -39,7 +39,7 @@ function Get-ADTMsiTableProperty
         You cannot pipe objects to this function.
 
     .OUTPUTS
-        System.Collections.Generic.IReadOnlyDictionary[System.String, System.String]
+        System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]
 
         Returns a readonly dictionary with the properties as key/value pairs.
 
@@ -93,7 +93,7 @@ function Get-ADTMsiTableProperty
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]
-    [OutputType([System.Collections.Generic.IReadOnlyDictionary[System.String, System.String]])]
+    [OutputType([System.Collections.Generic.IReadOnlyDictionary[System.String, System.Object]])]
     [OutputType([PSADT.WindowsInstaller.MsiSummaryInfo])]
     param
     (
