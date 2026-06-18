@@ -260,6 +260,10 @@ function Show-ADTInstallationProgress
                     {
                         $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                     }
+                    if ($null -ne $adtConfig.UI.FluentAccentColorDark)
+                    {
+                        $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
+                    }
                     $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.ProgressDialogOptions]) -Data $dialogOptions
 
                     # Create the new progress dialog.

@@ -433,6 +433,10 @@ function Show-ADTInstallationPrompt
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
+                if ($null -ne $adtConfig.UI.FluentAccentColorDark)
+                {
+                    $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
+                }
                 if ($ListItems)
                 {
                     $dialogOptions.Add('ListItems', $ListItems)

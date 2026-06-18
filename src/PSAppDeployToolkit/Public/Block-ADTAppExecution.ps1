@@ -164,6 +164,10 @@ function Block-ADTAppExecution
                 {
                     $dialogOptions.Add('FluentAccentColor', $adtConfig.UI.FluentAccentColor)
                 }
+                if ($null -ne $adtConfig.UI.FluentAccentColorDark)
+                {
+                    $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
+                }
                 $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.CustomDialogOptions]) -Data $dialogOptions
 
                 # Set up dictionary that we'll serialise and store in the registry as it's too long to pass on the command line.

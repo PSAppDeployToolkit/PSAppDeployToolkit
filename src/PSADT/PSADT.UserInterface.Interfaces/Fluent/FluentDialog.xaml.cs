@@ -65,14 +65,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Initialize the theme and accent color for the dialog based on the provided options, defaulting to automatic theming and accent if not specified.
             ApplicationThemeManager.Apply(ApplicationTheme.Auto);
 
-            // If the accent color is passed through, update via ThemeManager
-            if (options.FluentAccentColor is not null)
-            {
-                ApplicationAccentColorManager.ApplyCustomAccent(IntToColor(options.FluentAccentColor.Value));
-            }
-
             // Initialize the window
             InitializeComponent();
+
+            // Set up everything related to the dialog accent.
+            Color? accentColorDark = options.FluentAccentColorDark is not null ? IntToColor(options.FluentAccentColorDark.Value) : null;
+            Color? accentColor = options.FluentAccentColor is not null ? IntToColor(options.FluentAccentColor.Value) : null;
+            _dialogAccentCache = FrozenDictionary.ToFrozenDictionary(new Dictionary<ApplicationTheme, Color?>
+            {
+                { ApplicationTheme.Light, accentColor },
+                { ApplicationTheme.Dark, accentColorDark ?? accentColor },
+                { ApplicationTheme.HighContrast, accentColorDark ?? accentColor },
+                { ApplicationTheme.Auto, accentColor },
+            });
+            SetDialogAccent();
 
             // Set the language and flow direction for the dialog.
             Language = System.Windows.Markup.XmlLanguage.GetLanguage(options.Language.IetfLanguageTag);
@@ -102,8 +108,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _dialogMinimizeVisible = options.DialogAllowMinimize.Value;
             }
             IsMinimizeButtonVisible = _dialogMinimizeVisible ? Visibility.Visible : Visibility.Collapsed;
-
             WindowStartupLocation = WindowStartupLocation.Manual;
+
             // Park the window far off every monitor before any layout or show. SizeToContent,
             // FluentDialog_SizeChanged, FD.Loaded, and PositionWindow calls will all no-op or
             // operate on this off-screen position until OnContentRendered clears _firstShowPending
@@ -419,6 +425,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThemeManager_ActualThemeChanged(object? sender, ThemeChangedEventArgs e)
         {
+            SetDialogAccent();
             SetDialogIcon();
         }
 
@@ -769,6 +776,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (_appTaskbarIcon is null)
             {
                 Icon = AppIconImage.Source;
+            }
+        }
+
+        /// <summary>
+        /// Applies the accent color to the dialog based on the current application theme. The accent color is retrieved
+        /// from the dialog's accent color cache.
+        /// </summary>
+        private void SetDialogAccent()
+        {
+            if (_dialogAccentCache[ApplicationThemeManager.CurrentTheme] is Color accentColor)
+            {
+                ApplicationAccentColorManager.ApplyCustomAccent(accentColor);
             }
         }
 
@@ -1124,12 +1143,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private readonly FrozenDictionary<ApplicationTheme, BitmapSource> _dialogBitmapCache;
 
         /// <summary>
-        /// Dialog icon cache for improved performance
+        /// Dialog icon cache for improved performance.
         /// </summary>
         private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
 
         /// <summary>
-        /// Dispose managed resources
+        /// A read-only dictionary that caches accent colors for different application themes.
+        /// </summary>
+        private readonly FrozenDictionary<ApplicationTheme, Color?> _dialogAccentCache;
+
+        /// <summary>
+        /// Dispose managed resources.
         /// </summary>
         public void Dispose()
         {

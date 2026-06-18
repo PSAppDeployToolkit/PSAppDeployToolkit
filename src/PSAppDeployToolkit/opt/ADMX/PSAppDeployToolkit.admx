@@ -302,6 +302,13 @@
 				<text id="FluentAccentColor" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="FluentAccentColor" required="true" />
 			</elements>
 		</policy>
+		<policy name="FluentAccentColorDark" class="Machine" displayName="$(string.FluentAccentColorDark_Display)" explainText="$(string.FluentAccentColorDark_Explain)" presentation="$(presentation.FluentAccentColorDark)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
+			<parentCategory ref="UI" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="FluentAccentColorDark" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI" valueName="FluentAccentColorDark" required="true" />
+			</elements>
+		</policy>
 		<policy name="DialogStyle" class="Machine" displayName="$(string.DialogStyle_Display)" explainText="$(string.DialogStyle_Explain)" presentation="$(presentation.DialogStyle)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\UI">
 			<parentCategory ref="UI" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />

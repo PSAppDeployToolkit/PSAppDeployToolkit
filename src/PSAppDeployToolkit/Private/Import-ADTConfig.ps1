@@ -81,7 +81,7 @@ function Private:Import-ADTConfig
         begin
         {
             # Set up excluded values.
-            [System.String[]]$excludedValues = 'DefaultExitCode', 'DeferExitCode', 'FluentAccentColor'
+            [System.String[]]$excludedValues = 'DefaultExitCode', 'DeferExitCode', 'FluentAccentColor', 'FluentAccentColorDark'
         }
 
         process

@@ -129,6 +129,10 @@ try
                                                 # The value specified here should be literally typed (i.e. `FluentAccentColor = 0xFF0078D7`) and not wrapped in quotes.
                                                 FluentAccentColor = $null
 
+                                                # Specify the Accent Color in hex for dark mode (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.
+                                                # The value specified here should be literally typed (i.e. `FluentAccentColor = 0xFF0078D7`) and not wrapped in quotes.
+                                                FluentAccentColorDark = $null
+
                                                 # Exit code used when a UI prompt times out.
                                                 DefaultExitCode = 1618
 
