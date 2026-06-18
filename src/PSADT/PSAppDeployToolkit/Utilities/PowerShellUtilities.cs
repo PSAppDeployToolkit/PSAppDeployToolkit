@@ -64,19 +64,13 @@ namespace PSAppDeployToolkit.Utilities
         internal static string ConvertDictToPowerShellArgs(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions = null)
         {
             // Internal iterator function to yield each argument.
-            static IEnumerable<string> ConvertDictToPowerShellArgsImpl(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions = null)
+            static IEnumerable<string> ConvertDictToPowerShellArgsImpl(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions)
             {
                 // Iterate through each key-value pair in the dictionary.
                 foreach (KeyValuePair<string, object> entry in dict)
                 {
                     // Skip anything null or excluded.
-                    string key = entry.Key ?? throw new InvalidOperationException("The provided dictionary contains a null key.");
-                    string? val = null;
-                    if (entry.Value is null)
-                    {
-                        continue;
-                    }
-                    if (exclusions?.Contains(entry.Key, StringComparer.OrdinalIgnoreCase) == true)
+                    if (entry.Value is null || entry.Key is not string key || exclusions?.Contains(key, StringComparer.OrdinalIgnoreCase) == true)
                     {
                         continue;
                     }
@@ -84,28 +78,23 @@ namespace PSAppDeployToolkit.Utilities
                     // Handle nested dictionaries.
                     if (entry.Value is IDictionary dictionary)
                     {
-                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key} is null."), StringComparer.OrdinalIgnoreCase), exclusions);
+                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key}' is null."), StringComparer.OrdinalIgnoreCase), exclusions);
                         continue;
                     }
 
                     // Handle all other values.
-                    if (entry.Value is string str)
-                    {
-                        val = $"'{SingleQuoteRegex.Replace(str, "''")}'";
-                    }
-                    else if (entry.Value is List<object> list)
-                    {
-                        val = ConvertDictToPowerShellArgs(ConvertValuesFromRemainingArguments(list), exclusions);
-                    }
-                    else if (entry.Value is IEnumerable enumerable)
-                    {
-                        val = enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(static s => SingleQuoteRegex.Replace(s, "''")))}'" : string.Join(',', enumerable);
-                    }
-                    else if (entry.Value is not SwitchParameter)
-                    {
-                        val = entry.Value.ToString();
-                    }
-                    yield return !string.IsNullOrWhiteSpace(val) ? $"-{key}:{val}" : $"-{key}";
+                    string? val = entry.Value is string str
+                        ? $"'{SingleQuoteRegex.Replace(str, "''")}'"
+                        : entry.Value is List<object> list
+                        ? ConvertDictToPowerShellArgs(ConvertValuesFromRemainingArguments(list), exclusions)
+                        : entry.Value is IEnumerable enumerable
+                        ? enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(static s => SingleQuoteRegex.Replace(s, "''")))}'" : string.Join(',', enumerable)
+                        : entry.Value is not SwitchParameter
+                        ? entry.Value.ToString()
+                        : null;
+                    yield return !string.IsNullOrWhiteSpace(val)
+                        ? $"-{key}:{val}"
+                        : $"-{key}";
                 }
             }
             return string.Join(' ', ConvertDictToPowerShellArgsImpl(dict, exclusions));
