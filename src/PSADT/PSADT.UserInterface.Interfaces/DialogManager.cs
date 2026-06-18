@@ -123,10 +123,10 @@ namespace PSADT.UserInterface.Interfaces
             }
 
             // Announce whether there's apps to close.
+            IReadOnlyList<ProcessToClose>? processesToClose = null;
             if (state.RunningProcessService is not null)
             {
-                IReadOnlyList<ProcessToClose> processesToClose = state.RunningProcessService.ProcessesToClose;
-                if (processesToClose.Count == 0 && options.ContinueOnProcessClosure)
+                if ((processesToClose = state.RunningProcessService.ProcessesToClose).Count == 0 && options.ContinueOnProcessClosure)
                 {
                     // No processes are running and ContinueOnProcessClosure is set -> skip the dialog
                     // entirely. Avoids constructing a WPF window only to immediately close it (which
@@ -152,7 +152,7 @@ namespace PSADT.UserInterface.Interfaces
                 {
                     elapsed = TimeSpan.Zero;
                 }
-                if (state.RunningProcessService?.ProcessesToClose.Count > 0)
+                if (processesToClose?.Count > 0)
                 {
                     state.LogAction($"Close applications countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info);
                 }
