@@ -262,7 +262,7 @@ function Show-ADTInstallationPrompt
         }
 
         # Throw a terminating error if a default button is specified without the corresponding text.
-        if ($PSBoundParameters.ContainsKey('DefaultButton') -and ($DefaultButton -gt 0) -and ($PSBoundParameters.Keys -match "^Button$($DefaultButton)Text$"))
+        if ($PSBoundParameters.ContainsKey('DefaultButton') -and ($DefaultButton -gt 0) -and !($PSBoundParameters.Keys -match "^Button$($DefaultButton)Text$"))
         {
             $naerParams = @{
                 Exception = [System.ArgumentException]::new("Cannot specify [$DefaultButton] as default button without specifying [-Button$($DefaultButton)Text] also.")
