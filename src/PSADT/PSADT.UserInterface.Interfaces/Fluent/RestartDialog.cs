@@ -18,6 +18,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         internal RestartDialog(RestartDialogOptions options) : base(options, null!, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
         {
             // Reset the dialog's title. It must be that of the string table in the options.
+            shutdownReasonText = options.ShutdownReasonText;
             Title = options.Strings.Title;
 
             // Set up UI
@@ -59,7 +60,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
-            await DeviceUtilities.RestartComputer();
+            await DeviceUtilities.RestartComputer(shutdownReasonText);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -92,7 +93,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                await DeviceUtilities.RestartComputer();
+                await DeviceUtilities.RestartComputer(shutdownReasonText);
             }
             else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
@@ -101,5 +102,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 RestoreWindow();
             }
         }
+
+        /// <summary>
+        /// An optional string that specifies the reason for the shutdown, which will be logged in the system event log. If <see langword="null"/> or empty, no reason will be logged.
+        /// </summary>
+        private readonly string? shutdownReasonText;
     }
 }

@@ -169,6 +169,10 @@ function Private:Invoke-ADTClientServerOperation
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.UInt32]$Delay,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$ShutdownReasonText,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $false, ParameterSetName = 'GroupPolicyUpdate')]

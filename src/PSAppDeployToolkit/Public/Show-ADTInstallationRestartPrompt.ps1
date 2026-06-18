@@ -125,6 +125,21 @@ function Show-ADTInstallationRestartPrompt
             })]
         [System.UInt32]$SilentCountdownSeconds = 5,
 
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [ValidateScript({
+                if ([System.String]::IsNullOrWhiteSpace($_))
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ShutdownReasonText -ProvidedValue $_ -ExceptionMessage 'The specified ShutdownReasonText cannot be null or whitespace.'))
+                }
+                if ($_ -gt 511)
+                {
+                    $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ShutdownReasonText -ProvidedValue $_ -ExceptionMessage 'The specified ShutdownReasonText cannot exceed 512 characters in length.'))
+                }
+                return !!$_
+            })]
+        [System.String]$ShutdownReasonText,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogPosition]$WindowLocation,
@@ -238,6 +253,10 @@ function Show-ADTInstallationRestartPrompt
             {
                 Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$SilentCountdownSeconds] seconds."
                 $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
+                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
+                {
+                    $Script:ADT.ShutdownReasonText = $ShutdownReasonText
+                }
             }
             else
             {
@@ -253,6 +272,10 @@ function Show-ADTInstallationRestartPrompt
             if ($adtSession)
             {
                 $Script:ADT.RestartOnExitCountdown = $SilentCountdownSeconds
+                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
+                {
+                    $Script:ADT.ShutdownReasonText = $ShutdownReasonText
+                }
             }
             else
             {
@@ -282,6 +305,10 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CountdownSeconds))
                     $dialogOptions.Add('CountdownNoMinimizeDuration', [System.TimeSpan]::FromSeconds($CountdownNoHideSeconds))
+                }
+                if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
+                {
+                    $dialogOptions.Add('ShutdownReasonText', $ShutdownReasonText)
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {

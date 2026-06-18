@@ -84,6 +84,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 labelTimeRemaining.Text = StripFormattingTags(options.Strings.TimeRemaining);
                 buttonRestartNow.Text = StripFormattingTags(options.Strings.ButtonRestartNow);
                 buttonMinimize.Text = StripFormattingTags(options.Strings.ButtonRestartLater);
+                shutdownReasonText = options.ShutdownReasonText;
             }
 
             // Resume the dialog now that we've applied any options.
@@ -144,7 +145,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.
-            await DeviceUtilities.RestartComputer();
+            await DeviceUtilities.RestartComputer(shutdownReasonText);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -214,5 +215,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// The time span until the minimize button is disabled.
         /// </summary>
         private readonly TimeSpan? minimizeDuration;
+
+        /// <summary>
+        /// The shutdown reason text to use when performing the restart, if any.
+        /// </summary>
+        private readonly string? shutdownReasonText;
     }
 }

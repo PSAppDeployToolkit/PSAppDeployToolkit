@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -108,13 +109,20 @@ namespace PSADT.DeviceManagement
         /// <summary>
         /// Reboots the computer and terminates this process.
         /// </summary>
+        /// <param name="shutdownReasonText">An optional string that specifies the reason for the shutdown, which will be logged in the system event log. If <see langword="null"/> or empty, no reason will be logged.</param>
         /// <exception cref="InvalidOperationException">Thrown if the attempt to restart the computer fails or if shutdown.exe returns a non-zero exit code.</exception>
         /// <exception cref="InvalidProgramException">Thrown if the 'Environment.Exit()' method does not terminate the process as expected.</exception>
         [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
-        internal static async Task RestartComputer()
+        internal static async Task RestartComputer(string? shutdownReasonText)
         {
-            using (ProcessResult result = await (ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "shutdown.exe"), ["/r /f /t 0"], Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true)) ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.")).ConfigureAwait(false))
+            List<string> argumentList = ["/r", "/f", "/t", "0"];
+            if (shutdownReasonText is not null)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(shutdownReasonText);
+                argumentList.AddRange(["/c", $"\"{shutdownReasonText}\""]);
+            }
+            using (ProcessResult result = await (ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "shutdown.exe"), argumentList, Environment.SystemDirectory, denyUserTermination: true, createNoWindow: true)) ?? throw new InvalidOperationException("Failed to launch shutdown.exe to restart the computer.")).ConfigureAwait(false))
             {
                 if (result.ExitCode != 0)
                 {
