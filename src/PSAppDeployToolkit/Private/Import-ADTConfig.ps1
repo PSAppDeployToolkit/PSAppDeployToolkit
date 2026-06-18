@@ -76,21 +76,30 @@ function Private:Import-ADTConfig
     }
 
     # Internal filter to verify signedness of integer values.
-    filter Get-ADTConfigIntegerKeyNames
+    function Get-ADTConfigIntegerKeyNames
     {
-        # Go recursive if we've received a hashtable, otherwise just get the values.
-        foreach ($section in $($_.GetEnumerator()))
+        begin
         {
-            # Re-process if this is a hashtable.
-            if ($section.Value -is [System.Collections.Hashtable])
-            {
-                $section.Value | & $MyInvocation.MyCommand; continue
-            }
+            # Set up excluded values.
+            [System.String[]]$excludedValues = 'DefaultExitCode', 'DeferExitCode', 'FluentAccentColor'
+        }
 
-            # Output the key to the caller.
-            if (($section.Value -is [System.Int32]) -and !('DefaultExitCode', 'DeferExitCode', 'FluentAccentColor').Contains($section.Key))
+        process
+        {
+            # Go recursive if we've received a hashtable, otherwise just get the values.
+            foreach ($section in $($_.GetEnumerator()))
             {
-                $section.Key
+                # Re-process if this is a hashtable.
+                if ($section.Value -is [System.Collections.Hashtable])
+                {
+                    $section.Value | & $MyInvocation.MyCommand; continue
+                }
+
+                # Output the key to the caller.
+                if (($section.Value -is [System.Int32]) -and !$excludedValues.Contains($section.Key))
+                {
+                    $section.Key
+                }
             }
         }
     }
