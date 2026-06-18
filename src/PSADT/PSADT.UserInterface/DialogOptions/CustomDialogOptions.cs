@@ -43,6 +43,7 @@ namespace PSADT.UserInterface.DialogOptions
             options["ButtonLeftText"] as string,
             options["ButtonMiddleText"] as string,
             options["ButtonRightText"] as string,
+            options["DefaultButton"] as DialogDefaultButton?,
             options["Icon"] as DialogSystemIcon?,
             options["MinimizeWindows"] as bool? ?? false)
         {
@@ -80,10 +81,11 @@ namespace PSADT.UserInterface.DialogOptions
         /// displayed.</param>
         /// <param name="buttonRightText">The text displayed on the right button in the dialog. If <see langword="null"/>, the button is not
         /// displayed.</param>
+        /// <param name="defaultButton">Indicates which button is the default button in the dialog. If <see langword="null"/>, no default button is set.</param>
         /// <param name="icon">The system icon displayed in the dialog. If <see langword="null"/>, no icon is displayed.</param>
         /// <param name="minimizeWindows">Indicates whether all other windows should be minimized when the dialog is displayed.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="messageText"/> is <see langword="null"/> or empty.</exception>
-        private protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
+        private protected CustomDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor, DialogPosition? dialogPosition, bool? dialogAllowMove, bool? dialogAllowMinimize, TimeSpan? dialogExpiryDuration, TimeSpan? dialogPersistInterval, string messageText, DialogMessageAlignment? messageAlignment, string? buttonLeftText, string? buttonMiddleText, string? buttonRightText, DialogDefaultButton? defaultButton, DialogSystemIcon? icon, bool minimizeWindows) : base(appTitle, subtitle, appIconImage, appIconDarkImage, appBannerImage, appTaskbarIconImage, dialogTopMost, language, fluentAccentColor, dialogPosition, dialogAllowMove, dialogAllowMinimize, dialogExpiryDuration, dialogPersistInterval)
         {
             // At least one button must be defined.
             if (buttonLeftText is not null)
@@ -110,6 +112,7 @@ namespace PSADT.UserInterface.DialogOptions
             ButtonLeftText = buttonLeftText;
             ButtonMiddleText = buttonMiddleText;
             ButtonRightText = buttonRightText;
+            DefaultButton = defaultButton;
             Icon = icon;
             MinimizeWindows = minimizeWindows;
         }
@@ -143,6 +146,12 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataMember]
         public readonly string? ButtonRightText;
+
+        /// <summary>
+        /// Indicates which button is the default button in the dialog, if any. If <see langword="null"/>, no default button is set.
+        /// </summary>
+        [DataMember]
+        public readonly DialogDefaultButton? DefaultButton;
 
         /// <summary>
         /// The icon to be displayed in the dialog.

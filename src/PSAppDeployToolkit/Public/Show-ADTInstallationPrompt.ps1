@@ -37,6 +37,9 @@ function Show-ADTInstallationPrompt
     .PARAMETER ButtonMiddleText
         Show a button in the middle of the prompt with the specified text.
 
+    .PARAMETER DefaultButton
+        Specifies the default button to accent within the user interface.
+
     .PARAMETER Icon
         Show a system icon in the prompt.
 
@@ -160,6 +163,10 @@ function Show-ADTInstallationPrompt
         [System.String]$ButtonMiddleText,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [PSADT.UserInterface.DialogDefaultButton]$DefaultButton,
+
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [PSADT.UserInterface.DialogSystemIcon]$Icon,
 
@@ -248,6 +255,19 @@ function Show-ADTInstallationPrompt
                 Exception = [System.ArgumentException]::new('At least one button must be specified when calling this function.')
                 Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
                 ErrorId = 'MandatoryParameterMissing'
+                TargetObject = $PSBoundParameters
+                RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
+        # Throw a terminating error if a default button is specified without the corresponding text.
+        if ($PSBoundParameters.ContainsKey('DefaultButton') -and ($DefaultButton -gt 0) -and ($PSBoundParameters.Keys -match "^Button$($DefaultButton)Text$"))
+        {
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new("Cannot specify [$DefaultButton] as default button without specifying [-Button$($DefaultButton)Text] also.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'DefaultButtonTextMissing'
                 TargetObject = $PSBoundParameters
                 RecommendedAction = "Please review the supplied parameters used against $($MyInvocation.MyCommand.Name) and try again."
             }
@@ -392,6 +412,10 @@ function Show-ADTInstallationPrompt
                 if ($ButtonMiddleText)
                 {
                     $dialogOptions.Add('ButtonMiddleText', $ButtonMiddleText)
+                }
+                if ($DefaultButton)
+                {
+                    $dialogOptions.Add('DefaultButton', $DefaultButton)
                 }
                 if ($PSBoundParameters.ContainsKey('WindowLocation'))
                 {

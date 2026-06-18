@@ -31,6 +31,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER WindowLocation
         The location of the dialog on the screen.
 
+    .PARAMETER ShutdownReasonText
+        Specifies the shutdown comment to provide to the underlying `shutdown.exe` call when triggering the restart.
+
     .PARAMETER PersistPrompt
         Specify whether to make the prompt persist, reappearing in the specified `-WindowLocation` at the interval specified in the `config.psd1` file. The user will have no option but to respond to the prompt. This only takes effect if deferral is not allowed or has expired.
 
