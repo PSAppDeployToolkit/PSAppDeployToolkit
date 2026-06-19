@@ -18,14 +18,16 @@ function Private:Convert-ADTRegistryKeyToHashtable
         $subdata = $_ | Get-ChildItem | & {
             end
             {
-                $registryKeys = $($input) | & { process { if ($null -ne $_) { return $_ } } }
-                try
+                if ($registryKeys = $($input) | & { process { if ($null -ne $_) { return $_ } } })
                 {
-                    $registryKeys | & $MyInvocation.MyCommand
-                }
-                finally
-                {
-                    $registryKeys.Dispose()
+                    try
+                    {
+                        $registryKeys | & $MyInvocation.MyCommand
+                    }
+                    finally
+                    {
+                        $registryKeys.Dispose()
+                    }
                 }
             }
         }
