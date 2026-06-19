@@ -18,7 +18,7 @@ function Private:Convert-ADTRegistryKeyToHashtable
         $subdata = $_ | Get-ChildItem | & {
             end
             {
-                $registryKeys = $($input)
+                $registryKeys = $($input) | & { process { if ($null -ne $_) { return $_ } } }
                 try
                 {
                     $registryKeys | & $MyInvocation.MyCommand
