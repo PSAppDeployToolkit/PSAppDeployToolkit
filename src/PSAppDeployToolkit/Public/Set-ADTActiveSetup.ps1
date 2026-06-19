@@ -251,6 +251,12 @@ function Set-ADTActiveSetup
         $StubExeExt = [System.IO.Path]::GetExtension($StubExePath)
         $StubPath = $null
 
+        # Announce deprecation of .vbs support within this function.
+        if ($StubExeExt -in '.js', '.vbs')
+        {
+            Write-ADTLogEntry -Message "Support for [.vbs] and/or [.js] files is deprecated and will be removed in PSAppDeployToolkit 4.3.0." -Severity Warning
+        }
+
         # Define internal function to test current ActiveSetup stuff.
         function Test-ADTActiveSetup
         {
