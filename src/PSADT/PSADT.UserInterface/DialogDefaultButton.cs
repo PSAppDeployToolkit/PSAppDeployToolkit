@@ -9,6 +9,7 @@
         /// No default button.
         /// </summary>
         None = 0,
+
         /// <summary>
         /// The first button is the default button.
         /// </summary>

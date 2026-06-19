@@ -341,7 +341,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the full path to the common Start Menu Programs folder shared by all users on the system.
         /// </summary>
-        public DirectoryInfo? EnvCommonStartMenuPrograms { get; } = GetEnvironmentFolderPath(Environment.SpecialFolder.CommonStartMenu);
+        public DirectoryInfo? EnvCommonStartMenuPrograms { get; } = GetEnvironmentFolderPath(Environment.SpecialFolder.CommonPrograms);
 
         /// <summary>
         /// Gets the full path to the common Start Menu folder for all users on the system.
