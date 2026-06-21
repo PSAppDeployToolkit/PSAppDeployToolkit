@@ -23,11 +23,11 @@ namespace PSADT.UserInterface.DialogOptions
         public DialogBoxOptions(IDictionary options) : this(
             (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
             (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."),
-            (DialogBoxButtons?)options["DialogButtons"] ?? (DialogBoxButtons)uint.MaxValue,
-            (DialogBoxDefaultButton?)options["DialogDefaultButton"] ?? (DialogBoxDefaultButton)uint.MaxValue,
+            (DialogBoxButtons?)options["DialogButtons"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogButtons' is missing."),
+            (DialogBoxDefaultButton?)options["DialogDefaultButton"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogDefaultButton' is missing."),
             (DialogBoxIcon?)options["DialogIcon"],
             (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
-            (uint?)options["DialogExpiryDuration"] ?? uint.MaxValue)
+            (uint?)options["DialogExpiryDuration"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogExpiryDuration' is missing."))
         {
         }
 
@@ -47,18 +47,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
         private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint dialogExpiryDuration)
         {
-            if ((uint)dialogButtons == uint.MaxValue)
-            {
-                throw new ArgumentNullException(nameof(dialogButtons), "DialogButtons value is null or invalid.");
-            }
-            if ((uint)dialogDefaultButton == uint.MaxValue)
-            {
-                throw new ArgumentNullException(nameof(dialogDefaultButton), "DialogDefaultButton value is null or invalid.");
-            }
-            if (dialogExpiryDuration == uint.MaxValue)
-            {
-                throw new ArgumentNullException(nameof(dialogExpiryDuration), "DialogExpiryDuration value is null or invalid.");
-            }
             ArgumentException.ThrowIfNullOrWhiteSpace(appTitle);
             ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
             AppTitle = appTitle;

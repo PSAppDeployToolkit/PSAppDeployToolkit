@@ -26,7 +26,7 @@ namespace PSADT.UserInterface.DialogOptions
         public BalloonTipOptions(IDictionary options) : this(
             (string?)(options ?? throw new ArgumentNullException(nameof(options)))["Title"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Title' is missing."),
             (string?)options["Text"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Text' is missing."),
-            (BalloonTipIcon?)options["Icon"] ?? (BalloonTipIcon)(-1))
+            (BalloonTipIcon?)options["Icon"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Icon' is missing."))
         {
         }
 
@@ -47,12 +47,6 @@ namespace PSADT.UserInterface.DialogOptions
             ArgumentException.ThrowIfNullOrWhiteSpace(text);
             Title = title;
             Text = text;
-
-            // Confirm remaining parameters are valid.
-            if ((int)icon == -1)
-            {
-                throw new ArgumentNullException(nameof(icon), "Icon value is null or invalid.");
-            }
             Icon = icon;
         }
 
