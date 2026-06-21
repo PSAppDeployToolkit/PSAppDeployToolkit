@@ -33,21 +33,21 @@ namespace PSADT.UserInterface.DialogOptions
         /// title, subtitle, icon images, language, and display options. Keys must match the expected option names.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         private protected BaseDialogOptions(IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["Subtitle"] as string ?? null!,
-            options["AppIconImage"] as string ?? null!,
-            options["AppIconDarkImage"] as string,
-            options["AppBannerImage"] as string ?? null!,
-            options["AppTaskbarIconImage"] as string,
-            options["DialogTopMost"] as bool? ?? false,
-            options["Language"] as CultureInfo ?? null!,
-            options["FluentAccentColor"] as int?,
-            options["FluentAccentColorDark"] as int?,
-            options["DialogPosition"] as DialogPosition?,
-            options["DialogAllowMove"] as bool?,
-            options["DialogAllowMinimize"] as bool?,
-            options["DialogExpiryDuration"] as TimeSpan?,
-            options["DialogPersistInterval"] as TimeSpan?)
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["Subtitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Subtitle' is missing."),
+            (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
+            (string?)options["AppIconDarkImage"],
+            (string?)options["AppBannerImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppBannerImage' is missing."),
+            (string?)options["AppTaskbarIconImage"],
+            (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
+            (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
+            (int?)options["FluentAccentColor"],
+            (int?)options["FluentAccentColorDark"],
+            (DialogPosition?)options["DialogPosition"],
+            (bool?)options["DialogAllowMove"],
+            (bool?)options["DialogAllowMinimize"],
+            (TimeSpan?)options["DialogExpiryDuration"],
+            (TimeSpan?)options["DialogPersistInterval"])
         {
         }
 

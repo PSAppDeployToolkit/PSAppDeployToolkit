@@ -25,26 +25,26 @@ namespace PSADT.UserInterface.DialogOptions
         /// settings. Must not be null.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public RestartDialogOptions(DeploymentType deploymentType, IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["Subtitle"] as string ?? null!,
-            options["AppIconImage"] as string ?? null!,
-            options["AppIconDarkImage"] as string,
-            options["AppBannerImage"] as string ?? null!,
-            options["AppTaskbarIconImage"] as string,
-            options["DialogTopMost"] as bool? ?? false,
-            options["Language"] as CultureInfo ?? null!,
-            options["FluentAccentColor"] as int?,
-            options["FluentAccentColorDark"] as int?,
-            options["DialogPosition"] as DialogPosition?,
-            options["DialogAllowMove"] as bool?,
-            options["DialogAllowMinimize"] as bool?,
-            options["DialogExpiryDuration"] as TimeSpan?,
-            options["DialogPersistInterval"] as TimeSpan?,
-            options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings, deploymentType) : null!,
-            options["CountdownDuration"] as TimeSpan?,
-            options["CountdownNoMinimizeDuration"] as TimeSpan?,
-            options["ShutdownReasonText"] as string,
-            options["CustomMessageText"] as string)
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["Subtitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Subtitle' is missing."),
+            (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
+            (string?)options["AppIconDarkImage"],
+            (string?)options["AppBannerImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppBannerImage' is missing."),
+            (string?)options["AppTaskbarIconImage"],
+            (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
+            (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
+            (int?)options["FluentAccentColor"],
+            (int?)options["FluentAccentColorDark"],
+            (DialogPosition?)options["DialogPosition"],
+            (bool?)options["DialogAllowMove"],
+            (bool?)options["DialogAllowMinimize"],
+            (TimeSpan?)options["DialogExpiryDuration"],
+            (TimeSpan?)options["DialogPersistInterval"],
+            new((IDictionary?)options["Strings"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Strings' is missing."), deploymentType),
+            (TimeSpan?)options["CountdownDuration"],
+            (TimeSpan?)options["CountdownNoMinimizeDuration"],
+            (string?)options["ShutdownReasonText"],
+            (string?)options["CustomMessageText"])
         {
         }
 
@@ -142,13 +142,13 @@ namespace PSADT.UserInterface.DialogOptions
             /// messages, and button labels. Keys must match the expected resource names.</param>
             /// <param name="deploymentType">The deployment type that determines which localized message string to use in the dialog.</param>
             internal RestartDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
-                strings["Title"] as string ?? null!,
-                ((IDictionary?)strings["Message"])?[deploymentType.ToString()] as string ?? null!,
-                strings["MessageTime"] as string ?? null!,
-                strings["MessageRestart"] as string ?? null!,
-                strings["TimeRemaining"] as string ?? null!,
-                strings["ButtonRestartNow"] as string ?? null!,
-                strings["ButtonRestartLater"] as string ?? null!)
+                (string?)(strings ?? throw new ArgumentNullException(nameof(strings)))["Title"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'Title' is missing."),
+                (string?)((IDictionary?)strings["Message"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'Message' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), $"The specified key 'Message.{deploymentType}' is missing."),
+                (string?)strings["MessageTime"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'MessageTime' is missing."),
+                (string?)strings["MessageRestart"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'MessageRestart' is missing."),
+                (string?)strings["TimeRemaining"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'TimeRemaining' is missing."),
+                (string?)strings["ButtonRestartNow"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonRestartNow' is missing."),
+                (string?)strings["ButtonRestartLater"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonRestartLater' is missing."))
             {
             }
 

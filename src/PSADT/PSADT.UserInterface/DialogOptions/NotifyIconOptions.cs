@@ -24,10 +24,10 @@ namespace PSADT.UserInterface.DialogOptions
         /// 'Icon', 'BalloonTipTitle', 'BalloonTipText', and 'BalloonTipIcon'.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options parameter is null.</exception>
         public NotifyIconOptions(IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["AppIconImage"] as string ?? null!,
-            options["AppTaskbarIconImage"] as string,
-            options["MessageText"] as string ?? null!)
+            (string?)options["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
+            (string?)options["AppTaskbarIconImage"],
+            (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."))
         {
         }
 

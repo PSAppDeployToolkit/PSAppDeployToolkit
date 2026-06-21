@@ -25,32 +25,32 @@ namespace PSADT.UserInterface.DialogOptions
         /// keys may result in default values being used.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public ListSelectionDialogOptions(IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["Subtitle"] as string ?? null!,
-            options["AppIconImage"] as string ?? null!,
-            options["AppIconDarkImage"] as string,
-            options["AppBannerImage"] as string ?? null!,
-            options["AppTaskbarIconImage"] as string,
-            options["DialogTopMost"] as bool? ?? false,
-            options["Language"] as CultureInfo ?? null!,
-            options["FluentAccentColor"] as int?,
-            options["FluentAccentColorDark"] as int?,
-            options["DialogPosition"] as DialogPosition?,
-            options["DialogAllowMove"] as bool?,
-            options["DialogAllowMinimize"] as bool?,
-            options["DialogExpiryDuration"] as TimeSpan?,
-            options["DialogPersistInterval"] as TimeSpan?,
-            options["MessageText"] as string ?? null!,
-            options["MessageAlignment"] as DialogMessageAlignment?,
-            options["ButtonLeftText"] as string,
-            options["ButtonMiddleText"] as string,
-            options["ButtonRightText"] as string,
-            options["DefaultButton"] as DialogDefaultButton?,
-            options["Icon"] as DialogSystemIcon?,
-            options["MinimizeWindows"] as bool? ?? false,
-            options["ListItems"] as IReadOnlyList<string> ?? null!,
-            options["SelectedIndex"] as int?,
-            options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings) : null!)
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["Subtitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Subtitle' is missing."),
+            (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
+            (string?)options["AppIconDarkImage"],
+            (string?)options["AppBannerImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppBannerImage' is missing."),
+            (string?)options["AppTaskbarIconImage"],
+            (bool?)options["DialogTopMost"] ?? false,
+            (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
+            (int?)options["FluentAccentColor"],
+            (int?)options["FluentAccentColorDark"],
+            (DialogPosition?)options["DialogPosition"],
+            (bool?)options["DialogAllowMove"],
+            (bool?)options["DialogAllowMinimize"],
+            (TimeSpan?)options["DialogExpiryDuration"],
+            (TimeSpan?)options["DialogPersistInterval"],
+            (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."),
+            (DialogMessageAlignment?)options["MessageAlignment"],
+            (string?)options["ButtonLeftText"],
+            (string?)options["ButtonMiddleText"],
+            (string?)options["ButtonRightText"],
+            (DialogDefaultButton?)options["DefaultButton"],
+            (DialogSystemIcon?)options["Icon"],
+            (bool?)options["MinimizeWindows"] ?? false,
+            (IReadOnlyList<string>?)options["ListItems"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'ListItems' is missing."),
+            (int?)options["SelectedIndex"],
+            new((IDictionary?)options["Strings"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Strings' is missing.")))
         {
         }
 
@@ -140,7 +140,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// message will be set to null.</remarks>
             /// <param name="strings">An IDictionary containing string resources. The entry with the key 'ListSelectionMessage' is used to
             /// provide the message for the dialog.</param>
-            internal ListSelectionDialogStrings(IDictionary strings) : this(strings["ListSelectionMessage"] as string ?? null!)
+            internal ListSelectionDialogStrings(IDictionary strings) : this((string?)(strings ?? throw new ArgumentNullException(nameof(strings)))["ListSelectionMessage"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ListSelectionMessage' is missing."))
             {
             }
 

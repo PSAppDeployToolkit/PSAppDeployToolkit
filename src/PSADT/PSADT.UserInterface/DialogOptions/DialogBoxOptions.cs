@@ -21,13 +21,13 @@ namespace PSADT.UserInterface.DialogOptions
         /// message text, button configuration, default button, icon, topmost behavior, and expiry duration.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public DialogBoxOptions(IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["MessageText"] as string ?? null!,
-            options["DialogButtons"] as DialogBoxButtons? ?? (DialogBoxButtons)uint.MaxValue,
-            options["DialogDefaultButton"] as DialogBoxDefaultButton? ?? (DialogBoxDefaultButton)uint.MaxValue,
-            options["DialogIcon"] as DialogBoxIcon?,
-            options["DialogTopMost"] as bool? ?? false,
-            options["DialogExpiryDuration"] as uint? ?? uint.MaxValue)
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["MessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'MessageText' is missing."),
+            (DialogBoxButtons?)options["DialogButtons"] ?? (DialogBoxButtons)uint.MaxValue,
+            (DialogBoxDefaultButton?)options["DialogDefaultButton"] ?? (DialogBoxDefaultButton)uint.MaxValue,
+            (DialogBoxIcon?)options["DialogIcon"],
+            (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
+            (uint?)options["DialogExpiryDuration"] ?? uint.MaxValue)
         {
         }
 

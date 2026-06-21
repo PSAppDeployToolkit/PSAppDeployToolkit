@@ -21,25 +21,25 @@ namespace PSADT.UserInterface.DialogOptions
         /// application title, subtitle, icon images, dialog properties, and progress message details.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options dictionary is null.</exception>
         public ProgressDialogOptions(IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["Subtitle"] as string ?? null!,
-            options["AppIconImage"] as string ?? null!,
-            options["AppIconDarkImage"] as string,
-            options["AppBannerImage"] as string ?? null!,
-            options["AppTaskbarIconImage"] as string,
-            options["DialogTopMost"] as bool? ?? false,
-            options["Language"] as CultureInfo ?? null!,
-            options["FluentAccentColor"] as int?,
-            options["FluentAccentColorDark"] as int?,
-            options["DialogPosition"] as DialogPosition?,
-            options["DialogAllowMove"] as bool?,
-            options["DialogAllowMinimize"] as bool?,
-            options["DialogExpiryDuration"] as TimeSpan?,
-            options["DialogPersistInterval"] as TimeSpan?,
-            options["ProgressMessageText"] as string ?? null!,
-            options["ProgressDetailMessageText"] as string ?? null!,
-            options["ProgressPercentage"] as double?,
-            options["MessageAlignment"] as DialogMessageAlignment?)
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["Subtitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Subtitle' is missing."),
+            (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
+            (string?)options["AppIconDarkImage"],
+            (string?)options["AppBannerImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppBannerImage' is missing."),
+            (string?)options["AppTaskbarIconImage"],
+            (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
+            (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
+            (int?)options["FluentAccentColor"],
+            (int?)options["FluentAccentColorDark"],
+            (DialogPosition?)options["DialogPosition"],
+            (bool?)options["DialogAllowMove"],
+            (bool?)options["DialogAllowMinimize"],
+            (TimeSpan?)options["DialogExpiryDuration"],
+            (TimeSpan?)options["DialogPersistInterval"],
+            (string?)options["ProgressMessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'ProgressMessageText' is missing."),
+            (string?)options["ProgressDetailMessageText"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'ProgressDetailMessageText' is missing."),
+            (double?)options["ProgressPercentage"],
+            (DialogMessageAlignment?)options["MessageAlignment"])
         {
         }
 

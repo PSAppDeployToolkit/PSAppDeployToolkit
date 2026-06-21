@@ -24,30 +24,30 @@ namespace PSADT.UserInterface.DialogOptions
         /// and behavioral flags. Must not be null.</param>
         /// <exception cref="ArgumentNullException">Thrown when the options dictionary is null.</exception>
         public CloseAppsDialogOptions(DeploymentType deploymentType, IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] as string ?? null!,
-            options["Subtitle"] as string ?? null!,
-            options["AppIconImage"] as string ?? null!,
-            options["AppIconDarkImage"] as string,
-            options["AppBannerImage"] as string ?? null!,
-            options["AppTaskbarIconImage"] as string,
-            options["DialogTopMost"] as bool? ?? false,
-            options["Language"] as CultureInfo ?? null!,
-            options["FluentAccentColor"] as int?,
-            options["FluentAccentColorDark"] as int?,
-            options["DialogPosition"] as DialogPosition?,
-            options["DialogAllowMove"] as bool?,
-            options["DialogAllowMinimize"] as bool?,
-            options["DialogExpiryDuration"] as TimeSpan?,
-            options["DialogPersistInterval"] as TimeSpan?,
-            options["Strings"] as IDictionary is { Count: > 0 } strings ? new(strings, deploymentType) : null!,
-            options["DeferralsRemaining"] as uint?,
-            options["DeferralDeadline"] as DateTime?,
-            options["UnlimitedDeferrals"] as bool? ?? false,
-            options["ContinueOnProcessClosure"] as bool? ?? false,
-            options["CountdownDuration"] as TimeSpan?,
-            options["ForcedCountdown"] as bool? ?? false,
-            options["HideCloseButton"] as bool? ?? false,
-            options["CustomMessageText"] as string is { Length: > 0 } customMessageText ? customMessageText : null)
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["AppTitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppTitle' is missing."),
+            (string?)options["Subtitle"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Subtitle' is missing."),
+            (string?)options["AppIconImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppIconImage' is missing."),
+            (string?)options["AppIconDarkImage"],
+            (string?)options["AppBannerImage"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'AppBannerImage' is missing."),
+            (string?)options["AppTaskbarIconImage"],
+            (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
+            (CultureInfo?)options["Language"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Language' is missing."),
+            (int?)options["FluentAccentColor"],
+            (int?)options["FluentAccentColorDark"],
+            (DialogPosition?)options["DialogPosition"],
+            (bool?)options["DialogAllowMove"],
+            (bool?)options["DialogAllowMinimize"],
+            (TimeSpan?)options["DialogExpiryDuration"],
+            (TimeSpan?)options["DialogPersistInterval"],
+            new((IDictionary?)options["Strings"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Strings' is missing."), deploymentType),
+            (uint?)options["DeferralsRemaining"],
+            (DateTime?)options["DeferralDeadline"],
+            (bool?)options["UnlimitedDeferrals"] ?? false,
+            (bool?)options["ContinueOnProcessClosure"] ?? false,
+            (TimeSpan?)options["CountdownDuration"],
+            (bool?)options["ForcedCountdown"] ?? false,
+            (bool?)options["HideCloseButton"] ?? false,
+            (string?)options["CustomMessageText"])
         {
         }
 
@@ -177,8 +177,8 @@ namespace PSADT.UserInterface.DialogOptions
             /// <param name="strings">An IDictionary containing localized string resources for the dialog, organized by deployment type.</param>
             /// <param name="deploymentType">The deployment type that determines which set of localized strings to use.</param>
             internal CloseAppsDialogStrings(IDictionary strings, DeploymentType deploymentType) : this(
-                strings["Classic"] is IDictionary classicStrings ? new(classicStrings, deploymentType) : null!,
-                strings["Fluent"] is IDictionary fluentStrings ? new(fluentStrings, deploymentType) : null!)
+                new CloseAppsDialogClassicStrings((IDictionary?)(strings ?? throw new ArgumentNullException(nameof(strings)))["Classic"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'Classic' is missing."), deploymentType),
+                new CloseAppsDialogFluentStrings((IDictionary?)strings["Fluent"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'Fluent' is missing."), deploymentType))
             {
             }
 
@@ -228,18 +228,18 @@ namespace PSADT.UserInterface.DialogOptions
                 /// dictionary must include entries for each required message key.</param>
                 /// <param name="deploymentType">The deployment type that determines which localized string values are selected from the dictionary.</param>
                 internal CloseAppsDialogClassicStrings(IDictionary strings, DeploymentType deploymentType) : this(
-                    ((IDictionary?)strings["WelcomeMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    ((IDictionary?)strings["CloseAppsMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    ((IDictionary?)strings["ExpiryMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    strings["DeferralsRemaining"] as string ?? null!,
-                    strings["DeferralDeadline"] as string ?? null!,
-                    strings["ExpiryWarning"] as string ?? null!,
-                    ((IDictionary?)strings["CountdownDefer"])?[deploymentType.ToString()] as string ?? null!,
-                    ((IDictionary?)strings["CountdownClose"])?[deploymentType.ToString()] as string ?? null!,
-                    strings["ButtonClose"] as string ?? null!,
-                    strings["ButtonDefer"] as string ?? null!,
-                    strings["ButtonContinue"] as string ?? null!,
-                    strings["ButtonContinueTooltip"] as string ?? null!)
+                    (string?)((IDictionary?)(strings ?? throw new ArgumentNullException(nameof(strings)))["WelcomeMessage"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'WelcomeMessage' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), $"The specified key 'WelcomeMessage.{deploymentType}' is missing."),
+                    (string?)((IDictionary?)strings["CloseAppsMessage"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'CloseAppsMessage' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), $"The specified key 'CloseAppsMessage.{deploymentType}' is missing."),
+                    (string?)((IDictionary?)strings["ExpiryMessage"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ExpiryMessage' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), $"The specified key 'ExpiryMessage.{deploymentType}' is missing."),
+                    (string?)strings["DeferralsRemaining"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DeferralsRemaining' is missing."),
+                    (string?)strings["DeferralDeadline"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DeferralDeadline' is missing."),
+                    (string?)strings["ExpiryWarning"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ExpiryWarning' is missing."),
+                    (string?)((IDictionary?)strings["CountdownDefer"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'CountdownDefer' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), $"The specified key 'CountdownDefer.{deploymentType}' is missing."),
+                    (string?)((IDictionary?)strings["CountdownClose"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'CountdownClose' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), $"The specified key 'CountdownClose.{deploymentType}' is missing."),
+                    (string?)strings["ButtonClose"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonClose' is missing."),
+                    (string?)strings["ButtonDefer"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonDefer' is missing."),
+                    (string?)strings["ButtonContinue"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonContinue' is missing."),
+                    (string?)strings["ButtonContinueTooltip"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonContinueTooltip' is missing."))
                 {
                 }
 
@@ -382,14 +382,14 @@ namespace PSADT.UserInterface.DialogOptions
                 /// <param name="deploymentType">The DeploymentType that specifies the context for which the dialog messages are localized,
                 /// influencing the selection of strings from the provided dictionary.</param>
                 internal CloseAppsDialogFluentStrings(IDictionary strings, DeploymentType deploymentType) : this(
-                    ((IDictionary?)strings["DialogMessage"])?[deploymentType.ToString()] as string ?? null!,
-                    ((IDictionary?)strings["DialogMessageNoProcesses"])?[deploymentType.ToString()] as string ?? null!,
-                    strings["AutomaticStartCountdown"] as string ?? null!,
-                    strings["DeferralsRemaining"] as string ?? null!,
-                    strings["DeferralDeadline"] as string ?? null!,
-                    ((IDictionary?)strings["ButtonLeftText"])?[deploymentType.ToString()] as string ?? null!,
-                    strings["ButtonRightText"] as string ?? null!,
-                    ((IDictionary?)strings["ButtonLeftNoProcessesText"])?[deploymentType.ToString()] as string ?? null!)
+                    (string?)((IDictionary?)(strings ?? throw new ArgumentNullException(nameof(strings)))["DialogMessage"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DialogMessage' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DialogMessage' is missing."),
+                    (string?)((IDictionary?)strings["DialogMessageNoProcesses"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DialogMessageNoProcesses' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DialogMessageNoProcesses' is missing."),
+                    (string?)strings["AutomaticStartCountdown"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'AutomaticStartCountdown' is missing."),
+                    (string?)strings["DeferralsRemaining"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DeferralsRemaining' is missing."),
+                    (string?)strings["DeferralDeadline"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'DeferralDeadline' is missing."),
+                    (string?)((IDictionary?)strings["ButtonLeftText"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonLeftText' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonLeftText' is missing."),
+                    (string?)strings["ButtonRightText"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonRightText' is missing."),
+                    (string?)((IDictionary?)strings["ButtonLeftNoProcessesText"] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonLeftNoProcessesText' is missing."))[deploymentType.ToString()] ?? throw new ArgumentNullException(nameof(strings), "The specified key 'ButtonLeftNoProcessesText' is missing."))
                 {
                 }
 

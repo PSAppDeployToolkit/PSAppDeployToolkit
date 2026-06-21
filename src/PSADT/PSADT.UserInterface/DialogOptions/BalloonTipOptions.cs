@@ -24,9 +24,9 @@ namespace PSADT.UserInterface.DialogOptions
         /// 'TrayIcon', 'Title', 'Text', and 'Icon'.</param>
         /// <exception cref="ArgumentNullException">Thrown if the options parameter is null.</exception>
         public BalloonTipOptions(IDictionary options) : this(
-            (options ?? throw new ArgumentNullException(nameof(options)))["Title"] as string ?? null!,
-            options["Text"] as string ?? null!,
-            options["Icon"] as BalloonTipIcon? ?? (BalloonTipIcon)(-1))
+            (string?)(options ?? throw new ArgumentNullException(nameof(options)))["Title"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Title' is missing."),
+            (string?)options["Text"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'Text' is missing."),
+            (BalloonTipIcon?)options["Icon"] ?? (BalloonTipIcon)(-1))
         {
         }
 
