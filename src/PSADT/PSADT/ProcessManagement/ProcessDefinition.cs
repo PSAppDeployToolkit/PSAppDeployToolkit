@@ -42,7 +42,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="name">The name of the process.</param>
         /// <param name="description">The description of the process.</param>
-        public ProcessDefinition(string name, string description) : this(name)
+        public ProcessDefinition(string name, string? description) : this(name)
         {
             if (description?.Length > 0)
             {
@@ -58,7 +58,7 @@ namespace PSADT.ProcessManagement
         /// Initializes a new instance of the <see cref="ProcessDefinition"/> struct.
         /// </summary>
         /// <param name="properties">The hashtable with a process's name, and optionally a description.</param>
-        public ProcessDefinition(IDictionary properties) : this((properties ?? throw new ArgumentNullException(nameof(properties)))["Name"] as string ?? string.Empty, properties["Description"] as string ?? string.Empty)
+        public ProcessDefinition(IDictionary properties) : this((string?)(properties ?? throw new ArgumentNullException(nameof(properties)))["Name"] ?? throw new ArgumentNullException(nameof(properties), "The specified key 'Name' is missing."), (string?)properties["Description"])
         {
         }
 

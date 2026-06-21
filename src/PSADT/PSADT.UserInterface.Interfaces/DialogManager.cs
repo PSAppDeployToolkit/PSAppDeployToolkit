@@ -40,7 +40,7 @@ namespace PSADT.UserInterface.Interfaces
         static DialogManager()
         {
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
-            unhandledExceptionHandler = AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") as Action<Exception> ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
+            unhandledExceptionHandler = (Action<Exception>?)AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
 
             // Register process exit handler to ensure WPF is properly shut down. This prevents ~2.5 second delays during shutdown.
             // Use Dispatcher.InvokeShutdown() instead of Application.Shutdown() to avoid a race with WPF's

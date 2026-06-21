@@ -379,15 +379,15 @@ namespace PSAppDeployToolkit.Foundation
                         IReadOnlyDictionary<string, object> msiProps = (DefaultMstFile is not null ? MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableDictionary(DefaultMsiFile.FullName, "Property", 1, 2))!;
                         if (string.IsNullOrWhiteSpace(AppVendor))
                         {
-                            AppVendor = msiProps["Manufacturer"] as string;
+                            AppVendor = (string?)msiProps["Manufacturer"];
                         }
                         if (string.IsNullOrWhiteSpace(AppName))
                         {
-                            AppName = msiProps["ProductName"] as string;
+                            AppName = (string?)msiProps["ProductName"];
                         }
                         if (string.IsNullOrWhiteSpace(AppVersion))
                         {
-                            AppVersion = msiProps["ProductVersion"] as string;
+                            AppVersion = (string?)msiProps["ProductVersion"];
                         }
                         WriteLogEntry($"App Vendor [{msiProps["Manufacturer"]}].");
                         WriteLogEntry($"App Name [{msiProps["ProductName"]}].");
