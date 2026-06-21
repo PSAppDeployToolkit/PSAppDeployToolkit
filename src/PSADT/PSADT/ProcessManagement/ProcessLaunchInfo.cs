@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
@@ -421,7 +420,6 @@ namespace PSADT.ProcessManagement
         /// <remarks>This method uses default options when generating the command-line. To customize the
         /// output, use the overload that accepts parameters.</remarks>
         /// <returns>A string containing the command-line arguments constructed from the current settings.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string MakeCommandLine()
         {
             return MakeCommandLine(nullTerminated: false);
@@ -435,7 +433,6 @@ namespace PSADT.ProcessManagement
         /// <returns>A string containing the command-line representation of the process, including the file path and any
         /// arguments. If <paramref name="nullTerminated"/> is <see langword="true"/>, the string will end with a null
         /// character.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal string MakeCommandLine(bool nullTerminated)
         {
             return $"\"{FilePath}\"{(!string.IsNullOrWhiteSpace(Arguments) ? $" {Arguments}" : null)}{(nullTerminated ? '\0' : null)}";
@@ -444,7 +441,6 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets a value indicating whether the application is a command-line interface (CLI) application.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool IsCliApplication()
         {
             return ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;

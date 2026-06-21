@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -116,7 +115,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new void ShowDialog()
         {
             _ = base.ShowDialog();
@@ -151,7 +149,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// time interval spans multiple days. Minutes and seconds are always displayed as two digits.</remarks>
         /// <param name="ts">The time interval to format.</param>
         /// <returns>A string representation of the total hours, minutes, and seconds in the format "HH:MM:SS".</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected static string FormatTime(TimeSpan ts)
         {
             return $"{((ts.Days * 24) + ts.Hours).ToString(CultureInfo.InvariantCulture)}:{ts.Minutes.ToString("D2", CultureInfo.InvariantCulture)}:{ts.Seconds.ToString("D2", CultureInfo.InvariantCulture)}";
@@ -164,7 +161,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the left button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected virtual void ButtonLeft_Click(object? sender, EventArgs e)
         {
             CloseDialog();
@@ -177,7 +173,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected virtual void ButtonMiddle_Click(object? sender, EventArgs e)
         {
             CloseDialog();
@@ -190,7 +185,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the right button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected virtual void ButtonRight_Click(object? sender, EventArgs e)
         {
             CloseDialog();
@@ -317,7 +311,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Determines whether the current instance can be closed.
         /// </summary>
         /// <returns>true if the instance can be closed; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected bool CanClose()
         {
             return canClose;

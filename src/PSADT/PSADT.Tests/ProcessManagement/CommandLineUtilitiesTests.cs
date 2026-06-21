@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using PSADT.ProcessManagement;
 using Xunit;
 
@@ -634,7 +633,6 @@ namespace PSADT.Tests.ProcessManagement
         /// This ensures that ArgumentListToCommandLine followed by CommandLineToArgumentList
         /// preserves the original arguments exactly.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TheoryData<string[]> SystematicRoundTripTestData()
         {
             return [
@@ -1047,7 +1045,6 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests round-trip scenarios for UNC paths to ensure they are preserved accurately.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TheoryData<string[]> UncPathRoundTripTestData()
         {
             return [

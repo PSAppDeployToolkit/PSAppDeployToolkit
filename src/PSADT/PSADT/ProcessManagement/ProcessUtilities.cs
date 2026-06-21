@@ -36,7 +36,6 @@ namespace PSADT.ProcessManagement
         /// must ensure that the provided process is valid and accessible.</remarks>
         /// <param name="process">The process for which to retrieve the parent process. Must not be null.</param>
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Process GetParentProcess(Process process)
         {
             return Process.GetProcessById(GetParentProcessId(process));
@@ -48,7 +47,6 @@ namespace PSADT.ProcessManagement
         /// <param name="processId">The identifier of the process whose parent process is to be retrieved. Must correspond to a running process.</param>
         /// <returns>A <see cref="Process"/> object representing the parent process of the specified process. Returns <see langword="null"/>
         /// if the parent process cannot be determined.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Process GetParentProcess(int processId)
         {
             return Process.GetProcessById(GetParentProcessId(processId));
@@ -60,7 +58,6 @@ namespace PSADT.ProcessManagement
         /// <remarks>The returned <see cref="Process"/> object should be disposed of by the caller when it
         /// is no longer needed.</remarks>
         /// <returns>A <see cref="Process"/> object representing the parent process of the current process.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Process GetParentProcess()
         {
             return Process.GetProcessById(GetParentProcessId());
@@ -519,7 +516,6 @@ namespace PSADT.ProcessManagement
         /// rights to query information about the process.</param>
         /// <returns>A string containing the Win32 path of the process's executable image, or null if the path cannot be
         /// determined.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static FileInfo QueryProcessImageFileNameWin32(SafeHandle hProcess)
         {
             return new(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileNameWin32));
@@ -536,7 +532,6 @@ namespace PSADT.ProcessManagement
         /// <param name="ntPathLookupTable">A read-only dictionary used to map NT device paths to Win32 file system paths. This table is applied to
         /// translate the native path format returned by the system.</param>
         /// <returns>A string containing the full Win32 path to the executable image of the specified process.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static FileInfo QueryProcessImageFileName(SafeHandle hProcess, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             return new(TranslateNtPathToWin32Path(QueryProcessImageFileNameCommon(hProcess, PROCESSINFOCLASS.ProcessImageFileName), ntPathLookupTable));

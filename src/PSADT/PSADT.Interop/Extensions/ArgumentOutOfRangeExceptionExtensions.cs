@@ -24,7 +24,6 @@ namespace System
             /// <param name="value">The argument to validate.</param>
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero or -1.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZeroOrInvalid(nint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
             {
@@ -40,7 +39,6 @@ namespace System
             /// <param name="value">The argument to validate.</param>
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero or max value.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZeroOrInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
             {
@@ -56,7 +54,6 @@ namespace System
             /// <param name="value">The value to validate. Must not be -1, as this indicates an invalid state.</param>
             /// <param name="paramName">The name of the parameter being validated, used in the exception message.</param>
             /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is -1, indicating an invalid value.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfInvalid(nint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
             {
@@ -72,7 +69,6 @@ namespace System
             /// <param name="value">The value to validate. Must not be equal to -1, as this indicates an invalid state.</param>
             /// <param name="paramName">The name of the parameter being validated, used in the exception message if validation fails.</param>
             /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid value.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
             {

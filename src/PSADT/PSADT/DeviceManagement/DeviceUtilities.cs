@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using PSADT.Interop;
@@ -140,7 +139,6 @@ namespace PSADT.DeviceManagement
         /// system was started.</remarks>
         /// <returns>A <see cref="TimeSpan"/> representing the duration for which the system has been running since the last
         /// restart.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TimeSpan GetSystemUptime()
         {
             return TimeSpan.FromMilliseconds(PInvoke.GetTickCount64());
@@ -150,7 +148,6 @@ namespace PSADT.DeviceManagement
         /// Retrieves the system boot time by calculating the difference between the current time and the system uptime.
         /// </summary>
         /// <returns>A <see cref="DateTime"/> representing the date and time when the system was last booted.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DateTime GetSystemBootTime()
         {
             return DateTime.Now - GetSystemUptime();

@@ -3,7 +3,6 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using PSADT.FileSystem;
 
@@ -558,7 +557,6 @@ namespace PSADT.ProcessManagement
         /// </summary>
         /// <param name="part">The string part to check.</param>
         /// <returns>True if it looks like an argument.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsArgumentLike(string part)
         {
             return !string.IsNullOrWhiteSpace(part) && part[0] is char first && (((first is '/' or '-') && part.Length > 1) || part.Contains('=', StringComparison.OrdinalIgnoreCase) || (first == '{' && part.EndsWith('}')));

@@ -21,7 +21,6 @@
 using System;
 using System.Buffers.Binary;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace PSADT.SMBIOS
 {
@@ -35,7 +34,6 @@ namespace PSADT.SMBIOS
         /// </summary>
         /// <param name="buffer">The buffer containing the SMBIOS data.</param>
         /// <returns>The BIOS information or null if not found.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static PlatformFirmwareInformation Get(ReadOnlySpan<byte> buffer = default)
         {
             return SmbiosParsing.GetStructure(SmbiosType.PlatformFirmwareInformation, Parse, buffer);
@@ -227,7 +225,6 @@ namespace PSADT.SMBIOS
         /// Determines whether this system supports UEFI.
         /// </summary>
         /// <returns>True if UEFI is supported; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUefiSupported()
         {
             return CharacteristicsExt2.HasFlag(FirmwareCharacteristicsExtensionByte2.UefiSupported);
@@ -237,7 +234,6 @@ namespace PSADT.SMBIOS
         /// Determines whether this BIOS is upgradeable.
         /// </summary>
         /// <returns>True if the BIOS is upgradeable; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUpgradeable()
         {
             return Characteristics.HasFlag(FirmwareCharacteristics.BiosUpgradeable);
@@ -247,7 +243,6 @@ namespace PSADT.SMBIOS
         /// Determines whether this system is running in a virtual machine.
         /// </summary>
         /// <returns>True if running in a virtual machine; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsVirtualMachine()
         {
             return CharacteristicsExt2.HasFlag(FirmwareCharacteristicsExtensionByte2.VirtualMachine);
@@ -257,7 +252,6 @@ namespace PSADT.SMBIOS
         /// Determines whether this system supports manufacturing mode.
         /// </summary>
         /// <returns>True if manufacturing mode is supported; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsManufacturingModeSupported()
         {
             return CharacteristicsExt2.HasFlag(FirmwareCharacteristicsExtensionByte2.ManufacturingModeSupported);
@@ -267,7 +261,6 @@ namespace PSADT.SMBIOS
         /// Determines whether this system is currently in manufacturing mode.
         /// </summary>
         /// <returns>True if manufacturing mode is enabled; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsManufacturingModeEnabled()
         {
             return CharacteristicsExt2.HasFlag(FirmwareCharacteristicsExtensionByte2.ManufacturingModeEnabled);
@@ -279,7 +272,6 @@ namespace PSADT.SMBIOS
         /// <returns>The age in days; returns <see cref="double.NaN"/> if the release date is not available.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is not benchmarking code.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public double GetBiosAgeInDays()
         {
             return (DateTime.Now - ReleaseDate).TotalDays;
@@ -290,7 +282,6 @@ namespace PSADT.SMBIOS
         /// </summary>
         /// <param name="compareDate">The date to compare against.</param>
         /// <returns>True if BIOS was released after the specified date; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsReleasedAfter(DateTime compareDate)
         {
             return ReleaseDate > compareDate;
@@ -301,7 +292,6 @@ namespace PSADT.SMBIOS
         /// </summary>
         /// <param name="value">The byte value to normalize.</param>
         /// <returns>The original byte value if it is not 255; otherwise, <see langword="null"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte? NormalizeByte255(byte value)
         {
             return value != 0xFF ? value : null;
@@ -311,7 +301,6 @@ namespace PSADT.SMBIOS
         /// Returns the System BIOS version as a System.Version if both major and minor values are present; otherwise null.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Version? GetSystemBiosVersion()
         {
             return SystemBiosMajorRelease.HasValue && SystemBiosMinorRelease.HasValue ? new(SystemBiosMajorRelease.Value, SystemBiosMinorRelease.Value) : null;
@@ -321,7 +310,6 @@ namespace PSADT.SMBIOS
         /// Returns the Embedded Controller firmware version as a System.Version if both major and minor values are present; otherwise null.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Version? GetEmbeddedControllerVersion()
         {
             return EmbeddedControllerMajorRelease.HasValue && EmbeddedControllerMinorRelease.HasValue ? new(EmbeddedControllerMajorRelease.Value, EmbeddedControllerMinorRelease.Value) : null;

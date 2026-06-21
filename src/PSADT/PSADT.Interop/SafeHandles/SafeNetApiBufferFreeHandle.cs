@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using PSADT.Interop.Extensions;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -24,7 +23,6 @@ namespace PSADT.Interop.SafeHandles
         /// <param name="handle">The handle to the unmanaged resource to be wrapped by this instance.</param>
         /// <param name="length">The length, in bytes, of the buffer associated with the handle.</param>
         /// <param name="ownsHandle">true to release the handle when this instance is disposed; otherwise, false.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SafeNetApiBufferFreeHandle(IntPtr handle, int length, bool ownsHandle) : base(handle, length, ownsHandle)
         {
         }
@@ -37,7 +35,6 @@ namespace PSADT.Interop.SafeHandles
         /// management. The handle will be released automatically if ownsHandle is set to true.</remarks>
         /// <param name="handle">The native string buffer handle to be managed. Must be a valid, non-null PWSTR.</param>
         /// <param name="ownsHandle">true to indicate that this instance owns the handle and will release it when disposed; otherwise, false.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SafeNetApiBufferFreeHandle(PWSTR handle, bool ownsHandle) : base(handle.ToIntPtr(), handle.Length * sizeof(char), ownsHandle)
         {
         }

@@ -65,7 +65,6 @@ namespace PSADT.ProcessManagement
         /// Gets an awaiter for the process completion task.
         /// </summary>
         /// <returns>An awaiter for the process result.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TaskAwaiter<ProcessResult> GetAwaiter()
         {
             return Task.GetAwaiter();
@@ -80,7 +79,6 @@ namespace PSADT.ProcessManagement
         /// </param>
         /// <returns>A configured task awaitable.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
         {
             return Task.ConfigureAwait(continueOnCapturedContext);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Management.Automation;
-using System.Runtime.CompilerServices;
 
 namespace PSAppDeployToolkit.Attributes
 {
@@ -65,7 +64,6 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="days">When this method returns, contains the parsed number of days if the conversion succeeded, or zero if it
         /// failed.</param>
         /// <returns>true if the string was successfully parsed as a number of days; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool TryParseNumericalDays(string value, out double days)
         {
             return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out days) || double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out days);

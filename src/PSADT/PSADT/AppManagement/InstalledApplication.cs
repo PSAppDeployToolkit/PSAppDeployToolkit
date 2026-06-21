@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using PSADT.ProcessManagement;
 
 namespace PSADT.AppManagement
@@ -117,7 +116,6 @@ namespace PSADT.AppManagement
         /// Validates whether the product code is a valid GUID.
         /// </summary>
         /// <returns>True if the product code is a valid GUID; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsValidProductCode()
         {
             return ProductCode is not null;
@@ -127,7 +125,6 @@ namespace PSADT.AppManagement
         /// Returns a string representation of the installed application.
         /// </summary>
         /// <returns>A string that contains key details about the installed application.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             return $"Installed Application: {DisplayName} (Version: {DisplayVersion}, Publisher: {Publisher})";

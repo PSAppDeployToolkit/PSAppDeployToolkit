@@ -1144,7 +1144,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Writes a log entry with a message array.
         /// </summary>
         /// <param name="message">The log message array.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(IReadOnlyList<string> message)
         {
             _ = WriteLogEntry(message, debugMessage: false);
@@ -1155,7 +1154,6 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <param name="message">The log message array.</param>
         /// <param name="severity">The severity level.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(IReadOnlyList<string> message, LogSeverity severity)
         {
             _ = WriteLogEntry(message, debugMessage: false, severity);
@@ -1165,7 +1163,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Writes a log entry with a single message.
         /// </summary>
         /// <param name="message">The log message.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message)
         {
             _ = WriteLogEntry([message], debugMessage: false);
@@ -1176,7 +1173,6 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity)
         {
             _ = WriteLogEntry([message], debugMessage: false, severity);
@@ -1188,7 +1184,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="message">The log message.</param>
         /// <param name="severity">The severity level.</param>
         /// <param name="source">The source of the message.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, LogSeverity severity, string source)
         {
             _ = WriteLogEntry([message], debugMessage: false, severity, source);
@@ -1199,7 +1194,6 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="writeHost">Whether to write to the host.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLogEntry(string message, bool writeHost)
         {
             _ = WriteLogEntry([message], debugMessage: false, hostLogStreamType: GetHostLogStreamTypeMode(writeHost));
@@ -1210,7 +1204,6 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <returns>A read-only list of <see cref="LogEntry"/> objects representing the current log entries. The list is empty
         /// if no log entries are present.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IReadOnlyList<LogEntry> GetLogBuffer()
         {
             return LogBuffer.AsReadOnly();
@@ -1303,7 +1296,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="discriminator">A string value used to distinguish the log file name. Typically represents a unique identifier or context
         /// for the log file. Cannot be null.</param>
         /// <returns>A string containing the formatted log file name that incorporates the specified discriminator.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string NewLogFileName(string discriminator)
         {
             return string.Format(CultureInfo.InvariantCulture, DefaultLogName, discriminator);
@@ -1328,7 +1320,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Returns whether this session has been closed out.
         /// </summary>
         /// <returns>True if so; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsClosed()
         {
             return Settings.HasFlag(DeploymentSettings.Disposed);
@@ -1338,7 +1329,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Determines whether the session is allowed to exit PowerShell on close.
         /// </summary>
         /// <returns>True if the session can exit; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanExitOnClose()
         {
             return !Settings.HasFlag(DeploymentSettings.NoExitOnClose);
@@ -1348,7 +1338,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Determines whether the mode is non-interactive.
         /// </summary>
         /// <returns>True if the mode is non-interactive; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNonInteractive()
         {
             return Settings.HasFlag(DeploymentSettings.NonInteractive);
@@ -1358,7 +1347,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Determines whether the mode is silent.
         /// </summary>
         /// <returns>True if the mode is silent; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsSilent()
         {
             return Settings.HasFlag(DeploymentSettings.Silent);
@@ -1368,7 +1356,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the exit code.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "I like methods.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetExitCode()
         {
             return ExitCode;
@@ -1378,7 +1365,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Sets the exit code.
         /// </summary>
         /// <param name="exitCode">The exit code to set.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetExitCode(int exitCode)
         {
             ExitCode = exitCode;
@@ -1388,7 +1374,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Add the mounted WIM files.
         /// </summary>
         /// <param name="wimFile">The WIM file to add to the list for dismounting upon session closure.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMountedWimFile(FileInfo wimFile)
         {
             MountedWimFiles.Add(wimFile);
@@ -1402,7 +1387,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Writes a log divider.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteLogDivider()
         {
             WriteLogEntry(LogUtilities.LogDivider);
@@ -1430,7 +1414,6 @@ namespace PSAppDeployToolkit.Foundation
         /// otherwise, it returns HostLogStreamType.Host.</remarks>
         /// <param name="writeHost">true to enable writing logs to the host; false to disable host logging; or null to use the default behavior.</param>
         /// <returns>A value of type HostLogStreamType that indicates the log stream type to use: Console, Host, or None.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
             return writeHost != false && LogWriteToHost
@@ -1442,7 +1425,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Tests the deferral history path.
         /// </summary>
         /// <returns>True if the deferral history path exists; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TestDeferHistoryPath()
         {
             return ModuleDatabase.GetSessionState().InvokeProvider.Item.Exists(RegKeyDeferHistory, force: true, literalPath: true);
@@ -1451,7 +1433,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Creates the deferral history path.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateDeferHistoryPath()
         {
             _ = ModuleDatabase.GetSessionState().InvokeProvider.Item.New([RegKeyDeferBase], InstallName, itemTypeName: null, content: null, force: true);
@@ -1496,7 +1477,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="flag">The DeploymentSettings flag to check.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         /// <returns>True if the flag is set; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool GetFlagValue(DeploymentSettings flag, [CallerMemberName] string propertyName = null!)
         {
             return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState
@@ -1511,7 +1491,6 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="backingField">Read-only reference to the backing field.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         /// <returns>The property value from either the backing field or PowerShell session state.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T GetPropertyValue<T>(ref readonly T backingField, [CallerMemberName] string propertyName = null!)
         {
             return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState
@@ -1543,12 +1522,12 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's deployment type.
         /// </summary>
-        public DeploymentType DeploymentType { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = DeploymentType.Install;
+        public DeploymentType DeploymentType { get => GetPropertyValue(in field); } = DeploymentType.Install;
 
         /// <summary>
         /// Gets the deployment session's deployment mode.
         /// </summary>
-        public DeployMode DeployMode { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = DeployMode.Auto;
+        public DeployMode DeployMode { get => GetPropertyValue(in field); } = DeployMode.Auto;
 
         /// <summary>
         /// Gets whether this deployment session is allowed to exit with a reboot exit code.
@@ -1653,7 +1632,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's starting date and time.
         /// </summary>
-        public DateTime CurrentDateTime { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = DateTime.Now;
+        public DateTime CurrentDateTime { get => GetPropertyValue(in field); } = DateTime.Now;
 
         /// <summary>
         /// Gets the deployment session's starting date as a string.
@@ -1668,22 +1647,22 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's UTC offset from GMT 0.
         /// </summary>
-        public TimeSpan CurrentTimeZoneBias { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = TimeZoneInfo.Local.BaseUtcOffset;
+        public TimeSpan CurrentTimeZoneBias { get => GetPropertyValue(in field); } = TimeZoneInfo.Local.BaseUtcOffset;
 
         /// <summary>
         /// Gets the script directory of the caller.
         /// </summary>
-        public IReadOnlyList<DirectoryInfo> ScriptDirectory { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = new ReadOnlyCollection<DirectoryInfo>([]);
+        public IReadOnlyList<DirectoryInfo> ScriptDirectory { get => GetPropertyValue(in field); } = new ReadOnlyCollection<DirectoryInfo>([]);
 
         /// <summary>
         /// Gets the specified or determined path to the Files folder.
         /// </summary>
-        public DirectoryInfo? DirFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
+        public DirectoryInfo? DirFiles { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); }
 
         /// <summary>
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
-        public DirectoryInfo? DirSupportFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); }
+        public DirectoryInfo? DirSupportFiles { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); }
 
         /// <summary>
         /// Gets an override to the deployment session's installation title.
@@ -1718,7 +1697,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets the deployment session's Zero-Config MSP file paths.
         /// </summary>
-        public IReadOnlyList<FileInfo> DefaultMspFiles { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); } = new ReadOnlyCollection<FileInfo>([]);
+        public IReadOnlyList<FileInfo> DefaultMspFiles { get => GetPropertyValue(in field); } = new ReadOnlyCollection<FileInfo>([]);
 
         /// <summary>
         /// Gets whether this deployment session found a valid Zero-Config MSI file.
@@ -1728,7 +1707,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Gets/sets the deployment session's installation phase.
         /// </summary>
-        public string InstallPhase { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetPropertyValue(in field); [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetPropertyValue(ref field, value); } = "Initialization";
+        public string InstallPhase { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); } = "Initialization";
 
 
         #endregion Public properties.

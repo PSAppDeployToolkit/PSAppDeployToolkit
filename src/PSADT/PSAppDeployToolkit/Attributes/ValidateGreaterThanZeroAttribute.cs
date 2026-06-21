@@ -4,7 +4,6 @@ using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace PSAppDeployToolkit.Attributes
 {
@@ -137,7 +136,6 @@ namespace PSAppDeployToolkit.Attributes
         /// <param name="value">The object to test for null or special null-equivalent values. This can be any object, including database or
         /// PowerShell-specific null representations.</param>
         /// <returns>true if the value is null, a database null, or a recognized special null-equivalent; otherwise, false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNull(object? value)
         {
             return value is null || value is DBNull || value == AutomationNull.Value || value == NullString.Value;

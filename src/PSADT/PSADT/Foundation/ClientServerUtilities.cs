@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
@@ -66,7 +65,6 @@ namespace PSADT.Foundation
         /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
         /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ProcessHandle StartClientOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
             return InvokeClientOperationImpl(ClientDefaultPath, argumentList, runAsActiveUser, elevatedTokenType);
@@ -80,7 +78,6 @@ namespace PSADT.Foundation
         /// <param name="runAsActiveUser">If specified, determines whether the client process should be launched as the active user.</param>
         /// <param name="elevatedTokenType">Specifies the elevation level to use when launching the client process.</param>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ProcessHandle StartClientLauncherOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
             return InvokeClientOperationImpl(ClientLauncherDefaultPath, argumentList, runAsActiveUser, elevatedTokenType);
@@ -97,7 +94,6 @@ namespace PSADT.Foundation
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessHandle StartClientOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
             return InvokeClientOperationImpl(ClientDefaultPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
@@ -114,7 +110,6 @@ namespace PSADT.Foundation
         /// <param name="cancellationToken">A cancellation token that can be used to cancel the process launch operation. May be null.</param>
         /// <returns>A handle to the launched client process.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ProcessHandle StartClientLauncherOperation(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
             return InvokeClientOperationImpl(ClientLauncherDefaultPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);

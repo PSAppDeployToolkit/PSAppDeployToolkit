@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using PSADT.UserInterface.DialogOptions;
 
 namespace PSADT.ClientServer.Payloads
@@ -20,7 +19,6 @@ namespace PSADT.ClientServer.Payloads
         /// Initializes a new instance of the <see cref="ShowNotifyIconPayload"/> class.
         /// </summary>
         /// <param name="options">The notify icon options.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ShowNotifyIconPayload(NotifyIconOptions options)
         {
             Options = options;

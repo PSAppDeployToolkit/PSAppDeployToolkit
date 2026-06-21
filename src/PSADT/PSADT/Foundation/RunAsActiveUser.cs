@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -29,7 +28,6 @@ namespace PSADT.Foundation
         /// session information.</param>
         /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
         /// session is found.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static async Task<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null)
         {
             // Determine the account that will be used to execute client/server commands in the user's context.

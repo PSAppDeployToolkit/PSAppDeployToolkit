@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 
 namespace PSADT.DeviceManagement
 {
@@ -55,7 +54,6 @@ namespace PSADT.DeviceManagement
         /// Returns a value indicating whether any reboot is pending.
         /// </summary>
         /// <returns>True if any reboot is pending; otherwise false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasPendingReboot()
         {
             return IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending == true || IsAppVRebootPending || IsFileRenameRebootPending == true;

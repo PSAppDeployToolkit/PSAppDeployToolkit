@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Automation;
@@ -201,7 +200,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Redefined ShowDialog method to allow for custom behavior.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new void ShowDialog()
         {
             _ = base.ShowDialog();
@@ -225,7 +223,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// method is commonly used in dialog interfaces to respond to user actions.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected virtual void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             CloseDialog();
@@ -238,7 +235,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// button is clicked.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected virtual void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             CloseDialog();
@@ -252,7 +248,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// button is clicked.</remarks>
         /// <param name="sender">The source of the event, usually the right button that was clicked.</param>
         /// <param name="e">The event data associated with the button click.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private protected virtual void ButtonRight_Click(object? sender, RoutedEventArgs e)
         {
             CloseDialog();
@@ -267,7 +262,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// langword="true"/> to cancel the operation.</remarks>
         /// <param name="e">A <see cref="CancelEventArgs"/> that contains the event data for the closing event. Set <see
         /// cref="CancelEventArgs.Cancel"/> to <see langword="true"/> to prevent the window from closing.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void OnClosing(CancelEventArgs e)
         {
             e.Cancel = !_canClose;
@@ -409,7 +403,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// ensuring the application window is restored at regular intervals.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the event.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ExpiryTimer_Tick(object? sender, EventArgs e)
         {
             CloseDialog();
@@ -420,7 +413,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The event data associated with the theme change.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThemeManager_ActualThemeChanged(object? sender, ThemeChangedEventArgs e)
         {
             SetDialogAccent(e.Theme);
@@ -434,7 +426,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// ensuring the application window is restored at regular intervals.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the event.</param>
         /// <param name="e">An object that contains the event data.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PersistTimer_Tick(object? sender, EventArgs e)
         {
             RestoreWindow();
@@ -554,7 +545,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="formattingStack">The formatting context stack.</param>
         /// <returns>The current formatting context.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static FormattingContext GetCurrentFormattingContext(Stack<FormattingContext> formattingStack)
         {
             return formattingStack.Count > 0 ? formattingStack.Peek() : new();
@@ -565,7 +555,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="formattingStack">The formatting context stack.</param>
         /// <param name="predicate">The condition to match for popping.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PopFormattingContext(Stack<FormattingContext> formattingStack, Func<FormattingContext, bool> predicate)
         {
             if (formattingStack.Count > 0 && predicate(formattingStack.Peek()))
@@ -1208,7 +1197,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             public bool IsBold { get; set; }
             public bool IsItalic { get; set; }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public FormattingContext Clone()
             {
                 return new()

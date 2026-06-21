@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
@@ -30,7 +29,6 @@ namespace System
             /// <param name="value">The unsigned integer value to check. If this value is zero, an exception is thrown.</param>
             /// <param name="message">The message to include in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is zero.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZero(uint value, string message)
             {
@@ -46,7 +44,6 @@ namespace System
             /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
             /// <param name="message">The message that will be included in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZero(nint value, string message)
             {
@@ -62,7 +59,6 @@ namespace System
             /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
             /// <param name="message">The message that will be included in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZero(nuint value, string message)
             {
@@ -78,7 +74,6 @@ namespace System
             /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
             /// <param name="message">The message that will be included in the exception if the value is zero.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfNull([NotNull] PWSTR value, string message)
             {
@@ -99,7 +94,6 @@ namespace System
             /// <param name="value">The object to check for null. If this parameter is null, an exception is thrown.</param>
             /// <param name="message">The error message to include in the exception if the value is null.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfNull([NotNull] object? value, string message)
             {
@@ -115,7 +109,6 @@ namespace System
             /// <param name="value">The value to validate. If this value is -1, an exception is thrown.</param>
             /// <param name="message">The error message to include with the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is -1.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfInvalid(nint value, string message)
             {
@@ -132,7 +125,6 @@ namespace System
             /// thrown.</param>
             /// <param name="message">The error message to include with the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfInvalid(nuint value, string message)
             {
@@ -149,7 +141,6 @@ namespace System
             /// thrown.</param>
             /// <param name="message">The error message to include with the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfInvalid(PWSTR value, string message)
             {
@@ -170,7 +161,6 @@ namespace System
             /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZeroOrInvalid(nint value, string message)
             {
@@ -188,7 +178,6 @@ namespace System
             /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfZeroOrInvalid(nuint value, string message)
             {
@@ -206,7 +195,6 @@ namespace System
             /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
             /// <param name="message">The message to include in the exception if the value is invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfNullOrInvalid([NotNull] PWSTR value, string message)
             {
@@ -228,7 +216,6 @@ namespace System
             /// <param name="handle">The handle to validate. The handle must not be null, closed, or invalid.</param>
             /// <param name="message">The message included in the exception if the handle is null, closed, or invalid.</param>
             /// <exception cref="InvalidOperationException">Thrown if the handle is null, closed, or invalid.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfNullOrInvalid<T>([NotNull] T handle, string message) where T : SafeHandle
             {
@@ -244,7 +231,6 @@ namespace System
             /// <param name="length">The length to check. Must be a non-negative integer.</param>
             /// <param name="message">The message to include in the exception if the length is odd.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="length"/> is odd.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfNotEven(uint length, string message)
             {
@@ -261,7 +247,6 @@ namespace System
             /// <param name="maxValue">The maximum allowable value that the specified value must not exceed.</param>
             /// <param name="message">The message that will be included in the exception if the value exceeds the maximum.</param>
             /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is greater than <paramref name="maxValue"/>.</exception>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [StackTraceHidden]
             public static void ThrowIfGreaterThan(uint value, uint maxValue, string message)
             {

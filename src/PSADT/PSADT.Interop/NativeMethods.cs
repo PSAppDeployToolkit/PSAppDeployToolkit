@@ -101,7 +101,6 @@ namespace PSADT.Interop
         /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
         /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the key is opened successfully; otherwise, returns a nonzero error
         /// code.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR RegOpenKeyEx(SafeHandle hKey, string? lpSubKey, REG_SAM_FLAGS samDesired, out SafeRegistryHandle phkResult)
         {
             return RegOpenKeyEx(hKey, lpSubKey, REG_OPEN_CREATE_OPTIONS.REG_OPTION_RESERVED, samDesired, out phkResult);
@@ -298,7 +297,6 @@ namespace PSADT.Interop
         /// <param name="NewState">A structure that specifies the privileges to enable or disable for the access token.</param>
         /// <returns>A value that indicates whether the function succeeds. Returns <see langword="true"/> if the operation is
         /// successful; otherwise, <see langword="false"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in TOKEN_PRIVILEGES NewState)
         {
             return AdjustTokenPrivileges(TokenHandle, DisableAllPrivileges: false, in NewState, PreviousState: null, out _);
@@ -656,7 +654,6 @@ namespace PSADT.Interop
         /// releasing this handle when it is no longer needed.</param>
         /// <returns>A WIN32_ERROR value indicating the result of the operation. Returns WIN32_ERROR.ERROR_SUCCESS if the ACL was
         /// created successfully; otherwise, returns an error code.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static WIN32_ERROR SetEntriesInAcl(ReadOnlySpan<EXPLICIT_ACCESS_W> pListOfExplicitEntries, out LocalFreeSafeHandle NewAcl)
         {
             return SetEntriesInAcl(pListOfExplicitEntries, OldAcl: null, out NewAcl).ThrowOnFailure();
@@ -2018,7 +2015,6 @@ namespace PSADT.Interop
         /// <returns><see langword="true"/> if the system is in Terminal Services application installation mode; otherwise, <see
         /// langword="false"/>.</returns>
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static extern BOOL TermsrvAppInstallMode();
 
         /// <summary>
@@ -2493,7 +2489,6 @@ namespace PSADT.Interop
         /// format.</remarks>
         /// <param name="szProduct">The GUID that uniquely identifies the product to query.</param>
         /// <returns>An INSTALLSTATE value that indicates the current installation state of the specified product.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Windows.Win32.System.ApplicationInstallationAndServicing.INSTALLSTATE MsiQueryProductState(Guid szProduct)
         {
             return PInvoke.MsiQueryProductState(szProduct.ToString("B"));
@@ -2635,7 +2630,7 @@ namespace PSADT.Interop
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
         internal static NTSTATUS NtCreateThreadEx(out SafeThreadHandle ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, SafeProcessHandle ProcessHandle, SafeVirtualAllocHandle StartRoutine, nint? Argument = null, THREAD_CREATE_FLAGS CreateFlags = 0, uint ZeroBits = 0, uint StackSize = 0, uint MaximumStackSize = 0)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtCreateThreadEx(out nint ThreadHandle, THREAD_ACCESS_RIGHTS DesiredAccess, nint ObjectAttributes, nint ProcessHandle, nint StartRoutine, nint Argument, THREAD_CREATE_FLAGS CreateFlags, uint ZeroBits, uint StackSize, uint MaximumStackSize, nint AttributeList);
             ArgumentException.ThrowIfNullOrClosed(ProcessHandle);
             ArgumentException.ThrowIfNullOrInvalid(StartRoutine);
@@ -2677,7 +2672,7 @@ namespace PSADT.Interop
         /// <exception cref="ArgumentNullException">Thrown if ThreadHandle is null or has already been closed.</exception>
         internal static NTSTATUS NtTerminateThread(SafeThreadHandle ThreadHandle, in NTSTATUS ExitStatus)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtTerminateThread(nint ThreadHandle, NTSTATUS ExitStatus);
             ArgumentException.ThrowIfNullOrInvalid(ThreadHandle);
             bool ThreadHandleAddRef = false;
@@ -2936,7 +2931,6 @@ namespace PSADT.Interop
         /// <param name="dwItem2">A pointer to a second item or structure relevant to the event, as defined by the event type and flags. The
         /// interpretation depends on the values of wEventId and uFlags. This parameter is optional and may be
         /// default if not required.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void SHChangeNotify(SHCNE_ID wEventId, SHCNF_FLAGS uFlags, nint dwItem1 = 0, nint dwItem2 = 0)
         {
             unsafe
@@ -2959,7 +2953,7 @@ namespace PSADT.Interop
         /// <returns>An HRESULT value indicating the success or failure of the operation.</returns>
         internal static HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, out SHSTOCKICONINFO psii)
         {
-            [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("shell32.dll", CharSet = CharSet.Unicode), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern HRESULT SHGetStockIconInfo(SHSTOCKICONID siid, SHGSI_FLAGS uFlags, ref SHSTOCKICONINFO psii);
             psii = new() { cbSize = (uint)Unsafe.SizeOf<SHSTOCKICONINFO>() };
             HRESULT res = SHGetStockIconInfo(siid, uFlags, ref psii);
@@ -3010,7 +3004,6 @@ namespace PSADT.Interop
         /// graying it. Must be a valid combination of MENU_ITEM_FLAGS values.</param>
         /// <returns>A value indicating the previous state of the menu item. Returns a nonzero value if successful; otherwise,
         /// returns zero.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static BOOL EnableMenuItem(SafeHandle hMenu, WM_SYSCOMMAND uIDEnableItem, MENU_ITEM_FLAGS uEnable)
         {
             BOOL res = PInvoke.EnableMenuItem(hMenu, (uint)uIDEnableItem, uEnable);
@@ -3078,7 +3071,7 @@ namespace PSADT.Interop
         /// exception is thrown if a Windows error code is set.</returns>
         internal static int LoadString(SafeHandle hInstance, uint uID, out nint lpBuffer)
         {
-            [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "LoadStringW", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "LoadStringW", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern int LoadString(HINSTANCE hInstance, uint uID, out nint lpBuffer, int cchBufferMax);
             ArgumentException.ThrowIfNullOrInvalid(hInstance);
             bool hInstanceAddRef = false;
@@ -3228,7 +3221,7 @@ namespace PSADT.Interop
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (uint* p = &lpdwProcessId)
                 {
-                    [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
                     static extern uint GetWindowThreadProcessId(HWND hWnd, uint* lpdwProcessId);
                     if ((res = GetWindowThreadProcessId(hWnd, p)) == 0)
                     {
@@ -3256,7 +3249,7 @@ namespace PSADT.Interop
         /// mechanisms were successfully attached or detached; otherwise, <see langword="false"/>.</returns>
         internal static BOOL AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
-            [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern BOOL AttachThreadInput(uint idAttach, uint idAttachTo, BOOL fAttach);
             BOOL res = AttachThreadInput(idAttach, idAttachTo, fAttach);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -3554,7 +3547,7 @@ namespace PSADT.Interop
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
         internal static MESSAGEBOX_RESULT MessageBoxTimeout(string lpText, string lpCaption, MESSAGEBOX_STYLE uType, uint dwTimeout)
         {
-            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(HWND hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpText); ArgumentException.ThrowIfNullOrWhiteSpace(lpCaption);
             MESSAGEBOX_RESULT res = MessageBoxTimeoutW(default, lpText, lpCaption, uType, 0, dwTimeout);
@@ -4046,7 +4039,6 @@ namespace PSADT.Interop
         /// <param name="c">The third character of the tag.</param>
         /// <param name="d">The fourth character of the tag, corresponding to the most significant byte.</param>
         /// <returns>A 32-bit unsigned integer representing the OpenType tag composed of the specified characters.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static uint DWRITE_MAKE_OPENTYPE_TAG(char a, char b, char c, char d)
         {
             return (byte)a | ((uint)(byte)b << 8) | ((uint)(byte)c << 16) | ((uint)(byte)d << 24);
@@ -4058,7 +4050,6 @@ namespace PSADT.Interop
         /// <param name="length">The value to align.</param>
         /// <param name="alignment">The alignment boundary.</param>
         /// <returns>The aligned value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nuint ALIGN_DOWN_BY(nuint length, nuint alignment)
         {
             return length & ~(alignment - 1);
@@ -4070,7 +4061,6 @@ namespace PSADT.Interop
         /// <param name="length">The value to align.</param>
         /// <param name="alignment">The alignment boundary.</param>
         /// <returns>The aligned value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nuint ALIGN_UP_BY(nuint length, nuint alignment)
         {
             return ALIGN_DOWN_BY(length + alignment - 1, alignment);
@@ -4082,7 +4072,6 @@ namespace PSADT.Interop
         /// <param name="address">The pointer value to align.</param>
         /// <param name="alignment">The alignment boundary.</param>
         /// <returns>The aligned pointer value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nint ALIGN_DOWN_POINTER_BY(nint address, nuint alignment)
         {
             return (nint)ALIGN_DOWN_BY((nuint)address, alignment);
@@ -4094,7 +4083,6 @@ namespace PSADT.Interop
         /// <param name="address">The pointer value to align.</param>
         /// <param name="alignment">The alignment boundary.</param>
         /// <returns>The aligned pointer value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nint ALIGN_UP_POINTER_BY(nint address, nuint alignment)
         {
             return (nint)ALIGN_UP_POINTER_BY((nuint)address, alignment);
@@ -4106,7 +4094,6 @@ namespace PSADT.Interop
         /// <param name="address">The pointer value to align.</param>
         /// <param name="alignment">The alignment boundary.</param>
         /// <returns>The aligned pointer value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nuint ALIGN_UP_POINTER_BY(nuint address, nuint alignment)
         {
             return ALIGN_UP_BY(address, alignment);
@@ -4118,7 +4105,6 @@ namespace PSADT.Interop
         /// <typeparam name="T">The type whose size determines alignment.</typeparam>
         /// <param name="length">The value to align.</param>
         /// <returns>The aligned value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nuint ALIGN_DOWN<T>(nuint length) where T : unmanaged
         {
             return ALIGN_DOWN_BY(length, (nuint)Unsafe.SizeOf<T>());
@@ -4130,7 +4116,6 @@ namespace PSADT.Interop
         /// <typeparam name="T">The type whose size determines alignment.</typeparam>
         /// <param name="length">The value to align.</param>
         /// <returns>The aligned value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nuint ALIGN_UP<T>(nuint length) where T : unmanaged
         {
             return ALIGN_UP_BY(length, (nuint)Unsafe.SizeOf<T>());
@@ -4142,7 +4127,6 @@ namespace PSADT.Interop
         /// <typeparam name="T">The type whose size determines alignment.</typeparam>
         /// <param name="address">The pointer value to align.</param>
         /// <returns>The aligned pointer value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nint ALIGN_DOWN_POINTER<T>(nint address) where T : unmanaged
         {
             return ALIGN_DOWN_POINTER_BY(address, (nuint)Unsafe.SizeOf<T>());
@@ -4154,7 +4138,6 @@ namespace PSADT.Interop
         /// <typeparam name="T">The type whose size determines alignment.</typeparam>
         /// <param name="address">The pointer value to align.</param>
         /// <returns>The aligned pointer value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static nint ALIGN_UP_POINTER<T>(nint address) where T : unmanaged
         {
             return ALIGN_UP_POINTER_BY(address, (nuint)Unsafe.SizeOf<T>());
@@ -4247,7 +4230,7 @@ namespace PSADT.Interop
         /// other codes indicate errors or special conditions.</returns>
         internal static NTSTATUS RtlExpandEnvironmentStrings_U(SafeEnvironmentBlockHandle Environment, in UNICODE_STRING SourceString, ref UNICODE_STRING DestinationString, out uint RequiredBytes)
         {
-            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)][MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS RtlExpandEnvironmentStrings_U(IntPtr Environment, in UNICODE_STRING SourceString, ref UNICODE_STRING DestinationString, out uint RequiredBytes);
             ArgumentException.ThrowIfNullOrInvalid(Environment); ArgumentException.ThrowIfNullOrInvalid(SourceString); ArgumentException.ThrowIfInvalid(DestinationString);
             bool EnvironmentAddRef = false;

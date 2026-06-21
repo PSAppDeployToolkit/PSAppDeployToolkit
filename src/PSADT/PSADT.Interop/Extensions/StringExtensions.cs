@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace PSADT.Interop.Extensions
 {
@@ -21,7 +20,6 @@ namespace PSADT.Interop.Extensions
         /// <param name="value">The directory path to validate. Must not be null, empty, or consist only of white-space characters.</param>
         /// <returns>The original directory path if it exists.</returns>
         /// <exception cref="DirectoryNotFoundException">Thrown if <paramref name="value"/> does not point to an existing directory.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [StackTraceHidden]
         internal static string ThrowIfDirectoryDoesNotExist(this string value)
         {
@@ -40,7 +38,6 @@ namespace PSADT.Interop.Extensions
         /// <param name="value">The path of the file to check for existence. Must not be null, empty, or consist solely of whitespace.</param>
         /// <returns>The original file path if the file exists.</returns>
         /// <exception cref="FileNotFoundException">Thrown if the file specified by <paramref name="value"/> does not exist.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [StackTraceHidden]
         internal static string ThrowIfFileDoesNotExist(this string value)
         {
@@ -58,7 +55,6 @@ namespace PSADT.Interop.Extensions
         /// <param name="value">The file path to validate. This value must not be null or consist only of white-space characters.</param>
         /// <returns>The original file path if the file exists or its directory exists; otherwise, an exception is thrown.</returns>
         /// <exception cref="DirectoryNotFoundException">Thrown when the directory for the specified file path does not exist.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [StackTraceHidden]
         internal static string ThrowIfFileDirectoryDoesNotExist(this string value)
         {
@@ -75,7 +71,6 @@ namespace PSADT.Interop.Extensions
         /// <param name="value">The path to validate. This must be a non-null string representing a file or directory path.</param>
         /// <returns>The original path if it is fully qualified.</returns>
         /// <exception cref="DriveNotFoundException">Thrown if the specified path is not fully qualified.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [StackTraceHidden]
         internal static string ThrowIfPathIsNotFullyQualified(this string value)
         {

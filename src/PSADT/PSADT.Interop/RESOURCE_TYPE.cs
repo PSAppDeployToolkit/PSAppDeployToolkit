@@ -121,7 +121,6 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="value">The handle to be associated with this instance.</param>
         /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private RESOURCE_TYPE(PCWSTR value, [CallerMemberName] string name = null!) : base(value, name)
         {
         }

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
-using System.Runtime.CompilerServices;
 using System.Security.Principal;
 
 namespace PSAppDeployToolkit.Attributes
@@ -132,7 +131,6 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="value">The value to check.</param>
         /// <returns><see langword="true"/> if the value is null or a PowerShell/database null representation; otherwise, <see langword="false"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNull(object? value)
         {
             return value is null || value is DBNull || value == AutomationNull.Value || value == NullString.Value;
@@ -143,7 +141,6 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="value">The string to check.</param>
         /// <returns><see langword="true"/> if the string is non-empty and consists only of white-space characters; otherwise, <see langword="false"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsWhiteSpaceOnly(string value)
         {
             return value.Length > 0 && string.IsNullOrWhiteSpace(value);
@@ -182,7 +179,6 @@ namespace PSAppDeployToolkit.Attributes
         /// </summary>
         /// <param name="type">The type to check.</param>
         /// <returns><see langword="true"/> if the type is a value type that is not <see cref="Nullable{T}"/>; otherwise, <see langword="false"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNonNullableValueType(Type? type)
         {
             return type?.IsValueType == true && Nullable.GetUnderlyingType(type) is null;

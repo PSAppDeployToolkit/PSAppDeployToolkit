@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace PSADT.Interop
 {
@@ -34,7 +33,6 @@ namespace PSADT.Interop
         /// </summary>
         /// <returns>A string containing the hexadecimal representation of the language and code page identifiers, formatted
         /// as "LLLLCCCC", where "LLLL" is the language identifier and "CCCC" is the code page identifier.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override readonly string ToString()
         {
             return $"{wLanguage:X4}{wCodePage:X4}";

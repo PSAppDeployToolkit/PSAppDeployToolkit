@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace PSADT.Extensions
 {
@@ -24,7 +23,6 @@ namespace PSADT.Extensions
         /// cref="DescriptionAttribute"/>, or if the attribute's description is null, empty, or consists only of
         /// white-space characters.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "MA0179:Use Attribute.IsDefined instead of GetCustomAttribute(s)", Justification = "The particular setup below is correct.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string GetDescription(this Enum value)
         {
             return value.GetType().GetField(value.ToString()) is not FieldInfo fieldInfo

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using PSADT.WindowManagement;
 
 namespace PSADT.ClientServer.Payloads
@@ -20,7 +19,6 @@ namespace PSADT.ClientServer.Payloads
         /// Initializes a new instance of the <see cref="SendKeysPayload"/> class.
         /// </summary>
         /// <param name="options">The send keys options.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal SendKeysPayload(SendKeysOptions options)
         {
             Options = options;

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Security.Principal;
+﻿using System.Security.Principal;
 using Windows.Win32.Security;
 
 namespace PSADT.Interop.Extensions
@@ -18,7 +17,6 @@ namespace PSADT.Interop.Extensions
         /// </summary>
         /// <param name="pSid">The <see cref="PSID"/> instance to convert. Must not be null.</param>
         /// <returns>A <see cref="SecurityIdentifier"/> representing the specified <see cref="PSID"/>.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static SecurityIdentifier ToSecurityIdentifier(this PSID pSid)
         {
             return new((nint)pSid);

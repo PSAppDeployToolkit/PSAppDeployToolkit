@@ -21,7 +21,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
@@ -67,7 +66,6 @@ namespace PSADT.ShortcutManagement
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is empty or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the specified file does not exist.</exception>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static InternetShortcutFile Load(string filePath, Interop.STGM storageMode = Interop.STGM.STGM_READ)
         {
             return new(filePath, storageMode);
@@ -407,7 +405,6 @@ namespace PSADT.ShortcutManagement
         /// Opens the URL using the default handler.
         /// </summary>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invoke()
         {
             Invoke(verb: null, default, Interop.IURL_INVOKECOMMAND_FLAGS.IURL_INVOKECOMMAND_FL_USE_DEFAULT_VERB);
@@ -419,7 +416,6 @@ namespace PSADT.ShortcutManagement
         /// <param name="verb">The verb to invoke (e.g., "open"). Pass <see langword="null"/> for the default verb.</param>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invoke(string? verb)
         {
             Invoke(verb, default, verb is null ? Interop.IURL_INVOKECOMMAND_FLAGS.IURL_INVOKECOMMAND_FL_USE_DEFAULT_VERB : 0);

@@ -308,7 +308,6 @@ namespace PSADT.ProcessManagement
         /// otherwise, <see langword="false"/>.</param>
         /// <returns>An object used to await this task.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
         {
             return ProcessResultTask.ConfigureAwait(continueOnCapturedContext);
