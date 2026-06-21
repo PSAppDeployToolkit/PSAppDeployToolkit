@@ -91,11 +91,11 @@ namespace PSAppDeployToolkit.Foundation
                 // Set up other variable values based on incoming dictionary.
                 if (parameters?.Count > 0)
                 {
-                    if (parameters.TryGetValue("DeploymentType", out object? paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeploymentType", out object? paramValue))
                     {
                         DeploymentType = (DeploymentType)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployMode", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeployMode", out paramValue))
                     {
                         DeployMode = (DeployMode)paramValue;
                     }
@@ -111,91 +111,91 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         Settings |= DeploymentSettings.DisableLogging;
                     }
-                    if (parameters.TryGetValue("AppVendor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppVendor", out paramValue))
                     {
                         AppVendor = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppName", out paramValue))
                     {
                         AppName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppVersion", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppVersion", out paramValue))
                     {
                         AppVersion = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppArch", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppArch", out paramValue))
                     {
                         AppArch = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppLang", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppLang", out paramValue))
                     {
                         AppLang = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppRevision", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppRevision", out paramValue))
                     {
                         AppRevision = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("AppSuccessExitCodes", out paramValue))
                     {
                         AppSuccessExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("AppRebootExitCodes", out paramValue))
                     {
                         AppRebootExitCodes = new ReadOnlyCollection<int>((int[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("AppProcessesToClose", out paramValue))
                     {
                         AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>((ProcessDefinition[])paramValue);
                     }
-                    if (parameters.TryGetValue("AppScriptVersion", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("AppScriptVersion", out paramValue))
                     {
                         AppScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptDate", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("AppScriptDate", out paramValue))
                     {
                         AppScriptDate = (DateTime)paramValue;
                     }
-                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("AppScriptAuthor", out paramValue))
                     {
                         AppScriptAuthor = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("DeployAppScriptFriendlyName", out paramValue))
                     {
                         DeployAppScriptFriendlyName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeployAppScriptVersion", out paramValue))
                     {
                         DeployAppScriptVersion = (Version)paramValue;
                     }
-                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeployAppScriptParameters", out paramValue))
                     {
                         DeployAppScriptParameters = new ReadOnlyDictionary<string, object>((Dictionary<string, object>)paramValue);
                     }
-                    if (parameters.TryGetValue("DeployAppScriptSessionState", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DeployAppScriptSessionState", out paramValue))
                     {
                         DeployAppScriptSessionState = (SessionState)paramValue;
                     }
-                    if (parameters.TryGetValue("ScriptDirectory", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("ScriptDirectory", out paramValue))
                     {
                         ScriptDirectory = new ReadOnlyCollection<DirectoryInfo>([.. ((string[])paramValue).Select(static d => new DirectoryInfo(d))]);
                     }
-                    if (parameters.TryGetValue("DirFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("DirFiles", out paramValue))
                     {
                         DirFiles = new((string)paramValue);
                     }
-                    if (parameters.TryGetValue("DirSupportFiles", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("DirSupportFiles", out paramValue))
                     {
                         DirSupportFiles = new((string)paramValue);
                     }
-                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("DefaultMsiFile", out paramValue))
                     {
                         DefaultMsiFile = new((string)paramValue);
                     }
-                    if (parameters.TryGetValue("DefaultMstFile", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("DefaultMstFile", out paramValue))
                     {
                         DefaultMstFile = new((string)paramValue);
                     }
-                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue) && (paramValue is not null))
+                    if (parameters.TryGetValue("DefaultMspFiles", out paramValue))
                     {
                         DefaultMspFiles = new ReadOnlyCollection<FileInfo>([.. ((string[])paramValue).Select(static f => new FileInfo(f))]);
                     }
@@ -246,15 +246,15 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         Settings |= DeploymentSettings.RequireAdmin;
                     }
-                    if (parameters.TryGetValue("InstallTitle", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("InstallTitle", out paramValue))
                     {
                         InstallTitle = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("InstallName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("InstallName", out paramValue))
                     {
                         InstallName = (string)paramValue;
                     }
-                    if (parameters.TryGetValue("LogName", out paramValue) && !string.IsNullOrWhiteSpace((string?)paramValue))
+                    if (parameters.TryGetValue("LogName", out paramValue))
                     {
                         LogName = (string)paramValue;
                     }
