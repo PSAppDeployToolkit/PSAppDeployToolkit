@@ -2,6 +2,7 @@
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -43,7 +44,7 @@ namespace PSADT.Utilities
         /// <returns>A read-only dictionary that maps each font file path to its corresponding resource identifier.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="fontFilePaths"/> is <see langword="null"/>.</exception>
         /// <exception cref="FileNotFoundException">Thrown if any file specified in <paramref name="fontFilePaths"/> does not exist.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
+        [SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static IReadOnlyDictionary<string, int> AddFonts(IReadOnlyList<string> fontFilePaths)
         {
             ArgumentNullException.ThrowIfNull(fontFilePaths);
@@ -79,7 +80,7 @@ namespace PSADT.Utilities
         /// system.</remarks>
         /// <param name="fontFilePaths">A read-only list of file paths that identify the font resource files to remove from the system.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="fontFilePaths"/> is <see langword="null"/>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
+        [SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         public static void RemoveFonts(IReadOnlyList<string> fontFilePaths)
         {
             ArgumentNullException.ThrowIfNull(fontFilePaths);
@@ -285,7 +286,7 @@ namespace PSADT.Utilities
         /// <param name="result">When this method returns, contains the decoded name string if a matching record is found and successfully
         /// decoded; otherwise, null. This parameter is passed uninitialized.</param>
         /// <returns>true if a matching name record is found and successfully decoded; otherwise, false.</returns>
-        private static bool TryFindNameIdRecord(ReadOnlySpan<byte> nameTable, ushort count, ushort stringOffset, NAME_ID desiredNameId, ushort platformId, bool requireWindowsUnicode, ushort? languageId, out string? result)
+        private static bool TryFindNameIdRecord(ReadOnlySpan<byte> nameTable, ushort count, ushort stringOffset, NAME_ID desiredNameId, ushort platformId, bool requireWindowsUnicode, ushort? languageId, [NotNullWhen(true)] out string? result)
         {
             // Attempt to decode the name string.
             const int RecordStart = 6; const int RecordSize = 12;
@@ -367,9 +368,9 @@ namespace PSADT.Utilities
         /// <remarks> These identifiers specify the semantic meaning of a string stored in the font's 'name' table.
         /// The exact set of Name IDs present can vary between fonts.For more information about these values, see
         /// https://learn.microsoft.com/en-us/typography/opentype/spec/name#name-ids</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S4016:Enumeration members should not be named \"Reserved\"", Justification = "These values are named exactly as per the specification.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
+        [SuppressMessage("Naming", "CA1712:Do not prefix enum values with type name", Justification = "These are how they're named in the specification.")]
+        [SuppressMessage("Major Code Smell", "S4016:Enumeration members should not be named \"Reserved\"", Justification = "These values are named exactly as per the specification.")]
+        [SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum NAME_ID : ushort
         {
             /// <summary>
@@ -510,7 +511,7 @@ namespace PSADT.Utilities
         /// other font structures. Each identifier represents a different platform or encoding standard, which may
         /// affect how character data is interpreted. This enumeration is primarily used when parsing or generating font
         /// files that conform to the TrueType specification.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
+        [SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "This enum is correctly typed as per the specification.")]
         private enum TT_PLATFORM_ID : ushort
         {
             /// <summary>

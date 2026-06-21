@@ -20,6 +20,7 @@
     <InternalsVisibleTo Include="PSADT.UserInterface" />
     <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+    <InternalsVisibleTo Include="PSADT.WindowsRuntime" />
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>
 
@@ -64,6 +65,7 @@
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
       T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute|
       T:System.Diagnostics.CodeAnalysis.NotNullAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|
       T:System.Diagnostics.StackTraceHiddenAttribute|
       T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
       T:System.Runtime.CompilerServices.ModuleInitializerAttribute|

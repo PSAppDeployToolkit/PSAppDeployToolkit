@@ -942,7 +942,7 @@ namespace PSADT.ClientServer
         /// <returns>1 if focus mode is active; 0 if focus mode is inactive; -1 if the focus mode state could not be determined.</returns>
         private static int GetUserFocusModeState()
         {
-            return !ShellUtilities.TryGetFocusSessionActive(out bool? active) || !active.HasValue ? -1 : active.Value ? 1 : 0;
+            return !ShellUtilities.TryGetFocusSessionActive(out bool? active) ? -1 : active.Value ? 1 : 0;
         }
 
         /// <summary>
@@ -954,7 +954,7 @@ namespace PSADT.ClientServer
         /// mode. Returns a value of -1 if the mode cannot be determined.</returns>
         private static int GetUserToastNotificationMode()
         {
-            return !NotificationsUtilities.TryGetNotificationMode(out ToastNotificationMode mode) ? -1 : (int)mode;
+            return !NotificationsUtilities.TryGetNotificationMode(out ToastNotificationMode? mode) ? -1 : (int)mode.Value;
         }
 
         /// <summary>

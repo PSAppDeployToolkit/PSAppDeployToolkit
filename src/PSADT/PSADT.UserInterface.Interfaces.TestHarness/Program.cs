@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Management.Automation.Language;
@@ -385,7 +386,6 @@ namespace PSADT.UserInterface.TestHarness
                 invoke.Arguments.Count >= 2 &&
                 "[System.String]::Empty".Equals(invoke.Arguments[0].Extent.Text, StringComparison.Ordinal),
                 out InvokeMemberExpressionAst? defaultEntry) &&
-                defaultEntry != null &&
                 TryFindAncestor(defaultEntry.Parent, invoke =>
                 "new".Equals(invoke.Member.Extent.Text, StringComparison.Ordinal) &&
                 invoke.Arguments.Count >= 2 &&
@@ -400,7 +400,7 @@ namespace PSADT.UserInterface.TestHarness
         /// <param name="predicate">The predicate used to match an invoke member expression.</param>
         /// <param name="invokeMemberExpressionAst">The matching invoke member expression, if found.</param>
         /// <returns><see langword="true" /> when a matching ancestor is found; otherwise, <see langword="false" />.</returns>
-        private static bool TryFindAncestor(Ast ast, Func<InvokeMemberExpressionAst, bool> predicate, out InvokeMemberExpressionAst? invokeMemberExpressionAst)
+        private static bool TryFindAncestor(Ast ast, Func<InvokeMemberExpressionAst, bool> predicate, [NotNullWhen(true)] out InvokeMemberExpressionAst? invokeMemberExpressionAst)
         {
             for (Ast current = ast; current != null; current = current.Parent)
             {

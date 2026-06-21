@@ -19,4 +19,8 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.28000.1839" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PSADT.Interop\PSADT.Interop.csproj" />
+  </ItemGroup>
 </Project>

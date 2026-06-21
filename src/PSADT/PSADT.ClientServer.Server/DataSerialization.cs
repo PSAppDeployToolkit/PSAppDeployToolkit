@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Frozen;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -26,7 +27,7 @@ namespace PSADT.ClientServer
         /// <returns>A byte array containing the binary XML representation of the object.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="obj"/> is null.</exception>
         /// <exception cref="SerializationException">Thrown if serialization fails.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is deliberate.")]
+        [SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is deliberate.")]
         public static byte[] SerializeToBytes<T>(T obj)
         {
             ArgumentNullException.ThrowIfNull(obj);
@@ -135,7 +136,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ArgumentOutOfRangeException">Thrown if offset is less than 0.</exception>
         /// <exception cref="ArgumentNullException">Thrown if bytes is null or if the length of bytes is less than or equal to offset.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization returns a null result.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
+        [SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
         private static object DeserializeFromBytes(byte[] bytes, int offset, Type type)
         {
             ArgumentNullException.ThrowIfNull(bytes);
@@ -427,7 +428,7 @@ namespace PSADT.ClientServer
             /// <param name="typeName">The resulting data contract name.</param>
             /// <param name="typeNamespace">The resulting data contract namespace.</param>
             /// <returns><see langword="true"/> if the type was successfully resolved; otherwise, <see langword="false"/>.</returns>
-            public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, out XmlDictionaryString? typeNamespace)
+            public override bool TryResolveType(Type type, Type? declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString? typeName, [NotNullWhen(true)] out XmlDictionaryString? typeNamespace)
             {
                 // Handle ListDictionaryInternal and Hashtable - they both map to the same contract.
                 if (type == ListDictionaryInternalType || type == typeof(System.Collections.Hashtable))

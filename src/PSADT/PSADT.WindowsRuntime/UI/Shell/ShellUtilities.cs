@@ -1,4 +1,5 @@
-﻿using Windows.Foundation.Metadata;
+﻿using System.Diagnostics.CodeAnalysis;
+using Windows.Foundation.Metadata;
 using Windows.UI.Shell;
 
 namespace PSADT.WindowsRuntime.UI.Shell
@@ -6,7 +7,7 @@ namespace PSADT.WindowsRuntime.UI.Shell
     /// <summary>
     /// Provides utility methods for interacting with Windows Shell features.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
+    [SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
     internal static class ShellUtilities
     {
         /// <summary>
@@ -20,7 +21,7 @@ namespace PSADT.WindowsRuntime.UI.Shell
         /// langword="false"/>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if the Focus Session state was successfully retrieved; otherwise, <see
         /// langword="false"/>.</returns>
-        internal static bool TryGetFocusSessionActive(out bool? isActive)
+        internal static bool TryGetFocusSessionActive([NotNullWhen(true)] out bool? isActive)
         {
             if (!ApiInformation.IsTypePresent("Windows.UI.Shell.FocusSessionManager") || !FocusSessionManager.IsSupported)
             {
