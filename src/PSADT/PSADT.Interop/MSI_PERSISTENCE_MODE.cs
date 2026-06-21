@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Windows.Win32.Foundation;
 
 namespace PSADT.Interop
@@ -54,7 +55,7 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="value">A PCWSTR representing the persistence mode value to assign.</param>
         /// <param name="name">The name of the constant, automatically captured from the calling member.</param>
-        private MSI_PERSISTENCE_MODE(PCWSTR value, [System.Runtime.CompilerServices.CallerMemberName] string name = null!) : base(value, name)
+        private MSI_PERSISTENCE_MODE(PCWSTR value, [CallerMemberName] string name = null!) : base(value, name)
         {
         }
 
