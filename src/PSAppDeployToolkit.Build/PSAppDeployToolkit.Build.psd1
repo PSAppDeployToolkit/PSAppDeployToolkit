@@ -13,7 +13,7 @@
     # CompatiblePSEditions = @()
 
     # ID used to uniquely identify this module
-    GUID = 'eb0237fd-bff4-48c3-a772-0313c98c5a2e'
+    Guid = 'eb0237fd-bff4-48c3-a772-0313c98c5a2e'
 
     # Author of this module
     Author = 'PSAppDeployToolkit Team (Sean Lillis, Dan Cunningham, Muhammad Mashwani, Mitch Richters, Dan Gough)'

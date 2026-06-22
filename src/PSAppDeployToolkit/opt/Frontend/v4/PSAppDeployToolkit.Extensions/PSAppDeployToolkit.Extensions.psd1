@@ -15,7 +15,7 @@
     # CompatiblePSEditions = @()
 
     # ID used to uniquely identify this module
-    GUID = '55276a4c-9fbb-49a4-8481-159113757c39'
+    Guid = '55276a4c-9fbb-49a4-8481-159113757c39'
 
     # Author of this module
     # Author = ''
@@ -49,7 +49,7 @@
 
     # Modules that must be imported into the global environment prior to importing this module
     RequiredModules = @(
-        @{ ModuleName = 'PSAppDeployToolkit'; GUID = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }
+        @{ ModuleName = 'PSAppDeployToolkit'; Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }
     )
 
     # Assemblies that must be loaded prior to importing this module
