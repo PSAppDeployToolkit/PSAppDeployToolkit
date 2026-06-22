@@ -10,9 +10,12 @@ This module is imported by the Invoke-AppDeployToolkit.ps1 script which is used 
 
 #>
 
-##*===============================================
-##* MARK: MODULE GLOBAL SETUP
-##*===============================================
+
+#-----------------------------------------------------------------------------
+#
+# MARK: Global Module Setup
+#
+#-----------------------------------------------------------------------------
 
 # Set strict error handling across entire module.
 $ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
@@ -20,9 +23,11 @@ $ProgressPreference = [System.Management.Automation.ActionPreference]::SilentlyC
 Set-StrictMode -Version 1
 
 
-##*===============================================
-##* MARK: FUNCTION LISTINGS
-##*===============================================
+#-----------------------------------------------------------------------------
+#
+# MARK: Function Listings
+#
+#-----------------------------------------------------------------------------
 
 function New-ADTExampleFunction
 {
@@ -88,9 +93,11 @@ function New-ADTExampleFunction
 }
 
 
-##*===============================================
-##* MARK: SCRIPT BODY
-##*===============================================
+#-----------------------------------------------------------------------------
+#
+# MARK: Script Body
+#
+#-----------------------------------------------------------------------------
 
 # Announce successful importation of module.
 Write-ADTLogEntry -Message "Module [$($MyInvocation.MyCommand.ScriptBlock.Module.Name)] imported successfully." -ScriptSection Initialization
