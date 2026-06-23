@@ -50,7 +50,6 @@
       M:System.Diagnostics.Process.WaitForExitAsync|
       M:System.Int32.TryParse|
       M:System.IO.Path.IsPathFullyQualified|
-      M:System.IO.Path.Join|
       M:System.ObjectDisposedException.Throw|
       M:System.String.Contains|
       M:System.String.EndsWith|
