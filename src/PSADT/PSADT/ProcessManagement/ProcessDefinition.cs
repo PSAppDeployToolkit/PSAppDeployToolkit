@@ -23,18 +23,7 @@ namespace PSADT.ProcessManagement
             Name = name;
 
             // Set all calculated fields based on the name.
-            if (NameIsFullyQualifiedPath())
-            {
-                ProcessName = Path.GetFileNameWithoutExtension(Name);
-            }
-            if (Name.Contains('*', StringComparison.OrdinalIgnoreCase))
-            {
-                NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                if (ProcessName is not null)
-                {
-                    ProcessNameRegex = new($"^{Regex.Escape(ProcessName).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                }
-            }
+            SetCalculatedFields();
         }
 
         /// <summary>
@@ -60,6 +49,35 @@ namespace PSADT.ProcessManagement
         /// <param name="properties">The hashtable with a process's name, and optionally a description.</param>
         public ProcessDefinition(IDictionary properties) : this((string?)(properties ?? throw new ArgumentNullException(nameof(properties)))["Name"] ?? throw new ArgumentNullException(nameof(properties), "The specified key 'Name' is missing."), (string?)properties["Description"])
         {
+        }
+
+        /// <summary>
+        /// Sets all calculated fields based on the name.
+        /// </summary>
+        private void SetCalculatedFields()
+        {
+            if (NameIsFullyQualifiedPath())
+            {
+                ProcessName = Path.GetFileNameWithoutExtension(Name);
+            }
+            if (Name.Contains('*', StringComparison.OrdinalIgnoreCase))
+            {
+                NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                if (ProcessName is not null)
+                {
+                    ProcessNameRegex = new($"^{Regex.Escape(ProcessName).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets all calculated fields after deserialization.
+        /// </summary>
+        /// <param name="context">The deserialization context.</param>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            SetCalculatedFields();
         }
 
         /// <summary>
@@ -106,7 +124,7 @@ namespace PSADT.ProcessManagement
         /// Gets the process name without the path component, if the process definition's name is a fully qualified path.
         /// </summary>
         [IgnoreDataMember]
-        private readonly string? ProcessName;
+        private string? ProcessName;
 
         /// <summary>
         /// Gets the description of the process.
@@ -118,12 +136,12 @@ namespace PSADT.ProcessManagement
         /// Gets the regular expression for the process name, if the name contains wildcard characters.
         /// </summary>
         [IgnoreDataMember]
-        private readonly Regex? NameRegex;
+        private Regex? NameRegex;
 
         /// <summary>
         /// Gets the regular expression for the process name without the path component, if the process definition's name is a fully qualified path and contains wildcard characters.
         /// </summary>
         [IgnoreDataMember]
-        private readonly Regex? ProcessNameRegex;
+        private Regex? ProcessNameRegex;
     }
 }
