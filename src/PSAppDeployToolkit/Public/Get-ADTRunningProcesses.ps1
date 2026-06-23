@@ -13,7 +13,7 @@ function Get-ADTRunningProcesses
     .DESCRIPTION
         The `Get-ADTRunningProcesses` function returns the processes that are running from the provided list of process objects.
 
-    .PARAMETER ProcessObjects
+    .PARAMETER ProcessDefinition
         One or more process objects to search for.
 
     .INPUTS
@@ -27,7 +27,7 @@ function Get-ADTRunningProcesses
         Returns one or more RunningProcess objects representing each running process.
 
     .EXAMPLE
-        Get-ADTRunningProcesses -ProcessObjects $processObjects
+        Get-ADTRunningProcesses -ProcessDefinition $processObjects
 
         Returns a list of running processes. If nothing is found, nothing will be returned.
 
@@ -48,14 +48,15 @@ function Get-ADTRunningProcesses
     param
     (
         [Parameter(Mandatory = $true)]
+        [Alias('ProcessObjects')]
         [ValidateNotNullOrEmpty()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [PSADT.ProcessManagement.ProcessDefinition[]]$ProcessObjects
+        [PSADT.ProcessManagement.ProcessDefinition[]]$ProcessDefinition
     )
 
     # Process provided process objects and return any output.
-    Write-ADTLogEntry -Message "Checking for running processes: ['$([System.String]::Join("', '", $ProcessObjects.Name))']"
-    if (!($runningProcesses = [PSADT.ProcessManagement.RunningProcessInfo]::Get($ProcessObjects)))
+    Write-ADTLogEntry -Message "Checking for running processes: ['$([System.String]::Join("', '", $ProcessDefinition.Name))']"
+    if (!($runningProcesses = [PSADT.ProcessManagement.RunningProcessInfo]::Get($ProcessDefinition)))
     {
         Write-ADTLogEntry -Message 'Specified processes are not running.'
         return
