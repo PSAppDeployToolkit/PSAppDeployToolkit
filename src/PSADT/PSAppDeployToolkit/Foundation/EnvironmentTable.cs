@@ -1048,7 +1048,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property provides a way to access the well-known SID for the local system
         /// account, which is often used in security contexts. The returned NTAccount can be used for identity-related
         /// operations within the system.</remarks>
-        public NTAccount LocalSystemNTAccount { get; } = (NTAccount)AccountUtilities.GetWellKnownSid(WellKnownSidType.LocalSystemSid).Translate(typeof(NTAccount));
+        public NTAccount LocalSystemNTAccount { get; } = (NTAccount)new SecurityIdentifier(WellKnownSidType.LocalSystemSid, domainSid: null).Translate(typeof(NTAccount));
 
         /// <summary>
         /// Gets the NTAccount that represents the built-in local users group on the current machine.
@@ -1056,7 +1056,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the well-known security identifier (SID) for the built-in
         /// users group and translates it to an NTAccount. It is useful for managing permissions and access control for
         /// all local users.</remarks>
-        public NTAccount LocalUsersGroup { get; } = (NTAccount)AccountUtilities.GetWellKnownSid(WellKnownSidType.BuiltinUsersSid).Translate(typeof(NTAccount));
+        public NTAccount LocalUsersGroup { get; } = (NTAccount)new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, domainSid: null).Translate(typeof(NTAccount));
 
         /// <summary>
         /// Gets the local administrators group account for the current machine.
@@ -1064,7 +1064,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>This property retrieves the well-known local administrators group by translating the
         /// built-in administrators security identifier (SID) to an NTAccount. It is useful for managing permissions and
         /// access control related to local administrative tasks.</remarks>
-        public NTAccount LocalAdministratorsGroup { get; } = (NTAccount)AccountUtilities.GetWellKnownSid(WellKnownSidType.BuiltinAdministratorsSid).Translate(typeof(NTAccount));
+        public NTAccount LocalAdministratorsGroup { get; } = (NTAccount)new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, domainSid: null).Translate(typeof(NTAccount));
 
         /// <summary>
         /// Gets a value indicating whether the current account is a session zero account, which includes local system,

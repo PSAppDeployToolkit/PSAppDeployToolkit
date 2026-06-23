@@ -304,7 +304,7 @@ function Get-ADTUserProfiles
                     # Establish base profile.
                     $userProfile = [PSADT.AccountManagement.UserProfileInfo]::new(
                         'Default',
-                        [PSADT.AccountManagement.AccountUtilities]::GetWellKnownSid([System.Security.Principal.WellKnownSidType]::NullSid),
+                        [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::NullSid, $null),
                         $defaultUserProfilePath
                     )
 

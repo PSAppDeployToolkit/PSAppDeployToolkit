@@ -55,22 +55,7 @@ namespace PSADT.AccountManagement
                 }
             }
 
-            // Initialize the lookup table for well-known SIDs, skipping ones that don't construct.
-            Array wellKnownSidTypes = typeof(WellKnownSidType).GetEnumValues();
-            Dictionary<WellKnownSidType, SecurityIdentifier> wellKnownSids = new(wellKnownSidTypes.Length);
-            foreach (WellKnownSidType wellKnownSidType in wellKnownSidTypes)
-            {
-                if (wellKnownSids.ContainsKey(wellKnownSidType) || wellKnownSidType == WellKnownSidType.LogonIdsSid || (int)wellKnownSidType == 80 || (int)wellKnownSidType == 83)  // WinLocalLogonSid/WinApplicationPackageAuthoritySid.
-                {
-                    continue;
-                }
-                wellKnownSids.Add(wellKnownSidType, new(wellKnownSidType, LocalAccountDomainSid));
-            }
-            LocalSystemSid = wellKnownSids[WellKnownSidType.LocalSystemSid];
-            WellKnownSidLookupTable = wellKnownSids.ToFrozenDictionary();
-
             // Determine if the caller is the local system account.
-            CallerIsInteractive = Environment.UserInteractive;
             CallerIsLocalSystem = CallerSid.IsWellKnown(WellKnownSidType.LocalSystemSid);
             CallerIsLocalService = CallerSid.IsWellKnown(WellKnownSidType.LocalServiceSid);
             CallerIsNetworkService = CallerSid.IsWellKnown(WellKnownSidType.NetworkServiceSid);
@@ -90,24 +75,6 @@ namespace PSADT.AccountManagement
                     return false;
                 }
             });
-        }
-
-        /// <summary>
-        /// Retrieves the <see cref="SecurityIdentifier"/> associated with the specified well-known SID type.
-        /// </summary>
-        /// <remarks>Well-known SIDs are predefined identifiers for common security principals, such as
-        /// "Everyone" or "Local System." Use this method to obtain the <see cref="SecurityIdentifier"/> for a specific
-        /// well-known SID type.</remarks>
-        /// <param name="wellKnownSidType">The type of the well-known SID to retrieve. This must be a valid <see cref="WellKnownSidType"/> value.</param>
-        /// <returns>A <see cref="SecurityIdentifier"/> representing the specified well-known SID type.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified <paramref name="wellKnownSidType"/> is not recognized or is unavailable in the
-        /// current context.</exception>
-        public static SecurityIdentifier GetWellKnownSid(WellKnownSidType wellKnownSidType)
-        {
-            // Return the SecurityIdentifier for the specified well-known SID type.
-            return !WellKnownSidLookupTable.TryGetValue(wellKnownSidType, out SecurityIdentifier? sid)
-                ? throw new ArgumentOutOfRangeException(nameof(wellKnownSidType), wellKnownSidType, $"The specified well-known SID type '{wellKnownSidType}' is not recognized or not available in this context.")
-                : sid;
         }
 
         /// <summary>
@@ -164,7 +131,7 @@ namespace PSADT.AccountManagement
         /// <remarks>This value can be used to determine if the code is executing in an environment where
         /// user interaction is possible, such as a desktop session, as opposed to a background service or automated
         /// process.</remarks>
-        public static readonly bool CallerIsInteractive;
+        public static readonly bool CallerIsInteractive = Environment.UserInteractive;
 
         /// <summary>
         /// Indicates whether the caller is the local system account.
@@ -214,7 +181,7 @@ namespace PSADT.AccountManagement
         /// <remarks>This SID is commonly used to grant permissions to the local system account, which has
         /// extensive privileges on the local computer. Use this value when specifying access control or auditing rules
         /// that should apply to the system account.</remarks>
-        public static readonly SecurityIdentifier LocalSystemSid;
+        public static readonly SecurityIdentifier LocalSystemSid = new(WellKnownSidType.LocalSystemSid, domainSid: null);
 
         /// <summary>
         /// Represents the security identifier (SID) for the local account domain.
@@ -223,15 +190,6 @@ namespace PSADT.AccountManagement
         /// used in scenarios involving security-related operations, such as access control or user account
         /// management.</remarks>
         public static readonly SecurityIdentifier LocalAccountDomainSid;
-
-        /// <summary>
-        /// A read-only dictionary that maps <see cref="WellKnownSidType"/> values to their corresponding <see
-        /// cref="SecurityIdentifier"/> instances.
-        /// </summary>
-        /// <remarks>This dictionary provides a lookup table for well-known security identifiers (SIDs)
-        /// based on their type. It is intended to facilitate quick access to predefined SIDs commonly used in
-        /// security-related operations.</remarks>
-        private static readonly FrozenDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
 
         /// <summary>
         /// A private static class that encapsulates constant values related to running operations as the active user.
