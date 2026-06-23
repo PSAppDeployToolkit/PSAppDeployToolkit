@@ -723,9 +723,7 @@ namespace PSADT.ClientServer
         /// with its exit code. The returned string can be deserialized to obtain the dialog result.</remarks>
         /// <param name="arguments">A read-only dictionary containing the arguments required to configure the dialog. Must include valid values
         /// for 'DialogType' and 'DialogStyle'.</param>
-        /// <param name="closeAppsDialogState">An optional state object that can influence the dialog's behavior when handling application closure
-        /// scenarios.</param>
-        /// <param name="argv">An optional array of command-line arguments used to determine the executable to launch if the dialog is
+        /// <param name="argv">An array of command-line arguments used to determine the executable to launch if the dialog is
         /// configured for execution blocking.</param>
         /// <returns>A serialized string representing the result of the modal dialog, such as the selected button text or other
         /// relevant outcome information.</returns>
@@ -733,7 +731,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown if a required argument is missing or invalid, such as when 'DialogType' or 'DialogStyle' is not
         /// specified or is invalid, or if the dialog type is not supported.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code can deliberately short circuit.")]
-        private static async ValueTask<string> ShowModalDialogAsync(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
+        private static async ValueTask<string> ShowModalDialogAsync(ReadOnlyDictionary<string, string> arguments, string[] argv)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionStr) && bool.TryParse(blockExecutionStr, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
@@ -770,14 +768,13 @@ namespace PSADT.ClientServer
             // Deserialize the options to the correct type based on DialogType and show the dialog.
             return SerializeToString(dialogType switch
             {
-                DialogType.CloseAppsDialog => await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false),
                 DialogType.CustomDialog => await DialogManager.ShowCustomDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                 DialogType.DialogBox => await DialogManager.ShowDialogBoxAsync(DataSerialization.DeserializeFromString<DialogBoxOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                 DialogType.HelpConsole => await DialogManager.ShowHelpConsoleAsync(DataSerialization.DeserializeFromString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                 DialogType.InputDialog => await DialogManager.ShowInputDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                 DialogType.ListSelectionDialog => await DialogManager.ShowListSelectionDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
                 DialogType.RestartDialog => await DialogManager.ShowRestartDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog),
+                DialogType.CloseAppsDialog or DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported by the current implementation.", ClientExitCode.UnsupportedDialog),
             });
         }
 
