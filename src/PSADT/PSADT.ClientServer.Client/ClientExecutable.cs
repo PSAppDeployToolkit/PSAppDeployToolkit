@@ -881,9 +881,9 @@ namespace PSADT.ClientServer
             }
 
             // Set up the process and return its result.
-            return ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "gpupdate.exe"), argumentList, standardInput: ["N"], createNoWindow: true)) is not ProcessHandle handle
+            return ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "gpupdate.exe"), argumentList, standardInput: ["N"], createNoWindow: true))?.Task is not Task<ProcessResult> task
                 ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
-                : handle.Task;
+                : task;
         }
 
         /// <summary>
