@@ -49,6 +49,7 @@ namespace PSADT.Security
         /// <exception cref="UnauthorizedAccessException">Thrown if the caller is not an administrator or if an elevated token of type HighestMandatory cannot be
         /// obtained.</exception>
         /// <exception cref="InvalidProgramException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the token broker fails to provide a valid token or if an invalid token length is received.</exception>
         internal static async System.Threading.Tasks.Task<SafeFileHandle> GetUserPrimaryTokenAsync(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
         {
             // Confirm that the caller is an administrator.
@@ -79,150 +80,160 @@ namespace PSADT.Security
                 #pragma warning restore format
 
                 // Create an instance of the TaskService to manage scheduled tasks and connect on localhost.
-                ITaskService servicePtr = (ITaskService)new TaskScheduler();
                 try
                 {
-                    // Set up the task as required.
-                    using SafeFreeBSTRHandle folderName = SafeFreeBSTRHandle.Alloc(@"\");
-                    servicePtr.Connect(serverName: null, user: null, domain: null, password: null);
-                    servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
+                    ITaskService servicePtr = (ITaskService)new TaskScheduler();
                     try
                     {
-                        servicePtr.NewTask(0, out ITaskDefinition taskDefinition);
+                        // Set up the task as required.
+                        using SafeFreeBSTRHandle folderName = SafeFreeBSTRHandle.Alloc(@"\");
+                        servicePtr.Connect(serverName: null, user: null, domain: null, password: null);
+                        servicePtr.GetFolder(folderName, out ITaskFolder rootFolder);
                         try
                         {
-                            IActionCollection actions = taskDefinition.Actions;
+                            servicePtr.NewTask(0, out ITaskDefinition taskDefinition);
                             try
                             {
-                                actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC, out IAction action);
+                                IActionCollection actions = taskDefinition.Actions;
                                 try
                                 {
-                                    IExecAction execAction = (IExecAction)action;
+                                    actions.Create(TASK_ACTION_TYPE.TASK_ACTION_EXEC, out IAction action);
                                     try
                                     {
-                                        IPrincipal principal = taskDefinition.Principal;
+                                        IExecAction execAction = (IExecAction)action;
                                         try
                                         {
-                                            ITaskSettings settings = taskDefinition.Settings;
+                                            IPrincipal principal = taskDefinition.Principal;
                                             try
                                             {
-                                                using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
-                                                using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(ClientServerUtilities.ClientLauncherCompatiblePath.FullName);
-                                                using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
-                                                bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
+                                                ITaskSettings settings = taskDefinition.Settings;
                                                 try
                                                 {
-                                                    // Register and start the task, then delete it. It'll keep running until it exits.
-                                                    using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
-                                                    userId.DangerousAddRef(ref userIdAddRef);
-                                                    path.DangerousAddRef(ref pathAddRef);
-                                                    args.DangerousAddRef(ref argsAddRef);
-                                                    settings.StopIfGoingOnBatteries = false;
-                                                    settings.DisallowStartIfOnBatteries = false;
-                                                    principal.UserId = (BSTR)userId.DangerousGetHandle();
-                                                    principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
-                                                    principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
-                                                    execAction.Path = (BSTR)path.DangerousGetHandle();
-                                                    execAction.Arguments = (BSTR)args.DangerousGetHandle();
-                                                    rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, userId: null, password: null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, sddl: null, out IRegisteredTask task);
+                                                    using SafeFreeBSTRHandle userId = SafeFreeBSTRHandle.Alloc(AccountUtilities.LocalSystemSid.Value);
+                                                    using SafeFreeBSTRHandle path = SafeFreeBSTRHandle.Alloc(ClientServerUtilities.ClientLauncherCompatiblePath.FullName);
+                                                    using SafeFreeBSTRHandle args = SafeFreeBSTRHandle.Alloc($"/TokenBroker -PipeName {pipeName} -ProcessId {AccountUtilities.CallerProcessId} -SessionId {sessionId} -ElevatedTokenType {elevatedTokenType} -UIAccess {uiAccess}");
+                                                    bool userIdAddRef = false; bool pathAddRef = false; bool argsAddRef = false;
                                                     try
                                                     {
-                                                        // Wait for the token broker to connect while task is in scope for error reporting.
-                                                        // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
-                                                        task.Run(@params: null, out IRunningTask runningTask);
-                                                        _ = Marshal.FinalReleaseComObject(runningTask);
+                                                        // Register and start the task, then delete it. It'll keep running until it exits.
+                                                        using SafeFreeBSTRHandle taskName = SafeFreeBSTRHandle.Alloc(pipeName);
+                                                        userId.DangerousAddRef(ref userIdAddRef);
+                                                        path.DangerousAddRef(ref pathAddRef);
+                                                        args.DangerousAddRef(ref argsAddRef);
+                                                        settings.StopIfGoingOnBatteries = false;
+                                                        settings.DisallowStartIfOnBatteries = false;
+                                                        principal.UserId = (BSTR)userId.DangerousGetHandle();
+                                                        principal.LogonType = TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT;
+                                                        principal.RunLevel = TASK_RUNLEVEL_TYPE.TASK_RUNLEVEL_HIGHEST;
+                                                        execAction.Path = (BSTR)path.DangerousGetHandle();
+                                                        execAction.Arguments = (BSTR)args.DangerousGetHandle();
+                                                        rootFolder.RegisterTaskDefinition(taskName, taskDefinition, (int)TASK_CREATION.TASK_CREATE_OR_UPDATE, userId: null, password: null, TASK_LOGON_TYPE.TASK_LOGON_SERVICE_ACCOUNT, sddl: null, out IRegisteredTask task);
                                                         try
                                                         {
-                                                            using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
-                                                            await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
+                                                            // Wait for the token broker to connect while task is in scope for error reporting.
+                                                            // Note: CancellationToken doesn't interrupt ConnectNamedPipe - so we dispose the pipe.
+                                                            task.Run(@params: null, out IRunningTask runningTask);
+                                                            _ = Marshal.FinalReleaseComObject(runningTask);
+                                                            try
+                                                            {
+                                                                using CancellationTokenSource cts = new(ClientServerUtilities.ClientOperationTimeout);
+                                                                await pipe.WaitForConnectionAsync(cts.Token).ConfigureAwait(false);
+                                                            }
+                                                            catch (OperationCanceledException)
+                                                            {
+                                                                throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                            }
                                                         }
-                                                        catch (OperationCanceledException)
+                                                        finally
                                                         {
-                                                            throw new InvalidProgramException($"Token broker task failed to connect within timeout. Task state: {task.State}, Last result: 0x{task.LastTaskResult:X8}.");
+                                                            rootFolder.DeleteTask(taskName, 0);
+                                                            _ = Marshal.FinalReleaseComObject(task);
                                                         }
                                                     }
                                                     finally
                                                     {
-                                                        rootFolder.DeleteTask(taskName, 0);
-                                                        _ = Marshal.FinalReleaseComObject(task);
+                                                        if (userIdAddRef)
+                                                        {
+                                                            userId.DangerousRelease();
+                                                        }
+                                                        if (pathAddRef)
+                                                        {
+                                                            path.DangerousRelease();
+                                                        }
+                                                        if (argsAddRef)
+                                                        {
+                                                            args.DangerousRelease();
+                                                        }
                                                     }
                                                 }
                                                 finally
                                                 {
-                                                    if (userIdAddRef)
-                                                    {
-                                                        userId.DangerousRelease();
-                                                    }
-                                                    if (pathAddRef)
-                                                    {
-                                                        path.DangerousRelease();
-                                                    }
-                                                    if (argsAddRef)
-                                                    {
-                                                        args.DangerousRelease();
-                                                    }
+                                                    _ = Marshal.FinalReleaseComObject(settings);
                                                 }
                                             }
                                             finally
                                             {
-                                                _ = Marshal.FinalReleaseComObject(settings);
+                                                _ = Marshal.FinalReleaseComObject(principal);
                                             }
                                         }
                                         finally
                                         {
-                                            _ = Marshal.FinalReleaseComObject(principal);
+                                            _ = Marshal.FinalReleaseComObject(execAction);
                                         }
                                     }
                                     finally
                                     {
-                                        _ = Marshal.FinalReleaseComObject(execAction);
+                                        _ = Marshal.FinalReleaseComObject(action);
                                     }
                                 }
                                 finally
                                 {
-                                    _ = Marshal.FinalReleaseComObject(action);
+                                    _ = Marshal.FinalReleaseComObject(actions);
                                 }
                             }
                             finally
                             {
-                                _ = Marshal.FinalReleaseComObject(actions);
+                                _ = Marshal.FinalReleaseComObject(taskDefinition);
                             }
                         }
                         finally
                         {
-                            _ = Marshal.FinalReleaseComObject(taskDefinition);
+                            _ = Marshal.FinalReleaseComObject(rootFolder);
                         }
                     }
                     finally
                     {
-                        _ = Marshal.FinalReleaseComObject(rootFolder);
+                        _ = Marshal.FinalReleaseComObject(servicePtr);
+                    }
+
+                    // Read the token length from the pipe.
+                    int tokenLength = pipe.ReadByte();
+                    if (tokenLength == -1)
+                    {
+                        throw new InvalidProgramException("The token broker pipe closed before reading token length.");
+                    }
+                    if (tokenLength is not 4 and not 8)
+                    {
+                        throw new InvalidProgramException("Invalid token length received from the token broker.");
+                    }
+
+                    // Read the token from the pipe.
+                    byte[] tokenBuf = new byte[tokenLength];
+                    if (await pipe.ReadAsync(tokenBuf, 0, tokenLength).ConfigureAwait(false) != tokenLength)
+                    {
+                        throw new InvalidProgramException("Invalid token received from the token broker.");
+                    }
+
+                    // Return the token handle.
+                    return new(tokenBuf.AsReadOnlyStructure<nint>(), ownsHandle: true);
+                }
+                catch (Exception ex) when (ex.Message is not null)
+                {
+                    if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
+                    {
+                        throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                     }
                 }
-                finally
-                {
-                    _ = Marshal.FinalReleaseComObject(servicePtr);
-                }
-
-                // Read the token length from the pipe.
-                int tokenLength = pipe.ReadByte();
-                if (tokenLength == -1)
-                {
-                    throw new InvalidProgramException("No token length received from the token broker.");
-                }
-                if (tokenLength is not 4 and not 8)
-                {
-                    throw new InvalidProgramException("Invalid token length received from the token broker.");
-                }
-
-                // Read the token from the pipe.
-                byte[] tokenBuf = new byte[tokenLength];
-                if (await pipe.ReadAsync(tokenBuf, 0, tokenLength).ConfigureAwait(false) != tokenLength)
-                {
-                    throw new InvalidProgramException("Invalid token received from the token broker.");
-                }
-
-                // Return the token handle.
-                return new(tokenBuf.AsReadOnlyStructure<nint>(), ownsHandle: true);
             }
 
             // When we're local system, we can just get the primary token for the user.
@@ -240,7 +251,7 @@ namespace PSADT.Security
                     {
                         if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
                         {
-                            throw new UnauthorizedAccessException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
+                            throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                         }
                     }
                 }

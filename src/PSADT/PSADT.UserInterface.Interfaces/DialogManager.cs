@@ -632,7 +632,7 @@ namespace PSADT.UserInterface.Interfaces
         {
             { DialogStyle.Classic, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))) },
                 { DialogType.CustomDialog, static (options, _) => new Classic.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, static (options, _) => new Classic.InputDialog((InputDialogOptions)options) },
                 { DialogType.ListSelectionDialog, static (options, _) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
@@ -641,7 +641,7 @@ namespace PSADT.UserInterface.Interfaces
             })},
             { DialogStyle.Fluent, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
             {
-                { DialogType.CloseAppsDialog, static (options, state) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState)(state ?? throw new ArgumentNullException(nameof(state)))) },
+                { DialogType.CloseAppsDialog, static (options, state) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))) },
                 { DialogType.CustomDialog, static (options, _) => new Fluent.CustomDialog((CustomDialogOptions)options) },
                 { DialogType.InputDialog, static (options, _) => new Fluent.InputDialog((InputDialogOptions)options) },
                 { DialogType.ListSelectionDialog, static (options, _) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
