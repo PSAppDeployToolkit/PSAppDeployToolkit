@@ -246,7 +246,7 @@ namespace PSADT.AccountManagement
             /// <summary>
             /// Represents the active user context for the current session, encapsulated as a nullable <see cref="RunAsActiveUser"/> instance.
             /// </summary>
-            internal static readonly RunAsActiveUser? Session = SessionInfo.GetAsync(CallerSessionId).ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
+            internal static readonly RunAsActiveUser? Session = SessionInfo.GetAsync(CallerSessionId).AsTask().ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
         }
     }
 }

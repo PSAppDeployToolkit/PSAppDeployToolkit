@@ -45,9 +45,9 @@ namespace PSADT.TerminalServices
         /// <param name="sessionId">The identifier of the session to retrieve information for.</param>
         /// <returns>A <see cref="SessionInfo"/> object containing details about the session if found; otherwise, <see
         /// langword="null"/>.</returns>
-        public static async Task<SessionInfo?> GetAsync(uint sessionId)
+        public static ValueTask<SessionInfo?> GetAsync(uint sessionId)
         {
-            return await GetAllAsync(sessionId).FirstOrDefaultAsync().ConfigureAwait(false);
+            return GetAllAsync(sessionId).FirstOrDefaultAsync();
         }
 
         /// <summary>

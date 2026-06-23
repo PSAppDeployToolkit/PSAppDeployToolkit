@@ -792,7 +792,7 @@ namespace PSADT.ClientServer
         /// on the dialog type displayed.</returns>
         /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
-        private static async Task<object> InvokeModalDialogAsync(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
+        private static async Task<IDialogResult> InvokeModalDialogAsync(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
         {
             return dialogType switch
             {
@@ -900,7 +900,7 @@ namespace PSADT.ClientServer
         /// changed. If <see langword="true"/>, all settings are reapplied.</param>
         /// <returns>A <see cref="ProcessResult"/> object that contains the results of the Group Policy update operation.</returns>
         /// <exception cref="ClientException">Thrown if the Group Policy update process fails to launch.</exception>
-        private static async Task<ProcessResult> GroupPolicyUpdateAsync(bool force)
+        private static Task<ProcessResult> GroupPolicyUpdateAsync(bool force)
         {
             // Build out argument list for gpupdate.exe.
             List<string> argumentList = ["/Target:User"];
@@ -912,7 +912,7 @@ namespace PSADT.ClientServer
             // Set up the process and return its result.
             return ProcessManager.LaunchAsync(new(Path.Join(Environment.SystemDirectory, "gpupdate.exe"), argumentList, standardInput: ["N"], createNoWindow: true)) is not ProcessHandle handle
                 ? throw new ClientException("Failed to launch the Group Policy update process.", ClientExitCode.InvalidResult)
-                : await handle.ConfigureAwait(false);
+                : handle.Task;
         }
 
         /// <summary>
@@ -923,13 +923,13 @@ namespace PSADT.ClientServer
         /// <returns>A ProcessResult object containing the outcome of the executed process. If the process could not be started,
         /// returns a result indicating success with a default code.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "It's either this or a 'Dispose objects before losing scope' warning on the ternary.")]
-        private static async Task<ProcessResult> ShellExecuteProcessAsync(UserShellExecuteOptions options)
+        private static Task<ProcessResult> ShellExecuteProcessAsync(UserShellExecuteOptions options)
         {
-            if (ProcessManager.LaunchAsync(options.ToLaunchInfo()) is not ProcessHandle handle)
+            if (ProcessManager.LaunchAsync(options.ToLaunchInfo())?.Task is not Task<ProcessResult> task)
             {
-                return new(ClientServerUtilities.ShellExecuteProcessSuccessCode);
+                return Task.FromResult(new ProcessResult(ClientServerUtilities.ShellExecuteProcessSuccessCode));
             }
-            return await handle.ConfigureAwait(false);
+            return task;
         }
 
         /// <summary>
