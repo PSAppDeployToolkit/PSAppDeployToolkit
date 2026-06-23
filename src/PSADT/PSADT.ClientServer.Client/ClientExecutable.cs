@@ -893,14 +893,11 @@ namespace PSADT.ClientServer
         /// context.</param>
         /// <returns>A ProcessResult object containing the outcome of the executed process. If the process could not be started,
         /// returns a result indicating success with a default code.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0046:Convert to conditional expression", Justification = "It's either this or a 'Dispose objects before losing scope' warning on the ternary.")]
         private static Task<ProcessResult> ShellExecuteProcessAsync(UserShellExecuteOptions options)
         {
-            if (ProcessManager.LaunchAsync(options.ToLaunchInfo())?.Task is not Task<ProcessResult> task)
-            {
-                return Task.FromResult(new ProcessResult(ClientServerUtilities.ShellExecuteProcessSuccessCode));
-            }
-            return task;
+            return ProcessManager.LaunchAsync(options.ToLaunchInfo())?.Task is not Task<ProcessResult> task
+                ? Task.FromResult(new ProcessResult(ClientServerUtilities.ShellExecuteProcessSuccessCode))
+                : task;
         }
 
         /// <summary>
