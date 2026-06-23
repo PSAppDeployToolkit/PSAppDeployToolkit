@@ -176,7 +176,7 @@ namespace PSADT.ClientServer
         /// <param name="arguments">A read-only dictionary containing the pipe handles required for communication. The dictionary must include
         /// the keys <c>"InputPipe"</c> and <c>"OutputPipe"</c>, each mapped to a valid, non-empty pipe handle string.</param>
         /// <exception cref="ClientException">Thrown when a required pipe handle is missing, invalid, or cannot be opened.</exception>
-        private static async Task<int> EnterClientServerModeAsync(ReadOnlyDictionary<string, string> arguments)
+        private static async ValueTask<int> EnterClientServerModeAsync(ReadOnlyDictionary<string, string> arguments)
         {
             // Get the pipe handles from the arguments.
             if (!arguments.TryGetValue("OutputPipe", out string? outputPipeHandle) || string.IsNullOrWhiteSpace(outputPipeHandle))
@@ -553,7 +553,7 @@ namespace PSADT.ClientServer
         /// error conditions.</returns>
         /// <exception cref="ClientException">Thrown if required arguments are missing, invalid, or if the specified arguments do not correspond to a
         /// supported operation.</exception>
-        private static async Task<int> EnterStandaloneModeAsync(string[] argv)
+        private static async ValueTask<int> EnterStandaloneModeAsync(string[] argv)
         {
             // Parse the arguments and execute the requested operation.
             foreach (string arg in argv)
@@ -723,7 +723,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown if a required argument is missing or invalid, such as when 'DialogType' or 'DialogStyle' is not
         /// specified or is invalid, or if the dialog type is not supported.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code can deliberately short circuit.")]
-        private static async Task<string> ShowModalDialogAsync(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
+        private static async ValueTask<string> ShowModalDialogAsync(ReadOnlyDictionary<string, string> arguments, BaseDialogState? closeAppsDialogState = null, string[]? argv = null)
         {
             // Return early if this is a BlockExecution dialog and we're running as SYSTEM.
             if (arguments.TryGetValue("BlockExecution", out string? blockExecutionStr) && bool.TryParse(blockExecutionStr, out bool blockExecution) && blockExecution && AccountUtilities.CallerIsLocalSystem && argv is not null)
@@ -792,7 +792,7 @@ namespace PSADT.ClientServer
         /// on the dialog type displayed.</returns>
         /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
         /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
-        private static async Task<IDialogResult> InvokeModalDialogAsync(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
+        private static async ValueTask<IDialogResult> InvokeModalDialogAsync(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
         {
             return dialogType switch
             {
@@ -823,7 +823,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown if the caller is not running as the Local System account, or if any required argument is missing,
         /// invalid, or cannot be parsed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
-        private static async Task BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
+        private static async ValueTask BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we're running as the SYSTEM account before proceeding.
             if (!AccountUtilities.CallerIsLocalSystem)

@@ -111,7 +111,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="state">The current state of the dialog, including services for tracking running processes and logging.</param>
         /// <returns>A string representing the user's response or selection from the dialog.</returns>
         /// <exception cref="InvalidProgramException">Thrown if the WPF application fails to initialize or the dispatcher throws an exception.</exception>
-        internal static async Task<CloseAppsDialogResult> ShowCloseAppsDialogAsync(DialogStyle dialogStyle, CloseAppsDialogOptions options, CloseAppsDialogState state)
+        internal static async ValueTask<CloseAppsDialogResult> ShowCloseAppsDialogAsync(DialogStyle dialogStyle, CloseAppsDialogOptions options, CloseAppsDialogState state)
         {
             // Start the RunningProcessService if it is not already running.
             bool stopProcessService = false;
@@ -200,7 +200,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, and buttons.</param>
         /// <returns>A string representing the result of the dialog interaction. The value depends on the dialog's configuration and user input.</returns>
-        internal static async Task<CustomDialogResult> ShowCustomDialogAsync(DialogStyle dialogStyle, CustomDialogOptions options)
+        internal static async ValueTask<CustomDialogResult> ShowCustomDialogAsync(DialogStyle dialogStyle, CustomDialogOptions options)
         {
             if (options.MinimizeWindows)
             {
@@ -222,7 +222,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
         /// <param name="options">The options to configure the dialog, such as title, message, buttons, and list items.</param>
         /// <returns>A <see cref="ListSelectionDialogResult"/> object containing the button clicked and the selected list item.</returns>
-        internal static async Task<ListSelectionDialogResult> ShowListSelectionDialogAsync(DialogStyle dialogStyle, ListSelectionDialogOptions options)
+        internal static async ValueTask<ListSelectionDialogResult> ShowListSelectionDialogAsync(DialogStyle dialogStyle, ListSelectionDialogOptions options)
         {
             if (options.MinimizeWindows)
             {
@@ -244,7 +244,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="options">The options for configuring the input dialog, such as the prompt text, default value, and validation rules.</param>
         /// <returns>An <see cref="InputDialogResult"/> object containing the user's input and the dialog result (e.g., OK or Cancel).</returns>
         /// <exception cref="NotSupportedException">Thrown if the caller is using ServiceUI, as input dialogs are not supported in that context.</exception>
-        internal static async Task<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
+        internal static async ValueTask<InputDialogResult> ShowInputDialogAsync(DialogStyle dialogStyle, InputDialogOptions options)
         {
             if (AccountUtilities.CallerUsingServiceUI)
             {
@@ -483,7 +483,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="options">The options for configuring the message box, such as title, message text, buttons, icon, default button, topmost behavior, and expiry duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
         [SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
-        internal static Task<DialogBoxResult> ShowDialogBoxAsync(DialogBoxOptions options)
+        internal static ValueTask<DialogBoxResult> ShowDialogBoxAsync(DialogBoxOptions options)
         {
             return ShowDialogBoxAsync(options.AppTitle, options.MessageText, options.DialogButtons, options.DialogDefaultButton, options.DialogIcon ?? 0, options.DialogTopMost, options.DialogExpiryDuration);
         }
@@ -500,7 +500,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button clicked by the user.</returns>
-        internal static async Task<DialogBoxResult> ShowDialogBoxAsync(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
+        internal static async ValueTask<DialogBoxResult> ShowDialogBoxAsync(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
         {
             return DialogBoxResult.FromMessageBoxResult(await ShowDialogBoxAsync(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : MESSAGEBOX_STYLE.MB_OK), Timeout).ConfigureAwait(false));
         }

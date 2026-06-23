@@ -53,7 +53,7 @@ namespace PSADT.ProcessManagement
         /// not thread-safe and should not be called concurrently with other operations that start or stop
         /// polling.</remarks>
         /// <exception cref="InvalidOperationException">Thrown if the polling task is not currently running.</exception>
-        internal async Task StopAsync()
+        internal async ValueTask StopAsync()
         {
             // We can't stop the polling task if it's not running.
             if (_pollingTask is null || _cancellationTokenSource is null)

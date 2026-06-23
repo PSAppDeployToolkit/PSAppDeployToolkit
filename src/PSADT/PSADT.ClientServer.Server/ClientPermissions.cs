@@ -24,7 +24,7 @@ namespace PSADT.ClientServer
         /// langword="null"/>.</param>
         /// <param name="extraPaths">An optional list of additional file paths to include in the remediation process. All paths must be absolute
         /// and point to existing files.</param>
-        public static Task Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
+        public static ValueTask Remediate(RunAsActiveUser runAsActiveUser, IReadOnlyList<FileInfo>? extraPaths)
         {
             return ClientServerPermissions.Remediate(runAsActiveUser, extraPaths, ClientServerUtilities.DefaultElevationType);
         }

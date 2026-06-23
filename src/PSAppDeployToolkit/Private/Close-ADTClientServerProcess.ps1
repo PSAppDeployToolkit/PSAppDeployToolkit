@@ -27,7 +27,7 @@ function Private:Close-ADTClientServerProcess
     }
     try
     {
-        $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
+        $null = $Script:ADT.ClientServerProcess.DisposeAsync().AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
     }
     finally
     {

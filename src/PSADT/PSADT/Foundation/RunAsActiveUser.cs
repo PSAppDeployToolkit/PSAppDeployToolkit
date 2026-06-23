@@ -28,7 +28,7 @@ namespace PSADT.Foundation
         /// session information.</param>
         /// <returns>A RunAsActiveUser object representing the active user session for the caller, or null if no active user
         /// session is found.</returns>
-        public static async Task<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null)
+        public static async ValueTask<RunAsActiveUser?> GetAsync(IReadOnlyList<SessionInfo>? sessionInfo = null)
         {
             // Determine the account that will be used to execute client/server commands in the user's context.
             // Favour the caller's session if it's found and is currently an active user session on the device.

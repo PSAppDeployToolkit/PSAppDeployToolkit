@@ -52,7 +52,7 @@ namespace PSADT.ClientServer
         /// <exception cref="InvalidOperationException">Thrown if the server instance already has an associated client process.</exception>
         /// <exception cref="InvalidProgramException">Thrown if the opened client process returns an invalid response.</exception>
         /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
-        public async Task OpenAsync()
+        public async ValueTask OpenAsync()
         {
             // Don't re-open if there's already a client process associated with this instance.
             ObjectDisposedException.ThrowIf(_disposed, this);

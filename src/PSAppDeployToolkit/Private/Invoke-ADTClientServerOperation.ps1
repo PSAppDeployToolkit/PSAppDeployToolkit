@@ -204,7 +204,7 @@ function Private:Invoke-ADTClientServerOperation
         }
 
         # Return the client process's result to the caller.
-        if ($clientResult = $clientProcess.GetAwaiter().GetResult())
+        if ($clientResult = $clientProcess.ConfigureAwait($false).GetAwaiter().GetResult())
         {
             return $clientResult
         }
@@ -253,7 +253,7 @@ function Private:Invoke-ADTClientServerOperation
             $Script:ADT.ClientServerProcess = [PSADT.ClientServer.ServerInstance]::new($User)
             try
             {
-                $null = $Script:ADT.ClientServerProcess.OpenAsync().GetAwaiter().GetResult()
+                $null = $Script:ADT.ClientServerProcess.OpenAsync().AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             catch
             {
@@ -273,13 +273,13 @@ function Private:Invoke-ADTClientServerOperation
                         ErrorId = 'ClientServerProcessOpenFailure'
                         TargetObject = $clientServerClientProcessResult
                     }
-                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
+                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
                 else
                 {
-                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().GetAwaiter().GetResult()
+                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
                     $Script:ADT.ClientServerProcess = $null
                     $PSCmdlet.ThrowTerminatingError($_)
                 }
@@ -601,7 +601,7 @@ function Private:Invoke-ADTClientServerOperation
                     }
                     if ($sapResult.Task.IsCompleted)
                     {
-                        $sapResult.Task.GetAwaiter().GetResult()
+                        $sapResult.Task.ConfigureAwait($false).GetAwaiter().GetResult()
                         break
                     }
                     if ($noWaitTimer.Elapsed -ge [PSADT.Foundation.ClientServerUtilities]::ClientOperationTimeout)
@@ -620,7 +620,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).GetAwaiter().GetResult()
+                [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).ConfigureAwait($false).GetAwaiter().GetResult()
             }
         }
         finally

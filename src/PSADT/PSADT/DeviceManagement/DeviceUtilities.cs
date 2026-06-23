@@ -113,7 +113,7 @@ namespace PSADT.DeviceManagement
         /// <exception cref="InvalidProgramException">Thrown if the 'Environment.Exit()' method does not terminate the process as expected.</exception>
         [SuppressMessage("Blocker Code Smell", "S1147:Exit methods should not be called", Justification = "This code deliberately short circuits to exit.")]
         [DoesNotReturn]
-        internal static async Task RestartComputer(string? shutdownReasonText)
+        internal static async ValueTask RestartComputer(string? shutdownReasonText)
         {
             List<string> argumentList = ["/r", "/f", "/t", "0"];
             if (shutdownReasonText is not null)

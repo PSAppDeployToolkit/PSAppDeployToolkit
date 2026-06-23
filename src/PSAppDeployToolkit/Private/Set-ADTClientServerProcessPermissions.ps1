@@ -29,7 +29,7 @@ function Private:Set-ADTClientServerProcessPermissions
                             }
                         }
                     }
-                })).GetAwaiter().GetResult()
+                })).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
     }
     catch
     {

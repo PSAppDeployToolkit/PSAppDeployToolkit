@@ -34,7 +34,7 @@ namespace PSADT.TerminalServices
         /// of the call. Subsequent changes to session state are not reflected in the returned list.</remarks>
         /// <returns>A read-only list of <see cref="SessionInfo"/> objects, each representing the details of an active session.
         /// The list is empty if no active sessions are found.</returns>
-        public static async Task<IReadOnlyList<SessionInfo>> GetAsync()
+        public static async ValueTask<IReadOnlyList<SessionInfo>> GetAsync()
         {
             return new ReadOnlyCollection<SessionInfo>(await GetAllAsync().ToListAsync().ConfigureAwait(false));
         }
@@ -100,7 +100,7 @@ namespace PSADT.TerminalServices
         /// <returns>A SessionInfo object containing user, session, and client details if the session is valid; otherwise, null.</returns>
         /// <exception cref="InvalidOperationException">Thrown if a required process to retrieve idle time information cannot be launched.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "This is not benchmarking code.")]
-        private static async Task<SessionInfo?> GetAsync(WTS_SESSION_INFO_1W session)
+        private static async ValueTask<SessionInfo?> GetAsync(WTS_SESSION_INFO_1W session)
         {
             // Internal helpers for retrieving session information values.
             static string? GetString(uint sessionId, WTS_INFO_CLASS infoClass)
