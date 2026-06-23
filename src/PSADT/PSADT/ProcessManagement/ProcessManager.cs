@@ -69,6 +69,7 @@ namespace PSADT.ProcessManagement
         /// <returns>A handle to the launched process, encapsulated in a ProcessHandle object, which provides access to process
         /// state and standard streams as configured.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the process cannot be started.</exception>
+        /// <exception cref="NotSupportedException">Thrown if the specified user context is not supported for process creation.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This function must remain synchronous for now.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         private static ProcessHandle LaunchWithCreateProcessAsync(ProcessLaunchInfo launchInfo)
@@ -138,6 +139,10 @@ namespace PSADT.ProcessManagement
                 if (launchInfo.RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
                 {
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
+                    if (!TokenManager.CanGetUserPrimaryToken)
+                    {
+                        throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
+                    }
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                     using (lpEnvironment)
@@ -152,12 +157,16 @@ namespace PSADT.ProcessManagement
                         }
                     }
                 }
-                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType == ElevatedTokenType.None || (launchInfo.UIAccess && AccountUtilities.CallerIsLoggedOnUser && (!hasExternalHandles || CanUseCreateProcessAsUser(isCallerToken: true, callerPrivileges) == CreateProcessUsingTokenStatus.OK))))
+                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType == ElevatedTokenType.None || (launchInfo.UIAccess && AccountUtilities.CallerIsLoggedOnUser && TokenManager.CanGetUserPrimaryToken && (!hasExternalHandles || CanUseCreateProcessAsUser(isCallerToken: true, callerPrivileges) == CreateProcessUsingTokenStatus.OK))))
                 {
                     // We're running elevated but have been asked to de-elevate.
                     if (!AccountUtilities.CallerIsLoggedOnUser)
                     {
                         throw new InvalidOperationException("Cannot create process using unelevated token when running in a different user's session.");
+                    }
+                    if (!TokenManager.CanGetUserPrimaryToken)
+                    {
+                        throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
                     }
                     using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerSessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment: null, launchInfo.WorkingDirectory?.FullName, launchInfo.RunAsInvoker, in startupInfo, out pi);
@@ -661,11 +670,7 @@ namespace PSADT.ProcessManagement
                     }
 
                     // Add extended flags attribute if force breakaway is requested.
-                    EXTENDED_PROCESS_CREATION_FLAG extendedFlags = 0;
-                    if (runAsInvoker)
-                    {
-                        extendedFlags |= EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCELUA;
-                    }
+                    EXTENDED_PROCESS_CREATION_FLAG extendedFlags = runAsInvoker ? EXTENDED_PROCESS_CREATION_FLAG.EXTENDED_PROCESS_CREATION_FLAG_FORCELUA : 0;
                     if (forceBreakaway)
                     {
                         PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTcbPrivilege);

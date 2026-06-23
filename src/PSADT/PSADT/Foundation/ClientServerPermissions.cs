@@ -38,7 +38,7 @@ namespace PSADT.Foundation
             // Get the primary token for the user if they have a valid session ID, otherwise we'll just use their SID.
             using WindowsIdentity currentUser = WindowsIdentity.GetCurrent();
             using SafeHandle? hPrimaryToken = runAsActiveUser.SessionId != uint.MaxValue
-                ? runAsActiveUser != AccountUtilities.CallerRunAsActiveUser || AccountUtilities.CallerIsAdmin
+                ? runAsActiveUser != AccountUtilities.CallerRunAsActiveUser || TokenManager.CanGetUserPrimaryToken
                 ? await TokenManager.GetUserPrimaryTokenAsync(runAsActiveUser.SessionId, elevatedTokenType).ConfigureAwait(false)
                 : currentUser.AccessToken
                 : null;
@@ -80,6 +80,16 @@ namespace PSADT.Foundation
                     throw new InvalidOperationException($"Failed to grant [{runAsActiveUser.NTAccount}] the permissions [{_requiredPermissions}] to file [{path.FullName}]. This can occur when the caller can't modify permissions, such as when the file is located on a network share.", ex);
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the Local System account has the required file system permissions for all client/server assembly files.
+        /// </summary>
+        /// <returns>True if the Local System account has the required permissions; otherwise, false.</returns>
+        internal static bool SystemAccountHasPermissions()
+        {
+            SecurityIdentifier systemSid = AccountUtilities.GetWellKnownSid(WellKnownSidType.LocalSystemSid);
+            return _assemblies.All(path => FileSystemUtilities.TestEffectiveAccess(path, systemSid, _requiredPermissions));
         }
 
         /// <summary>

@@ -28,6 +28,11 @@ namespace PSADT.Security
     internal static class TokenManager
     {
         /// <summary>
+        /// Indicates whether the current execution context can utilize token brokering to retrieve user tokens from other sessions.
+        /// </summary>
+        internal static readonly bool CanGetUserPrimaryToken = AccountUtilities.CallerIsLocalSystem || (AccountUtilities.CallerIsAdmin && (!ClientServerUtilities.ClientServerOnUncPath || ClientServerPermissions.SystemAccountHasPermissions()));
+
+        /// <summary>
         /// Retrieves the primary access token for a user in the specified session, optionally requesting an elevated
         /// token type.
         /// </summary>

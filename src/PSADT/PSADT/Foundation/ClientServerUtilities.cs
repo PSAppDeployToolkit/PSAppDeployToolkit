@@ -55,6 +55,9 @@ namespace PSADT.Foundation
             CallerIsClientServerClientLauncher = callingProcessPath.Equals(ClientLauncherDefaultPath.FullName, StringComparison.OrdinalIgnoreCase)
                 || callingProcessPath.Equals(ClientLauncherCompatiblePath.FullName, StringComparison.OrdinalIgnoreCase);
             CallerIsClientServerExecutable = CallerIsClientServerClient || CallerIsClientServerClientLauncher;
+
+            // Determine whether the client/server executables are on a UNC path or not.
+            ClientServerOnUncPath = new Uri(ClientServerDirectory.FullName).IsUnc;
         }
 
         /// <summary>
@@ -259,6 +262,11 @@ namespace PSADT.Foundation
         /// Gets the directory path where the client-server architecture executables are located, based on the location of the current assembly.
         /// </summary>
         internal static readonly DirectoryInfo ClientServerDirectory;
+
+        /// <summary>
+        /// Indicates whether the client-server executables are located on a UNC path, which can affect how they are launched and executed.
+        /// </summary>
+        internal static readonly bool ClientServerOnUncPath;
 
         /// <summary>
         /// Indicates whether the current caller is the client component of the client-server architecture.
