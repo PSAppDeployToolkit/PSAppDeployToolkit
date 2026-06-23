@@ -90,11 +90,6 @@ namespace PSADT.AccountManagement
                     return false;
                 }
             });
-
-            // Generate a RunAsActiveUser object for the current user.
-            CallerRunAsActiveUser = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
-            SessionRunAsActiveUser = SessionInfo.GetAsync(CallerSessionId).ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
-            CallerIsLoggedOnUser = CallerRunAsActiveUser == SessionRunAsActiveUser;
         }
 
         /// <summary>
@@ -199,19 +194,19 @@ namespace PSADT.AccountManagement
         /// <summary>
         /// Indicates whether the current caller is the user currently logged on to the system.
         /// </summary>
-        public static readonly bool CallerIsLoggedOnUser;
+        public static bool CallerIsLoggedOnUser => CallerRunAsActiveUser == SessionRunAsActiveUser;
 
         /// <summary>
         /// Represents a predefined instance of <see cref="RunAsActiveUser"/> that executes operations as the currently
         /// active user.
         /// </summary>
-        public static readonly RunAsActiveUser CallerRunAsActiveUser;
+        public static RunAsActiveUser CallerRunAsActiveUser => RunAsActiveUserConstants.Caller;
 
         /// <summary>
         /// Gets the value indicating whether the session should run as the active user, or null if the setting is
         /// unspecified.
         /// </summary>
-        public static readonly RunAsActiveUser? SessionRunAsActiveUser;
+        public static RunAsActiveUser? SessionRunAsActiveUser => RunAsActiveUserConstants.Session;
 
         /// <summary>
         /// Represents the security identifier (SID) for the local system account (NT AUTHORITY\SYSTEM).
@@ -237,5 +232,21 @@ namespace PSADT.AccountManagement
         /// based on their type. It is intended to facilitate quick access to predefined SIDs commonly used in
         /// security-related operations.</remarks>
         private static readonly FrozenDictionary<WellKnownSidType, SecurityIdentifier> WellKnownSidLookupTable;
+
+        /// <summary>
+        /// A private static class that encapsulates constant values related to running operations as the active user.
+        /// </summary>
+        private static class RunAsActiveUserConstants
+        {
+            /// <summary>
+            /// Represents the active user context for the caller, encapsulated as a <see cref="RunAsActiveUser"/> instance.
+            /// </summary>
+            internal static readonly RunAsActiveUser Caller = new(CallerUsername, CallerSid, CallerSessionId, CallerIsAdmin);
+
+            /// <summary>
+            /// Represents the active user context for the current session, encapsulated as a nullable <see cref="RunAsActiveUser"/> instance.
+            /// </summary>
+            internal static readonly RunAsActiveUser? Session = SessionInfo.GetAsync(CallerSessionId).ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
+        }
     }
 }
