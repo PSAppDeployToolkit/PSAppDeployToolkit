@@ -382,7 +382,17 @@ namespace PSADT.ClientServer
                                         case PipeCommand.ShowModalDialog:
                                             {
                                                 ShowModalDialogPayload payload = DeserializeBytes<ShowModalDialogPayload>(requestBytes, payloadOffset);
-                                                WriteSuccess(await InvokeModalDialogAsync(payload.DialogType, payload.DialogStyle, payload.Options, closeAppsDialogState).ConfigureAwait(false));
+                                                WriteSuccess(payload.Options switch
+                                                {
+                                                    CloseAppsDialogOptions closeAppsDialogOptions => await DialogManager.ShowCloseAppsDialogAsync(payload.DialogStyle, closeAppsDialogOptions, closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false),
+                                                    InputDialogOptions inputDialogOptions => await DialogManager.ShowInputDialogAsync(payload.DialogStyle, inputDialogOptions).ConfigureAwait(false),
+                                                    ListSelectionDialogOptions listSelectionDialogOptions => await DialogManager.ShowListSelectionDialogAsync(payload.DialogStyle, listSelectionDialogOptions).ConfigureAwait(false),
+                                                    CustomDialogOptions customDialogOptions => await DialogManager.ShowCustomDialogAsync(payload.DialogStyle, customDialogOptions).ConfigureAwait(false),
+                                                    DialogBoxOptions dialogBoxOptions => await DialogManager.ShowDialogBoxAsync(dialogBoxOptions).ConfigureAwait(false),
+                                                    HelpConsoleOptions helpConsoleOptions => await DialogManager.ShowHelpConsoleAsync(helpConsoleOptions).ConfigureAwait(false),
+                                                    RestartDialogOptions restartDialogOptions => await DialogManager.ShowRestartDialogAsync(payload.DialogStyle, restartDialogOptions).ConfigureAwait(false),
+                                                    ProgressDialogOptions or _ => throw new ClientException($"The specified DialogType [{payload.DialogType}] is not supported for the ShowModalDialog command.", ClientExitCode.UnsupportedDialog),
+                                                });
                                                 break;
                                             }
 
@@ -758,52 +768,16 @@ namespace PSADT.ClientServer
             }
 
             // Deserialize the options to the correct type based on DialogType and show the dialog.
-            IDialogOptions options = dialogType switch
-            {
-                DialogType.CloseAppsDialog => DataSerialization.DeserializeFromString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.CustomDialog => DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.DialogBox => DataSerialization.DeserializeFromString<DialogBoxOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.HelpConsole => DataSerialization.DeserializeFromString<HelpConsoleOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.InputDialog => DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.ListSelectionDialog => DataSerialization.DeserializeFromString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.RestartDialog => DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments)),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog),
-            };
-            return SerializeToString(await InvokeModalDialogAsync(dialogType, dialogStyle, options, closeAppsDialogState).ConfigureAwait(false));
-        }
-
-        /// <summary>
-        /// Displays a modal dialog of the specified type and style, using the provided options and optional state
-        /// information.
-        /// </summary>
-        /// <remarks>The caller is responsible for providing the correct options and state objects
-        /// matching the selected dialog type. Passing an incorrect type for the options or state parameters may result
-        /// in a runtime exception. Not all dialog types require a style or state parameter; these are only used for
-        /// dialog types that support them.</remarks>
-        /// <param name="dialogType">The type of dialog to display. Must be a supported value of <see cref="DialogType"/>.</param>
-        /// <param name="dialogStyle">The visual style or presentation mode to use for the dialog. This parameter is required for dialog types
-        /// that support styling.</param>
-        /// <param name="options">An options object containing configuration data specific to the selected dialog type. The object must be of
-        /// the appropriate type for the dialog.</param>
-        /// <param name="closeAppsDialogState">An optional state object required when displaying a CloseAppsDialog. Must be of type <see
-        /// cref="CloseAppsDialogState"/> if <paramref name="dialogType"/> is <see cref="DialogType.CloseAppsDialog"/>;
-        /// otherwise, this parameter is ignored.</param>
-        /// <returns>An object representing the result of the dialog interaction. The type and meaning of the return value depend
-        /// on the dialog type displayed.</returns>
-        /// <exception cref="ClientException">Thrown if an unsupported dialog type is specified, or if <paramref name="dialogType"/> is <see
-        /// cref="DialogType.CloseAppsDialog"/> and <paramref name="closeAppsDialogState"/> is not provided.</exception>
-        private static async ValueTask<IDialogResult> InvokeModalDialogAsync(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options, BaseDialogState? closeAppsDialogState = null)
-        {
             return dialogType switch
             {
-                DialogType.CloseAppsDialog => options is CloseAppsDialogOptions closeAppsOptions ? await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, closeAppsOptions, (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.DialogBox => options is DialogBoxOptions dialogBoxOptions ? await DialogManager.ShowDialogBoxAsync(dialogBoxOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.HelpConsole => options is HelpConsoleOptions helpConsoleOptions ? await DialogManager.ShowHelpConsoleAsync(helpConsoleOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.InputDialog => options is InputDialogOptions inputDialogOptions ? await DialogManager.ShowInputDialogAsync(dialogStyle, inputDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.CustomDialog => options is CustomDialogOptions customDialogOptions ? await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.ListSelectionDialog => options is ListSelectionDialogOptions listSelectionDialogOptions ? await DialogManager.ShowListSelectionDialogAsync(dialogStyle, listSelectionDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.RestartDialog => options is RestartDialogOptions restartDialogOptions ? await DialogManager.ShowRestartDialogAsync(dialogStyle, restartDialogOptions).ConfigureAwait(false) : throw new ClientException($"The specified options type [{options.GetType().FullName}] is invalid for dialog type [{dialogType}].", ClientExitCode.InvalidOptions),
-                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported.", ClientExitCode.UnsupportedDialog),
+                DialogType.CloseAppsDialog => SerializeToString(await DialogManager.ShowCloseAppsDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<CloseAppsDialogOptions>(GetOptionsFromArguments(arguments)), (CloseAppsDialogState?)closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false)),
+                DialogType.CustomDialog => SerializeToString(await DialogManager.ShowCustomDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<CustomDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false)),
+                DialogType.DialogBox => SerializeToString(await DialogManager.ShowDialogBoxAsync(DataSerialization.DeserializeFromString<DialogBoxOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false)),
+                DialogType.HelpConsole => SerializeToString(await DialogManager.ShowHelpConsoleAsync(DataSerialization.DeserializeFromString<HelpConsoleOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false)),
+                DialogType.InputDialog => SerializeToString(await DialogManager.ShowInputDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<InputDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false)),
+                DialogType.ListSelectionDialog => SerializeToString(await DialogManager.ShowListSelectionDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<ListSelectionDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false)),
+                DialogType.RestartDialog => SerializeToString(await DialogManager.ShowRestartDialogAsync(dialogStyle, DataSerialization.DeserializeFromString<RestartDialogOptions>(GetOptionsFromArguments(arguments))).ConfigureAwait(false)),
+                DialogType.ProgressDialog or _ => throw new ClientException($"The specified DialogType of [{dialogType}] is not supported for deserialization.", ClientExitCode.UnsupportedDialog),
             };
         }
 
