@@ -432,7 +432,7 @@ function Set-ADTShortcut
                         }
                         elseif ($Clear -contains 'WindowStyle')
                         {
-                            $shortcut.WindowStyle = $null
+                            $shortcut.WindowStyle = [PSADT.ShortcutManagement.ShortcutWindowStyle]::Normal
                         }
 
                         # RunAsAdmin.
