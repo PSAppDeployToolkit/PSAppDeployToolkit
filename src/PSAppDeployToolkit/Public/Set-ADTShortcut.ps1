@@ -404,7 +404,7 @@ function Set-ADTShortcut
                         {
                             $shortcut.IconIndex = $null
                         }
-                        
+
                         # Description.
                         if ($PSBoundParameters.ContainsKey('Description'))
                         {
@@ -414,7 +414,7 @@ function Set-ADTShortcut
                         {
                             $shortcut.Description = [System.Management.Automation.Language.NullString]::Value
                         }
-                        
+
                         # WorkingDirectory.
                         if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
                         {
@@ -424,7 +424,7 @@ function Set-ADTShortcut
                         {
                             $shortcut.WorkingDirectory = [System.Management.Automation.Language.NullString]::Value
                         }
-                        
+
                         # WindowStyle.
                         if ($PSBoundParameters.ContainsKey('WindowStyle'))
                         {
@@ -440,7 +440,7 @@ function Set-ADTShortcut
                         {
                             $shortcut.RunAsAdmin = $RunAsAdmin
                         }
-                        
+
                         # Hotkey.
                         if ($PSBoundParameters.ContainsKey('Hotkey'))
                         {
