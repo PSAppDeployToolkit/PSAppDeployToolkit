@@ -120,60 +120,69 @@ namespace PSADT.ProcessManagement
                         continue;
                     }
 
-                    // Try to get the command line. If we can't, skip this process.
-                    string[] argv;
+                    // Only throw if the ProcessDefinition's name doesn't contain a wildcard character.
                     try
                     {
-                        if (ProcessUtilities.HasProcessExited(process))
+                        // Try to get the command line. If we can't, skip this process.
+                        string[] argv;
+                        try
+                        {
+                            if (ProcessUtilities.HasProcessExited(process))
+                            {
+                                continue;
+                            }
+                            argv = GetProcessArgv(process, processArgvMap, ntPathLookupTable);
+                        }
+                        catch (ArgumentException)
                         {
                             continue;
                         }
-                        argv = GetProcessArgv(process, processArgvMap, ntPathLookupTable);
-                    }
-                    catch (ArgumentException)
-                    {
-                        continue;
-                    }
 
-                    // If we couldn't get the command line, skip this process.
-                    if (argv.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    // Continue if this isn't our process or it's ended since we cached it.
-                    if (processDefinition.NameIsFullyQualifiedPath() && !processDefinition.IsNameMatch(argv[0]))
-                    {
-                        continue;
-                    }
-
-                    // Calculate a description for the running application.
-                    string description = processDefinition.Description is string defDescription && !string.IsNullOrWhiteSpace(defDescription)
-                        ? defDescription
-                        : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]).FileDescription is string fileDescription && !string.IsNullOrWhiteSpace(fileDescription)
-                        ? fileDescription
-                        : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]).FileDescription is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
-                        ? procDescription
-                        : process.ProcessName;
-
-                    // Grab the process owner if we can.
-                    SecurityIdentifier? sid = null;
-                    if (!ProcessUtilities.HasProcessExited(process))
-                    {
-                        try
+                        // If we couldn't get the command line, skip this process.
+                        if (argv.Length == 0)
                         {
-                            sid = ProcessUtilities.GetProcessSid(process);
+                            continue;
                         }
-                        catch (Exception ex) when (ex.Message is not null)
+
+                        // Continue if this isn't our process or it's ended since we cached it.
+                        if (processDefinition.NameIsFullyQualifiedPath() && !processDefinition.IsNameMatch(argv[0]))
                         {
-                            sid = null;
+                            continue;
+                        }
+
+                        // Calculate a description for the running application.
+                        string description = processDefinition.Description is string defDescription && !string.IsNullOrWhiteSpace(defDescription)
+                            ? defDescription
+                            : File.Exists(argv[0]) && FileVersionInfo.GetVersionInfo(argv[0]).FileDescription is string fileDescription && !string.IsNullOrWhiteSpace(fileDescription)
+                            ? fileDescription
+                            : PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeDebugPrivilege) && !ProcessUtilities.HasProcessExited(process) && ProcessVersionInfo.GetVersionInfo(process, argv[0]).FileDescription is string procDescription && !string.IsNullOrWhiteSpace(procDescription)
+                            ? procDescription
+                            : process.ProcessName;
+
+                        // Grab the process owner if we can.
+                        SecurityIdentifier? sid = null;
+                        if (!ProcessUtilities.HasProcessExited(process))
+                        {
+                            try
+                            {
+                                sid = ProcessUtilities.GetProcessSid(process);
+                            }
+                            catch (Exception ex) when (ex.Message is not null)
+                            {
+                                sid = null;
+                            }
+                        }
+
+                        // Store the process information.
+                        if (!ProcessUtilities.HasProcessExited(process))
+                        {
+                            runningProcesses.Add(new(process, description, argv[0], argv.Skip(1), sid));
                         }
                     }
-
-                    // Store the process information.
-                    if (!ProcessUtilities.HasProcessExited(process))
+                    catch when (processDefinition.Name.Contains('*', StringComparison.OrdinalIgnoreCase))
                     {
-                        runningProcesses.Add(new(process, description, argv[0], argv.Skip(1), sid));
+                        continue;
+                        throw;
                     }
                 }
             }
