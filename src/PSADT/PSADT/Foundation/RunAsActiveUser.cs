@@ -95,9 +95,9 @@ namespace PSADT.Foundation
         {
             get
             {
-                int divider = NTAccount.Value.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
+                int divider = NTAccountValue.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
                 return divider != -1
-                    ? NTAccount.Value[(divider + 1)..]
+                    ? NTAccountValue[(divider + 1)..]
                     : NTAccountValue;
             }
         }
@@ -110,9 +110,9 @@ namespace PSADT.Foundation
         {
             get
             {
-                int divider = NTAccount.Value.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
+                int divider = NTAccountValue.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
                 return divider != -1
-                    ? NTAccount.Value[..divider]
+                    ? NTAccountValue[..divider]
                     : null;
             }
         }
