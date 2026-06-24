@@ -206,12 +206,17 @@ namespace PSADT.UserInterface.Interfaces
             {
                 DesktopUtilities.MinimizeAllWindows();
             }
-            CustomDialogResult res = await ShowModalDialogAsync<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options).ConfigureAwait(false);
-            if (options.MinimizeWindows)
+            try
             {
-                DesktopUtilities.RestoreAllWindows();
+                return await ShowModalDialogAsync<CustomDialogResult>(DialogType.CustomDialog, dialogStyle, options).ConfigureAwait(false);
             }
-            return res;
+            finally
+            {
+                if (options.MinimizeWindows)
+                {
+                    DesktopUtilities.RestoreAllWindows();
+                }
+            }
         }
 
         /// <summary>
@@ -228,12 +233,17 @@ namespace PSADT.UserInterface.Interfaces
             {
                 DesktopUtilities.MinimizeAllWindows();
             }
-            ListSelectionDialogResult res = await ShowModalDialogAsync<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options).ConfigureAwait(false);
-            if (options.MinimizeWindows)
+            try
             {
-                DesktopUtilities.RestoreAllWindows();
+                return await ShowModalDialogAsync<ListSelectionDialogResult>(DialogType.ListSelectionDialog, dialogStyle, options).ConfigureAwait(false);
             }
-            return res;
+            finally
+            {
+                if (options.MinimizeWindows)
+                {
+                    DesktopUtilities.RestoreAllWindows();
+                }
+            }
         }
 
         /// <summary>
@@ -254,12 +264,17 @@ namespace PSADT.UserInterface.Interfaces
             {
                 DesktopUtilities.MinimizeAllWindows();
             }
-            InputDialogResult res = await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options).ConfigureAwait(false);
-            if (options.MinimizeWindows)
+            try
             {
-                DesktopUtilities.RestoreAllWindows();
+                return await ShowModalDialogAsync<InputDialogResult>(DialogType.InputDialog, dialogStyle, options).ConfigureAwait(false);
             }
-            return res;
+            finally
+            {
+                if (options.MinimizeWindows)
+                {
+                    DesktopUtilities.RestoreAllWindows();
+                }
+            }
         }
 
         /// <summary>
