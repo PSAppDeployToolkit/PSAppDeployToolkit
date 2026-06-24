@@ -145,7 +145,7 @@ function Set-ADTShortcut
         [System.String]$Hotkey,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('Arguments', 'IconLocation', 'IconIndex', 'Description', 'WorkingDirectory', 'WindowStyle', 'Hotkey')]
+        [ValidateSet('Arguments', 'IconLocation', 'IconIndex', 'Description', 'WorkingDirectory', 'WindowStyle', 'RunAsAdmin', 'Hotkey')]
         [System.String[]]$Clear,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
@@ -441,6 +441,10 @@ function Set-ADTShortcut
                         if ($PSBoundParameters.ContainsKey('RunAsAdmin'))
                         {
                             $shortcut.RunAsAdmin = $RunAsAdmin
+                        }
+                        elseif ($Clear -contains 'RunAsAdmin')
+                        {
+                            $shortcut.RunAsAdmin = $false
                         }
 
                         # Hotkey.
