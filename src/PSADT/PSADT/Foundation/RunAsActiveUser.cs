@@ -51,6 +51,16 @@ namespace PSADT.Foundation
             ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value, nameof(nTAccount));
             ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value, nameof(sID));
             NTAccountValue = nTAccount.Value;
+            int domainSeparator = NTAccountValue.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
+            if (domainSeparator != -1)
+            {
+                UserName = NTAccountValue[(domainSeparator + 1)..];
+                DomainName = NTAccountValue[..domainSeparator];
+            }
+            else
+            {
+                UserName = NTAccountValue;
+            }
             SIDValue = sID.Value;
             SessionId = sessionId;
             IsLocalAdmin = isLocalAdmin;
@@ -90,32 +100,14 @@ namespace PSADT.Foundation
         /// <summary>
         /// Gets the username associated with the user.
         /// </summary>
-        [IgnoreDataMember]
-        public string UserName
-        {
-            get
-            {
-                int divider = NTAccountValue.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
-                return divider != -1
-                    ? NTAccountValue[(divider + 1)..]
-                    : NTAccountValue;
-            }
-        }
+        [DataMember]
+        public readonly string UserName;
 
         /// <summary>
         /// Represents the domain name associated with the current context.
         /// </summary>
-        [IgnoreDataMember]
-        public string? DomainName
-        {
-            get
-            {
-                int divider = NTAccountValue.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
-                return divider != -1
-                    ? NTAccountValue[..divider]
-                    : null;
-            }
-        }
+        [DataMember]
+        public readonly string? DomainName;
 
         /// <summary>
         /// Represents the session ID of the user.
