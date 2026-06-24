@@ -132,7 +132,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Initially set ArgumentList and FilePath, and test that the caller hasn't done something weird by quoting the path.
-            ArgumentList = new ReadOnlyCollection<string>([.. argumentList ?? []]);
+            ArgumentList = new ReadOnlyCollection<string>(argumentList is not null ? [.. argumentList] : []);
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
@@ -256,8 +256,8 @@ namespace PSADT.ProcessManagement
             // Set remaining parameters.
             DenyUserTermination = denyUserTermination;
             RunAsInvoker = runAsInvoker;
-            StandardInput = new ReadOnlyCollection<string>([.. standardInput ?? []]);
-            HandlesToInheritValues = new ReadOnlyCollection<long>([.. handlesToInherit?.Select(static h => (long)h) ?? []]);
+            StandardInput = new ReadOnlyCollection<string>(standardInput is not null ? [.. standardInput] : []);
+            HandlesToInheritValues = new ReadOnlyCollection<long>(handlesToInherit?.Select(static h => (long)h) is IEnumerable<long> handlesToInheritValues ? [.. handlesToInheritValues] : []);
             WaitForChildProcesses = waitForChildProcesses;
             KillChildProcessesWithParent = killChildProcessesWithParent;
             NoTerminateOnTimeout = noTerminateOnTimeout;
