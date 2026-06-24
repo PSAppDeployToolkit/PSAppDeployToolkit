@@ -25,17 +25,16 @@ namespace PSADT.Extensions
         {
             try
             {
+                return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
+            }
+            catch
+            {
                 if (process.MainModule is not null)
                 {
                     return new(process.MainModule.FileName);
                 }
-            }
-            catch
-            {
-                return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
                 throw;
             }
-            return ProcessUtilities.GetProcessImageName(process.Id, ntPathLookupTable);
         }
     }
 }
