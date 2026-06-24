@@ -185,7 +185,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the target file or folder that the shortcut points to.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
-        public string? TargetPath
+        public string TargetPath
         {
             get
             {
@@ -207,7 +207,7 @@ namespace PSADT.ShortcutManagement
                 buffer.Clear(); _shellLink.GetPath(buffer, (uint)SLGP_FLAGS.SLGP_RAWPATH);
                 return buffer.ToStringUni() is string rawTargetPath
                     ? rawTargetPath
-                    : null;
+                    : null!;
             }
             set
             {
