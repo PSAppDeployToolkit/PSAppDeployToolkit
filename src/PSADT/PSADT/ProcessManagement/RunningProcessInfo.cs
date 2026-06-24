@@ -102,7 +102,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Pre-cache running processes and start looping through to find matches.
-            Process[] allProcesses = [.. Process.GetProcesses().Where(p => processDefinitions.Any(pd => pd.ProcessNameIsMatch(p.ProcessName)))]; List<RunningProcessInfo> runningProcesses = [];
+            Process[] allProcesses = [.. Process.GetProcesses().Where(p => p.Id > 0 && processDefinitions.Any(pd => pd.ProcessNameIsMatch(p.ProcessName)))]; List<RunningProcessInfo> runningProcesses = [];
             foreach (ProcessDefinition processDefinition in processDefinitions)
             {
                 // Loop through each process and check if it matches the definition.
