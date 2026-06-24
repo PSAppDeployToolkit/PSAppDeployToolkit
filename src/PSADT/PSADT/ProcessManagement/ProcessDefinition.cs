@@ -20,6 +20,10 @@ namespace PSADT.ProcessManagement
         {
             // Set name property first and foremost.
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
+            if (WildcardOnlyRegex.IsMatch(name))
+            {
+                throw new ArgumentException("The process name cannot be only wildcard characters.", nameof(name));
+            }
             Name = name;
 
             // Set all calculated fields based on the name.
@@ -143,5 +147,11 @@ namespace PSADT.ProcessManagement
         /// </summary>
         [IgnoreDataMember]
         private Regex? ProcessNameRegex;
+
+        /// <summary>
+        /// Gets the regular expression to determine if the process definition's name is a wildcard character only, which is not allowed for process definitions and can be used to validate input when creating process definitions from external sources.
+        /// </summary>
+        [IgnoreDataMember]
+        private static readonly Regex WildcardOnlyRegex = new(@"^\*+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     }
 }
