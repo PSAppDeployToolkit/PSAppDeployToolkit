@@ -145,7 +145,7 @@ function Set-ADTShortcut
         [System.String]$Hotkey,
 
         [Parameter(Mandatory = $false)]
-        [ValidateSet('TargetPath', 'Arguments', 'IconLocation', 'IconIndex', 'Description', 'WorkingDirectory', 'WindowStyle', 'Hotkey')]
+        [ValidateSet('Arguments', 'IconLocation', 'IconIndex', 'Description', 'WorkingDirectory', 'WindowStyle', 'Hotkey')]
         [System.String[]]$Clear,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
