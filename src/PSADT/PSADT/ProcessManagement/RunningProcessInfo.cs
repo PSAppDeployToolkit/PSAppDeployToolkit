@@ -31,10 +31,43 @@ namespace PSADT.ProcessManagement
             ArgumentNullException.ThrowIfNull(processDefinitions);
             ArgumentOutOfRangeException.ThrowIfZero(processDefinitions.Count, nameof(processDefinitions));
             ReadOnlyDictionary<string, string> ntPathLookupTable = FileSystemUtilities.MakeNtPathLookupTable();
-            Dictionary<Process, string[]> processArgvMap = [];
+            Dictionary<Process, string> processFilePathMap = []; Dictionary<Process, string[]> processArgvMap = [];
+
+            // Inline lambda to get the file path from the given process.
+            static string? GetProcessFilePath(Process process, Dictionary<Process, string> processFilePathMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
+            {
+                // Get the file path from the cache if we have it.
+                if (processFilePathMap.TryGetValue(process, out string? filePath))
+                {
+                    return filePath;
+                }
+
+                // Get the file path for the process.
+                if (ProcessUtilities.HasProcessExited(process))
+                {
+                    return null;
+                }
+                try
+                {
+                    filePath = process.GetFilePath(ntPathLookupTable).FullName;
+                }
+                catch (Exception ex) when (ex.Message is not null)
+                {
+                    if (!ProcessUtilities.HasProcessExited(process))
+                    {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
+                    return null;
+                }
+
+                // Cache and return the file path.
+                processFilePathMap.Add(process, filePath);
+                return filePath;
+            }
 
             // Inline lambda to get the command line from the given process.
-            static string[] GetProcessArgv(Process process, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
+            static string[] GetProcessArgv(Process process, Dictionary<Process, string> processFilePathMap, Dictionary<Process, string[]> processArgvMap, ReadOnlyDictionary<string, string> ntPathLookupTable)
             {
                 // Get the command line from the cache if we have it.
                 if (processArgvMap.TryGetValue(process, out string[]? argv))
@@ -64,36 +97,25 @@ namespace PSADT.ProcessManagement
                 }
 
                 // If we couldn't get the command line or the file path is malformed, try and get the process's image name.
-                if (ProcessUtilities.HasProcessExited(process))
+                string? filePath = GetProcessFilePath(process, processFilePathMap, ntPathLookupTable);
+                if (filePath is null)
                 {
                     return [];
                 }
-                try
+                if (argv?.Length > 0)
                 {
-                    if (argv?.Length > 0)
+                    if (!argv[0].Contains(process.ProcessName, StringComparison.OrdinalIgnoreCase) && !argv[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (!argv[0].Contains(process.ProcessName, StringComparison.OrdinalIgnoreCase) && !argv[0].EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            argv = [.. (new[] { process.GetFilePath(ntPathLookupTable).FullName }).Concat(argv)];
-                        }
-                        else
-                        {
-                            argv[0] = process.GetFilePath(ntPathLookupTable).FullName;
-                        }
+                        argv = [.. (new[] { filePath }).Concat(argv)];
                     }
                     else
                     {
-                        argv = [process.GetFilePath(ntPathLookupTable).FullName];
+                        argv[0] = filePath;
                     }
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                else
                 {
-                    if (!ProcessUtilities.HasProcessExited(process))
-                    {
-                        ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
-                    }
-                    return [];
+                    argv = [filePath];
                 }
 
                 // Cache and return the command line.
@@ -106,6 +128,7 @@ namespace PSADT.ProcessManagement
             foreach (ProcessDefinition processDefinition in processDefinitions)
             {
                 // Loop through each process and check if it matches the definition.
+                bool nameIsFullyQualifiedPath = processDefinition.NameIsFullyQualifiedPath();
                 foreach (Process process in allProcesses)
                 {
                     // Skip this process if it doesn't match the name.
@@ -123,6 +146,12 @@ namespace PSADT.ProcessManagement
                     // Only throw if the ProcessDefinition's name doesn't contain a wildcard character.
                     try
                     {
+                        // Continue if this isn't our process or it's ended since we cached it.
+                        if (nameIsFullyQualifiedPath && (GetProcessFilePath(process, processFilePathMap, ntPathLookupTable) is not string filePath || !processDefinition.IsNameMatch(filePath)))
+                        {
+                            continue;
+                        }
+
                         // Try to get the command line. If we can't, skip this process.
                         string[] argv;
                         try
@@ -131,7 +160,7 @@ namespace PSADT.ProcessManagement
                             {
                                 continue;
                             }
-                            argv = GetProcessArgv(process, processArgvMap, ntPathLookupTable);
+                            argv = GetProcessArgv(process, processFilePathMap, processArgvMap, ntPathLookupTable);
                         }
                         catch (ArgumentException)
                         {
@@ -140,12 +169,6 @@ namespace PSADT.ProcessManagement
 
                         // If we couldn't get the command line, skip this process.
                         if (argv.Length == 0)
-                        {
-                            continue;
-                        }
-
-                        // Continue if this isn't our process or it's ended since we cached it.
-                        if (processDefinition.NameIsFullyQualifiedPath() && !processDefinition.IsNameMatch(argv[0]))
                         {
                             continue;
                         }
