@@ -269,6 +269,7 @@ function Set-ADTShortcut
                         elseif ($Clear -contains 'IconLocation')
                         {
                             $shortcut.IconFile = [System.Management.Automation.Language.NullString]::Value
+                            $shortcut.IconIndex = $null
                         }
 
                         # IconIndex.
@@ -392,7 +393,8 @@ function Set-ADTShortcut
                         }
                         elseif ($Clear -contains 'IconLocation')
                         {
-                            $shortcut.IconLocation = [System.Management.Automation.Language.NullString]::Value
+                            $shortcut.IconLocation = $null
+                            $shortcut.IconIndex = $null
                         }
 
                         # IconIndex.
