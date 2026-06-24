@@ -46,8 +46,8 @@ function Set-ADTShortcut
     .PARAMETER Hotkey
         Sets the hotkey to launch the shortcut, e.g. "CTRL+SHIFT+F".
 
-    .PARAMETER ClearArguments
-        Clears the arguments used against the target path.
+    .PARAMETER Clear
+        Clears one or more shortcut properties. Only clears if the corresponding parameter isn't specified.
 
     .PARAMETER Force
         Forces creation of the shortcut if one doesn't already exist at the `-LiteralPath` provided.
@@ -96,18 +96,16 @@ function Set-ADTShortcut
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTShortcut
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'LiteralPath', SupportsShouldProcess = $true)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSADT.ShortcutManagement.IShortcutLinkInfo])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0, ParameterSetName = 'LiteralPath')]
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0, ParameterSetName = 'LiteralPath_ClearArguments')]
         [PSAppDeployToolkit.Attributes.ValidateExtension('.lnk', '.url')]
         [Alias('Path')]
         [System.String]$LiteralPath,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'InputObject_ClearArguments')]
         [ValidateNotNull()]
         [PSADT.ShortcutManagement.IShortcutLinkInfo]$InputObject,
 
@@ -115,8 +113,7 @@ function Set-ADTShortcut
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$TargetPath,
 
-        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'InputObject')]
+        [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Arguments,
 
@@ -147,12 +144,11 @@ function Set-ADTShortcut
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Hotkey,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'LiteralPath_ClearArguments')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'InputObject_ClearArguments')]
-        [System.Management.Automation.SwitchParameter]$ClearArguments,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('TargetPath', 'Arguments', 'IconLocation', 'IconIndex', 'Description', 'WorkingDirectory', 'WindowStyle', 'Hotkey')]
+        [System.String[]]$Clear,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'LiteralPath_ClearArguments')]
         [System.Management.Automation.SwitchParameter]$Force,
 
         [Parameter(Mandatory = $false)]
@@ -162,7 +158,7 @@ function Set-ADTShortcut
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if ((($PSCmdlet.ParameterSetName.StartsWith('LiteralPath')) -and ($PSBoundParameters.Count -eq 1)) -or $PSBoundParameters.Count -eq 0)
+        if ((($PSCmdlet.ParameterSetName -eq 'LiteralPath') -and ($PSBoundParameters.Count -eq 1)) -or $PSBoundParameters.Count -eq 0)
         {
             $naerParams = @{
                 Exception = [System.InvalidOperationException]::new("At least one change must be specified.")
@@ -174,7 +170,7 @@ function Set-ADTShortcut
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
         $exists = $true
-        if ($PSCmdlet.ParameterSetName.StartsWith('LiteralPath'))
+        if ($PSCmdlet.ParameterSetName -eq 'LiteralPath')
         {
             try
             {
@@ -218,7 +214,7 @@ function Set-ADTShortcut
         {
             try
             {
-                if ($PSCmdlet.ParameterSetName.StartsWith('InputObject'))
+                if ($PSCmdlet.ParameterSetName -eq 'InputObject')
                 {
                     $LiteralPath = $InputObject.FilePath
                 }
@@ -251,10 +247,17 @@ function Set-ADTShortcut
                     # Process all valid parameters.
                     try
                     {
+                        # TargetPath.
                         if ($PSBoundParameters.ContainsKey('TargetPath') -and $exists)
                         {
                             $shortcut.Url = $TargetPath
                         }
+                        elseif ($Clear -contains 'TargetPath')
+                        {
+                            $shortcut.Url = [System.Management.Automation.Language.NullString]::Value
+                        }
+
+                        # IconLocation.
                         if ($PSBoundParameters.ContainsKey('IconLocation'))
                         {
                             $shortcut.IconFile = $IconLocation
@@ -263,26 +266,62 @@ function Set-ADTShortcut
                                 $shortcut.IconIndex = 0
                             }
                         }
+                        elseif ($Clear -contains 'IconLocation')
+                        {
+                            $shortcut.IconFile = [System.Management.Automation.Language.NullString]::Value
+                        }
+
+                        # IconIndex.
                         if ($PSBoundParameters.ContainsKey('IconIndex'))
                         {
                             $shortcut.IconIndex = $IconIndex
                         }
+                        elseif ($Clear -contains 'IconIndex')
+                        {
+                            $shortcut.IconIndex = $null
+                        }
+
+                        # Description.
                         if ($PSBoundParameters.ContainsKey('Description'))
                         {
                             $shortcut.Description = $Description
                         }
+                        elseif ($Clear -contains 'Description')
+                        {
+                            $shortcut.Description = [System.Management.Automation.Language.NullString]::Value
+                        }
+
+                        # WorkingDirectory.
                         if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
                         {
                             $shortcut.WorkingDirectory = $WorkingDirectory
                         }
+                        elseif ($Clear -contains 'WorkingDirectory')
+                        {
+                            $shortcut.WorkingDirectory = [System.Management.Automation.Language.NullString]::Value
+                        }
+
+                        # WindowStyle.
                         if ($PSBoundParameters.ContainsKey('WindowStyle'))
                         {
                             $shortcut.ShowCommand = $WindowStyle
                         }
+                        elseif ($Clear -contains 'WindowStyle')
+                        {
+                            $shortcut.ShowCommand = $null
+                        }
+
+                        # Hotkey.
                         if ($PSBoundParameters.ContainsKey('Hotkey'))
                         {
                             $shortcut.Hotkey = $Hotkey
                         }
+                        elseif ($Clear -contains 'Hotkey')
+                        {
+                            $shortcut.Hotkey = $null
+                        }
+
+                        # Finalise shortcut.
                         if (!$exists)
                         {
                             $shortcut.Save($LiteralPath)
@@ -322,18 +361,27 @@ function Set-ADTShortcut
                     # Process all valid parameters.
                     try
                     {
+                        # TargetPath.
                         if ($PSBoundParameters.ContainsKey('TargetPath') -and $exists)
                         {
                             $shortcut.TargetPath = $TargetPath
                         }
-                        if ($ClearArguments)
+                        elseif ($Clear -contains 'TargetPath')
                         {
-                            $shortcut.Arguments = [System.Management.Automation.Language.NullString]::Value
+                            $shortcut.TargetPath = [System.Management.Automation.Language.NullString]::Value
                         }
-                        elseif ($PSBoundParameters.ContainsKey('Arguments'))
+
+                        # Arguments.
+                        if ($PSBoundParameters.ContainsKey('Arguments'))
                         {
                             $shortcut.Arguments = $Arguments
                         }
+                        elseif ($Clear -contains 'Arguments')
+                        {
+                            $shortcut.Arguments = [System.Management.Automation.Language.NullString]::Value
+                        }
+
+                        # IconLocation.
                         if ($PSBoundParameters.ContainsKey('IconLocation'))
                         {
                             $shortcut.IconLocation = $IconLocation
@@ -342,30 +390,68 @@ function Set-ADTShortcut
                                 $shortcut.IconIndex = 0
                             }
                         }
+                        elseif ($Clear -contains 'IconLocation')
+                        {
+                            $shortcut.IconLocation = [System.Management.Automation.Language.NullString]::Value
+                        }
+
+                        # IconIndex.
                         if ($PSBoundParameters.ContainsKey('IconIndex'))
                         {
                             $shortcut.IconIndex = $IconIndex
                         }
+                        elseif ($Clear -contains 'IconIndex')
+                        {
+                            $shortcut.IconIndex = $null
+                        }
+                        
+                        # Description.
                         if ($PSBoundParameters.ContainsKey('Description'))
                         {
                             $shortcut.Description = $Description
                         }
+                        elseif ($Clear -contains 'Description')
+                        {
+                            $shortcut.Description = [System.Management.Automation.Language.NullString]::Value
+                        }
+                        
+                        # WorkingDirectory.
                         if ($PSBoundParameters.ContainsKey('WorkingDirectory'))
                         {
                             $shortcut.WorkingDirectory = $WorkingDirectory
                         }
+                        elseif ($Clear -contains 'WorkingDirectory')
+                        {
+                            $shortcut.WorkingDirectory = [System.Management.Automation.Language.NullString]::Value
+                        }
+                        
+                        # WindowStyle.
                         if ($PSBoundParameters.ContainsKey('WindowStyle'))
                         {
                             $shortcut.WindowStyle = $WindowStyle
                         }
+                        elseif ($Clear -contains 'WindowStyle')
+                        {
+                            $shortcut.WindowStyle = $null
+                        }
+
+                        # RunAsAdmin.
                         if ($PSBoundParameters.ContainsKey('RunAsAdmin'))
                         {
                             $shortcut.RunAsAdmin = $RunAsAdmin
                         }
+                        
+                        # Hotkey.
                         if ($PSBoundParameters.ContainsKey('Hotkey'))
                         {
                             $shortcut.Hotkey = $Hotkey
                         }
+                        elseif ($Clear -contains 'Hotkey')
+                        {
+                            $shortcut.Hotkey = $null
+                        }
+
+                        # Finalise shortcut.
                         if (!$exists)
                         {
                             $shortcut.Save($LiteralPath)
