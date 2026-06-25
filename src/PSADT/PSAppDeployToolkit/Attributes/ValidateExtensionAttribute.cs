@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Internal;
-using System.Management.Automation.Language;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Attributes
 {
@@ -41,7 +40,7 @@ namespace PSAppDeployToolkit.Attributes
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void ValidateElement(object element)
         {
-            if (element is null || element == AutomationNull.Value || element == NullString.Value)
+            if (PowerShellUtilities.ObjectIsNull(element))
             {
                 throw new ArgumentNullException(paramName: null, "The argument is null. Provide a valid value for the argument, and then try running the command again.");
             }

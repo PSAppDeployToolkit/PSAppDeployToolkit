@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Management.Automation.Internal;
+using System.Management.Automation.Language;
 using System.Text.RegularExpressions;
 
 namespace PSAppDeployToolkit.Utilities
@@ -12,6 +14,31 @@ namespace PSAppDeployToolkit.Utilities
     /// </summary>
     public static class PowerShellUtilities
     {
+        /// <summary>
+        /// Gets the base object of a PSObject, unwrapping any nested PSObjects to retrieve the underlying object of type T.
+        /// </summary>
+        /// <typeparam name="T">The type of the underlying object to retrieve.</typeparam>
+        /// <param name="obj">The object to unwrap.</param>
+        /// <returns>The underlying object of type T if the input is a PSObject; otherwise, the input object itself cast to type T.</returns>
+        public static T GetBaseObject<T>(object obj)
+        {
+            while (obj is PSObject psObj)
+            {
+                obj = psObj.BaseObject;
+            }
+            return (T)obj;
+        }
+
+        /// <summary>
+        /// Determines whether the specified object is considered null in the context of PowerShell, including checks for DBNull, AutomationNull, and NullString.
+        /// </summary>
+        /// <param name="obj">The object to check for null.</param>
+        /// <returns>true if the object is considered null; otherwise, false.</returns>
+        public static bool ObjectIsNull(object? obj)
+        {
+            return obj is null || obj is DBNull || obj == AutomationNull.Value || obj == NullString.Value;
+        }
+
         /// <summary>
         /// Converts a list of remaining arguments to a dictionary of key-value pairs.
         /// This MUST NOT return a ReadOnlyDictionary! The API must match $PSBoundParameters.
@@ -42,7 +69,7 @@ namespace PSAppDeployToolkit.Utilities
                     }
                     else if (!string.IsNullOrWhiteSpace(currentKey))
                     {
-                        values[currentKey] = !string.IsNullOrWhiteSpace((string)((PSObject)ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument)).BaseObject) ? argument : null!;
+                        values[currentKey] = !string.IsNullOrWhiteSpace(GetBaseObject<string>(ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument))) ? argument : null!;
                         currentKey = string.Empty;
                     }
                 }

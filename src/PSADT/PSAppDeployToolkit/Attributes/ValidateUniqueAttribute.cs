@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Management.Automation;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Attributes
 {
@@ -45,10 +46,7 @@ namespace PSAppDeployToolkit.Attributes
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
             // Verify the provided input before proceeding.
-            while (arguments is PSObject psObject)
-            {
-                arguments = psObject.BaseObject;
-            }
+            arguments = PowerShellUtilities.GetBaseObject<object>(arguments);
             if (arguments is string || LanguagePrimitives.GetEnumerator(arguments) is not IEnumerator enumerator)
             {
                 return;
@@ -59,12 +57,12 @@ namespace PSAppDeployToolkit.Attributes
             }
 
             // Determine the type of the first non-null element to select an appropriate equality comparer.
-            object? firstValue = GetBaseObject(enumerator.Current);
+            object? firstValue = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
             List<object?> bufferedValues = [firstValue];
             Type? inferredType = firstValue?.GetType();
             while (inferredType is null && enumerator.MoveNext())
             {
-                object? value = GetBaseObject(enumerator.Current);
+                object? value = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
                 bufferedValues.Add(value);
                 inferredType = value?.GetType();
             }
@@ -85,28 +83,11 @@ namespace PSAppDeployToolkit.Attributes
             }
             while (enumerator.MoveNext())
             {
-                if (!seen.Add(GetBaseObject(enumerator.Current)))
+                if (!seen.Add(PowerShellUtilities.GetBaseObject<object>(enumerator.Current)))
                 {
                     throw new ArgumentException("The argument collection contains duplicate elements. Provide a collection in which each element is unique, and then try running the command again.");
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns the underlying base object by recursively unwrapping any enclosing PSObject instances.
-        /// </summary>
-        /// <remarks>This method is useful when working with objects that may be wrapped in one or more
-        /// layers of PSObject, such as those returned from PowerShell pipelines. If the input is not a PSObject, it is
-        /// returned unchanged.</remarks>
-        /// <param name="value">The object to unwrap. May be a PSObject or any other type; can be null.</param>
-        /// <returns>The innermost object contained within the input, or null if the input is null.</returns>
-        private static object? GetBaseObject(object? value)
-        {
-            while (value is PSObject psObject)
-            {
-                value = psObject.BaseObject;
-            }
-            return value;
         }
 
         /// <summary>

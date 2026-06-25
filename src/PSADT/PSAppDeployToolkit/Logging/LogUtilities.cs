@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using PSAppDeployToolkit.Extensions;
 using PSAppDeployToolkit.Foundation;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Logging
 {
@@ -89,7 +90,7 @@ namespace PSAppDeployToolkit.Logging
             else
             {
                 // Get the first PowerShell stack frame that contains a valid command.
-                CallStackFrame invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'")).Skip(1).Select(static o => (CallStackFrame)o.BaseObject).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
+                CallStackFrame invoker = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Get-PSCallStack'")).Skip(1).Select(PowerShellUtilities.GetBaseObject<CallStackFrame>).First(static f => f.GetCommand() is string command && !string.IsNullOrWhiteSpace(command) && (!CallerCommandRegex.IsMatch(command) || (CallerScriptBlockRegex.IsMatch(command) && CallerScriptLocationRegex.IsMatch(f.GetScriptLocation()))));
                 callerFileName = !string.IsNullOrWhiteSpace(invoker.ScriptName) ? invoker.ScriptName : invoker.GetScriptLocation();
                 callerSource = invoker.GetCommand();
             }

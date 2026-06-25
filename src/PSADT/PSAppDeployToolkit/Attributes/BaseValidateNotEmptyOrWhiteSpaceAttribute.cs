@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Management.Automation.Internal;
-using System.Management.Automation.Language;
 using System.Security.Principal;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Attributes
 {
@@ -34,14 +33,9 @@ namespace PSAppDeployToolkit.Attributes
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
         {
-            // Unwrap PSObject to get the underlying value.
-            while (arguments is PSObject psObject)
-            {
-                arguments = psObject.BaseObject;
-            }
-
             // Handle null based on configuration.
-            if (IsNull(arguments))
+            arguments = PowerShellUtilities.GetBaseObject<object>(arguments);
+            if (PowerShellUtilities.ObjectIsNull(arguments))
             {
                 if (allowNull)
                 {
@@ -104,8 +98,8 @@ namespace PSAppDeployToolkit.Attributes
                     {
                         do
                         {
-                            object element = enumerator.Current;
-                            if (IsNull(element))
+                            object element = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
+                            if (PowerShellUtilities.ObjectIsNull(element))
                             {
                                 throw new ArgumentException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
                             }
@@ -126,15 +120,6 @@ namespace PSAppDeployToolkit.Attributes
             }
         }
 
-        /// <summary>
-        /// Determines whether the specified value is null, including PowerShell-specific null representations.
-        /// </summary>
-        /// <param name="value">The value to check.</param>
-        /// <returns><see langword="true"/> if the value is null or a PowerShell/database null representation; otherwise, <see langword="false"/>.</returns>
-        private static bool IsNull(object? value)
-        {
-            return value is null || value is DBNull || value == AutomationNull.Value || value == NullString.Value;
-        }
 
         /// <summary>
         /// Determines whether the specified string consists only of white-space characters (but is not empty).

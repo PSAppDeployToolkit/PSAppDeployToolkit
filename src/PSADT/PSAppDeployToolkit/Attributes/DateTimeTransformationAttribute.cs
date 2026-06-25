@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Management.Automation;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Attributes
 {
@@ -24,11 +25,8 @@ namespace PSAppDeployToolkit.Attributes
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
         {
-            while (inputData is PSObject psObject)
-            {
-                inputData = psObject.BaseObject;
-            }
-            if (inputData is null)
+            inputData = PowerShellUtilities.GetBaseObject<object>(inputData);
+            if (PowerShellUtilities.ObjectIsNull(inputData))
             {
                 throw new ArgumentNullException(paramName: null, "Cannot transform null to DateTime.");
             }
