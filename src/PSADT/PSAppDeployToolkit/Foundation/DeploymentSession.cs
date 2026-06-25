@@ -441,7 +441,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     InstallName = $"{(!Settings.HasFlag(DeploymentSettings.UseDefaultMsi) ? $"{AppVendor}_" : null)}{AppName}_{AppVersion}_{AppArch}_{AppLang}_{AppRevision}";
                 }
-                InstallName = invalidChars.Replace(DoubleUnderscoreRegex.Replace(InstallName.Trim('_').Replace(" ", newValue: null, StringComparison.OrdinalIgnoreCase), "_"), string.Empty);
+                InstallName = invalidChars.Replace(DoubleUnderscoreRegex.Replace(InstallName.Trim('_').Replace(" ", newValue: null, StringComparison.Ordinal), "_"), string.Empty);
 
                 // Set the Defer History registry path.
                 RegKeyDeferBase = $@"{configToolkit["RegPath"]}\{appDeployToolkitName}\DeferHistory";
@@ -472,7 +472,7 @@ namespace PSAppDeployToolkit.Foundation
                 if ((bool)configToolkit["LogToHierarchy"]!)
                 {
                     // Create the hierarchical log path based on vendor, app name and version before checking whether we need to clean up old log folders.
-                    LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", newValue: null, StringComparison.OrdinalIgnoreCase))).FullName);
+                    LogPath = new(Directory.CreateDirectory(Path.Join(LogPath.FullName, $@"{AppVendor}\{AppName}\{AppVersion}".Replace(@"\\", newValue: null, StringComparison.Ordinal))).FullName);
 
                     // Check how many hierarchy levels to keep based on configuration.
                     DirectoryInfo[] hierarchyDirectories = [.. LogPath.Parent!.GetDirectories().Where(d => !d.FullName.Equals(LogPath.FullName, StringComparison.OrdinalIgnoreCase)).OrderBy(static d => d.CreationTime)];
@@ -507,7 +507,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Get new log file path.
                         string logFileNameOnly = Path.GetFileNameWithoutExtension(LogName);
                         string logFileExtension = LogUtilities.LogFileNameRegex.Match(LogName).Value;
-                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.OrdinalIgnoreCase);
+                        string logFileTimestamp = DateTime.Now.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.Ordinal);
                         string archiveLogFileName = $"{logFileNameOnly}_{logFileTimestamp}{logFileExtension}";
                         string archiveLogFilePath = Path.Join(LogPath.FullName, archiveLogFileName);
 
@@ -1081,7 +1081,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     // Get all archive files sorted by last write time.
                     FileInfo[] archiveFiles = [.. destArchiveFilePath.GetFiles(string.Format(CultureInfo.InvariantCulture, destArchiveFileName, "*")).Where(static f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).OrderBy(static f => f.LastWriteTime)];
-                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.OrdinalIgnoreCase));
+                    destArchiveFileName = string.Format(CultureInfo.InvariantCulture, destArchiveFileName, CurrentDateTime.ToString("O").Split('.')[0].Replace(":", newValue: null, StringComparison.Ordinal));
 
                     // Keep only the max number of archive files.
                     int archiveFilesCount = archiveFiles.Length;

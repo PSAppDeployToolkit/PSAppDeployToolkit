@@ -218,7 +218,7 @@ namespace PSADT.FileSystem
                             {
                                 // Validate the file name and skip "." and ".." entries.
                                 string name = data.cFileName.ToString();
-                                if (name.Equals(".", StringComparison.OrdinalIgnoreCase) || name.Equals("..", StringComparison.OrdinalIgnoreCase))
+                                if (name.Equals(".", StringComparison.Ordinal) || name.Equals("..", StringComparison.Ordinal))
                                 {
                                     continue;
                                 }

@@ -177,7 +177,7 @@ namespace PSADT.Interop
             return obj switch
             {
                 TSelf other => Equals(other),
-                string s => string.Equals(_name, s, StringComparison.OrdinalIgnoreCase),
+                string s => _name.Equals(s, StringComparison.OrdinalIgnoreCase),
                 sbyte n => _value == n,
                 byte n => _value == n,
                 short n => _value == n,

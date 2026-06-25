@@ -361,7 +361,7 @@ namespace PSADT.FileSystem
                     }
 
                     // Skip to next iteration if the handle doesn't meet our criteria.
-                    if (!objectName.StartsWith(@"\Device\HarddiskVolume", StringComparison.Ordinal))
+                    if (!objectName.StartsWith(@"\Device\HarddiskVolume", StringComparison.OrdinalIgnoreCase))
                     {
                         return;
                     }

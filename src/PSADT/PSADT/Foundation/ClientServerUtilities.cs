@@ -30,7 +30,7 @@ namespace PSADT.Foundation
         {
             // Set up the assembly path for the client/server architecture, factoring in the caller may be coming from a .NET Core client.
             string assemblyDirectory = Path.GetDirectoryName(typeof(ClientServerUtilities).Assembly.Location) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly.");
-            ClientServerDirectory = !assemblyDirectory.EndsWith("net472", StringComparison.OrdinalIgnoreCase)
+            ClientServerDirectory = !assemblyDirectory.EndsWith("net472", StringComparison.Ordinal)
                 ? new(Path.Join(Directory.GetParent(assemblyDirectory)?.FullName ?? throw new InvalidProgramException("Failed to retrieve parent directory for this assembly."), "net472"))
                 : new(assemblyDirectory);
 
@@ -161,7 +161,7 @@ namespace PSADT.Foundation
                 uiAccess: true,
                 handlesToInherit: handlesToInherit,
                 useShellExecute: useShellExecute,
-                createNoWindow: !filePath.Name.Contains("Launcher", StringComparison.OrdinalIgnoreCase),
+                createNoWindow: !filePath.Name.Contains("Launcher", StringComparison.Ordinal),
                 waitForChildProcesses: true,
                 cancellationToken: cancellationToken
             )) ?? throw new InvalidOperationException("Failed to launch client operation.");

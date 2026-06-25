@@ -82,7 +82,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (CustomDialogResult.DefaultResult.Equals(DialogResult))
             {
-                DialogResult = new CustomDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", newValue: null, StringComparison.OrdinalIgnoreCase));
+                DialogResult = new CustomDialogResult(((AccessText)ButtonLeft.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal));
             }
             base.ButtonLeft_Click(sender, e);
         }
@@ -101,7 +101,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (CustomDialogResult.DefaultResult.Equals(DialogResult))
             {
-                DialogResult = new CustomDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", newValue: null, StringComparison.OrdinalIgnoreCase));
+                DialogResult = new CustomDialogResult(((AccessText)ButtonMiddle.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal));
             }
             base.ButtonMiddle_Click(sender, e);
         }
@@ -120,7 +120,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Only set DialogResult if it hasn't been set by a derived class (still has default "Timeout" value).
             if (CustomDialogResult.DefaultResult.Equals(DialogResult))
             {
-                DialogResult = new CustomDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", newValue: null, StringComparison.OrdinalIgnoreCase));
+                DialogResult = new CustomDialogResult(((AccessText)ButtonRight.Content).Text.Replace("_", newValue: null, StringComparison.Ordinal));
             }
             base.ButtonRight_Click(sender, e);
         }

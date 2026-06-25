@@ -66,10 +66,10 @@ namespace PSADT.ProcessManagement
             }
             if (Name.Contains('*', StringComparison.Ordinal))
             {
-                NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.Ordinal)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 if (ProcessName is not null)
                 {
-                    ProcessNameRegex = new($"^{Regex.Escape(ProcessName).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                    ProcessNameRegex = new($"^{Regex.Escape(ProcessName).Replace("\\*", ".*", StringComparison.Ordinal)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 }
             }
         }

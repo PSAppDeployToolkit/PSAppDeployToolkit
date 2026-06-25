@@ -561,7 +561,7 @@ namespace PSADT.ProcessManagement
 
             // PRIORITY 3: For UNC paths without executable extensions, apply conservative rules.
             string combinedPath = string.Join(' ', tokens);
-            if (combinedPath.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+            if (combinedPath.StartsWith("\\\\", StringComparison.Ordinal))
             {
                 // If a token ends with a backslash, it's likely a directory. The path ends here.
                 for (int i = 0; i < tokens.Count - 1; i++)
