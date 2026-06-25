@@ -991,7 +991,6 @@ namespace PSAppDeployToolkit.Foundation
             catch (Exception ex) when (ex.Message is not null)
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
-                RemoveSubstDrive(); DismountWimFiles();
                 SetExitCode(ex is NotSupportedException ? DeferExitCode : 60008);
                 Environment.ExitCode = Close();
                 throw new ApplicationException("Failure occurred while instantiating new deployment session.", ex);
