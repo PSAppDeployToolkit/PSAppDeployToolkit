@@ -558,7 +558,7 @@ namespace PSADT.ProcessManagement
                 if (token.Length > 0)
                 {
                     char lastChar = token[^1];
-                    if (lastChar is ';' or '|' or '&' or '<' or '>' or '^')
+                    if (IsCommandSeparator(lastChar))
                     {
                         // This token contains a command separator, so the path ends here.
                         return (string.Join(' ', tokens.Take(i + 1)), i + 1);
@@ -588,8 +588,7 @@ namespace PSADT.ProcessManagement
                     {
                         string token = tokens[i];
 
-                        if (token.Contains(';', StringComparison.Ordinal) || token.Contains('|', StringComparison.Ordinal) || token.Contains('&', StringComparison.Ordinal) ||
-                            token.Contains('<', StringComparison.Ordinal) || token.Contains('>', StringComparison.Ordinal) || token.Contains('^', StringComparison.Ordinal))
+                        if (token.Any(static c => IsCommandSeparator(c)))
                         {
                             return (string.Join(' ', tokens.Take(i)), i);
                         }
@@ -779,6 +778,26 @@ namespace PSADT.ProcessManagement
         }
 
         /// <summary>
+        /// Determines whether a character is a command separator.
+        /// </summary>
+        /// <param name="c">The character to check.</param>
+        /// <returns>True if the character is a command separator, false otherwise.</returns>
+        private static bool IsCommandSeparator(char c)
+        {
+            return c is ';' or '|' or '&' or '<' or '>' or '^';
+        }
+
+        /// <summary>
+        /// Determines whether a string contains characters that require command-line quoting.
+        /// </summary>
+        /// <param name="value">The string to check.</param>
+        /// <returns>True if the string contains whitespace or quote characters, false otherwise.</returns>
+        private static bool ContainsWhitespaceOrQuote(string value)
+        {
+            return value.Any(static c => IsWhitespace(c) || c == '"');
+        }
+
+        /// <summary>
         /// Escapes a command-line argument to ensure compatibility with a parser that supports key-value pairs and
         /// quoted values.
         /// </summary>
@@ -893,7 +912,7 @@ namespace PSADT.ProcessManagement
                 return true;
             }
 
-            if (!valuePart.Any(static c => IsWhitespace(c) || c == '"'))
+            if (!ContainsWhitespaceOrQuote(valuePart))
             {
                 return false;
             }
@@ -909,7 +928,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The escaped value.</returns>
         private static string EscapeColonSeparatedValue(string value)
         {
-            if (value.Length == 0 || !value.Any(static c => IsWhitespace(c) || c == '"'))
+            if (!ContainsWhitespaceOrQuote(value))
             {
                 return value;
             }
@@ -988,7 +1007,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Only apply special handling if the value needs quoting (contains spaces or quotes).
-            if (!valuePart.Any(static c => IsWhitespace(c) || c == '"'))
+            if (!ContainsWhitespaceOrQuote(valuePart))
             {
                 return false;
             }
@@ -1013,7 +1032,7 @@ namespace PSADT.ProcessManagement
             }
 
             // The argument must be quoted if it contains a space, tab, a quote, or is empty.
-            bool needsQuoting = argument.Length == 0 || argument.Any(static c => IsWhitespace(c) || c == '"');
+            bool needsQuoting = argument.Length == 0 || ContainsWhitespaceOrQuote(argument);
             if (!needsQuoting)
             {
                 return argument;
