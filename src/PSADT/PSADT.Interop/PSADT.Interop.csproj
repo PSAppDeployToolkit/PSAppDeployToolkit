@@ -59,6 +59,7 @@
       M:System.String.Join|
       M:System.String.Replace|
       M:System.String.StartsWith|
+      M:System.StringComparer.FromComparison|
       M:System.Text.Encoding.GetString|
       M:System.Threading.CancellationTokenSource.CancelAsync|
       M:System.Threading.Tasks.Task.WaitAsync|

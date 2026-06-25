@@ -65,7 +65,7 @@ namespace PSAppDeployToolkit.Attributes
             // Create a typed equality comparer for the inferred type of the first element, or use a string comparer if the first element is a string.
             Type inferredType = firstValue.GetType(); IEqualityComparer<object?> comparer = inferredType != typeof(string)
                 ? Activator.CreateInstance(typeof(TypedDefaultEqualityComparer<>).MakeGenericType(inferredType)) as IEqualityComparer<object?> ?? throw new InvalidOperationException($"Unable to create a typed equality comparer for type '{inferredType.FullName}'.")
-                : new TypedDefaultEqualityComparer<string>(GetStringComparer(StringComparison));
+                : new TypedDefaultEqualityComparer<string>(StringComparer.FromComparison(StringComparison));
 
             // Use a HashSet to track seen elements and detect duplicates efficiently.
             HashSet<object?> seen = new(comparer) { firstValue };
@@ -80,26 +80,6 @@ namespace PSAppDeployToolkit.Attributes
                     throw new ArgumentException("The argument collection contains duplicate elements. Provide a collection in which each element is unique, and then try running the command again.");
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns a StringComparer instance that corresponds to the specified StringComparison value.
-        /// </summary>
-        /// <param name="stringComparison">The type of string comparison to use when selecting the StringComparer.</param>
-        /// <returns>A StringComparer that implements the specified string comparison behavior.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if stringComparison is not a valid StringComparison value.</exception>
-        private static StringComparer GetStringComparer(StringComparison stringComparison)
-        {
-            return stringComparison switch
-            {
-                StringComparison.CurrentCulture => StringComparer.CurrentCulture,
-                StringComparison.CurrentCultureIgnoreCase => StringComparer.CurrentCultureIgnoreCase,
-                StringComparison.InvariantCulture => StringComparer.InvariantCulture,
-                StringComparison.InvariantCultureIgnoreCase => StringComparer.InvariantCultureIgnoreCase,
-                StringComparison.Ordinal => StringComparer.Ordinal,
-                StringComparison.OrdinalIgnoreCase => StringComparer.OrdinalIgnoreCase,
-                _ => throw new ArgumentOutOfRangeException(nameof(stringComparison), stringComparison, "Unsupported string comparison type."),
-            };
         }
 
         /// <summary>
