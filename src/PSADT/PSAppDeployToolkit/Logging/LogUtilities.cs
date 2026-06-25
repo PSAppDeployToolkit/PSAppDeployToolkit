@@ -210,10 +210,10 @@ namespace PSAppDeployToolkit.Logging
         /// </summary>
         private static readonly ReadOnlyCollection<FrozenDictionary<string, ConsoleColor>> LogSeverityColors = new(
         [
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Green } }),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase)),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Yellow } }),
-            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.OrdinalIgnoreCase) { { "ForegroundColor", ConsoleColor.Red } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.Ordinal) { { "ForegroundColor", ConsoleColor.Green } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.Ordinal)),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.Ordinal) { { "ForegroundColor", ConsoleColor.Yellow } }),
+            FrozenDictionary.ToFrozenDictionary(new Dictionary<string, ConsoleColor>(StringComparer.Ordinal) { { "ForegroundColor", ConsoleColor.Red } }),
         ]);
 
         /// <summary>

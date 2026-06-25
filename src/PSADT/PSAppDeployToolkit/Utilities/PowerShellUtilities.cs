@@ -128,7 +128,7 @@ namespace PSAppDeployToolkit.Utilities
                     // Handle nested dictionaries.
                     if (entry.Value is IDictionary dictionary)
                     {
-                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key}' is null."), StringComparer.OrdinalIgnoreCase), exclusions);
+                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key}' is null."), StringComparer.Ordinal), exclusions);
                         continue;
                     }
 

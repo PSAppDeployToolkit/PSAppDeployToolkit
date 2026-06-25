@@ -211,7 +211,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Return an ordered list of running processes to the caller.
-            return new ReadOnlyCollection<RunningProcessInfo>([.. runningProcesses.OrderBy(static runningProcess => runningProcess.Description, StringComparer.OrdinalIgnoreCase)]);
+            return new ReadOnlyCollection<RunningProcessInfo>([.. runningProcesses.OrderBy(static runningProcess => runningProcess.Description, StringComparer.OrdinalIgnoreCase).ThenBy(static runningProcess => runningProcess.Description, StringComparer.Ordinal)]);
         }
 
         /// <summary>

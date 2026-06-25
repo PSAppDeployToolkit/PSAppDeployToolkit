@@ -48,7 +48,7 @@ namespace PSADT.Invoke
                 try
                 {
                     // Display help if being asked to do so.
-                    if (argv.Contains("/?", StringComparer.OrdinalIgnoreCase) || argv.Contains("/Help", StringComparer.OrdinalIgnoreCase))
+                    if (argv.Contains("/?", StringComparer.Ordinal) || argv.Contains("/Help", StringComparer.OrdinalIgnoreCase))
                     {
                         WriteHelpInformation();
                         return 1;
