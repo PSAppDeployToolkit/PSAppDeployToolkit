@@ -12,7 +12,7 @@ namespace PSAppDeployToolkit.Attributes
     /// <remarks>
     /// For string elements, uniqueness is evaluated using the configured <see cref="StringComparison"/> value.
     /// For non-string elements, uniqueness is evaluated using the type's equality implementation.
-    /// Non-collection values are treated as valid.
+    /// Null elements are not valid. Non-collection values are treated as valid.
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3253:Constructor and destructor declarations should not be redundant", Justification = "This primary constructor is required for PowerShell.")]
     public sealed class ValidateUniqueAttribute() : ValidateArgumentsAttribute
@@ -40,7 +40,7 @@ namespace PSAppDeployToolkit.Attributes
         /// Thrown if the method is called from outside the PSAppDeployToolkit module context.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// Thrown when <paramref name="arguments"/> is a collection that contains duplicate elements.
+        /// Thrown when <paramref name="arguments"/> is a collection that contains null or duplicate elements.
         /// </exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
@@ -56,34 +56,26 @@ namespace PSAppDeployToolkit.Attributes
                 return;
             }
 
-            // Determine the type of the first non-null element to select an appropriate equality comparer.
-            object? firstValue = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
-            List<object?> bufferedValues = [firstValue];
-            Type? inferredType = firstValue?.GetType();
-            while (inferredType is null && enumerator.MoveNext())
+            // Determine the type of the first element to select an appropriate equality comparer.
+            if (!PowerShellUtilities.TryGetBaseObject(enumerator.Current, out object? firstValue))
             {
-                object? value = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
-                bufferedValues.Add(value);
-                inferredType = value?.GetType();
+                throw new ArgumentException("The argument collection contains null elements. Provide a collection in which each element has a value, and then try running the command again.");
             }
-            IEqualityComparer<object?> comparer = inferredType == typeof(string)
-                ? new TypedDefaultEqualityComparer<string>(GetStringComparer(StringComparison))
-                : inferredType is not null
+
+            // Create a typed equality comparer for the inferred type of the first element, or use a string comparer if the first element is a string.
+            Type inferredType = firstValue.GetType(); IEqualityComparer<object?> comparer = inferredType != typeof(string)
                 ? Activator.CreateInstance(typeof(TypedDefaultEqualityComparer<>).MakeGenericType(inferredType)) as IEqualityComparer<object?> ?? throw new InvalidOperationException($"Unable to create a typed equality comparer for type '{inferredType.FullName}'.")
-                : EqualityComparer<object?>.Default;
+                : new TypedDefaultEqualityComparer<string>(GetStringComparer(StringComparison));
 
             // Use a HashSet to track seen elements and detect duplicates efficiently.
             HashSet<object?> seen = new(comparer) { firstValue };
-            for (int i = 1; i < bufferedValues.Count; i++)
-            {
-                if (!seen.Add(bufferedValues[i]))
-                {
-                    throw new ArgumentException("The argument collection contains duplicate elements. Provide a collection in which each element is unique, and then try running the command again.");
-                }
-            }
             while (enumerator.MoveNext())
             {
-                if (!seen.Add(PowerShellUtilities.GetBaseObject<object>(enumerator.Current)))
+                if (!PowerShellUtilities.TryGetBaseObject(enumerator.Current, out object? value))
+                {
+                    throw new ArgumentException("The argument collection contains null elements. Provide a collection in which each element has a value, and then try running the command again.");
+                }
+                if (!seen.Add(value))
                 {
                     throw new ArgumentException("The argument collection contains duplicate elements. Provide a collection in which each element is unique, and then try running the command again.");
                 }
