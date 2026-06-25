@@ -1452,6 +1452,7 @@ namespace PSAppDeployToolkit.Foundation
             }
             WriteLogEntry($"Removing substitution drive [{DirFilesSubstDrive}].");
             _ = NativeMethods.DefineDosDevice(DEFINE_DOS_DEVICE_FLAGS.DDD_REMOVE_DEFINITION, DirFilesSubstDrive.Name, lpTargetPath: null);
+            DirFilesSubstDrive = null;
         }
 
         /// <summary>
@@ -1714,6 +1715,11 @@ namespace PSAppDeployToolkit.Foundation
 
 
         /// <summary>
+        /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
+        /// </summary>
+        private DriveInfo? DirFilesSubstDrive;
+
+        /// <summary>
         /// Bitfield with settings for this deployment.
         /// </summary>
         private DeploymentSettings Settings;
@@ -1767,11 +1773,6 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the mounted WIM files within this session.
         /// </summary>
         private readonly List<FileInfo> MountedWimFiles = [];
-
-        /// <summary>
-        /// Gets the drive letter used with subst during a Zero-Config WIM file mount operation.
-        /// </summary>
-        private readonly DriveInfo? DirFilesSubstDrive;
 
         /// <summary>
         /// Gets the base registry path used for getting/setting deferral information.
