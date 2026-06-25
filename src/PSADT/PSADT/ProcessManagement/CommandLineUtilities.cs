@@ -122,7 +122,11 @@ namespace PSADT.ProcessManagement
                 {
                     break;
                 }
-                if (IsKeyValueArgument(commandLine, position))
+                if (TryParseColonSeparatedQuotedValueArgument(commandLine, ref position, out string colonSeparatedArgument))
+                {
+                    arguments.Add(colonSeparatedArgument);
+                }
+                else if (IsKeyValueArgument(commandLine, position))
                 {
                     arguments.Add(ParseKeyValueArgument(commandLine, ref position));
                 }
@@ -140,6 +144,105 @@ namespace PSADT.ProcessManagement
                 }
             }
             return arguments.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Attempts to parse a colon-separated argument with a quoted value while preserving embedded quotes in the value.
+        /// </summary>
+        /// <param name="commandLine">The command line span.</param>
+        /// <param name="position">The current position (updated as parsing progresses).</param>
+        /// <param name="argument">The parsed argument if the pattern matches, otherwise empty.</param>
+        /// <returns>True if the current position starts a name:"value" argument, otherwise false.</returns>
+        private static bool TryParseColonSeparatedQuotedValueArgument(ReadOnlySpan<char> commandLine, ref int position, out string argument)
+        {
+            argument = string.Empty;
+            if (position >= commandLine.Length || commandLine[position] == '"')
+            {
+                return false;
+            }
+
+            int separatorPos = -1;
+            for (int i = position; i < commandLine.Length && !IsWhitespace(commandLine[i]); i++)
+            {
+                if (commandLine[i] == ':' && i > position && i + 1 < commandLine.Length && commandLine[i + 1] == '"')
+                {
+                    separatorPos = i;
+                    break;
+                }
+            }
+            if (separatorPos < 0)
+            {
+                return false;
+            }
+
+            StringBuilder result = new();
+            while (position < separatorPos)
+            {
+                _ = result.Append(commandLine[position++]);
+            }
+
+            _ = result.Append(commandLine[position++]);
+            position++;
+            while (position < commandLine.Length)
+            {
+                char c = commandLine[position];
+                if (c == '\\')
+                {
+                    int backslashStart = position;
+                    while (position < commandLine.Length && commandLine[position] == '\\')
+                    {
+                        position++;
+                    }
+                    int backslashCount = position - backslashStart;
+                    if (position < commandLine.Length && commandLine[position] == '"')
+                    {
+                        _ = result.Append('\\', Math.DivRem(backslashCount, 2, out int remainder));
+                        if (remainder != 0)
+                        {
+                            _ = result.Append('"');
+                            position++;
+                        }
+                        continue;
+                    }
+                    _ = result.Append('\\', backslashCount);
+                }
+                else if (c == '"')
+                {
+                    if (position + 1 < commandLine.Length && commandLine[position + 1] == '"')
+                    {
+                        _ = result.Append('"');
+                        position += 2;
+                        continue;
+                    }
+
+                    int nextPosition = position + 1;
+                    if (nextPosition >= commandLine.Length)
+                    {
+                        position++;
+                        break;
+                    }
+                    if (IsWhitespace(commandLine[nextPosition]))
+                    {
+                        int nextArgumentPosition = nextPosition;
+                        SkipWhitespace(commandLine, ref nextArgumentPosition);
+                        if (nextArgumentPosition >= commandLine.Length || IsStartOfNewArgument(commandLine, nextArgumentPosition))
+                        {
+                            position++;
+                            break;
+                        }
+                    }
+
+                    _ = result.Append(c);
+                    position++;
+                }
+                else
+                {
+                    _ = result.Append(c);
+                    position++;
+                }
+            }
+            argument = result.ToString();
+            return true;
         }
 
         /// <summary>
@@ -704,15 +807,121 @@ namespace PSADT.ProcessManagement
                 return argument;
             }
 
+            // Check for PowerShell-style flag:value patterns (e.g., -Key:value with spaces).
+            if (TryEscapeFlagWithSeparatedValue(argument, out string escaped))
+            {
+                return escaped;
+            }
+
             // Check for flag+path pattern (e.g., -sfx_oC:\Path\To\Output).
             // This handles cases like 7-Zip's -sfx_o"C:\Path" where the path is attached to the flag.
-            if (TryEscapeFlagWithAttachedPath(argument, out string escaped))
+            if (TryEscapeFlagWithAttachedPath(argument, out escaped))
+            {
+                return escaped;
+            }
+
+            // Check for non-flag name:value patterns produced by tokenized PowerShell hashtable keys with spaces.
+            if (TryEscapeSeparatedValue(argument, 0, out escaped))
             {
                 return escaped;
             }
 
             // For all other cases, use the standard strict escaping.
             return EscapeArgumentStrict(argument);
+        }
+
+        /// <summary>
+        /// Attempts to escape an argument that follows the pattern of a flag with a value separated by a colon.
+        /// </summary>
+        /// <param name="argument">The argument to check and potentially escape.</param>
+        /// <param name="escaped">The escaped argument if the pattern matches, otherwise empty.</param>
+        /// <returns>True if the argument matched the flag:value pattern and was escaped, false otherwise.</returns>
+        /// <remarks>
+        /// This handles PowerShell-style scenarios like -Key:value with spaces, where only the value portion should
+        /// be quoted, e.g. -Key:"value with spaces" rather than "-Key:value with spaces".
+        /// </remarks>
+        private static bool TryEscapeFlagWithSeparatedValue(string argument, out string escaped)
+        {
+            // Must start with - or /.
+            escaped = string.Empty;
+            return argument.Length >= 4 && argument[0] is '-' or '/' && TryEscapeSeparatedValue(argument, 1, out escaped);
+        }
+
+        /// <summary>
+        /// Attempts to escape an argument that follows the pattern of a name with a value separated by a colon.
+        /// </summary>
+        /// <param name="argument">The argument to check and potentially escape.</param>
+        /// <param name="searchStart">The position to start searching for the colon separator.</param>
+        /// <param name="escaped">The escaped argument if the pattern matches, otherwise empty.</param>
+        /// <returns>True if the argument matched the name:value pattern and was escaped, false otherwise.</returns>
+        private static bool TryEscapeSeparatedValue(string argument, int searchStart, out string escaped)
+        {
+            escaped = string.Empty;
+            int separatorPos = argument.AsSpan(searchStart).IndexOf(':');
+            if (separatorPos >= 0)
+            {
+                separatorPos += searchStart;
+            }
+            if (separatorPos <= searchStart || separatorPos == argument.Length - 1)
+            {
+                return false;
+            }
+            if (char.IsLetter(argument[separatorPos - 1]) && argument[separatorPos + 1] is '\\' or '/')
+            {
+                return false;
+            }
+            if (separatorPos + 2 < argument.Length && argument[separatorPos + 1] == '/' && argument[separatorPos + 2] == '/')
+            {
+                return false;
+            }
+
+            int equalsPos = argument.AsSpan(searchStart).IndexOf('=');
+            if (equalsPos >= 0)
+            {
+                equalsPos += searchStart;
+            }
+            if (equalsPos > 0 && equalsPos < separatorPos)
+            {
+                return false;
+            }
+
+            string namePart = argument[..(separatorPos + 1)];
+            string valuePart = argument[(separatorPos + 1)..];
+            if (valuePart.Length > 1 && valuePart[0] == '"' && valuePart[^1] == '"')
+            {
+                escaped = argument;
+                return true;
+            }
+
+            if (!valuePart.Any(static c => IsWhitespace(c) || c == '"'))
+            {
+                return false;
+            }
+
+            escaped = namePart + EscapeColonSeparatedValue(valuePart);
+            return true;
+        }
+
+        /// <summary>
+        /// Escapes a colon-separated value for PowerShell-style argument reconstruction.
+        /// </summary>
+        /// <param name="value">The value portion of the colon-separated argument.</param>
+        /// <returns>The escaped value.</returns>
+        private static string EscapeColonSeparatedValue(string value)
+        {
+            if (value.Length == 0 || !value.Any(static c => IsWhitespace(c) || c == '"'))
+            {
+                return value;
+            }
+
+            StringBuilder sb = new();
+            _ = sb.Append('"').Append(value);
+            for (int i = value.Length - 1; i >= 0 && value[i] == '\\'; i--)
+            {
+                _ = sb.Append('\\');
+            }
+            _ = sb.Append('"');
+            return sb.ToString();
         }
 
         /// <summary>

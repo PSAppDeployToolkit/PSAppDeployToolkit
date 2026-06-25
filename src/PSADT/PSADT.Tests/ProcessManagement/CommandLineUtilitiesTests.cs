@@ -1677,6 +1677,149 @@ namespace PSADT.Tests.ProcessManagement
         }
 
         /// <summary>
+        /// Tests that PowerShell-style flag:value arguments quote only the value portion when needed.
+        /// </summary>
+        /// <param name="args">The array of arguments to convert to a command line string.</param>
+        /// <param name="expected">The expected command line string resulting from converting the arguments.</param>
+        [Theory]
+        [InlineData(new[] { "-Key1:this is my string", "-Key2:System.Collections.Hashtable" },
+                   "-Key1:\"this is my string\" -Key2:System.Collections.Hashtable")]
+        [InlineData(new[] { "-Path:C:\\Program Files\\App" },
+                   "-Path:\"C:\\Program Files\\App\"")]
+        [InlineData(new[] { "-Key:value" }, "-Key:value")]
+        [InlineData(new[] { "-Key:a\"b" }, "-Key:\"a\"b\"")]
+        public void ArgumentListToCommandLine_PowerShellStyleFlagValues_EscapesOnlyValuePortion(string[] args, string expected)
+        {
+            // Act
+            string result = CommandLineUtilities.ArgumentListToCommandLine(args);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        /// Tests round-trip conversion for PowerShell-style flag:value arguments.
+        /// </summary>
+        [Fact]
+        public void PowerShellStyleFlagValues_RoundTrip_PreservesArguments()
+        {
+            // Arrange
+            string[] originalArgs = ["-Key1:this is my string", "-Key2:System.Collections.Hashtable"];
+
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(originalArgs);
+            IReadOnlyList<string> roundTripArgs = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal("-Key1:\"this is my string\" -Key2:System.Collections.Hashtable", commandLine);
+            Assert.Equal(originalArgs, roundTripArgs);
+        }
+
+        /// <summary>
+        /// Tests parsing for PowerShell-style hashtable arguments where a key contains spaces remains token-based.
+        /// </summary>
+        [Fact]
+        public void CommandLineToArgumentList_PowerShellHashtableKeyWithSpaces_PreservesTokenizedArguments()
+        {
+            // Arrange
+            const string commandLine = "-Key Five:5 -Key1:\"this is my string\" -Key2:System.Collections.Hashtable";
+            string[] expectedArgs = ["-Key", "Five:5", "-Key1:this is my string", "-Key2:System.Collections.Hashtable"];
+
+            // Act
+            IReadOnlyList<string> args = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expectedArgs, args);
+        }
+
+        /// <summary>
+        /// Tests parsing for PowerShell-style hashtable arguments where quoted values contain embedded quotes.
+        /// </summary>
+        [Fact]
+        public void CommandLineToArgumentList_PowerShellHashtableValuesWithEmbeddedQuotes_PreservesInnerQuotes()
+        {
+            // Arrange
+            const string commandLine = "-Key Five:\"This is also \"my\" string\" -Key1:\"this is \"my\" string\" -Key2:System.Collections.Hashtable";
+            string[] expectedArgs = ["-Key", "Five:This is also \"my\" string", "-Key1:this is \"my\" string", "-Key2:System.Collections.Hashtable"];
+
+            // Act
+            IReadOnlyList<string> args = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(expectedArgs, args);
+        }
+
+        /// <summary>
+        /// Tests command-line creation from tokenized PowerShell-style hashtable arguments where a key contains spaces.
+        /// </summary>
+        [Fact]
+        public void ArgumentListToCommandLine_PowerShellHashtableKeyWithSpaces_PreservesCommandLine()
+        {
+            // Arrange
+            string[] args = ["-Key", "Five:5", "-Key1:this is my string", "-Key2:System.Collections.Hashtable"];
+
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args);
+
+            // Assert
+            Assert.Equal("-Key Five:5 -Key1:\"this is my string\" -Key2:System.Collections.Hashtable", commandLine);
+        }
+
+        /// <summary>
+        /// Tests command-line creation from tokenized PowerShell-style hashtable arguments where a spaced key has a value that requires quoting.
+        /// </summary>
+        [Fact]
+        public void ArgumentListToCommandLine_PowerShellHashtableKeyWithSpacesAndQuotedValue_QuotesValuePortion()
+        {
+            // Arrange
+            string[] args = ["-Key", "Five:This is also \"my\" string", "-Key1:this is \"my\" string", "-Key2:System.Collections.Hashtable"];
+
+            // Act
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args);
+
+            // Assert
+            Assert.Equal("-Key Five:\"This is also \"my\" string\" -Key1:\"this is \"my\" string\" -Key2:System.Collections.Hashtable", commandLine);
+        }
+
+        /// <summary>
+        /// Tests exact command-line round-trip for PowerShell-style hashtable arguments where quoted values contain embedded quotes.
+        /// </summary>
+        [Fact]
+        public void PowerShellHashtableValuesWithEmbeddedQuotes_RoundTrip_PreservesCommandLine()
+        {
+            // Arrange
+            const string originalCommandLine = "-Key Five:\"This is also \"my\" string\" -Key1:\"this is \"my\" string\" -Key2:System.Collections.Hashtable";
+
+            // Act
+            IReadOnlyList<string> args = CommandLineUtilities.CommandLineToArgumentList(originalCommandLine);
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args);
+            IReadOnlyList<string> roundTripArgs = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(originalCommandLine, commandLine);
+            Assert.Equal(args, roundTripArgs);
+        }
+
+        /// <summary>
+        /// Tests round-trip conversion for PowerShell-style hashtable arguments where a key contains spaces.
+        /// </summary>
+        [Fact]
+        public void PowerShellHashtableKeyWithSpaces_RoundTrip_PreservesCommandLine()
+        {
+            // Arrange
+            const string originalCommandLine = "-Key Five:5 -Key1:\"this is my string\" -Key2:System.Collections.Hashtable";
+
+            // Act
+            IReadOnlyList<string> args = CommandLineUtilities.CommandLineToArgumentList(originalCommandLine);
+            string commandLine = CommandLineUtilities.ArgumentListToCommandLine(args);
+            IReadOnlyList<string> roundTripArgs = CommandLineUtilities.CommandLineToArgumentList(commandLine);
+
+            // Assert
+            Assert.Equal(originalCommandLine, commandLine);
+            Assert.Equal(args, roundTripArgs);
+        }
+
+        /// <summary>
         /// Tests real-world 7-Zip command line scenario with multiple arguments.
         /// </summary>
         [Fact]
