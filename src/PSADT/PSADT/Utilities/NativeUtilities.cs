@@ -77,12 +77,14 @@ namespace PSADT.Utilities
         /// <param name="value">The 64-bit unsigned integer value to encode and load into the register.</param>
         /// <returns>An enumerable collection of 32-bit unsigned integers representing the encoded instructions required to load
         /// the specified value into the target register.</returns>
-        internal static IEnumerable<uint> Load64(int reg, ulong value)
+        internal static IReadOnlyList<uint> Load64(int reg, ulong value)
         {
-            yield return EncodeMovZ(reg, (ushort)(value >> 0), 0);
-            yield return EncodeMovK(reg, (ushort)(value >> 16), 1);
-            yield return EncodeMovK(reg, (ushort)(value >> 32), 2);
-            yield return EncodeMovK(reg, (ushort)(value >> 48), 3);
+            return [
+                EncodeMovZ(reg, (ushort)(value >> 0), 0),
+                EncodeMovK(reg, (ushort)(value >> 16), 1),
+                EncodeMovK(reg, (ushort)(value >> 32), 2),
+                EncodeMovK(reg, (ushort)(value >> 48), 3),
+            ];
         }
     }
 }
