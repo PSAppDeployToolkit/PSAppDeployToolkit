@@ -51,7 +51,7 @@ namespace PSADT.Foundation
             ArgumentException.ThrowIfNullOrWhiteSpace(nTAccount?.Value, nameof(nTAccount));
             ArgumentException.ThrowIfNullOrWhiteSpace(sID?.Value, nameof(sID));
             NTAccountValue = nTAccount.Value;
-            int domainSeparator = NTAccountValue.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
+            int domainSeparator = NTAccountValue.IndexOf('\\', StringComparison.Ordinal);
             if (domainSeparator != -1)
             {
                 UserName = NTAccountValue[(domainSeparator + 1)..];

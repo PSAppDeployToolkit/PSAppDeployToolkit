@@ -202,7 +202,7 @@ namespace PSADT.ProcessManagement
                             runningProcesses.Add(new(process, description, argv[0], argv.Skip(1), sid));
                         }
                     }
-                    catch when (processDefinition.Name.Contains('*', StringComparison.OrdinalIgnoreCase))
+                    catch when (processDefinition.Name.Contains('*', StringComparison.Ordinal))
                     {
                         continue;
                         throw;

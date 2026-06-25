@@ -64,7 +64,7 @@ namespace PSADT.ProcessManagement
             {
                 ProcessName = Path.GetFileNameWithoutExtension(Name);
             }
-            if (Name.Contains('*', StringComparison.OrdinalIgnoreCase))
+            if (Name.Contains('*', StringComparison.Ordinal))
             {
                 NameRegex = new($"^{Regex.Escape(Name).Replace("\\*", ".*", StringComparison.OrdinalIgnoreCase)}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 if (ProcessName is not null)

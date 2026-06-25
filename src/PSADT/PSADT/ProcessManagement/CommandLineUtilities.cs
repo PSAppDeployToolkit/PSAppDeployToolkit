@@ -485,8 +485,8 @@ namespace PSADT.ProcessManagement
                     {
                         string token = tokens[i];
 
-                        if (token.Contains(';', StringComparison.OrdinalIgnoreCase) || token.Contains('|', StringComparison.OrdinalIgnoreCase) || token.Contains('&', StringComparison.OrdinalIgnoreCase) ||
-                            token.Contains('<', StringComparison.OrdinalIgnoreCase) || token.Contains('>', StringComparison.OrdinalIgnoreCase) || token.Contains('^', StringComparison.OrdinalIgnoreCase))
+                        if (token.Contains(';', StringComparison.Ordinal) || token.Contains('|', StringComparison.Ordinal) || token.Contains('&', StringComparison.Ordinal) ||
+                            token.Contains('<', StringComparison.Ordinal) || token.Contains('>', StringComparison.Ordinal) || token.Contains('^', StringComparison.Ordinal))
                         {
                             return (string.Join(' ', tokens.Take(i)), i);
                         }
@@ -495,7 +495,7 @@ namespace PSADT.ProcessManagement
                     // Only apply the "penultimate token" rule if there are no obvious arguments.
                     // Check if the last token could reasonably be part of a path.
                     string lastToken = tokens[^1];
-                    if (!lastToken.StartsWith('/') && !lastToken.StartsWith('-') && !lastToken.Contains('=', StringComparison.OrdinalIgnoreCase) && !lastToken.StartsWith('{'))
+                    if (!lastToken.StartsWith('/') && !lastToken.StartsWith('-') && !lastToken.Contains('=', StringComparison.Ordinal) && !lastToken.StartsWith('{'))
                     {
                         return (string.Join(' ', tokens.Take(tokens.Count - 1)), tokens.Count - 1);
                     }
@@ -559,7 +559,7 @@ namespace PSADT.ProcessManagement
         /// <returns>True if it looks like an argument.</returns>
         private static bool IsArgumentLike(string part)
         {
-            return !string.IsNullOrWhiteSpace(part) && part[0] is char first && (((first is '/' or '-') && part.Length > 1) || part.Contains('=', StringComparison.OrdinalIgnoreCase) || (first == '{' && part.EndsWith('}')));
+            return !string.IsNullOrWhiteSpace(part) && part[0] is char first && (((first is '/' or '-') && part.Length > 1) || part.Contains('=', StringComparison.Ordinal) || (first == '{' && part.EndsWith('}')));
         }
 
         /// <summary>
@@ -696,7 +696,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Check if the argument is a key-value pair.
-            int equalsPos = argument.IndexOf('=', StringComparison.OrdinalIgnoreCase);
+            int equalsPos = argument.IndexOf('=', StringComparison.Ordinal);
             if (equalsPos > 0 && equalsPos < argument.Length - 1)
             {
                 // Return the argument irrespective of whether it's quoted or not to support

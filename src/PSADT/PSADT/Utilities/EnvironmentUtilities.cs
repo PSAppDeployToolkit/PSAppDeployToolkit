@@ -150,7 +150,7 @@ namespace PSADT.Utilities
             {
                 throw new FormatException("The first char in the variable is a null character.");
             }
-            if (variable.Contains('=', StringComparison.OrdinalIgnoreCase))
+            if (variable.Contains('=', StringComparison.Ordinal))
             {
                 throw new FormatException("Environment variable name cannot contain equal character.");
             }

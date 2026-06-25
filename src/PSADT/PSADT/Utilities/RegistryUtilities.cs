@@ -59,7 +59,7 @@ namespace PSADT.Utilities
         internal static RegistryKey GetRegistryKeyForPath(string keyPath, bool writable = false)
         {
             keyPath = keyPath.Replace(@"Microsoft.PowerShell.Core\Registry::", newValue: null, StringComparison.OrdinalIgnoreCase);
-            int firstBackslashIndex = keyPath.IndexOf('\\', StringComparison.OrdinalIgnoreCase);
+            int firstBackslashIndex = keyPath.IndexOf('\\', StringComparison.Ordinal);
             if (firstBackslashIndex == -1)
             {
                 throw new FormatException("Invalid registry key format.");
