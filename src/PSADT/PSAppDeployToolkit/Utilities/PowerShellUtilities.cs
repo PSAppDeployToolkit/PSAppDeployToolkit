@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -63,28 +62,30 @@ namespace PSAppDeployToolkit.Utilities
         }
 
         /// <summary>
+        /// Determines whether the specified object has no displayable content when converted to a string, using PowerShell's Out-String cmdlet to evaluate the object's string representation.
+        /// </summary>
+        /// <param name="obj">The object to check for displayable content.</param>
+        /// <returns>true if the object has no displayable content; otherwise, false.</returns>
+        public static bool ObjectRendersAsEmpty(object? obj)
+        {
+            return string.IsNullOrWhiteSpace(GetBaseObject<string>(ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(obj)));
+        }
+
+        /// <summary>
         /// Converts a list of remaining arguments to a dictionary of key-value pairs.
         /// This MUST NOT return a ReadOnlyDictionary! The API must match $PSBoundParameters.
         /// </summary>
         /// <param name="remainingArguments">A list of remaining arguments to convert.</param>
         /// <returns>A dictionary of key-value pairs representing the remaining arguments.</returns>
         /// <exception cref="FormatException">Thrown when the parser is unable to process the provided arguments.</exception>
-        public static IDictionary<string, object> ConvertValuesFromRemainingArguments(IReadOnlyList<object> remainingArguments)
+        public static IDictionary<string, object> ConvertValuesFromRemainingArguments(IEnumerable<object> remainingArguments)
         {
             Dictionary<string, object> values = new(StringComparer.OrdinalIgnoreCase);
-            if (!(remainingArguments?.Count > 0))
-            {
-                return values;
-            }
             try
             {
                 string currentKey = string.Empty;
                 foreach (object argument in remainingArguments)
                 {
-                    if (argument is null)
-                    {
-                        continue;
-                    }
                     if (argument is string str && PowerShellParameterRegex.IsMatch(str))
                     {
                         currentKey = PowerShellParamTokenRegex.Replace(str, string.Empty);
@@ -92,7 +93,14 @@ namespace PSAppDeployToolkit.Utilities
                     }
                     else if (!string.IsNullOrWhiteSpace(currentKey))
                     {
-                        values[currentKey] = !string.IsNullOrWhiteSpace(GetBaseObject<string>(ScriptBlock.Create("Out-String -InputObject $args[0]").InvokeReturnAsIs(argument))) ? argument : null!;
+                        if (!ObjectRendersAsEmpty(argument))
+                        {
+                            values[currentKey] = argument;
+                        }
+                        else
+                        {
+                            _ = values.Remove(currentKey);
+                        }
                         currentKey = string.Empty;
                     }
                 }
@@ -107,47 +115,40 @@ namespace PSAppDeployToolkit.Utilities
         /// <summary>
         /// Converts a dictionary of key-value pairs to a string of PowerShell arguments.
         /// </summary>
-        /// <param name="dict">A dictionary of key-value pairs to convert.</param>
-        /// <param name="exclusions">An array of keys to exclude from the conversion.</param>
+        /// <param name="boundParameters">A dictionary of key-value pairs to convert.</param>
         /// <returns>A string of PowerShell arguments representing the dictionary.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the provided dictionary contains a null key or a null value.</exception>
-        internal static string ConvertDictToPowerShellArgs(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions = null)
+        public static IReadOnlyList<string> ConvertBoundParametersToArgumentList(IEnumerable<KeyValuePair<string, object>> boundParameters)
         {
-            // Internal iterator function to yield each argument.
-            static IEnumerable<string> ConvertDictToPowerShellArgsImpl(IEnumerable<KeyValuePair<string, object>> dict, IReadOnlyList<string>? exclusions)
+            // Iterate through each key-value pair in the dictionary.
+            List<string> argumentList = []; foreach (KeyValuePair<string, object> boundParameter in boundParameters)
             {
-                // Iterate through each key-value pair in the dictionary.
-                foreach (KeyValuePair<string, object> entry in dict)
+                // Ensure the shape of the incoming data is correct.
+                if (boundParameter.Key is null)
                 {
-                    // Skip anything null or excluded.
-                    if (entry.Value is null || entry.Key is not string key || exclusions?.Contains(key, StringComparer.OrdinalIgnoreCase) == true)
-                    {
-                        continue;
-                    }
+                    throw new InvalidOperationException("The provided dictionary contains a null key. All keys must be non-null strings.");
+                }
 
-                    // Handle nested dictionaries.
-                    if (entry.Value is IDictionary dictionary)
+                // Handle the value with specific type handling.
+                if (boundParameter.Value is IEnumerable<object> remainingArguments && remainingArguments.Any(static v => v is string k && PowerShellParameterRegex.IsMatch(k)))
+                {
+                    argumentList.AddRange(ConvertBoundParametersToArgumentList(ConvertValuesFromRemainingArguments(remainingArguments)));
+                    continue;
+                }
+                if (boundParameter.Value is SwitchParameter switchParameter)
+                {
+                    if (switchParameter.IsPresent)
                     {
-                        yield return ConvertDictToPowerShellArgs(dictionary.Cast<DictionaryEntry>().ToDictionary(static entry => (string)entry.Key, static entry => entry.Value ?? throw new InvalidOperationException($"The value for '{entry.Key}' is null."), StringComparer.Ordinal), exclusions);
-                        continue;
+                        argumentList.Add($"-{boundParameter.Key}");
                     }
-
-                    // Handle all other values.
-                    string? val = entry.Value is string str
-                        ? $"'{SingleQuoteRegex.Replace(str, "''")}'"
-                        : entry.Value is List<object> list
-                        ? ConvertDictToPowerShellArgs(ConvertValuesFromRemainingArguments(list), exclusions)
-                        : entry.Value is IEnumerable enumerable
-                        ? enumerable.OfType<string>().ToArray() is string[] strings ? $"'{string.Join("','", strings.Select(static s => SingleQuoteRegex.Replace(s, "''")))}'" : string.Join(',', enumerable)
-                        : entry.Value is not SwitchParameter
-                        ? entry.Value.ToString()
-                        : null;
-                    yield return !string.IsNullOrWhiteSpace(val)
-                        ? $"-{key}:{val}"
-                        : $"-{key}";
+                    continue;
+                }
+                if (!ObjectRendersAsEmpty(boundParameter.Value))
+                {
+                    argumentList.Add($"-{boundParameter.Key}:{boundParameter.Value}");
                 }
             }
-            return string.Join(' ', ConvertDictToPowerShellArgsImpl(dict, exclusions));
+            return argumentList.AsReadOnly();
         }
 
         /// <summary>
@@ -159,10 +160,5 @@ namespace PSAppDeployToolkit.Utilities
         /// A regular expression to match the leading hyphen and optional trailing colon in PowerShell parameter tokens, used for extracting the parameter name from the token.
         /// </summary>
         private static readonly Regex PowerShellParamTokenRegex = new("(^-|:$)", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-        /// <summary>
-        /// A regular expression to match single quotes that are not part of a pair of single quotes, used for escaping single quotes in PowerShell string literals by doubling them. This regex uses negative lookbehind and negative lookahead assertions to ensure that it only matches single quotes that are not preceded or followed by another single quote, allowing for proper handling of escaped single quotes in PowerShell strings.
-        /// </summary>
-        private static readonly Regex SingleQuoteRegex = new("(?<!')'(?!')", RegexOptions.Compiled);
     }
 }

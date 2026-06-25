@@ -585,7 +585,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     if (DeployAppScriptParameters?.Count > 0)
                     {
-                        WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{PowerShellUtilities.ConvertDictToPowerShellArgs(DeployAppScriptParameters).Replace("''", "'", StringComparison.OrdinalIgnoreCase)}].");
+                        WriteLogEntry($"The following parameters were passed to [{DeployAppScriptFriendlyName}]: [{CommandLineUtilities.ArgumentListToCommandLine(PowerShellUtilities.ConvertBoundParametersToArgumentList(DeployAppScriptParameters))}].");
                     }
                 }
                 PSObject adtDirectories = (PSObject)adtData.Properties["Directories"].Value;
