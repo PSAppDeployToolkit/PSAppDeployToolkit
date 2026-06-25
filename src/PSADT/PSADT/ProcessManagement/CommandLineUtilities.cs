@@ -433,12 +433,12 @@ namespace PSADT.ProcessManagement
                     }
                     else
                     {
-                        StringBuilder valueBuilder = new();
+                        int valueStartPosition = position;
                         while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
                         {
-                            _ = valueBuilder.Append(commandLine[position++]);
+                            position++;
                         }
-                        value = valueBuilder.ToString();
+                        value = commandLine[valueStartPosition..position].ToString();
                     }
                     _ = result.Append(ConvertPosixPathToWindows(value));
                 }
@@ -475,20 +475,13 @@ namespace PSADT.ProcessManagement
                     break;
                 }
 
-                // Record the start position of this token.
-                tokenPositions.Add(position);
-
-                // Parse the current token (non-whitespace characters).
-                StringBuilder tokenBuilder = new();
+                int tokenStartPosition = position;
                 while (position < commandLine.Length && !IsWhitespace(commandLine[position]))
                 {
-                    _ = tokenBuilder.Append(commandLine[position]);
                     position++;
                 }
-                if (tokenBuilder.Length > 0)
-                {
-                    tokens.Add(tokenBuilder.ToString());
-                }
+                tokenPositions.Add(tokenStartPosition);
+                tokens.Add(commandLine[tokenStartPosition..position].ToString());
             }
 
             // Find the optimal breakpoint for the path. If we found a breakpoint, adjust the position to point to the start of the next argument.
@@ -586,9 +579,7 @@ namespace PSADT.ProcessManagement
                     // Allow \\server\share\folder before being strict.
                     for (int i = 3; i < tokens.Count; i++)
                     {
-                        string token = tokens[i];
-
-                        if (token.Any(static c => IsCommandSeparator(c)))
+                        if (tokens[i].Any(static c => IsCommandSeparator(c)))
                         {
                             return (string.Join(' ', tokens.Take(i)), i);
                         }
@@ -743,13 +734,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The converted Windows path, or the original path if it doesn't match the pattern.</returns>
         private static string ConvertPosixPathToWindows(string path)
         {
-            if (path.Length >= 3 && path[0] == '/' && char.IsLetter(path[1]) && path[2] == '/')
-            {
-                // This looks like a POSIX-style path, e.g., /C/Program Files/app.exe
-                // Convert it to a Windows-style path, e.g., C:\Program Files\app.exe
-                return $"{path[1]}:\\{path[3..].Replace('/', '\\')}";
-            }
-            return path;
+            return path.Length >= 3 && path[0] == '/' && char.IsLetter(path[1]) && path[2] == '/' ? $"{path[1]}:\\{path[3..].Replace('/', '\\')}" : path;
         }
 
         /// <summary>
@@ -773,7 +758,6 @@ namespace PSADT.ProcessManagement
         /// <returns>True if the character is whitespace, false otherwise.</returns>
         private static bool IsWhitespace(char c)
         {
-            // Windows command line parsing considers space and tab as whitespace.
             return c is ' ' or '\t';
         }
 
@@ -928,11 +912,6 @@ namespace PSADT.ProcessManagement
         /// <returns>The escaped value.</returns>
         private static string EscapeColonSeparatedValue(string value)
         {
-            if (!ContainsWhitespaceOrQuote(value))
-            {
-                return value;
-            }
-
             StringBuilder sb = new();
             _ = sb.Append('"').Append(value);
             for (int i = value.Length - 1; i >= 0 && value[i] == '\\'; i--)
