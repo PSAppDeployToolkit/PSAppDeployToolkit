@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Foundation
 {
@@ -159,10 +160,24 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="scriptBlock">The script block to execute. This parameter must not be null.</param>
         /// <param name="args">An array of arguments to pass to the script block. This parameter can be null or empty if no arguments are
         /// required.</param>
-        /// <returns>A read-only collection of PSObject instances that represent the results of the script execution.</returns>
-        internal static ReadOnlyCollection<PSObject> InvokeScript(ScriptBlock scriptBlock, params object[] args)
+        internal static void InvokeScript(ScriptBlock scriptBlock, params object[] args)
         {
-            SessionState sessionState = GetSessionState(); return new(sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args));
+            SessionState sessionState = GetSessionState(); _ = sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args);
+        }
+
+        /// <summary>
+        /// Invokes the specified script block with the provided arguments in the current session state.
+        /// </summary>
+        /// <remarks>This method executes the script block in the context of the current session state,
+        /// allowing access to session variables and commands.</remarks>
+        /// <typeparam name="T">The type of the objects returned by the script block execution.</typeparam>
+        /// <param name="scriptBlock">The script block to execute. This parameter must not be null.</param>
+        /// <param name="args">An array of arguments to pass to the script block. This parameter can be null or empty if no arguments are
+        /// required.</param>
+        /// <returns>A read-only collection of objects of type <typeparamref name="T"/> that represent the results of the script execution.</returns>
+        internal static ReadOnlyCollection<T> InvokeScript<T>(ScriptBlock scriptBlock, params object[] args)
+        {
+            SessionState sessionState = GetSessionState(); return new ReadOnlyCollection<T>([.. sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args).Select(PowerShellUtilities.GetBaseObject<T>)]);
         }
 
         /// <summary>

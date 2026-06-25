@@ -277,7 +277,7 @@ namespace PSAppDeployToolkit.Foundation
                     FileInfo wimFile = new(wimFiles[0].FullName);
                     WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
                     DirWimMountPath = new(Path.Join(DirFiles.FullName, Path.GetRandomFileName()));
-                    _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, DirWimMountPath);
+                    ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, DirWimMountPath);
                     AddMountedWimFile(wimFile); DirFiles = DirWimMountPath;
                     WriteLogEntry($"Successfully mounted WIM file to [{DirWimMountPath}].");
 
@@ -963,7 +963,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     else
                     {
-                        _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
+                        ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Enable-ADTTerminalServerInstallMode'"));
                     }
                 }
 
@@ -1024,7 +1024,7 @@ namespace PSAppDeployToolkit.Foundation
             // If terminal server mode was specified, revert the installation mode to support it.
             if (TerminalServerMode)
             {
-                _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
+                ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Disable-ADTTerminalServerInstallMode'"));
             }
 
             // Process resulting exit code.
@@ -1467,7 +1467,7 @@ namespace PSAppDeployToolkit.Foundation
             {
                 return;
             }
-            MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
+            MountedWimFiles.Reverse(); ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
             MountedWimFiles.Clear();
             DirWimMountPath = null;
         }
