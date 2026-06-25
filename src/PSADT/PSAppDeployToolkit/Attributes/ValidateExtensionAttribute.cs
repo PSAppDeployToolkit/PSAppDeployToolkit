@@ -38,9 +38,9 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentNullException">Thrown when the argument is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the argument is not a string or does not have a valid extension.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
-        protected override void ValidateElement(object element)
+        protected override void ValidateElement(object? element)
         {
-            if (PowerShellUtilities.ObjectIsNull(element))
+            if (!PowerShellUtilities.TryGetBaseObject(element, out element))
             {
                 throw new ArgumentNullException(paramName: null, "The argument is null. Provide a valid value for the argument, and then try running the command again.");
             }

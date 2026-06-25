@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Internal;
@@ -27,6 +28,28 @@ namespace PSAppDeployToolkit.Utilities
                 obj = psObj.BaseObject;
             }
             return (T)obj;
+        }
+
+        /// <summary>
+        /// Attempts to get the base object of a PSObject, unwrapping any nested PSObjects to retrieve the underlying object of type T. Returns true if successful, false otherwise.
+        /// </summary>
+        /// <typeparam name="T">The type of the underlying object to retrieve.</typeparam>
+        /// <param name="obj">The object to unwrap.</param>
+        /// <param name="baseObject">When this method returns, contains the underlying object of type T if the operation succeeded, or the default value of T if the operation failed.</param>
+        /// <returns>true if the underlying object of type T was successfully retrieved; otherwise, false.</returns>
+        public static bool TryGetBaseObject<T>(object? obj, [NotNullWhen(true)] out T? baseObject) where T : notnull
+        {
+            while (obj is PSObject psObj)
+            {
+                obj = psObj.BaseObject;
+            }
+            if (ObjectIsNull(obj) || obj is not T t)
+            {
+                baseObject = default;
+                return false;
+            }
+            baseObject = t;
+            return true;
         }
 
         /// <summary>

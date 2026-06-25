@@ -31,11 +31,10 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentNullException">Thrown when the argument is null and allowNull is <see langword="false"/>.</exception>
         /// <exception cref="ArgumentException">Thrown when the argument is empty or consists only of white-space characters and allowEmpty is <see langword="false"/>.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
-        protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
+        protected override void Validate(object? arguments, EngineIntrinsics engineIntrinsics)
         {
             // Handle null based on configuration.
-            arguments = PowerShellUtilities.GetBaseObject<object>(arguments);
-            if (PowerShellUtilities.ObjectIsNull(arguments))
+            if (!PowerShellUtilities.TryGetBaseObject(arguments, out arguments))
             {
                 if (allowNull)
                 {
@@ -98,8 +97,7 @@ namespace PSAppDeployToolkit.Attributes
                     {
                         do
                         {
-                            object element = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
-                            if (PowerShellUtilities.ObjectIsNull(element))
+                            if (!PowerShellUtilities.TryGetBaseObject(enumerator.Current, out object? element))
                             {
                                 throw new ArgumentException("The argument collection contains a null element. Provide a collection that does not contain null elements, and then try running the command again.");
                             }

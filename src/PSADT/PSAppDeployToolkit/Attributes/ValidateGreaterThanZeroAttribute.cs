@@ -26,10 +26,9 @@ namespace PSAppDeployToolkit.Attributes
         /// Thrown when <paramref name="arguments"/> is null, cannot be compared to zero, or is less than or equal to
         /// zero.
         /// </exception>
-        protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
+        protected override void Validate(object? arguments, EngineIntrinsics engineIntrinsics)
         {
-            arguments = PowerShellUtilities.GetBaseObject<object>(arguments);
-            if (PowerShellUtilities.ObjectIsNull(arguments))
+            if (!PowerShellUtilities.TryGetBaseObject(arguments, out arguments))
             {
                 throw new ArgumentNullException(paramName: null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
             }
@@ -50,8 +49,7 @@ namespace PSAppDeployToolkit.Attributes
         {
             while (enumerator.MoveNext())
             {
-                object element = PowerShellUtilities.GetBaseObject<object>(enumerator.Current);
-                if (PowerShellUtilities.ObjectIsNull(element))
+                if (!PowerShellUtilities.TryGetBaseObject(enumerator.Current, out object? element))
                 {
                     throw new ArgumentNullException(paramName: null, "The argument collection contains a null element. Provide a collection whose elements are greater than zero, and then try running the command again.");
                 }
@@ -67,10 +65,9 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentException">Thrown when the argument type does not support greater-than-zero validation.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the argument is less than or equal to zero.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
-        private static void ValidateValue(object value)
+        private static void ValidateValue(object? value)
         {
-            value = PowerShellUtilities.GetBaseObject<object>(value);
-            if (PowerShellUtilities.ObjectIsNull(value))
+            if (!PowerShellUtilities.TryGetBaseObject(value, out value))
             {
                 throw new ArgumentNullException(paramName: null, "The argument is null. Provide an argument that is greater than zero, and then try running the command again.");
             }

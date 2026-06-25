@@ -23,10 +23,9 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentNullException">Thrown when the input value is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the input value cannot be transformed into a DateTime.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0015:Specify the parameter name in ArgumentException", Justification = "We don't want a paramter name on these exceptions.")]
-        public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
+        public override object Transform(EngineIntrinsics engineIntrinsics, object? inputData)
         {
-            inputData = PowerShellUtilities.GetBaseObject<object>(inputData);
-            if (PowerShellUtilities.ObjectIsNull(inputData))
+            if (!PowerShellUtilities.TryGetBaseObject(inputData, out inputData))
             {
                 throw new ArgumentNullException(paramName: null, "Cannot transform null to DateTime.");
             }
