@@ -40,6 +40,9 @@ function Get-ADTCommandTable
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTCommandTable
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTCommandTable.ps1
     #>
 
     # Create a new directory to insert only public functions into.

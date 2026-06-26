@@ -41,6 +41,9 @@ function Convert-ADTValuesFromRemainingArguments
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Convert-ADTValuesFromRemainingArguments
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Convert-ADTValuesFromRemainingArguments.ps1
     #>
 
     [CmdletBinding()]

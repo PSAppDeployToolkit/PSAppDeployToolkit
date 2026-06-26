@@ -38,6 +38,9 @@ function Close-ADTInstallationProgress
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Close-ADTInstallationProgress
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Close-ADTInstallationProgress.ps1
     #>
 
     [CmdletBinding()]

@@ -43,6 +43,9 @@ function Get-ADTStringTable
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTStringTable
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTStringTable.ps1
     #>
 
     [CmdletBinding()]

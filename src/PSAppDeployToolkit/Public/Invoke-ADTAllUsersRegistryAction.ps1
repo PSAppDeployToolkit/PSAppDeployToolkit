@@ -74,6 +74,9 @@ function Invoke-ADTAllUsersRegistryAction
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTAllUsersRegistryAction
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Invoke-ADTAllUsersRegistryAction.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

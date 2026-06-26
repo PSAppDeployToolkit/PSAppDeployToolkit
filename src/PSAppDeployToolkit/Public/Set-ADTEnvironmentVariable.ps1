@@ -63,6 +63,9 @@ function Set-ADTEnvironmentVariable
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTEnvironmentVariable
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTEnvironmentVariable.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None', SupportsShouldProcess = $true)]

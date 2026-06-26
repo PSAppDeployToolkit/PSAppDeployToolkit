@@ -53,6 +53,9 @@ function Set-ADTDeferHistory
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTDeferHistory
 
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTDeferHistory.ps1
+
     #>
 
     [CmdletBinding()]

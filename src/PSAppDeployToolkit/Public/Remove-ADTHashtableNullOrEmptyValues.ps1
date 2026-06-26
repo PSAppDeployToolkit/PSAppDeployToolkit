@@ -47,6 +47,9 @@ function Remove-ADTHashtableNullOrEmptyValues
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTHashtableNullOrEmptyValues
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTHashtableNullOrEmptyValues.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetname = 'Default')]

@@ -82,6 +82,9 @@ function Test-ADTServiceExists
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTServiceExists
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTServiceExists.ps1
     #>
 
     [CmdletBinding()]

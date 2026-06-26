@@ -75,6 +75,9 @@ function Set-ADTServiceStartMode
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTServiceStartMode
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTServiceStartMode.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

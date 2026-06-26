@@ -38,6 +38,9 @@ function Show-ADTHelpConsole
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTHelpConsole
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTHelpConsole.ps1
     #>
 
     # Run this as no-wait dialog so it doesn't stall the main thread. This this uses WinForms, we don't care about the style.

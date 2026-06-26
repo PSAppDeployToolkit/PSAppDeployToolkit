@@ -103,6 +103,9 @@ function Set-ADTItemPermission
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTItemPermission
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTItemPermission.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

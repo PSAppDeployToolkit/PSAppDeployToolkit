@@ -78,6 +78,9 @@ function Start-ADTServiceAndDependencies
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTServiceAndDependencies
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTServiceAndDependencies.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]

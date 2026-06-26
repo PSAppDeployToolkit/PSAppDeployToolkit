@@ -39,6 +39,9 @@ function Set-ADTPowerShellCulture
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTPowerShellCulture
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTPowerShellCulture.ps1
     #>
 
     [CmdletBinding()]

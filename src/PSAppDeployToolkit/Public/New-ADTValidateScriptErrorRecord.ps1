@@ -68,6 +68,9 @@ function New-ADTValidateScriptErrorRecord
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTValidateScriptErrorRecord
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTValidateScriptErrorRecord.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]

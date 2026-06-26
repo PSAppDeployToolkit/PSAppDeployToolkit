@@ -41,6 +41,9 @@ function Get-ADTRunningProcesses
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTServiceStartMode
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTServiceStartMode.ps1
     #>
 
     [CmdletBinding()]

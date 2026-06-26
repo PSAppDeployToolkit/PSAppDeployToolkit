@@ -51,6 +51,9 @@ function Dismount-ADTWimFile
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Dismount-ADTWimFile
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Dismount-ADTWimFile.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

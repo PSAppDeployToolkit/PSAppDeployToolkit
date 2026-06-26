@@ -73,6 +73,9 @@ function Resolve-ADTErrorRecord
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Resolve-ADTErrorRecord
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Resolve-ADTErrorRecord.ps1
     #>
 
     [CmdletBinding()]

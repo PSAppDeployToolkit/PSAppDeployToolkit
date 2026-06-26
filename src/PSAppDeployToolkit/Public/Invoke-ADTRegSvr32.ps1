@@ -51,6 +51,9 @@ function Invoke-ADTRegSvr32
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Invoke-ADTRegSvr32
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Invoke-ADTRegSvr32.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

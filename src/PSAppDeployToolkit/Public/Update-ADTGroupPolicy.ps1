@@ -47,6 +47,9 @@ function Update-ADTGroupPolicy
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Update-ADTGroupPolicy
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Update-ADTGroupPolicy.ps1
     #>
 
     [CmdletBinding()]

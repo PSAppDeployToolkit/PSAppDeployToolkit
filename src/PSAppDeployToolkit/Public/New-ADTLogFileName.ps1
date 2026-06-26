@@ -46,6 +46,9 @@ function New-ADTLogFileName
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTLogFileName
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTLogFileName.ps1
     #>
 
     [CmdletBinding()]

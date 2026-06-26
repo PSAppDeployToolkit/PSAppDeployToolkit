@@ -69,6 +69,9 @@ function Test-ADTBattery
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTBattery
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTBattery.ps1
     #>
 
     [CmdletBinding()]

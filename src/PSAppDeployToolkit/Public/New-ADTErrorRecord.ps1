@@ -67,6 +67,9 @@ function New-ADTErrorRecord
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTErrorRecord
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTErrorRecord.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = "This function does not change system state.")]

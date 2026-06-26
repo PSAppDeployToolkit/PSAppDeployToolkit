@@ -78,6 +78,9 @@ function Write-ADTLogEntry
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Write-ADTLogEntry
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Write-ADTLogEntry.ps1
     #>
 
     [CmdletBinding()]

@@ -38,6 +38,9 @@ function Get-ADTUserNotificationState
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTUserNotificationState
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTUserNotificationState.ps1
     #>
 
     [CmdletBinding()]

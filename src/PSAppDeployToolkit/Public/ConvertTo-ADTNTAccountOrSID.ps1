@@ -80,6 +80,9 @@ function ConvertTo-ADTNTAccountOrSID
         https://psappdeploytoolkit.com/docs/reference/functions/ConvertTo-ADTNTAccountOrSID
 
     .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/ConvertTo-ADTNTAccountOrSID.ps1
+
+    .LINK
         https://learn.microsoft.com/en-us/dotnet/api/system.security.principal.wellknownsidtype
 
     #>

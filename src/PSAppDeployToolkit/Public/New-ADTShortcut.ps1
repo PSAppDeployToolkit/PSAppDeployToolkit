@@ -83,6 +83,9 @@ function New-ADTShortcut
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTShortcut
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTShortcut.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

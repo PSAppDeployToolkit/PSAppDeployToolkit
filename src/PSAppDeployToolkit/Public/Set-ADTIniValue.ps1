@@ -57,6 +57,9 @@ function Set-ADTIniValue
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniValue
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTIniValue.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

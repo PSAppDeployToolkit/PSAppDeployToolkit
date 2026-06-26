@@ -90,6 +90,9 @@ function Get-ADTMsiTableProperty
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTMsiTableProperty
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTMsiTableProperty.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'TableInfo')]

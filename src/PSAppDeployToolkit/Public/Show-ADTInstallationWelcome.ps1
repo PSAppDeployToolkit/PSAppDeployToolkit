@@ -173,6 +173,9 @@ function Show-ADTInstallationWelcome
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Show-ADTInstallationWelcome
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Show-ADTInstallationWelcome.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'Interactive, with no modifying options.')]

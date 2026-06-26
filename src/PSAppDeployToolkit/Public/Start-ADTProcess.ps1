@@ -209,6 +209,9 @@ function Start-ADTProcess
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTProcess
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTProcess.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Default_CreateWindow_Wait')]
