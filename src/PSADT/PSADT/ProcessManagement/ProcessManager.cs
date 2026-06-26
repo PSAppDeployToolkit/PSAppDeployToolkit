@@ -22,7 +22,10 @@ using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.SafeHandles;
 using PSADT.Security;
+using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security;
+using Windows.Win32.Security.Authorization;
 using Windows.Win32.System.JobObjects;
 using Windows.Win32.System.Threading;
 
@@ -76,8 +79,8 @@ namespace PSADT.ProcessManagement
             // Perform initial setup and get started with the process creation.
             ProcessReadStream? stdOutHandle = null, stdErrHandle = null; ProcessWriteStream? stdInHandle = null;
             AnonymousPipeServerStream? stdOutStream = null, stdErrStream = null, stdInStream = null;
-            ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges = PrivilegeManager.GetPrivileges();
             Span<char> commandSpan = launchInfo.MakeCommandLine(nullTerminated: true).ToCharArray();
+            ReadOnlyCollection<SE_PRIVILEGE> callerPrivileges = PrivilegeManager.GetPrivileges();
             SafeProcessHandle hProcess; SafeThreadHandle hThread; uint processId;
             ConcurrentQueue<string> interleavedData = [];
             try
@@ -212,6 +215,10 @@ namespace PSADT.ProcessManagement
             // Finalise the process creation and return the handle to the caller.
             try
             {
+                if (launchInfo.DenyUserTermination)
+                {
+                    DenyProcessTermination(launchInfo, hProcess, callerPrivileges);
+                }
                 Process process = Process.GetProcessById((int)processId);
                 try
                 {
@@ -224,13 +231,13 @@ namespace PSADT.ProcessManagement
                             _ = NativeMethods.ResumeThread(hThread);
                         }
                         stdInHandle?.Task.Start(TaskScheduler.Default);
-                        return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges, stdOutHandle, stdErrHandle, interleavedData, stdInHandle));
+                        return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle);
                     }
                     using (hThread)
                     {
                         _ = NativeMethods.ResumeThread(hThread);
                     }
-                    return new(new(launchInfo, process, processId, hProcess, commandSpan.ToString(), callerPrivileges));
+                    return new(launchInfo, process, processId, hProcess, commandSpan.ToString());
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -335,11 +342,15 @@ namespace PSADT.ProcessManagement
             // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
             try
             {
+                if (launchInfo.DenyUserTermination)
+                {
+                    DenyProcessTermination(launchInfo, hProcess);
+                }
                 if (launchInfo.PriorityClass is not null)
                 {
                     process.PriorityClass = launchInfo.PriorityClass.Value;
                 }
-                return new(new(launchInfo, process));
+                return new(launchInfo, process);
             }
             catch (Exception ex) when (ex.Message is not null)
             {
@@ -347,6 +358,87 @@ namespace PSADT.ProcessManagement
                 process.Dispose();
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Modifies the access control list (ACL) of the specified process to deny termination and other dangerous operations.
+        /// </summary>
+        /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
+        /// <param name="processHandle">A safe handle to the process, used for resource management and native operations.</param>
+        /// <param name="callerPrivileges">The caller's privileges as per the PrivilegeManager class.</param>
+        private static void DenyProcessTermination(ProcessLaunchInfo launchInfo, SafeProcessHandle processHandle, ReadOnlyCollection<SE_PRIVILEGE>? callerPrivileges = null)
+        {
+            // If the client/server process isn't ours, we'll want to change the owner to ourselves if we can.
+            RunAsActiveUser runAsActiveUser = launchInfo.RunAsActiveUser ?? AccountUtilities.CallerRunAsActiveUser; bool changeOwner = false;
+            if (runAsActiveUser.SID != AccountUtilities.CallerSid && (callerPrivileges ??= PrivilegeManager.GetPrivileges()).Contains(SE_PRIVILEGE.SeSecurityPrivilege) && callerPrivileges.Contains(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
+            {
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeSecurityPrivilege);
+                PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+                changeOwner = true;
+            }
+
+            // Create a restricted access control list (ACL) for the client process so the user can't terminate it.
+            using SafePinnedGCHandle pinnedUserSid = SafePinnedGCHandle.Alloc(runAsActiveUser.SID.GetBinaryForm());
+            bool pinnedUserSidAddRef = false;
+            try
+            {
+                // Generate an explicit access control entry (ACE) for the user SID.
+                pinnedUserSid.DangerousAddRef(ref pinnedUserSidAddRef);
+                TRUSTEE_W aceTrustee = new()
+                {
+                    TrusteeForm = TRUSTEE_FORM.TRUSTEE_IS_SID,
+                    ptstrName = new(pinnedUserSid.DangerousGetHandle()),
+                };
+
+                // Create a DENY ACE for dangerous permissions that could be used for code injection or process manipulation.
+                EXPLICIT_ACCESS_W denyAce = new()
+                {
+                    grfAccessPermissions = (uint)(
+                        PROCESS_ACCESS_RIGHTS.PROCESS_TERMINATE |                    // Prevent termination
+                        PROCESS_ACCESS_RIGHTS.PROCESS_VM_WRITE |                     // Prevent memory writes (code injection)
+                        PROCESS_ACCESS_RIGHTS.PROCESS_VM_OPERATION |                 // Prevent memory operations
+                        PROCESS_ACCESS_RIGHTS.PROCESS_CREATE_THREAD |                // Prevent remote thread creation
+                        PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE |                   // Prevent handle duplication attacks
+                        PROCESS_ACCESS_RIGHTS.PROCESS_SET_INFORMATION |              // Prevent process info modification
+                        PROCESS_ACCESS_RIGHTS.PROCESS_SUSPEND_RESUME),               // Prevent suspend/resume manipulation
+                    grfAccessMode = ACCESS_MODE.DENY_ACCESS,
+                    grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                    Trustee = aceTrustee,
+                };
+
+                // Create a GRANT ACE for limited permissions (query and synchronize only).
+                EXPLICIT_ACCESS_W grantAce = new()
+                {
+                    grfAccessPermissions = (uint)(
+                        PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION |    // Allow querying limited info
+                        PROCESS_ACCESS_RIGHTS.PROCESS_SYNCHRONIZE),                  // Allow synchronization
+                    grfAccessMode = ACCESS_MODE.GRANT_ACCESS,
+                    grfInheritance = ACE_FLAGS.NO_INHERITANCE,
+                    Trustee = aceTrustee,
+                };
+
+                // Apply the ACL and potentially change the owner of the client process. DENY ACEs are processed before GRANT ACEs by Windows.
+                _ = NativeMethods.SetEntriesInAcl([denyAce, grantAce], out LocalFreeSafeHandle pAcl);
+                using (pAcl)
+                {
+                    if (changeOwner)
+                    {
+                        using SafePinnedGCHandle pinnedCallerSid = SafePinnedGCHandle.Alloc(AccountUtilities.CallerSid.GetBinaryForm());
+                        _ = NativeMethods.SetSecurityInfo(processHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.OWNER_SECURITY_INFORMATION | OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, pinnedCallerSid, psidGroup: null, pAcl, pSacl: null);
+                    }
+                    else
+                    {
+                        _ = NativeMethods.SetSecurityInfo(processHandle, SE_OBJECT_TYPE.SE_KERNEL_OBJECT, OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION, psidOwner: null, psidGroup: null, pAcl, pSacl: null);
+                    }
+                }
+            }
+            finally
+            {
+                if (pinnedUserSidAddRef)
+                {
+                    pinnedUserSid.DangerousRelease();
+                }
             }
         }
 

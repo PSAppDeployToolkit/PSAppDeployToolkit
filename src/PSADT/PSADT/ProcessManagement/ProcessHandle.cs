@@ -1,7 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32.SafeHandles;
+using PSADT.Interop;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.JobObjects;
 
 namespace PSADT.ProcessManagement
 {
@@ -14,25 +21,149 @@ namespace PSADT.ProcessManagement
     public sealed record ProcessHandle
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProcessHandle"/> class with the specified launch state.
+        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information, process, process ID, process handle, command line, caller privileges, and optional standard output/error handles and interleaved buffer.
         /// </summary>
-        /// <param name="launchState">The process launch state containing information about the started process, its launch parameters, and the
-        /// result to be tracked. Cannot be null.</param>
-        /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null</exception>
-        internal ProcessHandle(ProcessLaunchState launchState)
+        /// <param name="launchInfo">The launch configuration and metadata used to start the process.</param>
+        /// <param name="process">The Process object representing the running process.</param>
+        /// <param name="processId">The unique identifier of the started process.</param>
+        /// <param name="processHandle">A safe handle to the process, used for resource management and native operations.</param>
+        /// <param name="commandLine">The full command line used to launch the process.</param>
+        /// <param name="stdOutHandle">The handle responsible for asynchronously reading the standard output stream of the process.</param>
+        /// <param name="stdErrHandle">The handle responsible for asynchronously reading the standard error stream of the process.</param>
+        /// <param name="interleavedBuffer">A read-only collection containing the combined output from both standard output and standard error streams.</param>
+        /// <param name="stdInHandle">An optional handle for writing to the standard input stream of the process, if input is being provided.</param>
+        /// <exception cref="InvalidProgramException">Thrown if the IO completion port or job object is not initialized when required.</exception>
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ProcessReadStream? stdOutHandle = null, ProcessReadStream? stdErrHandle = null, IReadOnlyCollection<string>? interleavedBuffer = null, ProcessWriteStream? stdInHandle = null)
         {
-            ArgumentNullException.ThrowIfNull(launchState);
+            // Internal worker to satisfy S4457 so that the error handling works properly.
             async Task<ProcessResult> GetTaskAsync()
             {
-                using (launchState)
+                // Ensure that the process is disposed of when the task completes, regardless of success or failure.
+                using (processHandle)
+                using (stdOutHandle)
+                using (stdErrHandle)
+                using (stdInHandle)
                 {
-                    return await launchState.ConfigureAwait(false);
+                    // Wait for the process to exit or for a cancellation request, and handle the exit code accordingly.
+                    CancellationToken cancellationToken = launchInfo.CancellationToken ?? CancellationToken.None;
+                    const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
+                    int exitCode = ProcessManager.TimeoutExitCode; bool processFinished = false;
+                    if (launchInfo.WaitForChildProcesses || launchInfo.KillChildProcessesWithParent)
+                    {
+                        // Set up a job object and an IO completion port to monitor the process and its child processes.
+                        using SafeFileHandle ioCompletionPort = NativeMethods.CreateIoCompletionPort(0);
+                        using SafeFileHandle jobObject = NativeMethods.CreateJobObject();
+                        JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new()
+                        {
+                            CompletionPort = (HANDLE)ioCompletionPort.DangerousGetHandle(),
+                            CompletionKey = null,
+                        };
+                        _ = NativeMethods.SetInformationJobObject(jobObject, in completionPort);
+                        if (launchInfo.KillChildProcessesWithParent)
+                        {
+                            JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedLimitInformation = new()
+                            {
+                                BasicLimitInformation = new()
+                                {
+                                    LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+                                },
+                            };
+                            _ = NativeMethods.SetInformationJobObject(jobObject, in extendedLimitInformation);
+                        }
+                        _ = NativeMethods.AssignProcessToJobObject(jobObject, processHandle);
+
+                        // Start a task to monitor the IO completion port for process exit or timeout events.
+                        await System.Threading.Tasks.Task.Run(() =>
+                        {
+                            using CancellationTokenRegistration? ctr = cancellationToken.CanBeCanceled ? cancellationToken.Register(() => NativeMethods.PostQueuedCompletionStatus(ioCompletionPort, timeoutExitCode, default)) : null;
+                            while (true)
+                            {
+                                _ = NativeMethods.GetQueuedCompletionStatus(ioCompletionPort, out uint lpCompletionCode, out _, out nuint lpOverlapped, PInvoke.INFINITE);
+                                if (lpCompletionCode == timeoutExitCode)
+                                {
+                                    if (launchInfo.NoTerminateOnTimeout)
+                                    {
+                                        // When KillChildProcessesWithParent is true, the job has JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE set.
+                                        // Disposing the job would terminate the process we're supposed to let run, so we intentionally
+                                        // leak the job handle in this specific scenario to honor the NoTerminateOnTimeout request.
+                                        if (launchInfo.KillChildProcessesWithParent)
+                                        {
+                                            jobObject.SetHandleAsInvalid();
+                                        }
+                                        break;
+                                    }
+                                    _ = NativeMethods.TerminateJobObject(jobObject, timeoutExitCode);
+                                }
+                                else if ((lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_EXIT_PROCESS && (uint)lpOverlapped == processId && !launchInfo.WaitForChildProcesses) || (lpCompletionCode == (uint)JOB_OBJECT_MSG.JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO))
+                                {
+                                    _ = NativeMethods.GetExitCodeProcess(processHandle, out uint lpExitCode);
+                                    exitCode = unchecked((int)lpExitCode);
+                                    processFinished = true;
+                                    break;
+                                }
+                            }
+                        }, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                            exitCode = process.ExitCode;
+                            processFinished = true;
+                        }
+                        catch (OperationCanceledException) when (cancellationToken.CanBeCanceled && cancellationToken.IsCancellationRequested)
+                        {
+                            if (!launchInfo.NoTerminateOnTimeout)
+                            {
+                                try
+                                {
+                                    process.Kill();
+                                }
+                                catch (InvalidOperationException)
+                                {
+                                    // Already exited.
+                                }
+                                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+                                processFinished = true;
+                            }
+                            exitCode = ProcessManager.TimeoutExitCode;
+                        }
+                    }
+                    if (processFinished)
+                    {
+                        await System.Threading.Tasks.Task.WhenAll(stdOutHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask, stdErrHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask, stdInHandle?.Task ?? System.Threading.Tasks.Task.CompletedTask).WaitAsync(cancellationToken.CanBeCanceled && !cancellationToken.IsCancellationRequested ? cancellationToken : CancellationToken.None).ConfigureAwait(false);
+                    }
+                    return new(process, launchInfo, commandLine, exitCode, stdOutHandle?.Buffer, stdErrHandle?.Buffer, interleavedBuffer);
                 }
             }
-            Process = launchState.Process;
-            LaunchInfo = launchState.LaunchInfo;
-            CommandLine = launchState.CommandLine;
+
+            // Confirm all inputs are valid.
+            ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
+            ArgumentNullException.ThrowIfNull(processHandle);
+            ArgumentNullException.ThrowIfNull(launchInfo);
+            ArgumentNullException.ThrowIfNull(process);
+
+            // Since the process might not have spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
+            // Otherwise, accessing properties like `ExitCode` will throw Exceptions like "Process was not started by this object", etc.
+            // Fetching the process handle will trigger the `Process` object to update its internal state by calling `SetProcessHandle`,
+            // the result is discarded as it's not used later in this code.
+            _ = process.Handle;
+
+            // Store off the incoming parameters.
+            Process = process;
+            LaunchInfo = launchInfo;
+            CommandLine = commandLine;
             Task = GetTaskAsync();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information and process.
+        /// </summary>
+        /// <param name="launchInfo">The launch information that describes how the process was started.</param>
+        /// <param name="process">The Process object representing the running process.</param>
+        internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process) : this(launchInfo, process, (uint)process.Id, new(process.Handle, ownsHandle: false), launchInfo.MakeCommandLine())
+        {
         }
 
         /// <summary>
