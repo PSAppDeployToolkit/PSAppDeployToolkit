@@ -260,6 +260,19 @@ namespace PSADT.Security
         }
 
         /// <summary>
+        /// Retrieves the primary access token for a user in the specified session, optionally requesting an elevated token.
+        /// </summary>
+        /// <param name="sessionId">The session ID of the user.</param>
+        /// <param name="elevatedTokenType">The type of elevated token to request.</param>
+        /// <param name="uiAccess">Indicates whether the token should have UI access enabled.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the primary token.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "This function must remain synchronous for now.")]
+        internal static SafeFileHandle GetUserPrimaryToken(uint sessionId, ElevatedTokenType elevatedTokenType = ElevatedTokenType.None, bool uiAccess = false)
+        {
+            return GetUserPrimaryTokenAsync(sessionId, elevatedTokenType, uiAccess).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Retrieves the primary token associated with the specified security token handle.
         /// </summary>
         /// <remarks>This method duplicates the specified security token to create a primary token, which
