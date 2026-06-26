@@ -27,12 +27,8 @@ namespace PSADT.Security
         /// available, the collection will be empty.</returns>
         internal static ReadOnlyCollection<SE_PRIVILEGE> GetPrivileges(TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
-            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken);
-            using (hToken)
-            {
-                return GetPrivileges(hToken, attributes);
-            }
+            using SafeFileHandle hToken = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
+            return GetPrivileges(hToken, attributes);
         }
 
         /// <summary>
@@ -68,12 +64,8 @@ namespace PSADT.Security
         /// <param name="privilege">The privilege to enable, specified as a value of the SE_PRIVILEGE enumeration.</param>
         internal static void EnablePrivilege(SE_PRIVILEGE privilege)
         {
-            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hToken);
-            using (hToken)
-            {
-                EnablePrivilege(hToken, privilege);
-            }
+            using SafeFileHandle hToken = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES);
+            EnablePrivilege(hToken, privilege);
         }
 
         /// <summary>
@@ -86,12 +78,8 @@ namespace PSADT.Security
         /// checked and enabled if necessary.</param>
         internal static void EnablePrivilegeIfDisabled(SE_PRIVILEGE privilege)
         {
-            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
-            _ = NativeMethods.OpenProcessToken(hProcess, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES, out SafeFileHandle hToken);
-            using (hToken)
-            {
-                EnablePrivilegeIfDisabled(hToken, privilege);
-            }
+            using SafeFileHandle hToken = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES);
+            EnablePrivilegeIfDisabled(hToken, privilege);
         }
 
         /// <summary>

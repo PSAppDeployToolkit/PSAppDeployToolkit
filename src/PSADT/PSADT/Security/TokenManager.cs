@@ -343,5 +343,17 @@ namespace PSADT.Security
                 throw;
             }
         }
+
+        /// <summary>
+        /// Retrieves the access token for the current process with the specified desired access rights.
+        /// </summary>
+        /// <param name="DesiredAccess">The desired access rights for the token.</param>
+        /// <returns>A <see cref="SafeFileHandle"/> representing the access token for the current process.</returns>
+        internal static SafeFileHandle GetCurrentProcessToken(TOKEN_ACCESS_MASK DesiredAccess)
+        {
+            using SafeProcessHandle hProcess = NativeMethods.GetCurrentProcess();
+            _ = NativeMethods.OpenProcessToken(hProcess, DesiredAccess, out SafeFileHandle hToken);
+            return hToken;
+        }
     }
 }
