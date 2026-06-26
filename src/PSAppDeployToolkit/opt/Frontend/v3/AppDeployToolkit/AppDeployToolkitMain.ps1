@@ -768,9 +768,13 @@ function Update-SessionEnvironmentVariables
     Set-StrictMode -Version 3
 
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Update-ADTEnvironmentPsProvider]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    if ($PSBoundParameters.ContainsKey('LoadLoggedOnUserEnvironmentVariables'))
+    {
+        $null = $PSBoundParameters.Remove('LoadLoggedOnUserEnvironmentVariables')
+    }
     try
     {
-        Update-ADTEnvironmentPsProvider -LoadLoggedOnUserEnvironmentVariables:$LoadLoggedOnUserEnvironmentVariables
+        Update-ADTEnvironmentPsProvider
     }
     catch
     {
