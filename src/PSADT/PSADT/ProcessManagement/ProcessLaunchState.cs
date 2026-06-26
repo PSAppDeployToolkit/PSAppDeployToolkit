@@ -189,20 +189,22 @@ namespace PSADT.ProcessManagement
                 {
                     JobObject = NativeMethods.CreateJobObject();
                     IoCompletionPort = NativeMethods.CreateIoCompletionPort(0);
-                    _ = NativeMethods.SetInformationJobObject(JobObject, new JOBOBJECT_ASSOCIATE_COMPLETION_PORT
+                    JOBOBJECT_ASSOCIATE_COMPLETION_PORT completionPort = new()
                     {
                         CompletionPort = (HANDLE)IoCompletionPort.DangerousGetHandle(),
                         CompletionKey = null,
-                    });
+                    };
+                    _ = NativeMethods.SetInformationJobObject(JobObject, in completionPort);
                     if (LaunchInfo.KillChildProcessesWithParent)
                     {
-                        _ = NativeMethods.SetInformationJobObject(JobObject, new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
+                        JOBOBJECT_EXTENDED_LIMIT_INFORMATION extendedLimitInformation = new()
                         {
                             BasicLimitInformation = new()
                             {
                                 LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
                             },
-                        });
+                        };
+                        _ = NativeMethods.SetInformationJobObject(JobObject, in extendedLimitInformation);
                     }
                     _ = NativeMethods.AssignProcessToJobObject(JobObject, ProcessSafeHandle);
                 }

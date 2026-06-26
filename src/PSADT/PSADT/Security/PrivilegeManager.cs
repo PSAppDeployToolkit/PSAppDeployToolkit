@@ -100,7 +100,7 @@ namespace PSADT.Security
             // Internal worker function to retrieve the privilege name from the token attributes.
             static SE_PRIVILEGE GetPrivilege(in LUID_AND_ATTRIBUTES attr, Span<char> buffer)
             {
-                _ = NativeMethods.LookupPrivilegeName(attr.Luid, buffer, out uint retLength);
+                _ = NativeMethods.LookupPrivilegeName(in attr.Luid, buffer, out uint retLength);
                 string privilegeName = buffer[..(int)retLength].Trim().ToString();
                 return !Enum.TryParse(privilegeName, ignoreCase: true, out SE_PRIVILEGE privilege)
                     ? throw new InvalidProgramException($"Failed to map privilege name [{privilegeName}] to a known SE_PRIVILEGE value.")
@@ -219,7 +219,7 @@ namespace PSADT.Security
                 Luid = luid,
                 Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED,
             };
-            _ = NativeMethods.AdjustTokenPrivileges(token, tp);
+            _ = NativeMethods.AdjustTokenPrivileges(token, in tp);
         }
 
         /// <summary>
