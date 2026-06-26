@@ -39,7 +39,7 @@ namespace PSADT.FileSystem
             }
             static ref readonly T ReadStruct<T>(BinaryReader reader) where T : unmanaged
             {
-                return ref reader.ReadBytes(Unsafe.SizeOf<T>()).AsSpan().AsReadOnlyStructure<T>();
+                return ref reader.ReadBytes(Unsafe.SizeOf<T>()).AsReadOnlyStructure<T>();
             }
 
             // Read the DOS header and check for the PE signature.

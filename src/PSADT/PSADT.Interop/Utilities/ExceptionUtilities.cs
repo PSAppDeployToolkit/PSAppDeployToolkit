@@ -28,9 +28,9 @@ namespace PSADT.Interop.Utilities
             {
                 ReadOnlySpan<char> trimmed = line.AsSpan().Trim();
                 return trimmed.Length > 6
-                    && trimmed.StartsWith("---".AsSpan(), StringComparison.Ordinal)
-                    && trimmed.EndsWith("---".AsSpan(), StringComparison.Ordinal)
-                    && !trimmed.StartsWith("--- >".AsSpan(), StringComparison.Ordinal);
+                    && trimmed.StartsWith("---", StringComparison.Ordinal)
+                    && trimmed.EndsWith("---", StringComparison.Ordinal)
+                    && !trimmed.StartsWith("--- >", StringComparison.Ordinal);
             }
 
             // Remove all invalid inner exception marker lines from the exception text and return the result.
