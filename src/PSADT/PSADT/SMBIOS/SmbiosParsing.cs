@@ -61,24 +61,6 @@ namespace PSADT.SMBIOS
         }
 
         /// <summary>
-        /// Generic method to read and parse all instances of a specific SMBIOS structure type.
-        /// </summary>
-        /// <typeparam name="T">The type of SMBIOS structure to return.</typeparam>
-        /// <param name="targetType">The SMBIOS structure type to search for.</param>
-        /// <param name="parser">Function to parse the structure from the buffer.</param>
-        /// <param name="buffer">An optional read-only span of bytes containing the SMBIOS data buffer.</param>
-        /// <returns>A collection of all parsed structures of the specified type.</returns>
-        internal static IReadOnlyList<T> GetAllStructures<T>(SmbiosType targetType, SmbiosParser<T> parser, ReadOnlySpan<byte> buffer = default) where T : ISmbiosStructure
-        {
-            if (buffer.IsEmpty)
-            {
-                Span<byte> localbuf = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(localbuf);
-                return ParseAllStructures(localbuf, targetType, parser);
-            }
-            return ParseAllStructures(buffer, targetType, parser);
-        }
-
-        /// <summary>
         /// Retrieves a list of positions for SMBIOS structures of a specified type from the provided buffer.
         /// </summary>
         /// <remarks>This method scans the provided buffer for all instances of the specified SMBIOS
@@ -130,24 +112,6 @@ namespace PSADT.SMBIOS
             return offsets.Count > 1
                 ? throw new NotSupportedException($"Multiple SMBIOS structures of type [{targetType}] found.")
                 : parser(buffer, offsets[0].Offset, offsets[0].Length);
-        }
-
-        /// <summary>
-        /// Parses SMBIOS data to extract all instances of a specific structure type.
-        /// </summary>
-        /// <typeparam name="T">The type of structure to parse.</typeparam>
-        /// <param name="buffer">The SMBIOS buffer to parse.</param>
-        /// <param name="targetType">The SMBIOS structure type to search for.</param>
-        /// <param name="parser">Function to parse the structure from the buffer.</param>
-        /// <returns>A collection of all parsed structures of the specified type.</returns>
-        internal static IReadOnlyList<T> ParseAllStructures<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
-        {
-            // Loop through the data and find all instances of the target structure.
-            List<T> structures = []; foreach (SmbiosTablePosition position in GetStructureOffsets(buffer, targetType))
-            {
-                structures.Add(parser(buffer, position.Offset, position.Length));
-            }
-            return structures.AsReadOnly();
         }
 
         /// <summary>

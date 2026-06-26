@@ -100,23 +100,6 @@ namespace PSADT.Tests.SMBIOS
         }
 
         /// <summary>
-        /// Verifies that the ParseAllStructures method parses each matching SMBIOS structure in the provided buffer.
-        /// </summary>
-        /// <remarks>This test ensures that all structures of the specified type are correctly identified
-        /// and parsed from the input data. It checks that each resulting structure has the expected handle value,
-        /// confirming correct parsing behavior.</remarks>
-        [Fact]
-        public void ParseAllStructures_ParsesEachMatch()
-        {
-            byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
-                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x1000, []),
-                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x1001, [])
-            );
-            IReadOnlyList<FakeStructure> result = SmbiosParsing.ParseAllStructures(buffer, SmbiosType.EndOfTable, FakeStructureParser);
-            Assert.Collection(result, item => Assert.Equal(0x1000, item.Handle), item => Assert.Equal(0x1001, item.Handle));
-        }
-
-        /// <summary>
         /// Verifies that the GetSmbiosString method returns the expected string values for various string indices and
         /// handles missing or zero indices correctly.
         /// </summary>
