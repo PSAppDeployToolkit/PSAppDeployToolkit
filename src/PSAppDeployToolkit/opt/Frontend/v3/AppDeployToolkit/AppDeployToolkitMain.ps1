@@ -2553,12 +2553,12 @@ function Execute-MSI
     }
     if ($PSBoundParameters.ContainsKey('Transform'))
     {
-        $PSBoundParameters.Transforms = $Transform.Split([System.IO.Path]::PathSeparator)
+        $PSBoundParameters.Transforms = $Transform.Split(';')
         $null = $PSBoundParameters.Remove('Transform')
     }
     if ($PSBoundParameters.ContainsKey('Patch'))
     {
-        $PSBoundParameters.Patches = $Patch.Split([System.IO.Path]::PathSeparator)
+        $PSBoundParameters.Patches = $Patch.Split(';')
         $null = $PSBoundParameters.Remove('Patch')
     }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
