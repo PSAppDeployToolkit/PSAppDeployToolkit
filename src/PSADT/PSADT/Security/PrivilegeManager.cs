@@ -213,11 +213,14 @@ namespace PSADT.Security
             TOKEN_PRIVILEGES tp = new()
             {
                 PrivilegeCount = 1,
-            };
-            tp.Privileges[0] = new()
-            {
-                Luid = luid,
-                Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED,
+                Privileges = new()
+                {
+                    e0 = new()
+                    {
+                        Luid = luid,
+                        Attributes = TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED,
+                    },
+                },
             };
             _ = NativeMethods.AdjustTokenPrivileges(token, in tp);
         }
