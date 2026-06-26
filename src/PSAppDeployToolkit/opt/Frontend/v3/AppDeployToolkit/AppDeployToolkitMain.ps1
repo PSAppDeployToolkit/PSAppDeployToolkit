@@ -2376,7 +2376,8 @@ function Execute-Process
         [System.Management.Automation.SwitchParameter]$CreateNoWindow,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$WorkingDirectory,
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$WorkingDirectory,
 
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$NoWait,
