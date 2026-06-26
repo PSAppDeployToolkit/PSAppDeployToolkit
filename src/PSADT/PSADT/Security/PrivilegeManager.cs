@@ -40,7 +40,8 @@ namespace PSADT.Security
         /// <returns>true if the current caller has the specified privilege; otherwise, false.</returns>
         internal static bool HasPrivilege(SE_PRIVILEGE privilege)
         {
-            return GetPrivileges().Contains(privilege);
+            using SafeFileHandle hToken = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
+            return HasPrivilege(hToken, privilege);
         }
 
         /// <summary>
@@ -52,7 +53,8 @@ namespace PSADT.Security
         /// <returns>true if the specified privilege is enabled; otherwise, false.</returns>
         internal static bool IsPrivilegeEnabled(SE_PRIVILEGE privilege)
         {
-            return GetPrivileges(TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
+            using SafeFileHandle hToken = TokenManager.GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_QUERY);
+            return HasPrivilege(hToken, privilege, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED);
         }
 
         /// <summary>
@@ -146,25 +148,48 @@ namespace PSADT.Security
         /// rights.</param>
         /// <param name="privilege">The privilege to check for in the access token. This should be a valid value of the SE_PRIVILEGE
         /// enumeration.</param>
+        /// <param name="attributes">Optional attributes to filter the privileges. If specified, only privileges matching these attributes will be considered.</param>
         /// <returns>true if the access token contains the specified privilege; otherwise, false.</returns>
-        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege)
+        /// <exception cref="InvalidProgramException">Thrown when the size of the LUID structure is unexpected.</exception>
+        private static bool HasPrivilege(SafeFileHandle token, SE_PRIVILEGE privilege, TOKEN_PRIVILEGES_ATTRIBUTES? attributes = null)
         {
-            return GetPrivileges(token).Contains(privilege);
-        }
+            // Internal worker function to perform LUID equality at a value level.
+            static bool PrivilegeValuesAreEqual(in LUID left, in LUID right)
+            {
+                return Unsafe.SizeOf<LUID>() == sizeof(ulong)
+                    ? Unsafe.As<LUID, ulong>(ref Unsafe.AsRef(in left)) == Unsafe.As<LUID, ulong>(ref Unsafe.AsRef(in right))
+                    : throw new InvalidProgramException("Unexpected LUID size; expected 8 bytes.");
+            }
 
-        /// <summary>
-        /// Determines whether the specified privilege is enabled for the given access token.
-        /// </summary>
-        /// <remarks>This method examines the privileges associated with the provided access token and
-        /// checks if the specified privilege is currently enabled. Use this method to verify privilege status before
-        /// performing operations that require specific privileges.</remarks>
-        /// <param name="token">A safe handle to the access token to check. The token must be valid and opened with appropriate access
-        /// rights.</param>
-        /// <param name="privilege">The privilege to check for its enabled status within the specified access token.</param>
-        /// <returns>true if the specified privilege is enabled for the access token; otherwise, false.</returns>
-        private static bool IsPrivilegeEnabled(SafeFileHandle token, SE_PRIVILEGE privilege)
-        {
-            return GetPrivileges(token, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED).Contains(privilege);
+            // Get the size of the buffer required to hold the token privileges.
+            _ = NativeMethods.LookupPrivilegeValue(privilege, out LUID luid);
+            _ = NativeMethods.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, TokenInformation: null, out uint returnLength);
+            Span<byte> buffer = stackalloc byte[(int)returnLength];
+
+            // Retrieve the token privileges and filter them based on the specified attributes before returning them.
+            _ = NativeMethods.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
+            ref readonly TOKEN_PRIVILEGES tokenPrivileges = ref buffer.AsReadOnlyStructure<TOKEN_PRIVILEGES>();
+            const int bufferOffset = sizeof(uint); int increment = Unsafe.SizeOf<LUID_AND_ATTRIBUTES>();
+            if (attributes is not null)
+            {
+                for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
+                {
+                    ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                    if ((attr.Attributes & attributes.Value) == attributes.Value && PrivilegeValuesAreEqual(in attr.Luid, in luid))
+                    {
+                        return true;
+                    }
+                }
+            }
+            for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
+            {
+                ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
+                if (PrivilegeValuesAreEqual(in attr.Luid, in luid))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -209,7 +234,7 @@ namespace PSADT.Security
         /// checked and enabled if necessary.</param>
         private static void EnablePrivilegeIfDisabled(SafeFileHandle token, SE_PRIVILEGE privilege)
         {
-            if (!IsPrivilegeEnabled(token, privilege))
+            if (!HasPrivilege(token, privilege, TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED))
             {
                 EnablePrivilege(token, privilege);
             }
