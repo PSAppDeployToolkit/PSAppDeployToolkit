@@ -55,35 +55,31 @@ namespace PSADT.SMBIOS
             if (buffer.IsEmpty)
             {
                 Span<byte> localbuf = stackalloc byte[SmbiosTables.GetRequiredLength()]; SmbiosTables.FillBuffer(localbuf);
-                return ParseStructure(localbuf, targetType, parser);
+                return ReadStructure(localbuf, targetType, parser);
             }
-            return ParseStructure(buffer, targetType, parser);
+            return ReadStructure(buffer, targetType, parser);
         }
 
         /// <summary>
-        /// Retrieves a list of positions for SMBIOS structures of a specified type from the provided buffer.
+        /// Reads a specific SMBIOS structure from the provided buffer.
         /// </summary>
-        /// <remarks>This method scans the provided buffer for all instances of the specified SMBIOS
-        /// structure type and returns their positions. It throws an exception if no structures of the specified type
-        /// are found.</remarks>
-        /// <param name="buffer">A read-only span of bytes representing the SMBIOS data to search through.</param>
-        /// <param name="targetType">The specific SMBIOS structure type to locate within the buffer.</param>
-        /// <returns>A read-only list of <see cref="SmbiosTablePosition"/> objects, each representing the position and length of
-        /// a found structure.</returns>
-        /// <exception cref="SmbiosTypeNotFoundException">Thrown if no SMBIOS structures of the specified <paramref name="targetType"/> are found in the buffer.</exception>
+        /// <typeparam name="T">The type of SMBIOS structure to read.</typeparam>
+        /// <param name="buffer">The SMBIOS buffer containing the structure data.</param>
+        /// <param name="targetType">The SMBIOS structure type to search for.</param>
+        /// <param name="parser">Function to parse the structure from the buffer.</param>
+        /// <returns>The parsed SMBIOS structure.</returns>
+        /// <exception cref="SmbiosTypeNotFoundException">Thrown if the specified SMBIOS structure type is not found in the buffer.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
-        internal static IReadOnlyList<SmbiosTablePosition> GetStructureOffsets(ReadOnlySpan<byte> buffer, SmbiosType targetType)
+        internal static T ReadStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
         {
-            // Loop through the data and find all instances of the target structure.
             ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
-            List<SmbiosTablePosition> offsets = []; int offset = 8;
-            while (offset < buffer.Length - 4)
+            int offset = 8; while (offset < buffer.Length - 4)
             {
                 // Have we found an instance?
                 byte length = buffer[offset + 1];
                 if (buffer[offset] == (byte)targetType)
                 {
-                    offsets.Add(new(offset, length));
+                    return parser(buffer, offset, length);
                 }
 
                 // Move to the next structure, skipping unformatted string fields. A double terminator indicates the end.
@@ -93,25 +89,7 @@ namespace PSADT.SMBIOS
                 }
                 offset += 2;
             }
-            return offsets.Count != 0 ? offsets.AsReadOnly() : throw new SmbiosTypeNotFoundException(targetType);
-        }
-
-        /// <summary>
-        /// Parses SMBIOS data to extract a specific structure type.
-        /// </summary>
-        /// <typeparam name="T">The type of structure to parse.</typeparam>
-        /// <param name="buffer">The SMBIOS buffer to parse.</param>
-        /// <param name="targetType">The SMBIOS structure type to search for.</param>
-        /// <param name="parser">Function to parse the structure from the buffer.</param>
-        /// <returns>The parsed structure or null if not found.</returns>
-        /// <exception cref="NotSupportedException">Thrown if multiple SMBIOS structures of the specified type are found in the buffer.</exception>"
-        internal static T ParseStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
-        {
-            // Get all structures that match the target type.
-            IReadOnlyList<SmbiosTablePosition> offsets = GetStructureOffsets(buffer, targetType);
-            return offsets.Count > 1
-                ? throw new NotSupportedException($"Multiple SMBIOS structures of type [{targetType}] found.")
-                : parser(buffer, offsets[0].Offset, offsets[0].Length);
+            throw new SmbiosTypeNotFoundException(targetType);
         }
 
         /// <summary>

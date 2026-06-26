@@ -19,84 +19,65 @@
  */
 
 using System;
-using System.Collections.Generic;
 using PSADT.SMBIOS;
 using Xunit;
 
 namespace PSADT.Tests.SMBIOS
 {
     /// <summary>
-    /// Contains unit tests for verifying the behavior of SMBIOS parsing methods, including structure offset detection,
-    /// structure parsing, string extraction, and version information retrieval.
+    /// Contains unit tests for verifying the behavior of SMBIOS parsing methods, including structure reading, string
+    /// extraction, and version information retrieval.
     /// </summary>
     /// <remarks>This class provides a suite of tests to ensure that the SMBIOS parsing API correctly handles
-    /// various scenarios, such as invalid input buffers, missing or multiple structures, and string parsing edge cases.
-    /// The tests validate both successful parsing and appropriate exception handling, helping to maintain the
-    /// reliability and correctness of the SMBIOS parsing implementation.</remarks>
+    /// various scenarios, such as invalid input buffers, missing structures, and string parsing edge cases. The tests
+    /// validate both successful parsing and appropriate exception handling, helping to maintain the reliability and
+    /// correctness of the SMBIOS parsing implementation.</remarks>
     public sealed class SmbiosParsingTests
     {
         /// <summary>
-        /// Verifies that the GetStructureOffsets method throws an ArgumentOutOfRangeException when the provided buffer is too
-        /// short to contain a valid SMBIOS structure header.
+        /// Verifies that the ReadStructure method throws an ArgumentOutOfRangeException when the provided buffer is too short
+        /// to contain a valid SMBIOS structure header.
         /// </summary>
-        /// <remarks>This test ensures that GetStructureOffsets enforces input validation by rejecting
+        /// <remarks>This test ensures that ReadStructure enforces input validation by rejecting
         /// buffers that do not meet the minimum required length for parsing SMBIOS structures.</remarks>
         [Fact]
-        public void GetStructureOffsets_ThrowsWhenBufferTooShort()
+        public void ReadStructure_ThrowsWhenBufferTooShort()
         {
-            _ = Assert.Throws<ArgumentOutOfRangeException>(() => SmbiosParsing.GetStructureOffsets(new byte[7], SmbiosType.EndOfTable));
+            _ = Assert.Throws<ArgumentOutOfRangeException>(() => SmbiosParsing.ReadStructure(new byte[7], SmbiosType.EndOfTable, FakeStructureParser));
         }
 
         /// <summary>
-        /// Verifies that the GetStructureOffsets method returns offsets that match the expected positions for SMBIOS
-        /// structures of the specified type.
+        /// Verifies that the ReadStructure method returns the first SMBIOS structure matching the requested type.
         /// </summary>
-        /// <remarks>This test ensures that the method correctly identifies the offset and length of
-        /// SMBIOS structures of type EndOfTable within a raw SMBIOS data buffer. It validates that only the expected
-        /// structure is found and that its position information is accurate.</remarks>
+        /// <remarks>This test ensures that the method parses the first matching structure directly and does not reject
+        /// subsequent duplicate structures.</remarks>
         [Fact]
-        public void GetStructureOffsets_ReturnsMatchingOffsets()
+        public void ReadStructure_ReturnsFirstMatchingStructure()
         {
             byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
                 new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.Inactive, 0x1000, [0xAA], "A"),
-                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x2000, [], "Term", string.Empty)
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x2000, []),
+                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x2001, [])
             );
-            IReadOnlyList<SmbiosTablePosition> positions = SmbiosParsing.GetStructureOffsets(buffer, SmbiosType.EndOfTable);
-            _ = Assert.Single(positions);
-            Assert.True(positions[0].Offset >= 8);
-            Assert.Equal(4, positions[0].Length);
+            FakeStructure structure = SmbiosParsing.ReadStructure(buffer, SmbiosType.EndOfTable, FakeStructureParser);
+            Assert.Equal(SmbiosType.EndOfTable, structure.Type);
+            Assert.Equal((ushort)0x2000, structure.Handle);
+            Assert.Equal(4, structure.Length);
         }
 
         /// <summary>
-        /// Verifies that the GetStructureOffsets method throws a SmbiosTypeNotFoundException when the specified SMBIOS
-        /// structure type is not present in the buffer.
+        /// Verifies that the ReadStructure method throws a SmbiosTypeNotFoundException when the specified SMBIOS structure
+        /// type is not present in the buffer.
         /// </summary>
-        /// <remarks>This test ensures that attempting to retrieve offsets for a missing SMBIOS structure
-        /// type results in the expected exception, indicating correct error handling by the parser.</remarks>
+        /// <remarks>This test ensures that attempting to read a missing SMBIOS structure type results in the expected
+        /// exception, indicating correct error handling by the parser.</remarks>
         [Fact]
-        public void GetStructureOffsets_ThrowsWhenTypeMissing()
+        public void ReadStructure_ThrowsWhenTypeMissing()
         {
             byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
                 new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.Inactive, 0x1000, [0xAA])
             );
-            _ = Assert.Throws<SmbiosTypeNotFoundException>(() => SmbiosParsing.GetStructureOffsets(buffer, SmbiosType.EndOfTable));
-        }
-
-        /// <summary>
-        /// Verifies that ParseStructure throws an NotSupportedException when multiple structures of the specified
-        /// type are found in the SMBIOS data.
-        /// </summary>
-        /// <remarks>This test ensures that the ParseStructure method enforces the expectation that only
-        /// one structure of a given type should exist in the provided SMBIOS buffer. If more than one matching
-        /// structure is present, the method is expected to throw an NotSupportedException.</remarks>
-        [Fact]
-        public void ParseStructure_ThrowsWhenMultipleStructuresFound()
-        {
-            byte[] buffer = SmbiosTestDataBuilder.BuildRawSmbios(
-                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x1000, []),
-                new SmbiosTestDataBuilder.SmbiosStructure(SmbiosType.EndOfTable, 0x1001, [])
-            );
-            _ = Assert.Throws<NotSupportedException>(() => SmbiosParsing.ParseStructure(buffer, SmbiosType.EndOfTable, FakeStructureParser));
+            _ = Assert.Throws<SmbiosTypeNotFoundException>(() => SmbiosParsing.ReadStructure(buffer, SmbiosType.EndOfTable, FakeStructureParser));
         }
 
         /// <summary>
