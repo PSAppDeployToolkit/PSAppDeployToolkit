@@ -41,6 +41,9 @@ function Remove-ADTFont
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTFont
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTFont.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]

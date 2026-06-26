@@ -38,6 +38,9 @@ function Test-ADTMicrophoneInUse
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTMicrophoneInUse
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTMicrophoneInUse.ps1
     #>
 
     [CmdletBinding()]

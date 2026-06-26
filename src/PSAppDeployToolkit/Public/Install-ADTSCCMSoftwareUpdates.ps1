@@ -60,6 +60,9 @@ function Install-ADTSCCMSoftwareUpdates
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Install-ADTSCCMSoftwareUpdates
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Install-ADTSCCMSoftwareUpdates.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

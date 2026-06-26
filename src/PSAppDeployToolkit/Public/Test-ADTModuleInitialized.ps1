@@ -38,6 +38,9 @@ function Test-ADTModuleInitialized
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTModuleInitialized
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTModuleInitialized.ps1
     #>
 
     return $Script:ADT.Initialized

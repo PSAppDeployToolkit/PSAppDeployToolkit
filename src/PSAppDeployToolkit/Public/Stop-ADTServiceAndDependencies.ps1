@@ -78,6 +78,9 @@ function Stop-ADTServiceAndDependencies
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Stop-ADTServiceAndDependencies
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Stop-ADTServiceAndDependencies.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Name', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]

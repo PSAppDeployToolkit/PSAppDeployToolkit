@@ -38,6 +38,9 @@ function Get-ADTOperatingSystemInfo
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTOperatingSystemInfo
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTOperatingSystemInfo.ps1
     #>
 
     return [PSADT.DeviceManagement.OperatingSystemInfo]::Current

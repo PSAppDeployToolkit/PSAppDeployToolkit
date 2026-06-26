@@ -38,6 +38,9 @@ function Get-ADTUserToastNotificationMode
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTUserToastNotificationMode
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTUserToastNotificationMode.ps1
     #>
 
     [CmdletBinding()]

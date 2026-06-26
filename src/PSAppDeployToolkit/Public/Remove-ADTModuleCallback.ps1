@@ -56,6 +56,9 @@ function Remove-ADTModuleCallback
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTModuleCallback
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTModuleCallback.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Hookpoint', Justification = "This parameter is used within delegates that PSScriptAnalyzer has no visibility of. See https://github.com/PowerShell/PSScriptAnalyzer/issues/1472 for more details.")]

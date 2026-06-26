@@ -43,6 +43,9 @@ function Test-ADTUserInFocusMode
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTUserInFocusMode
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTUserInFocusMode.ps1
     #>
 
     [CmdletBinding()]

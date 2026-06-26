@@ -40,6 +40,9 @@ function Enable-ADTTerminalServerInstallMode
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Enable-ADTTerminalServerInstallMode
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Enable-ADTTerminalServerInstallMode.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

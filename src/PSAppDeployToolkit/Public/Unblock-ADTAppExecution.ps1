@@ -45,6 +45,9 @@ function Unblock-ADTAppExecution
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Unblock-ADTAppExecution
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Unblock-ADTAppExecution.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $false)]

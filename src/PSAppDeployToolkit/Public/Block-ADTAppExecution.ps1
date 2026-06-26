@@ -54,6 +54,9 @@ function Block-ADTAppExecution
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Block-ADTAppExecution
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Block-ADTAppExecution.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

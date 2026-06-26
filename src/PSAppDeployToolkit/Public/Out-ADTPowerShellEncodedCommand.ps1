@@ -41,6 +41,9 @@ function Out-ADTPowerShellEncodedCommand
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Out-ADTPowerShellEncodedCommand
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Out-ADTPowerShellEncodedCommand.ps1
     #>
 
     [CmdletBinding()]

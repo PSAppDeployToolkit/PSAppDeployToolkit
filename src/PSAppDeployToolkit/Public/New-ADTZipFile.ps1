@@ -64,6 +64,9 @@ function New-ADTZipFile
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/New-ADTZipFile
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/New-ADTZipFile.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

@@ -44,6 +44,9 @@ function Initialize-ADTModule
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Initialize-ADTModule
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Initialize-ADTModule.ps1
     #>
 
     [CmdletBinding()]

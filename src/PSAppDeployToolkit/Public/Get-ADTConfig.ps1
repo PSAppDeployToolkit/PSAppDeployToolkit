@@ -40,6 +40,9 @@ function Get-ADTConfig
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTConfig
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTConfig.ps1
     #>
 
     [CmdletBinding()]

@@ -54,6 +54,9 @@ function Test-ADTRegistryValue
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTRegistryValue
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTRegistryValue.ps1
     #>
 
     [CmdletBinding()]

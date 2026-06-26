@@ -69,6 +69,9 @@ function Set-ADTIniSection
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Set-ADTIniSection
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Set-ADTIniSection.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

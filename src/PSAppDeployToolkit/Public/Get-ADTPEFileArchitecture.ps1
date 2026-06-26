@@ -55,6 +55,9 @@ function Get-ADTPEFileArchitecture
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTPEFileArchitecture
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTPEFileArchitecture.ps1
     #>
 
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'Path', Justification = "This parameter is accessed programmatically via the ParameterSet it's within, which PSScriptAnalyzer doesn't understand.")]

@@ -43,6 +43,9 @@ function Unregister-ADTDll
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Unregister-ADTDll
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Unregister-ADTDll.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

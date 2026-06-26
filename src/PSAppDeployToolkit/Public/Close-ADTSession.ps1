@@ -60,6 +60,9 @@ function Close-ADTSession
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Close-ADTSession
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Close-ADTSession.ps1
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'None')]

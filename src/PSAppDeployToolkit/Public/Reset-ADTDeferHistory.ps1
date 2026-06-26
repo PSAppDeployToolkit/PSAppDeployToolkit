@@ -37,6 +37,9 @@ function Reset-ADTDeferHistory
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Reset-ADTDeferHistory
 
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Reset-ADTDeferHistory.ps1
+
     #>
 
     [CmdletBinding()]

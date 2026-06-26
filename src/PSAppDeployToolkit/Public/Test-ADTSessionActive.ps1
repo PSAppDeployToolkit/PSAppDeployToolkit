@@ -38,6 +38,9 @@ function Test-ADTSessionActive
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Test-ADTSessionActive
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Test-ADTSessionActive.ps1
     #>
 
     return !!$Script:ADT.Sessions.Count

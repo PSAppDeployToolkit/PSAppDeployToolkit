@@ -43,6 +43,9 @@ function Register-ADTDll
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Register-ADTDll
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Register-ADTDll.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

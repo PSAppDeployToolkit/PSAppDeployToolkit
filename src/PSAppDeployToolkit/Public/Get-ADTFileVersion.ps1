@@ -49,6 +49,9 @@ function Get-ADTFileVersion
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTFileVersion
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTFileVersion.ps1
     #>
 
     [CmdletBinding()]

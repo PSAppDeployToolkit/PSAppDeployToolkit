@@ -200,6 +200,9 @@ function Start-ADTMsiProcess
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMsiProcess
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTMsiProcess.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

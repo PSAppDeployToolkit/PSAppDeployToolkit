@@ -73,6 +73,9 @@ function Mount-ADTWimFile
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Mount-ADTWimFile
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Mount-ADTWimFile.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

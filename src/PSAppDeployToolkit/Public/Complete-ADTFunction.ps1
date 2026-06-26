@@ -41,6 +41,9 @@ function Complete-ADTFunction
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Complete-ADTFunction
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Complete-ADTFunction.ps1
     #>
 
     [CmdletBinding()]

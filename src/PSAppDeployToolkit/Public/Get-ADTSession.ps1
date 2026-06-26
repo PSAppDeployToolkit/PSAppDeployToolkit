@@ -48,6 +48,9 @@ function Get-ADTSession
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTSession
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTSession.ps1
     #>
 
     [CmdletBinding()]

@@ -103,6 +103,9 @@ function Copy-ADTFileToUserProfiles
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Copy-ADTFileToUserProfiles
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Copy-ADTFileToUserProfiles.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'CalculatedProfiles')]

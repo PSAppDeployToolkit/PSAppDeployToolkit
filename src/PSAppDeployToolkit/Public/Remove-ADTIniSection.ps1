@@ -48,6 +48,9 @@ function Remove-ADTIniSection
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTIniSection
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTIniSection.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

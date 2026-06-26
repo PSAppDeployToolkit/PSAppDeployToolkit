@@ -51,6 +51,9 @@ function Remove-ADTEnvironmentVariable
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTEnvironmentVariable
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTEnvironmentVariable.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true)]

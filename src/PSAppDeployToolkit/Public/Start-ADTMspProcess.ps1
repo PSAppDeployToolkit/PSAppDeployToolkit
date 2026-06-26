@@ -132,6 +132,9 @@ function Start-ADTMspProcess
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Start-ADTMspProcess
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Start-ADTMspProcess.ps1
     #>
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'None')]

@@ -46,6 +46,9 @@ function Export-ADTEnvironmentTableToSessionState
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Export-ADTEnvironmentTableToSessionState
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Export-ADTEnvironmentTableToSessionState.ps1
     #>
 
     [CmdletBinding()]

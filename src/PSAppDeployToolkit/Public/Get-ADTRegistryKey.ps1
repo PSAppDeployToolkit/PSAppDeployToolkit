@@ -95,6 +95,9 @@ function Get-ADTRegistryKey
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Get-ADTRegistryKey
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Get-ADTRegistryKey.ps1
     #>
 
     [CmdletBinding()]

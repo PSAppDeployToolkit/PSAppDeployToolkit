@@ -45,6 +45,9 @@ function Remove-ADTInvalidFileNameChars
 
     .LINK
         https://psappdeploytoolkit.com/docs/reference/functions/Remove-ADTInvalidFileNameChars
+
+    .LINK
+        https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/blob/main/src/PSAppDeployToolkit/Public/Remove-ADTInvalidFileNameChars.ps1
     #>
 
     [CmdletBinding()]
