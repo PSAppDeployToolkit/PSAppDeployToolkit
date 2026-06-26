@@ -115,14 +115,14 @@ namespace PSADT.Security
             _ = NativeMethods.GetTokenInformation(token, TOKEN_INFORMATION_CLASS.TokenPrivileges, buffer, out _);
             ref readonly TOKEN_PRIVILEGES tokenPrivileges = ref buffer.AsReadOnlyStructure<TOKEN_PRIVILEGES>();
             const int bufferOffset = sizeof(uint); int increment = Unsafe.SizeOf<LUID_AND_ATTRIBUTES>();
-            Span<char> charSpan = stackalloc char[1024]; charSpan.Clear();
-            List<SE_PRIVILEGE> privileges = [];
+            List<SE_PRIVILEGE> privileges = new((int)tokenPrivileges.PrivilegeCount);
+            Span<char> charSpan = stackalloc char[1024];
             if (attributes is not null)
             {
                 for (int i = 0; i < tokenPrivileges.PrivilegeCount; i++)
                 {
                     ref readonly LUID_AND_ATTRIBUTES attr = ref buffer[(bufferOffset + (increment * i))..].AsReadOnlyStructure<LUID_AND_ATTRIBUTES>();
-                    if ((attr.Attributes & attributes) == attributes)
+                    if ((attr.Attributes & attributes.Value) == attributes.Value)
                     {
                         privileges.Add(GetPrivilege(in attr, charSpan));
                     }
