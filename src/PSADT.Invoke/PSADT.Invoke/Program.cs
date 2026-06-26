@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -341,7 +340,7 @@ namespace PSADT.Invoke
         /// accessed or does not exist, the collection may be truncated.</remarks>
         /// <returns>A read-only collection of <see cref="Process"/> objects representing the parent processes
         /// of the current process. The collection is empty if no parent processes can be determined.</returns>
-        private static ReadOnlyCollection<Process> GetParentProcesses()
+        private static IEnumerable<Process> GetParentProcesses()
         {
             // Internal method to get the parent process of a given process.
             static int GetParentProcessId(int processId)
@@ -353,7 +352,6 @@ namespace PSADT.Invoke
 
             // Build a list of parent processes and return it to the caller.
             int processId = (int)PInvoke.GetCurrentProcessId();
-            List<Process> processes = [];
             List<int> processesIds = [];
             while (true)
             {
@@ -376,16 +374,17 @@ namespace PSADT.Invoke
                 processesIds.Add(processId);
 
                 // Attempt to get the Process object for the parent process. If this fails (e.g., process has exited), break the loop.
+                Process process;
                 try
                 {
-                    processes.Add(Process.GetProcessById(processId));
+                    process = Process.GetProcessById(processId);
                 }
                 catch (ArgumentException)
                 {
                     break;
                 }
+                yield return process;
             }
-            return processes.AsReadOnly();
         }
 
         /// <summary>

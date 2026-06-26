@@ -105,18 +105,19 @@ namespace PSADT.ProcessManagement
             }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeDebugPrivilege);
 
-            // Get the main module base address and read the version resource from memory.
-            if (filePath is not null)
+            // Set the FileName property before trying to read memory.
+            if (filePath is null)
+            {
+                FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
+            }
+            else
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
                 FileName = new(filePath);
             }
-            else
-            {
-                FileName = process.GetFilePath(ntPathLookupTable ?? FileSystemUtilities.MakeNtPathLookupTable());
-            }
-            ReadOnlySpan<byte> versionResource;
-            using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, bInheritHandle: false, (uint)process.Id))
+
+            // Get the main module base address and read the version resource from memory.
+            byte[] versionResource; using (SafeFileHandle processHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, bInheritHandle: false, (uint)process.Id))
             {
                 try
                 {
@@ -153,11 +154,10 @@ namespace PSADT.ProcessManagement
             IsSpecialBuild = fixedFileInfo.dwFileFlags.HasFlag(VS_FIXEDFILEINFO_FILE_FLAGS.VS_FF_SPECIALBUILD);
 
             // Read the version resource strings.
-            ReadOnlyCollection<string> codepageTable = GetTranslationTableCombinations(versionResource);
-            Language = GetFileVersionLanguage(codepageTable[0]); bool success = false;
-            foreach (string codepage in codepageTable)
+            bool success = false; foreach (string codepage in GetTranslationTableCombinations(versionResource))
             {
                 // Exit loop if we successfully retrieved at least one string.
+                Language ??= GetFileVersionLanguage(codepage);
                 Comments = GetFileVersionString(versionResource, codepage, "Comments", ref success);
                 CompanyName = GetFileVersionString(versionResource, codepage, "CompanyName", ref success);
                 FileDescription = GetFileVersionString(versionResource, codepage, "FileDescription", ref success);
@@ -340,26 +340,29 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Gets language/codepage combinations from the Translation table.
         /// </summary>
-        /// <param name="versionResource">A span containing the version resource data.</param>
+        /// <param name="versionResource">A byte array containing the version resource data.</param>
         /// <returns>A read-only collection of language/codepage combinations.</returns>
-        private static ReadOnlyCollection<string> GetTranslationTableCombinations(ReadOnlySpan<byte> versionResource)
+        private static IEnumerable<string> GetTranslationTableCombinations(byte[] versionResource)
         {
-            // Return any translation pairs found in the version resource.
-            List<string> translationCombinations = [];
-            _ = NativeMethods.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out nint translationPtr, out uint translationLength);
-            int langAndCodepageSize = Unsafe.SizeOf<LANGANDCODEPAGE>();
-            for (int i = 0; i < translationLength / langAndCodepageSize; i++)
+            // Internal implementation to yield a list of language/codepage combinations from the version resource.
+            static IEnumerable<string> GetTranslationTableCombinationsImpl(byte[] versionResource)
             {
-                ref readonly LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsReadOnlyStructure<LANGANDCODEPAGE>();
-                translationCombinations.Add(langAndCodePage.ToString());
-            }
+                // Return any translation pairs found in the version resource.
+                _ = NativeMethods.VerQueryValue(versionResource, @"\VarFileInfo\Translation", out nint translationPtr, out uint translationLength);
+                int langAndCodepageSize = Unsafe.SizeOf<LANGANDCODEPAGE>();
+                for (int i = 0; i < translationLength / langAndCodepageSize; i++)
+                {
+                    ref readonly LANGANDCODEPAGE langAndCodePage = ref (translationPtr + (i * langAndCodepageSize)).AsReadOnlyStructure<LANGANDCODEPAGE>();
+                    yield return langAndCodePage.ToString();
+                }
 
-            // Add some common fallback combinations that are known to work in many cases.
-            // These are based on common language/codepage pairs used in version resources.
-            translationCombinations.Add("040904B0");
-            translationCombinations.Add("040904E4");
-            translationCombinations.Add("04090000");
-            return new([.. translationCombinations.Distinct(StringComparer.OrdinalIgnoreCase)]);
+                // Add some common fallback combinations that are known to work in many cases.
+                // These are based on common language/codepage pairs used in version resources.
+                yield return "040904B0";
+                yield return "040904E4";
+                yield return "04090000";
+            }
+            return GetTranslationTableCombinationsImpl(versionResource).Distinct(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

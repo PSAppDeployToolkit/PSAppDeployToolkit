@@ -43,7 +43,9 @@ namespace PSADT.ProcessManagement
         public static IReadOnlyList<string> CommandLineToArgumentList(string commandLine, bool strict = false)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(commandLine);
-            return strict ? CommandLineToArgumentListStrict(commandLine.AsSpan()) : CommandLineToArgumentListEnhanced(commandLine.AsSpan());
+            return !strict
+                ? CommandLineToArgumentListEnhanced(commandLine)
+                : CommandLineToArgumentListStrict(commandLine);
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
 using PSAppDeployToolkit.Utilities;
@@ -175,9 +174,9 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="args">An array of arguments to pass to the script block. This parameter can be null or empty if no arguments are
         /// required.</param>
         /// <returns>A read-only collection of objects of type <typeparamref name="T"/> that represent the results of the script execution.</returns>
-        internal static ReadOnlyCollection<T> InvokeScript<T>(ScriptBlock scriptBlock, params object[] args)
+        internal static IEnumerable<T> InvokeScript<T>(ScriptBlock scriptBlock, params object[] args)
         {
-            SessionState sessionState = GetSessionState(); return new ReadOnlyCollection<T>([.. sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args).Select(PowerShellUtilities.GetBaseObject<T>)]);
+            SessionState sessionState = GetSessionState(); return sessionState.InvokeCommand.InvokeScript(sessionState, scriptBlock, args).Select(PowerShellUtilities.GetBaseObject<T>);
         }
 
         /// <summary>
