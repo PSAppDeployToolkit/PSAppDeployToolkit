@@ -494,13 +494,14 @@ namespace PSADT.FileSystem
         internal static ReadOnlyDictionary<string, string> MakeNtPathLookupTable()
         {
             Dictionary<string, string> lookupTable = new(StringComparer.OrdinalIgnoreCase) { { @"\Device\Mup", @"\" } };
+            IEnumerable<string> drives = Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\'));
             Span<char> targetPath = stackalloc char[1024];
-            foreach (string driveLetter in Environment.GetLogicalDrives().Select(static l => l.TrimEnd('\\')))
+            foreach (string drive in drives)
             {
                 uint length;
                 try
                 {
-                    length = NativeMethods.QueryDosDevice(driveLetter, targetPath);
+                    length = NativeMethods.QueryDosDevice(drive, targetPath);
                 }
                 catch
                 {
@@ -509,7 +510,7 @@ namespace PSADT.FileSystem
                 }
                 foreach (string path in targetPath[..(int)length].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries).Where(path => path.Length > 0 && !lookupTable.ContainsKey(path)))
                 {
-                    lookupTable.Add(path, driveLetter);
+                    lookupTable.Add(path, drive);
                 }
             }
             return new(lookupTable);
