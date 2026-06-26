@@ -263,7 +263,7 @@ namespace PSADT.Interop
         /// <param name="ReturnLength">When this method returns, contains the number of bytes required to store the previous state of the token's
         /// privileges.</param>
         /// <returns>A value indicating whether the operation succeeded. If the function fails, an exception is thrown.</returns>
-        internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, in BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState, Span<byte> PreviousState, out uint ReturnLength)
+        internal static BOOL AdjustTokenPrivileges(SafeHandle TokenHandle, BOOL DisableAllPrivileges, in TOKEN_PRIVILEGES NewState, Span<byte> PreviousState, out uint ReturnLength)
         {
             ArgumentException.ThrowIfNullOrInvalid(TokenHandle);
             BOOL res; PInvoke.SetLastError(WIN32_ERROR.NO_ERROR);
@@ -405,7 +405,7 @@ namespace PSADT.Interop
         /// <returns>A value indicating whether the process was created successfully. Returns <see langword="true"/> if the
         /// process was created; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="lpEnvironment"/> is null or closed.</exception>
-        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
@@ -465,7 +465,7 @@ namespace PSADT.Interop
         /// <param name="lpProcessInformation">When this method returns, contains information about the newly created process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not null-terminated.</exception>
-        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcessAsUser(SafeHandle hToken, string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrInvalid(hToken);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
@@ -1680,7 +1680,7 @@ namespace PSADT.Interop
         /// process and its primary thread.</param>
         /// <returns>true if the process is created successfully; otherwise, false.</returns>
         /// <exception cref="ArgumentNullException">Thrown if lpEnvironment is null or has been closed.</exception>
-        internal static BOOL CreateProcess(string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcess(string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOW lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
             if (lpCurrentDirectory is not null)
@@ -1740,7 +1740,7 @@ namespace PSADT.Interop
         /// <returns>A <see cref="BOOL"/> value that is <see langword="true"/> if the process is created successfully; otherwise,
         /// <see langword="false"/>.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="lpCommandLine"/> is not empty and does not contain a null terminator.</exception>
-        internal static BOOL CreateProcess(string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, in BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
+        internal static BOOL CreateProcess(string lpApplicationName, ref Span<char> lpCommandLine, in SECURITY_ATTRIBUTES? lpProcessAttributes, in SECURITY_ATTRIBUTES? lpThreadAttributes, BOOL bInheritHandles, PROCESS_CREATION_FLAGS dwCreationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? lpCurrentDirectory, in STARTUPINFOEXW lpStartupInfoEx, out PROCESS_INFORMATION lpProcessInformation)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(lpApplicationName);
             if (!lpCommandLine.SequenceEqual([]) && lpCommandLine.LastIndexOf('\0') == -1)
@@ -1916,7 +1916,7 @@ namespace PSADT.Interop
         /// DUPLICATE_HANDLE_OPTIONS flags.</param>
         /// <returns>A value that is <see langword="true"/> if the handle was duplicated successfully; otherwise, <see
         /// langword="false"/>.</returns>
-        internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
+        internal static BOOL DuplicateHandle(SafeHandle hSourceProcessHandle, SafeHandle hSourceHandle, SafeHandle hTargetProcessHandle, out SafeFileHandle lpTargetHandle, PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, DUPLICATE_HANDLE_OPTIONS dwOptions)
         {
             ArgumentException.ThrowIfNullOrClosed(hSourceProcessHandle); ArgumentException.ThrowIfNullOrInvalid(hSourceHandle); ArgumentException.ThrowIfNullOrClosed(hTargetProcessHandle);
             BOOL res = PInvoke.DuplicateHandle(hSourceProcessHandle, hSourceHandle, hTargetProcessHandle, out lpTargetHandle, (uint)dwDesiredAccess, bInheritHandle, dwOptions);
@@ -1941,7 +1941,7 @@ namespace PSADT.Interop
         /// <param name="dwProcessId">The identifier of the local process to open. This must be the process ID of an existing process.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the opened process handle. The caller is responsible for
         /// releasing the handle when it is no longer needed.</returns>
-        internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, in BOOL bInheritHandle, uint dwProcessId)
+        internal static SafeFileHandle OpenProcess(PROCESS_ACCESS_RIGHTS dwDesiredAccess, BOOL bInheritHandle, uint dwProcessId)
         {
             SafeFileHandle res = PInvoke.OpenProcess_SafeHandle(dwDesiredAccess, bInheritHandle, dwProcessId);
             return res.IsInvalid ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
@@ -2670,7 +2670,7 @@ namespace PSADT.Interop
         /// <returns>An NTSTATUS value indicating the result of the operation. Returns STATUS_SUCCESS if the thread was
         /// terminated successfully; otherwise, returns an error code.</returns>
         /// <exception cref="ArgumentNullException">Thrown if ThreadHandle is null or has already been closed.</exception>
-        internal static NTSTATUS NtTerminateThread(SafeThreadHandle ThreadHandle, in NTSTATUS ExitStatus)
+        internal static NTSTATUS NtTerminateThread(SafeThreadHandle ThreadHandle, NTSTATUS ExitStatus)
         {
             [DllImport("ntdll.dll", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern NTSTATUS NtTerminateThread(nint ThreadHandle, NTSTATUS ExitStatus);
