@@ -242,7 +242,7 @@ namespace PSADT.Invoke
             string pwshExecutablePath = pwshDefaultPath;
             if (coreSpecified)
             {
-                if (Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator).Where(static p => File.Exists($"{p.TrimEnd('\\')}{Path.DirectorySeparatorChar}pwsh.exe")).Select(static p => $"{p.TrimEnd('\\')}{Path.DirectorySeparatorChar}pwsh.exe").FirstOrDefault() is not string pwshCorePath)
+                if (Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator).Where(static p => File.Exists(Path.Join(p, "pwsh.exe"))).Select(static p => Path.Join(p, "pwsh.exe")).FirstOrDefault() is not string pwshCorePath)
                 {
                     throw new InvalidOperationException("The [/Core] parameter was specified, but PowerShell Core was not found on this system.");
                 }
@@ -259,7 +259,7 @@ namespace PSADT.Invoke
                 _ = argv.RemoveAll(static x => x.Equals("/32", StringComparison.OrdinalIgnoreCase));
                 if (RuntimeInformation.OSArchitecture.ToString().EndsWith("64", StringComparison.Ordinal))
                 {
-                    pwshExecutablePath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.SystemX86)}{Path.DirectorySeparatorChar}WindowsPowerShell\v1.0\PowerShell.exe";
+                    pwshExecutablePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\PowerShell.exe");
                 }
             }
 
@@ -293,14 +293,14 @@ namespace PSADT.Invoke
             }
 
             // Determine the path to the script to invoke.
-            string adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{Path.GetFileNameWithoutExtension(AssemblyInfo.Location)}.ps1";
+            string adtFrontendPath = Path.Join(currentPath, $"{Path.GetFileNameWithoutExtension(AssemblyInfo.Location)}.ps1");
             int fileIndex = Array.FindIndex(argv.ToArray(), static x => x.Equals("-File", StringComparison.OrdinalIgnoreCase));
             if (fileIndex != -1)
             {
                 adtFrontendPath = argv[fileIndex + 1].Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
-                    adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{adtFrontendPath}";
+                    adtFrontendPath = Path.Join(currentPath, adtFrontendPath);
                 }
                 argv.RemoveAt(fileIndex + 1);
                 argv.RemoveAt(fileIndex);
@@ -311,7 +311,7 @@ namespace PSADT.Invoke
                 adtFrontendPath = argv.Find(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)).Replace("\"", newValue: null);
                 if (!Path.IsPathRooted(adtFrontendPath))
                 {
-                    adtFrontendPath = $"{currentPath}{Path.DirectorySeparatorChar}{adtFrontendPath}";
+                    adtFrontendPath = Path.Join(currentPath, adtFrontendPath);
                 }
                 argv.RemoveAt(argv.FindIndex(static x => x.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".ps1\"", StringComparison.OrdinalIgnoreCase)));
                 WriteDebugMessage("Using script (.ps1) file directly specified on the command line...");
@@ -460,7 +460,7 @@ namespace PSADT.Invoke
         /// <summary>
         /// The default path to PowerShell.
         /// </summary>
-        private static readonly string pwshDefaultPath = $@"{Environment.SystemDirectory}{Path.DirectorySeparatorChar}WindowsPowerShell\v1.0\PowerShell.exe";
+        private static readonly string pwshDefaultPath = Path.Join(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\PowerShell.exe");
 
         /// <summary>
         /// The default arguments to pass to PowerShell.
