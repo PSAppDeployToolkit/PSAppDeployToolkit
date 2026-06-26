@@ -1895,7 +1895,7 @@ function Update-GroupPolicy
 
 #---------------------------------------------------------------------------
 #
-# MARK: Wrapper around Get-ADTUniversalDate
+# MARK: Legacy implementation of Get-UniversalDate
 #
 #---------------------------------------------------------------------------
 
@@ -1916,15 +1916,19 @@ function Get-UniversalDate
     # Set strict mode to the highest within this function's scope.
     Set-StrictMode -Version 3
 
-    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Get-ADTUniversalDate]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
+    Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] is deprecated and compatibility behavior is provided inline. Please migrate your scripts away from this function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('ContinueOnError'))
     {
         $null = $PSBoundParameters.Remove('ContinueOnError')
     }
+    if (!$PSBoundParameters.ContainsKey('DateTime'))
+    {
+        $DateTime = [System.DateTime]::Now.ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern).TrimEnd('Z')
+    }
 
     try
     {
-        Get-ADTUniversalDate @PSBoundParameters
+        [System.DateTime]::Parse($DateTime, $Host.CurrentCulture).ToUniversalTime().ToString([System.Globalization.DateTimeFormatInfo]::CurrentInfo.UniversalSortableDateTimePattern)
     }
     catch
     {
