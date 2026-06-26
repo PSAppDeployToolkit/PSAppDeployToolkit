@@ -2556,6 +2556,11 @@ function Execute-MSI
         $PSBoundParameters.Transforms = $Transform.Split([System.IO.Path]::PathSeparator)
         $null = $PSBoundParameters.Remove('Transform')
     }
+    if ($PSBoundParameters.ContainsKey('Patch'))
+    {
+        $PSBoundParameters.Patches = $Patch.Split([System.IO.Path]::PathSeparator)
+        $null = $PSBoundParameters.Remove('Patch')
+    }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
