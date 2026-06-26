@@ -276,10 +276,10 @@ namespace PSAppDeployToolkit.Foundation
                     WriteInitialDivider(ref writtenDivider);
                     FileInfo wimFile = new(wimFiles[0].FullName);
                     WriteLogEntry($"Discovered Zero-Config WIM file [{wimFile}].");
-                    DirectoryInfo mountPath = new(Path.Join(DirFiles.FullName, Path.GetRandomFileName()));
-                    _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, mountPath);
-                    AddMountedWimFile(wimFile); DirFiles = mountPath;
-                    WriteLogEntry($"Successfully mounted WIM file to [{mountPath}].");
+                    DirWimMountPath = new(Path.Join(DirFiles.FullName, Path.GetRandomFileName()));
+                    _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Mount-ADTWimFile' -ImagePath $args[0] -Path $args[1] -Index 1"), wimFile, DirWimMountPath);
+                    AddMountedWimFile(wimFile); DirFiles = DirWimMountPath;
+                    WriteLogEntry($"Successfully mounted WIM file to [{DirWimMountPath}].");
 
                     // Subst the new DirFiles path to eliminate any potential path length issues.
                     IReadOnlyList<DriveInfo> usedLetters = adtEnv.EnvLogicalDrives;
@@ -1469,6 +1469,7 @@ namespace PSAppDeployToolkit.Foundation
             }
             MountedWimFiles.Reverse(); _ = ModuleDatabase.InvokeScript(ScriptBlock.Create("& $Script:CommandTable.'Dismount-ADTWimFile' -ImagePath $args[0]"), MountedWimFiles);
             MountedWimFiles.Clear();
+            DirWimMountPath = null;
         }
 
         /// <summary>
@@ -1663,6 +1664,11 @@ namespace PSAppDeployToolkit.Foundation
         /// Gets the specified or determined path to the SupportFiles folder.
         /// </summary>
         public DirectoryInfo? DirSupportFiles { get => GetPropertyValue(in field); set => SetPropertyValue(ref field, value); }
+
+        /// <summary>
+        /// Gets the specified or determined path to the WIM mount point folder.
+        /// </summary>
+        public DirectoryInfo? DirWimMountPath { get; private set; }
 
         /// <summary>
         /// Gets an override to the deployment session's installation title.
