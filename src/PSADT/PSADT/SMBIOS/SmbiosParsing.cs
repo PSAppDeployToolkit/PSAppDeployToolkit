@@ -70,6 +70,7 @@ namespace PSADT.SMBIOS
         /// <returns>The parsed SMBIOS structure.</returns>
         /// <exception cref="SmbiosTypeNotFoundException">Thrown if the specified SMBIOS structure type is not found in the buffer.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3236:Caller information arguments should not be provided explicitly", Justification = "This is intentional as we're testing a parameter member.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0194:Merge is expressions on the same value", Justification = "https://github.com/meziantou/Meziantou.Analyzer/issues/1206")]
         internal static T ReadStructure<T>(ReadOnlySpan<byte> buffer, SmbiosType targetType, SmbiosParser<T> parser) where T : ISmbiosStructure
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(buffer.Length, 8, nameof(buffer));
