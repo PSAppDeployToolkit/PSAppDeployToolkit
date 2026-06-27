@@ -588,7 +588,7 @@ function Private:Invoke-ADTClientServerOperation
             {
                 # Remove any previous success flags before starting the process.
                 $arkSuccessParams = $arkBaseParams.Clone(); $arkSuccessParams.Add('Name', [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty)
-                Remove-ADTRegistryKey @arkSuccessParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType)
+                Remove-ADTRegistryKey @arkSuccessParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientOperationAsync($argumentList, $User, $elevatedTokenType)
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -620,7 +620,7 @@ function Private:Invoke-ADTClientServerOperation
             }
             else
             {
-                [PSADT.Foundation.ClientServerUtilities]::StartClientOperation($argumentList, $User, $elevatedTokenType).ConfigureAwait($false).GetAwaiter().GetResult()
+                [PSADT.Foundation.ClientServerUtilities]::StartClientOperationAsync($argumentList, $User, $elevatedTokenType).ConfigureAwait($false).GetAwaiter().GetResult()
             }
         }
         finally

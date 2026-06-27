@@ -67,7 +67,7 @@ namespace PSADT.ClientServer
                 nint outputServerClientSafePipeHandle = _outputServer.ClientSafePipeHandle.DangerousGetHandle();
                 nint inputServerClientSafePipeHandle = _inputServer.ClientSafePipeHandle.DangerousGetHandle();
                 nint logServerClientSafePipeHandle = _logServer.ClientSafePipeHandle.DangerousGetHandle();
-                _clientProcess = ClientServerUtilities.StartClientOperation(
+                _clientProcess = ClientServerUtilities.StartClientOperationAsync(
                     ["/ClientServer", "-InputPipe", $"{((long)outputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-OutputPipe", $"{((long)inputServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}", "-LogPipe", $"{((long)logServerClientSafePipeHandle).ToString(CultureInfo.InvariantCulture)}"],
                     RunAsActiveUser,
                     [outputServerClientSafePipeHandle, inputServerClientSafePipeHandle, logServerClientSafePipeHandle],

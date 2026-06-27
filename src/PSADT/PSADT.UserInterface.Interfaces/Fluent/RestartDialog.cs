@@ -59,7 +59,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
-            await DeviceUtilities.RestartComputer(shutdownReasonText);
+            await DeviceUtilities.RestartComputerAsync(shutdownReasonText);
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -91,7 +91,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                await DeviceUtilities.RestartComputer(shutdownReasonText);
+                await DeviceUtilities.RestartComputerAsync(shutdownReasonText);
             }
             else if (_countdownWarningDuration is not null && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {

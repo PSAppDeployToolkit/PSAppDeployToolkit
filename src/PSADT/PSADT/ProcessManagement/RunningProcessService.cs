@@ -42,7 +42,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Renew the cancellation token as once they're cancelled, they're not usable.
-            _pollingTask = Task.Run(PollRunningProcesses, (_cancellationTokenSource = new()).Token);
+            _pollingTask = Task.Run(PollRunningProcessesAsync, (_cancellationTokenSource = new()).Token);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace PSADT.ProcessManagement
         /// processes to close has changed. Polling continues until cancellation is requested.</remarks>
         /// <returns>A task that represents the asynchronous polling operation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the cancellation token source is not initialized.</exception>
-        private async Task PollRunningProcesses()
+        private async Task PollRunningProcessesAsync()
         {
             if (_cancellationTokenSource is null)
             {

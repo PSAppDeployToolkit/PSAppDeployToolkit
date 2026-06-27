@@ -186,8 +186,8 @@ namespace PSADT.TerminalServices
                 {
                     try
                     {
-                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); await ClientServerPermissions.Remediate(user).ConfigureAwait(false);
-                        using ProcessResult result = await ClientServerUtilities.StartClientOperation(["/GetLastInputTime"], user).ConfigureAwait(false);
+                        RunAsActiveUser user = new(ntAccount, sid, session.SessionId, isLocalAdmin); await ClientServerPermissions.RemediateAsync(user).ConfigureAwait(false);
+                        using ProcessResult result = await ClientServerUtilities.StartClientOperationAsync(["/GetLastInputTime"], user).ConfigureAwait(false);
                         idleTime = new(long.Parse(result.StdOut[0], CultureInfo.InvariantCulture));
                     }
                     catch (Exception ex) when (ex.Message is not null)

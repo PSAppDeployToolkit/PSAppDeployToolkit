@@ -670,7 +670,7 @@ namespace PSADT.ClientServer
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
                     await Task.Delay(delayValue * 1000, default).ConfigureAwait(false);
-                    await DeviceUtilities.RestartComputer(shutdownReason).ConfigureAwait(false);
+                    await DeviceUtilities.RestartComputerAsync(shutdownReason).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
                 }
@@ -681,7 +681,7 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/TokenBroker", StringComparison.Ordinal) || arg.Equals("/tb", StringComparison.Ordinal))
                 {
-                    await BrokerTokenForCaller(ArgvToDictionary(argv)).ConfigureAwait(false);
+                    await BrokerTokenForCallerAsync(ArgvToDictionary(argv)).ConfigureAwait(false);
                     return (int)ClientExitCode.Success;
                 }
                 if (arg.Equals("/GroupPolicyUpdate", StringComparison.Ordinal) || arg.Equals("/gpu", StringComparison.Ordinal))
@@ -795,7 +795,7 @@ namespace PSADT.ClientServer
         /// <exception cref="ClientException">Thrown if the caller is not running as the Local System account, or if any required argument is missing,
         /// invalid, or cannot be parsed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
-        private static async ValueTask BrokerTokenForCaller(ReadOnlyDictionary<string, string> arguments)
+        private static async ValueTask BrokerTokenForCallerAsync(ReadOnlyDictionary<string, string> arguments)
         {
             // Confirm we're running as the SYSTEM account before proceeding.
             if (!AccountUtilities.CallerIsLocalSystem)

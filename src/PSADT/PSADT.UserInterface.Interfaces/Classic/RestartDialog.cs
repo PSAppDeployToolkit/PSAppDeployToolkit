@@ -144,7 +144,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.
-            await DeviceUtilities.RestartComputer(shutdownReasonText);
+            await DeviceUtilities.RestartComputerAsync(shutdownReasonText);
             base.ButtonLeft_Click(sender, e);
         }
 
