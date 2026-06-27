@@ -81,7 +81,7 @@ namespace PSADT.ClientServer
             while (bytesRead < 4)
             {
                 int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
-                if (read == 0)
+                if (read is 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
                 }
@@ -105,7 +105,7 @@ namespace PSADT.ClientServer
             while (bytesRead < length)
             {
                 int read = stream.Read(data, bytesRead, length - bytesRead);
-                if (read == 0)
+                if (read is 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading data.");
                 }
@@ -286,7 +286,7 @@ namespace PSADT.ClientServer
             {
                 result |= a[i] ^ b[i];
             }
-            return result == 0;
+            return result is 0;
         }
 
         /// <summary>

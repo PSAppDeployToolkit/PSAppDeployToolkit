@@ -259,7 +259,7 @@ namespace PSADT.FileSystem
                     }
                     finally
                     {
-                        if (Interlocked.Decrement(ref pendingDirs) == 0 && Interlocked.Exchange(ref completed, 1) == 0)
+                        if (Interlocked.Decrement(ref pendingDirs) is 0 && Interlocked.Exchange(ref completed, 1) is 0)
                         {
                             queue.CompleteAdding();
                         }

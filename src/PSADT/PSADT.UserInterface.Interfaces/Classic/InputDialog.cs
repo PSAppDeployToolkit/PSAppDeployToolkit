@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         internal InputDialog() : this(null!)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
@@ -31,7 +31,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Fluent dialog type.</exception>
         internal InputDialog(InputDialogOptions options) : base(options, InputDialogResult.DefaultResult)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("The InputDialog is only implemented for the Fluent dialog type.");
             }

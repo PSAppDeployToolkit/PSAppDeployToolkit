@@ -742,11 +742,11 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                if (vt == VARENUM.VT_EMPTY)
+                if (vt is VARENUM.VT_EMPTY)
                 {
                     return null;
                 }
-                if (vt == VARENUM.VT_BSTR)
+                if (vt is VARENUM.VT_BSTR)
                 {
                     nint bstrVal;
                     unsafe
@@ -760,7 +760,7 @@ namespace PSADT.ShortcutManagement
                     string bstrValStr = Marshal.PtrToStringBSTR(bstrVal);
                     return !string.IsNullOrWhiteSpace(bstrValStr) ? bstrValStr : null;
                 }
-                if (vt == VARENUM.VT_LPWSTR)
+                if (vt is VARENUM.VT_LPWSTR)
                 {
                     PWSTR pwszVal = propVariant.Anonymous.Anonymous.Anonymous.pwszVal;
                     if (pwszVal.IsNull())
@@ -825,11 +825,11 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                return vt == VARENUM.VT_BOOL
+                return vt is VARENUM.VT_BOOL
                     ? propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0
-                    : vt == VARENUM.VT_I4
+                    : vt is VARENUM.VT_I4
                     ? propVariant.Anonymous.Anonymous.Anonymous.lVal is not 0
-                    : vt == VARENUM.VT_UI4
+                    : vt is VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0
                     : vt is not VARENUM.VT_EMPTY
                     ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
@@ -885,7 +885,7 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                if (vt == VARENUM.VT_EMPTY)
+                if (vt is VARENUM.VT_EMPTY)
                 {
                     return null;
                 }
@@ -956,9 +956,9 @@ namespace PSADT.ShortcutManagement
             {
                 ((IPropertyStore)_shellLink).GetValue(in key, out propVariant);
                 VARENUM vt = propVariant.Anonymous.Anonymous.vt;
-                return vt == VARENUM.VT_I4 && propVariant.Anonymous.Anonymous.Anonymous.lVal < 0
+                return vt is VARENUM.VT_I4 && propVariant.Anonymous.Anonymous.Anonymous.lVal < 0
                     ? (uint)propVariant.Anonymous.Anonymous.Anonymous.lVal
-                    : vt == VARENUM.VT_UI4
+                    : vt is VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal
                     : vt is not VARENUM.VT_EMPTY
                     ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.")
@@ -1087,7 +1087,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <remarks>Use this property to determine if modifications to the storage are allowed. When <see
         /// langword="true"/>, attempts to write or update the storage will not be permitted.</remarks>
-        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) == Interop.STGM.STGM_DIRECT;
+        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) is Interop.STGM.STGM_DIRECT;
 
         /// <summary>
         /// Indicates whether the object has been disposed.

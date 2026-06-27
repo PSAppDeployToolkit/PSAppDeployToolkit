@@ -79,7 +79,7 @@ namespace PSADT.ClientServer
                 foreach (AssemblyName referencedAssemblyName in queue.Dequeue().GetReferencedAssemblies())
                 {
                     // Skip over any invalid or already seen assembly names.
-                    if (referencedAssemblyName.ContentType == AssemblyContentType.WindowsRuntime)
+                    if (referencedAssemblyName.ContentType is AssemblyContentType.WindowsRuntime)
                     {
                         continue;
                     }
@@ -133,7 +133,7 @@ namespace PSADT.ClientServer
             try
             {
                 // Determine the mode of operation based on the provided arguments.
-                if (argv.Length == 0)
+                if (argv.Length is 0)
                 {
                     string productVersion = AssemblyInfo.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? throw new ClientException("Failed to retrieve assembly version information.", ClientExitCode.Unknown);
                     string helpTitle = $"{AssemblyInfo.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? throw new ClientException("Failed to retrieve assembly title information.", ClientExitCode.Unknown)} {new Version(productVersion[..productVersion.IndexOf('+', StringComparison.Ordinal)])}";
@@ -272,7 +272,7 @@ namespace PSADT.ClientServer
                             {
                                 // Read and decrypt the request: [1-byte command][serialized payload]
                                 byte[] requestBytes = ioEncryption.ReadEncrypted(inputPipeClient);
-                                if (requestBytes.Length == 0)
+                                if (requestBytes.Length is 0)
                                 {
                                     throw new ClientException("Received empty request from server.", ClientExitCode.InvalidRequest);
                                 }
@@ -364,7 +364,7 @@ namespace PSADT.ClientServer
                                             }
 
                                             // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
-                                            if (failures.Count == 0 && runningProcesses.Length > 0)
+                                            if (failures.Count is 0 && runningProcesses.Length > 0)
                                             {
                                                 closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
                                                 foreach (Process process in runningProcesses)
@@ -852,7 +852,7 @@ namespace PSADT.ClientServer
             // Write the duplicated token to the pipe.
             using (hDupToken)
             {
-                if (IntPtr.Size == 8)
+                if (IntPtr.Size is 8)
                 {
                     pipe.WriteByte(8); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt64()), 0, 8).ConfigureAwait(false);
                 }

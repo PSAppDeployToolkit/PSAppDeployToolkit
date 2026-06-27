@@ -74,7 +74,7 @@ namespace PSADT.WindowManagement
                     }
 
                     // Continue if the visible window title doesn't match our filter.
-                    if (windowTitleRegexObject?.IsMatch(windowTitle) == false)
+                    if ((windowTitleRegexObject?.IsMatch(windowTitle)) is false)
                     {
                         continue;
                     }

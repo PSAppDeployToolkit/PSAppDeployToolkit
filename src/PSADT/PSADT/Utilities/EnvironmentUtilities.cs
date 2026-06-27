@@ -133,7 +133,7 @@ namespace PSADT.Utilities
         public static void SetEnvironmentVariable(string variable, string? value, EnvironmentVariableTarget target, bool expandable, bool append, bool remove)
         {
             // Use the built-in method for process-level variables.
-            if (target == EnvironmentVariableTarget.Process)
+            if (target is EnvironmentVariableTarget.Process)
             {
                 SetEnvironmentVariable(variable, value);
                 return;
@@ -176,7 +176,7 @@ namespace PSADT.Utilities
                     return;
                 }
                 string[] existingParts = [.. existingValue.Split([Path.PathSeparator], StringSplitOptions.RemoveEmptyEntries).Where(static p => !string.IsNullOrWhiteSpace(p)).Select(static p => p.Trim())];
-                if (existingParts.Length == 0)
+                if (existingParts.Length is 0)
                 {
                     RemoveEnvironmentVariable(variable, target);
                     return;

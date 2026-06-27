@@ -73,7 +73,7 @@ namespace PSAppDeployToolkit.Logging
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State is not RunspaceState.Opened);
             StackFrame[] stackFrames = [.. new StackTrace(fNeedFileInfo: true).GetFrames().Skip(1)]; string callerFileName, callerSource;
-            if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
+            if (noRunspace || !stackFrames.Any(static f => (f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal)) is true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
                 StackFrame invoker = stackFrames.First(static f => f.GetMethod()?.DeclaringType?.FullName is string fullName && !DeclaringTypeRegex.IsMatch(fullName));
@@ -121,7 +121,7 @@ namespace PSAppDeployToolkit.Logging
 
             // Build out the log entries and confirm whether there's anything to log.
             ReadOnlyCollection<LogEntry> logEntries = new([.. message.Where(static msg => !string.IsNullOrWhiteSpace(msg)).Select(msg => new LogEntry(dateNow, msg, severity.Value, source, scriptSection, debugMessage, callerFileName, callerSource))]);
-            if (logEntries.Count == 0)
+            if (logEntries.Count is 0)
             {
                 throw new InvalidOperationException("No valid log messages were provided to log.");
             }
@@ -130,7 +130,7 @@ namespace PSAppDeployToolkit.Logging
             if (canLogToDisk)
             {
                 using StreamWriter logFileWriter = new(Path.Join(logFileDirectory, logFileName), append: true, LogEncoding);
-                if (logStyle.Value == LogStyle.CMTrace)
+                if (logStyle.Value is LogStyle.CMTrace)
                 {
                     foreach (LogEntry logEntry in logEntries)
                     {
@@ -149,7 +149,7 @@ namespace PSAppDeployToolkit.Logging
             // Write out all messages to host if configured/permitted to do so.
             if (hostLogStreamType is not HostLogStreamType.None)
             {
-                if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
+                if (hostLogStreamType is HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
                     FrozenDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
@@ -158,7 +158,7 @@ namespace PSAppDeployToolkit.Logging
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
                     }
-                    TextWriter stdStream = severity == LogSeverity.Error
+                    TextWriter stdStream = severity is LogSeverity.Error
                         ? Console.Error
                         : Console.Out;
                     foreach (LogEntry logEntry in logEntries)

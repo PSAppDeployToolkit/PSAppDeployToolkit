@@ -43,6 +43,6 @@ namespace PSADT.Interop
         /// <remarks>The instance is considered valid when the reserved identifier is zero, the type
         /// identifier is either 1 or 2, and the count is greater than zero. This property can be used to check if the
         /// object is in a usable state before performing operations.</remarks>
-        internal readonly bool IsValid => idReserved == 0 && (idType == 1 || idType == 2) && idCount > 0;
+        internal readonly bool IsValid => idReserved is 0 && (idType is 1 or 2) && idCount > 0;
     }
 }

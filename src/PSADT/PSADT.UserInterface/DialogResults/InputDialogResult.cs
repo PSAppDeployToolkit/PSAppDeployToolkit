@@ -41,7 +41,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <returns>true if the specified object is an InputDialogResult with equal Result and Text values; otherwise, false.</returns>
         public override bool Equals(object? obj)
         {
-            return obj is InputDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && Text?.Equals(other.Text, StringComparison.Ordinal) == true;
+            return obj is InputDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && (Text?.Equals(other.Text, StringComparison.Ordinal)) is true;
         }
 
         /// <summary>

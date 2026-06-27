@@ -60,12 +60,12 @@ namespace PSADT.FileSystem
             // Read the file header and optional header, returning the ExecutableInfo.
             ref readonly IMAGE_FILE_HEADER fileHeader = ref ReadStruct<IMAGE_FILE_HEADER>(binaryReader);
             ushort optionalHeaderMagic = binaryReader.ReadUInt16(); _ = fileStream.Seek(-2, SeekOrigin.Current);
-            if ((IMAGE_OPTIONAL_HEADER_MAGIC)optionalHeaderMagic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+            if ((IMAGE_OPTIONAL_HEADER_MAGIC)optionalHeaderMagic is IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC)
             {
                 ref readonly IMAGE_OPTIONAL_HEADER32 opt32 = ref ReadStruct<IMAGE_OPTIONAL_HEADER32>(binaryReader);
                 return new(filePath, fileHeader.Machine, opt32.Subsystem, HasCLRHeader(opt32.DataDirectory), opt32.AddressOfEntryPoint, opt32.ImageBase);
             }
-            if ((IMAGE_OPTIONAL_HEADER_MAGIC)optionalHeaderMagic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+            if ((IMAGE_OPTIONAL_HEADER_MAGIC)optionalHeaderMagic is IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC)
             {
                 ref readonly IMAGE_OPTIONAL_HEADER64 opt64 = ref ReadStruct<IMAGE_OPTIONAL_HEADER64>(binaryReader);
                 return new(filePath, fileHeader.Machine, opt64.Subsystem, HasCLRHeader(opt64.DataDirectory), opt64.AddressOfEntryPoint, opt64.ImageBase);

@@ -150,8 +150,8 @@ namespace PSADT.TerminalServices
             // Set up the remaining session information values.
             bool isCurrentSession = session.SessionId == AccountUtilities.CallerSessionId;
             bool isConsoleSession = session.SessionId == PInvoke.WTSGetActiveConsoleSessionId();
-            bool isActiveUserSession = session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
-            bool isValidUserSession = isActiveUserSession || session.State == Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
+            bool isActiveUserSession = session.State is Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSActive;
+            bool isValidUserSession = isActiveUserSession || session.State is Windows.Win32.System.RemoteDesktop.WTS_CONNECTSTATE_CLASS.WTSDisconnected;
             ushort clientProtocolType = GetValue<ushort>(session.SessionId, WTS_INFO_CLASS.WTSClientProtocolType);
             string? clientName = GetString(session.SessionId, WTS_INFO_CLASS.WTSClientName);
             string? pWinStationName = session.pSessionName.ToString();

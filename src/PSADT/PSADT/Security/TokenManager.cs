@@ -229,7 +229,7 @@ namespace PSADT.Security
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
+                    if (elevatedTokenType is ElevatedTokenType.HighestMandatory)
                     {
                         throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                     }
@@ -249,7 +249,7 @@ namespace PSADT.Security
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
-                        if (elevatedTokenType == ElevatedTokenType.HighestMandatory)
+                        if (elevatedTokenType is ElevatedTokenType.HighestMandatory)
                         {
                             throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                         }

@@ -46,7 +46,7 @@ namespace PSADT.SMBIOS
         /// True when RawType encodes an SMBIOS structure type (bit 7 == 0).
         /// False when it encodes an SMBIOS Baseboard Type (bit 7 == 1).
         /// </summary>
-        public bool IsType => (RawType & 0x80) == 0;
+        public bool IsType => (RawType & 0x80) is 0;
 
         /// <summary>
         /// Lower7-bit type code (interpretation depends on IsType).

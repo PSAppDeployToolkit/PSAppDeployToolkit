@@ -146,7 +146,7 @@ namespace PSADT.Utilities
         {
             Span<char> buffer = new char[65536]; uint len = NativeMethods.GetPrivateProfileSectionNames(buffer, filepath);
             string[] sections = buffer[..(int)len].ToString().Split(['\0'], StringSplitOptions.RemoveEmptyEntries);
-            return sections.Length == 0 ? throw new InvalidDataException("No sections found in the INI file.") : new(sections);
+            return sections.Length is 0 ? throw new InvalidDataException("No sections found in the INI file.") : new(sections);
         }
 
         /// <summary>

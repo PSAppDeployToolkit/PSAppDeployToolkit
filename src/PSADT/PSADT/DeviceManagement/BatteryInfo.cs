@@ -77,7 +77,7 @@ namespace PSADT.DeviceManagement
             get
             {
                 // Ensure the system power status is up to date.
-                UpdateSystemPowerStatus(); return systemPowerStatus.SystemStatusFlag == 1;
+                UpdateSystemPowerStatus(); return systemPowerStatus.SystemStatusFlag is 1;
             }
         }
 
@@ -126,7 +126,7 @@ namespace PSADT.DeviceManagement
         /// </summary>
         private bool IsBatteryInvalid()
         {
-            return BatteryChargeStatus is BatteryChargeStatus batteryChargeStatus && (batteryChargeStatus == BatteryChargeStatus.NoSystemBattery || batteryChargeStatus == BatteryChargeStatus.Unknown);
+            return BatteryChargeStatus is BatteryChargeStatus batteryChargeStatus && (batteryChargeStatus is BatteryChargeStatus.NoSystemBattery or BatteryChargeStatus.Unknown);
         }
 
         /// <summary>

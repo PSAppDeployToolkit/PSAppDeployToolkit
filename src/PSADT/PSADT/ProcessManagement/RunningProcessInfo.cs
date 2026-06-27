@@ -168,7 +168,7 @@ namespace PSADT.ProcessManagement
                         }
 
                         // If we couldn't get the command line, skip this process.
-                        if (argv.Length == 0)
+                        if (argv.Length is 0)
                         {
                             continue;
                         }

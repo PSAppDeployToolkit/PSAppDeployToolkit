@@ -23,7 +23,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         internal CloseAppsDialog() : this(null!, null!)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
@@ -289,7 +289,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             labelCountdown.Text = FormatTime(remaining);
             if (remaining <= TimeSpan.Zero)
             {
-                if (forcedCountdown && (runningProcessService is null || (listBoxCloseProcesses.Items.Count == 0 && !hideCloseButton)))
+                if (forcedCountdown && (runningProcessService is null || (listBoxCloseProcesses.Items.Count is 0 && !hideCloseButton)))
                 {
                     buttonContinue.PerformClick();
                 }

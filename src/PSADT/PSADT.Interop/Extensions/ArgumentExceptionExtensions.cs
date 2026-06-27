@@ -99,7 +99,7 @@ namespace System
                         throw new ArgumentNullException(name, "The specified UNICODE_STRING cannot have a null buffer.");
                     }
                 }
-                if (value.Length == 0)
+                if (value.Length is 0)
                 {
                     throw new ArgumentException("The specified UNICODE_STRING cannot be empty.", name);
                 }
@@ -125,7 +125,7 @@ namespace System
                     {
                         throw new ArgumentNullException(name, "The specified UNICODE_STRING cannot have a null buffer when MaximumLength is greater than zero.");
                     }
-                    if (value.Buffer.Value is not null && value.MaximumLength == 0)
+                    if (value.Buffer.Value is not null && value.MaximumLength is 0)
                     {
                         throw new ArgumentException("The specified UNICODE_STRING cannot have a non-null buffer when MaximumLength is zero.", name);
                     }

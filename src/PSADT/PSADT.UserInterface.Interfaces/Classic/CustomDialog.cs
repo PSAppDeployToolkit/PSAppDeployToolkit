@@ -17,7 +17,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         internal CustomDialog() : this(null!, null!)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }

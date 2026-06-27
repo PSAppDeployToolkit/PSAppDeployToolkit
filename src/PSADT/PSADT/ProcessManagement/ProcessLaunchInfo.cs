@@ -112,11 +112,11 @@ namespace PSADT.ProcessManagement
             // Confirm we're not using incompatible options.
             if (useShellExecute)
             {
-                if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
+                if ((runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser)) is false)
                 {
                     throw new NotSupportedException("Cannot specify UseShellExecute while specifying a RunAsActiveUser.");
                 }
-                if (elevatedTokenType?.Equals(Security.ElevatedTokenType.None) == false)
+                if ((elevatedTokenType?.Equals(Security.ElevatedTokenType.None)) is false)
                 {
                     throw new NotSupportedException("Cannot specify ElevatedTokenType while specifying a RunAsActiveUser.");
                 }
@@ -147,7 +147,7 @@ namespace PSADT.ProcessManagement
             // Expand out environment variables for FilePath/ArgumentList as required.
             if (ExpandEnvironmentVariables = expandEnvironmentVariables)
             {
-                if (RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
+                if ((RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser)) is false)
                 {
                     if (!TokenManager.CanGetUserPrimaryToken)
                     {

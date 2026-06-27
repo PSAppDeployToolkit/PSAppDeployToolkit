@@ -135,7 +135,7 @@ namespace PSADT.Interop.Utilities
         {
             return hResult >= 0
                 ? throw new NotSupportedException($"Attempted to throw an exception with HRESULT of [{hResult.Value:X8}].")
-                : HRESULT_FACILITY(hResult) == FACILITY_CODE.FACILITY_WIN32
+                : HRESULT_FACILITY(hResult) is FACILITY_CODE.FACILITY_WIN32
                 ? GetException((WIN32_ERROR)HRESULT_CODE(hResult))
                 : Marshal.GetExceptionForHR(hResult) ?? throw new InvalidOperationException($"Failed to retrive an exception for HRESULT of [{hResult.Value:X8}]. This should never occur.");
         }

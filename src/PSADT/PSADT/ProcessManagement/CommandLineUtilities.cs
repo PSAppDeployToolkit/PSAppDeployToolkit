@@ -311,9 +311,9 @@ namespace PSADT.ProcessManagement
                     bool isNested = quoteDepth > 0 && position > 0 && IsWhitespace(commandLine[position - 1]);
                     _ = result.Append(c);
                     position++;
-                    quoteDepth += isNested ? 1 : (quoteDepth == 0 ? 1 : -1);
+                    quoteDepth += isNested ? 1 : (quoteDepth is 0 ? 1 : -1);
 
-                    if (quoteDepth == 0)
+                    if (quoteDepth is 0)
                     {
                         break;
                     }
@@ -517,11 +517,11 @@ namespace PSADT.ProcessManagement
         private static (string Path, int TokenCount) FindOptimalPathFromTokens(List<string> tokens)
         {
             // Verify the supplied tokens before proceeding.
-            if (tokens.Count == 0)
+            if (tokens.Count is 0)
             {
                 return (string.Empty, 0);
             }
-            if (tokens.Count == 1)
+            if (tokens.Count is 1)
             {
                 return (tokens[0], 1);
             }
@@ -1013,7 +1013,7 @@ namespace PSADT.ProcessManagement
             }
 
             // The argument must be quoted if it contains a space, tab, a quote, or is empty.
-            bool needsQuoting = argument.Length == 0 || ContainsWhitespaceOrQuote(argument);
+            bool needsQuoting = argument.Length is 0 || ContainsWhitespaceOrQuote(argument);
             if (!needsQuoting)
             {
                 return argument;

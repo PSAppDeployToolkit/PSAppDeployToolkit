@@ -123,7 +123,7 @@ namespace PSADT.SMBIOS
             // SKU Number string index
             string? skuNumber = null;
             int stringTableOffset = structureOffset + structureLength;
-            bool canReadSku = !(containedElementCount > 0 && containedElementRecordLength == 0);
+            bool canReadSku = !(containedElementCount > 0 && containedElementRecordLength is 0);
             if (canReadSku && structureLength > afterRecordsOffset)
             {
                 skuNumber = SmbiosParsing.GetSmbiosString(buffer, stringTableOffset, buffer[structureOffset + afterRecordsOffset]);

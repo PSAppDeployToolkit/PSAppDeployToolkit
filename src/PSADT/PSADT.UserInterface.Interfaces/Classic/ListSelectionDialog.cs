@@ -15,7 +15,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         internal ListSelectionDialog() : this(null!)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
@@ -31,7 +31,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// the Fluent dialog type.</exception>
         internal ListSelectionDialog(ListSelectionDialogOptions options) : base(options, ListSelectionDialogResult.DefaultResult)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("The ListSelectionDialog is only implemented for the Fluent dialog type.");
             }

@@ -138,7 +138,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
-                if (launchInfo.RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) == false)
+                if ((launchInfo.RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser)) is false)
                 {
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                     if (!TokenManager.CanGetUserPrimaryToken)
@@ -159,7 +159,7 @@ namespace PSADT.ProcessManagement
                         }
                     }
                 }
-                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType == ElevatedTokenType.None || (launchInfo.UIAccess && AccountUtilities.CallerIsLoggedOnUser && TokenManager.CanGetUserPrimaryToken && ((!hasExternalHandles && CanUseCreateProcessWithToken(isCallerToken: true, callerPrivileges, commandSpan) == CreateProcessUsingTokenStatus.OK) || CanUseCreateProcessAsUser(isCallerToken: true, callerPrivileges) == CreateProcessUsingTokenStatus.OK))))
+                else if (AccountUtilities.CallerIsAdmin && (launchInfo.ElevatedTokenType is ElevatedTokenType.None || (launchInfo.UIAccess && AccountUtilities.CallerIsLoggedOnUser && TokenManager.CanGetUserPrimaryToken && ((!hasExternalHandles && CanUseCreateProcessWithToken(isCallerToken: true, callerPrivileges, commandSpan) is CreateProcessUsingTokenStatus.OK) || CanUseCreateProcessAsUser(isCallerToken: true, callerPrivileges) is CreateProcessUsingTokenStatus.OK))))
                 {
                     // We're running elevated but have been asked to de-elevate.
                     if (!AccountUtilities.CallerIsLoggedOnUser)
@@ -566,7 +566,7 @@ namespace PSADT.ProcessManagement
             using ServiceController serviceController = new("seclogon");
             try
             {
-                if (serviceController.StartType == ServiceStartMode.Disabled)
+                if (serviceController.StartType is ServiceStartMode.Disabled)
                 {
                     return CreateProcessUsingTokenStatus.SecLogonServiceDisabled;
                 }
@@ -659,8 +659,8 @@ namespace PSADT.ProcessManagement
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
             bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken, callerPrivilges);
-            bool forceBreakaway = createProcessAsUserAbility == CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
-            if (createProcessAsUserAbility == CreateProcessUsingTokenStatus.OK || forceBreakaway || runAsInvoker)
+            bool forceBreakaway = createProcessAsUserAbility is CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
+            if (createProcessAsUserAbility is CreateProcessUsingTokenStatus.OK || forceBreakaway || runAsInvoker)
             {
                 // Use STARTUPINFOEX when we need to specify handle inheritance or force breakaway.
                 if (forceBreakaway || runAsInvoker || handlesToInherit.Count > 0)

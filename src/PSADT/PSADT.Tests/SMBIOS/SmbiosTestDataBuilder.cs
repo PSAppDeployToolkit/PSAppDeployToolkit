@@ -40,7 +40,7 @@ namespace PSADT.Tests.SMBIOS
                 tableBytes.Add((byte)(structure.Handle >> 8));
                 tableBytes.AddRange(structure.FormattedData);
 
-                if (structure.Strings.Length == 0)
+                if (structure.Strings.Length is 0)
                 {
                     tableBytes.Add(0);
                     tableBytes.Add(0);

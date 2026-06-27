@@ -259,7 +259,7 @@ namespace PSAppDeployToolkit.Foundation
                         LogName = (string)paramValue;
                     }
                 }
-                if (noExitOnClose == true)
+                if (noExitOnClose is true)
                 {
                     Settings |= DeploymentSettings.NoExitOnClose;
                 }
@@ -348,7 +348,7 @@ namespace PSAppDeployToolkit.Foundation
                         }
 
                         // Discover if there are zero-config MSP files. Name multiple MSP files in alphabetical order to control order in which they are installed.
-                        if (DefaultMspFiles.Count == 0)
+                        if (DefaultMspFiles.Count is 0)
                         {
                             if (DirFiles is not null)
                             {
@@ -367,7 +367,7 @@ namespace PSAppDeployToolkit.Foundation
                         // Generate list of MSI executables for use with Show-ADTInstallationWelcome.
                         if (!Settings.HasFlag(DeploymentSettings.DisableDefaultMsiProcessList))
                         {
-                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => (p as string)?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(((string)p).Split(['|'], StringSplitOptions.RemoveEmptyEntries)[^1])))];
+                            ProcessDefinition[] msiExecList = [.. (DefaultMstFile is not null ? MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3, [DefaultMstFile.FullName]) : MsiUtilities.GetMsiTableColumnValues(DefaultMsiFile.FullName, "File", 3)).Where(static p => ((p as string)?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) is true).Select(static p => new ProcessDefinition(Path.GetFileNameWithoutExtension(((string)p).Split(['|'], StringSplitOptions.RemoveEmptyEntries)[^1])))];
                             if (msiExecList.Length > 0)
                             {
                                 AppProcessesToClose = new ReadOnlyCollection<ProcessDefinition>([.. AppProcessesToClose.Concat(msiExecList).GroupBy(static p => p.Name, StringComparer.OrdinalIgnoreCase).Select(static g => g.First())]);
@@ -549,7 +549,7 @@ namespace PSAppDeployToolkit.Foundation
                 if (!DisableLogging && LogBuffer.Count > 0)
                 {
                     using StreamWriter logFileWriter = new(Path.Join(LogPath.FullName, LogName), append: true, LogUtilities.LogEncoding);
-                    foreach (string line in LogStyle == LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
+                    foreach (string line in LogStyle is LogStyle.CMTrace ? LogBuffer.Select(static o => o.CMTraceLogLine) : LogBuffer.Select(static o => o.LegacyLogLine))
                     {
                         logFileWriter.WriteLine(line);
                     }
@@ -610,7 +610,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Announce session instantiation mode.
-                if (compatibilityMode == true)
+                if (compatibilityMode is true)
                 {
                     WriteLogEntry([$"[{appDeployToolkitName}] session mode is [Compatibility]. This mode is for the transition of v3.x scripts and is not for new development.", "Information on how to migrate this script to Native mode is available at [https://psappdeploytoolkit.com/]."], LogSeverity.Warning);
                 }
@@ -858,7 +858,7 @@ namespace PSAppDeployToolkit.Foundation
                     }
                     else if (!Settings.HasFlag(DeploymentSettings.NoProcessDetection))
                     {
-                        if (AppProcessesToClose.Count == 0 || (RunningProcessInfo.Get(AppProcessesToClose) is var runningProcesses && (runningProcesses.Count == 0)))
+                        if (AppProcessesToClose.Count is 0 || (RunningProcessInfo.Get(AppProcessesToClose) is var runningProcesses && (runningProcesses.Count is 0)))
                         {
                             if (AppProcessesToClose.Count > 0 && !forceProcessDetection)
                             {
@@ -906,19 +906,19 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // If we're still in Auto mode, then set the deployment mode to Interactive.
-                if (DeployMode == DeployMode.Auto)
+                if (DeployMode is DeployMode.Auto)
                 {
                     DeployMode = DeployMode.Interactive;
                 }
 
                 // Set Deploy Mode switches.
                 WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
-                if (DeployMode == DeployMode.Silent)
+                if (DeployMode is DeployMode.Silent)
                 {
                     Settings |= DeploymentSettings.NonInteractive;
                     Settings |= DeploymentSettings.Silent;
                 }
-                else if (DeployMode == DeployMode.NonInteractive)
+                else if (DeployMode is DeployMode.NonInteractive)
                 {
                     Settings |= DeploymentSettings.NonInteractive;
                 }
@@ -968,7 +968,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Export session's public variables to the user's scope.
-                if (compatibilityMode == true)
+                if (compatibilityMode is true)
                 {
                     if (DeployAppScriptSessionState is not SessionState sessionState)
                     {
@@ -1043,10 +1043,10 @@ namespace PSAppDeployToolkit.Foundation
                 default:
                     if (Settings.HasFlag(DeploymentSettings.ExitWithMsiCodes))
                     {
-                        ExitCode = deploymentStatus == DeploymentStatus.RestartRequired ? 3010 : 0;
+                        ExitCode = deploymentStatus is DeploymentStatus.RestartRequired ? 3010 : 0;
                     }
                     WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed"), LogSeverity.Success);
-                    if (deploymentStatus == DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
+                    if (deploymentStatus is DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
                     {
                         WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
                     }
@@ -1463,7 +1463,7 @@ namespace PSAppDeployToolkit.Foundation
         /// are complete.</remarks>
         private void DismountWimFiles()
         {
-            if (MountedWimFiles.Count == 0)
+            if (MountedWimFiles.Count is 0)
             {
                 return;
             }

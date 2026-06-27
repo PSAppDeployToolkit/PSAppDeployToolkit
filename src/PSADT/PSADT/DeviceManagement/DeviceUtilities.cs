@@ -60,7 +60,7 @@ namespace PSADT.DeviceManagement
                                 try
                                 {
                                     sessionControl.GetState(out AudioSessionState state);
-                                    if (state == AudioSessionState.AudioSessionStateActive)
+                                    if (state is AudioSessionState.AudioSessionStateActive)
                                     {
                                         return true;
                                     }

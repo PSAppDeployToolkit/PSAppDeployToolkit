@@ -162,7 +162,7 @@ namespace PSADT.ShortcutManagement
                     keyCode = ParseKeyCode(part);
                 }
             }
-            return keyCode == 0
+            return keyCode is 0
                 ? throw new ArgumentException($"No valid key found in hotkey string: '{hotkeyString}'", nameof(hotkeyString))
                 : new(keyCode, control, shift, alt);
         }
@@ -177,7 +177,7 @@ namespace PSADT.ShortcutManagement
         {
             // Single character (A-Z, 0-9).
             string upper = keyName.ToUpperInvariant();
-            if (upper.Length == 1)
+            if (upper.Length is 1)
             {
                 char c = upper[0];
                 return c switch

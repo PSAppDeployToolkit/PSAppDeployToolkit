@@ -28,7 +28,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         internal ClassicDialog() : this(null!, null!)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // glyph, and expose the form in the taskbar so the user can restore a minimized
                 // dialog. This replaces the per-dialog wiring previously duplicated in
                 // CloseAppsDialog so every Classic dialog honors the same contract.
-                if (options.DialogAllowMinimize == true)
+                if (options.DialogAllowMinimize is true)
                 {
                     FormBorderStyle = FormBorderStyle.FixedSingle;
                     ControlBox = true;
@@ -270,7 +270,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private void SystemEvents_UserPreferenceChanged(object? sender, UserPreferenceChangedEventArgs e)
         {
             // Taskbar moves / size changes often show up here.
-            if (!IsDisposed && IsHandleCreated && (e.Category == UserPreferenceCategory.General || e.Category == UserPreferenceCategory.Desktop || e.Category == UserPreferenceCategory.Window))
+            if (!IsDisposed && IsHandleCreated && (e.Category is UserPreferenceCategory.General or UserPreferenceCategory.Desktop or UserPreferenceCategory.Window))
             {
                 _ = BeginInvoke(PositionForm);
             }

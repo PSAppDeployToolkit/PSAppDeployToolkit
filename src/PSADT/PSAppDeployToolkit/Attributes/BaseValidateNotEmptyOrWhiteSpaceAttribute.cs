@@ -74,14 +74,14 @@ namespace PSAppDeployToolkit.Attributes
             }
             else if (arguments is IDictionary dict)
             {
-                if (dict.Count == 0)
+                if (dict.Count is 0)
                 {
                     throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
             }
             else if (IsReadOnlyDictionary(arguments, out int count))
             {
-                if (count == 0)
+                if (count is 0)
                 {
                     throw new ArgumentException("The argument is an empty collection. Provide an argument that is not an empty collection, and then try running the command again.");
                 }
@@ -164,7 +164,7 @@ namespace PSAppDeployToolkit.Attributes
         /// <returns><see langword="true"/> if the type is a value type that is not <see cref="Nullable{T}"/>; otherwise, <see langword="false"/>.</returns>
         private static bool IsNonNullableValueType(Type? type)
         {
-            return type?.IsValueType == true && Nullable.GetUnderlyingType(type) is null;
+            return (type?.IsValueType) is true && Nullable.GetUnderlyingType(type) is null;
         }
 
         /// <summary>

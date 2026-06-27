@@ -276,7 +276,7 @@ namespace PSADT.Interop
                         throw ExceptionUtilities.GetExceptionForLastWin32Error();
                     }
                     WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                    if (lastWin32Error == WIN32_ERROR.ERROR_NOT_ALL_ASSIGNED)
+                    if (lastWin32Error is WIN32_ERROR.ERROR_NOT_ALL_ASSIGNED)
                     {
                         throw ExceptionUtilities.GetException(lastWin32Error);
                     }
@@ -619,7 +619,7 @@ namespace PSADT.Interop
             WIN32_ERROR res;
             try
             {
-                if (OldAcl?.IsClosed == false)
+                if ((OldAcl?.IsClosed) is false)
                 {
                     OldAcl.DangerousAddRef(ref OldAclAddRef);
                 }
@@ -2267,7 +2267,7 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(hHandle);
             WAIT_EVENT res = PInvoke.WaitForSingleObject(hHandle, dwMilliseconds);
-            return res == WAIT_EVENT.WAIT_FAILED ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return res is WAIT_EVENT.WAIT_FAILED ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -2307,7 +2307,7 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(hFile);
             FILE_TYPE res = PInvoke.GetFileType(hFile);
-            if (res == FILE_TYPE.FILE_TYPE_UNKNOWN)
+            if (res is FILE_TYPE.FILE_TYPE_UNKNOWN)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
                 if (lastWin32Error is not WIN32_ERROR.NO_ERROR)
@@ -3172,7 +3172,7 @@ namespace PSADT.Interop
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
             }
             PInvoke.SetLastError(WIN32_ERROR.NO_ERROR); int res = PInvoke.GetWindowTextLength(hWnd);
-            if (res == 0)
+            if (res is 0)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
                 if (lastWin32Error is not WIN32_ERROR.NO_ERROR)
@@ -3200,7 +3200,7 @@ namespace PSADT.Interop
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
             }
             int res = PInvoke.GetWindowText(hWnd, lpString);
-            return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
+            return res is 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
         }
 
         /// <summary>
@@ -3997,7 +3997,7 @@ namespace PSADT.Interop
         internal static int AddFontResource(string lpFileName)
         {
             int res = PInvoke.AddFontResource(lpFileName.ThrowIfFileDoesNotExist());
-            return res == 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "The call to AddFontResource() failed.") : res;
+            return res is 0 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_GEN_FAILURE, "The call to AddFontResource() failed.") : res;
         }
 
         /// <summary>

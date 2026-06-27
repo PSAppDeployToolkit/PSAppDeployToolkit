@@ -877,8 +877,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Adjust for workArea offset.
             string dialogPosName = _dialogPosition.ToString();
-            left -= _dialogPosition == DialogPosition.Default || dialogPosName.EndsWith("Right", StringComparison.Ordinal) ? 18 : dialogPosName.EndsWith("Left", StringComparison.Ordinal) ? -18 : 0;
-            top -= _dialogPosition == DialogPosition.Default || dialogPosName.StartsWith("Bottom", StringComparison.Ordinal) ? 14 : dialogPosName.StartsWith("Top", StringComparison.Ordinal) ? -14 : 0;
+            left -= _dialogPosition is DialogPosition.Default || dialogPosName.EndsWith("Right", StringComparison.Ordinal) ? 18 : dialogPosName.EndsWith("Left", StringComparison.Ordinal) ? -18 : 0;
+            top -= _dialogPosition is DialogPosition.Default || dialogPosName.StartsWith("Bottom", StringComparison.Ordinal) ? 14 : dialogPosName.StartsWith("Top", StringComparison.Ordinal) ? -14 : 0;
 
             // Set positions in DIPs.
             Left = _startingLeft = left;
@@ -903,15 +903,15 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         {
             // Build a list of visible buttons in the order they appear.
             List<UIElement> visibleButtons = [];
-            if (ButtonLeft.Visibility == Visibility.Visible)
+            if (ButtonLeft.Visibility is Visibility.Visible)
             {
                 visibleButtons.Add(ButtonLeft);
             }
-            if (ButtonMiddle.Visibility == Visibility.Visible)
+            if (ButtonMiddle.Visibility is Visibility.Visible)
             {
                 visibleButtons.Add(ButtonMiddle);
             }
-            if (ButtonRight.Visibility == Visibility.Visible)
+            if (ButtonRight.Visibility is Visibility.Visible)
             {
                 visibleButtons.Add(ButtonRight);
             }
@@ -920,7 +920,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             ActionButtons.ColumnDefinitions.Clear();
 
             // Return early if there's no buttons.
-            if (visibleButtons.Count == 0)
+            if (visibleButtons.Count is 0)
             {
                 return;
             }
@@ -935,7 +935,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     ActionButtons.ColumnDefinitions.Add(new() { Width = new(1, GridUnitType.Star) });
                     Grid.SetColumn(visibleButtons[i], i);
                     Fluence.Wpf.Controls.Button button = (Fluence.Wpf.Controls.Button)visibleButtons[i];
-                    button.Margin = i == 0 ? new(0, 0, 4, 0) : i == visibleButtons.Count - 1 ? new(4, 0, 0, 0) : new(4, 0, 4, 0);
+                    button.Margin = i is 0 ? new(0, 0, 4, 0) : i == visibleButtons.Count - 1 ? new(4, 0, 0, 0) : new(4, 0, 4, 0);
                 }
             }
             else

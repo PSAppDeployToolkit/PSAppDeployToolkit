@@ -55,7 +55,7 @@ namespace PSADT.SMBIOS
             byte romSize = buffer[structureOffset + 9];
             // Per spec: 0xFF is a sentinel indicating extended size. Do not treat as legacy 16MB.
             uint? romSizeBytes = romSize is not 0xFF ? (uint)(romSize + 1) * 64 * 1024 : null;
-            if (structureLength >= 26 && romSize == 0xFF)
+            if (structureLength >= 26 && romSize is 0xFF)
             {
                 // Bits 15:14 = unit (00b=MB, 01b=GB; others reserved), Bits 13:0 = size.
                 extendedRomSize = new(BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(structureOffset + 24, 2)));

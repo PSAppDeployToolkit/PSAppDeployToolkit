@@ -205,7 +205,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 AutomationProperties.SetName(DeferRemainingValueTextBlock, _deferralsRemaining.Value.ToString(CultureInfo.CurrentCulture));
 
                 // Update text color based on remaining deferrals
-                if (_deferralsRemaining == 0)
+                if (_deferralsRemaining is 0)
                 {
                     DeferRemainingValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCriticalBrush");
                     DeferRemainingValueTextBlock.FontWeight = FontWeights.ExtraBold;
@@ -336,7 +336,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Defensive: if we entered the dialog with zero processes already and ContinueOnProcessClosure
             // is set, fire the auto-continue now that the window is loaded. This is a backstop in case
             // the upstream short-circuit in DialogManager is bypassed.
-            if (_continueOnProcessClosure && AppsToCloseCollection.Count == 0)
+            if (_continueOnProcessClosure && AppsToCloseCollection.Count is 0)
             {
                 ButtonLeft.RaiseEvent(new(ButtonBase.ClickEvent));
             }

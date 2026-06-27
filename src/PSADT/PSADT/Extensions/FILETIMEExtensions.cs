@@ -18,7 +18,7 @@ namespace PSADT.Extensions
         /// <returns>true if the specified FILETIME structure represents a zero date and time; otherwise, false.</returns>
         internal static bool IsZero(this FILETIME filetime)
         {
-            return filetime.dwHighDateTime == 0 && filetime.dwLowDateTime == 0;
+            return filetime.dwHighDateTime is 0 && filetime.dwLowDateTime is 0;
         }
 
         /// <summary>

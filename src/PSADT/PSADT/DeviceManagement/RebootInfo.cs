@@ -56,7 +56,7 @@ namespace PSADT.DeviceManagement
         /// <returns>True if any reboot is pending; otherwise false.</returns>
         public bool HasPendingReboot()
         {
-            return IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending == true || IsAppVRebootPending || IsFileRenameRebootPending == true;
+            return IsSystemRebootPending || IsCBServicingRebootPending || IsWindowsUpdateRebootPending || IsSCCMClientRebootPending is true || IsAppVRebootPending || IsFileRenameRebootPending is true;
         }
 
         /// <summary>

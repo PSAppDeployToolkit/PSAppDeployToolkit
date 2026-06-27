@@ -24,7 +24,7 @@ namespace PSADT.UserInterface.Interfaces
         internal void ResetItems(IEnumerable<T> items, bool force = false)
         {
             T[] incoming = [.. items];
-            if (!force && incoming.Length == 0 && Count == 0)
+            if (!force && incoming.Length is 0 && Count is 0)
             {
                 return;
             }

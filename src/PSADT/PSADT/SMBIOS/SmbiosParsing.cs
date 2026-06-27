@@ -83,7 +83,7 @@ namespace PSADT.SMBIOS
                 }
 
                 // Move to the next structure, skipping unformatted string fields. A double terminator indicates the end.
-                offset += length; while (offset < buffer.Length - 1 && !(buffer[offset] == 0 && buffer[offset + 1] == 0))
+                offset += length; while (offset < buffer.Length - 1 && !(buffer[offset] is 0 && buffer[offset + 1] is 0))
                 {
                     offset++;
                 }
@@ -102,7 +102,7 @@ namespace PSADT.SMBIOS
         internal static string? GetSmbiosString(ReadOnlySpan<byte> buffer, int stringTableOffset, byte stringIndex)
         {
             // SMBIOS string indices are 1-based; 0 means no string.
-            if (stringIndex == 0)
+            if (stringIndex is 0)
             {
                 return null;
             }
@@ -126,7 +126,7 @@ namespace PSADT.SMBIOS
 
                 // Move past the null terminator. A double null indicates end of the table, not an empty string entry.
                 offset++; currentIndex++;
-                if ((offset >= buffer.Length) || (buffer[offset] == 0 && (offset + 1 >= buffer.Length || buffer[offset + 1] == 0)))
+                if ((offset >= buffer.Length) || (buffer[offset] is 0 && (offset + 1 >= buffer.Length || buffer[offset + 1] is 0)))
                 {
                     break;
                 }

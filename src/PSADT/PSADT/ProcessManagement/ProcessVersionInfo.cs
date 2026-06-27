@@ -230,7 +230,7 @@ namespace PSADT.ProcessManagement
 
             // Determine the resource directory RVA and size based on the optional header magic number.
             uint resourceRva, resourceSize;
-            if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC) // PE32
+            if (magic is IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR32_MAGIC) // PE32
             {
                 Span<byte> optionalHeader32Buf = stackalloc byte[Unsafe.SizeOf<IMAGE_OPTIONAL_HEADER32>()];
                 _ = NativeMethods.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader32Buf, out _);
@@ -242,7 +242,7 @@ namespace PSADT.ProcessManagement
                 resourceRva = optionalHeader32.DataDirectory._2.VirtualAddress;  // INDEX_RESOURCE = 2
                 resourceSize = optionalHeader32.DataDirectory._2.Size;
             }
-            else if (magic == IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC) // PE32+
+            else if (magic is IMAGE_OPTIONAL_HEADER_MAGIC.IMAGE_NT_OPTIONAL_HDR64_MAGIC) // PE32+
             {
                 Span<byte> optionalHeader64Buf = stackalloc byte[Unsafe.SizeOf<IMAGE_OPTIONAL_HEADER64>()];
                 _ = NativeMethods.ReadProcessMemory(processHandle, ntOptionalHeadersAddress, optionalHeader64Buf, out _);

@@ -38,7 +38,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 SetButtonContentWithAccelerator(ButtonLeft, options.ButtonLeftText);
                 ButtonLeft.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonLeft, options.ButtonLeftText);
-                if (options.DefaultButton == DialogDefaultButton.Left)
+                if (options.DefaultButton is DialogDefaultButton.Left)
                 {
                     SetDefaultButton(ButtonLeft);
                     SetAccentButton(ButtonLeft);
@@ -49,7 +49,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 SetButtonContentWithAccelerator(ButtonMiddle, options.ButtonMiddleText);
                 ButtonMiddle.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonMiddle, options.ButtonMiddleText);
-                if (options.DefaultButton == DialogDefaultButton.Middle)
+                if (options.DefaultButton is DialogDefaultButton.Middle)
                 {
                     SetDefaultButton(ButtonMiddle);
                     SetAccentButton(ButtonMiddle);
@@ -60,7 +60,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 SetButtonContentWithAccelerator(ButtonRight, options.ButtonRightText);
                 ButtonRight.Visibility = Visibility.Visible;
                 AutomationProperties.SetName(ButtonRight, options.ButtonRightText);
-                if (options.DefaultButton == DialogDefaultButton.Right)
+                if (options.DefaultButton is DialogDefaultButton.Right)
                 {
                     SetDefaultButton(ButtonRight);
                     SetAccentButton(ButtonRight);

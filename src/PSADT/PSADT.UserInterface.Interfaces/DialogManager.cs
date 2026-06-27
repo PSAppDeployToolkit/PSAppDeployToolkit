@@ -115,7 +115,7 @@ namespace PSADT.UserInterface.Interfaces
         {
             // Start the RunningProcessService if it is not already running.
             bool stopProcessService = false;
-            if (state.RunningProcessService?.IsRunning == false)
+            if ((state.RunningProcessService?.IsRunning) is false)
             {
                 state.RunningProcessService.Start();
                 stopProcessService = true;
@@ -125,7 +125,7 @@ namespace PSADT.UserInterface.Interfaces
             IReadOnlyList<ProcessToClose>? processesToClose = null;
             if (state.RunningProcessService is not null)
             {
-                if ((processesToClose = state.RunningProcessService.ProcessesToClose).Count == 0 && options.ContinueOnProcessClosure)
+                if ((processesToClose = state.RunningProcessService.ProcessesToClose).Count is 0 && options.ContinueOnProcessClosure)
                 {
                     // No processes are running and ContinueOnProcessClosure is set -> skip the dialog
                     // entirely. Avoids constructing a WPF window only to immediately close it (which
@@ -480,7 +480,7 @@ namespace PSADT.UserInterface.Interfaces
         /// cref="DialogType.CloseAppsDialog"/>.</exception>
         private static Task<TResult> ShowModalDialogAsync<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
         {
-            if (dialogType == DialogType.CloseAppsDialog)
+            if (dialogType is DialogType.CloseAppsDialog)
             {
                 ArgumentNullException.ThrowIfNull(state);
             }

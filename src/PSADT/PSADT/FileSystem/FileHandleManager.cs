@@ -53,7 +53,7 @@ namespace PSADT.FileSystem
                 FARPROC exitThread = NativeMethods.GetProcAddress(hKernel32Ptr, "ExitThread");
                 int handleOffset, bufferOffset, bufferLengthOffset; List<byte> startRoutine = [];
                 Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
-                if (processArchitecture == Architecture.X64)
+                if (processArchitecture is Architecture.X64)
                 {
                     // mov rcx, handle (placeholder)
                     startRoutine.Add(0x48); startRoutine.Add(0xB9);
@@ -96,7 +96,7 @@ namespace PSADT.FileSystem
                     startRoutine.Add(0xFF); startRoutine.Add(0xD0);
                     NtQueryObjectStartRoutineTemplate = new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
                 }
-                else if (processArchitecture == Architecture.X86)
+                else if (processArchitecture is Architecture.X86)
                 {
                     // push NULL (ReturnLength)
                     startRoutine.Add(0x6A);
@@ -136,7 +136,7 @@ namespace PSADT.FileSystem
                     startRoutine.Add(0xFF); startRoutine.Add(0xD0);
                     NtQueryObjectStartRoutineTemplate = new([.. startRoutine], handleOffset, bufferOffset, bufferLengthOffset);
                 }
-                else if (processArchitecture == Architecture.Arm64)
+                else if (processArchitecture is Architecture.Arm64)
                 {
                     // x0 = handle (placeholder - 4 instructions)
                     List<uint> code = [];
@@ -340,7 +340,7 @@ namespace PSADT.FileSystem
                                 throw ExceptionUtilities.GetException(res);
                             }
                             ref readonly OBJECT_NAME_INFORMATION objectBufferData = ref objectBuffer.AsReadOnlyStructure<OBJECT_NAME_INFORMATION>();
-                            if (objectBufferData.Name.Length == 0)
+                            if (objectBufferData.Name.Length is 0)
                             {
                                 return;
                             }
@@ -420,7 +420,7 @@ namespace PSADT.FileSystem
         {
             // Patch the handle and buffer pointers into the StartRoutine template.
             Architecture processArchitecture = RuntimeInformation.ProcessArchitecture;
-            if (processArchitecture == Architecture.X64)
+            if (processArchitecture is Architecture.X64)
             {
                 // Patch handle at offset (mov rcx, handle -> 2 bytes opcode + 8 bytes value)
                 // Patch buffer at offset (mov r8, buffer -> 3 bytes opcode + 8 bytes value)
@@ -429,7 +429,7 @@ namespace PSADT.FileSystem
                 _ = startRoutineBuffer.WriteInt64(infoBuffer, NtQueryObjectStartRoutineTemplate.BufferOffset);
                 _ = startRoutineBuffer.WriteInt64(infoBufferLength, NtQueryObjectStartRoutineTemplate.BufferLengthOffset);
             }
-            else if (processArchitecture == Architecture.X86)
+            else if (processArchitecture is Architecture.X86)
             {
                 // Patch buffer length (push bufferSize)
                 // Patch buffer (push buffer)
@@ -438,7 +438,7 @@ namespace PSADT.FileSystem
                 _ = startRoutineBuffer.WriteInt32((int)infoBuffer, NtQueryObjectStartRoutineTemplate.BufferOffset);
                 _ = startRoutineBuffer.WriteInt32((int)fileHandle, NtQueryObjectStartRoutineTemplate.HandleOffset);
             }
-            else if (processArchitecture == Architecture.Arm64)
+            else if (processArchitecture is Architecture.Arm64)
             {
                 // For ARM64, we need to regenerate the MOVZ/MOVK sequences for each 64-bit value. Each instruction is 4 bytes, patch in place.
                 // Handle is at x0 (instructions 0-3), buffer is at x2 (instructions 8-11), length is at x3 (instructions 12-15).

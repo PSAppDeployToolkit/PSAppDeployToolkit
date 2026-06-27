@@ -66,7 +66,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns><see langword="true"/> if the database is initialized; otherwise, <see langword="false"/>.</returns>
         public static bool IsInitialized()
         {
-            return (bool?)_database?.Properties["Initialized"].Value == true;
+            return (bool?)_database?.Properties["Initialized"].Value is true;
         }
 
         /// <summary>

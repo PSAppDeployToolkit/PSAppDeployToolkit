@@ -18,7 +18,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// </summary>
         internal ProgressDialog() : this(null!)
         {
-            if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+            if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
             {
                 throw new NotSupportedException("This constructor cannot be used in runtime mode.");
             }
@@ -162,7 +162,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// pressed.</param>
         private void AnyControl_MouseDown(object? sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            if (e.Button is MouseButtons.Left)
             {
                 _ = NativeMethods.ReleaseCapture();
                 _ = NativeMethods.SendMessage((HWND)Handle, WINDOW_MESSAGE.WM_NCLBUTTONDOWN, (nuint)WM_NCHITTEST.HTCAPTION);

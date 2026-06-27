@@ -97,7 +97,7 @@ namespace PSADT.SMBIOS
         internal string GetFullVersionString()
         {
             string version = GetVersionString();
-            string entryPoint = EntryPointType == SmbiosEntryPointType.Unknown ? string.Empty : $" ({EntryPointType})";
+            string entryPoint = EntryPointType is SmbiosEntryPointType.Unknown ? string.Empty : $" ({EntryPointType})";
             string dmi = DmiRevision > 0 ? $", DMI {DmiRevision}" : string.Empty;
             return $"SMBIOS {version}{entryPoint}{dmi}";
         }
@@ -193,7 +193,7 @@ namespace PSADT.SMBIOS
         /// <returns>True if SMBIOS 2.x; otherwise false.</returns>
         internal bool IsLegacySmbios()
         {
-            return MajorVersion == 2;
+            return MajorVersion is 2;
         }
 
         /// <summary>
