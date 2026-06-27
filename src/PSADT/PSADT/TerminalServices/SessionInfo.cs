@@ -36,7 +36,7 @@ namespace PSADT.TerminalServices
         /// The list is empty if no active sessions are found.</returns>
         public static async ValueTask<IReadOnlyList<SessionInfo>> GetAsync()
         {
-            return new ReadOnlyCollection<SessionInfo>(await GetAllAsync().ToListAsync().ConfigureAwait(false));
+            return new ReadOnlyCollection<SessionInfo>(await GetAllAsync().ToListAsync(default).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace PSADT.TerminalServices
         /// langword="null"/>.</returns>
         public static ValueTask<SessionInfo?> GetAsync(uint sessionId)
         {
-            return GetAllAsync(sessionId).FirstOrDefaultAsync();
+            return GetAllAsync(sessionId).FirstOrDefaultAsync(default);
         }
 
         /// <summary>

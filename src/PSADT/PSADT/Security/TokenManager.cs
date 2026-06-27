@@ -219,7 +219,7 @@ namespace PSADT.Security
 
                     // Read the token from the pipe.
                     byte[] tokenBuf = new byte[tokenLength];
-                    if (await pipe.ReadAsync(tokenBuf, 0, tokenLength).ConfigureAwait(false) != tokenLength)
+                    if (await pipe.ReadAsync(tokenBuf, 0, tokenLength, default).ConfigureAwait(false) != tokenLength)
                     {
                         throw new InvalidProgramException("Invalid token received from the token broker.");
                     }

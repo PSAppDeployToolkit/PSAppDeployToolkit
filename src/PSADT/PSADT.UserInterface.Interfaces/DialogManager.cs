@@ -601,7 +601,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <returns>A task that represents the asynchronous operation.</returns>
         private static Task InvokeDialogActionAsync(Action callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal).Task;
+            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
         }
 
         /// <summary>
@@ -612,7 +612,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <returns>A task that represents the asynchronous operation, containing the result of the function.</returns>
         private static Task<TResult> InvokeDialogActionAsync<TResult>(Func<TResult> callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal).Task;
+            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
         }
 
         /// <summary>

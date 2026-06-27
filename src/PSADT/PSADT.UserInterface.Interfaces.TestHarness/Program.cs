@@ -280,14 +280,14 @@ namespace PSADT.UserInterface.TestHarness
 
                 await DialogManager.ShowProgressDialogAsync(dialogStyle, progressDialogOptions).ConfigureAwait(false);
 
-                await Task.Delay(3000).ConfigureAwait(false); // Simulate some work being done
+                await Task.Delay(3000, default).ConfigureAwait(false); // Simulate some work being done
 
                 // Simulate a process with progress updates.
                 for (int i = 0; i <= 100; i += 10)
                 {
                     // Update progress
                     await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i.ToString(CultureInfo.InvariantCulture)}%", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
-                    await Task.Delay(250).ConfigureAwait(false);  // Simulate work being done
+                    await Task.Delay(250, default).ConfigureAwait(false);  // Simulate work being done
                 }
 
                 // Close Progress Dialog

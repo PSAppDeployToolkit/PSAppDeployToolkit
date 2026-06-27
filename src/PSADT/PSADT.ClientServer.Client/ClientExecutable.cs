@@ -8,6 +8,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -358,7 +359,7 @@ namespace PSADT.ClientServer
                                                             closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
                                                             break;
                                                         }
-                                                        await Task.Delay(2000).ConfigureAwait(false);
+                                                        await Task.Delay(2000, default).ConfigureAwait(false);
                                                     }
                                                 }
                                             }
@@ -372,7 +373,7 @@ namespace PSADT.ClientServer
                                                     closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
                                                     if (!process.HasExited)
                                                     {
-                                                        process.Kill(); await process.WaitForExitAsync().ConfigureAwait(false);
+                                                        process.Kill(); await process.WaitForExitAsync(default).ConfigureAwait(false);
                                                     }
                                                 }
                                             }
@@ -668,7 +669,7 @@ namespace PSADT.ClientServer
                         throw new ClientException("An invalid ShutdownReason was specified on the command line. If provided, it cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
-                    await Task.Delay(delayValue * 1000).ConfigureAwait(false);
+                    await Task.Delay(delayValue * 1000, default).ConfigureAwait(false);
                     await DeviceUtilities.RestartComputer(shutdownReason).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;
@@ -838,7 +839,7 @@ namespace PSADT.ClientServer
 
             // Connect to the named pipe server.
             using NamedPipeClientStream pipe = new(".", pipeName, PipeDirection.InOut, PipeOptions.None);
-            await pipe.ConnectAsync().ConfigureAwait(false);
+            await pipe.ConnectAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Duplicate the token to the specified process ID.
             SafeFileHandle hDupToken;
@@ -854,14 +855,14 @@ namespace PSADT.ClientServer
             {
                 if (IntPtr.Size is 8)
                 {
-                    pipe.WriteByte(8); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt64()), 0, 8).ConfigureAwait(false);
+                    pipe.WriteByte(8); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt64()), 0, 8, default).ConfigureAwait(false);
                 }
                 else
                 {
-                    pipe.WriteByte(4); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt32()), 0, 4).ConfigureAwait(false);
+                    pipe.WriteByte(4); await pipe.WriteAsync(BitConverter.GetBytes(hDupToken.DangerousGetHandle().ToInt32()), 0, 4, default).ConfigureAwait(false);
                 }
             }
-            await pipe.FlushAsync().ConfigureAwait(false); pipe.WaitForPipeDrain();
+            await pipe.FlushAsync(default).ConfigureAwait(false); pipe.WaitForPipeDrain();
         }
 
         /// <summary>

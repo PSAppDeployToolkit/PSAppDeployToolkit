@@ -193,7 +193,7 @@ namespace PSADT.FileSystem
             long totalBytes = 0; int pendingDirs = 1; int completed = 0;
             _ = Parallel.For(0, workerCount, __ =>
             {
-                foreach (string dir in queue.GetConsumingEnumerable())
+                foreach (string dir in queue.GetConsumingEnumerable(default))
                 {
                     try
                     {
@@ -236,7 +236,7 @@ namespace PSADT.FileSystem
                                     _ = Interlocked.Increment(ref pendingDirs);
                                     try
                                     {
-                                        queue.Add(dir + "\\" + name);
+                                        queue.Add(dir + "\\" + name, default);
                                     }
                                     catch (Exception ex) when (ex.Message is not null)
                                     {
