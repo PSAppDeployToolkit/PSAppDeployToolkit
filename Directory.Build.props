@@ -52,7 +52,7 @@
 
   <!-- Banned API analyzer -->
   <ItemGroup>
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.114">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.115">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -72,6 +72,9 @@
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)src\BannedSymbols.txt" />
   </ItemGroup>
+  <PropertyGroup>
+    <MeziantouAnalysisMode>all-errors</MeziantouAnalysisMode>
+  </PropertyGroup>
 
   <!-- Common embedded resource for license -->
   <ItemGroup>

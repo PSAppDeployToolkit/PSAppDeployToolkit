@@ -220,7 +220,7 @@ namespace PSADT.Interop
         {
             ArgumentException.ThrowIfNullOrInvalid(TokenHandle);
             BOOL res = PInvoke.GetTokenInformation(TokenHandle, TokenInformationClass, TokenInformation, out ReturnLength);
-            if (!res && TokenInformation.Length != 0)
+            if (!res && TokenInformation.Length is not 0)
             {
                 throw ExceptionUtilities.GetExceptionForLastWin32Error();
             }
@@ -282,7 +282,7 @@ namespace PSADT.Interop
                     }
                 }
             }
-            if (PreviousState.Length != 0)
+            if (PreviousState.Length is not 0)
             {
                 InvalidOperationException.ThrowIfZero(ReturnLength, "The return length from 'AdjustTokenPrivileges()' is zero, but a non-empty buffer was provided for the previous state.");
             }
@@ -569,7 +569,7 @@ namespace PSADT.Interop
             if (!res)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                if (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length != 0)
+                if (lastWin32Error is not WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpBuffer.Length is not 0)
                 {
                     throw ExceptionUtilities.GetException(lastWin32Error);
                 }
@@ -1396,7 +1396,7 @@ namespace PSADT.Interop
         {
             PInvoke.SetLastError(WIN32_ERROR.NO_ERROR); uint res = PInvoke.GetPrivateProfileSectionNames(lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-            return lastWin32Error != WIN32_ERROR.NO_ERROR
+            return lastWin32Error is not WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res == lpReturnedString.Length - 2
                 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
@@ -1420,7 +1420,7 @@ namespace PSADT.Interop
             ArgumentException.ThrowIfNullOrWhiteSpace(lpAppName);
             PInvoke.SetLastError(WIN32_ERROR.NO_ERROR); uint res = PInvoke.GetPrivateProfileSection(lpAppName, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-            return lastWin32Error != WIN32_ERROR.NO_ERROR
+            return lastWin32Error is not WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res == lpReturnedString.Length - 2
                 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
@@ -1453,7 +1453,7 @@ namespace PSADT.Interop
             }
             PInvoke.SetLastError(WIN32_ERROR.NO_ERROR); uint res = PInvoke.GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, lpFileName.ThrowIfFileDoesNotExist());
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-            return lastWin32Error != WIN32_ERROR.NO_ERROR
+            return lastWin32Error is not WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res == lpReturnedString.Length - 1 || res == lpReturnedString.Length - 2
                 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
@@ -2034,7 +2034,7 @@ namespace PSADT.Interop
             uint res = PInvoke.GetSystemFirmwareTable(FirmwareTableProviderSignature, (uint)FirmwareTableID, pFirmwareTableBuffer);
             return res == 0
                 ? throw ExceptionUtilities.GetExceptionForLastWin32Error()
-                : pFirmwareTableBuffer.Length != 0 && res > pFirmwareTableBuffer.Length
+                : pFirmwareTableBuffer.Length is not 0 && res > pFirmwareTableBuffer.Length
                 ? throw ExceptionUtilities.GetException(WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER)
                 : res;
         }
@@ -2310,7 +2310,7 @@ namespace PSADT.Interop
             if (res == FILE_TYPE.FILE_TYPE_UNKNOWN)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+                if (lastWin32Error is not WIN32_ERROR.NO_ERROR)
                 {
                     throw ExceptionUtilities.GetException(lastWin32Error);
                 }
@@ -2545,7 +2545,7 @@ namespace PSADT.Interop
                 fixed (byte* SystemInformationLocal = SystemInformation)
                 {
                     res = Windows.Wdk.PInvoke.NtQuerySystemInformation((Windows.Wdk.System.SystemInformation.SYSTEM_INFORMATION_CLASS)SystemInformationClass, SystemInformationLocal, (uint)SystemInformation.Length, ref ReturnLength);
-                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && SystemInformation.Length != 0)))
+                    if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!SystemInfoClassSizes.TryGetValue(SystemInformationClass, out int systemInfoQueryLength) || SystemInformation.Length != systemInfoQueryLength) && SystemInformation.Length is not 0)))
                     {
                         throw ExceptionUtilities.GetException(res);
                     }
@@ -2585,7 +2585,7 @@ namespace PSADT.Interop
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
                 res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
-                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && ObjectInformation.Length != 0)))
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && ObjectInformation.Length is not 0)))
                 {
                     throw ExceptionUtilities.GetException(res);
                 }
@@ -2725,7 +2725,7 @@ namespace PSADT.Interop
                         fixed (uint* ReturnLengthLocal = &ReturnLength)
                         {
                             res = Windows.Wdk.PInvoke.NtQueryInformationProcess((HANDLE)ProcessHandle.DangerousGetHandle(), ProcessInformationClass, ProcessInformationLocal, (uint)ProcessInformation.Length, ReturnLengthLocal);
-                            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length != 0))
+                            if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || ProcessInformation.Length is not 0))
                             {
                                 throw ExceptionUtilities.GetException(res);
                             }
@@ -3081,7 +3081,7 @@ namespace PSADT.Interop
                 hInstance.DangerousAddRef(ref hInstanceAddRef); PInvoke.SetLastError(WIN32_ERROR.NO_ERROR);
                 res = LoadString((HINSTANCE)hInstance.DangerousGetHandle(), uID, out lpBuffer, 0);
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+                if (lastWin32Error is not WIN32_ERROR.NO_ERROR)
                 {
                     throw ExceptionUtilities.GetException(lastWin32Error);
                 }
@@ -3175,7 +3175,7 @@ namespace PSADT.Interop
             if (res == 0)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                if (lastWin32Error != WIN32_ERROR.NO_ERROR)
+                if (lastWin32Error is not WIN32_ERROR.NO_ERROR)
                 {
                     throw ExceptionUtilities.GetException(lastWin32Error);
                 }
@@ -3413,7 +3413,7 @@ namespace PSADT.Interop
             }
             PInvoke.SetLastError(WIN32_ERROR.NO_ERROR); LRESULT res = PInvoke.SendMessage(hWnd, (uint)Msg, wParam, lParam);
             WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-            return lastWin32Error != WIN32_ERROR.NO_ERROR
+            return lastWin32Error is not WIN32_ERROR.NO_ERROR
                 ? throw ExceptionUtilities.GetException(lastWin32Error)
                 : res;
         }
@@ -4238,7 +4238,7 @@ namespace PSADT.Interop
             {
                 Environment.DangerousAddRef(ref EnvironmentAddRef);
                 NTSTATUS res = RtlExpandEnvironmentStrings_U(Environment.DangerousGetHandle(), in SourceString, ref DestinationString, out RequiredBytes);
-                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_BUFFER_TOO_SMALL || DestinationString.MaximumLength != 0))
+                if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_BUFFER_TOO_SMALL || DestinationString.MaximumLength is not 0))
                 {
                     throw ExceptionUtilities.GetException(res);
                 }

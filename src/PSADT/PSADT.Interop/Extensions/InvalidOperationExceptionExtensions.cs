@@ -219,7 +219,7 @@ namespace System
             [StackTraceHidden]
             public static void ThrowIfNullOrInvalid<T>([NotNull] T handle, string message) where T : SafeHandle
             {
-                if (handle?.IsClosed != false || handle.IsInvalid)
+                if ((handle?.IsClosed) is not false || handle.IsInvalid)
                 {
                     throw new InvalidOperationException(message);
                 }

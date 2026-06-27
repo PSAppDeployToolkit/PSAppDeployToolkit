@@ -71,7 +71,7 @@ namespace PSAppDeployToolkit.Logging
             }
 
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
-            bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State != RunspaceState.Opened);
+            bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State is not RunspaceState.Opened);
             StackFrame[] stackFrames = [.. new StackTrace(fNeedFileInfo: true).GetFrames().Skip(1)]; string callerFileName, callerSource;
             if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) == true))
             {
@@ -147,13 +147,13 @@ namespace PSAppDeployToolkit.Logging
             }
 
             // Write out all messages to host if configured/permitted to do so.
-            if (hostLogStreamType != HostLogStreamType.None)
+            if (hostLogStreamType is not HostLogStreamType.None)
             {
                 if (hostLogStreamType == HostLogStreamType.Console || noRunspace)
                 {
                     // Writing straight to the console.
                     FrozenDictionary<string, ConsoleColor> sevCols = LogSeverityColors[(int)severity];
-                    bool colouredOutput = severity != LogSeverity.Info;
+                    bool colouredOutput = severity is not LogSeverity.Info;
                     if (colouredOutput)
                     {
                         Console.ForegroundColor = sevCols["ForegroundColor"];
@@ -170,7 +170,7 @@ namespace PSAppDeployToolkit.Logging
                         Console.ResetColor();
                     }
                 }
-                else if (hostLogStreamType != HostLogStreamType.Verbose)
+                else if (hostLogStreamType is not HostLogStreamType.Verbose)
                 {
                     // Write the host output to PowerShell's InformationStream.
                     string[] infoMessages = [.. logEntries.Select(static e => e.LegacyLogLine)];

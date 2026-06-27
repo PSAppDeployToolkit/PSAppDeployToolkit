@@ -54,7 +54,7 @@ namespace PSADT.SMBIOS
             BiosExtendedRomSize? extendedRomSize = null;
             byte romSize = buffer[structureOffset + 9];
             // Per spec: 0xFF is a sentinel indicating extended size. Do not treat as legacy 16MB.
-            uint? romSizeBytes = romSize != 0xFF ? (uint)(romSize + 1) * 64 * 1024 : null;
+            uint? romSizeBytes = romSize is not 0xFF ? (uint)(romSize + 1) * 64 * 1024 : null;
             if (structureLength >= 26 && romSize == 0xFF)
             {
                 // Bits 15:14 = unit (00b=MB, 01b=GB; others reserved), Bits 13:0 = size.
@@ -63,7 +63,7 @@ namespace PSADT.SMBIOS
 
             // Starting address segment (0 means not applicable per spec)
             ushort startingSegRaw = BinaryPrimitives.ReadUInt16LittleEndian(buffer.Slice(structureOffset + 6, 2));
-            ushort? startingSeg = startingSegRaw != 0 ? startingSegRaw : null;
+            ushort? startingSeg = startingSegRaw is not 0 ? startingSegRaw : null;
 
             // Return the information to the caller.
             int stringTableOffset = structureOffset + structureLength;
@@ -294,7 +294,7 @@ namespace PSADT.SMBIOS
         /// <returns>The original byte value if it is not 255; otherwise, <see langword="null"/>.</returns>
         private static byte? NormalizeByte255(byte value)
         {
-            return value != 0xFF ? value : null;
+            return value is not 0xFF ? value : null;
         }
 
         /// <summary>

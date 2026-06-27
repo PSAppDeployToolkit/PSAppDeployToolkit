@@ -728,7 +728,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment has already been changed to [{DeployMode}]");
                     }
-                    if (DeployMode != DeployMode.Auto)
+                    if (DeployMode is not DeployMode.Auto)
                     {
                         WriteLogEntry($"Detected OOBE in progress but deployment mode was explicitly set to [{DeployMode}].");
                     }
@@ -759,7 +759,7 @@ namespace PSAppDeployToolkit.Foundation
                                     {
                                         WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment has already been changed to [{DeployMode}]");
                                     }
-                                    else if (DeployMode != DeployMode.Auto)
+                                    else if (DeployMode is not DeployMode.Auto)
                                     {
                                         WriteLogEntry($"The ESP User Account Setup phase is still in progress but deployment mode was explicitly set to [{DeployMode}].");
                                     }
@@ -805,7 +805,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         WriteLogEntry($"Session 0 detected but deployment has already been changed to [{DeployMode}]");
                     }
-                    else if (DeployMode != DeployMode.Auto)
+                    else if (DeployMode is not DeployMode.Auto)
                     {
                         WriteLogEntry($"Session 0 detected but deployment mode was explicitly set to [{DeployMode}].");
                     }
@@ -852,7 +852,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment has already been changed to [{DeployMode}]");
                     }
-                    else if (DeployMode != DeployMode.Auto)
+                    else if (DeployMode is not DeployMode.Auto)
                     {
                         WriteLogEntry($"The processes ['{string.Join("', '", AppProcessesToClose.Select(static p => p.Name))}'] were specified as requiring closure but deployment mode was explicitly set to [{DeployMode}].");
                     }
@@ -886,7 +886,7 @@ namespace PSAppDeployToolkit.Foundation
                     {
                         WriteLogEntry($"No processes were specified as requiring closure but deployment has already been changed to [{DeployMode}]");
                     }
-                    if (DeployMode != DeployMode.Auto)
+                    if (DeployMode is not DeployMode.Auto)
                     {
                         WriteLogEntry($"No processes were specified as requiring closure but deployment mode was explicitly set to [{DeployMode}].");
                     }
@@ -944,7 +944,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Check if the caller explicitly wants interactivity but we can't do it.
-                if (DeployMode != DeployMode.Silent && runAsActiveUser is null && !isProcessUserInteractive)
+                if (DeployMode is not DeployMode.Silent && runAsActiveUser is null && !isProcessUserInteractive)
                 {
                     throw new NotSupportedException("This deployment explicitly requires interactivity, however there are no suitable logged on users available and this process is running non-interactively.");
                 }
@@ -1059,7 +1059,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Update the module's last tracked exit code.
-            if (ExitCode != 0)
+            if (ExitCode is not 0)
             {
                 adtExitCode.Value = ExitCode;
             }
@@ -1415,7 +1415,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <returns>A value of type HostLogStreamType that indicates the log stream type to use: Console, Host, or None.</returns>
         private HostLogStreamType GetHostLogStreamTypeMode(bool? writeHost = null)
         {
-            return writeHost != false && LogWriteToHost
+            return writeHost is not false && LogWriteToHost
                 ? (LogHostOutputToStdStreams ? HostLogStreamType.Console : HostLogStreamType.Host)
                 : HostLogStreamType.None;
         }

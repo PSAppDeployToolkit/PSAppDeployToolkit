@@ -690,7 +690,7 @@ namespace PSADT.ProcessManagement
 
             // Using CreateProcessAsUser() is not possible, so fall back to CreateProcessWithToken().
             CreateProcessUsingTokenStatus createProcessWithTokenAbility = CanUseCreateProcessWithToken(isCallerToken, callerPrivilges, commandLine);
-            if (createProcessWithTokenAbility != CreateProcessUsingTokenStatus.OK)
+            if (createProcessWithTokenAbility is not CreateProcessUsingTokenStatus.OK)
             {
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {createProcessWithTokenAbility.GetDescription()}");
             }

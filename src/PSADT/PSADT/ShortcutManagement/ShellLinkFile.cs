@@ -828,10 +828,10 @@ namespace PSADT.ShortcutManagement
                 return vt == VARENUM.VT_BOOL
                     ? propVariant.Anonymous.Anonymous.Anonymous.boolVal != 0
                     : vt == VARENUM.VT_I4
-                    ? propVariant.Anonymous.Anonymous.Anonymous.lVal != 0
+                    ? propVariant.Anonymous.Anonymous.Anonymous.lVal is not 0
                     : vt == VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal != 0
-                    : vt != VARENUM.VT_EMPTY
+                    : vt is not VARENUM.VT_EMPTY
                     ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
                     : null;
             }
@@ -889,7 +889,7 @@ namespace PSADT.ShortcutManagement
                 {
                     return null;
                 }
-                if (vt != VARENUM.VT_CLSID)
+                if (vt is not VARENUM.VT_CLSID)
                 {
                     throw new FileFormatException($"Property has unexpected type {vt}, expected VT_CLSID.");
                 }
@@ -960,7 +960,7 @@ namespace PSADT.ShortcutManagement
                     ? (uint)propVariant.Anonymous.Anonymous.Anonymous.lVal
                     : vt == VARENUM.VT_UI4
                     ? propVariant.Anonymous.Anonymous.Anonymous.ulVal
-                    : vt != VARENUM.VT_EMPTY
+                    : vt is not VARENUM.VT_EMPTY
                     ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_UI4 or VT_I4.")
                     : null;
             }
@@ -1028,7 +1028,7 @@ namespace PSADT.ShortcutManagement
         /// <returns><see langword="true"/> if the flag is set; otherwise, <see langword="false"/>.</returns>
         private bool GetFlag(SHELL_LINK_DATA_FLAGS flag)
         {
-            return (GetFlags() & flag) != SHELL_LINK_DATA_FLAGS.SLDF_DEFAULT;
+            return (GetFlags() & flag) is not SHELL_LINK_DATA_FLAGS.SLDF_DEFAULT;
         }
 
         /// <summary>

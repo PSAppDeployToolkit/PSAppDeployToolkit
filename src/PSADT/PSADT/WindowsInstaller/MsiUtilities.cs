@@ -570,7 +570,7 @@ namespace PSADT.WindowsInstaller
         internal static int? GetSummaryInfoIntProperty(MsiCloseHandleSafeHandle hSummaryInfo, MSI_PROPERTY_ID propertyId)
         {
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out VARENUM puiDataType, out int piValue, out _, szValueBuf: null, out _);
-            return puiDataType is VARENUM.VT_I2 or VARENUM.VT_I4 && piValue != 0 ? piValue : null;
+            return puiDataType is VARENUM.VT_I2 or VARENUM.VT_I4 && piValue is not 0 ? piValue : null;
         }
 
         /// <summary>

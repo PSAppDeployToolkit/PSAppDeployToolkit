@@ -42,7 +42,7 @@ namespace PSADT.WindowsInstaller
         internal MsiSummaryInfo(MsiCloseHandleSafeHandle hSummaryInfo)
         {
             int? codePage = MsiUtilities.GetSummaryInfoIntProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_CODEPAGE);
-            CodePage = codePage.HasValue && codePage.Value != 0 ? Encoding.GetEncoding(codePage.Value) : null;
+            CodePage = codePage.HasValue && codePage.Value is not 0 ? Encoding.GetEncoding(codePage.Value) : null;
             Title = MsiUtilities.GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_TITLE);
             Subject = MsiUtilities.GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_SUBJECT);
             Author = MsiUtilities.GetSummaryInfoStringProperty(hSummaryInfo, MSI_PROPERTY_ID.PID_AUTHOR);

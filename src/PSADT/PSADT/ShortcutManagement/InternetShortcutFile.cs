@@ -471,10 +471,10 @@ namespace PSADT.ShortcutManagement
                     return vt == VARENUM.VT_BOOL
                         ? propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal != 0
                         : vt == VARENUM.VT_I4
-                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.lVal != 0
+                        ? propertyValues[0].Anonymous.Anonymous.Anonymous.lVal is not 0
                         : vt == VARENUM.VT_UI4
                         ? propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal != 0
-                        : vt != VARENUM.VT_EMPTY
+                        : vt is not VARENUM.VT_EMPTY
                         ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_BOOL, VT_I4, or VT_UI4.")
                         : null;
                 }
@@ -569,7 +569,7 @@ namespace PSADT.ShortcutManagement
                         string bstrValStr = Marshal.PtrToStringBSTR(bstrVal);
                         return !string.IsNullOrWhiteSpace(bstrValStr) ? bstrValStr : null;
                     }
-                    if (vt != VARENUM.VT_LPWSTR)
+                    if (vt is not VARENUM.VT_LPWSTR)
                     {
                         throw new FileFormatException($"Property has unexpected type {vt}, expected VT_LPWSTR or VT_BSTR.");
                     }
@@ -661,7 +661,7 @@ namespace PSADT.ShortcutManagement
                         ? propertyValues[0].Anonymous.Anonymous.Anonymous.lVal
                         : vt == VARENUM.VT_UI4
                         ? (int)propertyValues[0].Anonymous.Anonymous.Anonymous.ulVal
-                        : vt != VARENUM.VT_EMPTY
+                        : vt is not VARENUM.VT_EMPTY
                         ? throw new FileFormatException($"Property has unexpected type {vt}, expected VT_I4 or VT_UI4.")
                         : null;
                 }

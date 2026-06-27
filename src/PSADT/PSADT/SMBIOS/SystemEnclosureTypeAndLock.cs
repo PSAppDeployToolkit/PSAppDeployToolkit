@@ -42,7 +42,7 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// True when chassis lock is present (bit 7).
         /// </summary>
-        public bool ChassisLockPresent => (Raw & 0x80) != 0;
+        public bool ChassisLockPresent => (Raw & 0x80) is not 0;
 
         /// <summary>
         /// Gets the raw byte value represented by this instance.

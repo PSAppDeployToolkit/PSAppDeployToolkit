@@ -57,7 +57,7 @@ namespace PSADT.WindowManagement
             {
                 // Get the list of processes based on the provided filters and start finding applicable windows.
                 Regex? windowTitleRegexObject = windowTitleRegex is not null ? new(windowTitleRegex, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled) : null;
-                IReadOnlyList<Process> processes = parentProcesses ?? [.. Process.GetProcesses().Where(p => p.MainWindowHandle != default && parentProcessFilter?.Any(f => f.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase)) != false && parentProcessIdFilter?.Contains(p.Id) != false && parentProcessMainWindowHandleFilter?.Contains(p.MainWindowHandle) != false)];
+                IReadOnlyList<Process> processes = parentProcesses ?? [.. Process.GetProcesses().Where(p => p.MainWindowHandle != default && (parentProcessFilter?.Any(f => f.Equals(p.ProcessName, StringComparison.OrdinalIgnoreCase))) is not false && (parentProcessIdFilter?.Contains(p.Id)) is not false && (parentProcessMainWindowHandleFilter?.Contains(p.MainWindowHandle)) is not false)];
                 foreach (HWND windowHandle in windowHandleFilter is not null ? WindowTools.EnumWindows().Where(w => windowHandleFilter.Contains(w) && NativeMethods.IsWindowVisible(w)) : WindowTools.EnumWindows().Where(static w => NativeMethods.IsWindowVisible(w)))
                 {
                     // Return early if we can't find a process for this window.

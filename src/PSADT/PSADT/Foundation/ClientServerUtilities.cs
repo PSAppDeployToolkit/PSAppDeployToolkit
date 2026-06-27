@@ -134,10 +134,10 @@ namespace PSADT.Foundation
         private static ProcessHandle InvokeClientOperationImpl(FileInfo filePath, IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType? elevatedTokenType = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
             bool denyUserTermination = true; bool runAsInvoker = false; bool useShellExecute = false;
-            if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) != false)
+            if ((runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser)) is not false)
             {
                 bool cannotUseToken = !AccountUtilities.CallerIsAdmin || !AccountUtilities.CallerIsLoggedOnUser;
-                if (useShellExecute = cannotUseToken && filePath == ClientLauncherAutoPath && elevatedTokenType?.Equals(ElevatedTokenType.None) != false)
+                if (useShellExecute = cannotUseToken && filePath == ClientLauncherAutoPath && (elevatedTokenType?.Equals(ElevatedTokenType.None)) is not false)
                 {
                     denyUserTermination = filePath != ClientLauncherDefaultPath || AccountUtilities.CallerIsAdmin;
                 }

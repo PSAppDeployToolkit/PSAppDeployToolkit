@@ -446,7 +446,7 @@ namespace PSADT.ProcessManagement
         /// </summary>
         internal bool IsCliApplication()
         {
-            return ImageSubsystem != IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
+            return ImageSubsystem is not IMAGE_SUBSYSTEM.IMAGE_SUBSYSTEM_WINDOWS_GUI;
         }
 
         /// <summary>

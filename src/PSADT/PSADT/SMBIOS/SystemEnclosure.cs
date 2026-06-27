@@ -75,7 +75,7 @@ namespace PSADT.SMBIOS
             if (structureLength >= 19)
             {
                 byte cordsRaw = buffer[structureOffset + 18];
-                if (cordsRaw != 0)
+                if (cordsRaw is not 0)
                 {
                     numberOfPowerCords = cordsRaw;
                 }

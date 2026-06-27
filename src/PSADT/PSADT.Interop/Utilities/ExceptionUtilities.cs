@@ -151,7 +151,7 @@ namespace PSADT.Interop.Utilities
         internal static WIN32_ERROR? WIN32_FROM_NT(NTSTATUS ntStatus)
         {
             WIN32_ERROR win32Error = (WIN32_ERROR)PInvoke.RtlNtStatusToDosError(ntStatus);
-            return win32Error != WIN32_ERROR.ERROR_MR_MID_NOT_FOUND ? win32Error : null;
+            return win32Error is not WIN32_ERROR.ERROR_MR_MID_NOT_FOUND ? win32Error : null;
         }
 
         /// <summary>

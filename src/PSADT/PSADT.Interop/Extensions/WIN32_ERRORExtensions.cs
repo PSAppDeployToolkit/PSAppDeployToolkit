@@ -23,7 +23,7 @@ namespace PSADT.Interop.Extensions
         [StackTraceHidden]
         internal static WIN32_ERROR ThrowOnFailure(this WIN32_ERROR win32Error)
         {
-            return win32Error != WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(win32Error) : win32Error;
+            return win32Error is not WIN32_ERROR.ERROR_SUCCESS ? throw ExceptionUtilities.GetException(win32Error) : win32Error;
         }
     }
 }

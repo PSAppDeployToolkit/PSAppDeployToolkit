@@ -66,12 +66,12 @@ namespace PSADT.SMBIOS
         /// <summary>
         /// Normalized minimum (null when reserved value 0xFF is used).
         /// </summary>
-        public byte? Minimum => RawMinimum != 0xFF ? RawMinimum : null;
+        public byte? Minimum => RawMinimum is not 0xFF ? RawMinimum : null;
 
         /// <summary>
         /// Normalized maximum (null when reserved value 0 is used).
         /// </summary>
-        public byte? Maximum => RawMaximum != 0 ? RawMaximum : null;
+        public byte? Maximum => RawMaximum is not 0 ? RawMaximum : null;
 
         /// <summary>
         /// Returns true when Minimum/Maximum are within spec-defined ranges.

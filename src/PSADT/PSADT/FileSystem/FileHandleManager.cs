@@ -302,7 +302,7 @@ namespace PSADT.FileSystem
                     {
                         try
                         {
-                            if (NativeMethods.GetFileType(fileDupHandle) != FILE_TYPE.FILE_TYPE_DISK)
+                            if (NativeMethods.GetFileType(fileDupHandle) is not FILE_TYPE.FILE_TYPE_DISK)
                             {
                                 return;
                             }
@@ -323,7 +323,7 @@ namespace PSADT.FileSystem
                             using (hThread)
                             {
                                 // Terminate the thread if it's taking longer than our timeout (NtQueryObject() has hung); otherwise just get the exit code.
-                                if (NativeMethods.WaitForSingleObject(hThread, 500) != WAIT_EVENT.WAIT_OBJECT_0)
+                                if (NativeMethods.WaitForSingleObject(hThread, 500) is not WAIT_EVENT.WAIT_OBJECT_0)
                                 {
                                     _ = NativeMethods.NtTerminateThread(hThread, NTSTATUS.STATUS_TIMEOUT);
                                 }

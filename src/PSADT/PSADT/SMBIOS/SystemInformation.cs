@@ -83,11 +83,11 @@ namespace PSADT.SMBIOS
             for (int i = 0; i < 16; i++)
             {
                 byte b = raw16[i];
-                if (b != 0x00)
+                if (b is not 0x00)
                 {
                     allZero = false;
                 }
-                if (b != 0xFF)
+                if (b is not 0xFF)
                 {
                     allFF = false;
                 }

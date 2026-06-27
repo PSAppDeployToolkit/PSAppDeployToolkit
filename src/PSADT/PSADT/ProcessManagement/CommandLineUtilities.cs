@@ -199,7 +199,7 @@ namespace PSADT.ProcessManagement
                     if (position < commandLine.Length && commandLine[position] == '"')
                     {
                         _ = result.Append('\\', Math.DivRem(backslashCount, 2, out int remainder));
-                        if (remainder != 0)
+                        if (remainder is not 0)
                         {
                             _ = result.Append('"');
                             position++;
@@ -690,7 +690,7 @@ namespace PSADT.ProcessManagement
                         // 2n backslashes + quote -> n backslashes, and the quote is a delimiter.
                         // 2n+1 backslashes + quote -> n backslashes + a literal quote.
                         _ = argument.Append('\\', Math.DivRem(backslashCount, 2, out int remainder));
-                        if (remainder != 0)
+                        if (remainder is not 0)
                         {
                             _ = argument.Append('"'); // Escaped quote.
                         }

@@ -248,7 +248,7 @@ namespace PSADT.Interop.SafeHandles
             ArgumentOutOfRangeException.ThrowIfNegative(offset); int length = (Length - offset) / Unsafe.SizeOf<T>();
             return length < 0
                 ? throw new InvalidOperationException("Offset exceeds the length of the memory region.")
-                : (Length - offset) % Unsafe.SizeOf<T>() != 0
+                : (Length - offset) % Unsafe.SizeOf<T>() is not 0
                 ? throw new InvalidOperationException("Offset must be aligned to the size of the type T.")
                 : (handle + offset).AsReadOnlySpan<T>(length);
         }

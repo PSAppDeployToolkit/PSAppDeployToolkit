@@ -241,7 +241,7 @@ namespace PSADT.Security
             _ = NativeMethods.WTSQueryUserToken(sessionId, out SafeFileHandle hUserToken);
             using (hUserToken)
             {
-                if (elevatedTokenType != ElevatedTokenType.None)
+                if (elevatedTokenType is not ElevatedTokenType.None)
                 {
                     try
                     {

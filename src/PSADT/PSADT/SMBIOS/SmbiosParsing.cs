@@ -113,7 +113,7 @@ namespace PSADT.SMBIOS
             {
                 // Read until null terminator.
                 List<byte> stringBytes = [];
-                while (offset < buffer.Length && buffer[offset] != 0)
+                while (offset < buffer.Length && buffer[offset] is not 0)
                 {
                     stringBytes.Add(buffer[offset]);
                     offset++;

@@ -20,7 +20,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         internal ProgressDialog(ProgressDialogOptions options) : base(options, null!)
         {
             UpdateProgressImpl(options.ProgressMessageText, options.ProgressDetailMessageText, options.ProgressPercentage);
-            if (_dialogPosition != DialogPosition.Oobe || (!DeviceUtilities.IsOOBEComplete() && !_dialogAllowMove))
+            if (_dialogPosition is not DialogPosition.Oobe || (!DeviceUtilities.IsOOBEComplete() && !_dialogAllowMove))
             {
                 IsMinimizeButtonVisible = Visibility.Visible;
             }

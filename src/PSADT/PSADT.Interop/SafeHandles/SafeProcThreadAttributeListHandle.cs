@@ -74,7 +74,7 @@ namespace PSADT.Interop.SafeHandles
             if (!res)
             {
                 WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                if (lastWin32Error != WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default)
+                if (lastWin32Error is not WIN32_ERROR.ERROR_INSUFFICIENT_BUFFER || lpAttributeList != default)
                 {
                     throw ExceptionUtilities.GetException(lastWin32Error);
                 }
