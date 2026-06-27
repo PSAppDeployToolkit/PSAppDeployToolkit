@@ -19,10 +19,11 @@ namespace PSAppDeployToolkit.Attributes
         /// Initializes a new instance of the TimeSpanTransformationAttribute class using the specified culture
         /// information.
         /// </summary>
-        /// <param name="cultureInfo">The CultureInfo to use for parsing and formatting time span values. Cannot be null.</param>
-        public TimeSpanTransformationAttribute(CultureInfo cultureInfo) : this()
+        /// <param name="formatProvider">The IFormatProvider to use for parsing and formatting time span values. Cannot be null.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0170:Type cannot be used as an attribute argument", Justification = "https://www.youtube.com/watch?v=IpF9O0R873I")]
+        public TimeSpanTransformationAttribute(IFormatProvider formatProvider) : this()
         {
-            CultureInfo = cultureInfo;
+            FormatProvider = formatProvider;
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             if (inputData is string valueAsString)
             {
-                if (TimeSpan.TryParse(valueAsString, CultureInfo, out TimeSpan parsedTimeSpan))
+                if (TimeSpan.TryParse(valueAsString, FormatProvider, out TimeSpan parsedTimeSpan))
                 {
                     return parsedTimeSpan;
                 }
@@ -125,8 +126,8 @@ namespace PSAppDeployToolkit.Attributes
         }
 
         /// <summary>
-        /// Represents the culture-specific information associated with the current context.
+        /// Represents the format provider associated with the current context.
         /// </summary>
-        public CultureInfo CultureInfo { get; } = CultureInfo.CurrentCulture;
+        public IFormatProvider FormatProvider { get; } = CultureInfo.CurrentCulture;
     }
 }
