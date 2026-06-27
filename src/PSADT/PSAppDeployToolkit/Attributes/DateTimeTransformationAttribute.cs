@@ -79,35 +79,65 @@ namespace PSAppDeployToolkit.Attributes
             switch (inputData)
             {
                 case sbyte value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case byte value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case short value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case ushort value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case int value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case uint value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case long value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case ulong value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case float value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case double value:
-                    days = value;
-                    return true;
+                    {
+                        days = value;
+                        return true;
+                    }
+
                 case decimal value:
                     try
                     {
@@ -119,9 +149,12 @@ namespace PSAppDeployToolkit.Attributes
                         days = default;
                         return false;
                     }
+
                 default:
-                    days = default;
-                    return false;
+                    {
+                        days = default;
+                        return false;
+                    }
             }
         }
     }

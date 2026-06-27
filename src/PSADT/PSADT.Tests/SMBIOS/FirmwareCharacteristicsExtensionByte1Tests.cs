@@ -53,17 +53,16 @@ namespace PSADT.Tests.SMBIOS
         /// flag values to their bit positions in a byte.</remarks>
         /// <returns>An enumerable collection of object arrays, each containing a byte value representing a firmware
         /// characteristic extension flag and an integer indicating its associated bit position.</returns>
-        public static TheoryData<byte, int> BitAssignments =>
-            new()
-            {
-                { (byte)FirmwareCharacteristicsExtensionByte1.AcpiSupported, 0 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.UsbLegacySupported, 1 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.AgpSupported, 2 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.I2OBootSupported, 3 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.Ls120BootSupported, 4 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.AtapiZipBootSupported, 5 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.Ieee1394BootSupported, 6 },
-                { (byte)FirmwareCharacteristicsExtensionByte1.SmartBatterySupported, 7 },
-            };
+        public static TheoryData<byte, int> BitAssignments => new()
+        {
+            { (byte)FirmwareCharacteristicsExtensionByte1.AcpiSupported, 0 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.UsbLegacySupported, 1 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.AgpSupported, 2 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.I2OBootSupported, 3 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.Ls120BootSupported, 4 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.AtapiZipBootSupported, 5 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.Ieee1394BootSupported, 6 },
+            { (byte)FirmwareCharacteristicsExtensionByte1.SmartBatterySupported, 7 },
+        };
     }
 }

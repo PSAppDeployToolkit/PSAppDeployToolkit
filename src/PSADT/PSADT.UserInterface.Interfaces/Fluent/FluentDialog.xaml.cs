@@ -805,68 +805,88 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             switch (_dialogPosition)
             {
                 case DialogPosition.TopLeft:
-                    // Align to top left corner
-                    left = workingArea.Left;
-                    top = workingArea.Top;
-                    break;
+                    {
+                        // Align to top left corner
+                        left = workingArea.Left;
+                        top = workingArea.Top;
+                        break;
+                    }
 
                 case DialogPosition.Top:
-                    // Center horizontally, align to top
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
-                    top = workingArea.Top;
-                    break;
+                    {
+                        // Center horizontally, align to top
+                        left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                        top = workingArea.Top;
+                        break;
+                    }
 
                 case DialogPosition.TopRight:
-                    // Align to top right corner
-                    left = workingArea.Left + (workingArea.Width - ActualWidth);
-                    top = workingArea.Top;
-                    break;
+                    {
+                        // Align to top right corner
+                        left = workingArea.Left + (workingArea.Width - ActualWidth);
+                        top = workingArea.Top;
+                        break;
+                    }
 
                 case DialogPosition.TopCenter:
-                    // Center horizontally, align to top but not to the top of the screen
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
-                    top = workingArea.Top + ((workingArea.Height - ActualHeight) * (1.0 / 6.0));
-                    break;
+                    {
+                        // Center horizontally, align to top but not to the top of the screen
+                        left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                        top = workingArea.Top + ((workingArea.Height - ActualHeight) * (1.0 / 6.0));
+                        break;
+                    }
 
                 case DialogPosition.Center:
-                    // Center horizontally and vertically
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
-                    top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
-                    break;
+                    {
+                        // Center horizontally and vertically
+                        left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                        top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2);
+                        break;
+                    }
 
                 case DialogPosition.BottomLeft:
-                    // Align to bottom left corner
-                    left = workingArea.Left;
-                    top = workingArea.Top + (workingArea.Height - ActualHeight);
-                    break;
+                    {
+                        // Align to bottom left corner
+                        left = workingArea.Left;
+                        top = workingArea.Top + (workingArea.Height - ActualHeight);
+                        break;
+                    }
 
                 case DialogPosition.Bottom:
-                    // Center horizontally, align to bottom
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
-                    top = workingArea.Top + (workingArea.Height - ActualHeight);
-                    break;
+                    {
+                        // Center horizontally, align to bottom
+                        left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                        top = workingArea.Top + (workingArea.Height - ActualHeight);
+                        break;
+                    }
 
                 case DialogPosition.BottomCenter:
-                    // Center horizontally, align to bottom but not to the bottom of the screen
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
-                    top = workingArea.Top + ((workingArea.Height - ActualHeight) * (5.0 / 6.0));
-                    break;
+                    {
+                        // Center horizontally, align to bottom but not to the bottom of the screen
+                        left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2);
+                        top = workingArea.Top + ((workingArea.Height - ActualHeight) * (5.0 / 6.0));
+                        break;
+                    }
 
                 case DialogPosition.Oobe:
-                    // Center vertically on full screen (compensating for non-existent taskbar in OOBE)
-                    // Calculate taskbar offset: difference between full screen and working area
-                    double taskbarOffset = SystemParameters.PrimaryScreenHeight - workingArea.Height - workingArea.Top;
-                    left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2) - (ActualWidth * 0.6);
-                    top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2) + (taskbarOffset / 2);
-                    break;
+                    {
+                        // Center vertically on full screen (compensating for non-existent taskbar in OOBE)
+                        // Calculate taskbar offset: difference between full screen and working area
+                        double taskbarOffset = SystemParameters.PrimaryScreenHeight - workingArea.Height - workingArea.Top;
+                        left = workingArea.Left + ((workingArea.Width - ActualWidth) / 2) - (ActualWidth * 0.6);
+                        top = workingArea.Top + ((workingArea.Height - ActualHeight) / 2) + (taskbarOffset / 2);
+                        break;
+                    }
 
                 case DialogPosition.BottomRight:
                 case DialogPosition.Default:
                 default:
-                    // Align to bottom right (original behavior)
-                    left = workingArea.Left + (workingArea.Width - ActualWidth);
-                    top = workingArea.Top + (workingArea.Height - ActualHeight);
-                    break;
+                    {
+                        // Align to bottom right (original behavior)
+                        left = workingArea.Left + (workingArea.Width - ActualWidth);
+                        top = workingArea.Top + (workingArea.Height - ActualHeight);
+                        break;
+                    }
             }
 
             // Ensure the window is within the screen bounds.

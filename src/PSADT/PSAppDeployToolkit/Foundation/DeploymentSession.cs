@@ -1033,29 +1033,37 @@ namespace PSAppDeployToolkit.Foundation
             switch (deploymentStatus)
             {
                 case DeploymentStatus.FastRetry:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred"), LogSeverity.Warning);
-                    break;
+                    {
+                        WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "was deferred"), LogSeverity.Warning);
+                        break;
+                    }
+
                 case DeploymentStatus.Error:
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed"), LogSeverity.Error);
-                    break;
+                    {
+                        WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "failed"), LogSeverity.Error);
+                        break;
+                    }
+
                 case DeploymentStatus.RestartRequired:
                 case DeploymentStatus.Complete:
                 default:
-                    if (Settings.HasFlag(DeploymentSettings.ExitWithMsiCodes))
                     {
-                        ExitCode = deploymentStatus is DeploymentStatus.RestartRequired ? 3010 : 0;
+                        if (Settings.HasFlag(DeploymentSettings.ExitWithMsiCodes))
+                        {
+                            ExitCode = deploymentStatus is DeploymentStatus.RestartRequired ? 3010 : 0;
+                        }
+                        WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed"), LogSeverity.Success);
+                        if (deploymentStatus is DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
+                        {
+                            WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
+                        }
+                        else
+                        {
+                            ExitCode = 0;
+                        }
+                        ResetDeferHistory();
+                        break;
                     }
-                    WriteLogEntry(string.Format(CultureInfo.InvariantCulture, deployString, "completed"), LogSeverity.Success);
-                    if (deploymentStatus is DeploymentStatus.RestartRequired && !SuppressRebootPassThru)
-                    {
-                        WriteLogEntry("A restart has been flagged as required.", LogSeverity.Warning);
-                    }
-                    else
-                    {
-                        ExitCode = 0;
-                    }
-                    ResetDeferHistory();
-                    break;
             }
 
             // Update the module's last tracked exit code.

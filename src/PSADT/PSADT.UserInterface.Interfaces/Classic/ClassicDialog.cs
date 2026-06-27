@@ -410,61 +410,81 @@ namespace PSADT.UserInterface.Interfaces.Classic
             switch (dialogPosition)
             {
                 case DialogPosition.TopLeft:
-                    left = workingArea.Left;
-                    top = workingArea.Top;
-                    break;
+                    {
+                        left = workingArea.Left;
+                        top = workingArea.Top;
+                        break;
+                    }
 
                 case DialogPosition.Top:
-                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
-                    top = workingArea.Top;
-                    break;
+                    {
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
+                        top = workingArea.Top;
+                        break;
+                    }
 
                 case DialogPosition.TopRight:
-                    left = workingArea.Right - Width;
-                    top = workingArea.Top;
-                    break;
+                    {
+                        left = workingArea.Right - Width;
+                        top = workingArea.Top;
+                        break;
+                    }
 
                 case DialogPosition.TopCenter:
-                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
-                    top = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
-                    break;
+                    {
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
+                        top = workingArea.Top + ((workingArea.Height - Height) * (1.0 / 6.0));
+                        break;
+                    }
 
                 case DialogPosition.BottomLeft:
-                    left = workingArea.Left;
-                    top = workingArea.Bottom - Height;
-                    break;
+                    {
+                        left = workingArea.Left;
+                        top = workingArea.Bottom - Height;
+                        break;
+                    }
 
                 case DialogPosition.Bottom:
-                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
-                    top = workingArea.Bottom - Height;
-                    break;
+                    {
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
+                        top = workingArea.Bottom - Height;
+                        break;
+                    }
 
                 case DialogPosition.BottomCenter:
-                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
-                    top = workingArea.Top + ((workingArea.Height - Height) * (5.0 / 6.0));
-                    break;
+                    {
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
+                        top = workingArea.Top + ((workingArea.Height - Height) * (5.0 / 6.0));
+                        break;
+                    }
 
                 case DialogPosition.BottomRight:
-                    left = workingArea.Right - Width;
-                    top = workingArea.Bottom - Height;
-                    break;
+                    {
+                        left = workingArea.Right - Width;
+                        top = workingArea.Bottom - Height;
+                        break;
+                    }
 
                 case DialogPosition.Oobe:
-                    // Center vertically on full screen (compensating for non-existent taskbar in OOBE)
-                    // Calculate taskbar offset in pixels: difference between full screen and working area
-                    Rectangle screenBounds = screen.Bounds;
-                    int taskbarOffsetPixels = screenBounds.Height - workingArea.Height - (workingArea.Top - screenBounds.Top);
-                    double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
-                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5) - (Width / dpiScale * 0.6 * dpiScale);
-                    top = workingArea.Top + ((workingArea.Height - Height) * 0.5) + (taskbarOffsetPixels * 0.5);
-                    break;
+                    {
+                        // Center vertically on full screen (compensating for non-existent taskbar in OOBE)
+                        // Calculate taskbar offset in pixels: difference between full screen and working area
+                        Rectangle screenBounds = screen.Bounds;
+                        int taskbarOffsetPixels = screenBounds.Height - workingArea.Height - (workingArea.Top - screenBounds.Top);
+                        double dpiScale = NativeMethods.GetDpiForWindow((HWND)Handle) / 96.0;
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5) - (Width / dpiScale * 0.6 * dpiScale);
+                        top = workingArea.Top + ((workingArea.Height - Height) * 0.5) + (taskbarOffsetPixels * 0.5);
+                        break;
+                    }
 
                 case DialogPosition.Center:
                 case DialogPosition.Default:
                 default:
-                    left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
-                    top = workingArea.Top + ((workingArea.Height - Height) * 0.5);
-                    break;
+                    {
+                        left = workingArea.Left + ((workingArea.Width - Width) * 0.5);
+                        top = workingArea.Top + ((workingArea.Height - Height) * 0.5);
+                        break;
+                    }
             }
 
             // Clamp to working-area bounds

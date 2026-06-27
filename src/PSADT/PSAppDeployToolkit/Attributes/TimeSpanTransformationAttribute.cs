@@ -79,35 +79,65 @@ namespace PSAppDeployToolkit.Attributes
             switch (inputData)
             {
                 case sbyte value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case byte value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case short value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case ushort value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case int value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case uint value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case long value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case ulong value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case float value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case double value:
-                    seconds = value;
-                    return true;
+                    {
+                        seconds = value;
+                        return true;
+                    }
+
                 case decimal value:
                     try
                     {
@@ -119,9 +149,12 @@ namespace PSAppDeployToolkit.Attributes
                         seconds = default;
                         return false;
                     }
+
                 default:
-                    seconds = default;
-                    return false;
+                    {
+                        seconds = default;
+                        return false;
+                    }
             }
         }
 

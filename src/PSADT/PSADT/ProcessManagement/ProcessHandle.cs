@@ -211,6 +211,7 @@ namespace PSADT.ProcessManagement
         /// </param>
         /// <returns>A configured task awaitable.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1046:Asynchronous method name should end with 'Async'", Justification = "This isn't appropriate here.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0137:Use 'Async' suffix when a method returns an awaitable type", Justification = "This isn't appropriate here.")]
         public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
         {

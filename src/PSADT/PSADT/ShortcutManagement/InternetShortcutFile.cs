@@ -872,6 +872,5 @@ namespace PSADT.ShortcutManagement
         /// The storage mode used when loading the shortcut file.
         /// </summary>
         private readonly Interop.STGM? _storageMode;
-
     }
 }
