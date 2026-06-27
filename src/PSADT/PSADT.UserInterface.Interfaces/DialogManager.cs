@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -299,7 +298,12 @@ namespace PSADT.UserInterface.Interfaces
         {
             return progressDialog is not null ? throw new InvalidOperationException("Cannot show a progress dialog while one is already open.") : InvokeDialogActionAsync(() =>
             {
-                progressDialog = (IProgressDialog)dialogDispatcher[dialogStyle][DialogType.ProgressDialog](options, null);
+                progressDialog = dialogStyle switch
+                {
+                    DialogStyle.Classic => new Classic.ProgressDialog(options),
+                    DialogStyle.Fluent => new Fluent.ProgressDialog(options),
+                    _ => throw new NotSupportedException($"Dialog style '{dialogStyle}' is not supported for dialog type 'ProgressDialog'."),
+                };
                 try
                 {
                     progressDialog.Show();
@@ -486,7 +490,20 @@ namespace PSADT.UserInterface.Interfaces
             }
             return InvokeDialogActionAsync(() =>
             {
-                using IModalDialog dialog = (IModalDialog)dialogDispatcher[dialogStyle][dialogType](options, state);
+                using IModalDialog dialog = (dialogStyle, dialogType) switch
+                {
+                    (DialogStyle.Classic, DialogType.CloseAppsDialog) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))),
+                    (DialogStyle.Classic, DialogType.CustomDialog) => new Classic.CustomDialog((CustomDialogOptions)options),
+                    (DialogStyle.Classic, DialogType.InputDialog) => new Classic.InputDialog((InputDialogOptions)options),
+                    (DialogStyle.Classic, DialogType.ListSelectionDialog) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options),
+                    (DialogStyle.Classic, DialogType.RestartDialog) => new Classic.RestartDialog((RestartDialogOptions)options),
+                    (DialogStyle.Fluent, DialogType.CloseAppsDialog) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))),
+                    (DialogStyle.Fluent, DialogType.CustomDialog) => new Fluent.CustomDialog((CustomDialogOptions)options),
+                    (DialogStyle.Fluent, DialogType.InputDialog) => new Fluent.InputDialog((InputDialogOptions)options),
+                    (DialogStyle.Fluent, DialogType.ListSelectionDialog) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options),
+                    (DialogStyle.Fluent, DialogType.RestartDialog) => new Fluent.RestartDialog((RestartDialogOptions)options),
+                    _ => throw new NotSupportedException($"Dialog style '{dialogStyle}' is not supported for dialog type '{dialogType}'."),
+                };
                 dialog.ShowDialog(); return (TResult)dialog.DialogResult;
             });
         }
@@ -639,30 +656,5 @@ namespace PSADT.UserInterface.Interfaces
         /// Gets or sets the action to be invoked when an exception occurs in the dispatcher.
         /// </summary>
         private static readonly Action<Exception> unhandledExceptionHandler;
-
-        /// <summary>
-        /// Dialog lookup table for dispatching to the correct dialog based on the style and type.
-        /// </summary>
-        private static readonly FrozenDictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>> dialogDispatcher = FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogStyle, FrozenDictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>>
-        {
-            { DialogStyle.Classic, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
-            {
-                { DialogType.CloseAppsDialog, static (options, state) => new Classic.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))) },
-                { DialogType.CustomDialog, static (options, _) => new Classic.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, _) => new Classic.InputDialog((InputDialogOptions)options) },
-                { DialogType.ListSelectionDialog, static (options, _) => new Classic.ListSelectionDialog((ListSelectionDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, _) => new Classic.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, _) => new Classic.RestartDialog((RestartDialogOptions)options) },
-            })},
-            { DialogStyle.Fluent, FrozenDictionary.ToFrozenDictionary(new Dictionary<DialogType, Func<BaseDialogOptions, BaseDialogState?, IBaseDialog>>
-            {
-                { DialogType.CloseAppsDialog, static (options, state) => new Fluent.CloseAppsDialog((CloseAppsDialogOptions)options, (CloseAppsDialogState?)state ?? throw new ArgumentNullException(nameof(state))) },
-                { DialogType.CustomDialog, static (options, _) => new Fluent.CustomDialog((CustomDialogOptions)options) },
-                { DialogType.InputDialog, static (options, _) => new Fluent.InputDialog((InputDialogOptions)options) },
-                { DialogType.ListSelectionDialog, static (options, _) => new Fluent.ListSelectionDialog((ListSelectionDialogOptions)options) },
-                { DialogType.ProgressDialog, static (options, _) => new Fluent.ProgressDialog((ProgressDialogOptions)options) },
-                { DialogType.RestartDialog, static (options, _) => new Fluent.RestartDialog((RestartDialogOptions)options) },
-            })},
-        });
     }
 }
