@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace PSADT.UserInterface.DialogResults
@@ -39,7 +40,7 @@ namespace PSADT.UserInterface.DialogResults
         /// of the exact same type.</remarks>
         /// <param name="obj">The object to compare with the current instance.</param>
         /// <returns>true if the specified object is equal to the current instance; otherwise, false.</returns>
-        public override bool Equals(object? obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
             // Only compare instances of the exact same type, not derived types.
             return obj switch

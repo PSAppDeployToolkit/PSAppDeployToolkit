@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using PSADT.Utilities;
 
@@ -39,7 +40,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <remarks>Compares both the Result and Text properties. String equality is not supported for derived types.</remarks>
         /// <param name="obj">The object to compare with the current instance.</param>
         /// <returns>true if the specified object is an InputDialogResult with equal Result and Text values; otherwise, false.</returns>
-        public override bool Equals(object? obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj is InputDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && (Text?.Equals(other.Text, StringComparison.Ordinal)) is true;
         }

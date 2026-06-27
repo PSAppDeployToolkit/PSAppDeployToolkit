@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using Windows.Win32.Foundation;
 
@@ -17,7 +18,7 @@ namespace PSADT.Interop
     /// <item>Explicit cast operators for numeric and string conversions</item>
     /// </list>
     /// </remarks>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S4035:Classes implementing \"IEquatable<T>\" should be sealed", Justification = "This is a CRTP-style abstract base for strongly typed constants; sealing it is not possible and implementing IEqualityComparer on instances would not match its role.")]
+    [SuppressMessage("Major Code Smell", "S4035:Classes implementing \"IEquatable<T>\" should be sealed", Justification = "This is a CRTP-style abstract base for strongly typed constants; sealing it is not possible and implementing IEqualityComparer on instances would not match its role.")]
     [DataContract]
     public abstract class TypedConstant<TSelf> : IEquatable<TSelf> where TSelf : TypedConstant<TSelf>
     {
@@ -158,7 +159,7 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="other">The other instance to compare with.</param>
         /// <returns><see langword="true"/> if both instances have the same name and value; otherwise, <see langword="false"/>.</returns>
-        public bool Equals(TSelf? other)
+        public bool Equals([NotNullWhen(true)] TSelf? other)
         {
             return other is not null && _name.Equals(other._name, StringComparison.Ordinal) && _value == other._value;
         }
@@ -172,7 +173,7 @@ namespace PSADT.Interop
         /// </remarks>
         /// <param name="obj">The object to compare with this instance.</param>
         /// <returns><see langword="true"/> if the object is equal to this instance; otherwise, <see langword="false"/>.</returns>
-        public override bool Equals(object? obj)
+        public override bool Equals([NotNullWhen(true)] object? obj)
         {
             return obj switch
             {
