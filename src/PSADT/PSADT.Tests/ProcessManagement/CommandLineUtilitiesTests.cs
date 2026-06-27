@@ -120,6 +120,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests null input handling.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
         [Fact]
         public void CommandLineToArgumentList_NullInput_ThrowsArgumentNullException()
         {
@@ -239,6 +240,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests null input handling for ArgumentListToCommandLine.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
         [Fact]
         public void ArgumentListToCommandLine_NullArrayInput_ThrowsArgumentNullException()
         {
@@ -249,6 +251,7 @@ namespace PSADT.Tests.ProcessManagement
         /// <summary>
         /// Tests null input handling for ArgumentListToCommandLine with List.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
         [Fact]
         public void ArgumentListToCommandLine_NullListInput_ThrowsArgumentNullException()
         {

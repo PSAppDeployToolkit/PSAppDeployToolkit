@@ -15,6 +15,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="RestartDialog"/> class.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
         internal RestartDialog() : this(null!)
         {
             if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)
@@ -32,6 +33,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// flexible customization of the dialog's content and behavior based on the supplied options.</remarks>
         /// <param name="options">The options that configure the dialog's appearance and behavior, including title, custom messages, and
         /// countdown settings. Cannot be null.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
         internal RestartDialog(RestartDialogOptions options) : base(options, null!)
         {
             // Initialise the form and reset the control order.

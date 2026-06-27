@@ -185,6 +185,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <value>The path to the target file or folder that the shortcut points to.</value>
         /// <exception cref="COMException">Thrown when the COM operation fails.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate.")]
         public string TargetPath
         {
             get

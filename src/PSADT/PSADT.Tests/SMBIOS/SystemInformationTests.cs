@@ -91,6 +91,7 @@ namespace PSADT.Tests.SMBIOS
         /// as null values by the SystemInformation.Get method, matching expected normalization behavior for SMBIOS
         /// string fields.</remarks>
         [Fact]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is deliberate as part of unit testing.")]
         public void Get_NormalizesEmptyStrings()
         {
             byte[] formatted = new byte[23];

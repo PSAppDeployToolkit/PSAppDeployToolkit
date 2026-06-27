@@ -13,6 +13,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Initializes a new instance of the <see cref="ListSelectionDialog"/> class.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
         internal ListSelectionDialog() : this(null!)
         {
             if (LicenseManager.UsageMode is LicenseUsageMode.Runtime)

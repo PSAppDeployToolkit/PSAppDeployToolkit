@@ -14,6 +14,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Instantiates a new RestartDialog dialog.
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0191:Do not use the null-forgiving operator", Justification = "This is necessary here.")]
         internal RestartDialog(RestartDialogOptions options) : base(options, null!, options.CustomMessageText, options.CountdownDuration, options.CountdownNoMinimizeDuration)
         {
             // Reset the dialog's title. It must be that of the string table in the options.
