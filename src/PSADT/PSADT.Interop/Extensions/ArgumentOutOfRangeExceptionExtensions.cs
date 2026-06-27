@@ -25,7 +25,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero or -1.</exception>
             [StackTraceHidden]
-            public static void ThrowIfZeroOrInvalid(nint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
+            public static void ThrowIfZeroOrInvalid(nint value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
             {
                 if (value is 0 or -1)
                 {
@@ -40,7 +40,7 @@ namespace System
             /// <param name="paramName">The name of the parameter with which <paramref name="value"/> corresponds.</param>
             /// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is zero or max value.</exception>
             [StackTraceHidden]
-            public static void ThrowIfZeroOrInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
+            public static void ThrowIfZeroOrInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
             {
                 if (value == 0 || value == (nuint)(nint)HANDLE.INVALID_HANDLE_VALUE)
                 {
@@ -55,7 +55,7 @@ namespace System
             /// <param name="paramName">The name of the parameter being validated, used in the exception message.</param>
             /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is -1, indicating an invalid value.</exception>
             [StackTraceHidden]
-            public static void ThrowIfInvalid(nint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
+            public static void ThrowIfInvalid(nint value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
             {
                 if (value == -1)
                 {
@@ -70,7 +70,7 @@ namespace System
             /// <param name="paramName">The name of the parameter being validated, used in the exception message if validation fails.</param>
             /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid value.</exception>
             [StackTraceHidden]
-            public static void ThrowIfInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string paramName = null!)
+            public static void ThrowIfInvalid(nuint value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
             {
                 if (value == unchecked((nuint)(-1)))
                 {

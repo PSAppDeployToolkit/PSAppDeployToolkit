@@ -39,9 +39,9 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="value">The numeric value to be associated with this instance.</param>
         /// <param name="name">The name of the constant.</param>
-        private protected TypedConstant(nint value, string name)
+        private protected TypedConstant(nint value, string? name)
         {
-            _name = name;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
             _value = value;
         }
 
@@ -51,9 +51,9 @@ namespace PSADT.Interop
         /// </summary>
         /// <param name="value">The PCWSTR value to be associated with this instance.</param>
         /// <param name="name">The name of the constant.</param>
-        private protected TypedConstant(PCWSTR value, string name)
+        private protected TypedConstant(PCWSTR value, string? name)
         {
-            _name = name;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
             unsafe
             {
                 _value = (nint)value.Value;

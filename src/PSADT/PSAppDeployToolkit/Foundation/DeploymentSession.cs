@@ -1478,7 +1478,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="flag">The DeploymentSettings flag to check.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         /// <returns>True if the flag is set; otherwise, false.</returns>
-        private bool GetFlagValue(DeploymentSettings flag, [CallerMemberName] string propertyName = null!)
+        private bool GetFlagValue(DeploymentSettings flag, [CallerMemberName] string? propertyName = null)
         {
             return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState
                 ? (bool)sessionState.PSVariable.GetValue(propertyName)
@@ -1492,7 +1492,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="backingField">Read-only reference to the backing field.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
         /// <returns>The property value from either the backing field or PowerShell session state.</returns>
-        private T GetPropertyValue<T>(ref readonly T backingField, [CallerMemberName] string propertyName = null!)
+        private T GetPropertyValue<T>(ref readonly T backingField, [CallerMemberName] string? propertyName = null)
         {
             return Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState
                 ? (T)sessionState.PSVariable.GetValue(propertyName)
@@ -1506,7 +1506,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="backingField">Reference to the mutable backing field.</param>
         /// <param name="value">The value to set.</param>
         /// <param name="propertyName">The name of the property (auto-populated by CallerMemberName).</param>
-        private void SetPropertyValue<T>(ref T backingField, T value, [CallerMemberName] string propertyName = null!)
+        private void SetPropertyValue<T>(ref T backingField, T value, [CallerMemberName] string? propertyName = null)
         {
             if (Settings.HasFlag(DeploymentSettings.CompatibilityMode) && DeployAppScriptSessionState is SessionState sessionState)
             {

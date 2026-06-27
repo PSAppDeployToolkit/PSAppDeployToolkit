@@ -100,7 +100,7 @@ namespace PSADT.UserInterface.DialogResults
         /// </summary>
         /// <param name="value">The MESSAGEBOX_RESULT value to be associated with this instance.</param>
         /// <param name="name">The name to be associated with this instance for string comparisons. Automatically captured from the caller member name.</param>
-        private DialogBoxResult(MESSAGEBOX_RESULT value, [CallerMemberName] string name = null!) : base((nint)value, name)
+        private DialogBoxResult(MESSAGEBOX_RESULT value, [CallerMemberName] string? name = null) : base((nint)value, name)
         {
         }
 

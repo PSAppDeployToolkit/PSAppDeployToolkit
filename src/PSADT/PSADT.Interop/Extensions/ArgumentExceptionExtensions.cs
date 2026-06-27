@@ -29,7 +29,7 @@ namespace System
             /// <param name="paramName">The name of the parameter being validated. Used in the exception message if validation fails.</param>
             /// <exception cref="ArgumentException">Thrown if <paramref name="argument"/> is empty or contains only whitespace characters.</exception>
             [StackTraceHidden]
-            public static void ThrowIfEmptyOrWhiteSpace(ReadOnlySpan<char> argument, [CallerArgumentExpression(nameof(argument))] string paramName = null!)
+            public static void ThrowIfEmptyOrWhiteSpace(ReadOnlySpan<char> argument, [CallerArgumentExpression(nameof(argument))] string? paramName = null)
             {
                 if (argument.IsEmpty || argument.IsWhiteSpace())
                 {
@@ -47,7 +47,7 @@ namespace System
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="handle"/> is null.</exception>
             /// <exception cref="ObjectDisposedException">Thrown if <paramref name="handle"/> is closed.</exception>
             [StackTraceHidden]
-            public static void ThrowIfNullOrClosed(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string name = null!)
+            public static void ThrowIfNullOrClosed(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string? name = null)
             {
                 if (handle is null)
                 {
@@ -69,7 +69,7 @@ namespace System
             /// <param name="name">The name of the parameter. Used in exception messages to identify the source of the error.</param>
             /// <exception cref="ArgumentOutOfRangeException">Thrown if the SafeHandle is invalid, indicating that the handle cannot be used.</exception>
             [StackTraceHidden]
-            public static void ThrowIfNullOrInvalid(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string name = null!)
+            public static void ThrowIfNullOrInvalid(SafeHandle handle, [CallerArgumentExpression(nameof(handle))] string? name = null)
             {
                 ThrowIfNullOrClosed(handle, name);
                 if (handle.IsInvalid)
@@ -90,7 +90,7 @@ namespace System
             /// <exception cref="ArgumentNullException">Thrown if the buffer of the specified UNICODE_STRING is null.</exception>
             /// <exception cref="ArgumentException">Thrown if the length of the specified UNICODE_STRING is zero.</exception>
             [StackTraceHidden]
-            public static void ThrowIfNullOrInvalid(UNICODE_STRING value, [CallerArgumentExpression(nameof(value))] string name = null!)
+            public static void ThrowIfNullOrInvalid(UNICODE_STRING value, [CallerArgumentExpression(nameof(value))] string? name = null)
             {
                 unsafe
                 {
@@ -117,7 +117,7 @@ namespace System
             /// <param name="name">The name of the parameter being validated. Used in exception messages to identify the invalid argument.</param>
             /// <exception cref="ArgumentNullException">Thrown if value.Buffer is null while value.MaximumLength is greater than zero.</exception>
             /// <exception cref="ArgumentException">Thrown if value.Buffer is not null while value.MaximumLength is zero.</exception>
-            public static void ThrowIfInvalid(UNICODE_STRING value, [CallerArgumentExpression(nameof(value))] string name = null!)
+            public static void ThrowIfInvalid(UNICODE_STRING value, [CallerArgumentExpression(nameof(value))] string? name = null)
             {
                 unsafe
                 {
