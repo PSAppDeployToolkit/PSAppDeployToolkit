@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.InteropServices;
 using PSADT.Interop.Exceptions;
 using Windows.Win32;
@@ -23,23 +22,22 @@ namespace PSADT.Interop.Utilities
         /// <returns>The cleaned exception string with redundant markers removed.</returns>
         public static string CollapseInnerExceptionTraceMarkers(string exceptionText)
         {
-            // Internal worker method to determine if a line is an inner exception marker line.
-            static bool IsInnerExceptionMarker(string line)
-            {
-                ReadOnlySpan<char> trimmed = line.AsSpan().Trim();
-                return trimmed.Length > 6
-                    && trimmed.StartsWith("---", StringComparison.Ordinal)
-                    && trimmed.EndsWith("---", StringComparison.Ordinal)
-                    && !trimmed.StartsWith("--- >", StringComparison.Ordinal);
-            }
-
             // Remove all invalid inner exception marker lines from the exception text and return the result.
             ArgumentException.ThrowIfNullOrWhiteSpace(exceptionText);
             string[] lines = exceptionText.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
-            List<string> result = new(lines.Length);
-            for (int i = 0; i < lines.Length; i++)
+            List<string> result = new(lines.Length) { lines[0] }; bool removedInitialMarkers = false;
+            for (int i = 1; i < lines.Length; i++)
             {
-                if (!IsInnerExceptionMarker(lines[i]) || !(result.Count == 0 || !result[^1].TrimStart().StartsWith(StackTraceAtPrefix, StringComparison.Ordinal)))
+                if (!removedInitialMarkers && lines[i].TrimStart().StartsWith("---", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+                removedInitialMarkers = true;
+                if (lines[i].StartsWith("   ---", StringComparison.Ordinal))
+                {
+                    result.Add(lines[i].TrimStart());
+                }
+                else
                 {
                     result.Add(lines[i]);
                 }
@@ -251,44 +249,5 @@ namespace PSADT.Interop.Utilities
             }
             return null;
         }
-
-        /// <summary>
-        /// Determines the localized stack trace "at " prefix by generating a real
-        /// stack trace and extracting the word(s) before the fully-qualified method name.
-        /// Falls back to <c>"at "</c> (English) if detection fails.
-        /// </summary>
-        /// <returns>The localized stack trace line prefix (e.g. <c>"at "</c>, <c>"bei "</c>).</returns>
-        private static string GetStackTraceAtPrefix()
-        {
-            // The first stack trace line will reference this method. Extract everything
-            // before the fully-qualified method name to obtain the localized "at " prefix.
-            try
-            {
-                throw new InvalidOperationException();
-            }
-            catch (InvalidOperationException ex)
-            {
-                if (ex.StackTrace is string trace)
-                {
-                    const string marker = nameof(ExceptionUtilities) + "." + nameof(GetStackTraceAtPrefix);
-                    foreach (string line in trace.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries).Select(static s => s.TrimStart()))
-                    {
-                        int idx = line.IndexOf(marker, StringComparison.Ordinal);
-                        if (idx > 0)
-                        {
-                            return line[..idx];
-                        }
-                    }
-                }
-            }
-            return "at ";
-        }
-
-        /// <summary>
-        /// The localized stack trace "at " prefix used by the current runtime
-        /// (e.g. "at " in English, "bei " in German, "à " in French).
-        /// Determined once at class initialization by inspecting a real stack trace.
-        /// </summary>
-        private static readonly string StackTraceAtPrefix = GetStackTraceAtPrefix();
     }
 }
