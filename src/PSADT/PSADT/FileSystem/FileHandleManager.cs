@@ -395,10 +395,9 @@ namespace PSADT.FileSystem
         /// must be valid and correspond to an open handle.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleEntries"/> is null.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
-        public static void CloseHandles(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX[] handleEntries)
+        public static void CloseHandles(ReadOnlySpan<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX> handleEntries)
         {
             // Open each process handle, duplicate it with close source flag, then close the duplicated handle to close the original handle.
-            ArgumentNullException.ThrowIfNull(handleEntries);
             using SafeProcessHandle currentProcessHandle = NativeMethods.GetCurrentProcess();
             foreach (SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX handleEntry in handleEntries)
             {
