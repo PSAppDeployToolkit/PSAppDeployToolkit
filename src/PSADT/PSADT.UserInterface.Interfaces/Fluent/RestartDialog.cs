@@ -93,7 +93,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 await DeviceUtilities.RestartComputer(shutdownReasonText);
             }
-            else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
+            else if (_countdownWarningDuration is not null && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
                 IsMinimizeButtonVisible = Visibility.Collapsed;
                 ButtonRight.IsEnabled = false;

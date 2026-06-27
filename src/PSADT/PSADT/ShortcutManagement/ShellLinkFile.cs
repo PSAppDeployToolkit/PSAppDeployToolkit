@@ -852,7 +852,7 @@ namespace PSADT.ShortcutManagement
             PROPVARIANT propVariant = default;
             try
             {
-                if (value.HasValue)
+                if (value is not null)
                 {
                     propVariant.Anonymous.Anonymous.vt = VARENUM.VT_BOOL;
                     propVariant.Anonymous.Anonymous.Anonymous.boolVal = value.Value ? (VARIANT_BOOL)(-1) : (VARIANT_BOOL)0;
@@ -919,7 +919,7 @@ namespace PSADT.ShortcutManagement
             PROPVARIANT propVariant = default;
             try
             {
-                if (value.HasValue)
+                if (value is not null)
                 {
                     unsafe
                     {
@@ -981,7 +981,7 @@ namespace PSADT.ShortcutManagement
             PROPVARIANT propVariant = default;
             try
             {
-                if (value.HasValue)
+                if (value is not null)
                 {
                     propVariant.Anonymous.Anonymous.vt = VARENUM.VT_UI4;
                     propVariant.Anonymous.Anonymous.Anonymous.ulVal = value.Value;

@@ -135,7 +135,7 @@ namespace PSADT.ProcessManagement
             FilePath = filePath.TrimStart('"').TrimEnd('"');
 
             // Set up all token-related variables. Allow useLinkedAdminToken to clobber useHighestAvailableToken.
-            if (elevatedTokenType.HasValue)
+            if (elevatedTokenType is not null)
             {
                 ElevatedTokenType = elevatedTokenType.Value;
             }

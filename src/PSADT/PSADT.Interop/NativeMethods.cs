@@ -496,7 +496,7 @@ namespace PSADT.Interop
                                 SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                                 hToken.DangerousAddRef(ref hTokenAddRef);
                                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                                BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                                BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes is not null ? &lpProcessAttributesLocal : null, lpThreadAttributes is not null ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                                 if (!res)
                                 {
                                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -1768,7 +1768,7 @@ namespace PSADT.Interop
                                 SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
                                 SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                                BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.HasValue ? &lpProcessAttributesLocal : null, lpThreadAttributes.HasValue ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                                BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes is not null ? &lpProcessAttributesLocal : null, lpThreadAttributes is not null ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                                 if (!res)
                                 {
                                     throw ExceptionUtilities.GetExceptionForLastWin32Error();

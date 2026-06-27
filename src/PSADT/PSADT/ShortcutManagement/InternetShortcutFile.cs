@@ -502,7 +502,7 @@ namespace PSADT.ShortcutManagement
                 PROPVARIANT[] propertyValues = [default];
                 try
                 {
-                    if (value.HasValue)
+                    if (value is not null)
                     {
                         propertyValues[0].Anonymous.Anonymous.vt = VARENUM.VT_BOOL;
                         propertyValues[0].Anonymous.Anonymous.Anonymous.boolVal = value.Value ? (VARIANT_BOOL)(-1) : (VARIANT_BOOL)0;

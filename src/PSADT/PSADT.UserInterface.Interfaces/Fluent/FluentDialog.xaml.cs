@@ -119,7 +119,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             _countdownDuration = countdownDuration;
             _countdownWarningDuration = countdownWarningDuration;
             _countdownStopwatch = countdownStopwatch ?? new();
-            CountdownStackPanel.Visibility = _countdownDuration.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            CountdownStackPanel.Visibility = _countdownDuration is not null ? Visibility.Visible : Visibility.Collapsed;
 
             // Pre-format the custom message if we have one
             if (_customMessageText is not null && !string.IsNullOrWhiteSpace(_customMessageText))
@@ -1002,7 +1002,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;
 
             }
-            else if (_countdownWarningDuration.HasValue && _countdownRemainingTime <= _countdownWarningDuration.Value)
+            else if (_countdownWarningDuration is not null && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
                 CountdownValueTextBlock.SetResourceReference(ForegroundProperty, "SystemFillColorCautionBrush");
                 CountdownValueTextBlock.FontWeight = FontWeights.ExtraBold;

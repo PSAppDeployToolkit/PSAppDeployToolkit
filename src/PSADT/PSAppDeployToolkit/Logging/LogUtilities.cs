@@ -105,7 +105,7 @@ namespace PSAppDeployToolkit.Logging
             }
 
             // Set up default values if not specified.
-            if (!logStyle.HasValue)
+            if (logStyle is null)
             {
                 logStyle = Enum.TryParse(configToolkit?["LogStyle"] as string, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
             }

@@ -318,7 +318,7 @@ namespace PSADT.Utilities
                 {
                     continue;
                 }
-                if (languageId.HasValue && l != languageId.Value)
+                if (languageId is not null && l != languageId.Value)
                 {
                     continue;
                 }

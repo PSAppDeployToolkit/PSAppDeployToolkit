@@ -143,18 +143,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Set up UI
             FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
-            DeferRemainingStackPanel.Visibility = _deferralsRemaining.HasValue && !options.UnlimitedDeferrals ? Visibility.Visible : Visibility.Collapsed;
+            DeferRemainingStackPanel.Visibility = _deferralsRemaining is not null && !options.UnlimitedDeferrals ? Visibility.Visible : Visibility.Collapsed;
             DeferRemainingHeadingTextBlock.Text = options.Strings.Fluent.DeferralsRemaining;
-            DeferDeadlineStackPanel.Visibility = _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            DeferDeadlineStackPanel.Visibility = _deferralDeadline is not null ? Visibility.Visible : Visibility.Collapsed;
             DeferDeadlineHeadingTextBlock.Text = options.Strings.Fluent.DeferralDeadline;
             CountdownHeadingTextBlock.Text = options.Strings.Fluent.AutomaticStartCountdown;
-            CountdownDeferPanelSeparator.Visibility = (_deferralsRemaining.HasValue || _deferralDeadline.HasValue) ? Visibility.Visible : Visibility.Collapsed;
+            CountdownDeferPanelSeparator.Visibility = (_deferralsRemaining is not null || _deferralDeadline is not null) ? Visibility.Visible : Visibility.Collapsed;
             ButtonPanel.Visibility = Visibility.Visible;
 
             // Configure buttons
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
             AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
-            ButtonRight.Visibility = _deferralsRemaining.HasValue || _deferralDeadline.HasValue ? Visibility.Visible : Visibility.Collapsed;
+            ButtonRight.Visibility = _deferralsRemaining is not null || _deferralDeadline is not null ? Visibility.Visible : Visibility.Collapsed;
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
@@ -177,7 +177,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <returns><see langword="true"/> if there are remaining deferrals or a deferral deadline is set; otherwise, <see langword="false"/>.</returns>
         private bool DeferralsAvailable()
         {
-            return _deferralsRemaining.HasValue || _deferralDeadline.HasValue;
+            return _deferralsRemaining is not null || _deferralDeadline is not null;
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
 
             // Handle deferral values
-            if (_deferralsRemaining.HasValue)
+            if (_deferralsRemaining is not null)
             {
                 // Only enable the button if there are deferrals remaining
                 ButtonRight.IsEnabled = _deferralsRemaining > 0;
@@ -216,7 +216,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     DeferRemainingValueTextBlock.FontWeight = FontWeights.ExtraBold;
                 }
             }
-            if (_deferralDeadline.HasValue)
+            if (_deferralDeadline is not null)
             {
                 // Set button state based on deadline
                 TimeSpan timeRemaining = _deferralDeadline.Value - DateTime.Now;

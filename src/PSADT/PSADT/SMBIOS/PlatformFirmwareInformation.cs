@@ -303,7 +303,7 @@ namespace PSADT.SMBIOS
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
         public Version? GetSystemBiosVersion()
         {
-            return SystemBiosMajorRelease.HasValue && SystemBiosMinorRelease.HasValue ? new(SystemBiosMajorRelease.Value, SystemBiosMinorRelease.Value) : null;
+            return SystemBiosMajorRelease is not null && SystemBiosMinorRelease is not null ? new(SystemBiosMajorRelease.Value, SystemBiosMinorRelease.Value) : null;
         }
 
         /// <summary>
@@ -312,7 +312,7 @@ namespace PSADT.SMBIOS
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "A property would insinuate that it's part of the SMBIOS specification.")]
         public Version? GetEmbeddedControllerVersion()
         {
-            return EmbeddedControllerMajorRelease.HasValue && EmbeddedControllerMinorRelease.HasValue ? new(EmbeddedControllerMajorRelease.Value, EmbeddedControllerMinorRelease.Value) : null;
+            return EmbeddedControllerMajorRelease is not null && EmbeddedControllerMinorRelease is not null ? new(EmbeddedControllerMajorRelease.Value, EmbeddedControllerMinorRelease.Value) : null;
         }
 
         /// <summary>

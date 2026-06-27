@@ -77,10 +77,10 @@ namespace PSADT.Tests.SMBIOS
             Assert.Equal((byte)24, info.Length);
             Assert.Equal("Acme Corp.", info.Vendor);
             Assert.Equal("FW 1.2", info.Version);
-            Assert.True(info.StartingAddressSegment.HasValue);
+            Assert.True(info.StartingAddressSegment is not null);
             Assert.Equal<ushort>(0xFFF0, info.StartingAddressSegment.Value);
             Assert.Equal<DateTime>(new(2020, 1, 31), info.ReleaseDate);
-            Assert.True(info.RomSizeBytes.HasValue);
+            Assert.True(info.RomSizeBytes is not null);
             Assert.Equal<uint>((0x20 + 1) * 64 * 1024, info.RomSizeBytes.Value);
             Assert.Equal(characteristics, (ulong)info.Characteristics);
             Assert.True(info.IsUpgradeable());
@@ -96,12 +96,10 @@ namespace PSADT.Tests.SMBIOS
             double? age = info.GetBiosAgeInDays();
             _ = Assert.NotNull(age);
             Assert.True(age.Value > 1800); // Expected to be well over 1800 days when running these tests in 2025
-            bool? releasedAfter2019 = info.IsReleasedAfter(new DateTime(2019, 12, 31));
-            bool? releasedAfter2021 = info.IsReleasedAfter(new DateTime(2021, 1, 1));
-            Assert.True(releasedAfter2019.HasValue);
-            Assert.True(releasedAfter2019.Value);
-            Assert.True(releasedAfter2021.HasValue);
-            Assert.False(releasedAfter2021.Value);
+            bool releasedAfter2019 = info.IsReleasedAfter(new DateTime(2019, 12, 31));
+            bool releasedAfter2021 = info.IsReleasedAfter(new DateTime(2021, 1, 1));
+            Assert.True(releasedAfter2019);
+            Assert.False(releasedAfter2021);
             Assert.Equal("Acme Corp. FW 1.2 (2020-01-31)", info.ToString());
         }
 
@@ -146,7 +144,7 @@ namespace PSADT.Tests.SMBIOS
             Assert.Null(info.Vendor);
             Assert.Equal("VersionOnly", info.Version);
             Assert.Null(info.StartingAddressSegment);
-            Assert.True(info.RomSizeBytes.HasValue);
+            Assert.True(info.RomSizeBytes is not null);
             Assert.Equal<uint>(64 * 1024, info.RomSizeBytes.Value); // (0 + 1) * 64 KB
             Assert.Null(info.GetSystemBiosVersion());
             Assert.Null(info.GetEmbeddedControllerVersion());

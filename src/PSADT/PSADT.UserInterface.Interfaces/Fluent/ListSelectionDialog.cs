@@ -32,7 +32,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
 
             // Disable all except the cancel button until an item is selected.
-            if (!options.SelectedIndex.HasValue)
+            if (options.SelectedIndex is null)
             {
                 ListSelectionComboBox.SelectionChanged += (sender, e) =>
                 {

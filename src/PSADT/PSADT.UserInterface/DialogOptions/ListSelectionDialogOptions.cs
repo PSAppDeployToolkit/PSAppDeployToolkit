@@ -98,7 +98,7 @@ namespace PSADT.UserInterface.DialogOptions
             ArgumentNullException.ThrowIfNull(strings);
             ArgumentNullException.ThrowIfNull(listItems);
             ArgumentOutOfRangeException.ThrowIfZero(listItems.Count, nameof(listItems));
-            if (selectedIndex.HasValue && (selectedIndex.Value < 0 || selectedIndex.Value >= listItems.Count))
+            if (selectedIndex is not null && (selectedIndex.Value < 0 || selectedIndex.Value >= listItems.Count))
             {
                 throw new ArgumentOutOfRangeException(nameof(selectedIndex), selectedIndex, "SelectedIndex must be a valid index within ListItems.");
             }
