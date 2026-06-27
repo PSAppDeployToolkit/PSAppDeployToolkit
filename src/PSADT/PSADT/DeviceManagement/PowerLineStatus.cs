@@ -8,6 +8,7 @@
     /// offline.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The type is correct for the data.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "The type is correct for the data.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0104:Do not create a type with a name from the BCL", Justification = "This is a clone of the BCL's enum.")]
     public enum PowerLineStatus : byte
     {
         /// <summary>

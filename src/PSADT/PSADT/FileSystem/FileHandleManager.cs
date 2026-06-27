@@ -370,7 +370,7 @@ namespace PSADT.FileSystem
                     string objectNameKey = $@"\{string.Join('\\', objectName.Split(['\\'], StringSplitOptions.RemoveEmptyEntries).Take(2))}";
                     if (ntPathLookupTable.TryGetValue(objectNameKey, out string? driveLetter) && objectName.Replace(objectNameKey, driveLetter, StringComparison.OrdinalIgnoreCase) is string dosPath && (path is null || dosPath.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
                     {
-                        openHandles.Add(new(sysHandle, dosPath, objectName, objectType));
+                        openHandles.Add(new(in sysHandle, dosPath, objectName, objectType));
                     }
                 });
                 return new ReadOnlyCollection<FileHandleInfo>([.. openHandles]);

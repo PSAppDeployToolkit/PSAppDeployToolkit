@@ -156,6 +156,7 @@ namespace PSADT.Utilities
         /// <param name="section">The section name</param>
         /// <param name="content">INI content to write</param>
         /// <exception cref="ArgumentException">Thrown if the content contains invalid keys or values.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0107:Do not use object.ToString", Justification = "Don't have a choice here.")]
         public static void WriteSection(string filepath, string section, IDictionary? content)
         {
             if (content is null)

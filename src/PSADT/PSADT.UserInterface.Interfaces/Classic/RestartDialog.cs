@@ -143,6 +143,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">An object that contains the event data.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
         private protected override async void ButtonLeft_Click(object? sender, EventArgs e)
         {
             // Restart the computer immediately.

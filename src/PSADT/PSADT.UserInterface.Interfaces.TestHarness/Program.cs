@@ -402,7 +402,7 @@ namespace PSADT.UserInterface.TestHarness
         /// <returns><see langword="true" /> when a matching ancestor is found; otherwise, <see langword="false" />.</returns>
         private static bool TryFindAncestor(Ast ast, Func<InvokeMemberExpressionAst, bool> predicate, [NotNullWhen(true)] out InvokeMemberExpressionAst? invokeMemberExpressionAst)
         {
-            for (Ast current = ast; current != null; current = current.Parent)
+            for (Ast current = ast; current is not null; current = current.Parent)
             {
                 if (current is InvokeMemberExpressionAst currentInvokeMemberExpressionAst && predicate(currentInvokeMemberExpressionAst))
                 {

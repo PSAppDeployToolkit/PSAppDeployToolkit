@@ -26,6 +26,7 @@ namespace PSADT.SMBIOS
     /// <summary>
     /// Immutable representation of SMBIOS System Information (Type 1) structure.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0104:Do not create a type with a name from the BCL", Justification = "This is named as per the SMBIOS specification.")]
     public sealed record class SystemInformation : ISmbiosStructure
     {
         /// <summary>

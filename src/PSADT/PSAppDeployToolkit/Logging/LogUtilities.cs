@@ -105,10 +105,6 @@ namespace PSAppDeployToolkit.Logging
             }
 
             // Set up default values if not specified.
-            if (logStyle is null)
-            {
-                logStyle = Enum.TryParse(configToolkit?["LogStyle"] as string, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
-            }
             if (source is null || string.IsNullOrWhiteSpace(source))
             {
                 source = callerSource;
@@ -117,6 +113,7 @@ namespace PSAppDeployToolkit.Logging
             {
                 _ = Directory.CreateDirectory(logFileDirectory);
             }
+            logStyle ??= Enum.TryParse(configToolkit?["LogStyle"] as string, out LogStyle styleEnum) ? styleEnum : LogStyle.CMTrace;
             severity ??= LogSeverity.Info;
 
             // Build out the log entries and confirm whether there's anything to log.

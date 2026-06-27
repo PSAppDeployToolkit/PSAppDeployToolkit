@@ -64,6 +64,7 @@ namespace PSADT.ClientServer
         /// <returns>An instance of type T deserialized from the specified bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="bytes"/> is null or empty.</exception>
         /// <exception cref="SerializationException">Thrown if deserialization fails or results in a null object.</exception>
+        [SuppressMessage("Design", "MA0109:Consider adding an overload with a Span<T> or Memory<T>", Justification = "The underlying MemoryStream only supports byte arrays.")]
         public static T DeserializeFromBytes<T>(byte[] bytes)
         {
             return DeserializeFromBytes<T>(bytes, 0);
@@ -75,6 +76,7 @@ namespace PSADT.ClientServer
         /// <param name="bytes">The byte array containing the serialized data to deserialize. Cannot be null.</param>
         /// <param name="type">The type of the object to deserialize from the byte array. Cannot be null.</param>
         /// <returns>An object instance of the specified type reconstructed from the provided byte array.</returns>
+        [SuppressMessage("Design", "MA0109:Consider adding an overload with a Span<T> or Memory<T>", Justification = "The underlying MemoryStream only supports byte arrays.")]
         public static object DeserializeFromBytes(byte[] bytes, Type type)
         {
             return DeserializeFromBytes(bytes, 0, type);

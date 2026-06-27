@@ -763,6 +763,7 @@ namespace PSADT.ClientServer
         /// <param name="sender">The source of the event, typically the current application domain.</param>
         /// <param name="e">An object that contains the event data.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is necessary here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is necessary here.")]
         private async void ProcessExit_Handler(object? sender, EventArgs e)
         {
             if (!_disposed)

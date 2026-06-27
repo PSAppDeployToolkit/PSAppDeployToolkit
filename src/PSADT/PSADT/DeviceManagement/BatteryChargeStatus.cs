@@ -13,6 +13,7 @@ namespace PSADT.DeviceManagement
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4022:Enumerations should have \"Int32\" storage", Justification = "The type is correct for the data.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1135:Declare enum member with zero value (when enum has FlagsAttribute)", Justification = "There is no zero value in the Win32 API for this.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0062:Non-flags enums should not be marked with \"FlagsAttribute\"", Justification = "Again, this is how it's represented in the Win32 API.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0104:Do not create a type with a name from the BCL", Justification = "This is a clone of the BCL's enum.")]
     [Flags]
     public enum BatteryChargeStatus : byte
     {

@@ -96,6 +96,8 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <remarks>This property is not serialized as it represents a runtime-only handle
         /// that cannot cross process boundaries.</remarks>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0137:Use 'Async' suffix when a method returns an awaitable type", Justification = "This is OK here.")]
+        [IgnoreDataMember]
         public ProcessHandle? ClientProcess => _clientProcess;
 
         /// <summary>

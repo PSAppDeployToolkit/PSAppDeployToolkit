@@ -57,6 +57,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, typically the control that raised the event.</param>
         /// <param name="e">The event data associated with the click event.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
         private protected override async void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Immediately restart the computer.
@@ -86,6 +87,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// handling.</remarks>
         /// <param name="state">An optional state object that can be used to pass additional information to the timer event handler.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
         private protected override async void CountdownTimer_Tick(object? state)
         {
             // Call the base timer and test local expiration.
