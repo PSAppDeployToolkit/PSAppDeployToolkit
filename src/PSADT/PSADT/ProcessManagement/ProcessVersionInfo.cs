@@ -33,7 +33,7 @@ namespace PSADT.ProcessManagement
     /// such as the file description, internal name, and whether the file is a debug or special build. This class is
     /// particularly useful for applications that need to inspect or display version information of running
     /// processes.</remarks>
-    public sealed record ProcessVersionInfo
+    public sealed record class ProcessVersionInfo
     {
         /// <summary>
         /// Retrieves version information for the specified process.

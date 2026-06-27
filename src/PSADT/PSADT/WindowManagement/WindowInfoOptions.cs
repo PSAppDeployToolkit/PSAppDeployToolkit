@@ -13,7 +13,7 @@ namespace PSADT.WindowManagement
     /// processes. Any of the filters can be null, indicating that the corresponding criterion should not be
     /// applied.</remarks>
     [DataContract]
-    public sealed record WindowInfoOptions
+    public sealed record class WindowInfoOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfoOptions"/> class with optional filters for window

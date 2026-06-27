@@ -9,7 +9,7 @@ namespace PSADT.WindowsInstaller
     /// <summary>
     /// Represents MSI (Microsoft Installer) summary information.
     /// </summary>
-    public sealed record MsiSummaryInfo
+    public sealed record class MsiSummaryInfo
     {
         /// <summary>
         /// Retrieves summary information from a Windows Installer database, optionally applying one or more transform

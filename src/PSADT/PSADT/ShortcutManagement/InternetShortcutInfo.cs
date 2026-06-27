@@ -26,7 +26,7 @@ namespace PSADT.ShortcutManagement
     /// <summary>
     /// Represents an immutable snapshot of an <see cref="InternetShortcutFile"/>.
     /// </summary>
-    public sealed record InternetShortcutInfo : IShortcutLinkInfo
+    public sealed record class InternetShortcutInfo : IShortcutLinkInfo
     {
         /// <summary>
         /// Retrieves information about an Internet shortcut file at the specified path.

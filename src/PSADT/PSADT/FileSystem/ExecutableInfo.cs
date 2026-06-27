@@ -12,7 +12,7 @@ namespace PSADT.FileSystem
     /// <summary>
     /// Provides information about a PE file.
     /// </summary>
-    public sealed record ExecutableInfo
+    public sealed record class ExecutableInfo
     {
         /// <summary>
         /// Retrieves information about a Portable Executable (PE) file at the specified path, including its

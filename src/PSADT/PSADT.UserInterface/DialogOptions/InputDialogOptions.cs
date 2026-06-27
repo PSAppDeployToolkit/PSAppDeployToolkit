@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for the InputDialog.
     /// </summary>
     [DataContract]
-    public sealed record InputDialogOptions : CustomDialogOptions
+    public sealed record class InputDialogOptions : CustomDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the InputDialogOptions class using the specified configuration options.

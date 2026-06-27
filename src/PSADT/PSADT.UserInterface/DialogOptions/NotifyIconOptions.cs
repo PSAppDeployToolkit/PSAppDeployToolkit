@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// cref="NotifyIconOptions(IDictionary)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
     [DataContract]
-    public sealed record NotifyIconOptions : IDialogOptions
+    public sealed record class NotifyIconOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the NotifyIconOptions class using the specified configuration options.

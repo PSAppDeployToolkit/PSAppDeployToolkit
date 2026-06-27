@@ -10,7 +10,7 @@ namespace PSADT.DeviceManagement
     /// <remarks>Use this type to determine whether a computer is joined to a domain, a workgroup, or is
     /// unjoined, and to retrieve the corresponding domain or workgroup name when available. This record is
     /// immutable.</remarks>
-    public sealed record DomainStatus
+    public sealed record class DomainStatus
     {
         /// <summary>
         /// Initializes a new instance of the DomainStatus class with the specified join status and domain or workgroup

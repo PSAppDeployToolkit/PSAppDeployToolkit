@@ -28,7 +28,7 @@ namespace PSADT.SMBIOS
     /// including major and minor version numbers, DMI revision, and entry point type.
     /// This information is useful for determining which SMBIOS structures are supported.
     /// </remarks>
-    internal sealed record SmbiosVersionInfo
+    internal sealed record class SmbiosVersionInfo
     {
         /// <summary>
         /// Gets the SMBIOS major version number.

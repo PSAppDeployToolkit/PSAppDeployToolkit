@@ -18,7 +18,7 @@ namespace PSADT.ProcessManagement
     /// </summary>
     /// <remarks>This record provides a structured way to manage and interact with a process, offering access
     /// to its core components and the ability to handle its asynchronous operations.</remarks>
-    public sealed record ProcessHandle
+    public sealed record class ProcessHandle
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessHandle"/> record with the specified process launch information, process, process ID, process handle, command line, caller privileges, and optional standard output/error handles and interleaved buffer.

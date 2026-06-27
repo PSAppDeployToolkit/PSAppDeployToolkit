@@ -8,7 +8,7 @@ namespace PSADT.AccountManagement
     /// <summary>
     /// Represents information about a user profile.
     /// </summary>
-    public sealed record UserProfileInfo
+    public sealed record class UserProfileInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UserProfileInfo"/> struct.

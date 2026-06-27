@@ -21,7 +21,7 @@ namespace PSADT.UserInterface.DialogOptions
     [KnownType(typeof(ListSelectionDialogOptions))]
     [KnownType(typeof(ProgressDialogOptions))]
     [KnownType(typeof(RestartDialogOptions))]
-    public abstract record BaseDialogOptions : IDialogOptions
+    public abstract record class BaseDialogOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the BaseDialogOptions class using the specified configuration options.

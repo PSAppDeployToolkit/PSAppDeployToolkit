@@ -26,7 +26,7 @@ namespace PSADT.SMBIOS
     /// <summary>
     /// Immutable representation of SMBIOS System Information (Type 1) structure.
     /// </summary>
-    public sealed record SystemInformation : ISmbiosStructure
+    public sealed record class SystemInformation : ISmbiosStructure
     {
         /// <summary>
         /// Reads the SMBIOS System Information (Type 1) structure.

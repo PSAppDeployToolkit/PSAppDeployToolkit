@@ -16,7 +16,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Represents a running process.
     /// </summary>
-    public sealed record RunningProcessInfo
+    public sealed record class RunningProcessInfo
     {
         /// <summary>
         /// Retrieves a list of running processes that match the specified process definitions.

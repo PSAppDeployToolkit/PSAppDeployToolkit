@@ -6,7 +6,7 @@ namespace PSAppDeployToolkit.Foundation
     /// Represents the deferral history for an operation, including the number of remaining deferrals, the deadline for
     /// completion, and the most recent run interval time.
     /// </summary>
-    public sealed record DeferHistory
+    public sealed record class DeferHistory
     {
         /// <summary>
         /// Initializes a new instance of the DeferHistory class with the specified defer times remaining, deadline, and

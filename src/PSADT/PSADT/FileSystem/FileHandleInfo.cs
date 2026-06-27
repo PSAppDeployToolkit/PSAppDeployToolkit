@@ -7,7 +7,7 @@ namespace PSADT.FileSystem
     /// <summary>
     /// Represents information about a file handle.
     /// </summary>
-    public sealed record FileHandleInfo
+    public sealed record class FileHandleInfo
     {
         /// <summary>
         /// Initializes a new instance of the FileHandleInfo class using the specified handle information and file

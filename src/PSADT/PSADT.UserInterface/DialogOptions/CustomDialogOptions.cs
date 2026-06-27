@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.DialogOptions
     [DataContract]
     [KnownType(typeof(InputDialogOptions))]
     [KnownType(typeof(ListSelectionDialogOptions))]
-    public record CustomDialogOptions : BaseDialogOptions
+    public record class CustomDialogOptions : BaseDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the CustomDialogOptions class using the specified configuration options.

@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the ShellExecuteProcess command.
     /// </summary>
     [DataContract]
-    internal sealed record ShellExecuteProcessPayload : IClientServerPayload
+    internal sealed record class ShellExecuteProcessPayload : IClientServerPayload
     {
         /// <summary>
         /// The shell execute process options.

@@ -9,7 +9,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for all dialogs.
     /// </summary>
     [DataContract]
-    public sealed record HelpConsoleOptions : IDialogOptions
+    public sealed record class HelpConsoleOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the HelpConsoleOptions class using the specified options dictionary.

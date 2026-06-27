@@ -13,7 +13,7 @@ namespace PSADT.AccountManagement
     /// <remarks>This class encapsulates the account's username and security identifier, providing a way to
     /// associate these identity details with group policy operations. The <see cref="Username"/> and <see cref="SID"/>
     /// fields are immutable and must be provided during object construction.</remarks>
-    public sealed record GroupPolicyAccountInfo
+    public sealed record class GroupPolicyAccountInfo
     {
         /// <summary>
         /// Retrieves a list of account information associated with Group Policy.

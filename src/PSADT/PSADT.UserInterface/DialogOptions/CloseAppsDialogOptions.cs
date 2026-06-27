@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for the CloseAppsDialog.
     /// </summary>
     [DataContract]
-    public sealed record CloseAppsDialogOptions : BaseDialogOptions
+    public sealed record class CloseAppsDialogOptions : BaseDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the CloseAppsDialogOptions class using the specified deployment type and
@@ -166,7 +166,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
         [DataContract]
-        public sealed record CloseAppsDialogStrings
+        public sealed record class CloseAppsDialogStrings
         {
             /// <summary>
             /// Initializes a new instance of the CloseAppsDialogStrings class using localized string resources for
@@ -214,7 +214,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// The strings used for the classic CloseAppsDialog.
             /// </summary>
             [DataContract]
-            public sealed record CloseAppsDialogClassicStrings
+            public sealed record class CloseAppsDialogClassicStrings
             {
                 /// <summary>
                 /// Initializes a new instance of the CloseAppsDialogClassicStrings class using localized string values
@@ -367,7 +367,7 @@ namespace PSADT.UserInterface.DialogOptions
             /// Strings used for the Fluent CloseAppsDialog.
             /// </summary>
             [DataContract]
-            public sealed record CloseAppsDialogFluentStrings
+            public sealed record class CloseAppsDialogFluentStrings
             {
                 /// <summary>
                 /// Initializes a new instance of the CloseAppsDialogFluentStrings class with localized string values

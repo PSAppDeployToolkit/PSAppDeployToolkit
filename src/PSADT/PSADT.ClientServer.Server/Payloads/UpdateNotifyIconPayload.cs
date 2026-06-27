@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the UpdateNotifyIconPayload command.
     /// </summary>
     [DataContract]
-    internal sealed record UpdateNotifyIconPayload : IClientServerPayload
+    internal sealed record class UpdateNotifyIconPayload : IClientServerPayload
     {
         /// <summary>
         /// The text content of the message.

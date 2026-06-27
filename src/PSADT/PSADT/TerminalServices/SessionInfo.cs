@@ -24,7 +24,7 @@ namespace PSADT.TerminalServices
     /// <summary>
     /// A class to hold all information for a given WTS session.
     /// </summary>
-    public sealed record SessionInfo
+    public sealed record class SessionInfo
     {
         /// <summary>
         /// Retrieves a read-only collection containing information about all active sessions on the current server.

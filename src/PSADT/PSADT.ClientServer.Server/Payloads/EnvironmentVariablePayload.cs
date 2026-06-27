@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for environment variable operations.
     /// </summary>
     [DataContract]
-    internal sealed record EnvironmentVariablePayload : IClientServerPayload
+    internal sealed record class EnvironmentVariablePayload : IClientServerPayload
     {
         /// <summary>
         /// The name of the environment variable.

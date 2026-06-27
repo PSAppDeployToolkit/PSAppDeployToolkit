@@ -27,7 +27,7 @@ namespace PSADT.SMBIOS
     /// <summary>
     /// Immutable representation of SMBIOS System Enclosure (Type 3) structure.
     /// </summary>
-    public sealed record SystemEnclosure : ISmbiosStructure
+    public sealed record class SystemEnclosure : ISmbiosStructure
     {
         /// <summary>
         /// Reads the SMBIOS System Enclosure (Type 3) structure.

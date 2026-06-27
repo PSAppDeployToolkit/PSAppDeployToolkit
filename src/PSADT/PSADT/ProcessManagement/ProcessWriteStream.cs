@@ -6,7 +6,7 @@ namespace PSADT.ProcessManagement
     /// Represents a write handle for standard input or output associated with a process, enabling asynchronous write
     /// operations.
     /// </summary>
-    internal sealed record ProcessWriteStream : ProcessStream
+    internal sealed record class ProcessWriteStream : ProcessStream
     {
         /// <summary>
         /// Initializes a new instance of the ProcessWriteStream class with the specified task.

@@ -10,7 +10,7 @@ namespace PSADT.WindowManagement
     /// sequence to be sent. Use this class to configure and manage the parameters required for sending keys to a
     /// window.</remarks>
     [DataContract]
-    public sealed record SendKeysOptions
+    public sealed record class SendKeysOptions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendKeysOptions"/> class with the specified window handle and

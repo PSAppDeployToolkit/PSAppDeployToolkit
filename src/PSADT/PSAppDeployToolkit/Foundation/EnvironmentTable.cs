@@ -34,7 +34,7 @@ namespace PSAppDeployToolkit.Foundation
     /// useful for deployment automation, diagnostics, and scripts that need to adapt their behavior based on the
     /// current environment. All properties are read-only and reflect the state of the environment at the time the
     /// instance is created.</remarks>
-    public sealed record EnvironmentTable
+    public sealed record class EnvironmentTable
     {
         /// <summary>
         /// Initializes a new instance of the EnvironmentTable class, providing access to various environment-related

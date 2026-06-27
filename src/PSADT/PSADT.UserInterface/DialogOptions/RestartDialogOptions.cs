@@ -10,7 +10,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// Options for the RestartDialog.
     /// </summary>
     [DataContract]
-    public sealed record RestartDialogOptions : BaseDialogOptions
+    public sealed record class RestartDialogOptions : BaseDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the RestartDialogOptions class using the specified deployment type and a
@@ -129,7 +129,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// </summary>
         [DataContract]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "The nesting in this case is alright.")]
-        public sealed record RestartDialogStrings
+        public sealed record class RestartDialogStrings
         {
             /// <summary>
             /// Initializes a new instance of the RestartDialogStrings class using the specified string resources and

@@ -7,7 +7,7 @@ namespace PSADT.ClientServer.Payloads
     /// Payload for the PromptToCloseApps command.
     /// </summary>
     [DataContract]
-    internal sealed record PromptToCloseAppsPayload : IClientServerPayload
+    internal sealed record class PromptToCloseAppsPayload : IClientServerPayload
     {
         /// <summary>
         /// The timeout duration for the prompt.

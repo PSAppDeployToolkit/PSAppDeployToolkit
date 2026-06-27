@@ -6,7 +6,7 @@ namespace PSADT.ProcessManagement
     /// <summary>
     /// Represents a process that needs to be closed.
     /// </summary>
-    public sealed record ProcessToClose
+    public sealed record class ProcessToClose
     {
         /// <summary>
         /// Initializes a new instance of the ProcessToClose class using the specified running process information.

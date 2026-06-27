@@ -10,7 +10,7 @@ namespace PSAppDeployToolkit.Logging
     /// <summary>
     /// Represents all data used as the basis for logging a PSAppDeployToolkit PowerShell log entry via `[ADTSession]::WriteLogEntry()`.
     /// </summary>
-    public sealed record LogEntry
+    public sealed record class LogEntry
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LogEntry"/> struct.

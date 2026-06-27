@@ -10,7 +10,7 @@ namespace PSADT.AppManagement
     /// <summary>
     /// Represents an installed application and its related information.
     /// </summary>
-    public sealed record InstalledApplication
+    public sealed record class InstalledApplication
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InstalledApplication"/> struct.

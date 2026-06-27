@@ -27,7 +27,7 @@ namespace PSADT.SMBIOS
     /// <summary>
     /// Immutable representation of SMBIOS BIOS Information (Type 0) structure.
     /// </summary>
-    public sealed record PlatformFirmwareInformation : ISmbiosStructure
+    public sealed record class PlatformFirmwareInformation : ISmbiosStructure
     {
         /// <summary>
         /// Reads the SMBIOS BIOS Information (Type 0) structure.

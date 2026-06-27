@@ -9,7 +9,7 @@ namespace PSADT.DeviceManagement
     /// <summary>
     /// Utility singleton class for getting OS version info.
     /// </summary>
-    public sealed record OperatingSystemInfo
+    public sealed record class OperatingSystemInfo
     {
         /// <summary>
         /// This operating system's version information.

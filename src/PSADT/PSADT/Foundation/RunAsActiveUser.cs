@@ -16,7 +16,7 @@ namespace PSADT.Foundation
     /// account, security identifier (SID), username, and domain name. This class is useful for scenarios where
     /// operations need to be performed under the context of a specific user.</remarks>
     [DataContract]
-    public sealed record RunAsActiveUser
+    public sealed record class RunAsActiveUser
     {
         /// <summary>
         /// Gets the active user session associated with the caller, or the most recent active user session if the

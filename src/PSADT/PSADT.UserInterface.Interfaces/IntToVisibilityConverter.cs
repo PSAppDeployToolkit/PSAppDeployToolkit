@@ -11,7 +11,7 @@ namespace PSADT.UserInterface.Interfaces
     /// Can be reversed with the parameter 'True' to collapse when value > 0.
     /// Special cases can be handled with string parameters like 'ListView' for ListView scrollbar behavior.
     /// </summary>
-    public sealed record IntToVisibilityConverter : IValueConverter
+    public sealed record class IntToVisibilityConverter : IValueConverter
     {
         /// <summary>
         /// Converts an integer value representing a count to a corresponding visibility state for UI elements.

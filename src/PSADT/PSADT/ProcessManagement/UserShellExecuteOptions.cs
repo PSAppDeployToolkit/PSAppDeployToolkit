@@ -11,7 +11,7 @@ namespace PSADT.ProcessManagement
     /// Provides options for launching a managed process.
     /// </summary>
     [DataContract]
-    public sealed record UserShellExecuteOptions
+    public sealed record class UserShellExecuteOptions
     {
         /// <summary>
         /// Initializes a new instance of the ProcessLaunchInfo class with the specified process launch parameters.

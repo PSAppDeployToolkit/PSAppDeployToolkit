@@ -7,7 +7,7 @@ namespace PSADT.ProcessManagement
     /// Represents an abstract base class for managing a standard input, output, or error handle associated with a
     /// process, providing resource management and disposal functionality.
     /// </summary>
-    internal abstract record ProcessStream : IDisposable
+    internal abstract record class ProcessStream : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the ProcessStream class with the specified task.

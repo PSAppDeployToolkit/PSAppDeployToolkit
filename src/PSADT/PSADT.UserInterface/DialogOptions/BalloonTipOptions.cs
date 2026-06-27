@@ -13,7 +13,7 @@ namespace PSADT.UserInterface.DialogOptions
     /// cref="BalloonTipOptions(IDictionary)"/> constructor to initialize an instance with validated configuration
     /// values.</remarks>
     [DataContract]
-    public sealed record BalloonTipOptions : IDialogOptions
+    public sealed record class BalloonTipOptions : IDialogOptions
     {
         /// <summary>
         /// Initializes a new instance of the BalloonTipOptions class using the specified configuration options.

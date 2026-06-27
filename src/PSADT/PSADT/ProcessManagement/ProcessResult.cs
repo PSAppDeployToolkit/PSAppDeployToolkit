@@ -11,7 +11,7 @@ namespace PSADT.ProcessManagement
     /// Represents the result of a process execution, including exit code and standard output/error.
     /// </summary>
     [DataContract]
-    public sealed record ProcessResult : IDisposable
+    public sealed record class ProcessResult : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.

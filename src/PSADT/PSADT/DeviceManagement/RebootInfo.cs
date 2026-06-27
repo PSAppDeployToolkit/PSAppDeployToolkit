@@ -7,7 +7,7 @@ namespace PSADT.DeviceManagement
     /// <summary>
     /// Represents information about reboot and pending operations on the system.
     /// </summary>
-    public sealed record RebootInfo
+    public sealed record class RebootInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RebootInfo"/> struct with the specified values.

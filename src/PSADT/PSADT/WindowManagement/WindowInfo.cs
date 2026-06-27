@@ -7,7 +7,7 @@ namespace PSADT.WindowManagement
     /// Represents information about a window in the system.
     /// </summary>
     [DataContract]
-    public sealed record WindowInfo
+    public sealed record class WindowInfo
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WindowInfo"/> struct.

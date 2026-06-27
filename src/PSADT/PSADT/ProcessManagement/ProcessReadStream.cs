@@ -7,7 +7,7 @@ namespace PSADT.ProcessManagement
     /// Represents a handle for reading standard input or output from a process, including the associated asynchronous
     /// task and the buffered output lines.
     /// </summary>
-    internal sealed record ProcessReadStream : ProcessStream
+    internal sealed record class ProcessReadStream : ProcessStream
     {
         /// <summary>
         /// Initializes a new instance of the ProcessReadStream class with the specified buffer and task.

@@ -14,7 +14,7 @@ namespace PSADT.UserInterface.DialogState
     /// provides functionality for tracking running processes and managing countdown operations related to process
     /// closure.</remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
-    internal sealed record CloseAppsDialogState : BaseDialogState, IAsyncDisposable
+    internal sealed record class CloseAppsDialogState : BaseDialogState, IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CloseAppsDialogState"/> class with the specified processes to close.

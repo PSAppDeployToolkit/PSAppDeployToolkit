@@ -11,7 +11,7 @@ namespace PSADT.AppManagement
     /// <summary>
     /// Represents information about a Windows Runtime package.
     /// </summary>
-    public sealed record AppxManifestInfo
+    public sealed record class AppxManifestInfo
     {
         /// <summary>
         /// Retrieves the manifest information from the specified package file by determining the package type and reading the appropriate manifest file within the package archive.
