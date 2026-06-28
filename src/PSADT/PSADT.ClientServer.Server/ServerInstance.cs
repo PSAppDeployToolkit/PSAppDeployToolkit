@@ -53,6 +53,42 @@ namespace PSADT.ClientServer
         /// <exception cref="ServerException">Thrown if the client process fails to respond to the initial command.</exception>
         public async ValueTask OpenAsync()
         {
+            // Internal task method to handle log messages from the client process asynchronously.
+            async Task ReadLogAsync()
+            {
+                // Read the log stream until cancellation is requested or the end of the stream is reached.
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                while (!_logWriterTaskCts.IsCancellationRequested)
+                {
+                    try
+                    {
+                        // Read and decrypt the log message, then process it if a deployment session is active.
+                        // We must read it before if there's a deployment session active to clear the queue.
+                        if (await _logEncryption.ReadEncryptedAsync(_logServer).ConfigureAwait(false) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
+                        {
+                            // Deserialize the log message DTO.
+                            LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
+                            ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // The log writer task was cancelled, exit the loop.
+                        break;
+                    }
+                    catch (EndOfStreamException)
+                    {
+                        // The log writer task reached the end of the stream, exit the loop.
+                        break;
+                    }
+                    catch (Exception ex) when (ex.Message is not null)
+                    {
+                        // Some kind of read issue occurred that was unexpected.
+                        throw new ServerException("An error occurred while reading from the log stream.", ex);
+                    }
+                }
+            }
+
             // Don't re-open if there's already a client process associated with this instance.
             ObjectDisposedException.ThrowIf(_disposed, this);
             if (_clientProcess is not null)
@@ -708,47 +744,6 @@ namespace PSADT.ClientServer
             return response[0] != (byte)ResponseMarker.Success
                 ? throw new ServerException("The client process returned an exception.", DataSerialization.DeserializeFromBytes<Exception>(response, 1))
                 : DataSerialization.DeserializeFromBytes<T>(response, 1);
-        }
-
-        /// <summary>
-        /// Reads and processes log entries from the underlying log stream.
-        /// </summary>
-        /// <remarks>This method reads each line from the log stream until the end of the stream is
-        /// reached. Non-empty and non-whitespace lines are processed as needed.</remarks>
-        /// <exception cref="ServerException">Thrown when an error occurs while reading from the log stream.</exception>
-        private async Task ReadLogAsync()
-        {
-            // Read the log stream until cancellation is requested or the end of the stream is reached.
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            while (!_logWriterTaskCts.IsCancellationRequested)
-            {
-                try
-                {
-                    // Read and decrypt the log message, then process it if a deployment session is active.
-                    // We must read it before if there's a deployment session active to clear the queue.
-                    if (await _logEncryption.ReadEncryptedAsync(_logServer).ConfigureAwait(false) is { Length: > 0 } decrypted && ModuleDatabase.IsDeploymentSessionActive())
-                    {
-                        // Deserialize the log message DTO.
-                        LogMessagePayload logMessage = DataSerialization.DeserializeFromBytes<LogMessagePayload>(decrypted);
-                        ModuleDatabase.GetDeploymentSession().WriteLogEntry(logMessage.Message.Trim(), logMessage.Severity, logMessage.Source);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    // The log writer task was cancelled, exit the loop.
-                    break;
-                }
-                catch (EndOfStreamException)
-                {
-                    // The log writer task reached the end of the stream, exit the loop.
-                    break;
-                }
-                catch (Exception ex) when (ex.Message is not null)
-                {
-                    // Some kind of read issue occurred that was unexpected.
-                    throw new ServerException("An error occurred while reading from the log stream.", ex);
-                }
-            }
         }
 
         /// <summary>
