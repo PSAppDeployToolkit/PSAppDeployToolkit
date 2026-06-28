@@ -204,7 +204,8 @@ namespace PSADT.AccountManagement
             /// <summary>
             /// Represents the active user context for the current session, encapsulated as a nullable <see cref="RunAsActiveUser"/> instance.
             /// </summary>
-            internal static readonly RunAsActiveUser? Session = SessionInfo.GetAsync(CallerSessionId).AsTask().ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
+            internal static readonly RunAsActiveUser? Session = SessionInfo.GetAsync(CallerSessionId).ConfigureAwait(false).GetAwaiter().GetResult()?.ToRunAsActiveUser();
         }
     }
 }

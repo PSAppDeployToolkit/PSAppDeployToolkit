@@ -47,6 +47,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <param name="psVersionTable">A hashtable containing version information for the PowerShell environment. This parameter cannot be null.</param>
         /// <param name="psVersion">The version of PowerShell being used, represented as a Version object.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cmdlet"/> or <paramref name="psVersionTable"/> is null.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "There's no async support during construction.")]
         public EnvironmentTable(PSCmdlet cmdlet, Hashtable psVersionTable, Version psVersion)
         {
@@ -192,12 +193,12 @@ namespace PSAppDeployToolkit.Foundation
             EnvPSVersion = psVersion;
 
             // Logged on user information.
-            if ((LoggedOnUserSessions = SessionInfo.GetAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult()).Count > 0)
+            if ((LoggedOnUserSessions = SessionInfo.GetAsync().ConfigureAwait(false).GetAwaiter().GetResult()).Count > 0)
             {
                 UsersLoggedOn = new ReadOnlyCollection<NTAccount>([.. LoggedOnUserSessions.Select(static s => s.NTAccount)]);
                 CurrentLoggedOnUserSession = LoggedOnUserSessions.FirstOrDefault(static s => s.IsCurrentSession);
                 CurrentConsoleUserSession = LoggedOnUserSessions.FirstOrDefault(static s => s.IsConsoleSession);
-                RunAsActiveUser = RunAsActiveUser.GetAsync(LoggedOnUserSessions).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                RunAsActiveUser = RunAsActiveUser.GetAsync(LoggedOnUserSessions).ConfigureAwait(false).GetAwaiter().GetResult();
                 if (RunAsActiveUser is not null)
                 {
                     RunAsActiveUserLocale = Registry.GetValue($@"HKEY_USERS\{RunAsActiveUser.SID}\Control Panel\International", "LocaleName", defaultValue: null) is string localeName && !string.IsNullOrWhiteSpace(localeName) ? new(localeName) : null;

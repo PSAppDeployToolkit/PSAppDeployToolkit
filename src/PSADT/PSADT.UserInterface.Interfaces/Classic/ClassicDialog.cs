@@ -45,8 +45,9 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the dialog's appearance and behavior. Must not be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, used to determine the outcome when the dialog
         /// is closed.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0056:Do not call overridable members in constructor", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0056:Do not call overridable members in constructor", Justification = "This is OK here.")]
         private protected ClassicDialog(BaseDialogOptions options, IDialogResult dialogResult)
         {
             // Initialise the underlying form as set up by the designer.
@@ -58,7 +59,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // Base properties.
                 SuspendLayout();
                 Text = StripFormattingTags(options.AppTitle);
-                Icon = GetIconAsync(options.AppTaskbarIconImage ?? options.AppIconImage).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+                Icon = GetIconAsync(options.AppTaskbarIconImage ?? options.AppIconImage).ConfigureAwait(false).GetAwaiter().GetResult();
                 TopMost = options.DialogTopMost;
                 ActiveControl = buttonDefault;
                 FormClosing += Form_FormClosing;
