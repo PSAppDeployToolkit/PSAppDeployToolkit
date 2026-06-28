@@ -388,7 +388,7 @@ namespace PSADT.UserInterface.Interfaces
 
                 // Correct the registry data for the AUMID. This can reference stale info from a previous run.
                 string appIconPath = options.AppTaskbarIconImage ?? options.AppIconImage;
-                System.Drawing.Icon iconObj = await Classic.ClassicDialog.GetIconAsync(appIconPath).ConfigureAwait(false);
+                System.Drawing.Icon iconObj = await Classic.ClassicDialog.GetIconAsync(appIconPath).ConfigureAwait(true);
                 string regKey = $@"{(AccountUtilities.CallerIsAdmin ? "HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
                 Registry.SetValue(regKey, "DisplayName", options.AppTitle, RegistryValueKind.String);
                 if (MiscUtilities.GetBase64StringBytes(appIconPath) is not null)
@@ -615,6 +615,16 @@ namespace PSADT.UserInterface.Interfaces
         private static Task InvokeDialogActionAsync(Action callback)
         {
             return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
+        }
+
+        /// <summary>
+        /// Invokes the specified asynchronous action on the WPF UI thread.
+        /// </summary>
+        /// <param name="callback">The asynchronous action to invoke on the WPF UI thread.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        private static Task InvokeDialogActionAsync(Func<Task> callback)
+        {
+            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task.Unwrap();
         }
 
         /// <summary>

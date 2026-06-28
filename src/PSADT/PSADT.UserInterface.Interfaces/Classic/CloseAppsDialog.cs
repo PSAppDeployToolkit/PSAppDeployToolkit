@@ -331,7 +331,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                     object[] runningApps = [.. e.ProcessesToClose.Select(static p => p.Description)];
                     if (logAction is not null)
                     {
-                        await logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...", LogSeverity.Info).ConfigureAwait(false);
+                        await logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...", LogSeverity.Info);
                     }
                     toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
                     listBoxCloseProcesses.Items.AddRange(runningApps);
@@ -349,7 +349,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 {
                     if (logAction is not null)
                     {
-                        await logAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
+                        await logAction("Previously detected running processes are no longer running.", LogSeverity.Info);
                     }
                     toolTipButtonContinue.RemoveAll();
                     labelCountdownMessage.Text = countdownDefer;

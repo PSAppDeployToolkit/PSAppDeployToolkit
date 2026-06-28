@@ -276,7 +276,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 if (_logAction is not null)
                 {
-                    await _logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info).ConfigureAwait(false);
+                    await _logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info);
                 }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
@@ -297,7 +297,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 if (_logAction is not null)
                 {
-                    await _logAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
+                    await _logAction("Previously detected running processes are no longer running.", LogSeverity.Info);
                 }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
