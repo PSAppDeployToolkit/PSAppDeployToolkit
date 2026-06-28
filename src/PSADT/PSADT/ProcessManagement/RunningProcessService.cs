@@ -95,16 +95,17 @@ namespace PSADT.ProcessManagement
             // Cancel the task and wait for it to complete.
             try
             {
-                await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
-                await _pollingTask.ConfigureAwait(false);
+                using (_cancellationTokenSource)
+                {
+                    await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+                    await _pollingTask.ConfigureAwait(false);
+                }
             }
             finally
             {
                 Volatile.Write(ref _processSnapshot, null);
-                _pollingTask.Dispose();
-                _pollingTask = null;
-                _cancellationTokenSource.Dispose();
                 _cancellationTokenSource = null;
+                _pollingTask = null;
             }
         }
 
