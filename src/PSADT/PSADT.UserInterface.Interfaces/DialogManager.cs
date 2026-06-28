@@ -363,11 +363,13 @@ namespace PSADT.UserInterface.Interfaces
             {
                 try
                 {
-                    progressDialog.CloseDialog();
+                    using (progressDialog)
+                    {
+                        progressDialog.CloseDialog();
+                    }
                 }
                 finally
                 {
-                    progressDialog.Dispose();
                     progressDialog = null;
                 }
             });

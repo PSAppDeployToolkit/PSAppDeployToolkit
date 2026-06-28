@@ -379,8 +379,11 @@ namespace PSADT.FileSystem
             {
                 foreach ((SafePinnedGCHandle objectBuffer, SafeVirtualAllocHandle startRoutineBuffer) in threadBuffers.Values)
                 {
-                    startRoutineBuffer.Dispose();
-                    objectBuffer.Dispose();
+                    using (startRoutineBuffer)
+                    using (objectBuffer)
+                    {
+                        continue;
+                    }
                 }
             }
         }
