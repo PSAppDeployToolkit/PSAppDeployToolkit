@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace PSADT.ClientServer
 {
@@ -28,25 +29,30 @@ namespace PSADT.ClientServer
         /// <item><description>Server verifies its challenge and returns encrypted client_challenge</description></item>
         /// </list>
         /// </remarks>
-        internal override void PerformKeyExchange(Stream outputStream, Stream inputStream)
+        internal override ValueTask PerformKeyExchangeAsync(Stream outputStream, Stream inputStream)
         {
+            // Internal implementation.
+            async ValueTask PerformKeyExchangeImplAsync()
+            {
+                // Server sends public key first.
+                byte[] publicKey = GetPublicKey();
+                await WriteLengthPrefixedBytesAsync(outputStream, publicKey).ConfigureAwait(false);
+
+                // Server receives client's public key.
+                byte[] clientPublicKey = await ReadLengthPrefixedBytesAsync(inputStream).ConfigureAwait(false);
+
+                // Derive the shared key.
+                DeriveSharedKey(clientPublicKey);
+
+                // Mutual authentication.
+                await PerformMutualAuthenticationAsync(outputStream, inputStream).ConfigureAwait(false);
+            }
+
             // Verify state and parameters.
             ThrowIfDisposed();
             ArgumentNullException.ThrowIfNull(outputStream);
             ArgumentNullException.ThrowIfNull(inputStream);
-
-            // Server sends public key first.
-            byte[] publicKey = GetPublicKey();
-            WriteLengthPrefixedBytes(outputStream, publicKey);
-
-            // Server receives client's public key.
-            byte[] clientPublicKey = ReadLengthPrefixedBytes(inputStream);
-
-            // Derive the shared key.
-            DeriveSharedKey(clientPublicKey);
-
-            // Mutual authentication.
-            PerformMutualAuthentication(outputStream, inputStream);
+            return PerformKeyExchangeImplAsync();
         }
 
         /// <summary>
@@ -60,7 +66,7 @@ namespace PSADT.ClientServer
         /// <param name="inputStream">The stream from which authentication data is read. Must be readable and remain open for the duration of the
         /// handshake.</param>
         /// <exception cref="CryptographicException">Thrown if the authentication handshake fails due to invalid or mismatched challenge data.</exception>
-        private void PerformMutualAuthentication(Stream outputStream, Stream inputStream)
+        private async ValueTask PerformMutualAuthenticationAsync(Stream outputStream, Stream inputStream)
         {
             // Generate server's random challenge.
             byte[] serverChallenge = new byte[ChallengeSize];
@@ -70,10 +76,10 @@ namespace PSADT.ClientServer
             }
 
             // Send the server challenge (unencrypted - it's random data).
-            WriteLengthPrefixedBytes(outputStream, serverChallenge);
+            await WriteLengthPrefixedBytesAsync(outputStream, serverChallenge).ConfigureAwait(false);
 
             // Read the encrypted response containing both challenges.
-            byte[] encryptedResponse = ReadLengthPrefixedBytes(inputStream);
+            byte[] encryptedResponse = await ReadLengthPrefixedBytesAsync(inputStream).ConfigureAwait(false);
             byte[] decryptedResponse = Decrypt(encryptedResponse);
 
             // Verify response length.
@@ -94,7 +100,7 @@ namespace PSADT.ClientServer
             byte[] clientChallenge = new byte[ChallengeSize];
             Buffer.BlockCopy(decryptedResponse, ChallengeSize, clientChallenge, 0, ChallengeSize);
             byte[] encryptedClientChallenge = Encrypt(clientChallenge);
-            WriteLengthPrefixedBytes(outputStream, encryptedClientChallenge);
+            await WriteLengthPrefixedBytesAsync(outputStream, encryptedClientChallenge).ConfigureAwait(false);
         }
     }
 }

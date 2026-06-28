@@ -294,51 +294,51 @@ function Private:Invoke-ADTClientServerOperation
         {
             if ([PSADT.UserInterface.DialogType]::DialogBox.Equals($DialogType))
             {
-                $result = $Script:ADT.ClientServerProcess.ShowDialogBox($Options)
+                $result = $Script:ADT.ClientServerProcess.ShowDialogBoxAsync($Options).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('ShowModalDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess."Show$($DialogType)"($DialogStyle, $Options)
+                $result = $Script:ADT.ClientServerProcess."Show$($DialogType)Async"($DialogStyle, $Options).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('InitCloseAppsDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialog($CloseProcesses)
+                $result = $Script:ADT.ClientServerProcess.InitCloseAppsDialogAsync($CloseProcesses).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('PromptToCloseApps'))
             {
-                $result = $Script:ADT.ClientServerProcess.PromptToCloseApps($PromptToCloseTimeout)
+                $result = $Script:ADT.ClientServerProcess.PromptToCloseAppsAsync($PromptToCloseTimeout).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('ShowProgressDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess.ShowProgressDialog($DialogStyle, $Options)
+                $result = $Script:ADT.ClientServerProcess.ShowProgressDialogAsync($DialogStyle, $Options).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('UpdateProgressDialog'))
             {
-                $result = $Script:ADT.ClientServerProcess.UpdateProgressDialog($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment)
+                $result = $Script:ADT.ClientServerProcess.UpdateProgressDialogAsync($ProgressMessage, $ProgressDetailMessage, $ProgressPercentage, $MessageAlignment).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('UpdateNotifyIcon'))
             {
-                $result = $Script:ADT.ClientServerProcess.UpdateNotifyIcon($MessageText)
+                $result = $Script:ADT.ClientServerProcess.UpdateNotifyIconAsync($MessageText).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('GetEnvironmentVariable') -or $PSCmdlet.ParameterSetName.Equals('RemoveEnvironmentVariable'))
             {
-                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Variable)
+                $result = $Script:ADT.ClientServerProcess."$($PSCmdlet.ParameterSetName)Async"($Variable).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('SetEnvironmentVariable'))
             {
-                $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariable($Variable, $Value, !!$Expandable, !!$Append, !!$Remove)
+                $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariableAsync($Variable, $Value, !!$Expandable, !!$Append, !!$Remove).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSCmdlet.ParameterSetName.Equals('GroupPolicyUpdate'))
             {
-                $result = $Script:ADT.ClientServerProcess.GroupPolicyUpdate(!!$Force)
+                $result = $Script:ADT.ClientServerProcess.GroupPolicyUpdateAsync(!!$Force).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSBoundParameters.ContainsKey('Options'))
             {
-                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)($Options)
+                $result = $Script:ADT.ClientServerProcess."$($PSCmdlet.ParameterSetName)Async"($Options).AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
             else
             {
-                $result = $Script:ADT.ClientServerProcess.($PSCmdlet.ParameterSetName)()
+                $result = $Script:ADT.ClientServerProcess."$($PSCmdlet.ParameterSetName)Async"().AsTask().ConfigureAwait($false).GetAwaiter().GetResult()
             }
 
             # If the log writer gave up the ghost, throw its exception.

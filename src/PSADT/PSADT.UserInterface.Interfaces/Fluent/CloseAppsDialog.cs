@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls.Primitives;
@@ -254,22 +255,29 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <param name="sender">The source of the event, typically the service that monitors running processes.</param>
         /// <param name="e">An object containing event data, including the updated list of processes to close.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD001:Avoid legacy thread switching APIs", Justification = "Standalone WPF STA thread; JoinableTaskFactory not applicable.")]
-        private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is necessary here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is necessary here.")]
+        private async void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {
-            Dispatcher.Invoke(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(static p => new AppToClose(p))));
+            await Dispatcher.InvokeAsync(() => AppsToCloseCollection.ResetItems(e.ProcessesToClose.Select(static p => new AppToClose(p)))).Task.ConfigureAwait(false);
         }
 
         /// <summary>
         /// Handles the event when the collection of apps to close changes.
         /// </summary>
-        private void UpdateRunningProcesses()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
+        private async void UpdateRunningProcesses()
         {
             // Update the UI based on the changes in the collection.
             AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
-                _logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info);
+                if (_logAction is not null)
+                {
+                    await _logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info).ConfigureAwait(false);
+                }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 if (!_hideCloseButton)
@@ -287,7 +295,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             else
             {
-                _logAction?.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
+                if (_logAction is not null)
+                {
+                    await _logAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
+                }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
                 AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
@@ -461,7 +472,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Represents the delegate used for logging operations with severity.
         /// </summary>
         /// <remarks>This delegate is invoked to write log messages with optional severity.</remarks>
-        private readonly Action<string, LogSeverity> _logAction;
+        private readonly Func<string, LogSeverity, ValueTask> _logAction;
 
         /// <summary>
         /// App/process icon cache for improved performance

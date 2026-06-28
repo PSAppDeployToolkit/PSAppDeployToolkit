@@ -42,7 +42,7 @@ namespace PSADT.ProcessManagement
             }
 
             // Renew the cancellation token as once they're cancelled, they're not usable.
-            _pollingTask = Task.Run(PollRunningProcessesAsync, (_cancellationTokenSource = new()).Token);
+            _cancellationTokenSource = new(); _pollingTask = PollRunningProcessesAsync();
         }
 
         /// <summary>
@@ -95,27 +95,21 @@ namespace PSADT.ProcessManagement
             CancellationToken token = _cancellationTokenSource.Token;
             while (!token.IsCancellationRequested)
             {
-                // Update the list of running processes.
-                await _mutex.WaitAsync(token).ConfigureAwait(false);
-                try
+                // Update the list of running processes and raise the event if the list of processes to close has changed.
+                ProcessesToCloseChangedEventArgs? eventArgs = null;
+                lock (_lock)
                 {
                     RefreshCachedProcessLists();
+                    ReadOnlyCollection<string> processDescs = new([.. _processesToClose.Select(static runningProcess => runningProcess.Description)]);
+                    if (!_lastProcessDescriptions.SequenceEqual(processDescs, StringComparer.OrdinalIgnoreCase))
+                    {
+                        _lastProcessDescriptions = processDescs;
+                        eventArgs = new(_processesToClose);
+                    }
                 }
-                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                if (eventArgs is not null)
                 {
-                    break;
-                }
-                finally
-                {
-                    _ = _mutex.Release();
-                }
-
-                // Raise the event if the list of processes to close has changed.
-                ReadOnlyCollection<string> processDescs = new([.. _processesToClose.Select(static runningProcess => runningProcess.Description)]);
-                if (!_lastProcessDescriptions.SequenceEqual(processDescs, StringComparer.OrdinalIgnoreCase))
-                {
-                    _lastProcessDescriptions = processDescs;
-                    ProcessesToCloseChanged?.Invoke(this, new(_processesToClose));
+                    ProcessesToCloseChanged?.Invoke(this, eventArgs);
                 }
 
                 // Wait for the specified interval before polling again.
@@ -154,15 +148,10 @@ namespace PSADT.ProcessManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _mutex.Wait(default(CancellationToken));
-                try
+                lock (_lock)
                 {
                     RefreshCachedProcessLists();
                     return _runningProcesses;
-                }
-                finally
-                {
-                    _ = _mutex.Release();
                 }
             }
         }
@@ -175,15 +164,10 @@ namespace PSADT.ProcessManagement
             get
             {
                 ObjectDisposedException.ThrowIf(_disposed, this);
-                _mutex.Wait(default(CancellationToken));
-                try
+                lock (_lock)
                 {
                     RefreshCachedProcessLists();
                     return _processesToClose;
-                }
-                finally
-                {
-                    _ = _mutex.Release();
                 }
             }
         }
@@ -206,7 +190,6 @@ namespace PSADT.ProcessManagement
             {
                 await StopAsync().ConfigureAwait(false);
             }
-            _mutex.Dispose();
             _disposed = true;
         }
 
@@ -241,9 +224,9 @@ namespace PSADT.ProcessManagement
         private CancellationTokenSource? _cancellationTokenSource;
 
         /// <summary>
-        /// The mutex used to synchronize access to the running processes list.
+        /// The lock used to synchronize access to the running processes list.
         /// </summary>
-        private readonly SemaphoreSlim _mutex = new(1, 1);
+        private readonly Lock _lock = new();
 
         /// <summary>
         /// The caller's specified process definitions.

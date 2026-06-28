@@ -42,13 +42,15 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="messageText">The title of the system tray application.</param>
         /// <exception cref="ArgumentNullException">Thrown if any required parameter is null, empty, or whitespace.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified tray icon file does not exist.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "This is a documented Sonar false positive")]
         private NotifyIconOptions(string appTitle, string appIconImage, string? appTaskbarIconImage, string messageText)
         {
             // Set initial string properties.
             ArgumentException.ThrowIfNullOrWhiteSpace(appTitle);
             ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
             ArgumentException.ThrowIfNullOrWhiteSpace(appIconImage);
-            AppIconImage = BaseDialogOptions.ThrowIfImageIsInvalid(appIconImage, nameof(AppIconImage));
+            AppIconImage = BaseDialogOptions.ThrowIfImageIsInvalidAsync(appIconImage, nameof(AppIconImage)).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
             MessageText = messageText;
             AppTitle = appTitle;
 
@@ -56,7 +58,7 @@ namespace PSADT.UserInterface.DialogOptions
             if (appTaskbarIconImage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(appTaskbarIconImage);
-                AppTaskbarIconImage = BaseDialogOptions.ThrowIfImageIsInvalid(appTaskbarIconImage, nameof(AppTaskbarIconImage));
+                AppTaskbarIconImage = BaseDialogOptions.ThrowIfImageIsInvalidAsync(appTaskbarIconImage, nameof(AppTaskbarIconImage)).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
             }
         }
 

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace PSADT.ClientServer
 {
@@ -22,7 +23,7 @@ namespace PSADT.ClientServer
     /// ensuring both confidentiality and integrity in a single cryptographic operation.
     /// </para>
     /// <para>
-    /// Instances must complete the key exchange via <see cref="PerformKeyExchange"/>
+    /// Instances must complete the key exchange via <see cref="PerformKeyExchangeAsync"/>
     /// before encryption or decryption operations can be performed.
     /// </para>
     /// <para>
@@ -37,7 +38,7 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="outputStream">The stream to send data to the remote party.</param>
         /// <param name="inputStream">The stream to receive data from the remote party.</param>
-        internal abstract void PerformKeyExchange(Stream outputStream, Stream inputStream);
+        internal abstract ValueTask PerformKeyExchangeAsync(Stream outputStream, Stream inputStream);
 
         /// <summary>
         /// Reads and decrypts data from the stream.
@@ -45,11 +46,17 @@ namespace PSADT.ClientServer
         /// <param name="stream">The input stream.</param>
         /// <returns>The decrypted plaintext bytes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> is null.</exception>
-        internal byte[] ReadEncrypted(Stream stream)
+        internal ValueTask<byte[]> ReadEncryptedAsync(Stream stream)
         {
+            // Internal implementation method.
+            async ValueTask<byte[]> ReadEncryptedImplAsync(Stream stream)
+            {
+                return Decrypt(await ReadLengthPrefixedBytesAsync(stream).ConfigureAwait(false));
+            }
+
             // Read and decrypt.
             ArgumentNullException.ThrowIfNull(stream);
-            return Decrypt(ReadLengthPrefixedBytes(stream));
+            return ReadEncryptedImplAsync(stream);
         }
 
         /// <summary>
@@ -58,12 +65,12 @@ namespace PSADT.ClientServer
         /// <param name="stream">The output stream.</param>
         /// <param name="plaintext">The plaintext bytes to encrypt and write.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="stream"/> or <paramref name="plaintext"/> is null.</exception>
-        internal void WriteEncrypted(Stream stream, byte[] plaintext)
+        internal ValueTask WriteEncryptedAsync(Stream stream, byte[] plaintext)
         {
             // Encrypt and write.
             ArgumentNullException.ThrowIfNull(stream);
             ArgumentNullException.ThrowIfNull(plaintext);
-            WriteLengthPrefixedBytes(stream, Encrypt(plaintext));
+            return WriteLengthPrefixedBytesAsync(stream, Encrypt(plaintext));
         }
 
         /// <summary>
@@ -74,13 +81,13 @@ namespace PSADT.ClientServer
         /// <exception cref="EndOfStreamException">Thrown if the stream ends before the expected data is read.</exception>
         /// <exception cref="InvalidDataException">Thrown if the length prefix is invalid or exceeds maximum allowed size.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
-        private protected static byte[] ReadLengthPrefixedBytes(Stream stream)
+        private protected static async ValueTask<byte[]> ReadLengthPrefixedBytesAsync(Stream stream)
         {
             // Read the 4-byte length prefix
             byte[] lengthBytes = new byte[4]; int bytesRead = 0;
             while (bytesRead < 4)
             {
-                int read = stream.Read(lengthBytes, bytesRead, 4 - bytesRead);
+                int read = await stream.ReadAsync(lengthBytes, bytesRead, 4 - bytesRead, default).ConfigureAwait(false);
                 if (read is 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading length prefix.");
@@ -104,7 +111,7 @@ namespace PSADT.ClientServer
             bytesRead = 0;
             while (bytesRead < length)
             {
-                int read = stream.Read(data, bytesRead, length - bytesRead);
+                int read = await stream.ReadAsync(data, bytesRead, length - bytesRead, default).ConfigureAwait(false);
                 if (read is 0)
                 {
                     throw new EndOfStreamException("Unexpected end of stream while reading data.");
@@ -119,12 +126,12 @@ namespace PSADT.ClientServer
         /// </summary>
         /// <param name="stream">The output stream.</param>
         /// <param name="data">The data to write.</param>
-        private protected static void WriteLengthPrefixedBytes(Stream stream, byte[] data)
+        private protected static async ValueTask WriteLengthPrefixedBytesAsync(Stream stream, byte[] data)
         {
             byte[] lengthBytes = BitConverter.GetBytes(data.Length);
-            stream.Write(lengthBytes, 0, 4);
-            stream.Write(data, 0, data.Length);
-            stream.Flush();
+            await stream.WriteAsync(lengthBytes, 0, 4, default).ConfigureAwait(false);
+            await stream.WriteAsync(data, 0, data.Length, default).ConfigureAwait(false);
+            await stream.FlushAsync(default).ConfigureAwait(false);
         }
 
         /// <summary>

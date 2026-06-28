@@ -71,6 +71,3 @@ dotnet_diagnostic.MA0168.severity = none
 dotnet_diagnostic.MA0175.severity = none
 dotnet_diagnostic.MA0177.severity = none
 dotnet_diagnostic.MA0181.severity = none
-
-# Temporary exclusions for the time being.
-dotnet_diagnostic.MA0045.severity = none

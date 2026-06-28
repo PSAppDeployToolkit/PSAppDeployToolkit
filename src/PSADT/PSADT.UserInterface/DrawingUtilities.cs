@@ -5,6 +5,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using PSADT.Interop;
 using PSADT.Interop.Extensions;
 
@@ -93,45 +94,44 @@ namespace PSADT.UserInterface
         /// <param name="stream">The stream to examine. Must have a length of at least 6 bytes to be valid for icon detection.</param>
         /// <returns>true if the stream starts with the ICONDIR header indicating it is an icon file; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if the stream is not readable or seekable.</exception>
-        internal static bool IsStreamAnIcon(Stream stream)
+        internal static ValueTask<bool> IsStreamAnIconAsync(Stream stream)
         {
-            // Confirm the stream is valid.
-            ArgumentNullException.ThrowIfNull(stream);
-            if (!stream.CanRead)
+            // Internal implementation method.
+            static async ValueTask<bool> IsStreamAnIconImplAsync(Stream stream)
             {
-                throw new ArgumentException("The stream must be readable.", nameof(stream));
-            }
-            if (!stream.CanSeek)
-            {
-                throw new ArgumentException("The stream must be seekable.", nameof(stream));
-            }
-
-            // Confirm the stream has enough data for an ICONDIR header.
-            int iconDirSize = Unsafe.SizeOf<ICONDIR>();
-            if (stream.Length < iconDirSize)
-            {
-                return false;
-            }
-
-            // Validate that the byte data at the start of the stream matches the expected ICONDIR header values.
-            long startingPosition = stream.Position; stream.Position = 0;
-            try
-            {
-                // Read the ICONDIR header and confirm it has the expected values.
-                byte[] buffer = new byte[iconDirSize]; int bytesRead = stream.Read(buffer, 0, iconDirSize);
-                if (bytesRead != iconDirSize)
+                // Confirm the stream has enough data for an ICONDIR header.
+                int iconDirSize = Unsafe.SizeOf<ICONDIR>();
+                if (stream.Length < iconDirSize)
                 {
                     return false;
                 }
 
-                // Interpret the buffer as an ICONDIR structure and validate its fields.
-                ref readonly ICONDIR iconDir = ref buffer.AsReadOnlyStructure<ICONDIR>();
-                return iconDir.IsValid;
+                // Validate that the byte data at the start of the stream matches the expected ICONDIR header values.
+                long startingPosition = stream.Position; stream.Position = 0;
+                try
+                {
+                    // Read the ICONDIR header and confirm it has the expected values.
+                    byte[] buffer = new byte[iconDirSize]; int bytesRead = await stream.ReadAsync(buffer, 0, iconDirSize, default).ConfigureAwait(false);
+                    if (bytesRead != iconDirSize)
+                    {
+                        return false;
+                    }
+
+                    // Interpret the buffer as an ICONDIR structure and validate its fields.
+                    ref readonly ICONDIR iconDir = ref buffer.AsReadOnlyStructure<ICONDIR>();
+                    return iconDir.IsValid;
+                }
+                finally
+                {
+                    stream.Position = startingPosition;
+                }
             }
-            finally
-            {
-                stream.Position = startingPosition;
-            }
+
+            // Confirm the stream is valid.
+            ArgumentNullException.ThrowIfNull(stream);
+            return !stream.CanRead ? throw new ArgumentException("The stream must be readable.", nameof(stream))
+                : !stream.CanSeek ? throw new ArgumentException("The stream must be seekable.", nameof(stream))
+                : IsStreamAnIconImplAsync(stream);
         }
 
         /// <summary>

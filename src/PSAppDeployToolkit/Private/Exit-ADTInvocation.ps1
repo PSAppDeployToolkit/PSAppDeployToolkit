@@ -36,7 +36,7 @@ function Private:Exit-ADTInvocation
     # Attempt to close down any dialog or client/server process here as an additional safety item.
     $clientOpen = if ($Script:ADT.ClientServerProcess)
     {
-        if ($Script:ADT.ClientServerProcess.ProgressDialogOpen())
+        if ($Script:ADT.ClientServerProcess.ProgressDialogOpenAsync().AsTask().ConfigureAwait($false).GetAwaiter().GetResult())
         {
             try
             {
@@ -47,7 +47,7 @@ function Private:Exit-ADTInvocation
                 $_
             }
         }
-        if ($Script:ADT.ClientServerProcess.NotifyIconOpen())
+        if ($Script:ADT.ClientServerProcess.NotifyIconOpenAsync().AsTask().ConfigureAwait($false).GetAwaiter().GetResult())
         {
             try
             {

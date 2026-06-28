@@ -233,8 +233,8 @@ namespace PSADT.ClientServer
                     // Perform ECDH key exchange for encrypted communication.
                     try
                     {
-                        ioEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
-                        logEncryption.PerformKeyExchange(outputPipeClient, inputPipeClient);
+                        await ioEncryption.PerformKeyExchangeAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
+                        await logEncryption.PerformKeyExchangeAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
@@ -242,25 +242,25 @@ namespace PSADT.ClientServer
                     }
 
                     // Set up writer helper methods.
-                    void WriteSuccess<T>(T result)
+                    async ValueTask WriteSuccessAsync<T>(T result)
                     {
                         byte[] data = SerializeToBytes(result);
                         byte[] response = new byte[data.Length + 1];
                         response[0] = (byte)ResponseMarker.Success;
                         data.CopyTo(response.AsSpan(1));
-                        ioEncryption.WriteEncrypted(outputPipeClient, response);
+                        await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
                     }
-                    void WriteError(Exception ex)
+                    async ValueTask WriteErrorAsync(Exception ex)
                     {
                         byte[] data = SerializeToBytes(ex);
                         byte[] response = new byte[data.Length + 1];
                         response[0] = (byte)ResponseMarker.Error;
                         data.CopyTo(response.AsSpan(1));
-                        ioEncryption.WriteEncrypted(outputPipeClient, response);
+                        await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
                     }
-                    void WriteLog(string message, LogSeverity severity, string source)
+                    async ValueTask WriteLogAsync(string message, LogSeverity severity, string source)
                     {
-                        logEncryption.WriteEncrypted(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source)));
+                        await logEncryption.WriteEncryptedAsync(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source))).ConfigureAwait(false);
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
@@ -272,7 +272,7 @@ namespace PSADT.ClientServer
                             try
                             {
                                 // Read and decrypt the request: [1-byte command][serialized payload]
-                                byte[] requestBytes = ioEncryption.ReadEncrypted(inputPipeClient);
+                                byte[] requestBytes = await ioEncryption.ReadEncryptedAsync(inputPipeClient).ConfigureAwait(false);
                                 if (requestBytes.Length is 0)
                                 {
                                     throw new ClientException("Received empty request from server.", ClientExitCode.InvalidRequest);
@@ -283,11 +283,11 @@ namespace PSADT.ClientServer
                                     switch (command)
                                     {
                                         case PipeCommand.Open:
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.Close:
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             return (int)ClientExitCode.Success;
 
                                         case PipeCommand.InitCloseAppsDialog:
@@ -298,9 +298,9 @@ namespace PSADT.ClientServer
                                                 await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
                                             }
                                             #pragma warning disable format, CA2000 
-                                            closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLog);
+                                            closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLogAsync);
                                             #pragma warning restore CA2000, format
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.PromptToCloseApps:
@@ -318,14 +318,14 @@ namespace PSADT.ClientServer
                                                 foreach (WindowInfo window in windows)
                                                 {
                                                     Process process = Process.GetProcessById(window.ParentProcessId);
-                                                    closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info);
+                                                    await closeAppsDialogState.LogAction($"Closing window with title [{window.WindowTitle}] for process [{process.ProcessName}], prompting to save if necessary.", LogSeverity.Info).ConfigureAwait(false);
                                                     try
                                                     {
                                                         WindowTools.BringWindowToFront((HWND)window.WindowHandle);
                                                     }
                                                     catch (Exception ex) when (ex.Message is not null)
                                                     {
-                                                        closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error);
+                                                        await closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error).ConfigureAwait(false);
                                                         failures.Add(window.WindowHandle);
                                                         continue;
                                                     }
@@ -340,7 +340,7 @@ namespace PSADT.ClientServer
                                                     }
                                                     catch (Exception ex) when (ex.Message is not null)
                                                     {
-                                                        closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error);
+                                                        await closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error).ConfigureAwait(false);
                                                         failures.Add(window.WindowHandle);
                                                         continue;
                                                     }
@@ -351,12 +351,12 @@ namespace PSADT.ClientServer
                                                     {
                                                         if (!WindowUtilities.GetProcessWindowInfo(parentProcessIdFilter: [process.Id], windowHandleFilter: [window.WindowHandle]).Any())
                                                         {
-                                                            closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info);
+                                                            await closeAppsDialogState.LogAction($"Window [{window.WindowTitle}] for process [{process.ProcessName}] was successfully closed.", LogSeverity.Info).ConfigureAwait(false);
                                                             break;
                                                         }
                                                         if (promptToCloseStopwatch.Elapsed >= promptToSaveTimeout)
                                                         {
-                                                            closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning);
+                                                            await closeAppsDialogState.LogAction($"Timed out waiting for window [{window.WindowTitle}] for process [{process.ProcessName}] to close.", LogSeverity.Warning).ConfigureAwait(false);
                                                             break;
                                                         }
                                                         await Task.Delay(2000, default).ConfigureAwait(false);
@@ -367,23 +367,23 @@ namespace PSADT.ClientServer
                                             // If we didn't have any failures and we've still got running processes, they're processes without windows, so just kill them before returning.
                                             if (failures.Count is 0 && runningProcesses.Length > 0)
                                             {
-                                                closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info);
+                                                await closeAppsDialogState.LogAction("Stopping remaining processes without open windows...", LogSeverity.Info).ConfigureAwait(false);
                                                 foreach (Process process in runningProcesses)
                                                 {
-                                                    closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info);
+                                                    await closeAppsDialogState.LogAction($"Stopping process {process.ProcessName}...", LogSeverity.Info).ConfigureAwait(false);
                                                     if (!process.HasExited)
                                                     {
                                                         process.Kill(); await process.WaitForExitAsync(default).ConfigureAwait(false);
                                                     }
                                                 }
                                             }
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.ShowModalDialog:
                                             {
                                                 ShowModalDialogPayload payload = DeserializeBytes<ShowModalDialogPayload>(requestBytes, payloadOffset);
-                                                WriteSuccess(payload.Options switch
+                                                await WriteSuccessAsync(payload.Options switch
                                                 {
                                                     CloseAppsDialogOptions closeAppsDialogOptions => await DialogManager.ShowCloseAppsDialogAsync(payload.DialogStyle, closeAppsDialogOptions, closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false),
                                                     InputDialogOptions inputDialogOptions => await DialogManager.ShowInputDialogAsync(payload.DialogStyle, inputDialogOptions).ConfigureAwait(false),
@@ -393,7 +393,7 @@ namespace PSADT.ClientServer
                                                     HelpConsoleOptions helpConsoleOptions => await DialogManager.ShowHelpConsoleAsync(helpConsoleOptions).ConfigureAwait(false),
                                                     RestartDialogOptions restartDialogOptions => await DialogManager.ShowRestartDialogAsync(payload.DialogStyle, restartDialogOptions).ConfigureAwait(false),
                                                     ProgressDialogOptions or _ => throw new ClientException($"The specified DialogType [{payload.DialogType}] is not supported for the ShowModalDialog command.", ClientExitCode.UnsupportedDialog),
-                                                });
+                                                }).ConfigureAwait(false);
                                                 break;
                                             }
 
@@ -401,121 +401,121 @@ namespace PSADT.ClientServer
                                             {
                                                 ShowProgressDialogPayload payload = DeserializeBytes<ShowProgressDialogPayload>(requestBytes, payloadOffset);
                                                 await DialogManager.ShowProgressDialogAsync(payload.DialogStyle, payload.Options).ConfigureAwait(false);
-                                                WriteSuccess(DialogManager.ProgressDialogOpen());
+                                                await WriteSuccessAsync(DialogManager.ProgressDialogOpen()).ConfigureAwait(false);
                                                 break;
                                             }
 
                                         case PipeCommand.ProgressDialogOpen:
-                                            WriteSuccess(DialogManager.ProgressDialogOpen());
+                                            await WriteSuccessAsync(DialogManager.ProgressDialogOpen()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.UpdateProgressDialog:
                                             {
                                                 UpdateProgressDialogPayload payload = DeserializeBytes<UpdateProgressDialogPayload>(requestBytes, payloadOffset);
                                                 await DialogManager.UpdateProgressDialogAsync(payload.Message, payload.DetailMessage, payload.Percentage, payload.Alignment).ConfigureAwait(false);
-                                                WriteSuccess(result: true);
+                                                await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                                 break;
                                             }
 
                                         case PipeCommand.CloseProgressDialog:
                                             await DialogManager.CloseProgressDialogAsync().ConfigureAwait(false);
-                                            WriteSuccess(!DialogManager.ProgressDialogOpen());
+                                            await WriteSuccessAsync(!DialogManager.ProgressDialogOpen()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.ShowNotifyIcon:
                                             await DialogManager.ShowNotifyIconAsync(DeserializeBytes<ShowNotifyIconPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.NotifyIconOpen:
-                                            WriteSuccess(DialogManager.NotifyIconOpen());
+                                            await WriteSuccessAsync(DialogManager.NotifyIconOpen()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.UpdateNotifyIcon:
                                             await DialogManager.UpdateNotifyIconAsync(DeserializeBytes<UpdateNotifyIconPayload>(requestBytes, payloadOffset).MessageText).ConfigureAwait(false);
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.ShowBalloonTip:
                                             await DialogManager.ShowBalloonTipAsync(DeserializeBytes<ShowBalloonTipPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.CloseNotifyIcon:
                                             await DialogManager.CloseNotifyIconAsync().ConfigureAwait(false);
-                                            WriteSuccess(!DialogManager.NotifyIconOpen());
+                                            await WriteSuccessAsync(!DialogManager.NotifyIconOpen()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.MinimizeAllWindows:
                                             DesktopUtilities.MinimizeAllWindows();
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
 
                                         case PipeCommand.RestoreAllWindows:
                                             DesktopUtilities.RestoreAllWindows();
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.SendKeys:
                                             await DialogManager.SendKeysAsync(DeserializeBytes<SendKeysPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.GetProcessWindowInfo:
-                                            WriteSuccess(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options));
+                                            await WriteSuccessAsync(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options)).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.RefreshDesktopAndEnvironmentVariables:
                                             DesktopUtilities.RefreshDesktopAndEnvironmentVariables();
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.GetUserNotificationState:
-                                            WriteSuccess(DesktopUtilities.GetUserNotificationState());
+                                            await WriteSuccessAsync(DesktopUtilities.GetUserNotificationState()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.GetForegroundWindowProcessId:
-                                            WriteSuccess(DesktopUtilities.GetForegroundWindowProcessId());
+                                            await WriteSuccessAsync(DesktopUtilities.GetForegroundWindowProcessId()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.GetEnvironmentVariable:
-                                            WriteSuccess(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel);
+                                            await WriteSuccessAsync(EnvironmentUtilities.GetEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User) ?? ServerInstance.SuccessSentinel).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.SetEnvironmentVariable:
                                             {
                                                 EnvironmentVariablePayload payload = DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset);
                                                 EnvironmentUtilities.SetEnvironmentVariable(payload.Name, payload.Value, EnvironmentVariableTarget.User, payload.Expandable, payload.Append, payload.Remove);
-                                                WriteSuccess(result: true);
+                                                await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                                 break;
                                             }
 
                                         case PipeCommand.RemoveEnvironmentVariable:
                                             EnvironmentUtilities.RemoveEnvironmentVariable(DeserializeBytes<EnvironmentVariablePayload>(requestBytes, payloadOffset).Name, EnvironmentVariableTarget.User);
-                                            WriteSuccess(result: true);
+                                            await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.GroupPolicyUpdate:
                                             {
                                                 using ProcessResult result = await GroupPolicyUpdateAsync(DeserializeBytes<GroupPolicyUpdatePayload>(requestBytes, payloadOffset).Force).ConfigureAwait(false);
-                                                WriteSuccess(result);
+                                                await WriteSuccessAsync(result).ConfigureAwait(false);
                                                 break;
                                             }
 
                                         case PipeCommand.ShellExecuteProcess:
                                             {
                                                 using ProcessResult result = await ShellExecuteProcessAsync(DeserializeBytes<ShellExecuteProcessPayload>(requestBytes, payloadOffset).Options).ConfigureAwait(false);
-                                                WriteSuccess(result);
+                                                await WriteSuccessAsync(result).ConfigureAwait(false);
                                                 break;
                                             }
 
                                         case PipeCommand.GetUserFocusModeState:
-                                            WriteSuccess(GetUserFocusModeState());
+                                            await WriteSuccessAsync(GetUserFocusModeState()).ConfigureAwait(false);
                                             break;
 
                                         case PipeCommand.GetUserToastNotificationMode:
-                                            WriteSuccess(GetUserToastNotificationMode());
+                                            await WriteSuccessAsync(GetUserToastNotificationMode()).ConfigureAwait(false);
                                             break;
 
                                         default:
@@ -525,7 +525,7 @@ namespace PSADT.ClientServer
                                 catch (Exception ex) when (ex.Message is not null)
                                 {
                                     // Something we weren't expecting occurred. Write the error response.
-                                    WriteError(ex);
+                                    await WriteErrorAsync(ex).ConfigureAwait(false);
                                 }
                             }
                             catch (EndOfStreamException)

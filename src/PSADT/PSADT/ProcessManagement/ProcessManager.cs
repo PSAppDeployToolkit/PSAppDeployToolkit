@@ -74,6 +74,8 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidOperationException">Thrown if the process cannot be started.</exception>
         /// <exception cref="NotSupportedException">Thrown if the specified user context is not supported for process creation.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "We cannot refactor this method to be async at this stage.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S5034:\"ValueTask\" should be consumed correctly", Justification = "This is a documented Sonar false positive")]
         private static ProcessHandle LaunchWithCreateProcessAsync(ProcessLaunchInfo launchInfo)
         {
             // Perform initial setup and get started with the process creation.
@@ -145,7 +147,7 @@ namespace PSADT.ProcessManagement
                     {
                         throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
                     }
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess);
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(launchInfo.RunAsActiveUser.SessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.None, launchInfo.UIAccess).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = NativeMethods.CreateEnvironmentBlock(out SafeEnvironmentBlockHandle lpEnvironment, hPrimaryToken, launchInfo.InheritEnvironmentVariables);
                     using (lpEnvironment)
                     {
@@ -170,7 +172,7 @@ namespace PSADT.ProcessManagement
                     {
                         throw new NotSupportedException("Cannot retrieve necessary user token as SYSTEM account does not have access to PSAppDeployToolkit module.");
                     }
-                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryToken(AccountUtilities.CallerSessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess);
+                    using SafeFileHandle hPrimaryToken = TokenManager.GetUserPrimaryTokenAsync(AccountUtilities.CallerSessionId, launchInfo.ElevatedTokenType ?? ElevatedTokenType.HighestMandatory, launchInfo.UIAccess).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
                     _ = CreateProcessUsingToken(hPrimaryToken, callerPrivileges, launchInfo.FilePath, ref commandSpan, handlesToInherit, hasExternalHandles, creationFlags, lpEnvironment: null, launchInfo.WorkingDirectory?.FullName, launchInfo.RunAsInvoker, in startupInfo, out pi);
                 }
                 else
@@ -222,22 +224,11 @@ namespace PSADT.ProcessManagement
                 Process process = Process.GetProcessById((int)processId);
                 try
                 {
-                    if (stdOutHandle is not null && stdErrHandle is not null)
-                    {
-                        stdOutHandle.Task.Start(TaskScheduler.Default);
-                        stdErrHandle.Task.Start(TaskScheduler.Default);
-                        using (hThread)
-                        {
-                            _ = NativeMethods.ResumeThread(hThread);
-                        }
-                        stdInHandle?.Task.Start(TaskScheduler.Default);
-                        return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle);
-                    }
                     using (hThread)
                     {
                         _ = NativeMethods.ResumeThread(hThread);
                     }
-                    return new(launchInfo, process, processId, hProcess, commandSpan.ToString());
+                    return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle);
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
@@ -452,19 +443,21 @@ namespace PSADT.ProcessManagement
         {
             AnonymousPipeServerStream stream = new(PipeDirection.In, HandleInheritability.Inheritable);
             List<string> output = [];
+            async Task ReadToEndAsync()
+            {
+                using (stream)
+                {
+                    using StreamReader reader = new(stream, encoding);
+                    while ((await reader.ReadLineAsync(default).ConfigureAwait(false))?.TrimEnd() is string line)
+                    {
+                        interleaved.Enqueue(line);
+                        output.Add(line);
+                    }
+                }
+            }
             try
             {
-                return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(output, new(() =>
-                {
-                    using (stream)
-                    {
-                        using StreamReader reader = new(stream, encoding);
-                        while (reader.ReadLine()?.TrimEnd() is string line)
-                        {
-                            interleaved.Enqueue(line); output.Add(line);
-                        }
-                    }
-                })));
+                return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(output, ReadToEndAsync()));
             }
             catch (Exception ex) when (ex.Message is not null)
             {
@@ -483,27 +476,28 @@ namespace PSADT.ProcessManagement
         private static (AnonymousPipeServerStream stream, HANDLE pipe, ProcessWriteStream handle) CreateWritePipe(IReadOnlyList<string> input, Encoding encoding)
         {
             AnonymousPipeServerStream stream = new(PipeDirection.Out, HandleInheritability.Inheritable);
-            try
+            async Task WriteToEndAsync()
             {
-                return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(new(() =>
+                using (stream)
                 {
-                    using (stream)
+                    try
                     {
-                        try
+                        using StreamWriter writer = new(stream, encoding);
+                        foreach (string line in input)
                         {
-                            using StreamWriter writer = new(stream, encoding);
-                            foreach (string line in input)
-                            {
-                                writer.WriteLine(line);
-                            }
-                        }
-                        catch (IOException)
-                        {
-                            // The child process didn't read all input before exiting.
-                            return;
+                            await writer.WriteLineAsync(line).ConfigureAwait(false);
                         }
                     }
-                })));
+                    catch (IOException)
+                    {
+                        // The child process didn't read all input before exiting.
+                        return;
+                    }
+                }
+            }
+            try
+            {
+                return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(WriteToEndAsync()));
             }
             catch (Exception ex) when (ex.Message is not null)
             {

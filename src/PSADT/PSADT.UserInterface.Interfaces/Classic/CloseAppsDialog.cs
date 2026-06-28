@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
@@ -322,13 +323,16 @@ namespace PSADT.UserInterface.Interfaces.Classic
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "We can't suppress a mix of object/void returns.")]
         private void RunningProcessService_ProcessesToCloseChanged(object? sender, ProcessesToCloseChangedEventArgs e)
         {
-            Invoke(() =>
+            Invoke(async () =>
             {
                 listBoxCloseProcesses.Items.Clear();
                 if (e.ProcessesToClose.Count > 0)
                 {
                     object[] runningApps = [.. e.ProcessesToClose.Select(static p => p.Description)];
-                    logAction?.Invoke($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...", LogSeverity.Info);
+                    if (logAction is not null)
+                    {
+                        await logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", runningApps)}']...", LogSeverity.Info).ConfigureAwait(false);
+                    }
                     toolTipButtonContinue.SetToolTip(buttonContinue, buttonContinueToolTipText);
                     listBoxCloseProcesses.Items.AddRange(runningApps);
                     labelCountdownMessage.Text = countdownClose;
@@ -343,7 +347,10 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 }
                 else
                 {
-                    logAction?.Invoke("Previously detected running processes are no longer running.", LogSeverity.Info);
+                    if (logAction is not null)
+                    {
+                        await logAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
+                    }
                     toolTipButtonContinue.RemoveAll();
                     labelCountdownMessage.Text = countdownDefer;
                     flowLayoutPanelCloseApps.Visible = false;
@@ -407,7 +414,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// Represents the delegate used for logging operations with severity.
         /// </summary>
         /// <remarks>This delegate is invoked to write log messages with optional severity.</remarks>
-        private readonly Action<string, LogSeverity>? logAction;
+        private readonly Func<string, LogSeverity, ValueTask>? logAction;
 
         /// <summary>
         /// A regular expression used to replace single ampersands with double ampersands, while preserving existing double ampersands. This is necessary because in Windows Forms, a single ampersand is used to denote an accelerator key (e.g., "&amp;File" would display as "File" with 'F' underlined), while a double ampersand is displayed as a literal ampersand character. The regex uses negative lookbehind and lookahead assertions to ensure that only single ampersands that are not already part of a double ampersand sequence are replaced, allowing for correct display of text that includes ampersands without unintended accelerator keys.

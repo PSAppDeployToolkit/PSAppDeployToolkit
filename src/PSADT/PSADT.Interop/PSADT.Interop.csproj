@@ -51,6 +51,7 @@
       M:System.Int32.TryParse|
       M:System.IO.Path.IsPathFullyQualified|
       M:System.IO.Path.Join|
+      M:System.IO.StreamReader.ReadLineAsync|
       M:System.ObjectDisposedException.Throw|
       M:System.String.Contains|
       M:System.String.EndsWith|

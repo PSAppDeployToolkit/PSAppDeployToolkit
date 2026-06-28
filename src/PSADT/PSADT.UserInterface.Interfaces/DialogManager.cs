@@ -130,7 +130,7 @@ namespace PSADT.UserInterface.Interfaces
                     // No processes are running and ContinueOnProcessClosure is set -> skip the dialog
                     // entirely. Avoids constructing a WPF window only to immediately close it (which
                     // also produced an InvalidOperationException prior to the CloseAppsDialog fix).
-                    state.LogAction("Previously detected running processes are no longer running.", LogSeverity.Info);
+                    await state.LogAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
                     if (stopProcessService)
                     {
                         await state.RunningProcessService.StopAsync().ConfigureAwait(false);
@@ -139,7 +139,7 @@ namespace PSADT.UserInterface.Interfaces
                 }
                 if (processesToClose.Count > 0)
                 {
-                    state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", processesToClose.Select(static p => p.Description))}']...", LogSeverity.Info);
+                    await state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", processesToClose.Select(static p => p.Description))}']...", LogSeverity.Info).ConfigureAwait(false);
                 }
             }
 
@@ -153,11 +153,11 @@ namespace PSADT.UserInterface.Interfaces
                 }
                 if (processesToClose?.Count > 0)
                 {
-                    state.LogAction($"Close applications countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info);
+                    await state.LogAction($"Close applications countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
                 }
                 else
                 {
-                    state.LogAction($"Countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info);
+                    await state.LogAction($"Countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
                 }
             }
 
@@ -169,15 +169,15 @@ namespace PSADT.UserInterface.Interfaces
             {
                 if (result.Equals(CloseAppsDialogResult.Close))
                 {
-                    state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).", LogSeverity.Info);
+                    await state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).", LogSeverity.Info).ConfigureAwait(false);
                 }
                 else if (result.Equals(CloseAppsDialogResult.Defer))
                 {
-                    state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.", LogSeverity.Info);
+                    await state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.", LogSeverity.Info).ConfigureAwait(false);
                 }
                 else if (result.Equals(CloseAppsDialogResult.Continue))
                 {
-                    state.LogAction("Countdown timer has elapsed and no processes running. Force continue.", LogSeverity.Info);
+                    await state.LogAction("Countdown timer has elapsed and no processes running. Force continue.", LogSeverity.Info).ConfigureAwait(false);
                 }
             }
 
@@ -377,14 +377,14 @@ namespace PSADT.UserInterface.Interfaces
         internal static Task ShowNotifyIconAsync(NotifyIconOptions options)
         {
             // Ensure there's not already a notify icon open.
-            return notifyIcon is not null ? throw new InvalidOperationException("Cannot show a notify icon while one is already open.") : InvokeDialogActionAsync(() =>
+            return notifyIcon is not null ? throw new InvalidOperationException("Cannot show a notify icon while one is already open.") : InvokeDialogActionAsync(async () =>
             {
                 // Set the AUMID for this process so the Windows 10 toast has the correct title.
                 _ = NativeMethods.SetCurrentProcessExplicitAppUserModelID(options.AppTitle);
 
                 // Correct the registry data for the AUMID. This can reference stale info from a previous run.
                 string appIconPath = options.AppTaskbarIconImage ?? options.AppIconImage;
-                System.Drawing.Icon iconObj = Classic.ClassicDialog.GetIcon(appIconPath);
+                System.Drawing.Icon iconObj = await Classic.ClassicDialog.GetIconAsync(appIconPath).ConfigureAwait(false);
                 string regKey = $@"{(AccountUtilities.CallerIsAdmin ? "HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
                 Registry.SetValue(regKey, "DisplayName", options.AppTitle, RegistryValueKind.String);
                 if (MiscUtilities.GetBase64StringBytes(appIconPath) is not null)

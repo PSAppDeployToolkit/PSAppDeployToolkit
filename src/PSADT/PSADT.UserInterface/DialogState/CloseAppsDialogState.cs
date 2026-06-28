@@ -22,7 +22,7 @@ namespace PSADT.UserInterface.DialogState
         /// <param name="closeProcesses">An array of <see cref="ProcessDefinition"/> objects representing the processes to be managed for closure. If
         /// the array is null or empty, no processes will be managed.</param>
         /// <param name="logAction">An optional delegate for logging messages with severity. If null, logging is disabled.</param>
-        internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, Action<string, LogSeverity, string> logAction)
+        internal CloseAppsDialogState(ReadOnlyCollection<ProcessDefinition>? closeProcesses, Func<string, LogSeverity, string, ValueTask> logAction)
         {
             // Only initialise these variables if they're not null.
             if (closeProcesses?.Count > 0)
@@ -57,7 +57,7 @@ namespace PSADT.UserInterface.DialogState
         /// </summary>
         /// <remarks>This delegate is intended for internal use only.When invoked, it writes the
         /// provided message with the specified severity to the configured logging destination.</remarks>
-        internal readonly Action<string, LogSeverity> LogAction;
+        internal readonly Func<string, LogSeverity, ValueTask> LogAction;
 
         /// <summary>
         /// Disposes of the resources used by the <see cref="CloseAppsDialogState"/> record.
