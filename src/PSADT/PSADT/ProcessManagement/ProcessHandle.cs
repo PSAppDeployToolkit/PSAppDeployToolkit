@@ -102,7 +102,7 @@ namespace PSADT.ProcessManagement
                                     break;
                                 }
                             }
-                        }, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                        }, default).ConfigureAwait(false);
                     }
                     else
                     {
