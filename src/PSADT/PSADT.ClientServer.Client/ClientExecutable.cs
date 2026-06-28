@@ -581,8 +581,10 @@ namespace PSADT.ClientServer
                     {
                         if (closeAppsDialogState is not null)
                         {
-                            await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
-                            closeAppsDialogState = null;
+                            await using (closeAppsDialogState.ConfigureAwait(false))
+                            {
+                                closeAppsDialogState = null;
+                            }
                         }
                     }
                     return (int)ClientExitCode.Success;
