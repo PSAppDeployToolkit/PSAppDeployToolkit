@@ -484,10 +484,6 @@ namespace PSADT.UserInterface.Interfaces
         /// cref="DialogType.CloseAppsDialog"/>.</exception>
         private static Task<TResult> ShowModalDialogAsync<TResult>(DialogType dialogType, DialogStyle dialogStyle, BaseDialogOptions options, BaseDialogState? state = null)
         {
-            if (dialogType is DialogType.CloseAppsDialog)
-            {
-                ArgumentNullException.ThrowIfNull(state);
-            }
             return InvokeDialogActionAsync(() =>
             {
                 using IModalDialog dialog = (dialogStyle, dialogType) switch

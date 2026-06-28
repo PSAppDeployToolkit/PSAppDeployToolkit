@@ -190,7 +190,6 @@ namespace PSADT.ProcessManagement
         /// <remarks>This field holds a <see cref="Task{TResult}"/> that, when awaited, provides the
         /// result of a process. The task is read-only and should be awaited to retrieve the <see
         /// cref="ProcessResult"/>.</remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0137:Use 'Async' suffix when a method returns an awaitable type", Justification = "This isn't appropriate here.")]
         public Task<ProcessResult> Task { get; }
 
         /// <summary>
@@ -212,7 +211,6 @@ namespace PSADT.ProcessManagement
         /// <returns>A configured task awaitable.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "This task is started within our context.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1046:Asynchronous method name should end with 'Async'", Justification = "This isn't appropriate here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0137:Use 'Async' suffix when a method returns an awaitable type", Justification = "This isn't appropriate here.")]
         public ConfiguredTaskAwaitable<ProcessResult> ConfigureAwait(bool continueOnCapturedContext)
         {
             return Task.ConfigureAwait(continueOnCapturedContext);

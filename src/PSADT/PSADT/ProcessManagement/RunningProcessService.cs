@@ -85,7 +85,6 @@ namespace PSADT.ProcessManagement
         /// processes to close has changed. Polling continues until cancellation is requested.</remarks>
         /// <returns>A task that represents the asynchronous polling operation.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the cancellation token source is not initialized.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0167:Use an overload with a TimeProvider argument", Justification = "https://github.com/meziantou/Meziantou.Polyfill/issues/269")]
         private async Task PollRunningProcessesAsync()
         {
             if (_cancellationTokenSource is null)

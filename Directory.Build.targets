@@ -18,6 +18,6 @@
 
   <!-- Silence incompatibility warnings since we're not targeting Windows directly -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <NoWarn>$(NoWarn);CA1416;RCS1261;MA0042;MA0045</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;RCS1261;MA0042;MA0045;MA0167</NoWarn>
   </PropertyGroup>
 </Project>
