@@ -121,10 +121,10 @@ namespace PSADT.ClientServer
             await _logEncryption.PerformKeyExchangeAsync(_outputServer, _inputServer).ConfigureAwait(false);
 
             // Confirm the client starts and is ready to receive commands.
-            bool? opened = null;
+            bool opened = false;
             try
             {
-                if (!(opened = await InvokeAsync<bool>(PipeCommand.Open).ConfigureAwait(false)).Value)
+                if (!(opened = await InvokeAsync<bool>(PipeCommand.Open).ConfigureAwait(false)))
                 {
                     throw new InvalidProgramException("The opened client process returned an invalid response.");
                 }
@@ -135,9 +135,12 @@ namespace PSADT.ClientServer
             }
             finally
             {
-                if (opened is null || !opened.Value)
+                if (!opened)
                 {
-                    await DisposeAsync().ConfigureAwait(false);
+                    await using (this.ConfigureAwait(false))
+                    {
+                        _clientProcess = null;
+                    }
                 }
             }
 
@@ -583,6 +586,7 @@ namespace PSADT.ClientServer
         /// <remarks>This method gracefully closes the client process if it is running, waits for
         /// the log writer task to complete, and disposes all pipes, encryption objects, and cancellation
         /// token sources. Once disposed, the instance should not be used further.</remarks>
+        /// <exception cref="ServerException">Thrown if the client process fails during shutdown.</exception>
         public async ValueTask DisposeAsync()
         {
             // Check we're not already done.
@@ -600,53 +604,60 @@ namespace PSADT.ClientServer
             using (_inputServer)
             using (_logServer)
             {
-                // Shut down the client process if one was started.
-                if (_clientProcess is not null)
+                // Use try/finally to ensure the log writer task is cancelled and awaited even if the client process fails to close.
+                try
                 {
-                    // Attempt a graceful close if the process is still running.
-                    if (IsRunning)
+                    // Shut down the client process if one was started.
+                    if (_clientProcess is not null)
                     {
-                        try
+                        // Attempt a graceful close if the process is still running.
+                        if (IsRunning)
                         {
-                            _ = await InvokeAsync<bool>(PipeCommand.Close).ConfigureAwait(false);
-                        }
-                        catch (Exception ex) when (ex.Message is not null)
-                        {
-                            // Failed to gracefully close the process, so cancel it.
-                            if (!_clientProcessCts.IsCancellationRequested)
+                            try
                             {
-                                await _clientProcessCts.CancelAsync().ConfigureAwait(false);
+                                _ = await InvokeAsync<bool>(PipeCommand.Close).ConfigureAwait(false);
+                            }
+                            catch (Exception ex) when (ex.Message is not null)
+                            {
+                                // Failed to gracefully close the process, so cancel it.
+                                if (!_clientProcessCts.IsCancellationRequested)
+                                {
+                                    await _clientProcessCts.CancelAsync().ConfigureAwait(false);
+                                }
                             }
                         }
-                    }
 
-                    // We either closed or cancelled the process. Wait for that to occur.
-                    try
-                    {
-                        using (await _clientProcess.ConfigureAwait(false))
+                        // We either closed or cancelled the process. Wait for that to occur.
+                        try
                         {
+                            using ProcessResult clientResult = await _clientProcess.ConfigureAwait(false);
+                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException)
+                            {
+                                throw new ServerException("The client process failed during shutdown.", clientException);
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // Expected when the process faulted before disposal.
                             _clientProcess = null;
                         }
                     }
-                    catch (Exception ex) when (ex.Message is not null)
-                    {
-                        // Expected when the process faulted before disposal.
-                        _clientProcess = null;
-                    }
                 }
-
-                // Cancel the log writer and wait for it to finish.
-                await _logWriterTaskCts.CancelAsync().ConfigureAwait(false);
-                if (_logWriterTask is not null)
+                finally
                 {
-                    await _logWriterTask.ConfigureAwait(false);
-                    _logWriterTask = null;
+                    // Cancel the log writer and wait for it to finish.
+                    await _logWriterTaskCts.CancelAsync().ConfigureAwait(false);
+                    if (_logWriterTask is not null)
+                    {
+                        await _logWriterTask.ConfigureAwait(false);
+                        _logWriterTask = null;
+                    }
+
+                    // Unregister the process exit handler and mark as disposed.
+                    AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
+                    _disposed = true;
                 }
             }
-
-            // Unregister the process exit handler and mark as disposed.
-            AppDomain.CurrentDomain.ProcessExit -= ProcessExit_Handler;
-            _disposed = true;
         }
 
         /// <summary>
@@ -764,7 +775,10 @@ namespace PSADT.ClientServer
         {
             if (!_disposed)
             {
-                await DisposeAsync().ConfigureAwait(false);
+                await using (this.ConfigureAwait(false))
+                {
+                    return;
+                }
             }
         }
 

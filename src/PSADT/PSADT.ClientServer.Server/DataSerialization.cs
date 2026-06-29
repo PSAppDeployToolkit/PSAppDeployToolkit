@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml;
+using PSADT.ProcessManagement;
 
 namespace PSADT.ClientServer
 {
@@ -106,6 +107,28 @@ namespace PSADT.ClientServer
         public static object DeserializeFromString(string base64Xml, Type type)
         {
             return DeserializeFromBytes(Convert.FromBase64String(base64Xml), 0, type);
+        }
+
+        /// <summary>
+        /// Attempts to deserialize an exception object from the standard error output of a process result.
+        /// </summary>
+        /// <param name="processResult">The process result containing the standard error output.</param>
+        /// <returns>An <see cref="Exception"/> object if deserialization is successful; otherwise, <see langword="null"/>.</returns>
+        public static Exception? DeserializeExceptionFromStdErr(ProcessResult processResult)
+        {
+            for (int i = processResult.StdErr.Count - 1; i >= 0; i--)
+            {
+                try
+                {
+                    return DeserializeFromString<Exception>(processResult.StdErr[i]);
+                }
+                catch
+                {
+                    continue;
+                    throw;
+                }
+            }
+            return null;
         }
 
         /// <summary>

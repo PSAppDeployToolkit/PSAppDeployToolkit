@@ -263,7 +263,7 @@ function Private:Invoke-ADTClientServerOperation
                     $naerParams = @{
                         Exception = if ($clientServerClientProcessResult.StdErr.Count)
                         {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($clientServerClientProcessResult.StdErr[0], [System.Exception]))
+                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
                         }
                         else
                         {
@@ -361,7 +361,7 @@ function Private:Invoke-ADTClientServerOperation
                 $naerParams = @{
                     Exception = if ($clientServerClientProcessResult.StdErr.Count)
                     {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($clientServerClientProcessResult.StdErr[0], [System.Exception]))
+                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
                     }
                     else
                     {
@@ -646,7 +646,7 @@ function Private:Invoke-ADTClientServerOperation
         if ($return.StdErr.Count -ne 0)
         {
             $naerParams = @{
-                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdErr[0], [System.Exception]))
+                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($return))
                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                 ErrorId = 'ClientServerResultError'
                 TargetObject = $return
