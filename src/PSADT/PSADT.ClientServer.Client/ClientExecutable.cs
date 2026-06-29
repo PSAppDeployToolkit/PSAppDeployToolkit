@@ -242,21 +242,21 @@ namespace PSADT.ClientServer
                     }
 
                     // Set up writer helper methods.
-                    async ValueTask WriteSuccessAsync<T>(T result)
+                    ValueTask WriteSuccessAsync<T>(T result)
                     {
                         byte[] data = SerializeToBytes(result);
                         byte[] response = new byte[data.Length + 1];
                         response[0] = (byte)ResponseMarker.Success;
                         data.CopyTo(response.AsSpan(1));
-                        await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
+                        return ioEncryption.WriteEncryptedAsync(outputPipeClient, response);
                     }
-                    async ValueTask WriteErrorAsync(Exception ex)
+                    ValueTask WriteErrorAsync(Exception ex)
                     {
                         byte[] data = SerializeToBytes(ex);
                         byte[] response = new byte[data.Length + 1];
                         response[0] = (byte)ResponseMarker.Error;
                         data.CopyTo(response.AsSpan(1));
-                        await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
+                        return ioEncryption.WriteEncryptedAsync(outputPipeClient, response);
                     }
                     ValueTask WriteLogAsync(string message, LogSeverity severity, string source)
                     {
