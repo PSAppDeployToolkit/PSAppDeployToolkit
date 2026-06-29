@@ -617,7 +617,10 @@ namespace PSADT.ClientServer
                         {
                             try
                             {
-                                _ = await InvokeAsync<bool>(PipeCommand.Close).ConfigureAwait(false);
+                                if (!await InvokeAsync<bool>(PipeCommand.Close).ConfigureAwait(false))
+                                {
+                                    throw new InvalidProgramException("The client process failed to close gracefully.");
+                                }
                             }
                             catch (Exception ex) when (ex.Message is not null)
                             {
