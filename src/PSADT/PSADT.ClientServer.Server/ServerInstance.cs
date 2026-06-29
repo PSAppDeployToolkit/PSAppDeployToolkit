@@ -613,7 +613,8 @@ namespace PSADT.ClientServer
                     if (_clientProcess is not null)
                     {
                         // Attempt a graceful close if the process is still running.
-                        if (IsRunning)
+                        bool wasRunning = IsRunning;
+                        if (wasRunning)
                         {
                             try
                             {
@@ -655,7 +656,7 @@ namespace PSADT.ClientServer
                             {
                                 throw new ServerException("The client process failed during shutdown.", clientException);
                             }
-                            if (clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode)
+                            if (wasRunning && clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode)
                             {
                                 if (Enum.IsDefined(typeof(ClientExitCode), clientResult.ExitCode))
                                 {
