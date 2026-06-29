@@ -258,9 +258,9 @@ namespace PSADT.ClientServer
                         data.CopyTo(response.AsSpan(1));
                         await ioEncryption.WriteEncryptedAsync(outputPipeClient, response).ConfigureAwait(false);
                     }
-                    async ValueTask WriteLogAsync(string message, LogSeverity severity, string source)
+                    ValueTask WriteLogAsync(string message, LogSeverity severity, string source)
                     {
-                        await logEncryption.WriteEncryptedAsync(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source))).ConfigureAwait(false);
+                        return logEncryption.WriteEncryptedAsync(logPipeClient, SerializeToBytes(new LogMessagePayload(message, severity, source)));
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
