@@ -132,7 +132,7 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]."
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking pre-close callback [$($callback.Name)]." -DisableErrorResolving:$false
                 }
             }
             foreach ($callback in $(if ($Script:ADT.Sessions.Count.Equals(1)) { $Script:ADT.Callbacks.([PSAppDeployToolkit.Foundation.CallbackType]::OnFinish) }))
@@ -150,7 +150,7 @@ function Close-ADTSession
                 }
                 catch
                 {
-                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.Name)]."
+                    $_; Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failure occurred while invoking on-finish callback [$($callback.Name)]." -DisableErrorResolving:$false
                 }
             }
         )
