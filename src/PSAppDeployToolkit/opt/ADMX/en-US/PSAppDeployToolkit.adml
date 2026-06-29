@@ -78,7 +78,7 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<string id="BalloonNotifications_Explain">Used to turn automatic balloon notifications on or off.</string>
 			<string id="FluentAccentColor_Display">FluentAccentColor</string>
 			<string id="FluentAccentColor_Explain">Specify the Accent Color in hex (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.</string>
-			<string id="FluentAccentColorDark_Display">FluentAccentColor</string>
+			<string id="FluentAccentColorDark_Display">FluentAccentColorDark</string>
 			<string id="FluentAccentColorDark_Explain">Specify the Accent Color in hex for dark mode (with the first two characters for transparency, 00 = 0%, FF = 100%), e.g. 0xFF0078D7.</string>
 			<string id="DialogStyle_Display">DialogStyle</string>
 			<string id="DialogStyle_Explain">Choose from either 'Fluent' for contemporary dialogs, or 'Classic' for PSAppDeployToolkit 3.x WinForms dialogs.</string>
