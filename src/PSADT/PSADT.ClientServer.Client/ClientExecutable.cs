@@ -264,8 +264,8 @@ namespace PSADT.ClientServer
                     }
 
                     // Continuously loop until the end. When we receive null, the server has closed the pipe, so we should break and exit.
-                    CloseAppsDialogState? closeAppsDialogState = null;
-                    try
+                    CloseAppsDialogStateManager closeAppsDialogStateManager = new();
+                    await using (closeAppsDialogStateManager.ConfigureAwait(false))
                     {
                         while (true)
                         {
@@ -296,15 +296,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.InitCloseAppsDialog:
                                             {
-                                                // We have the suppression here as the analyser can't handle our setup with IAsyncDisposable.
-                                                // It is correct though and under no circumstances is any memory leaked out of our setup.
-                                                if (closeAppsDialogState is not null)
-                                                {
-                                                    await closeAppsDialogState.DisposeAsync().ConfigureAwait(false);
-                                                }
-                                                #pragma warning disable format, CA2000 
-                                                closeAppsDialogState = new(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLogAsync);
-                                                #pragma warning restore CA2000, format
+                                                await closeAppsDialogStateManager.ResetAsync(DeserializeBytes<InitCloseAppsDialogPayload>(requestBytes, payloadOffset).ProcessDefinitions, WriteLogAsync).ConfigureAwait(false);
                                                 await WriteSuccessAsync(result: true).ConfigureAwait(false);
                                                 break;
                                             }
@@ -312,14 +304,14 @@ namespace PSADT.ClientServer
                                         case PipeCommand.PromptToCloseApps:
                                             {
                                                 // If we're here without a RunningProcessService, the InitCloseAppsDialog command was not called properly.
-                                                if (closeAppsDialogState?.RunningProcessService is null)
+                                                if (closeAppsDialogStateManager.State is not CloseAppsDialogState closeAppsDialogState || closeAppsDialogState.RunningProcessService is not RunningProcessService runningProcessService)
                                                 {
                                                     throw new ClientException("The PromptToCloseApps command can only be called when ProcessDefinitions were provided to the InitCloseAppsDialog command.", ClientExitCode.InvalidRequest);
                                                 }
 
                                                 // Get all the windows that haven't failed on us and start closing them.
                                                 TimeSpan promptToSaveTimeout = DeserializeBytes<PromptToCloseAppsPayload>(requestBytes, payloadOffset).Timeout; List<nint> failures = []; Process[] runningProcesses;
-                                                while ((runningProcesses = [.. closeAppsDialogState.RunningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
+                                                while ((runningProcesses = [.. runningProcessService.RunningProcesses.Select(static rp => rp.Process)]).Length > 0 && WindowUtilities.GetProcessWindowInfo(runningProcesses).Where(w => w.WindowHandle == w.ParentProcessMainWindowHandle && !failures.Contains(w.WindowHandle)).ToArray() is { Length: > 0 } windows)
                                                 {
                                                     // Start gracefully closing each open window.
                                                     foreach (WindowInfo window in windows)
@@ -393,7 +385,7 @@ namespace PSADT.ClientServer
                                                 ShowModalDialogPayload payload = DeserializeBytes<ShowModalDialogPayload>(requestBytes, payloadOffset);
                                                 await WriteSuccessAsync(payload.Options switch
                                                 {
-                                                    CloseAppsDialogOptions closeAppsDialogOptions => await DialogManager.ShowCloseAppsDialogAsync(payload.DialogStyle, closeAppsDialogOptions, closeAppsDialogState ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false),
+                                                    CloseAppsDialogOptions closeAppsDialogOptions => await DialogManager.ShowCloseAppsDialogAsync(payload.DialogStyle, closeAppsDialogOptions, closeAppsDialogStateManager.State ?? throw new ClientException("A required CloseAppsDialogState was not provided for the CloseAppsDialog.", ClientExitCode.NoCloseAppsDialogState)).ConfigureAwait(false),
                                                     InputDialogOptions inputDialogOptions => await DialogManager.ShowInputDialogAsync(payload.DialogStyle, inputDialogOptions).ConfigureAwait(false),
                                                     ListSelectionDialogOptions listSelectionDialogOptions => await DialogManager.ShowListSelectionDialogAsync(payload.DialogStyle, listSelectionDialogOptions).ConfigureAwait(false),
                                                     CustomDialogOptions customDialogOptions => await DialogManager.ShowCustomDialogAsync(payload.DialogStyle, customDialogOptions).ConfigureAwait(false),
@@ -574,16 +566,6 @@ namespace PSADT.ClientServer
                             catch (EndOfStreamException)
                             {
                                 break;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (closeAppsDialogState is not null)
-                        {
-                            await using (closeAppsDialogState.ConfigureAwait(false))
-                            {
-                                closeAppsDialogState = null;
                             }
                         }
                     }
@@ -1153,5 +1135,47 @@ namespace PSADT.ClientServer
         /// The <see cref="Assembly"/> containing the <see cref="ClientExecutable"/> type.
         /// </summary>
         private static readonly Assembly AssemblyInfo = typeof(ClientExecutable).Assembly;
+
+        /// <summary>
+        /// Owns the current close applications dialog state for the client-server command loop.
+        /// </summary>
+        private sealed class CloseAppsDialogStateManager : IAsyncDisposable
+        {
+            /// <summary>
+            /// Gets the currently active close applications dialog state.
+            /// </summary>
+            internal CloseAppsDialogState? State { get; private set; }
+
+            /// <summary>
+            /// Replaces the currently active close applications dialog state.
+            /// </summary>
+            /// <param name="processDefinitions">The process definitions to track for close applications dialogs.</param>
+            /// <param name="logAction">The delegate used to write log messages to the server.</param>
+            internal async ValueTask ResetAsync(ReadOnlyCollection<ProcessDefinition>? processDefinitions, Func<string, LogSeverity, string, ValueTask> logAction)
+            {
+                if (State is not null)
+                {
+                    await using (State.ConfigureAwait(false))
+                    {
+                        State = null;
+                    }
+                }
+                State = new(processDefinitions, logAction);
+            }
+
+            /// <summary>
+            /// Disposes of the currently active close applications dialog state.
+            /// </summary>
+            public async ValueTask DisposeAsync()
+            {
+                if (State is not null)
+                {
+                    await using (State.ConfigureAwait(false))
+                    {
+                        State = null;
+                    }
+                }
+            }
+        }
     }
 }
