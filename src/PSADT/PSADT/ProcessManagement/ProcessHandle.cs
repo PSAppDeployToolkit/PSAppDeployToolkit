@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using PSADT.Interop;
 using Windows.Win32;
@@ -36,7 +35,7 @@ namespace PSADT.ProcessManagement
         internal ProcessHandle(ProcessLaunchInfo launchInfo, Process process, uint processId, SafeProcessHandle processHandle, string commandLine, ProcessReadStream? stdOutHandle = null, ProcessReadStream? stdErrHandle = null, IReadOnlyCollection<string>? interleavedBuffer = null, ProcessWriteStream? stdInHandle = null)
         {
             // Internal worker to satisfy S4457 so that the error handling works properly.
-            async Task<ProcessResult> GetTaskAsync()
+            async System.Threading.Tasks.Task<ProcessResult> GetTaskAsync()
             {
                 // Ensure that the process is disposed of when the task completes, regardless of success or failure.
                 using (processHandle)
@@ -184,15 +183,15 @@ namespace PSADT.ProcessManagement
         /// <summary>
         /// Represents an asynchronous operation that returns a <see cref="ProcessResult"/>.
         /// </summary>
-        /// <remarks>This field holds a <see cref="Task{TResult}"/> that, when awaited, provides the
+        /// <remarks>This field holds a <see cref="System.Threading.Tasks.Task{TResult}"/> that, when awaited, provides the
         /// result of a process. The task is read-only and should be awaited to retrieve the <see
         /// cref="ProcessResult"/>.</remarks>
-        public Task<ProcessResult> Task { get; }
+        public System.Threading.Tasks.Task<ProcessResult> Task { get; }
 
         /// <summary>
         /// Gets the current status of the process completion task.
         /// </summary>
-        public TaskStatus Status => Task.Status;
+        public System.Threading.Tasks.TaskStatus Status => Task.Status;
 
         /// <summary>
         /// Gets a value indicating whether the process completion task has been canceled.
