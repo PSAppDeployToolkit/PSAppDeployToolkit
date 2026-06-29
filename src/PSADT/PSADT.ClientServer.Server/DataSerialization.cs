@@ -327,7 +327,6 @@ namespace PSADT.ClientServer
                 // PSADT custom exceptions
                 typeof(Interop.Exceptions.NtStatusException),
                 typeof(ClientException),
-                typeof(ServerException),
 
                 // Payload types
                 typeof(Payloads.EnvironmentVariablePayload),
