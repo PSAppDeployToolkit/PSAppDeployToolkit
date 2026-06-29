@@ -1,259 +1,257 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Windows.Win32.Foundation;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace System
-#pragma warning restore IDE0130 // Namespace does not match folder structure
+/// <summary>
+/// Additional ArgumentException extensions for handle validation.
+/// These are not polyfills - they are always available on all target frameworks.
+/// </summary>
+[SuppressMessage("Roslynator", "RCS1110:Declare type inside namespace", Justification = "Polyfills aren't meant to be part of a namespace.")]
+[SuppressMessage("Design", "MA0047:Declare types in namespaces", Justification = "Polyfills aren't meant to be part of a namespace.")]
+internal static class InvalidOperationExceptionExtensions
 {
     /// <summary>
-    /// Additional ArgumentException extensions for handle validation.
-    /// These are not polyfills - they are always available on all target frameworks.
+    /// Provides extension methods for throwing InvalidOperationException when encountering invalid or unexpected
+    /// operation states, such as zero, null, or invalid pointer and handle values.
     /// </summary>
-    internal static class InvalidOperationExceptionExtensions
+    /// <remarks>These methods are intended to simplify validation of values and handles in interop
+    /// scenarios, ensuring that exceptions are thrown when encountering invalid states before performing operations
+    /// that require valid inputs. Use these methods to enforce preconditions and improve error handling
+    /// consistency.</remarks>
+    extension(InvalidOperationException)
     {
         /// <summary>
-        /// Provides extension methods for throwing InvalidOperationException when encountering invalid or unexpected
-        /// operation states, such as zero, null, or invalid pointer and handle values.
+        /// Throws an exception if the specified unsigned integer value is zero.
         /// </summary>
-        /// <remarks>These methods are intended to simplify validation of values and handles in interop
-        /// scenarios, ensuring that exceptions are thrown when encountering invalid states before performing operations
-        /// that require valid inputs. Use these methods to enforce preconditions and improve error handling
-        /// consistency.</remarks>
-        extension(InvalidOperationException)
+        /// <param name="value">The unsigned integer value to check. If this value is zero, an exception is thrown.</param>
+        /// <param name="message">The message to include in the exception if the value is zero.</param>
+        /// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is zero.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfZero(uint value, string message)
         {
-            /// <summary>
-            /// Throws an exception if the specified unsigned integer value is zero.
-            /// </summary>
-            /// <param name="value">The unsigned integer value to check. If this value is zero, an exception is thrown.</param>
-            /// <param name="message">The message to include in the exception if the value is zero.</param>
-            /// <exception cref="InvalidOperationException">Thrown when <paramref name="value"/> is zero.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfZero(uint value, string message)
+            if (value == 0)
             {
-                if (value == 0)
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an InvalidOperationException if the specified value is zero.
+        /// </summary>
+        /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
+        /// <param name="message">The message that will be included in the exception if the value is zero.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfZero(nint value, string message)
+        {
+            if (value == IntPtr.Zero)
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an InvalidOperationException if the specified value is zero.
+        /// </summary>
+        /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
+        /// <param name="message">The message that will be included in the exception if the value is zero.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfZero(nuint value, string message)
+        {
+            if (value == UIntPtr.Zero)
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an InvalidOperationException if the specified value is zero.
+        /// </summary>
+        /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
+        /// <param name="message">The message that will be included in the exception if the value is zero.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfNull([NotNull] PWSTR value, string message)
+        {
+            unsafe
+            {
+                if (value.Value is null)
                 {
                     throw new InvalidOperationException(message);
                 }
             }
+        }
 
-            /// <summary>
-            /// Throws an InvalidOperationException if the specified value is zero.
-            /// </summary>
-            /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
-            /// <param name="message">The message that will be included in the exception if the value is zero.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfZero(nint value, string message)
+        /// <summary>
+        /// Throws an InvalidOperationException if the specified object is null, using the provided error message.
+        /// </summary>
+        /// <remarks>Use this method to enforce non-null requirements for parameters and provide a
+        /// custom error message when a null value is encountered.</remarks>
+        /// <param name="value">The object to check for null. If this parameter is null, an exception is thrown.</param>
+        /// <param name="message">The error message to include in the exception if the value is null.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfNull([NotNull] object? value, string message)
+        {
+            if (value is null)
             {
-                if (value == IntPtr.Zero)
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if the specified value is invalid.
+        /// </summary>
+        /// <param name="value">The value to validate. If this value is -1, an exception is thrown.</param>
+        /// <param name="message">The error message to include with the exception if the value is invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is -1.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfInvalid(nint value, string message)
+        {
+            if (value == -1)
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if the specified value represents an invalid state.
+        /// </summary>
+        /// <param name="value">The value to validate. If this value is equal to -1, it is considered invalid and an exception will be
+        /// thrown.</param>
+        /// <param name="message">The error message to include with the exception if the value is invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfInvalid(nuint value, string message)
+        {
+            if (value == unchecked((nuint)(-1)))
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if the specified value represents an invalid state.
+        /// </summary>
+        /// <param name="value">The value to validate. If this value is equal to -1, it is considered invalid and an exception will be
+        /// thrown.</param>
+        /// <param name="message">The error message to include with the exception if the value is invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfInvalid(PWSTR value, string message)
+        {
+            unsafe
+            {
+                if (value.Value == HANDLE.INVALID_HANDLE_VALUE)
                 {
                     throw new InvalidOperationException(message);
                 }
             }
+        }
 
-            /// <summary>
-            /// Throws an InvalidOperationException if the specified value is zero.
-            /// </summary>
-            /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
-            /// <param name="message">The message that will be included in the exception if the value is zero.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is zero.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfZero(nuint value, string message)
+        /// <summary>
+        /// Throws an exception if the specified native pointer value is null or invalid.
+        /// </summary>
+        /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
+        /// that require a non-null reference.</remarks>
+        /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
+        /// <param name="message">The message to include in the exception if the value is invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfZeroOrInvalid(nint value, string message)
+        {
+            if (value == IntPtr.Zero || value == -1)
             {
-                if (value == UIntPtr.Zero)
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if the specified native pointer value is null or invalid.
+        /// </summary>
+        /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
+        /// that require a non-null reference.</remarks>
+        /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
+        /// <param name="message">The message to include in the exception if the value is invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfZeroOrInvalid(nuint value, string message)
+        {
+            if (value == UIntPtr.Zero || value == unchecked((nuint)(-1)))
+            {
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        /// <summary>
+        /// Throws an exception if the specified native pointer value is null or invalid.
+        /// </summary>
+        /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
+        /// that require a non-null reference.</remarks>
+        /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
+        /// <param name="message">The message to include in the exception if the value is invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfNullOrInvalid([NotNull] PWSTR value, string message)
+        {
+            unsafe
+            {
+                if (value.Value is null || value.Value == HANDLE.INVALID_HANDLE_VALUE)
                 {
                     throw new InvalidOperationException(message);
                 }
             }
+        }
 
-            /// <summary>
-            /// Throws an InvalidOperationException if the specified value is zero.
-            /// </summary>
-            /// <param name="value">The value to check. If this parameter is zero, an exception will be thrown.</param>
-            /// <param name="message">The message that will be included in the exception if the value is zero.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfNull([NotNull] PWSTR value, string message)
+        /// <summary>
+        /// Throws an exception if the specified handle is null, closed, or invalid.
+        /// </summary>
+        /// <remarks>Use this method to ensure that a SafeHandle is in a valid state before performing
+        /// operations that require a valid handle.</remarks>
+        /// <typeparam name="T">Specifies the type of the handle. Must derive from SafeHandle.</typeparam>
+        /// <param name="handle">The handle to validate. The handle must not be null, closed, or invalid.</param>
+        /// <param name="message">The message included in the exception if the handle is null, closed, or invalid.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the handle is null, closed, or invalid.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfNullOrInvalid<T>([NotNull] T handle, string message) where T : SafeHandle
+        {
+            if ((handle?.IsClosed) is not false || handle.IsInvalid)
             {
-                unsafe
-                {
-                    if (value.Value is null)
-                    {
-                        throw new InvalidOperationException(message);
-                    }
-                }
+                throw new InvalidOperationException(message);
             }
+        }
 
-            /// <summary>
-            /// Throws an InvalidOperationException if the specified object is null, using the provided error message.
-            /// </summary>
-            /// <remarks>Use this method to enforce non-null requirements for parameters and provide a
-            /// custom error message when a null value is encountered.</remarks>
-            /// <param name="value">The object to check for null. If this parameter is null, an exception is thrown.</param>
-            /// <param name="message">The error message to include in the exception if the value is null.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is null.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfNull([NotNull] object? value, string message)
+        /// <summary>
+        /// Throws an InvalidOperationException if the specified length is odd.
+        /// </summary>
+        /// <param name="length">The length to check. Must be a non-negative integer.</param>
+        /// <param name="message">The message to include in the exception if the length is odd.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="length"/> is odd.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfNotEven(uint length, string message)
+        {
+            if ((length & 1) != 0)
             {
-                if (value is null)
-                {
-                    throw new InvalidOperationException(message);
-                }
+                throw new InvalidOperationException(message);
             }
+        }
 
-            /// <summary>
-            /// Throws an exception if the specified value is invalid.
-            /// </summary>
-            /// <param name="value">The value to validate. If this value is -1, an exception is thrown.</param>
-            /// <param name="message">The error message to include with the exception if the value is invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is -1.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfInvalid(nint value, string message)
+        /// <summary>
+        /// Throws an InvalidOperationException if the specified value exceeds the maximum allowed value.
+        /// </summary>
+        /// <param name="value">The value to be checked against the maximum limit.</param>
+        /// <param name="maxValue">The maximum allowable value that the specified value must not exceed.</param>
+        /// <param name="message">The message that will be included in the exception if the value exceeds the maximum.</param>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is greater than <paramref name="maxValue"/>.</exception>
+        [StackTraceHidden]
+        public static void ThrowIfGreaterThan(uint value, uint maxValue, string message)
+        {
+            if (value > maxValue)
             {
-                if (value == -1)
-                {
-                    throw new InvalidOperationException(message);
-                }
-            }
-
-            /// <summary>
-            /// Throws an exception if the specified value represents an invalid state.
-            /// </summary>
-            /// <param name="value">The value to validate. If this value is equal to -1, it is considered invalid and an exception will be
-            /// thrown.</param>
-            /// <param name="message">The error message to include with the exception if the value is invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfInvalid(nuint value, string message)
-            {
-                if (value == unchecked((nuint)(-1)))
-                {
-                    throw new InvalidOperationException(message);
-                }
-            }
-
-            /// <summary>
-            /// Throws an exception if the specified value represents an invalid state.
-            /// </summary>
-            /// <param name="value">The value to validate. If this value is equal to -1, it is considered invalid and an exception will be
-            /// thrown.</param>
-            /// <param name="message">The error message to include with the exception if the value is invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to -1, indicating an invalid operation.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfInvalid(PWSTR value, string message)
-            {
-                unsafe
-                {
-                    if (value.Value == HANDLE.INVALID_HANDLE_VALUE)
-                    {
-                        throw new InvalidOperationException(message);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Throws an exception if the specified native pointer value is null or invalid.
-            /// </summary>
-            /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
-            /// that require a non-null reference.</remarks>
-            /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
-            /// <param name="message">The message to include in the exception if the value is invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfZeroOrInvalid(nint value, string message)
-            {
-                if (value == IntPtr.Zero || value == -1)
-                {
-                    throw new InvalidOperationException(message);
-                }
-            }
-
-            /// <summary>
-            /// Throws an exception if the specified native pointer value is null or invalid.
-            /// </summary>
-            /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
-            /// that require a non-null reference.</remarks>
-            /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
-            /// <param name="message">The message to include in the exception if the value is invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfZeroOrInvalid(nuint value, string message)
-            {
-                if (value == UIntPtr.Zero || value == unchecked((nuint)(-1)))
-                {
-                    throw new InvalidOperationException(message);
-                }
-            }
-
-            /// <summary>
-            /// Throws an exception if the specified native pointer value is null or invalid.
-            /// </summary>
-            /// <remarks>Use this method to ensure that a native pointer is valid before performing operations
-            /// that require a non-null reference.</remarks>
-            /// <param name="value">The native pointer value to validate. Must not be equal to <see cref="IntPtr.Zero"/>.</param>
-            /// <param name="message">The message to include in the exception if the value is invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is equal to <see cref="IntPtr.Zero"/>.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfNullOrInvalid([NotNull] PWSTR value, string message)
-            {
-                unsafe
-                {
-                    if (value.Value is null || value.Value == HANDLE.INVALID_HANDLE_VALUE)
-                    {
-                        throw new InvalidOperationException(message);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Throws an exception if the specified handle is null, closed, or invalid.
-            /// </summary>
-            /// <remarks>Use this method to ensure that a SafeHandle is in a valid state before performing
-            /// operations that require a valid handle.</remarks>
-            /// <typeparam name="T">Specifies the type of the handle. Must derive from SafeHandle.</typeparam>
-            /// <param name="handle">The handle to validate. The handle must not be null, closed, or invalid.</param>
-            /// <param name="message">The message included in the exception if the handle is null, closed, or invalid.</param>
-            /// <exception cref="InvalidOperationException">Thrown if the handle is null, closed, or invalid.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfNullOrInvalid<T>([NotNull] T handle, string message) where T : SafeHandle
-            {
-                if ((handle?.IsClosed) is not false || handle.IsInvalid)
-                {
-                    throw new InvalidOperationException(message);
-                }
-            }
-
-            /// <summary>
-            /// Throws an InvalidOperationException if the specified length is odd.
-            /// </summary>
-            /// <param name="length">The length to check. Must be a non-negative integer.</param>
-            /// <param name="message">The message to include in the exception if the length is odd.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="length"/> is odd.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfNotEven(uint length, string message)
-            {
-                if ((length & 1) != 0)
-                {
-                    throw new InvalidOperationException(message);
-                }
-            }
-
-            /// <summary>
-            /// Throws an InvalidOperationException if the specified value exceeds the maximum allowed value.
-            /// </summary>
-            /// <param name="value">The value to be checked against the maximum limit.</param>
-            /// <param name="maxValue">The maximum allowable value that the specified value must not exceed.</param>
-            /// <param name="message">The message that will be included in the exception if the value exceeds the maximum.</param>
-            /// <exception cref="InvalidOperationException">Thrown if <paramref name="value"/> is greater than <paramref name="maxValue"/>.</exception>
-            [StackTraceHidden]
-            public static void ThrowIfGreaterThan(uint value, uint maxValue, string message)
-            {
-                if (value > maxValue)
-                {
-                    throw new InvalidOperationException(message);
-                }
+                throw new InvalidOperationException(message);
             }
         }
     }
