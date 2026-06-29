@@ -193,6 +193,26 @@ namespace PSADT.ProcessManagement
         public Task<ProcessResult> Task { get; }
 
         /// <summary>
+        /// Gets the current status of the process completion task.
+        /// </summary>
+        public TaskStatus Status => Task.Status;
+
+        /// <summary>
+        /// Gets a value indicating whether the process completion task has been canceled.
+        /// </summary>
+        public bool IsCanceled => Task.IsCanceled;
+
+        /// <summary>
+        /// Gets a value indicating whether the process completion task has completed.
+        /// </summary>
+        public bool IsCompleted => Task.IsCompleted;
+
+        /// <summary>
+        /// Gets a value indicating whether the process completion task has completed with an error.
+        /// </summary>
+        public bool IsFaulted => Task.IsFaulted;
+
+        /// <summary>
         /// Gets an awaiter for the process completion task.
         /// </summary>
         /// <returns>An awaiter for the process result.</returns>

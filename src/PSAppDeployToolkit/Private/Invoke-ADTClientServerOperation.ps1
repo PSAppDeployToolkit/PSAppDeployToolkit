@@ -588,7 +588,7 @@ function Private:Invoke-ADTClientServerOperation
             {
                 # Remove any previous success flags before starting the process.
                 $arkSuccessParams = $arkBaseParams.Clone(); $arkSuccessParams.Add('Name', [PSADT.Foundation.ClientServerUtilities]::OperationSuccessRegistryProperty)
-                Remove-ADTRegistryKey @arkSuccessParams; $sapResult = [PSADT.Foundation.ClientServerUtilities]::StartClientOperationAsync($argumentList, $User, $elevatedTokenType)
+                Remove-ADTRegistryKey @arkSuccessParams; $cspHandle = [PSADT.Foundation.ClientServerUtilities]::StartClientOperationAsync($argumentList, $User, $elevatedTokenType)
 
                 # Wait for the success flag. When found, remove it to clean up house and break to continue.
                 $noWaitTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -599,9 +599,9 @@ function Private:Invoke-ADTClientServerOperation
                         Remove-ADTRegistryKey @arkSuccessParams
                         return
                     }
-                    if ($sapResult.Task.IsCompleted)
+                    if ($cspHandle.IsCompleted)
                     {
-                        $sapResult.Task.ConfigureAwait($false).GetAwaiter().GetResult()
+                        $cspHandle.ConfigureAwait($false).GetAwaiter().GetResult()
                         break
                     }
                     if ($noWaitTimer.Elapsed -ge [PSADT.Foundation.ClientServerUtilities]::ClientOperationTimeout)
@@ -610,7 +610,7 @@ function Private:Invoke-ADTClientServerOperation
                             Exception = [System.TimeoutException]::new("Timed out waiting for the -NoWait client/server operation to report success.")
                             Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                             ErrorId = 'ClientServerNoWaitTimeoutExceeded'
-                            TargetObject = $sapResult
+                            TargetObject = $cspHandle
                             RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
                         }
                         $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
