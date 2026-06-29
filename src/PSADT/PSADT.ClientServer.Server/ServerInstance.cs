@@ -237,7 +237,7 @@ namespace PSADT.ClientServer
         /// <summary>
         /// Displays a restart dialog to the user and returns the user's input as a string.
         /// </summary>
-        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.InputDialog"/> and
+        /// <remarks>This method displays a modal dialog of type <see cref="DialogType.RestartDialog"/> and
         /// blocks execution until the user provides input or dismisses the dialog. The returned value depends on the
         /// specific implementation of the dialog and the user's interaction.</remarks>
         /// <param name="dialogStyle">The style of the dialog, which determines its appearance and behavior.</param>
@@ -346,9 +346,9 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Determines whether the progress dialog is currently open.
+        /// Determines whether the notification icon is currently open.
         /// </summary>
-        /// <remarks>This method checks the state of the progress dialog and returns a boolean value
+        /// <remarks>This method checks the state of the notification icon and returns a boolean value
         /// indicating whether it is currently displayed to the user.</remarks>
         /// <returns><see langword="true"/> if the notification icon is open; otherwise, <see langword="false"/>.</returns>
         public ValueTask<bool> NotifyIconOpenAsync()

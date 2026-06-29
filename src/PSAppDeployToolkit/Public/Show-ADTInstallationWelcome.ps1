@@ -155,9 +155,7 @@ function Show-ADTInstallationWelcome
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'excel' } -BlockExecution -AllowDefer -DeferTimes 10 -DeferDeadline '2013-08-25' -CloseProcessesCountdown 600
 
-        Close Word and Excel and prevent the user from launching the applications while the deployment is in progress.
-
-        Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first. When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
+        Close Word and Excel and prevent the user from launching the applications while the deployment is in progress. Allow the user to defer the deployment a maximum of 10 times or until the deadline is reached, whichever happens first. When deferral expires, prompt the user to close the applications and automatically close them after 10 minutes.
 
     .NOTES
         An active ADT session is NOT required to use this function.

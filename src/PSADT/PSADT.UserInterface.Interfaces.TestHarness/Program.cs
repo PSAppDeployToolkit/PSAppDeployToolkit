@@ -310,7 +310,7 @@ namespace PSADT.UserInterface.TestHarness
 
                 string custom2Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog2Options).ConfigureAwait(false);
 
-                if (customResult.Equals(customDialogButtonRightText, StringComparison.Ordinal))
+                if (custom2Result.Equals(customDialogButtonRightText, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -319,7 +319,7 @@ namespace PSADT.UserInterface.TestHarness
 
                 // Show Custom3 Dialog
 
-                string custom3Result = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog3Options).ConfigureAwait(false);
+                _ = await DialogManager.ShowCustomDialogAsync(dialogStyle, customDialog3Options).ConfigureAwait(false);
 
                 // This dialog only has one button, so we don't need to bother checking the result.
 
