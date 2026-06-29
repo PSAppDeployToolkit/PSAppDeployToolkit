@@ -75,7 +75,7 @@ function Set-ADTShortcut
     .EXAMPLE
         Set-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" -TargetPath "$envProgramFiles\Application\application.exe"
 
-        Creates a shortcut on the All Users desktop named 'Application', targeted to '$envProgramFiles\Application\application.exe'.
+        Modifies the existing shortcut on the All Users desktop named 'Application' so it targets '$envProgramFiles\Application\application.exe'.
 
     .EXAMPLE
         Get-ADTShortcut -LiteralPath "$envCommonDesktop\Application.lnk" | Set-ADTShortcut -WindowStyle Maximized

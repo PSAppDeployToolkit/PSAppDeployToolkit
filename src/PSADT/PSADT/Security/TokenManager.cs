@@ -271,7 +271,7 @@ namespace PSADT.Security
         /// <param name="tokenHandle">A handle to the security token. This handle must have the necessary access rights to allow duplication.</param>
         /// <param name="uiAccess">A boolean value indicating whether the retrieved primary token should have UI access enabled.</param>
         /// <returns>A <see cref="SafeFileHandle"/> representing the duplicated primary token.</returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>"
+        /// <exception cref="UnauthorizedAccessException">Thrown if the caller does not have the required privileges to duplicate the token with UI access enabled.</exception>
         internal static SafeFileHandle GetPrimaryToken(SafeHandle tokenHandle, bool uiAccess = false)
         {
             _ = NativeMethods.DuplicateTokenEx(tokenHandle, TOKEN_ACCESS_MASK.TOKEN_QUERY | TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_ASSIGN_PRIMARY | TOKEN_ACCESS_MASK.TOKEN_ADJUST_DEFAULT | TOKEN_ACCESS_MASK.TOKEN_ADJUST_SESSIONID, lpTokenAttributes: null, SECURITY_IMPERSONATION_LEVEL.SecurityAnonymous, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hPrimaryToken);

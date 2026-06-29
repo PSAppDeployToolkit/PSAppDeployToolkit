@@ -17,7 +17,7 @@ function Set-ADTPowerShellCulture
         The culture to set the current thread's Culture and UICulture to. Can be a CultureInfo object, or any valid IETF BCP 47 language tag.
 
     .EXAMPLE
-        Set-ADTPowerShellCulture -Culture en-US
+        Set-ADTPowerShellCulture -CultureInfo en-US
 
     .INPUTS
         None
