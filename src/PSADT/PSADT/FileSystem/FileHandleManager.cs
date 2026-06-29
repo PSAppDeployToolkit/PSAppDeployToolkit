@@ -397,6 +397,7 @@ namespace PSADT.FileSystem
         /// <param name="handleEntries">An array of SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX structures representing the handles to be closed. Each entry
         /// must be valid and correspond to an open handle.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="handleEntries"/> is null.</exception>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S1751:Loops with at most one iteration should be refactored", Justification = "This is a documented false positive.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There is no zero value for the enums in question.")]
         public static void CloseHandles(ReadOnlySpan<SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX> handleEntries)
         {
@@ -407,7 +408,10 @@ namespace PSADT.FileSystem
                 using SafeFileHandle fileProcessHandle = NativeMethods.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_DUP_HANDLE, bInheritHandle: false, (uint)handleEntry.UniqueProcessId);
                 using SafeFileHandle fileOpenHandle = new((HANDLE)handleEntry.HandleValue, ownsHandle: false);
                 _ = NativeMethods.DuplicateHandle(fileProcessHandle, fileOpenHandle, currentProcessHandle, out SafeFileHandle localHandle, 0, bInheritHandle: false, DUPLICATE_HANDLE_OPTIONS.DUPLICATE_CLOSE_SOURCE);
-                localHandle.Dispose();
+                using (localHandle)
+                {
+                    continue;
+                }
             }
         }
 

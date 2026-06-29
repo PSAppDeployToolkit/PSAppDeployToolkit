@@ -198,14 +198,16 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                stdOutHandle?.Dispose();
-                stdOutStream?.Dispose();
-                stdErrHandle?.Dispose();
-                stdErrStream?.Dispose();
-                stdInHandle?.Dispose();
-                stdInStream?.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (stdOutHandle)
+                using (stdOutStream)
+                using (stdErrHandle)
+                using (stdErrStream)
+                using (stdInHandle)
+                using (stdInStream)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
             finally
             {
@@ -232,23 +234,27 @@ namespace PSADT.ProcessManagement
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    process.Dispose();
-                    ExceptionDispatchInfo.Capture(ex).Throw();
-                    throw;
+                    using (process)
+                    {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                stdOutHandle?.Dispose();
-                stdOutStream?.Dispose();
-                stdErrHandle?.Dispose();
-                stdErrStream?.Dispose();
-                stdInHandle?.Dispose();
-                stdInStream?.Dispose();
-                hProcess.Dispose();
-                hThread.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (stdOutHandle)
+                using (stdOutStream)
+                using (stdErrHandle)
+                using (stdErrStream)
+                using (stdInHandle)
+                using (stdInStream)
+                using (hProcess)
+                using (hThread)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
         }
 
@@ -310,9 +316,11 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                process.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (process)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
 
             // Try to get the process's handle and process Id. For a pure
@@ -325,9 +333,11 @@ namespace PSADT.ProcessManagement
             }
             catch
             {
-                process.Dispose();
-                return null;
-                throw;
+                using (process)
+                {
+                    return null;
+                    throw;
+                }
             }
 
             // If this wasn't a pure shell action, assign the handle to our job and set the priority class.
@@ -345,10 +355,12 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                hProcess.Dispose();
-                process.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (hProcess)
+                using (process)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
         }
 
@@ -461,9 +473,11 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                stream.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (stream)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
         }
 
@@ -501,9 +515,11 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                stream.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (stream)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
         }
 
@@ -777,16 +793,20 @@ namespace PSADT.ProcessManagement
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    pinnedHandles?.Dispose();
-                    ExceptionDispatchInfo.Capture(ex).Throw();
-                    throw;
+                    using (pinnedHandles)
+                    {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                hAttributeList.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (hAttributeList)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
         }
 

@@ -207,8 +207,10 @@ namespace PSADT.FileSystem
                         }
                         if (hFind.IsInvalid)
                         {
-                            hFind.Dispose();
-                            continue;
+                            using (hFind)
+                            {
+                                continue;
+                            }
                         }
 
                         // Process the first result and then continue with FindNextFile in a loop until there are no more results. For each subdirectory, add it to the queue for processing.
@@ -560,13 +562,15 @@ namespace PSADT.FileSystem
             }
             catch (UnauthorizedAccessException)
             {
-                ppSecurityDescriptor?.Dispose();
-                ppsidOwner?.Dispose();
-                ppsidGroup?.Dispose();
-                ppDacl?.Dispose();
-                ppSacl?.Dispose();
-                return 0;
-                throw;
+                using (ppSecurityDescriptor)
+                using (ppsidOwner)
+                using (ppsidGroup)
+                using (ppDacl)
+                using (ppSacl)
+                {
+                    return 0;
+                    throw;
+                }
             }
             using (ppSecurityDescriptor)
             using (ppsidOwner)

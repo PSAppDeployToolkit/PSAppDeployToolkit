@@ -509,9 +509,11 @@ namespace PSADT.WindowsInstaller
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                hDatabase.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (hDatabase)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
         }
 

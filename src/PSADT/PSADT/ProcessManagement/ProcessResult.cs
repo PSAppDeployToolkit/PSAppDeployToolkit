@@ -87,7 +87,10 @@ namespace PSADT.ProcessManagement
         /// held by the associated process. After calling Dispose, the instance should not be used.</remarks>
         public void Dispose()
         {
-            Process?.Dispose();
+            using (Process)
+            {
+                return;
+            }
         }
 
         /// <summary>

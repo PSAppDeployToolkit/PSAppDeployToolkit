@@ -623,13 +623,16 @@ namespace PSADT.ClientServer
                     // We either closed or cancelled the process. Wait for that to occur.
                     try
                     {
-                        (await _clientProcess.ConfigureAwait(false)).Dispose();
+                        using (await _clientProcess.ConfigureAwait(false))
+                        {
+                            _clientProcess = null;
+                        }
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
                         // Expected when the process faulted before disposal.
+                        _clientProcess = null;
                     }
-                    _clientProcess = null;
                 }
 
                 // Cancel the log writer and wait for it to finish.

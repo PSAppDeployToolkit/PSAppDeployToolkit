@@ -68,11 +68,15 @@ namespace PSADT.UserInterface.DialogState
             {
                 return;
             }
-            if (RunningProcessService is not null)
+            if (RunningProcessService is null)
             {
-                await RunningProcessService.DisposeAsync().ConfigureAwait(false);
+                _disposed = true;
+                return;
             }
-            _disposed = true;
+            await using (RunningProcessService.ConfigureAwait(false))
+            {
+                _disposed = true;
+            }
         }
     }
 }

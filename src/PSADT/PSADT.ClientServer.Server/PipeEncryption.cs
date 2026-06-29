@@ -390,11 +390,13 @@ namespace PSADT.ClientServer
             {
                 return;
             }
-            _ecdh.Dispose();
-            if (_encryptionKey is not null)
+            using (_ecdh)
             {
-                SecureZeroMemory(_encryptionKey);
-                _encryptionKey = null;
+                if (_encryptionKey is not null)
+                {
+                    SecureZeroMemory(_encryptionKey);
+                    _encryptionKey = null;
+                }
             }
             _disposed = true;
         }

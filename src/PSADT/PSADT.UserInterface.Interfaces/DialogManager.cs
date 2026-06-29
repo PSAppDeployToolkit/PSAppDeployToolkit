@@ -310,10 +310,12 @@ namespace PSADT.UserInterface.Interfaces
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
-                    progressDialog.Dispose();
-                    progressDialog = null;
-                    ExceptionDispatchInfo.Capture(ex).Throw();
-                    throw;
+                    using (progressDialog)
+                    {
+                        progressDialog = null;
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                        throw;
+                    }
                 }
             });
         }
@@ -465,9 +467,11 @@ namespace PSADT.UserInterface.Interfaces
         {
             return notifyIcon is null ? throw new InvalidOperationException("Cannot close a notify icon while one is not open.") : InvokeDialogActionAsync(() =>
             {
-                lastBalloonTip = null;
-                notifyIcon.Dispose();
-                notifyIcon = null;
+                using (notifyIcon)
+                {
+                    lastBalloonTip = null;
+                    notifyIcon = null;
+                }
             });
         }
 

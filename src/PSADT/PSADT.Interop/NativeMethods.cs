@@ -2970,9 +2970,11 @@ namespace PSADT.Interop
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                psii.Dispose();
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw;
+                using (psii)
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw;
+                }
             }
             return res;
         }
