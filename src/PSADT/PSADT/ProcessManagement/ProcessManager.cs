@@ -198,11 +198,8 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                using (stdOutHandle)
                 using (stdOutStream)
-                using (stdErrHandle)
                 using (stdErrStream)
-                using (stdInHandle)
                 using (stdInStream)
                 {
                     ExceptionDispatchInfo.Capture(ex).Throw();
@@ -243,11 +240,8 @@ namespace PSADT.ProcessManagement
             }
             catch (Exception ex) when (ex.Message is not null)
             {
-                using (stdOutHandle)
                 using (stdOutStream)
-                using (stdErrHandle)
                 using (stdErrStream)
-                using (stdInHandle)
                 using (stdInStream)
                 using (hProcess)
                 using (hThread)

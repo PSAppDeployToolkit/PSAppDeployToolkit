@@ -40,9 +40,6 @@ namespace PSADT.ProcessManagement
             {
                 // Ensure that the process is disposed of when the task completes, regardless of success or failure.
                 using (processHandle)
-                using (stdOutHandle)
-                using (stdErrHandle)
-                using (stdInHandle)
                 {
                     // Wait for the process to exit or for a cancellation request, and handle the exit code accordingly.
                     CancellationToken cancellationToken = launchInfo.CancellationToken ?? CancellationToken.None;
