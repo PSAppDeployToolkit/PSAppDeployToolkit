@@ -628,18 +628,28 @@ namespace PSADT.ClientServer
                         }
 
                         // We either closed or cancelled the process. Wait for that to occur.
+                        ProcessResult clientResult;
                         try
                         {
-                            using ProcessResult clientResult = await _clientProcess.ConfigureAwait(false);
-                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException)
-                            {
-                                throw new ServerException("The client process failed during shutdown.", clientException);
-                            }
+                            clientResult = await _clientProcess.ConfigureAwait(false);
                         }
                         catch (OperationCanceledException)
                         {
                             // Expected when the process faulted before disposal.
+                            return;
+                        }
+                        finally
+                        {
                             _clientProcess = null;
+                        }
+
+                        // If the client process failed, throw a ServerException with the inner exception.
+                        using (clientResult)
+                        {
+                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException)
+                            {
+                                throw new ServerException("The client process failed during shutdown.", clientException);
+                            }
                         }
                     }
                 }
