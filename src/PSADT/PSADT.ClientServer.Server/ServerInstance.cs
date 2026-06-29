@@ -587,6 +587,8 @@ namespace PSADT.ClientServer
         /// the log writer task to complete, and disposes all pipes, encryption objects, and cancellation
         /// token sources. Once disposed, the instance should not be used further.</remarks>
         /// <exception cref="ServerException">Thrown if the client process fails during shutdown.</exception>
+        /// <exception cref="ClientException">Thrown if the client process exits with a known error code during shutdown.</exception>
+        /// <exception cref="InvalidProgramException">Thrown if the client process exits with an unknown error code during shutdown.</exception>
         public async ValueTask DisposeAsync()
         {
             // Check we're not already done.
@@ -649,6 +651,14 @@ namespace PSADT.ClientServer
                             if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException)
                             {
                                 throw new ServerException("The client process failed during shutdown.", clientException);
+                            }
+                            if (clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode)
+                            {
+                                if (Enum.IsDefined(typeof(ClientExitCode), clientResult.ExitCode))
+                                {
+                                    throw new ClientException($"The client process exited with code [{clientResult.ExitCode.ToString(CultureInfo.InvariantCulture)}] during shutdown.", (ClientExitCode)clientResult.ExitCode);
+                                }
+                                throw new InvalidProgramException($"The client process exited with an unknown code [{clientResult.ExitCode.ToString(CultureInfo.InvariantCulture)}] during shutdown.");
                             }
                         }
                     }
