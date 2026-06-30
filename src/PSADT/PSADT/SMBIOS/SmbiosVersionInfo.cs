@@ -28,7 +28,11 @@ namespace PSADT.SMBIOS
     /// including major and minor version numbers, DMI revision, and entry point type.
     /// This information is useful for determining which SMBIOS structures are supported.
     /// </remarks>
-    internal sealed record class SmbiosVersionInfo
+    /// <param name="MajorVersion">The SMBIOS major version number.</param>
+    /// <param name="MinorVersion">The SMBIOS minor version number.</param>
+    /// <param name="DmiRevision">The DMI revision number.</param>
+    /// <param name="EntryPointType">The entry point type.</param>
+    internal sealed record class SmbiosVersionInfo(byte MajorVersion, byte MinorVersion, byte DmiRevision, SmbiosEntryPointType EntryPointType)
     {
         /// <summary>
         /// Gets the SMBIOS major version number.
@@ -38,7 +42,7 @@ namespace PSADT.SMBIOS
         /// - 2 for SMBIOS 2.x implementations
         /// - 3 for SMBIOS 3.x implementations
         /// </remarks>
-        internal readonly byte MajorVersion;
+        internal readonly byte MajorVersion = MajorVersion;
 
         /// <summary>
         /// Gets the SMBIOS minor version number.
@@ -47,7 +51,7 @@ namespace PSADT.SMBIOS
         /// For SMBIOS 2.x: typically ranges from 0-8 (e.g., 2.0, 2.1, 2.8)
         /// For SMBIOS 3.x: typically ranges from 0-6 (e.g., 3.0, 3.1, 3.6)
         /// </remarks>
-        internal readonly byte MinorVersion;
+        internal readonly byte MinorVersion = MinorVersion;
 
         /// <summary>
         /// Gets the DMI (Desktop Management Interface) revision number.
@@ -56,7 +60,7 @@ namespace PSADT.SMBIOS
         /// This field is primarily used in SMBIOS 2.x implementations.
         /// Common values include 0, 1, or 2 depending on the DMI revision supported.
         /// </remarks>
-        internal readonly byte DmiRevision;
+        internal readonly byte DmiRevision = DmiRevision;
 
         /// <summary>
         /// Gets the SMBIOS entry point type.
@@ -64,22 +68,7 @@ namespace PSADT.SMBIOS
         /// <remarks>
         /// Indicates whether this is a SMBIOS 2.x, 3.x, or unknown entry point format.
         /// </remarks>
-        internal readonly SmbiosEntryPointType EntryPointType;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SmbiosVersionInfo"/> class.
-        /// </summary>
-        /// <param name="majorVersion">The SMBIOS major version number.</param>
-        /// <param name="minorVersion">The SMBIOS minor version number.</param>
-        /// <param name="dmiRevision">The DMI revision number.</param>
-        /// <param name="entryPointType">The entry point type.</param>
-        internal SmbiosVersionInfo(byte majorVersion, byte minorVersion, byte dmiRevision, SmbiosEntryPointType entryPointType)
-        {
-            MajorVersion = majorVersion;
-            MinorVersion = minorVersion;
-            DmiRevision = dmiRevision;
-            EntryPointType = entryPointType;
-        }
+        internal readonly SmbiosEntryPointType EntryPointType = EntryPointType;
 
         /// <summary>
         /// Gets the version as a formatted string.

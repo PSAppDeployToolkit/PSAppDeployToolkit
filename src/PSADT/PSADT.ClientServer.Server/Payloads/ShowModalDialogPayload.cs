@@ -7,6 +7,9 @@ namespace PSADT.ClientServer.Payloads
     /// <summary>
     /// Payload for the ShowModalDialog command.
     /// </summary>
+    /// <param name="DialogType">The type of dialog to display.</param>
+    /// <param name="DialogStyle">The style of the dialog.</param>
+    /// <param name="Options">The options for the dialog.</param>
     [DataContract]
     [KnownType(typeof(CloseAppsDialogOptions))]
     [KnownType(typeof(CustomDialogOptions))]
@@ -15,38 +18,25 @@ namespace PSADT.ClientServer.Payloads
     [KnownType(typeof(InputDialogOptions))]
     [KnownType(typeof(ProgressDialogOptions))]
     [KnownType(typeof(RestartDialogOptions))]
-    internal sealed record class ShowModalDialogPayload : IClientServerPayload
+    internal sealed record class ShowModalDialogPayload(DialogType DialogType, DialogStyle DialogStyle, IDialogOptions Options) : IClientServerPayload
     {
         /// <summary>
         /// The type of dialog to display.
         /// </summary>
         [DataMember]
-        internal readonly DialogType DialogType;
+        internal readonly DialogType DialogType = DialogType;
 
         /// <summary>
         /// The style of the dialog.
         /// </summary>
         [DataMember]
-        internal readonly DialogStyle DialogStyle;
+        internal readonly DialogStyle DialogStyle = DialogStyle;
 
         /// <summary>
         /// The options for the dialog.
         /// </summary>
         /// <remarks>The concrete type depends on the <see cref="DialogType"/>.</remarks>
         [DataMember]
-        internal readonly IDialogOptions Options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ShowModalDialogPayload"/> class.
-        /// </summary>
-        /// <param name="dialogType">The type of dialog to display.</param>
-        /// <param name="dialogStyle">The style of the dialog.</param>
-        /// <param name="options">The options for the dialog.</param>
-        internal ShowModalDialogPayload(DialogType dialogType, DialogStyle dialogStyle, IDialogOptions options)
-        {
-            DialogType = dialogType;
-            DialogStyle = dialogStyle;
-            Options = options;
-        }
+        internal readonly IDialogOptions Options = Options;
     }
 }
