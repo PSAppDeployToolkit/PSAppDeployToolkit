@@ -1165,49 +1165,35 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private readonly ReadOnlyDictionary<ApplicationTheme, Color?> _dialogAccentCache;
 
         /// <summary>
-        /// Dispose managed resources.
+        /// Releases the managed resources used by the dialog.
         /// </summary>
-        public void Dispose()
+        /// <remarks>Event handlers are detached and timers are stopped to prevent memory leaks.</remarks>
+        public virtual void Dispose()
         {
-            Dispose(disposing: true);
-        }
-
-        /// <summary>
-        /// Releases the resources used by the dialog and optionally disposes of managed resources.
-        /// </summary>
-        /// <remarks>This method is part of the standard dispose pattern. When disposing is true, event
-        /// handlers are detached and timers are stopped to prevent memory leaks. Call this method when the dialog is no
-        /// longer needed to ensure that all resources are properly released.</remarks>
-        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-        private protected virtual void Dispose(bool disposing)
-        {
+            // Remove event handlers.
             if (Disposed)
             {
                 return;
             }
-            if (disposing)
+            SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
+            SizeChanged -= FluentDialog_SizeChanged;
+            Loaded -= FluentDialog_Loaded;
+
+            // Remove timer event handlers if they exist.
+            if (_expiryTimer is not null)
             {
-                // Remove event handlers.
-                SystemParameters.StaticPropertyChanged -= SystemParameters_StaticPropertyChanged;
-                SizeChanged -= FluentDialog_SizeChanged;
-                Loaded -= FluentDialog_Loaded;
-
-                // Remove timer event handlers if they exist.
-                if (_expiryTimer is not null)
-                {
-                    _expiryTimer.Tick -= ExpiryTimer_Tick;
-                    _expiryTimer.Stop();
-                }
-                if (_persistTimer is not null)
-                {
-                    _persistTimer.Tick -= PersistTimer_Tick;
-                    _persistTimer.Stop();
-                }
-
-                // Clean up resources.
-                ApplicationThemeManager.Changed -= ThemeManager_ActualThemeChanged;
-                _countdownTimer?.Stop();
+                _expiryTimer.Tick -= ExpiryTimer_Tick;
+                _expiryTimer.Stop();
             }
+            if (_persistTimer is not null)
+            {
+                _persistTimer.Tick -= PersistTimer_Tick;
+                _persistTimer.Stop();
+            }
+
+            // Clean up resources.
+            ApplicationThemeManager.Changed -= ThemeManager_ActualThemeChanged;
+            _countdownTimer?.Stop();
             Disposed = true;
         }
 

@@ -1056,20 +1056,11 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         public void Dispose()
         {
-            Dispose(disposing: true);
-        }
-
-        /// <summary>
-        /// Releases the unmanaged resources used by the <see cref="ShellLinkFile"/> and optionally releases the managed resources.
-        /// </summary>
-        /// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
-        private void Dispose(bool disposing)
-        {
             if (_disposed)
             {
                 return;
             }
-            if (disposing && _shellLink is not null)
+            if (_shellLink is not null)
             {
                 _ = Marshal.FinalReleaseComObject(_shellLink);
             }
