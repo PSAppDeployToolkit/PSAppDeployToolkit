@@ -831,7 +831,7 @@ namespace PSADT.ShortcutManagement
         }
 
         /// <summary>
-        /// Releases the unmanaged resources used by the <see cref="InternetShortcutFile"/> and optionally releases the managed resources.
+        /// Releases all resources used by the <see cref="InternetShortcutFile"/>.
         /// </summary>
         public void Dispose()
         {

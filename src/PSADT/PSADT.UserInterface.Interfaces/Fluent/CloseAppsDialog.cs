@@ -480,21 +480,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private static readonly Dictionary<string, BitmapSource> _appIconCache = [];
 
         /// <summary>
-        /// Dispose managed and unmanaged resources
+        /// Releases the managed resources used by the dialog.
         /// </summary>
-        /// <param name="disposing">true if called from Dispose; false if called from finalizer.</param>
-        private protected override void Dispose(bool disposing)
+        public override void Dispose()
         {
             if (Disposed)
             {
                 return;
             }
-            if (disposing)
-            {
-                _runningProcessService?.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
-                AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
-            }
-            base.Dispose(disposing);
+            _runningProcessService?.ProcessesToCloseChanged -= RunningProcessService_ProcessesToCloseChanged;
+            AppsToCloseCollection.CollectionChanged -= AppsToCloseCollection_CollectionChanged;
+            base.Dispose();
         }
     }
 }
