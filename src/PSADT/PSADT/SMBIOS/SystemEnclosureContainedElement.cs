@@ -35,7 +35,7 @@ namespace PSADT.SMBIOS
         /// <param name="rawType">The raw type identifier for the contained element.</param>
         /// <param name="rawMinimum">The minimum raw value supported by the contained element.</param>
         /// <param name="rawMaximum">The maximum raw value supported by the contained element.</param>
-        public SystemEnclosureContainedElement(byte rawType, byte rawMinimum, byte rawMaximum)
+        internal SystemEnclosureContainedElement(byte rawType, byte rawMinimum, byte rawMaximum)
         {
             RawType = rawType;
             RawMinimum = rawMinimum;

@@ -97,7 +97,7 @@ namespace PSADT.ShortcutManagement
         /// <param name="shift">Whether the Shift modifier is required.</param>
         /// <param name="alt">Whether the Alt modifier is required.</param>
         /// <param name="extended">Whether this is an extended key.</param>
-        public ShortcutHotkey(byte keyCode, bool control = false, bool shift = false, bool alt = false, bool extended = false)
+        internal ShortcutHotkey(byte keyCode, bool control = false, bool shift = false, bool alt = false, bool extended = false)
         {
             KeyCode = keyCode;
             Control = control;
@@ -115,7 +115,7 @@ namespace PSADT.ShortcutManagement
         /// <param name="alt">Whether the Alt modifier is required.</param>
         /// <param name="extended">Whether this is an extended key.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the key is not A-Z or 0-9.</exception>
-        public ShortcutHotkey(char key, bool control = false, bool shift = false, bool alt = false, bool extended = false)
+        internal ShortcutHotkey(char key, bool control = false, bool shift = false, bool alt = false, bool extended = false)
         {
             char upperKey = char.ToUpperInvariant(key);
             KeyCode = upperKey switch

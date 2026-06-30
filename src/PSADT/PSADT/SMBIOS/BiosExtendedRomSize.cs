@@ -29,7 +29,7 @@ namespace PSADT.SMBIOS
         /// Initializes a new instance of the BiosExtendedRomSize structure with the specified raw value.
         /// </summary>
         /// <param name="raw">The raw 16-bit value representing the BIOS extended ROM size.</param>
-        public BiosExtendedRomSize(ushort raw)
+        internal BiosExtendedRomSize(ushort raw)
         {
             Raw = raw;
         }
