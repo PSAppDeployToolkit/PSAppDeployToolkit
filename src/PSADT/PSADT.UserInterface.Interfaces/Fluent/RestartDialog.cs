@@ -133,14 +133,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             else if (_countdownWarningDuration is not null && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
                 IsMinimizeButtonVisible = Visibility.Collapsed;
-                if (allowCancel)
-                {
-                    ButtonMiddle.IsEnabled = false;
-                }
-                else
-                {
-                    ButtonRight.IsEnabled = false;
-                }
+                (allowCancel ? ButtonMiddle : ButtonRight).IsEnabled = false;
                 RestoreWindow();
             }
         }
