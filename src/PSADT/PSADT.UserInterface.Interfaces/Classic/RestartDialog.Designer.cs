@@ -40,6 +40,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             this.tableLayoutPanelButton = new System.Windows.Forms.TableLayoutPanel();
             this.buttonMinimize = new System.Windows.Forms.Button();
             this.buttonRestartNow = new System.Windows.Forms.Button();
+            this.buttonCancel = new System.Windows.Forms.Button();
             this.pictureBanner = new System.Windows.Forms.PictureBox();
             this.flowLayoutPanelBase = new System.Windows.Forms.FlowLayoutPanel();
             this.countdownTimer = new System.Windows.Forms.Timer(this.components);
@@ -175,11 +176,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanelButton.AutoSize = true;
             this.tableLayoutPanelButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.tableLayoutPanelButton.ColumnCount = 2;
+            this.tableLayoutPanelButton.ColumnCount = 3;
             this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelButton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelButton.Controls.Add(this.buttonMinimize, 1, 0);
             this.tableLayoutPanelButton.Controls.Add(this.buttonRestartNow, 0, 0);
+            this.tableLayoutPanelButton.Controls.Add(this.buttonMinimize, 1, 0);
+            this.tableLayoutPanelButton.Controls.Add(this.buttonCancel, 2, 0);
             this.tableLayoutPanelButton.Location = new System.Drawing.Point(16, 192);
             this.tableLayoutPanelButton.Margin = new System.Windows.Forms.Padding(0, 12, 0, 0);
             this.tableLayoutPanelButton.Name = "tableLayoutPanelButton";
@@ -190,13 +193,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // 
             // buttonMinimize
             // 
-            this.buttonMinimize.Dock = System.Windows.Forms.DockStyle.Right;
-            this.buttonMinimize.Location = new System.Drawing.Point(247, 0);
+            this.buttonMinimize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.buttonMinimize.Location = new System.Drawing.Point(164, 0);
             this.buttonMinimize.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonMinimize.MaximumSize = new System.Drawing.Size(233, 25);
-            this.buttonMinimize.MinimumSize = new System.Drawing.Size(233, 25);
+            this.buttonMinimize.MaximumSize = new System.Drawing.Size(152, 25);
+            this.buttonMinimize.MinimumSize = new System.Drawing.Size(152, 25);
             this.buttonMinimize.Name = "buttonMinimize";
-            this.buttonMinimize.Size = new System.Drawing.Size(233, 25);
+            this.buttonMinimize.Size = new System.Drawing.Size(152, 25);
             this.buttonMinimize.TabIndex = 1;
             this.buttonMinimize.Text = "Minimize";
             this.buttonMinimize.UseVisualStyleBackColor = true;
@@ -204,21 +207,35 @@ namespace PSADT.UserInterface.Interfaces.Classic
             // 
             // buttonRestartNow
             // 
-            this.buttonRestartNow.Dock = System.Windows.Forms.DockStyle.Left;
+            this.buttonRestartNow.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.buttonRestartNow.Location = new System.Drawing.Point(0, 0);
             this.buttonRestartNow.Margin = new System.Windows.Forms.Padding(0);
-            this.buttonRestartNow.MaximumSize = new System.Drawing.Size(234, 25);
-            this.buttonRestartNow.MinimumSize = new System.Drawing.Size(234, 25);
+            this.buttonRestartNow.MaximumSize = new System.Drawing.Size(152, 25);
+            this.buttonRestartNow.MinimumSize = new System.Drawing.Size(152, 25);
             this.buttonRestartNow.Name = "buttonRestartNow";
-            this.buttonRestartNow.Size = new System.Drawing.Size(234, 25);
+            this.buttonRestartNow.Size = new System.Drawing.Size(152, 25);
             this.buttonRestartNow.TabIndex = 0;
             this.buttonRestartNow.Text = "Restart Now";
             this.buttonRestartNow.UseVisualStyleBackColor = true;
             this.buttonRestartNow.Click += new System.EventHandler(this.ButtonLeft_Click);
             // 
+            // buttonCancel
+            // 
+            this.buttonCancel.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.buttonCancel.Location = new System.Drawing.Point(328, 0);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(0);
+            this.buttonCancel.MaximumSize = new System.Drawing.Size(152, 25);
+            this.buttonCancel.MinimumSize = new System.Drawing.Size(152, 25);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(152, 25);
+            this.buttonCancel.TabIndex = 2;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.ButtonMiddle_Click);
+            // 
             // pictureBanner
             // 
-            this.pictureBanner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.pictureBanner.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBanner.Location = new System.Drawing.Point(0, 0);
             this.pictureBanner.Margin = new System.Windows.Forms.Padding(0);
@@ -275,6 +292,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         private TableLayoutPanel tableLayoutPanelButton;
         private Button buttonMinimize;
         private Button buttonRestartNow;
+        private Button buttonCancel;
         private FlowLayoutPanel flowLayoutPanelCountdown;
         private Label labelRestartMessage;
         private Label labelTimeRemaining;

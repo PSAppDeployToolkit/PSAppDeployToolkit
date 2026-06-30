@@ -86,6 +86,18 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 buttonRestartNow.Text = StripFormattingTags(options.Strings.ButtonRestartNow);
                 buttonMinimize.Text = StripFormattingTags(options.Strings.ButtonRestartLater);
                 shutdownReasonText = options.ShutdownReasonText;
+
+                // Set up the Cancel button if cancellation is allowed, otherwise remove it.
+                if (options.AllowCancel)
+                {
+                    buttonCancel.Text = StripFormattingTags(options.Strings.ButtonCancel);
+                }
+                else
+                {
+                    // Drop the Cancel button and move the minimize button into the right-hand column.
+                    tableLayoutPanelButton.Controls.Remove(buttonCancel);
+                    tableLayoutPanelButton.SetColumn(buttonMinimize, 2);
+                }
             }
 
             // Resume the dialog now that we've applied any options.

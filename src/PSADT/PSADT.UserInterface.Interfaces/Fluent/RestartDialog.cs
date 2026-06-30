@@ -32,6 +32,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 FormatMessageWithHyperlinks(MessageTextBlock, options.Strings.Message);
             }
             ButtonPanel.Visibility = Visibility.Visible;
+            allowCancel = options.AllowCancel;
 
             // Configure left button
             SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);
@@ -40,12 +41,29 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
-            // Configure right button
-            SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
-            AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
-            IsMinimizeButtonVisible = Visibility.Visible;
-            ButtonRight.Visibility = Visibility.Visible;
-            SetCancelButton(ButtonRight);
+            if (allowCancel)
+            {
+                // Configure middle button (Restart Later / minimize).
+                SetButtonContentWithAccelerator(ButtonMiddle, options.Strings.ButtonRestartLater);
+                AutomationProperties.SetName(ButtonMiddle, options.Strings.ButtonRestartLater);
+                IsMinimizeButtonVisible = Visibility.Visible;
+                ButtonMiddle.Visibility = Visibility.Visible;
+
+                // Configure right button (Cancel) to close the dialog without restarting.
+                SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonCancel);
+                AutomationProperties.SetName(ButtonRight, options.Strings.ButtonCancel);
+                ButtonRight.Visibility = Visibility.Visible;
+                SetCancelButton(ButtonRight);
+            }
+            else
+            {
+                // Configure right button (Restart Later / minimize).
+                SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
+                AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
+                IsMinimizeButtonVisible = Visibility.Visible;
+                ButtonRight.Visibility = Visibility.Visible;
+                SetCancelButton(ButtonRight);
+            }
         }
 
         /// <summary>
@@ -69,10 +87,26 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Handles the right button click event by minimizing the window.
         /// </summary>
         /// <remarks>Overrides the default right button behavior to minimize the window instead of
-        /// performing any other action.</remarks>
+        /// performing any other action. When cancellation is allowed, the right button is the Cancel button and the
+        /// base implementation is invoked to close the dialog without restarting.</remarks>
         /// <param name="sender">The source of the event, typically the button that was clicked.</param>
         /// <param name="e">The event data associated with the click event.</param>
         private protected override void ButtonRight_Click(object? sender, RoutedEventArgs e)
+        {
+            if (allowCancel)
+            {
+                base.ButtonRight_Click(sender, e);
+                return;
+            }
+            WindowState = WindowState.Minimized;
+        }
+
+        /// <summary>
+        /// Handles the middle button click event by minimizing the window when cancellation is allowed.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
+        private protected override void ButtonMiddle_Click(object? sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
@@ -99,7 +133,14 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             else if (_countdownWarningDuration is not null && _countdownRemainingTime <= _countdownWarningDuration.Value)
             {
                 IsMinimizeButtonVisible = Visibility.Collapsed;
-                ButtonRight.IsEnabled = false;
+                if (allowCancel)
+                {
+                    ButtonMiddle.IsEnabled = false;
+                }
+                else
+                {
+                    ButtonRight.IsEnabled = false;
+                }
                 RestoreWindow();
             }
         }
@@ -108,5 +149,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// An optional string that specifies the reason for the shutdown, which will be logged in the system event log. If <see langword="null"/> or empty, no reason will be logged.
         /// </summary>
         private readonly string? shutdownReasonText;
+
+        /// <summary>
+        /// Indicates whether a Cancel button is shown to close the dialog without restarting.
+        /// </summary>
+        private readonly bool allowCancel;
     }
 }

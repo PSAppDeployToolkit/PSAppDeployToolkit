@@ -296,6 +296,9 @@ try
                                                 # Button text for when wanting to restart the device now.
                                                 ButtonRestartNow = 'Restart Now'
 
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Cancel'
+
                                                 # Text displayed when the device requires a restart.
                                                 Message = @{
                                                     Install = 'In order for the installation to complete, you must restart your computer.'
@@ -517,6 +520,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'تصغير'
                                                 ButtonRestartNow = 'إعادة التشغيل الآن'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'إلغاء'
                                                 Message = @{
                                                     Install = 'لكي يكتمل التثبيت، يجب إعادة تشغيل الكمبيوتر.'
                                                     Repair = 'لكي تكتمل عملية الإصلاح، يجب إعادة تشغيل الكمبيوتر.'
@@ -681,6 +687,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Минимизирай'
                                                 ButtonRestartNow = 'Рестартирай сега'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Отказ'
                                                 Message = @{
                                                     Install = 'За да може инсталацията да завърши, е нужно да рестартирате Вашия компютър.'
                                                     Repair = 'За да може поправката да завърши, е нужно да рестартирате Вашия компютър.'
@@ -845,6 +854,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimalizovat'
                                                 ButtonRestartNow = 'Restartovat nyní'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Zrušit'
                                                 Message = @{
                                                     Install = 'Aby se instalace dokončila, musíte restartovat počítač.'
                                                     Repair = 'Aby byla oprava dokončena, musíte restartovat počítač.'
@@ -1009,6 +1021,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimér'
                                                 ButtonRestartNow = 'Genstart nu'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Annuller'
                                                 Message = @{
                                                     Install = 'For at installationen kan gennemføres, skal du genstarte din computer.'
                                                     Repair = 'For at reparationen kan gennemføres, skal du genstarte din computer.'
@@ -1173,6 +1188,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimieren'
                                                 ButtonRestartNow = 'Jetzt neu starten'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Abbrechen'
                                                 Message = @{
                                                     Install = 'Damit die Installation abgeschlossen werden kann, müssen Sie Ihren Computer neu starten.'
                                                     Repair = 'Damit die Reparatur abgeschlossen werden kann, müssen Sie Ihren Computer neu starten.'
@@ -1337,6 +1355,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Ελαχιστοποίηση'
                                                 ButtonRestartNow = 'Επανεκκίνηση τώρα'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Άκυρο'
                                                 Message = @{
                                                     Install = 'Προκειμένου να ολοκληρωθεί η εγκατάσταση, πρέπει να επανεκκινήσετε τον υπολογιστή σας.'
                                                     Repair = 'Για να ολοκληρωθεί η επισκευή, πρέπει να επανεκκινήσετε τον υπολογιστή σας.'
@@ -1501,6 +1522,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimizar'
                                                 ButtonRestartNow = 'Reiniciar ahora'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Cancelar'
                                                 Message = @{
                                                     Install = 'Para que la instalación se complete, debe reiniciar su ordenador.'
                                                     Repair = 'Para que la reparación se complete, debe reiniciar su ordenador.'
@@ -1665,6 +1689,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimoi'
                                                 ButtonRestartNow = 'Käynnistä uudelleen nyt'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Peruuta'
                                                 Message = @{
                                                     Install = 'Jotta asennus voidaan suorittaa loppuun, sinun on käynnistettävä tietokoneesi uudelleen.'
                                                     Repair = 'Jotta korjaus saataisiin päätökseen, sinun on käynnistettävä tietokone uudelleen.'
@@ -1829,6 +1856,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Réduire'
                                                 ButtonRestartNow = 'Redémarrer maintenant'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Annuler'
                                                 Message = @{
                                                     Install = "Pour que l'installation soit terminée, vous devez redémarrer votre ordinateur."
                                                     Repair = "Pour que la réparation soit terminée, vous devez redémarrer votre ordinateur."
@@ -1993,6 +2023,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'לְצַמְצֵם'
                                                 ButtonRestartNow = 'הפעל מחדש עכשיו'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'ביטול'
                                                 Message = @{
                                                     Install = 'על מנת שההתקנה תסתיים, עליך להפעיל מחדש את המחשב.'
                                                     Repair = 'על מנת שהתיקון יסתיים, עליך להפעיל מחדש את המחשב.'
@@ -2157,6 +2190,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimalizálás'
                                                 ButtonRestartNow = 'Újraindítás most'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Mégse'
                                                 Message = @{
                                                     Install = 'A telepítés befejezéséhez újra kell indítania a számítógépet.'
                                                     Repair = 'A javítás befejezéséhez újra kell indítania a számítógépet.'
@@ -2321,6 +2357,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Riduci a icona.'
                                                 ButtonRestartNow = 'Riavvia ora.'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Annulla'
                                                 Message = @{
                                                     Install = "Per completare l'installazione, deve riavviare il computer."
                                                     Repair = "Affinché la riparazione sia completata, deve riavviare il computer."
@@ -2485,6 +2524,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = '最小化'
                                                 ButtonRestartNow = '今すぐ再起動'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'キャンセル'
                                                 Message = @{
                                                     Install = 'インストールを完了するには、コンピュータを再起動する必要があります。'
                                                     Repair = '修復を完了するには、コンピュータを再起動する必要があります。'
@@ -2649,6 +2691,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = '최소화'
                                                 ButtonRestartNow = '지금 다시 시작'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = '취소'
                                                 Message = @{
                                                     Install = '설치를 완료하려면 컴퓨터를 다시 시작해야 합니다.'
                                                     Repair = '복구가 완료되려면 컴퓨터를 다시 시작해야 합니다.'
@@ -2813,6 +2858,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimizēt'
                                                 ButtonRestartNow = 'Restartēt tagad'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Atcelt'
                                                 Message = @{
                                                     Install = 'Lai instalēšana tiktu pabeigta, dators ir jārestartē.'
                                                     Repair = 'Lai labošana tiktu pabeigta, dators jārestartē.'
@@ -2977,6 +3025,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimer'
                                                 ButtonRestartNow = 'Start på nytt nå'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Avbryt'
                                                 Message = @{
                                                     Install = 'For at installasjonen skal fullføres, må du starte datamaskinen på nytt.'
                                                     Repair = 'For at reparasjonen skal fullføres, må du starte datamaskinen på nytt.'
@@ -3141,6 +3192,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimaliseren'
                                                 ButtonRestartNow = 'Nu opnieuw opstarten'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Annuleren'
                                                 Message = @{
                                                     Install = 'Om de installatie te voltooien, moet u uw computer opnieuw opstarten.'
                                                     Repair = 'Om de reparatie te voltooien, moet u uw computer opnieuw opstarten.'
@@ -3305,6 +3359,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimalizuj'
                                                 ButtonRestartNow = 'Uruchom ponownie teraz'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Anuluj'
                                                 Message = @{
                                                     Install = 'Aby zakończyć instalację, należy ponownie uruchomić komputer.'
                                                     Repair = 'Aby zakończyć naprawę, należy ponownie uruchomić komputer.'
@@ -3469,6 +3526,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimizar'
                                                 ButtonRestartNow = 'Reiniciar agora'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Cancelar'
                                                 Message = @{
                                                     Install = 'Para que a instalação seja concluída, tem de reiniciar o computador.'
                                                     Repair = 'Para que a reparação seja concluída, tem de reiniciar o computador.'
@@ -3633,6 +3693,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimizar'
                                                 ButtonRestartNow = 'Reiniciar Agora'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Cancelar'
                                                 Message = @{
                                                     Install = 'Para que a instalação seja concluída, é preciso reiniciar o computador.'
                                                     Repair = 'Para que o reparo seja concluído, é preciso reiniciar o computador.'
@@ -3797,6 +3860,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Минимизировать'
                                                 ButtonRestartNow = 'Перезапустить сейчас'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Отмена'
                                                 Message = @{
                                                     Install = 'Чтобы установка была завершена, Вы должны перезагрузить компьютер.'
                                                     Repair = 'Для завершения восстановления Вам необходимо перезагрузить компьютер.'
@@ -3961,6 +4027,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimalizovať'
                                                 ButtonRestartNow = 'Reštartovať Teraz'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Zrušiť'
                                                 Message = @{
                                                     Install = 'Aby sa inštalácia dokončila, musíte reštartovať počítač.'
                                                     Repair = 'Aby sa oprava dokončila, musíte reštartovať počítač.'
@@ -4125,6 +4194,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Minimera'
                                                 ButtonRestartNow = 'Starta om nu'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'Avbryt'
                                                 Message = @{
                                                     Install = 'För att installationen ska kunna slutföras måste du starta om datorn.'
                                                     Repair = 'För att reparationen ska kunna slutföras måste du starta om datorn.'
@@ -4289,6 +4361,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = 'Küçült'
                                                 ButtonRestartNow = 'Şimdi Yeniden Başlat'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = 'İptal'
                                                 Message = @{
                                                     Install = 'Yüklemenin tamamlanması için bilgisayarınızı yeniden başlatmanız gerekir.'
                                                     Repair = 'Onarımın tamamlanması için bilgisayarınızı yeniden başlatmanız gerekir.'
@@ -4453,6 +4528,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = '最小化'
                                                 ButtonRestartNow = '立即重启'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = '取消'
                                                 Message = @{
                                                     Install = '为了完成安装，您必须重启计算机。'
                                                     Repair = '为了完成修复，您必须重新启动计算机。'
@@ -4617,6 +4695,9 @@ try
                                             RestartPrompt = @{
                                                 ButtonRestartLater = '最小化'
                                                 ButtonRestartNow = '現在重新啟動'
+
+                                                # Button text for cancelling the restart.
+                                                ButtonCancel = '取消'
                                                 Message = @{
                                                     Install = '為了完成安裝，您必須重新啟動電腦。'
                                                     Repair = '為了完成維修，您必須重新啟動電腦。'

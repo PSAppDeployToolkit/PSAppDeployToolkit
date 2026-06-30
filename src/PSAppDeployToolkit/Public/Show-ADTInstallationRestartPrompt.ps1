@@ -49,6 +49,9 @@ function Show-ADTInstallationRestartPrompt
     .PARAMETER AllowMove
         Specifies that the user can move the dialog on the screen.
 
+    .PARAMETER AllowCancel
+        Specifies that a Cancel button is displayed alongside the restart options, allowing the user to dismiss the prompt without restarting.
+
     .INPUTS
         None
 
@@ -168,7 +171,11 @@ function Show-ADTInstallationRestartPrompt
         [System.Management.Automation.SwitchParameter]$NotTopMost,
 
         [Parameter(Mandatory = $false)]
-        [System.Management.Automation.SwitchParameter]$AllowMove
+        [System.Management.Automation.SwitchParameter]$AllowMove,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoCountdown')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Countdown')]
+        [System.Management.Automation.SwitchParameter]$AllowCancel
     )
 
     dynamicparam
@@ -323,6 +330,10 @@ function Show-ADTInstallationRestartPrompt
                 if ($PSBoundParameters.ContainsKey('AllowMove'))
                 {
                     $dialogOptions.Add('DialogAllowMove', !!$AllowMove)
+                }
+                if ($AllowCancel)
+                {
+                    $dialogOptions.Add('DialogAllowCancel', $true)
                 }
                 if ($PersistPrompt)
                 {
