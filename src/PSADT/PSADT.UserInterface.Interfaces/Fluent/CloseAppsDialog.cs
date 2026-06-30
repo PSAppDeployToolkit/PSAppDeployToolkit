@@ -89,32 +89,31 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     {
                         icon = null;
                     }
-                    using (icon)
+                    if (icon is null)
                     {
-                        if (icon is null)
+                        using DestroyIconSafeHandle hIcon = SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
+                        bool hIconAddRef = false;
+                        try
                         {
-                            using DestroyIconSafeHandle hIcon = SystemIcons.Get(DialogSystemIcon.Application, SHIL_SIZE.SHIL_LARGE);
-                            bool hIconAddRef = false;
-                            try
+                            hIcon.DangerousAddRef(ref hIconAddRef);
+                            bitmapSource = Imaging.CreateBitmapSourceFromHIcon(hIcon.DangerousGetHandle(), Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        }
+                        finally
+                        {
+                            if (hIconAddRef)
                             {
-                                hIcon.DangerousAddRef(ref hIconAddRef);
-                                bitmapSource = Imaging.CreateBitmapSourceFromHIcon(hIcon.DangerousGetHandle(), Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-
-                            }
-                            finally
-                            {
-                                if (hIconAddRef)
-                                {
-                                    hIcon.DangerousRelease();
-                                }
+                                hIcon.DangerousRelease();
                             }
                         }
-                        else
+                    }
+                    else
+                    {
+                        using (icon)
                         {
                             bitmapSource = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                         }
-                        bitmapSource.Freeze();
                     }
+                    bitmapSource.Freeze();
                     _appIconCache.Add(appFilePath, bitmapSource);
                 }
                 return bitmapSource;
