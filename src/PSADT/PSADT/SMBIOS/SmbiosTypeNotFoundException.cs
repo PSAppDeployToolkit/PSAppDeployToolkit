@@ -27,27 +27,16 @@ namespace PSADT.SMBIOS
     /// </summary>
     /// <remarks>This exception is specifically used to indicate that a requested SMBIOS type does not exist
     /// in the current context.</remarks>
+    /// <param name="Type">The SMBIOS type that was not found.</param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "The constructors here are correct for our specific, internal requirements.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "The constructors here are correct for our specific, internal requirements.")]
-    internal sealed class SmbiosTypeNotFoundException : ArgumentOutOfRangeException
+    internal sealed class SmbiosTypeNotFoundException(SmbiosType Type) : ArgumentOutOfRangeException($"No SMBIOS structures of type [{Type}] found.", (Exception?)null)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SmbiosTypeNotFoundException"/> class with a specified SMBIOS
-        /// type.
-        /// </summary>
-        /// <remarks>This exception is thrown when no SMBIOS structures of the specified type are
-        /// found.</remarks>
-        /// <param name="type">The SMBIOS type that was not found.</param>
-        internal SmbiosTypeNotFoundException(SmbiosType type) : base($"No SMBIOS structures of type [{type}] found.", (Exception?)null)
-        {
-            Type = type;
-        }
-
         /// <summary>
         /// Represents the type of the System Management BIOS (SMBIOS) structure.
         /// </summary>
         /// <remarks>This field is used to identify the specific SMBIOS structure type. It is a read-only
         /// field and is intended for internal use within the system to categorize and process SMBIOS data.</remarks>
-        internal readonly SmbiosType Type;
+        internal readonly SmbiosType Type = Type;
     }
 }

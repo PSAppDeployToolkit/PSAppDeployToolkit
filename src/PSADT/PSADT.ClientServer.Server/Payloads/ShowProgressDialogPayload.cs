@@ -7,30 +7,21 @@ namespace PSADT.ClientServer.Payloads
     /// <summary>
     /// Payload for the ShowProgressDialog command.
     /// </summary>
+    /// <param name="DialogStyle">The style of the dialog.</param>
+    /// <param name="Options">The progress dialog options.</param>
     [DataContract]
-    internal sealed record class ShowProgressDialogPayload : IClientServerPayload
+    internal sealed record class ShowProgressDialogPayload(DialogStyle DialogStyle, ProgressDialogOptions Options) : IClientServerPayload
     {
         /// <summary>
         /// The style of the dialog.
         /// </summary>
         [DataMember]
-        internal readonly DialogStyle DialogStyle;
+        internal readonly DialogStyle DialogStyle = DialogStyle;
 
         /// <summary>
         /// The progress dialog options.
         /// </summary>
         [DataMember]
-        internal readonly ProgressDialogOptions Options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ShowProgressDialogPayload"/> class.
-        /// </summary>
-        /// <param name="dialogStyle">The style of the dialog.</param>
-        /// <param name="options">The progress dialog options.</param>
-        internal ShowProgressDialogPayload(DialogStyle dialogStyle, ProgressDialogOptions options)
-        {
-            DialogStyle = dialogStyle;
-            Options = options;
-        }
+        internal readonly ProgressDialogOptions Options = Options;
     }
 }

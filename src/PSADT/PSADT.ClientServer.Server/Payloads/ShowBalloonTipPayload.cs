@@ -6,22 +6,14 @@ namespace PSADT.ClientServer.Payloads
     /// <summary>
     /// Payload for the ShowBalloonTip command.
     /// </summary>
+    /// <param name="Options">The balloon tip options.</param>
     [DataContract]
-    internal sealed record class ShowBalloonTipPayload : IClientServerPayload
+    internal sealed record class ShowBalloonTipPayload(BalloonTipOptions Options) : IClientServerPayload
     {
         /// <summary>
         /// The balloon tip options.
         /// </summary>
         [DataMember]
-        internal readonly BalloonTipOptions Options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ShowBalloonTipPayload"/> class.
-        /// </summary>
-        /// <param name="options">The balloon tip options.</param>
-        internal ShowBalloonTipPayload(BalloonTipOptions options)
-        {
-            Options = options;
-        }
+        internal readonly BalloonTipOptions Options = Options;
     }
 }

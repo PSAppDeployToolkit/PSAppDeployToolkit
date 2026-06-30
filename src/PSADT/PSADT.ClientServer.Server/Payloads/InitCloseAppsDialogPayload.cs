@@ -7,22 +7,14 @@ namespace PSADT.ClientServer.Payloads
     /// <summary>
     /// Payload for the InitCloseAppsDialog command.
     /// </summary>
+    /// <param name="ProcessDefinitions">The collection of process definitions to monitor, or null if no processes need to be monitored.</param>
     [DataContract]
-    internal sealed record class InitCloseAppsDialogPayload : IClientServerPayload
+    internal sealed record class InitCloseAppsDialogPayload(ReadOnlyCollection<ProcessDefinition>? ProcessDefinitions) : IClientServerPayload
     {
         /// <summary>
         /// The collection of process definitions to monitor, or null if no processes need to be monitored.
         /// </summary>
         [DataMember]
-        internal readonly ReadOnlyCollection<ProcessDefinition>? ProcessDefinitions;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InitCloseAppsDialogPayload"/> class.
-        /// </summary>
-        /// <param name="processDefinitions">The collection of process definitions to monitor, or null if no processes need to be monitored.</param>
-        internal InitCloseAppsDialogPayload(ReadOnlyCollection<ProcessDefinition>? processDefinitions)
-        {
-            ProcessDefinitions = processDefinitions;
-        }
+        internal readonly ReadOnlyCollection<ProcessDefinition>? ProcessDefinitions = ProcessDefinitions;
     }
 }
