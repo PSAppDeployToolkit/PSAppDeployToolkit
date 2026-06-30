@@ -673,8 +673,7 @@ function Set-ADTActiveSetup
                     return
                 }
 
-                $processResult = $null
-                if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
+                $processResult = $null; if ([PSADT.AccountManagement.AccountUtilities]::CallerSid.IsWellKnown([System.Security.Principal.WellKnownSidType]::LocalSystemSid))
                 {
                     if (!$runAsActiveUser)
                     {
@@ -730,9 +729,13 @@ function Set-ADTActiveSetup
                 }
 
                 # Return the process result if its available and requested.
-                if ($processResult -and $PassThru)
+                if ($processResult)
                 {
-                    return $processResult
+                    if ($PassThru)
+                    {
+                        return $processResult
+                    }
+                    $processResult.Dispose()
                 }
             }
             catch

@@ -260,22 +260,29 @@ function Private:Invoke-ADTClientServerOperation
                 # Construct an ErrorRecord using an exception from the client/server process if possible.
                 if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
                 {
-                    $naerParams = @{
-                        Exception = if ($clientServerClientProcessResult.StdErr.Count)
-                        {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
+                    try
+                    {
+                        $naerParams = @{
+                            Exception = if ($clientServerClientProcessResult.StdErr.Count)
+                            {
+                                [System.ApplicationException]::new("Failed to open the instantiated client/server process.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
+                            }
+                            else
+                            {
+                                [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
+                            }
+                            Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                            ErrorId = 'ClientServerProcessOpenFailure'
+                            TargetObject = $clientServerClientProcessResult
                         }
-                        else
-                        {
-                            [System.ApplicationException]::new("Failed to open the instantiated client/server process.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
-                        }
-                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                        ErrorId = 'ClientServerProcessOpenFailure'
-                        TargetObject = $clientServerClientProcessResult
+                        $null = $Script:ADT.ClientServerProcess.DisposeAsync().ConfigureAwait($false).GetAwaiter().GetResult()
+                        $Script:ADT.ClientServerProcess = $null
+                        $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                     }
-                    $null = $Script:ADT.ClientServerProcess.DisposeAsync().ConfigureAwait($false).GetAwaiter().GetResult()
-                    $Script:ADT.ClientServerProcess = $null
-                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                    finally
+                    {
+                        $clientServerClientProcessResult.Dispose()
+                    }
                 }
                 else
                 {
@@ -358,20 +365,27 @@ function Private:Invoke-ADTClientServerOperation
             # Construct an ErrorRecord using an exception from the client/server process if possible.
             if ($clientServerClientProcessResult = Get-ADTClientServerClientProcessResult -ErrorRecord $_)
             {
-                $naerParams = @{
-                    Exception = if ($clientServerClientProcessResult.StdErr.Count)
-                    {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
+                try
+                {
+                    $naerParams = @{
+                        Exception = if ($clientServerClientProcessResult.StdErr.Count)
+                        {
+                            [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($clientServerClientProcessResult))
+                        }
+                        else
+                        {
+                            [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
+                        }
+                        Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                        ErrorId = 'ClientServerProcessCommandFailure'
+                        TargetObject = $clientServerClientProcessResult
                     }
-                    else
-                    {
-                        [System.ApplicationException]::new("Failed to invoke the requested client/server command.$(if (!$clientServerClientProcessResult.ExitCode.Equals([PSADT.ProcessManagement.ProcessManager]::TimeoutExitCode) -and !$_.Exception.InnerException.Message.Contains($clientServerClientProcessResult.ExitCode)) { " Exit Code: [$($clientServerClientProcessResult.ExitCode)]." })$(if ($clientServerClientProcessResult.StdOut) { " Console Output: [$([System.String]::Join([System.Environment]::NewLine, $clientServerClientProcessResult.StdOut))]" })", $_.Exception.InnerException)
-                    }
-                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                    ErrorId = 'ClientServerProcessCommandFailure'
-                    TargetObject = $clientServerClientProcessResult
+                    $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
                 }
-                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+                finally
+                {
+                    $clientServerClientProcessResult.Dispose()
+                }
             }
             else
             {
@@ -631,7 +645,7 @@ function Private:Invoke-ADTClientServerOperation
             }
         }
 
-        # Confirm we were successful in our operation.
+        # Deserialise the result for returning to the caller.
         if ($return -isnot [PSADT.ProcessManagement.ProcessResult])
         {
             $naerParams = @{
@@ -643,54 +657,53 @@ function Private:Invoke-ADTClientServerOperation
             }
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
-        if ($return.StdErr.Count -ne 0)
-        {
-            $naerParams = @{
-                Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($return))
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'ClientServerResultError'
-                TargetObject = $return
-                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-        if ($return.ExitCode -ne 0)
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The client/server process failed with exit code [$($return.ExitCode)]$(if ([System.Enum]::IsDefined([PSADT.ClientServer.ClientExitCode], $return.ExitCode)) { " ($([PSADT.ClientServer.ClientExitCode]$return.ExitCode))" }).")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'ClientServerRuntimeFailure'
-                TargetObject = $return
-                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-        if ($return.StdOut.Count -eq 0)
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The client/server process returned no result.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'ClientServerResultNull'
-                TargetObject = $return
-                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-        if ($return.StdOut.Count -gt 1)
-        {
-            $naerParams = @{
-                Exception = [System.InvalidOperationException]::new("The client/server process returned an invalid result.")
-                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                ErrorId = 'ClientServerResultInvalid'
-                TargetObject = $return
-                RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
-            }
-            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
-        }
-
-        # Deserialise the result for returning to the caller.
         try
         {
+            # Confirm we were successful in our operation.
+            if ($return.StdErr.Count -ne 0)
+            {
+                $naerParams = @{
+                    Exception = [System.ApplicationException]::new("Failed to invoke the requested client/server command.", [PSADT.ClientServer.DataSerialization]::DeserializeExceptionFromStdErr($return))
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'ClientServerResultError'
+                    TargetObject = $return
+                    RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+            if ($return.ExitCode -ne 0)
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The client/server process failed with exit code [$($return.ExitCode)]$(if ([System.Enum]::IsDefined([PSADT.ClientServer.ClientExitCode], $return.ExitCode)) { " ($([PSADT.ClientServer.ClientExitCode]$return.ExitCode))" }).")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'ClientServerRuntimeFailure'
+                    TargetObject = $return
+                    RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+            if ($return.StdOut.Count -eq 0)
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The client/server process returned no result.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'ClientServerResultNull'
+                    TargetObject = $return
+                    RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
+            if ($return.StdOut.Count -gt 1)
+            {
+                $naerParams = @{
+                    Exception = [System.InvalidOperationException]::new("The client/server process returned an invalid result.")
+                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                    ErrorId = 'ClientServerResultInvalid'
+                    TargetObject = $return
+                    RecommendedAction = "Please raise an issue with the PSAppDeployToolkit team for further review."
+                }
+                $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+            }
             $result = [PSADT.ClientServer.DataSerialization]::DeserializeFromString($return.StdOut[0], $type)
         }
         finally
