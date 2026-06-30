@@ -715,7 +715,7 @@ namespace PSADT.ClientServer
                 {
                     if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Force", out string? forceStr) || !bool.TryParse(forceStr, out bool force))
                     {
-                        throw new ClientException("The 'Sync' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                        throw new ClientException("The 'Force' argument is required and cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
                     using ProcessResult result = await GroupPolicyUpdateAsync(force).ConfigureAwait(false);
