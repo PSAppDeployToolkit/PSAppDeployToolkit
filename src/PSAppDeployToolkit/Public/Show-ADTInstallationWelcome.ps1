@@ -60,7 +60,7 @@ function Show-ADTInstallationWelcome
         The deadline date will be displayed to the user in the format of their culture.
 
     .PARAMETER DeferRunInterval
-        Specifies the time span that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
+        Specifies the time span that must elapse before prompting the user again if a process specified via `-CloseProcesses` is still running after a deferral.
 
         This addresses the issue where Intune retries deployments shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
@@ -160,7 +160,7 @@ function Show-ADTInstallationWelcome
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        The process descriptions are retrieved via `Get-Process`, with a fall back on the process name if no description is available. Alternatively, you can specify the description yourself by instantiating the ProcessDefinition object with a description, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
+        The process descriptions are retrieved via `Get-Process`, with a fallback on the process name if no description is available. Alternatively, you can specify the description yourself by instantiating the ProcessDefinition object with a description, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
 
         The dialog box will timeout after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 
