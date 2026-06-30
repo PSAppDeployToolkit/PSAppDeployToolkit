@@ -244,7 +244,6 @@
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.IsDeferredScrollingEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        SelectionChanged="CloseAppsListView_SelectionChanged"
                         SelectionMode="Single"
                         VirtualizingPanel.IsVirtualizing="True"
                         VirtualizingPanel.ScrollUnit="Pixel"
