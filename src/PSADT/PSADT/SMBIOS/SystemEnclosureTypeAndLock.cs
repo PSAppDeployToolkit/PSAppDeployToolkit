@@ -29,7 +29,7 @@ namespace PSADT.SMBIOS
         /// Initializes a new instance of the SystemEnclosureTypeAndLock structure using the specified raw byte value.
         /// </summary>
         /// <param name="raw">The raw byte value representing the enclosure type and lock state.</param>
-        public SystemEnclosureTypeAndLock(byte raw)
+        internal SystemEnclosureTypeAndLock(byte raw)
         {
             Raw = raw;
         }
