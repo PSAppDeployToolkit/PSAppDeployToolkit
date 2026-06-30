@@ -126,6 +126,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// </summary>
         /// <param name="options">Mandatory options needed to construct the window.</param>
         /// <param name="state">Optional state values for the dialog.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls", Justification = "Synchronous wait is necessary for constructor initialization.")]
         internal CloseAppsDialog(CloseAppsDialogOptions options, CloseAppsDialogState state) : base(options, CloseAppsDialogResult.Timeout, options.CustomMessageText, options.CountdownDuration, countdownStopwatch: state.CountdownStopwatch)
         {
             // Set up the context for data binding
@@ -167,7 +170,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 AppsToCloseCollection.ResetItems(_runningProcessService.ProcessesToClose.Select(static p => new AppToClose(p)), force: true);
                 AppsToCloseCollection.CollectionChanged += AppsToCloseCollection_CollectionChanged;
             }
-            UpdateRunningProcesses();
+            UpdateRunningProcessesAsync().GetAwaiter().GetResult();
             UpdateDeferralValues();
             _logAction = state.LogAction;
         }
@@ -265,9 +268,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Handles the event when the collection of apps to close changes.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
-        private async void UpdateRunningProcesses()
+        private async ValueTask UpdateRunningProcessesAsync()
         {
             // Update the UI based on the changes in the collection.
             AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
@@ -322,9 +323,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// ensuring that the running processes are kept in sync with the current collection state.</remarks>
         /// <param name="sender">The source of the event, typically the collection that was modified.</param>
         /// <param name="e">An object that provides data about the type of change that occurred in the collection.</param>
-        private void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "This is OK here.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0155:Do not use async void methods", Justification = "This is OK here.")]
+        private async void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            UpdateRunningProcesses();
+            await UpdateRunningProcessesAsync();
         }
 
         /// <summary>
