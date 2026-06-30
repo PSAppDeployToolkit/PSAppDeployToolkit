@@ -52,7 +52,25 @@ namespace PSADT.ClientServer
         [ModuleInitializer]
         internal static void Init()
         {
-            AppDomain.CurrentDomain.SetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler", static (Exception ex) => Console.Error.WriteLine(DataSerialization.SerializeToString(ex)));
+            // Repeated handler to serialise the exception and write it to the event logs.
+            static void UnhandledExceptionHandler(Exception ex)
+            {
+                Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
+                Environment.FailFast($"An unhandled exception occurred that resulted in client termination: {ex}", ex);
+            }
+
+            // Exception handler for the dialog thread.
+            AppDomain.CurrentDomain.SetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler", (Action<Exception>)UnhandledExceptionHandler);
+
+            // Exception handler for the main thread.
+            AppDomain.CurrentDomain.UnhandledException += static (_, e) =>
+            {
+                if (e.ExceptionObject is Exception ex)
+                {
+                    UnhandledExceptionHandler(ex);
+                }
+                Environment.FailFast("An unhandled exception occurred and no further information is available.");
+            };
         }
 
         /// <summary>
