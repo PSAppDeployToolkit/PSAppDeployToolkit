@@ -398,7 +398,6 @@ namespace PSADT.ProcessManagement
                             {
                                 // This leverages the documented ProcessImageFileNameWin32 info class.
                                 return QueryProcessImageFileNameWin32(hProcess);
-
                             }
                             catch (Exception ex5) when (ex5.Message is not null)
                             {

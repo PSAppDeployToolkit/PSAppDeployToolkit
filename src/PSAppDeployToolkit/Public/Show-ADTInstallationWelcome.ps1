@@ -716,7 +716,6 @@ function Show-ADTInstallationWelcome
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$CustomMessageText,
 
-
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, and with a free disk space check.', HelpMessage = 'Specify whether to check if there is enough disk space for the deployment to proceed. If this parameter is specified without the [-RequiredDiskSpace] parameter, the required disk space is calculated automatically based on the size of the script source and associated files.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, and a free disk space check.', HelpMessage = 'Specify whether to check if there is enough disk space for the deployment to proceed. If this parameter is specified without the [-RequiredDiskSpace] parameter, the required disk space is calculated automatically based on the size of the script source and associated files.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with deferral allowed, and a free disk space check.', HelpMessage = 'Specify whether to check if there is enough disk space for the deployment to proceed. If this parameter is specified without the [-RequiredDiskSpace] parameter, the required disk space is calculated automatically based on the size of the script source and associated files.')]
