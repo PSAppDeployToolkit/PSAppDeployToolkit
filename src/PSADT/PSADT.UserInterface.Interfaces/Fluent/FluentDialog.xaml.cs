@@ -1216,10 +1216,5 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 };
             }
         }
-
-        private void CloseAppsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Selection changes in the close-apps list view require no additional action.
-        }
     }
 }
