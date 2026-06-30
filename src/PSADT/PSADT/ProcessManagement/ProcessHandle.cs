@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
+using PSADT.Foundation;
 using PSADT.Interop;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -40,6 +41,12 @@ namespace PSADT.ProcessManagement
                 // Ensure that the process is disposed of when the task completes, regardless of success or failure.
                 using (processHandle)
                 {
+                    // Set the client/server success flag if the client started a ShellExecuteEx process invocation.
+                    if (ClientServerUtilities.CallerIsClientServerExecutable && launchInfo.UseShellExecute)
+                    {
+                        ClientServerUtilities.SetOperationSuccessFlag();
+                    }
+
                     // Wait for the process to exit or for a cancellation request, and handle the exit code accordingly.
                     CancellationToken cancellationToken = launchInfo.CancellationToken ?? CancellationToken.None;
                     const uint timeoutExitCode = unchecked((uint)ProcessManager.TimeoutExitCode);
