@@ -126,11 +126,20 @@ namespace PSADT.ProcessManagement
                                 catch (InvalidOperationException)
                                 {
                                     // Already exited.
+                                    exitCode = process.ExitCode;
+                                    processFinished = true;
                                 }
-                                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-                                processFinished = true;
+                                if (!processFinished)
+                                {
+                                    await process.WaitForExitAsync(default).ConfigureAwait(false);
+                                    exitCode = ProcessManager.TimeoutExitCode;
+                                    processFinished = true;
+                                }
                             }
-                            exitCode = ProcessManager.TimeoutExitCode;
+                            else
+                            {
+                                exitCode = ProcessManager.TimeoutExitCode;
+                            }
                         }
                     }
                     if (processFinished)
