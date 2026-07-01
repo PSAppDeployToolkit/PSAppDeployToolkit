@@ -39,7 +39,7 @@ namespace PSADT.UserInterface.Interfaces
         static DialogManager()
         {
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
-            unhandledExceptionHandler = (Action<Exception>?)AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
+            Action<Exception> unhandledExceptionHandler = (Action<Exception>?)AppDomain.CurrentDomain.GetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler") ?? throw new InvalidProgramException("Failed to initialize DialogManager: Unhandled exception handler not found in AppDomain data.");
 
             // Register process exit handler to ensure WPF is properly shut down. This prevents ~2.5 second delays during shutdown.
             // Use Dispatcher.InvokeShutdown() instead of Application.Shutdown() to avoid a race with WPF's
@@ -66,7 +66,7 @@ namespace PSADT.UserInterface.Interfaces
                 {
                     // Create the application and start the message pump (this will set dispatcherRunning when fully instantiated).
                     appLocal = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
-                    appLocal.Dispatcher.UnhandledException += static (_, e) => unhandledExceptionHandler(e.Exception);
+                    appLocal.Dispatcher.UnhandledException += (_, e) => unhandledExceptionHandler(e.Exception);
                     appLocal.Startup += async (_, _) =>
                     {
                         if (!await appLocal.Dispatcher.InvokeAsync(dispatcherRunning.Set, System.Windows.Threading.DispatcherPriority.Normal, default))
@@ -671,10 +671,5 @@ namespace PSADT.UserInterface.Interfaces
         /// Application instance for the WPF dialog.
         /// </summary>
         private static readonly System.Windows.Application app;
-
-        /// <summary>
-        /// Gets or sets the action to be invoked when an exception occurs in the dispatcher.
-        /// </summary>
-        private static readonly Action<Exception> unhandledExceptionHandler;
     }
 }
