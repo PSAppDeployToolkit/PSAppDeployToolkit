@@ -680,7 +680,7 @@ namespace PSADT.ShortcutManagement
         /// </summary>
         /// <param name="propertyId">The property ID.</param>
         /// <returns>The property value, or <see langword="null"/> if not set.</returns>
-        /// <exception cref="FileFormatException">Thrown if the property has an unexpected type.</exception>"
+        /// <exception cref="FileFormatException">Thrown if the property has an unexpected type.</exception>
         private ushort? GetUInt16Property(PID_IS propertyId)
         {
             IPropertyStorage propertyStorage = OpenInternetShortcutPropertyStorage((uint)Interop.STGM.STGM_READ);

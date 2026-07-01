@@ -130,7 +130,7 @@ namespace PSADT.Interop.Utilities
         /// <param name="hResult">The HRESULT value that represents the error condition. Must be a negative value to indicate an error.</param>
         /// <returns>An Exception instance that represents the error condition described by the provided HRESULT value.</returns>
         /// <exception cref="NotSupportedException">Thrown if hResult is non-negative, indicating that no error has occurred.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the method fails to retrieve an exception for the provided HRESULT value, which should not occur under normal circumstances.</exception>"
+        /// <exception cref="InvalidOperationException">Thrown if the method fails to retrieve an exception for the provided HRESULT value, which should not occur under normal circumstances.</exception>
         internal static Exception GetException(HRESULT hResult)
         {
             return hResult >= 0

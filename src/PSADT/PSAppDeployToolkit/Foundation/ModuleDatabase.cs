@@ -36,7 +36,7 @@ namespace PSAppDeployToolkit.Foundation
         /// <remarks>Call this method to release the current database and prepare for reinitialization.
         /// After calling this method, any operations that depend on the database instance may fail until it is
         /// reinitialized.</remarks>
-        /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>"
+        /// <exception cref="InvalidOperationException">Thrown if the method is called from outside the PSAppDeployToolkit module context.</exception>
         public static void Clear()
         {
             if (!ScriptBlock.Create("Get-PSCallStack | & { process { if ($_.ScriptName -and ($_.ScriptName.EndsWith('PSAppDeployToolkit\\PSAppDeployToolkit.psm1') -or $_.ScriptName.EndsWith('PSAppDeployToolkit\\ImportsLast.ps1'))) { return $_ } } }").Invoke().Count.Equals(1))

@@ -19,7 +19,7 @@ internal static class ReadOnlySpanExtensions
     /// <param name="span">The read-only span of bytes to interpret as a structure of type T. The span must be at least as large as the
     /// size of T.</param>
     /// <returns>A reference to the structure of type T at the start of the span.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided span is too small to contain a structure of type T.</exception>"
+    /// <exception cref="InvalidOperationException">Thrown if the provided span is too small to contain a structure of type T.</exception>
     internal static ref readonly T AsReadOnlyStructure<T>(this ReadOnlySpan<byte> span) where T : unmanaged
     {
         if (Unsafe.SizeOf<T>() > span.Length)

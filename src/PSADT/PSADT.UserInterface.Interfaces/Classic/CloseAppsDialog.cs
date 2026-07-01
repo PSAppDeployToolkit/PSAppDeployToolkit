@@ -272,7 +272,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// that periodically updates the countdown in a user interface.</remarks>
         /// <param name="sender">The source of the event, typically the timer that triggered the tick event.</param>
         /// <param name="e">An EventArgs object that contains the event data.</param>
-        /// <exception cref="InvalidProgramException">Thrown if the countdown timer ticks but the required countdown duration or stopwatch is not set. This indicates a programming error in the dialog's implementation.</exception>"
+        /// <exception cref="InvalidProgramException">Thrown if the countdown timer ticks but the required countdown duration or stopwatch is not set. This indicates a programming error in the dialog's implementation.</exception>
         private void CountdownTimer_Tick(object? sender, EventArgs e)
         {
             if (countdownDuration is null)

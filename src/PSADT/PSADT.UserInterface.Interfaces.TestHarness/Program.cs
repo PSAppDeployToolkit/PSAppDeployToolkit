@@ -33,7 +33,7 @@ namespace PSADT.UserInterface.TestHarness
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        /// <exception cref="InvalidDataException">Thrown when there is an error parsing the PSADT strings file or locating required data within it.</exception>"
+        /// <exception cref="InvalidDataException">Thrown when there is an error parsing the PSADT strings file or locating required data within it.</exception>
         [STAThread]
         private static async Task Main()
         {
@@ -364,7 +364,7 @@ namespace PSADT.UserInterface.TestHarness
         /// <param name="importsAst">The parsed ImportsLast.ps1 AST.</param>
         /// <param name="tableName">The module defaults table name.</param>
         /// <returns>The default hashtable for the requested module defaults table.</returns>
-        /// <exception cref="InvalidDataException">Thrown when the requested module defaults table cannot be located in the ImportsLast.ps1 AST.</exception>"
+        /// <exception cref="InvalidDataException">Thrown when the requested module defaults table cannot be located in the ImportsLast.ps1 AST.</exception>
         private static Hashtable GetModuleDefaultTable(ScriptBlockAst importsAst, string tableName)
         {
             return (Hashtable)(importsAst.Find(node =>

@@ -430,7 +430,7 @@ namespace PSADT.ProcessManagement
         /// <returns>The Win32-formatted image file path of the specified process.</returns>
         /// <exception cref="NotSupportedException">Thrown if the method is called from a 32-bit process on a 64-bit operating system, if the image name query
         /// returns a null or empty result, or if the retrieved image name is not a valid NT path.</exception>
-        /// <exception cref="FormatException">Thrown if the retrieved image name does not start with "\Device\", indicating an invalid NT path.</exception>"
+        /// <exception cref="FormatException">Thrown if the retrieved image name does not start with "\Device\", indicating an invalid NT path.</exception>
         private static FileInfo QuerySystemProcessIdInformationImageName(uint processId, ReadOnlyDictionary<string, string> ntPathLookupTable)
         {
             // Throw if we're a 32-bit process on a 64-bit system as we cannot query the image name in that case.
@@ -596,7 +596,7 @@ namespace PSADT.ProcessManagement
         /// process ID for active services.</remarks>
         /// <param name="service">The <see cref="ServiceController"/> representing the service for which to obtain the process ID.</param>
         /// <returns>The process ID of the specified service.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the service is not running or does not have a valid process ID.</exception>"
+        /// <exception cref="InvalidOperationException">Thrown if the service is not running or does not have a valid process ID.</exception>
         internal static uint GetServiceProcessId(ServiceController service)
         {
             using CloseServiceHandleSafeHandle scm = NativeMethods.OpenSCManager(SC_MANAGER_ACCESS.SC_MANAGER_CONNECT);

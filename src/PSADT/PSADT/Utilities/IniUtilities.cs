@@ -85,7 +85,7 @@ namespace PSADT.Utilities
         /// <param name="section">The section name</param>
         /// <returns>OrderedDictionary of key/value pairs in the section</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified section does not exist in the INI file.</exception>
-        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section.</exception>"
+        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S2302:\"nameof\" should be used", Justification = "This is a false positive.")]
         public static OrderedDictionary? GetSection(string filepath, string section)
         {
@@ -140,7 +140,7 @@ namespace PSADT.Utilities
         /// </summary>
         /// <param name="filepath">Path to the INI file</param>
         /// <returns>Array of section names</returns>
-        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section names.</exception>"
+        /// <exception cref="InvalidDataException">Thrown if the INI file is malformed or if there is an error reading the section names.</exception>
         private static ReadOnlyCollection<string> GetSectionNames(string filepath)
         {
             Span<char> buffer = new char[65536]; uint len = NativeMethods.GetPrivateProfileSectionNames(buffer, filepath);

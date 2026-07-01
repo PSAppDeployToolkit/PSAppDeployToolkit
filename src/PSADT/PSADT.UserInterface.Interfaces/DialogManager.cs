@@ -364,7 +364,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Closes the currently open dialog, if any.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if no progress dialog is currently open. Ensure a progress dialog is displayed before attempting to close it.</exception>"
+        /// <exception cref="InvalidOperationException">Thrown if no progress dialog is currently open. Ensure a progress dialog is displayed before attempting to close it.</exception>
         internal static Task CloseProgressDialogAsync()
         {
             return progressDialog is null ? throw new InvalidOperationException("Cannot close a progress dialog while one is not open.") : InvokeDialogActionAsync(() =>

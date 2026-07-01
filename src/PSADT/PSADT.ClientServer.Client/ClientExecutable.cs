@@ -937,7 +937,7 @@ namespace PSADT.ClientServer
         /// followed by its corresponding value as a separate argument.</param>
         /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the parsed key-value pairs from the input
         /// arguments.</returns>
-        /// <exception cref="ClientException">Thrown if any argument key is not followed by a valid value, such as when the value is null, empty, whitespace, or resembles another key.</exception>"
+        /// <exception cref="ClientException">Thrown if any argument key is not followed by a valid value, such as when the value is null, empty, whitespace, or resembles another key.</exception>
         private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
         {
             // Loop through arguments and match argument names to their values.

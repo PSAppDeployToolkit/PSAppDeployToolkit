@@ -105,7 +105,7 @@ namespace PSADT.Utilities
         /// determined, returns the file name without its extension.</returns>
         /// <exception cref="BadImageFormatException">Thrown if the specified font file is not a supported font format.</exception>
         /// <exception cref="FileFormatException">Thrown if the font file format is not supported or if the font file contains no font faces.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the font title cannot be determined from the name table of any font face in the file.</exception>"
+        /// <exception cref="InvalidOperationException">Thrown if the font title cannot be determined from the name table of any font face in the file.</exception>
         public static string GetFontTitle(string fontPath)
         {
             // Create factory and font file reference.
