@@ -11,20 +11,20 @@ function Invoke-ADTPesterUnitTesting
     try
     {
         # Perform unit testing.
-        Write-ADTBuildLogEntry -Message "Commencing unit tests with Pester $((Get-Module -Name Pester).Version), this may take while."
+        Write-ADTBuildLogEntry -Message "Commencing unit tests with Pester $((Get-Module -Name Pester).Version), this may take a while."
         $null = [System.IO.Directory]::CreateDirectory($Script:ModuleConstants.Paths.TestOutput)
         $null = [System.IO.Directory]::CreateDirectory($Script:ModuleConstants.Paths.CodeCoverageOutput)
         $pesterConfig = New-PesterConfiguration
-        $pesterConfig.Run.Path = $ModuleConstants.Paths.UnitTests
+        $pesterConfig.Run.Path = $Script:ModuleConstants.Paths.UnitTests
         $pesterConfig.Run.PassThru = $true
         $pesterConfig.Run.Exit = $false
         $pesterConfig.CodeCoverage.Enabled = $true
-        $pesterConfig.CodeCoverage.Path = "$($ModuleConstants.Paths.ModuleSource)\*\*.ps1"
+        $pesterConfig.CodeCoverage.Path = "$($Script:ModuleConstants.Paths.ModuleSource)\*\*.ps1"
         $pesterConfig.CodeCoverage.CoveragePercentTarget = 100
-        $pesterConfig.CodeCoverage.OutputPath = "$($ModuleConstants.Paths.CodeCoverageOutput)\CodeCoverage.xml"
+        $pesterConfig.CodeCoverage.OutputPath = "$($Script:ModuleConstants.Paths.CodeCoverageOutput)\CodeCoverage.xml"
         $pesterConfig.CodeCoverage.OutputFormat = 'JaCoCo'
         $pesterConfig.TestResult.Enabled = $true
-        $pesterConfig.TestResult.OutputPath = "$($ModuleConstants.Paths.TestOutput)\PesterTests.xml"
+        $pesterConfig.TestResult.OutputPath = "$($Script:ModuleConstants.Paths.TestOutput)\PesterTests.xml"
         $pesterConfig.TestResult.OutputFormat = 'NUnitXML'
         $pesterConfig.Output.Verbosity = 'Detailed'
         $results = Invoke-Pester -Configuration $pesterConfig 6>&1 | Invoke-ADTPesterOutputHandler

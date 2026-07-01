@@ -160,7 +160,7 @@ function Show-ADTInstallationWelcome
     .NOTES
         An active ADT session is NOT required to use this function.
 
-        The process descriptions are retrieved via `Get-Process`, with a fallback on the process name if no description is available. Alternatively, you can specify the description yourself by instantiating the ProcessDefinition object with a description, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
+        The process descriptions are retrieved via `Get-Process`, with a fallback on the process name if no description is available. Alternatively, you can specify the description yourself by providing a hashtable that is converted to a ProcessDefinition object, e.g., `@{ Name = 'winword'; Description = 'Microsoft Word' }`
 
         The dialog box will timeout after the timeout specified in the `config.psd1` file (default 55 minutes) to prevent Intune/SCCM deployments from timing out and returning a failure code. When the dialog times out, the script will exit and return a 1618 code (SCCM fast retry code).
 

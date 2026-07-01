@@ -158,11 +158,11 @@ namespace PSADT.UserInterface.Interfaces
                 }
                 if (processesToClose?.Count > 0)
                 {
-                    await state.LogAction($"Close applications countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
+                    await state.LogAction($"Close applications countdown has [{((int)Math.Ceiling(elapsed.Value.TotalSeconds)).ToString(CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
                 }
                 else
                 {
-                    await state.LogAction($"Countdown has [{elapsed.Value.ToString(format: null, CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
+                    await state.LogAction($"Countdown has [{((int)Math.Ceiling(elapsed.Value.TotalSeconds)).ToString(CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
                 }
             }
 
@@ -519,7 +519,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <summary>
         /// Displays a message box with the specified title, prompt, and options.
         /// </summary>
-        /// <remarks>The behavior and appearance of the message box are determined by the properties of the <paramref name="options"/> parameter.</remarks>ews
+        /// <remarks>The behavior and appearance of the message box are determined by the properties of the <paramref name="options"/> parameter.</remarks>
         /// <param name="options">The options for configuring the message box, such as title, message text, buttons, icon, default button, topmost behavior, and expiry duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button that was clicked by the user.</returns>
         [SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]

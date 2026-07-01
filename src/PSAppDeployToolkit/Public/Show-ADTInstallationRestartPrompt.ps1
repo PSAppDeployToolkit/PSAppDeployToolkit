@@ -20,7 +20,7 @@ function Show-ADTInstallationRestartPrompt
         Specifies the number of seconds to display the restart prompt without allowing the window to be hidden.
 
     .PARAMETER SilentCountdownSeconds
-        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` isn't specified.
+        Specifies number of seconds to countdown for the restart when the toolkit is running in silent mode and `-SilentRestart` is specified.
 
     .PARAMETER SilentRestart
         Specifies whether the restart should be triggered when DeployMode is silent or very silent.

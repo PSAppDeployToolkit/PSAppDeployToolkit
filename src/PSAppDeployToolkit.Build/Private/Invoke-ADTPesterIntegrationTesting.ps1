@@ -11,9 +11,9 @@ function Invoke-ADTPesterIntegrationTesting
     try
     {
         # Perform unit testing.
-        Write-ADTBuildLogEntry -Message "Commencing integration tests with Pester $((Get-Module -Name Pester).Version), this may take while."
+        Write-ADTBuildLogEntry -Message "Commencing integration tests with Pester $((Get-Module -Name Pester).Version), this may take a while."
         $pesterConfig = New-PesterConfiguration
-        $pesterConfig.Run.Path = $ModuleConstants.Paths.IntegrationTests
+        $pesterConfig.Run.Path = $Script:ModuleConstants.Paths.IntegrationTests
         $pesterConfig.Run.PassThru = $true
         $pesterConfig.Run.Exit = $false
         $pesterConfig.CodeCoverage.Enabled = $false
@@ -24,7 +24,7 @@ function Invoke-ADTPesterIntegrationTesting
         # Throw if any tests failed.
         if (($results.FailedCount + $results.FailedBlocksCount + $results.FailedContainersCount) -gt 0)
         {
-            throw "One or more unit tests failed which must be addressed."
+            throw "One or more integration tests failed which must be addressed."
         }
         Complete-ADTModuleBuildFunction
     }
