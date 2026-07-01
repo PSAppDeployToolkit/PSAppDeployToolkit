@@ -85,7 +85,7 @@ dotnet_diagnostic.MA0181.severity = none
 
 
 # Manual enablement for a number of Roslynator rules. This is the only way...
-https://github.com/dotnet/roslynator/issues/832
+# https://github.com/dotnet/roslynator/issues/832
 
 # Add blank line after embedded statement
 dotnet_diagnostic.rcs0001.severity = error
