@@ -66,7 +66,7 @@ namespace PSADT.UserInterface.Interfaces
                 {
                     // Create the application and start the message pump (this will set dispatcherRunning when fully instantiated).
                     System.Windows.Application app = new() { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
-                    app.Dispatcher.UnhandledException += (_, e) => unhandledExceptionHandler(e.Exception);
+                    app.DispatcherUnhandledException += (_, e) => unhandledExceptionHandler(e.Exception);
                     app.Startup += async (_, _) =>
                     {
                         if (!await app.Dispatcher.InvokeAsync(dispatcherRunning.Set, System.Windows.Threading.DispatcherPriority.Normal, default))
