@@ -30,7 +30,7 @@ function Invoke-ADTPesterUnitTesting
         $results = Invoke-Pester -Configuration $pesterConfig 6>&1 | Invoke-ADTPesterOutputHandler
 
         # Throw if any tests failed.
-        if ($results.FailedCount -gt 0)
+        if (($results.FailedCount + $results.FailedBlocksCount + $results.FailedContainersCount) -gt 0)
         {
             throw "One or more unit tests failed which must be addressed."
         }
