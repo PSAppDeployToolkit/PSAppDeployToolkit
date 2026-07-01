@@ -99,13 +99,13 @@ namespace PSADT.UserInterface.Interfaces
             {
                 throw new InvalidProgramException("Failed to initialize WPF application: Dispatcher threw an exception.", appThreadException);
             }
-            if (System.Windows.Application.Current is null)
+            if (System.Windows.Application.Current?.Dispatcher is not System.Windows.Threading.Dispatcher dispatcher)
             {
                 throw new InvalidProgramException("Failed to initialize WPF application: Application instance is null.");
             }
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-            _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, DesktopUtilities.RefreshDesktop);
+            _ = dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, DesktopUtilities.RefreshDesktop);
         }
 
         /// <summary>
