@@ -590,10 +590,16 @@ function New-ADTTemplate
                 }
                 Export-ADTScriptBlockToFile -ScriptBlock $Script:ADT.ModuleDefaults.Strings.([System.String]::Empty) -LiteralPath "$templatePath\Strings\strings.psd1"
 
-                # Remove any digital signatures from the ps*1 files.
+                # Ensure all editable ps*1 files are not read-only and remove any digital signatures.
                 Get-ChildItem -LiteralPath $templatePath -File -Filter *.ps*1 -Recurse | & {
                     process
                     {
+                        $attributes = [System.IO.File]::GetAttributes($_.FullName)
+                        if (($attributes -band [System.IO.FileAttributes]::ReadOnly) -ne 0)
+                        {
+                            [System.IO.File]::SetAttributes($_.FullName, ($attributes -band (-bnot [System.IO.FileAttributes]::ReadOnly)))
+                        }
+
                         if (($sigLine = $(($fileLines = [System.IO.File]::ReadAllLines($_.FullName)) -match '^# SIG # Begin signature block$')))
                         {
                             [System.IO.File]::WriteAllLines($_.FullName, $fileLines[0..($fileLines.IndexOf($sigLine) - 2)])
@@ -609,7 +615,11 @@ function New-ADTTemplate
                 $(Get-Item -LiteralPath $templateModulePath; Get-ChildItem -LiteralPath $templateModulePath -Recurse) | & {
                     process
                     {
-                        $_.Attributes = 'ReadOnly'
+                        $attributes = [System.IO.File]::GetAttributes($_.FullName)
+                        if (($attributes -band [System.IO.FileAttributes]::ReadOnly) -eq 0)
+                        {
+                            [System.IO.File]::SetAttributes($_.FullName, ($attributes -bor [System.IO.FileAttributes]::ReadOnly))
+                        }
                     }
                 }
 
