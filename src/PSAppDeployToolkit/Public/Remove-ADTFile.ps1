@@ -107,20 +107,20 @@ function Remove-ADTFile
                     {
                         try
                         {
-                            $giParams = @{ $PSCmdlet.ParameterSetName = $path }
+                            $giParams = @{ $PSCmdlet.ParameterSetName = $_ }
                             if ($items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName)
                             {
                                 return $items
                             }
-                            Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
+                            Write-ADTLogEntry -Message "Unable to resolve the path [$_] because it does not exist." -Severity Warning
                         }
                         catch [System.Management.Automation.ItemNotFoundException]
                         {
-                            Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
+                            Write-ADTLogEntry -Message "Unable to resolve the path [$_] because it does not exist." -Severity Warning
                         }
                         catch [System.Management.Automation.DriveNotFoundException]
                         {
-                            Write-ADTLogEntry -Message "Unable to resolve the path [$path] because the drive does not exist." -Severity Warning
+                            Write-ADTLogEntry -Message "Unable to resolve the path [$_] because the drive does not exist." -Severity Warning
                         }
                         catch
                         {
@@ -129,7 +129,7 @@ function Remove-ADTFile
                     }
                     catch
                     {
-                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$path]."
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$_]."
                     }
                 }
             }
