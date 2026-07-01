@@ -48,7 +48,7 @@ namespace PSADT.UserInterface.Interfaces
             // ManagedWndProcTracker runs, causing an unhandled Win32Exception ("Invalid window handle") in
             // PostMessage. InvokeShutdown() stops the dispatcher pump without destroying windows, letting
             // ManagedWndProcTracker clean them up safely.
-            AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.InvokeShutdown();
+            AppDomain.CurrentDomain.ProcessExit += static (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeShutdown();
 
             // Configure WinForms modernisations here the NotifyIcon can create a IWin32Window which will make this throw if called afterwards.
             System.Windows.Forms.Application.EnableVisualStyles(); System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(defaultValue: false);
@@ -58,23 +58,22 @@ namespace PSADT.UserInterface.Interfaces
 
             // Create and start the WPF application thread.
             using ManualResetEvent dispatcherRunning = new(initialState: false);
-            System.Windows.Application? appLocal = null;
             Exception? appThreadException = null;
             Thread appThread = new(() =>
             {
                 try
                 {
                     // Create the application and start the message pump (this will set dispatcherRunning when fully instantiated).
-                    appLocal = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
-                    appLocal.Dispatcher.UnhandledException += (_, e) => unhandledExceptionHandler(e.Exception);
-                    appLocal.Startup += async (_, _) =>
+                    System.Windows.Application app = new() { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
+                    app.Dispatcher.UnhandledException += (_, e) => unhandledExceptionHandler(e.Exception);
+                    app.Startup += async (_, _) =>
                     {
-                        if (!await appLocal.Dispatcher.InvokeAsync(dispatcherRunning.Set, System.Windows.Threading.DispatcherPriority.Normal, default))
+                        if (!await app.Dispatcher.InvokeAsync(dispatcherRunning.Set, System.Windows.Threading.DispatcherPriority.Normal, default))
                         {
                             throw new InvalidProgramException("Failed to signal that the WPF dispatcher is running.");
                         }
                     };
-                    _ = appLocal.Run();
+                    _ = app.Run();
                 }
                 catch (Exception exception) when (exception.Message is not null)
                 {
@@ -100,14 +99,13 @@ namespace PSADT.UserInterface.Interfaces
             {
                 throw new InvalidProgramException("Failed to initialize WPF application: Dispatcher threw an exception.", appThreadException);
             }
-            if (appLocal is null)
+            if (System.Windows.Application.Current is null)
             {
                 throw new InvalidProgramException("Failed to initialize WPF application: Application instance is null.");
             }
-            app = appLocal;
 
             // Refresh desktop icons to ensure any changes are reflected (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1846).
-            _ = app.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, DesktopUtilities.RefreshDesktop);
+            _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, DesktopUtilities.RefreshDesktop);
         }
 
         /// <summary>
@@ -628,7 +626,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <returns>A task that represents the asynchronous operation.</returns>
         private static Task InvokeDialogActionAsync(Action callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
+            return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
         }
 
         /// <summary>
@@ -638,7 +636,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <returns>A task that represents the asynchronous operation.</returns>
         private static Task InvokeDialogActionAsync(Func<Task> callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task.Unwrap();
+            return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task.Unwrap();
         }
 
         /// <summary>
@@ -649,7 +647,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <returns>A task that represents the asynchronous operation, containing the result of the function.</returns>
         private static Task<TResult> InvokeDialogActionAsync<TResult>(Func<TResult> callback)
         {
-            return app.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
+            return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
         }
 
         /// <summary>
@@ -666,10 +664,5 @@ namespace PSADT.UserInterface.Interfaces
         /// A cached value of the last balloon tip options used.
         /// </summary>
         private static BalloonTipOptions? lastBalloonTip;
-
-        /// <summary>
-        /// Application instance for the WPF dialog.
-        /// </summary>
-        private static readonly System.Windows.Application app;
     }
 }
