@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Interop.Extensions;
 using Windows.Win32.Graphics.DirectWrite;
 
 namespace PSADT.Interop.SafeHandles

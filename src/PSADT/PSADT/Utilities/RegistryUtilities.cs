@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Extensions;
 using PSADT.Interop;
 using Windows.Win32.System.Registry;
 

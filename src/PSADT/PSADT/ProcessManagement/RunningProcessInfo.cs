@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Security.Principal;
-using PSADT.Extensions;
 using PSADT.FileSystem;
 using PSADT.Interop;
 using PSADT.Security;

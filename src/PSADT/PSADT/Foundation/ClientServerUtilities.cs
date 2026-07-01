@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
-using PSADT.Extensions;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 

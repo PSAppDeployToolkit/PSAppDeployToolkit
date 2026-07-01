@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using Windows.Win32.Security;
 
 namespace PSADT.Security

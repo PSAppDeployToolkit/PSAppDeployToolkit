@@ -2,31 +2,30 @@
 using System.ComponentModel;
 using System.Reflection;
 
-namespace PSADT.Extensions
+/// <summary>
+/// Provides extension methods for retrieving metadata from enumeration values, such as descriptions defined by
+/// attributes.
+/// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1110:Declare type inside namespace", Justification = "Polyfills aren't meant to be part of a namespace.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0047:Declare types in namespaces", Justification = "Polyfills aren't meant to be part of a namespace.")]
+internal static class EnumExtensions
 {
     /// <summary>
-    /// Provides extension methods for retrieving metadata from enumeration values, such as descriptions defined by
-    /// attributes.
+    /// Retrieves the description specified by the <see cref="DescriptionAttribute"/> for the given enumeration
+    /// value.
     /// </summary>
-    internal static class EnumExtensions
+    /// <remarks>This method requires that each enumeration value is decorated with a single <see
+    /// cref="DescriptionAttribute"/> containing a non-empty description. It is intended for use with enums that
+    /// follow this convention.</remarks>
+    /// <param name="value">The enumeration value for which to obtain the description.</param>
+    /// <returns>A string containing the description associated with the specified enumeration value.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the enumeration value is not defined as a field, does not have exactly one <see
+    /// cref="DescriptionAttribute"/>, or if the attribute's description is null, empty, or consists only of
+    /// white-space characters.</exception>
+    internal static string GetDescription(this Enum value)
     {
-        /// <summary>
-        /// Retrieves the description specified by the <see cref="DescriptionAttribute"/> for the given enumeration
-        /// value.
-        /// </summary>
-        /// <remarks>This method requires that each enumeration value is decorated with a single <see
-        /// cref="DescriptionAttribute"/> containing a non-empty description. It is intended for use with enums that
-        /// follow this convention.</remarks>
-        /// <param name="value">The enumeration value for which to obtain the description.</param>
-        /// <returns>A string containing the description associated with the specified enumeration value.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the enumeration value is not defined as a field, does not have exactly one <see
-        /// cref="DescriptionAttribute"/>, or if the attribute's description is null, empty, or consists only of
-        /// white-space characters.</exception>
-        internal static string GetDescription(this Enum value)
-        {
-            return value.GetType().GetField(value.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description is not string description || string.IsNullOrWhiteSpace(description)
-                ? throw new InvalidOperationException("The specified enum value is invalid or does not have a valid Description attribute.")
-                : description;
-        }
+        return value.GetType().GetField(value.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description is not string description || string.IsNullOrWhiteSpace(description)
+            ? throw new InvalidOperationException("The specified enum value is invalid or does not have a valid Description attribute.")
+            : description;
     }
 }

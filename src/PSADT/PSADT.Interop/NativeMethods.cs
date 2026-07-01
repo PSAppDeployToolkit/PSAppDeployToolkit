@@ -10,7 +10,6 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Threading;
 using Microsoft.Win32.SafeHandles;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.Interop.Utilities;
 using Windows.Wdk.Foundation;

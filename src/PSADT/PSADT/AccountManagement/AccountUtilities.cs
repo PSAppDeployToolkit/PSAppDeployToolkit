@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using PSADT.Foundation;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.ProcessManagement;
 using PSADT.Security;

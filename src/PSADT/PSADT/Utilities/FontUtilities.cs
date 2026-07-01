@@ -7,7 +7,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;

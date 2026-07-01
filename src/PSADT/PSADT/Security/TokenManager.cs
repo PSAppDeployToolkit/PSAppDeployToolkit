@@ -9,7 +9,6 @@ using Microsoft.Win32.SafeHandles;
 using PSADT.AccountManagement;
 using PSADT.Foundation;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.SafeHandles;
 using PSADT.Utilities;
 using Windows.Win32;

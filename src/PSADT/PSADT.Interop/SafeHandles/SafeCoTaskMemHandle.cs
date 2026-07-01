@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using PSADT.Interop.Extensions;
 using Windows.Win32.Foundation;
 
 namespace PSADT.Interop.SafeHandles

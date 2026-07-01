@@ -12,7 +12,6 @@ using PSADT.AccountManagement;
 using PSADT.FileSystem;
 using PSADT.Foundation;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using PSADT.Security;
 using PSADT.Utilities;

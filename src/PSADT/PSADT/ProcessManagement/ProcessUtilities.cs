@@ -11,7 +11,6 @@ using System.ServiceProcess;
 using Microsoft.Win32.SafeHandles;
 using PSADT.FileSystem;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Security;
 using Windows.Wdk.System.Threading;
 using Windows.Win32;

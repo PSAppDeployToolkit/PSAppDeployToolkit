@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.Utilities;
 using Windows.Win32;
 

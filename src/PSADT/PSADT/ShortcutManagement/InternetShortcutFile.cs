@@ -24,7 +24,6 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 using PSADT.Interop.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;

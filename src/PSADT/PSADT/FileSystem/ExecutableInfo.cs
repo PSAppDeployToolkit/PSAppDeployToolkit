@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using PSADT.Interop.Extensions;
 using Windows.Win32;
 using Windows.Win32.System.Diagnostics.Debug;
 using Windows.Win32.System.SystemInformation;

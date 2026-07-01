@@ -7,7 +7,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using PSADT.Interop;
-using PSADT.Interop.Extensions;
 
 namespace PSADT.UserInterface
 {

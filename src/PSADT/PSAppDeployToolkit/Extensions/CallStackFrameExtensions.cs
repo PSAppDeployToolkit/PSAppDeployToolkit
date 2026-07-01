@@ -1,29 +1,28 @@
 ﻿using System.Management.Automation;
 
-namespace PSAppDeployToolkit.Extensions
+/// <summary>
+/// Extension methods for <see cref="CallStackFrame"/> objects.
+/// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1110:Declare type inside namespace", Justification = "Polyfills aren't meant to be part of a namespace.")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0047:Declare types in namespaces", Justification = "Polyfills aren't meant to be part of a namespace.")]
+internal static class CallStackFrameExtensions
 {
     /// <summary>
-    /// Extension methods for <see cref="CallStackFrame"/> objects.
+    /// Retrieves the name of the command associated with the specified call stack frame.
     /// </summary>
-    internal static class CallStackFrameExtensions
+    /// <remarks>If the invocation information or command name is unavailable, the function name is
+    /// returned instead. This method is intended for internal use when analyzing or displaying call stack
+    /// information.</remarks>
+    /// <param name="frame">The call stack frame from which to obtain the command name. This parameter cannot be null.</param>
+    /// <returns>The name of the command associated with the call stack frame, or the function name if no command is found.</returns>
+    internal static string GetCommand(this CallStackFrame frame)
     {
-        /// <summary>
-        /// Retrieves the name of the command associated with the specified call stack frame.
-        /// </summary>
-        /// <remarks>If the invocation information or command name is unavailable, the function name is
-        /// returned instead. This method is intended for internal use when analyzing or displaying call stack
-        /// information.</remarks>
-        /// <param name="frame">The call stack frame from which to obtain the command name. This parameter cannot be null.</param>
-        /// <returns>The name of the command associated with the call stack frame, or the function name if no command is found.</returns>
-        internal static string GetCommand(this CallStackFrame frame)
-        {
-            return frame.InvocationInfo is null
-                ? frame.FunctionName
-                : frame.InvocationInfo.MyCommand is null
-                ? frame.InvocationInfo.InvocationName
-                : !string.IsNullOrWhiteSpace(frame.InvocationInfo.MyCommand.Name)
-                ? frame.InvocationInfo.MyCommand.Name
-                : frame.FunctionName;
-        }
+        return frame.InvocationInfo is null
+            ? frame.FunctionName
+            : frame.InvocationInfo.MyCommand is null
+            ? frame.InvocationInfo.InvocationName
+            : !string.IsNullOrWhiteSpace(frame.InvocationInfo.MyCommand.Name)
+            ? frame.InvocationInfo.MyCommand.Name
+            : frame.FunctionName;
     }
 }

@@ -11,7 +11,6 @@ using System.Management.Automation.Runspaces;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using PSAppDeployToolkit.Extensions;
 using PSAppDeployToolkit.Foundation;
 
 namespace PSAppDeployToolkit.Logging

@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using PSADT.Extensions;
 
 namespace PSADT.Foundation
 {

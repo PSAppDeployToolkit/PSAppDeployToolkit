@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices.ComTypes;
-using PSADT.Extensions;
 using Xunit;
 
 namespace PSADT.Tests.Extensions
