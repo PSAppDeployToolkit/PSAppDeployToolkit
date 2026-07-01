@@ -4,3 +4,4 @@ M:Windows.Win32.Foundation.HRESULT.ThrowOnFailure(System.IntPtr);Use ExceptionUt
 M:System.Environment.GetEnvironmentVariable(System.String);Use EnvironmentUtilities.GetEnvironmentVariable(System.String) instead.
 M:System.Environment.GetEnvironmentVariable(System.String,System.EnvironmentVariableTarget);Use EnvironmentUtilities.GetEnvironmentVariable(System.String,System.EnvironmentVariableTarget) instead.
 M:System.Environment.ExpandEnvironmentVariables(System.String);Use EnvironmentUtilities.ExpandEnvironmentVariables(System.String) instead.
+P:System.Windows.Application.Current;Use InvokeDialogActionAsync() methods instead.

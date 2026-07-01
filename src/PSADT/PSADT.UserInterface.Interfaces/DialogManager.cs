@@ -36,6 +36,7 @@ namespace PSADT.UserInterface.Interfaces
         /// </summary>
         [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "These exceptions will never fire under normal, expected circumstances.")]
         [SuppressMessage("Usage", "VSTHRD101:Avoid unsupported async delegates", Justification = "An exception throwing in this event is truly exceptional, so we want it to propagate.")]
+        [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Access to System.Windows.Application.Current is appropriate here while we're setting up.")]
         static DialogManager()
         {
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
@@ -624,6 +625,7 @@ namespace PSADT.UserInterface.Interfaces
         /// </summary>
         /// <param name="callback">The action to invoke on the WPF UI thread.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is our safe implementation.")]
         private static Task InvokeDialogActionAsync(Action callback)
         {
             return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
@@ -634,6 +636,7 @@ namespace PSADT.UserInterface.Interfaces
         /// </summary>
         /// <param name="callback">The asynchronous action to invoke on the WPF UI thread.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
+        [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is our safe implementation.")]
         private static Task InvokeDialogActionAsync(Func<Task> callback)
         {
             return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task.Unwrap();
@@ -645,6 +648,7 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="callback">The function to invoke on the WPF UI thread.</param>
         /// <typeparam name="TResult">The type of the result returned by the function.</typeparam>
         /// <returns>A task that represents the asynchronous operation, containing the result of the function.</returns>
+        [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is our safe implementation.")]
         private static Task<TResult> InvokeDialogActionAsync<TResult>(Func<TResult> callback)
         {
             return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
