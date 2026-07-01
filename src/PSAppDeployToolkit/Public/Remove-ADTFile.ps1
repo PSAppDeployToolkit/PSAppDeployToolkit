@@ -100,39 +100,37 @@ function Remove-ADTFile
         # Grab and cache all directories.
         $files = if (!$PSCmdlet.ParameterSetName.Equals('InputObject'))
         {
-            foreach ($path in $PSBoundParameters[$PSCmdlet.ParameterSetName])
-            {
-                try
+            $PSBoundParameters[$PSCmdlet.ParameterSetName] | & {
+                process
                 {
                     try
                     {
-                        $giParams = @{ $PSCmdlet.ParameterSetName = $path }
-                        if (!($items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName))
+                        try
+                        {
+                            $giParams = @{ $PSCmdlet.ParameterSetName = $path }
+                            if ($items = Get-Item @giParams -Force | Select-Object -ExpandProperty FullName)
+                            {
+                                return $items
+                            }
+                            Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
+                        }
+                        catch [System.Management.Automation.ItemNotFoundException]
                         {
                             Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
-                            continue
                         }
-                        return $items
-                    }
-                    catch [System.Management.Automation.ItemNotFoundException]
-                    {
-                        Write-ADTLogEntry -Message "Unable to resolve the path [$path] because it does not exist." -Severity Warning
-                        continue
-                    }
-                    catch [System.Management.Automation.DriveNotFoundException]
-                    {
-                        Write-ADTLogEntry -Message "Unable to resolve the path [$path] because the drive does not exist." -Severity Warning
-                        continue
+                        catch [System.Management.Automation.DriveNotFoundException]
+                        {
+                            Write-ADTLogEntry -Message "Unable to resolve the path [$path] because the drive does not exist." -Severity Warning
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
+                        }
                     }
                     catch
                     {
-                        Write-Error -ErrorRecord $_
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$path]."
                     }
-                }
-                catch
-                {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to resolve the path for deletion [$path]."
-                    continue
                 }
             }
         }
