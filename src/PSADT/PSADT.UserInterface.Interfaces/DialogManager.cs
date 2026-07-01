@@ -35,6 +35,7 @@ namespace PSADT.UserInterface.Interfaces
         /// Initializes the WPF application when the class is first accessed.
         /// </summary>
         [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "These exceptions will never fire under normal, expected circumstances.")]
+        [SuppressMessage("Usage", "VSTHRD101:Avoid unsupported async delegates", Justification = "An exception throwing in this event is truly exceptional, so we want it to propagate.")]
         static DialogManager()
         {
             // Set up the required dispatcher exception handler first. If it's not present, the setup is wrong and we won't proceed.
@@ -49,6 +50,12 @@ namespace PSADT.UserInterface.Interfaces
             // ManagedWndProcTracker clean them up safely.
             AppDomain.CurrentDomain.ProcessExit += static (_, _) => app?.Dispatcher.InvokeShutdown();
 
+            // Configure WinForms modernisations here the NotifyIcon can create a IWin32Window which will make this throw if called afterwards.
+            System.Windows.Forms.Application.EnableVisualStyles(); System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(defaultValue: false);
+
+            // Force all WPF dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
+            System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+
             // Create and start the WPF application thread.
             using ManualResetEvent dispatcherRunning = new(initialState: false);
             System.Windows.Application? appLocal = null;
@@ -60,11 +67,12 @@ namespace PSADT.UserInterface.Interfaces
                     // Create the application and start the message pump (this will set dispatcherRunning when fully instantiated).
                     appLocal = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown, };
                     appLocal.Dispatcher.UnhandledException += static (_, e) => unhandledExceptionHandler(e.Exception);
-                    appLocal.Startup += (_, _) =>
+                    appLocal.Startup += async (_, _) =>
                     {
-                        // Force the dialogs into software mode for remoting apps (https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/issues/1762)
-                        System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-                        _ = appLocal.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, dispatcherRunning.Set);
+                        if (!await appLocal.Dispatcher.InvokeAsync(dispatcherRunning.Set, System.Windows.Threading.DispatcherPriority.Normal, default))
+                        {
+                            throw new InvalidProgramException("Failed to signal that the WPF dispatcher is running.");
+                        }
                     };
                     _ = appLocal.Run();
                 }
