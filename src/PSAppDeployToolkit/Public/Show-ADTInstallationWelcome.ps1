@@ -1127,6 +1127,10 @@ function Show-ADTInstallationWelcome
                         if ($CloseProcessesCountdown -gt 0)
                         {
                             $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
+                            if ($CloseProcessesCountdown -ge $adtConfig.UI.DefaultTimeout)
+                            {
+                                $dialogOptions.DialogExpiryDuration = [System.TimeSpan]::FromSeconds($CloseProcessesCountdown + 60)
+                            }
                         }
                     }
                     if ($PersistPrompt)
@@ -1136,6 +1140,10 @@ function Show-ADTInstallationWelcome
                     if (($PSBoundParameters.ContainsKey('ForceCloseProcessesCountdown') -or $PSBoundParameters.ContainsKey('ForceCountdown')) -and !$dialogOptions.ContainsKey('CountdownDuration'))
                     {
                         $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
+                        if ($CloseProcessesCountdown -ge $adtConfig.UI.DefaultTimeout)
+                        {
+                            $dialogOptions.DialogExpiryDuration = [System.TimeSpan]::FromSeconds($CloseProcessesCountdown + 60)
+                        }
                     }
                     if ($HideCloseButton -and ($AllowDefer -or !$dialogOptions.ContainsKey('CountdownDuration')))
                     {
