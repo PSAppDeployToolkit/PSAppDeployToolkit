@@ -87,7 +87,7 @@ function Show-ADTInstallationWelcome
         Specifies whether to minimize other windows when displaying prompt.
 
     .PARAMETER NotTopMost
-        Specifies whether the windows is the topmost window.
+        Specifies whether the window is the topmost window.
 
     .PARAMETER AllowMinimize
         Specifies that the user is allowed to minimize the dialog.
