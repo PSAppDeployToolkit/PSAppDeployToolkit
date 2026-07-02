@@ -192,7 +192,7 @@ function Show-ADTInstallationRestartPrompt
         {
             $sessionState = $PSCmdlet.SessionState
         }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
+        $adtStrings = Get-ADTStringTable -SessionState $sessionState
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
@@ -358,7 +358,7 @@ function Show-ADTInstallationRestartPrompt
                 {
                     $dialogOptions.Add('FluentAccentColorDark', $adtConfig.UI.FluentAccentColorDark)
                 }
-                $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.RestartDialogOptions]) -Data $dialogOptions -DeploymentType $DeploymentType
+                $dialogOptions = New-ADTDialogOptionsObject -Type ([PSADT.UserInterface.DialogOptions.RestartDialogOptions]) -Data $dialogOptions -DeploymentType $deploymentType
 
                 # If the script has been dot-source invoked by the deploy app script, display the restart prompt asynchronously.
                 if ($adtSession)
