@@ -19,13 +19,13 @@ internal static class EnumExtensions
     /// follow this convention.</remarks>
     /// <param name="value">The enumeration value for which to obtain the description.</param>
     /// <returns>A string containing the description associated with the specified enumeration value.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the enumeration value is not defined as a field, does not have exactly one <see
+    /// <exception cref="ArgumentException">Thrown if the enumeration value is not defined as a field, does not have exactly one <see
     /// cref="DescriptionAttribute"/>, or if the attribute's description is null, empty, or consists only of
     /// white-space characters.</exception>
     internal static string GetDescription(this Enum value)
     {
         return value.GetType().GetField(value.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description is not string description || string.IsNullOrWhiteSpace(description)
-            ? throw new InvalidOperationException("The specified enum value is invalid or does not have a valid Description attribute.")
+            ? throw new ArgumentException("The specified enum value is invalid or does not have a valid Description attribute.", nameof(value))
             : description;
     }
 }
