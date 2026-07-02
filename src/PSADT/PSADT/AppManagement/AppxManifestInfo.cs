@@ -108,7 +108,7 @@ namespace PSADT.AppManagement
         /// <returns>The package information.</returns>
         private static AppxManifestInfo GetPackageManifestInformation(Uri packageUri)
         {
-            _ = NativeMethods.SHCreateStreamOnFileEx(packageUri.LocalPath, Interop.STGM.STGM_READ | Interop.STGM.STGM_SHARE_DENY_NONE, FileAttributes.Normal, fCreate: false, pstmTemplate: null, out IStream packageStream);
+            IStream packageStream = CreateStreamForPackage(packageUri);
             try
             {
                 IAppxFactory appxFactory = (IAppxFactory)new AppxFactory();
@@ -158,7 +158,7 @@ namespace PSADT.AppManagement
         /// <returns>The package information.</returns>
         private static AppxManifestInfo GetBundleManifestInformation(Uri packageUri)
         {
-            _ = NativeMethods.SHCreateStreamOnFileEx(packageUri.LocalPath, Interop.STGM.STGM_READ | Interop.STGM.STGM_SHARE_DENY_NONE, FileAttributes.Normal, fCreate: false, pstmTemplate: null, out IStream packageStream);
+            IStream packageStream = CreateStreamForPackage(packageUri);
             try
             {
                 IAppxBundleFactory appxFactory = (IAppxBundleFactory)new AppxBundleFactory();
@@ -199,6 +199,17 @@ namespace PSADT.AppManagement
             {
                 _ = Marshal.FinalReleaseComObject(packageStream);
             }
+        }
+
+        /// <summary>
+        /// Creates an IStream for the specified package file using the SHCreateStreamOnFileEx function from the Windows API.
+        /// </summary>
+        /// <param name="packageUri">The URI to the package file.</param>
+        /// <returns>An IStream representing the package file.</returns>
+        private static IStream CreateStreamForPackage(Uri packageUri)
+        {
+            _ = NativeMethods.SHCreateStreamOnFileEx(packageUri.LocalPath, Interop.STGM.STGM_READ | Interop.STGM.STGM_SHARE_DENY_NONE, FileAttributes.Normal, fCreate: false, pstmTemplate: null, out IStream ppstm);
+            return ppstm;
         }
     }
 }
