@@ -211,16 +211,23 @@ namespace PSADT.ProcessManagement
                 stdInStream?.DisposeLocalCopyOfClientHandle();
             }
 
-            // Finalise the process creation and return the handle to the caller.
+            // Finalise the process creation.
             try
             {
-                if (launchInfo.DenyUserTermination)
-                {
-                    DenyProcessTermination(launchInfo, hProcess, callerPrivileges);
-                }
                 Process process = Process.GetProcessById((int)processId);
                 try
                 {
+                    // Since the process was not spawned by .NET, we need to trigger .NET to get a lock on the handle of the process.
+                    // Otherwise, accessing properties like `ExitCode` will throw Exceptions like "Process was not started by this object", etc.
+                    // Fetching the process handle will trigger the `Process` object to update its internal state by calling `SetProcessHandle`,
+                    // the result is discarded as it's not used later in this code.
+                    _ = process.Handle;
+
+                    // Return the process handle and associated information to the caller.
+                    if (launchInfo.DenyUserTermination)
+                    {
+                        DenyProcessTermination(launchInfo, hProcess, callerPrivileges);
+                    }
                     using (hThread)
                     {
                         _ = NativeMethods.ResumeThread(hThread);
