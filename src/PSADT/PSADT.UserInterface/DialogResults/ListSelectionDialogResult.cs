@@ -46,7 +46,7 @@ namespace PSADT.UserInterface.DialogResults
         /// <returns>true if the specified object is a ListSelectionDialogResult with equal Result and SelectedItem values; otherwise, false.</returns>
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            return obj is ListSelectionDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && (SelectedItem?.Equals(other.SelectedItem, StringComparison.Ordinal)) is true;
+            return obj is ListSelectionDialogResult other && Result.Equals(other.Result, StringComparison.Ordinal) && SelectedItem?.Equals(other.SelectedItem, StringComparison.Ordinal) is true;
         }
 
         /// <summary>

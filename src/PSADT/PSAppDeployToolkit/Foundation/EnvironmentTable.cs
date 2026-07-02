@@ -105,7 +105,7 @@ namespace PSAppDeployToolkit.Foundation
                 {
                     EnvLogonServer = (string?)Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Group Policy\\History", "DCName", defaultValue: null);
                 }
-                if ((EnvLogonServer?.StartsWith('\\')) is true)
+                if (EnvLogonServer?.StartsWith('\\') is true)
                 {
                     EnvLogonServer = EnvLogonServer.TrimStart('\\');
                 }

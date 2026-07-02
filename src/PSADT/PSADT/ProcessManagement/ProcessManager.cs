@@ -138,7 +138,7 @@ namespace PSADT.ProcessManagement
                 }
 
                 // Attempt to launch the process with the specified user's token if the necessary information was provided, otherwise just directly create the process.
-                if ((launchInfo.RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser)) is false)
+                if (launchInfo.RunAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) is false)
                 {
                     // Start the process with the user's token. Without creating an environment block, the process will take on the environment of the SYSTEM account.
                     if (!TokenManager.CanGetUserPrimaryToken)

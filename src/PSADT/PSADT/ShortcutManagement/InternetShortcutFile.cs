@@ -855,7 +855,7 @@ namespace PSADT.ShortcutManagement
         /// <summary>
         /// Gets a value indicating whether the current storage mode is read-only, preventing any write operations.
         /// </summary>
-        private bool IsReadOnly => _storageMode is Interop.STGM mode && (mode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) is Interop.STGM.STGM_DIRECT;
+        private bool IsReadOnly => (_storageMode & (Interop.STGM.STGM_WRITE | Interop.STGM.STGM_READWRITE)) is Interop.STGM.STGM_DIRECT;
 
         /// <summary>
         /// Indicates whether the object has been disposed.

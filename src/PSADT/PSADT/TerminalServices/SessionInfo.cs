@@ -71,7 +71,7 @@ namespace PSADT.TerminalServices
                     for (int i = 0; i < objCount; i++)
                     {
                         ref readonly WTS_SESSION_INFO_1W wtsSessionInfo = ref pSessionInfoPtr.AsReadOnlyStructure<WTS_SESSION_INFO_1W>(objLength * i);
-                        if ((sessionId?.Equals(wtsSessionInfo.SessionId)) is not false && await GetAsync(wtsSessionInfo).ConfigureAwait(false) is SessionInfo sessionInfo)
+                        if (sessionId?.Equals(wtsSessionInfo.SessionId) is not false && await GetAsync(wtsSessionInfo).ConfigureAwait(false) is SessionInfo sessionInfo)
                         {
                             yield return sessionInfo;
                         }

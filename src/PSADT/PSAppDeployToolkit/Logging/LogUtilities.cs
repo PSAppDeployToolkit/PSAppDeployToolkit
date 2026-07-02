@@ -72,7 +72,7 @@ namespace PSAppDeployToolkit.Logging
             // Get the caller's source and filename, factoring in whether we're running outside of PowerShell or not.
             bool noRunspace = (Runspace.DefaultRunspace is null) || (Runspace.DefaultRunspace.RunspaceStateInfo.State is not RunspaceState.Opened);
             StackFrame[] stackFrames = [.. new StackTrace(fNeedFileInfo: true).GetFrames().Skip(1)]; string callerFileName, callerSource;
-            if (noRunspace || !stackFrames.Any(static f => (f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal)) is true))
+            if (noRunspace || !stackFrames.Any(static f => f.GetMethod()?.DeclaringType?.Namespace?.StartsWith("System.Management.Automation", StringComparison.Ordinal) is true))
             {
                 // Get the right stack frame. We want the first one that's not ours. If it's invalid, get our last one.
                 StackFrame invoker = stackFrames.First(static f => f.GetMethod()?.DeclaringType?.FullName is string fullName && !DeclaringTypeRegex.IsMatch(fullName));
