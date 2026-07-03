@@ -228,12 +228,9 @@ namespace PSADT.Security
                         // Return the token handle.
                         return new(tokenBuf.AsReadOnlyStructure<nint>(), ownsHandle: true);
                     }
-                    catch (Exception ex) when (ex.Message is not null)
+                    catch (Exception ex) when (elevatedTokenType is ElevatedTokenType.HighestMandatory)
                     {
-                        if (elevatedTokenType is ElevatedTokenType.HighestMandatory)
-                        {
-                            throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
-                        }
+                        throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                     }
                 }
             }
@@ -249,12 +246,9 @@ namespace PSADT.Security
                     {
                         return GetLinkedPrimaryToken(hUserToken, uiAccess);
                     }
-                    catch (Exception ex) when (ex.Message is not null)
+                    catch (Exception ex) when (elevatedTokenType is ElevatedTokenType.HighestMandatory)
                     {
-                        if (elevatedTokenType is ElevatedTokenType.HighestMandatory)
-                        {
-                            throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
-                        }
+                        throw new InvalidOperationException($"Failed to get the linked admin token for Session Id [{sessionId}].", ex);
                     }
                 }
                 return GetPrimaryToken(hUserToken, uiAccess);

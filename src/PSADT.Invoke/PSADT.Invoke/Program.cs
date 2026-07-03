@@ -113,7 +113,7 @@ namespace PSADT.Invoke
                         process.WaitForExit();
                         return process.ExitCode;
                     }
-                    catch (Exception ex) when (ex.Message is not null)
+                    catch (Exception ex)
                     {
                         string errorMessage = $"Error launching [{processStartInfo.FileName} {processStartInfo.Arguments}].";
                         WriteDebugMessage($"{errorMessage} {ex}", isError: true);
@@ -122,9 +122,10 @@ namespace PSADT.Invoke
                             Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
                         }
                         return 60011;
+                        throw;
                     }
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch (Exception ex)
                 {
                     const string errorMessage = "Error while preparing to invoke deployment script.";
                     WriteDebugMessage($"{errorMessage} {ex}", isError: true);
@@ -133,6 +134,7 @@ namespace PSADT.Invoke
                         Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
                     }
                     return 60010;
+                    throw;
                 }
                 finally
                 {

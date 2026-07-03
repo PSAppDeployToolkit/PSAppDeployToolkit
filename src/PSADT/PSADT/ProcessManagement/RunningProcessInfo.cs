@@ -50,14 +50,14 @@ namespace PSADT.ProcessManagement
                 {
                     filePath = process.GetFilePath(ntPathLookupTable).FullName;
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch (Exception ex)
                 {
                     if (!ProcessUtilities.HasProcessExited(process))
                     {
                         ExceptionDispatchInfo.Capture(ex).Throw();
-                        throw;
                     }
                     return null;
+                    throw;
                 }
 
                 // Cache and return the file path.

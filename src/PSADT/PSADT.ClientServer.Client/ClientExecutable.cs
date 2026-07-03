@@ -177,11 +177,13 @@ namespace PSADT.ClientServer
             {
                 // We've caught our own error. Write it out, the error handler will get the exit code out of it.
                 return InvokeMainErrorHandler(ex, $"Failed to perform the requested operation with error code [{ex.HResult.ToString("X8", CultureInfo.InvariantCulture)}].");
+                throw;
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 // This block is here as a fail-safe and should never be reached.
                 return InvokeMainErrorHandler(ex, $"An unexpected exception occurred with HRESULT [{ex.HResult.ToString("X8", CultureInfo.InvariantCulture)}].", ClientExitCode.Unknown);
+                throw;
             }
         }
 
@@ -219,7 +221,7 @@ namespace PSADT.ClientServer
             {
                 outputPipeClient = new(PipeDirection.Out, outputPipeHandle);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("Failed to open a pipe client for the specified OutputHandle.", ClientExitCode.InvalidOutputPipe, ex);
             }
@@ -227,7 +229,7 @@ namespace PSADT.ClientServer
             {
                 inputPipeClient = new(PipeDirection.In, inputPipeHandle);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("Failed to open a pipe client for the specified InputHandle.", ClientExitCode.InvalidInputPipe, ex);
             }
@@ -235,7 +237,7 @@ namespace PSADT.ClientServer
             {
                 logPipeClient = new(PipeDirection.Out, logPipeHandle);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("Failed to open a pipe client for the specified LogHandle.", ClientExitCode.InvalidLogPipe, ex);
             }
@@ -254,7 +256,7 @@ namespace PSADT.ClientServer
                         await ioEncryption.PerformKeyExchangeAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
                         await logEncryption.PerformKeyExchangeAsync(outputPipeClient, inputPipeClient).ConfigureAwait(false);
                     }
-                    catch (Exception ex) when (ex.Message is not null)
+                    catch (Exception ex)
                     {
                         throw new ClientException("Failed to establish encrypted communication with the server process.", ClientExitCode.EncryptionError, ex);
                     }
@@ -340,11 +342,12 @@ namespace PSADT.ClientServer
                                                         {
                                                             WindowTools.BringWindowToFront((HWND)window.WindowHandle);
                                                         }
-                                                        catch (Exception ex) when (ex.Message is not null)
+                                                        catch (Exception ex)
                                                         {
                                                             await closeAppsDialogState.LogAction($"Failed to bring window [{window.WindowTitle}] for process [{process.ProcessName}] to the foreground for closing: {ex}", LogSeverity.Error).ConfigureAwait(false);
                                                             failures.Add(window.WindowHandle);
                                                             continue;
+                                                            throw;
                                                         }
 
                                                         // Attempt to close out the process's main window.
@@ -355,11 +358,12 @@ namespace PSADT.ClientServer
                                                                 throw new ClientException("The call to CloseMainWindow() returned false, indicating the main window may be disabled due to a modal dialog being shown.", ClientExitCode.PromptToSaveFailure);
                                                             }
                                                         }
-                                                        catch (Exception ex) when (ex.Message is not null)
+                                                        catch (Exception ex)
                                                         {
                                                             await closeAppsDialogState.LogAction($"The call to CloseMainWindow() method on process [{process.ProcessName}] with window title [{window.WindowTitle}] failed: {ex}", LogSeverity.Error).ConfigureAwait(false);
                                                             failures.Add(window.WindowHandle);
                                                             continue;
+                                                            throw;
                                                         }
 
                                                         // Spin until the window is closed or we time out.
@@ -575,10 +579,12 @@ namespace PSADT.ClientServer
                                             throw new ClientException($"The specified command [{command}] is not recognised.", ClientExitCode.InvalidArguments);
                                     }
                                 }
-                                catch (Exception ex) when (ex.Message is not null)
+                                catch (Exception ex)
                                 {
                                     // Something we weren't expecting occurred. Write the error response.
                                     await WriteErrorAsync(ex).ConfigureAwait(false);
+                                    continue;
+                                    throw;
                                 }
                             }
                             catch (EndOfStreamException)
@@ -590,7 +596,7 @@ namespace PSADT.ClientServer
                     return (int)ClientExitCode.Success;
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("Failed to read or write from the pipe.", ClientExitCode.PipeReadWriteError, ex);
             }
@@ -1012,7 +1018,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.DeserializeFromBytes<T>(input, offset);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
@@ -1031,7 +1037,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.DeserializeFromString<T>(input);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("An error occurred while deserializing the provided input.", ClientExitCode.InvalidOptions, ex);
             }
@@ -1051,7 +1057,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.SerializeToBytes(result);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
@@ -1071,7 +1077,7 @@ namespace PSADT.ClientServer
             {
                 return DataSerialization.SerializeToString(result);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ClientException("An error occurred while serializing the provided result.", ClientExitCode.InvalidResult, ex);
             }
@@ -1098,9 +1104,10 @@ namespace PSADT.ClientServer
             {
                 Console.Error.WriteLine(DataSerialization.SerializeToString(exception));
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 Environment.FailFast($"An unexpected exception occurred while serializing main exception [{ex}].{Environment.NewLine}Exception Info: {exception}", exception);
+                throw;
             }
             return (int?)exitCode ?? exception.HResult;
         }

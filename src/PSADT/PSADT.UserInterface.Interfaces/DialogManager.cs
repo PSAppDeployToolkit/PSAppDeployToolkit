@@ -315,7 +315,7 @@ namespace PSADT.UserInterface.Interfaces
                 {
                     progressDialog.Show();
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch (Exception ex)
                 {
                     using (progressDialog)
                     {

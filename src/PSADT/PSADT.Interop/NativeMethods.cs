@@ -2963,7 +2963,7 @@ namespace PSADT.Interop
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)psii.hIcon, "The icon handle returned from 'SHGetStockIconInfo()' is null or invalid.");
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (psii)
                 {
@@ -4201,7 +4201,7 @@ namespace PSADT.Interop
                 InvalidOperationException.ThrowIfNullOrInvalid(ppszPathLocal, "The path returned from 'SHGetKnownFolderPath()' is null or invalid.");
                 ppszPath = new(ppszPathLocal, ownsHandle: true);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 Marshal.FreeCoTaskMem(ppszPathLocal.ToIntPtr());
                 ExceptionDispatchInfo.Capture(ex).Throw();
