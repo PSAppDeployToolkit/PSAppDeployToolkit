@@ -364,7 +364,7 @@ namespace PSADT.Interop
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
                 unsafe
                 {
-                    BOOL res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    BOOL res = PInvoke.CreateProcessWithToken(hToken, dwLogonFlags, lpApplicationName, ref lpCommandLine, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                     return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
@@ -421,7 +421,7 @@ namespace PSADT.Interop
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
                 unsafe
                 {
-                    BOOL res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    BOOL res = PInvoke.CreateProcessAsUser(hToken, lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                     return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
@@ -491,11 +491,9 @@ namespace PSADT.Interop
                         {
                             fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                             {
-                                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
-                                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                                 hToken.DangerousAddRef(ref hTokenAddRef);
                                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                                BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes is not null ? &lpProcessAttributesLocal : null, lpThreadAttributes is not null ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                                BOOL res = PInvoke.CreateProcessAsUser((HANDLE)hToken.DangerousGetHandle(), lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.ToPointer(), lpThreadAttributes.ToPointer(), bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                                 if (!res)
                                 {
                                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -627,7 +625,7 @@ namespace PSADT.Interop
                     ACL* NewAclLocal = null;
                     fixed (EXPLICIT_ACCESS_W* pListOfExplicitEntriesLocal = pListOfExplicitEntries)
                     {
-                        res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, OldAcl is not null ? (ACL*)OldAcl.DangerousGetHandle() : (ACL*)null, &NewAclLocal).ThrowOnFailure();
+                        res = PInvoke.SetEntriesInAcl((uint)pListOfExplicitEntries.Length, pListOfExplicitEntriesLocal, (ACL*)OldAcl?.DangerousGetHandle().ToPointer(), &NewAclLocal).ThrowOnFailure();
                     }
                     InvalidOperationException.ThrowIfZeroOrInvalid((nint)NewAclLocal, "Failed to create a new ACL with the specified entries.");
                     NewAcl = new((nint)NewAclLocal);
@@ -715,7 +713,7 @@ namespace PSADT.Interop
                 pSacl?.DangerousAddRef(ref pSaclAddRef);
                 unsafe
                 {
-                    return PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, psidOwner is not null ? new(psidOwner.DangerousGetHandle()) : (PSID)null, psidGroup is not null ? new(psidGroup.DangerousGetHandle()) : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null).ThrowOnFailure();
+                    return PInvoke.SetSecurityInfo((HANDLE)handle.DangerousGetHandle(), ObjectType, SecurityInfo, (PSID?)psidOwner?.DangerousGetHandle() ?? default, (PSID?)psidGroup?.DangerousGetHandle() ?? default, (ACL*)pDacl?.DangerousGetHandle().ToPointer(), (ACL*)pSacl?.DangerousGetHandle().ToPointer()).ThrowOnFailure();
                 }
             }
             finally
@@ -860,7 +858,7 @@ namespace PSADT.Interop
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        return PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, psidOwner is not null ? (PSID)psidOwner.DangerousGetHandle() : (PSID)null, psidGroup is not null ? (PSID)psidGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null).ThrowOnFailure();
+                        return PInvoke.SetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, (PSID?)psidOwner?.DangerousGetHandle() ?? default, (PSID?)psidGroup?.DangerousGetHandle() ?? default, (ACL*)pDacl?.DangerousGetHandle().ToPointer(), (ACL*)pSacl?.DangerousGetHandle().ToPointer()).ThrowOnFailure();
                     }
                 }
             }
@@ -955,7 +953,7 @@ namespace PSADT.Interop
                 {
                     fixed (char* pObjectNameLocal = pObjectName)
                     {
-                        return PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, pOwner is not null ? (PSID)pOwner.DangerousGetHandle() : (PSID)null, pGroup is not null ? (PSID)pGroup.DangerousGetHandle() : (PSID)null, pDacl is not null ? (ACL*)pDacl.DangerousGetHandle() : (ACL*)null, pSacl is not null ? (ACL*)pSacl.DangerousGetHandle() : (ACL*)null, KeepExplicit, fnProgress, ProgressInvokeSetting, (void*)Args).ThrowOnFailure();
+                        return PInvoke.TreeResetNamedSecurityInfo(pObjectNameLocal, ObjectType, SecurityInfo, (PSID?)pOwner?.DangerousGetHandle() ?? default, (PSID?)pGroup?.DangerousGetHandle() ?? default, (ACL*)pDacl?.DangerousGetHandle().ToPointer(), (ACL*)pSacl?.DangerousGetHandle().ToPointer(), KeepExplicit, fnProgress, ProgressInvokeSetting, (void*)Args).ThrowOnFailure();
                     }
                 }
             }
@@ -1695,7 +1693,7 @@ namespace PSADT.Interop
                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
                 unsafe
                 {
-                    BOOL res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
+                    BOOL res = PInvoke.CreateProcess(lpApplicationName, ref lpCommandLine, lpProcessAttributes, lpThreadAttributes, bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectory, in lpStartupInfo, out lpProcessInformation);
                     return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
                 }
             }
@@ -1764,10 +1762,8 @@ namespace PSADT.Interop
                         {
                             fixed (STARTUPINFOEXW* lpStartupInfoExLocal = &lpStartupInfoEx)
                             {
-                                SECURITY_ATTRIBUTES lpProcessAttributesLocal = lpProcessAttributes ?? default;
-                                SECURITY_ATTRIBUTES lpThreadAttributesLocal = lpThreadAttributes ?? default;
                                 lpEnvironment?.DangerousAddRef(ref lpEnvironmentAddRef);
-                                BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes is not null ? &lpProcessAttributesLocal : null, lpThreadAttributes is not null ? &lpThreadAttributesLocal : null, bInheritHandles, dwCreationFlags, lpEnvironment is not null ? (void*)lpEnvironment.DangerousGetHandle() : null, lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
+                                BOOL res = PInvoke.CreateProcess(lpApplicationNameLocal, plpCommandLine, lpProcessAttributes.ToPointer(), lpThreadAttributes.ToPointer(), bInheritHandles, dwCreationFlags, lpEnvironment?.DangerousGetHandle().ToPointer(), lpCurrentDirectoryLocal, (STARTUPINFOW*)lpStartupInfoExLocal, lpProcessInformationLocal);
                                 if (!res)
                                 {
                                     throw ExceptionUtilities.GetExceptionForLastWin32Error();
@@ -2371,7 +2367,7 @@ namespace PSADT.Interop
                 try
                 {
                     lpSource?.DangerousAddRef(ref lpSourceAddRef);
-                    uint res = PInvoke.FormatMessage(dwFlags, lpSource is not null ? (void*)lpSource.DangerousGetHandle() : null, dwMessageId, dwLanguageId, lpBuffer, (uint)lpBuffer.Length, (sbyte*)Arguments);
+                    uint res = PInvoke.FormatMessage(dwFlags, lpSource?.DangerousGetHandle().ToPointer(), dwMessageId, dwLanguageId, lpBuffer, (uint)lpBuffer.Length, (sbyte*)Arguments);
                     return res == 0 ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
 
                 }
@@ -2583,7 +2579,7 @@ namespace PSADT.Interop
             try
             {
                 Handle?.DangerousAddRef(ref HandleAddRef);
-                res = Windows.Wdk.PInvoke.NtQueryObject(Handle is not null ? (HANDLE)Handle.DangerousGetHandle() : HANDLE.Null, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
+                res = Windows.Wdk.PInvoke.NtQueryObject((HANDLE?)Handle?.DangerousGetHandle() ?? default, (Windows.Wdk.Foundation.OBJECT_INFORMATION_CLASS)ObjectInformationClass, ObjectInformation, out ReturnLength);
                 if (res != NTSTATUS.STATUS_SUCCESS && (res != NTSTATUS.STATUS_INFO_LENGTH_MISMATCH || (!retrievingLength && (!ObjectInfoClassSizes.TryGetValue(ObjectInformationClass, out int objectInfoQueryLength) || ObjectInformation.Length != objectInfoQueryLength) && ObjectInformation.Length is not 0)))
                 {
                     throw ExceptionUtilities.GetException(res);

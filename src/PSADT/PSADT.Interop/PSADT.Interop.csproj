@@ -52,6 +52,7 @@
       M:System.IO.Path.IsPathFullyQualified|
       M:System.IO.Path.Join|
       M:System.IO.StreamReader.ReadLineAsync|
+      M:System.Nullable.GetValueRefOrDefaultRef|
       M:System.ObjectDisposedException.Throw|
       M:System.String.Contains|
       M:System.String.EndsWith|
