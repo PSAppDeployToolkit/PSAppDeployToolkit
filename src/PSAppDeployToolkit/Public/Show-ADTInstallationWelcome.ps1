@@ -65,6 +65,7 @@ function Show-ADTInstallationWelcome
         This addresses the issue where Intune retries deployments shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
         Example:
+        - String values should use the `[d.]hh:mm:ss` format, where `d` (days) is optional.
         - To specify 30 minutes, use: `([System.TimeSpan]::FromMinutes(30))` or `00:30:00`.
         - To specify 24 hours, use: `([System.TimeSpan]::FromHours(24))` or `1.00:00:00`.
 
@@ -145,7 +146,7 @@ function Show-ADTInstallationWelcome
     .EXAMPLE
         Show-ADTInstallationWelcome -CloseProcesses @{ Name = 'winword' }, @{ Name = 'msaccess' }, @{ Name = 'excel' } -PersistPrompt
 
-        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen every couple of seconds, specified in the `config.psd1` file, so the user cannot ignore it by dragging it aside.
+        Prompt the user to close Word, MSAccess and Excel. By using the PersistPrompt switch, the dialog will return to the center of the screen at the interval specified in the `config.psd1` file, so the user cannot ignore it by dragging it aside.
 
     .EXAMPLE
         Show-ADTInstallationWelcome -AllowDefer -DeferDeadline '2013-08-25'
@@ -799,7 +800,7 @@ function Show-ADTInstallationWelcome
         {
             $sessionState = $PSCmdlet.SessionState
         }
-        $adtStrings = Get-ADTStringTable -SessionState $SessionState
+        $adtStrings = Get-ADTStringTable -SessionState $sessionState
 
         # Define parameter dictionary for returning at the end.
         $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
