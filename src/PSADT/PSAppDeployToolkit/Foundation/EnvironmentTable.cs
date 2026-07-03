@@ -875,7 +875,7 @@ namespace PSAppDeployToolkit.Foundation
         /// useful for diagnostics and performance tuning.</remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This needs to be an instance member.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0041:Make method static (deprecated, use CA1822 instead)", Justification = "This needs to be an instance member.")]
-        public string? EnvHardwareType => _envHardwareType;
+        public string EnvHardwareType => _envHardwareType;
 
         /// <summary>
         /// Gets the environment PowerShell version information as a hashtable.
@@ -1158,21 +1158,19 @@ namespace PSAppDeployToolkit.Foundation
         /// </summary>
         /// <remarks>This property provides information about the hardware configuration, which can be
         /// useful for diagnostics and performance tuning.</remarks>
-        private static readonly string? _envHardwareType = HardwareInfo.SystemInformation.Manufacturer is string manufacturer && HardwareInfo.SystemInformation.SerialNumber is string serialNumber && HardwareInfo.SystemInformation.ProductName is string productName && HardwareInfo.SystemInformation.Version is string version
-            ? version.Contains("VRTUAL", StringComparison.Ordinal) || (manufacturer.Contains("Microsoft", StringComparison.Ordinal) && !productName.Contains("Surface", StringComparison.Ordinal))
-                ? "Virtual:Hyper-V"
-                : version.Contains("A M I", StringComparison.Ordinal)
-                ? "Virtual:Virtual PC"
-                : version.Contains("Xen", StringComparison.Ordinal)
-                ? "Virtual:Xen"
-                : serialNumber.Contains("VMware", StringComparison.Ordinal) || manufacturer.Contains("VMware", StringComparison.Ordinal)
-                ? "Virtual:VMware"
-                : serialNumber.Contains("Parallels", StringComparison.Ordinal) || manufacturer.Contains("Parallels", StringComparison.Ordinal)
-                ? "Virtual:Parallels"
-                : productName.Contains("Virtual", StringComparison.Ordinal)
-                ? "Virtual"
-                : "Physical"
-            : null;
+        private static readonly string _envHardwareType = HardwareInfo.SystemInformation.Version?.Contains("VRTUAL", StringComparison.Ordinal) is true || (HardwareInfo.SystemInformation.Manufacturer?.Contains("Microsoft", StringComparison.Ordinal) is true && HardwareInfo.SystemInformation.ProductName?.Contains("Surface", StringComparison.Ordinal) is not true)
+            ? "Virtual:Hyper-V"
+            : HardwareInfo.SystemInformation.Version?.Contains("A M I", StringComparison.Ordinal) is true
+            ? "Virtual:Virtual PC"
+            : HardwareInfo.SystemInformation.Version?.Contains("Xen", StringComparison.Ordinal) is true
+            ? "Virtual:Xen"
+            : HardwareInfo.SystemInformation.SerialNumber?.Contains("VMware", StringComparison.Ordinal) is true || HardwareInfo.SystemInformation.Manufacturer?.Contains("VMware", StringComparison.Ordinal) is true
+            ? "Virtual:VMware"
+            : HardwareInfo.SystemInformation.SerialNumber?.Contains("Parallels", StringComparison.Ordinal) is true || HardwareInfo.SystemInformation.Manufacturer?.Contains("Parallels", StringComparison.Ordinal) is true
+            ? "Virtual:Parallels"
+            : HardwareInfo.SystemInformation.ProductName?.Contains("Virtual", StringComparison.Ordinal) is true
+            ? "Virtual"
+            : "Physical";
 
         /// <summary>
         /// Gets a read-only collection of characters that are invalid in file names.
