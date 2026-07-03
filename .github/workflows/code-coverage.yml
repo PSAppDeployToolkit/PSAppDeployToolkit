@@ -23,7 +23,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          if ! gh api --method PATCH "/repos/${{ github.repository }}/code-scanning/default-setup" \
+          if ! gh api --method PATCH "repos/${{ github.repository }}/code-scanning/default-setup" \
             --field state=not-configured; then
             echo "::warning::Failed to disable default CodeQL setup. If the workflow fails to upload results, ensure default setup is disabled in the repository's code security settings."
           fi
