@@ -18,6 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Disable default CodeQL setup
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if ! gh api --method PATCH "/repos/${{ github.repository }}/code-scanning/default-setup" \
+            --field state=not-configured; then
+            echo "::warning::Failed to disable default CodeQL setup. If the workflow fails to upload results, ensure default setup is disabled in the repository's code security settings."
+          fi
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
