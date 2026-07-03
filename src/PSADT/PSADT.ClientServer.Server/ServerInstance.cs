@@ -81,7 +81,7 @@ namespace PSADT.ClientServer
                         // The log writer task reached the end of the stream, exit the loop.
                         break;
                     }
-                    catch (Exception ex) when (ex.Message is not null)
+                    catch (Exception ex)
                     {
                         // Some kind of read issue occurred that was unexpected.
                         throw new ServerException("An error occurred while reading from the log stream.", ex);
@@ -129,7 +129,7 @@ namespace PSADT.ClientServer
                     throw new InvalidProgramException("The opened client process returned an invalid response.");
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ServerException("The opened client process is not properly responding to commands.", ex, _clientProcess);
             }
@@ -713,7 +713,7 @@ namespace PSADT.ClientServer
             {
                 await _ioEncryption.WriteEncryptedAsync(_outputServer, [(byte)command]).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
             }
@@ -747,7 +747,7 @@ namespace PSADT.ClientServer
             {
                 await _ioEncryption.WriteEncryptedAsync(_outputServer, request).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ServerException("An error occurred while writing to the output stream.", ex, _clientProcess!);
             }
@@ -773,7 +773,7 @@ namespace PSADT.ClientServer
                     throw new InvalidOperationException("The client process returned an invalid or empty response.");
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new ServerException("An error occurred while reading from the input stream.", ex, _clientProcess!);
             }

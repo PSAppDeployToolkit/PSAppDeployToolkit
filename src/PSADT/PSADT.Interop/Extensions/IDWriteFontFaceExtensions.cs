@@ -41,7 +41,7 @@ internal static class IDWriteFontFaceExtensions
                 InvalidOperationException.ThrowIfZero(tableSize, "Retrieved font table size is zero, which is invalid.");
                 tableContext = new(fontFace, (nint)tableContextLocal, (nint)tableData, tableSize, ownsHandle: true);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 fontFace.ReleaseFontTable(tableContextLocal);
                 ExceptionDispatchInfo.Capture(ex).Throw();

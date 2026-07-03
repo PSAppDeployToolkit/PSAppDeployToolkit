@@ -238,7 +238,7 @@ namespace PSADT.FileSystem
                                     {
                                         queue.Add(dir + "\\" + name, default);
                                     }
-                                    catch (Exception ex) when (ex.Message is not null)
+                                    catch (Exception ex)
                                     {
                                         _ = Interlocked.Decrement(ref pendingDirs);
                                         ExceptionDispatchInfo.Capture(ex).Throw();

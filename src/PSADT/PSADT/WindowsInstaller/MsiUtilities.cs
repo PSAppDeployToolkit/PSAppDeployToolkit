@@ -505,7 +505,7 @@ namespace PSADT.WindowsInstaller
                 }
                 return hDatabase;
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (hDatabase)
                 {

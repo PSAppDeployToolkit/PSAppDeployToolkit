@@ -194,7 +194,7 @@ namespace PSADT.ProcessManagement
                 hThread = new(pi.hThread, ownsHandle: true);
                 processId = pi.dwProcessId;
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (stdOutStream)
                 using (stdErrStream)
@@ -234,7 +234,7 @@ namespace PSADT.ProcessManagement
                     }
                     return new(launchInfo, process, processId, hProcess, commandSpan.ToString(), stdOutHandle, stdErrHandle, interleavedData, stdInHandle);
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch (Exception ex)
                 {
                     using (process)
                     {
@@ -243,7 +243,7 @@ namespace PSADT.ProcessManagement
                     }
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (stdOutStream)
                 using (stdErrStream)
@@ -313,7 +313,7 @@ namespace PSADT.ProcessManagement
                     throw new InvalidProgramException("Failed to start the process.");
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (process)
                 {
@@ -352,7 +352,7 @@ namespace PSADT.ProcessManagement
                 }
                 return new(launchInfo, process);
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (hProcess)
                 using (process)
@@ -470,7 +470,7 @@ namespace PSADT.ProcessManagement
             {
                 return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(output, ReadToEndAsync()));
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (stream)
                 {
@@ -512,7 +512,7 @@ namespace PSADT.ProcessManagement
             {
                 return (stream, (HANDLE)stream.ClientSafePipeHandle.DangerousGetHandle(), new(WriteToEndAsync()));
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (stream)
                 {
@@ -790,7 +790,7 @@ namespace PSADT.ProcessManagement
                     startupInfoEx.lpAttributeList = (LPPROC_THREAD_ATTRIBUTE_LIST)hAttributeList.DangerousGetHandle();
                     return (startupInfoEx, hAttributeList);
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch (Exception ex)
                 {
                     using (pinnedHandles)
                     {
@@ -799,7 +799,7 @@ namespace PSADT.ProcessManagement
                     }
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 using (hAttributeList)
                 {

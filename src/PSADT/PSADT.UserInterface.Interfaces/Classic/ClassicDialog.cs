@@ -210,14 +210,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
             using (DestroyMenuSafeHandle menuHandle = NativeMethods.GetSystemMenu((HWND)Handle, bRevert: false))
             {
                 // Disable the close button on the form. Failing that, disable the ControlBox.
-                try
-                {
-                    _ = NativeMethods.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
-                }
-                catch (Exception ex) when (ex.Message is not null)
-                {
-                    ControlBox = false;
-                }
+                _ = NativeMethods.EnableMenuItem(menuHandle, WM_SYSCOMMAND.SC_CLOSE, MENU_ITEM_FLAGS.MF_GRAYED);
 
                 // Disable the move command on the system menu if we can't move the dialog.
                 if (!dialogAllowMove)

@@ -988,7 +988,7 @@ namespace PSAppDeployToolkit.Foundation
 
                 #endregion Finalization
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 WriteLogEntry(ex.Message, LogSeverity.Error);
                 SetExitCode(ex is NotSupportedException ? DeferExitCode : 60008);

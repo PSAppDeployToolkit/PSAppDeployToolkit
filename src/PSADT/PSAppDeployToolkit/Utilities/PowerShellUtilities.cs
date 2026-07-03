@@ -105,7 +105,7 @@ namespace PSAppDeployToolkit.Utilities
                     }
                 }
             }
-            catch (Exception ex) when (ex.Message is not null)
+            catch (Exception ex)
             {
                 throw new FormatException("The parser was unable to process the provided arguments.", ex);
             }

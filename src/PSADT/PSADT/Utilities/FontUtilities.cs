@@ -341,7 +341,7 @@ namespace PSADT.Utilities
                     }
                     return true;
                 }
-                catch (Exception ex) when (ex.Message is not null)
+                catch
                 {
                     continue;
                     throw;
