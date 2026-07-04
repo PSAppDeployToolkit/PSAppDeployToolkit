@@ -16,6 +16,9 @@ function Register-ADTDll
     .PARAMETER FilePath
         Path to the DLL file.
 
+    .PARAMETER PerUser
+        Specifies that the DLL should be registered for the current user only by calling its DllInstall entry point with the 'user' argument (regsvr32.exe /n /i:user). If this function is running under the SYSTEM account, regsvr32.exe is executed in the context of the currently logged on user. Note that the DLL must support per-user registration via a DllInstall export for this to work.
+
     .INPUTS
         None
 
@@ -30,6 +33,11 @@ function Register-ADTDll
         Register-ADTDll -FilePath "C:\Test\DcTLSFileToDMSComp.dll"
 
         Registers the specified DLL file.
+
+    .EXAMPLE
+        Register-ADTDll -FilePath "C:\Test\DcTLSFileToDMSComp.dll" -PerUser
+
+        Registers the specified DLL file for the currently logged on user only.
 
     .NOTES
         An active ADT session is NOT required to use this function.
@@ -59,7 +67,10 @@ function Register-ADTDll
                 }
                 return ![System.String]::IsNullOrWhiteSpace($_)
             })]
-        [System.String]$FilePath
+        [System.String]$FilePath,
+
+        [Parameter(Mandatory = $false)]
+        [System.Management.Automation.SwitchParameter]$PerUser
     )
 
     begin
