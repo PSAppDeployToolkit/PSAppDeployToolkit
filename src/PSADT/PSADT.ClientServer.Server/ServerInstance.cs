@@ -521,18 +521,6 @@ namespace PSADT.ClientServer
         }
 
         /// <summary>
-        /// Triggers a Group Policy update on the target system, optionally forcing the update and specifying whether to
-        /// run synchronously or asynchronously.
-        /// </summary>
-        /// <param name="force">true to reapply all policy settings, even those that have not changed; false to update only changed
-        /// settings.</param>
-        /// <returns>A ProcessResult object containing the outcome of the Group Policy update operation.</returns>
-        public ValueTask<ProcessResult> GroupPolicyUpdateAsync(bool force)
-        {
-            return InvokeAsync<GroupPolicyUpdatePayload, ProcessResult>(PipeCommand.GroupPolicyUpdate, new(force));
-        }
-
-        /// <summary>
         /// Executes a process using the specified shell execution options in the user context.
         /// </summary>
         /// <param name="shellExecuteOptions">The options that define how the process should be executed, including file name, arguments, working

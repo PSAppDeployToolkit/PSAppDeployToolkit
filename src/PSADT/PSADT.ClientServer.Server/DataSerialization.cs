@@ -354,7 +354,6 @@ namespace PSADT.ClientServer
                 // Payload types
                 typeof(Payloads.EnvironmentVariablePayload),
                 typeof(Payloads.GetProcessWindowInfoPayload),
-                typeof(Payloads.GroupPolicyUpdatePayload),
                 typeof(Payloads.InitCloseAppsDialogPayload),
                 typeof(Payloads.LogMessagePayload),
                 typeof(Payloads.PromptToCloseAppsPayload),

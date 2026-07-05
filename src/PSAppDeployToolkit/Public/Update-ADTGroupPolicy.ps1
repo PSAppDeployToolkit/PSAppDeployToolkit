@@ -73,6 +73,106 @@ function Update-ADTGroupPolicy
     {
         # Make this function continue on error.
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorAction SilentlyContinue
+
+        # Internal implementation for repeated usage.
+        function Update-ADTGroupPolicyImpl
+        {
+            [CmdletBinding()]
+            param
+            (
+                [Parameter(Mandatory = $true)]
+                [ValidateSet('Computer', 'User')]
+                [ValidateNotNullOrEmpty()]
+                [System.String]$Target,
+
+                [Parameter(Mandatory = $false)]
+                [ValidateNotNullOrEmpty()]
+                [System.Management.Automation.SwitchParameter]$Force,
+
+                [Parameter(Mandatory = $false)]
+                [ValidateNotNullOrEmpty()]
+                [System.Management.Automation.SwitchParameter]$NoWait
+            )
+
+            dynamicparam
+            {
+                # Return early if we've been given directory input.
+                if ($PSBoundParameters.Target -eq 'Computer')
+                {
+                    return
+                }
+
+                # Define parameter dictionary for returning at the end.
+                $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+                # Add in the mandatory RunAsActiveUser parameter.
+                $paramDictionary.Add('RunAsActiveUser', [System.Management.Automation.RuntimeDefinedParameter]::new(
+                        'RunAsActiveUser', [PSADT.Foundation.RunAsActiveUser], $(
+                            [System.Management.Automation.ParameterAttribute]@{ Mandatory = $true }
+                            [System.Management.Automation.ValidateNotNullOrEmptyAttribute]::new()
+                        )
+                    ))
+
+                # Return the populated dictionary.
+                return $paramDictionary
+            }
+
+            begin
+            {
+                # Set up the parameters for Start-ADTProcess.
+                $sapParams = @{
+                    FilePath = "$([System.Environment]::SystemDirectory)\gpupdate.exe"
+                    ArgumentList = $("/Target:$Target"; if ($Force) { '/Force' })
+                    InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                    CreateNoWindow = $true
+                    StandardInput = 'N'
+                }
+                if ($PSBoundParameters.ContainsKey('RunAsActiveUser'))
+                {
+                    $sapParams.Add('RunAsActiveUser', $PSBoundParameters.RunAsActiveUser)
+                }
+            }
+
+            end
+            {
+                # Perform the underlying call as required.
+                if (!$NoWait)
+                {
+                    Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the $Target"))."
+                    try
+                    {
+                        try
+                        {
+                            if (($result = Start-ADTProcess @sapParams -ErrorAction SilentlyContinue -PassThru).ExitCode -ne 0)
+                            {
+                                $naerParams = @{
+                                    Exception = [PSADT.ProcessManagement.ProcessException]::new("$msg failed with exit code [$($result.ExitCode)].", $result)
+                                    Category = [System.Management.Automation.ErrorCategory]::InvalidResult
+                                    ErrorId = "GpUpdate$($Target)Failure"
+                                    TargetObject = $result
+                                    RecommendedAction = "Please review the result in this error's TargetObject property and try again."
+                                }
+                                throw (New-ADTErrorRecord @naerParams)
+                            }
+                            $result.Dispose()
+                        }
+                        catch
+                        {
+                            Write-Error -ErrorRecord $_
+                        }
+                    }
+                    catch
+                    {
+                        Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
+                    }
+                }
+                else
+                {
+                    Write-ADTLogEntry -Message "Updating Group Policies for the $Target without waiting."
+                    Start-ADTProcess @sapParams -NoWait
+                }
+            }
+        }
     }
 
     process
@@ -80,49 +180,7 @@ function Update-ADTGroupPolicy
         # Handle the Computer target first.
         if ($Target.Contains('Computer'))
         {
-            # Set up the parameters for Start-ADTProcess.
-            $sapParams = @{
-                FilePath = "$([System.Environment]::SystemDirectory)\gpupdate.exe"
-                ArgumentList = $('/Target:Computer'; if ($Force) { '/Force' })
-                InformationAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                CreateNoWindow = $true
-                StandardInput = 'N'
-            }
-            if (!$NoWait)
-            {
-                Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the Computer"))."
-                try
-                {
-                    try
-                    {
-                        if (($result = Start-ADTProcess @sapParams -ErrorAction SilentlyContinue -PassThru).ExitCode -ne 0)
-                        {
-                            $naerParams = @{
-                                Exception = [PSADT.ProcessManagement.ProcessException]::new("$msg failed with exit code [$($result.ExitCode)].", $result)
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                ErrorId = 'GpUpdateComputerFailure'
-                                TargetObject = $result
-                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
-                        }
-                        $result.Dispose()
-                    }
-                    catch
-                    {
-                        Write-Error -ErrorRecord $_
-                    }
-                }
-                catch
-                {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-                }
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Updating Group Policies for the Computer without waiting."
-                Start-ADTProcess @sapParams -NoWait
-            }
+            Update-ADTGroupPolicyImpl -Target Computer -Force:$Force -NoWait:$NoWait
         }
 
         # Handle the User target if specified.
@@ -135,45 +193,7 @@ function Update-ADTGroupPolicy
             }
 
             # Set up the parameters for Invoke-ADTClientServerOperation.
-            $iacsoParams = @{
-                GroupPolicyUpdate = $true
-                User = $runAsActiveUser
-                Force = $Force
-            }
-            if (!$NoWait)
-            {
-                Write-ADTLogEntry -Message "$(($msg = "Updating Group Policies for the User"))."
-                try
-                {
-                    try
-                    {
-                        if (($result = Invoke-ADTClientServerOperation @iacsoParams).ExitCode -ne 0)
-                        {
-                            $naerParams = @{
-                                Exception = [PSADT.ProcessManagement.ProcessException]::new("$msg failed with exit code [$($result.ExitCode)].", $result)
-                                Category = [System.Management.Automation.ErrorCategory]::InvalidResult
-                                ErrorId = 'GpUpdateUserFailure'
-                                TargetObject = $result
-                                RecommendedAction = "Please review the result in this error's TargetObject property and try again."
-                            }
-                            throw (New-ADTErrorRecord @naerParams)
-                        }
-                    }
-                    catch
-                    {
-                        Write-Error -ErrorRecord $_
-                    }
-                }
-                catch
-                {
-                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_
-                }
-            }
-            else
-            {
-                Write-ADTLogEntry -Message "Updating Group Policies for the Computer without waiting."
-                Invoke-ADTClientServerOperation @iacsoParams -NoWait
-            }
+            Update-ADTGroupPolicyImpl -Target User -Force:$Force -NoWait:$NoWait -RunAsActiveUser $runAsActiveUser
         }
     }
 

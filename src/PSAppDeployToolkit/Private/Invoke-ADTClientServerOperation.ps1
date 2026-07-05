@@ -76,9 +76,6 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'RemoveEnvironmentVariable')]
         [System.Management.Automation.SwitchParameter]$RemoveEnvironmentVariable,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
-        [System.Management.Automation.SwitchParameter]$GroupPolicyUpdate,
-
         [Parameter(Mandatory = $true, ParameterSetName = 'ShellExecuteProcess')]
         [System.Management.Automation.SwitchParameter]$ShellExecuteProcess,
 
@@ -152,9 +149,6 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $true, ParameterSetName = 'SetEnvironmentVariable')]
         [System.Management.Automation.SwitchParameter]$Expandable,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'GroupPolicyUpdate')]
-        [System.Management.Automation.SwitchParameter]$Force,
-
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowProgressDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $true, ParameterSetName = 'ShowNotifyIcon')]
@@ -175,7 +169,6 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
-        [Parameter(Mandatory = $false, ParameterSetName = 'GroupPolicyUpdate')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShellExecuteProcess')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
@@ -334,10 +327,6 @@ function Private:Invoke-ADTClientServerOperation
             elseif ($PSCmdlet.ParameterSetName.Equals('SetEnvironmentVariable'))
             {
                 $result = $Script:ADT.ClientServerProcess.SetEnvironmentVariableAsync($Variable, $Value, !!$Expandable, !!$Append, !!$Remove).ConfigureAwait($false).GetAwaiter().GetResult()
-            }
-            elseif ($PSCmdlet.ParameterSetName.Equals('GroupPolicyUpdate'))
-            {
-                $result = $Script:ADT.ClientServerProcess.GroupPolicyUpdateAsync(!!$Force).ConfigureAwait($false).GetAwaiter().GetResult()
             }
             elseif ($PSBoundParameters.ContainsKey('Options'))
             {
@@ -506,11 +495,6 @@ function Private:Invoke-ADTClientServerOperation
             RemoveEnvironmentVariable
             {
                 [System.Boolean]
-                break
-            }
-            GroupPolicyUpdate
-            {
-                [PSADT.ProcessManagement.ProcessResult]
                 break
             }
             ShellExecuteProcess
@@ -726,7 +710,7 @@ function Private:Invoke-ADTClientServerOperation
     }
 
     # Only write a result out for modes where we're expecting a result.
-    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|NotifyIconOpen|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|GroupPolicyUpdate|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.Foundation.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
+    if (![System.String]::IsNullOrWhiteSpace(($result | Out-String)) -and ![PSADT.ClientServer.ServerInstance]::SuccessSentinel.Equals($result) -and ($PSCmdlet.ParameterSetName -match '^(InitCloseAppsDialog|ProgressDialogOpen|ShowModalDialog|NotifyIconOpen|GetProcessWindowInfo|GetUserNotificationState|GetForegroundWindowProcessId|GetEnvironmentVariable|ShellExecuteProcess|GetUserFocusModeState|GetUserToastNotificationMode)$') -and ![PSADT.UserInterface.DialogType]::HelpConsole.Equals($DialogType) -and (($result -isnot [PSADT.ProcessManagement.ProcessResult]) -or !$result.ExitCode.Equals([PSADT.Foundation.ClientServerUtilities]::ShellExecuteProcessSuccessCode)))
     {
         return $result
     }

@@ -126,23 +126,18 @@
         RemoveEnvironmentVariable = 23,
 
         /// <summary>
-        /// Performs gpupdate.exe for the user.
-        /// </summary>
-        GroupPolicyUpdate = 24,
-
-        /// <summary>
         /// Performs a ShellExecuteEx invocation for the user.
         /// </summary>
-        ShellExecuteProcess = 25,
+        ShellExecuteProcess = 24,
 
         /// <summary>
         /// Gets the current focus mode state for the user.
         /// </summary>
-        GetUserFocusModeState = 26,
+        GetUserFocusModeState = 25,
 
         /// <summary>
         /// Gets the current toast notification mode for the user.
         /// </summary>
-        GetUserToastNotificationMode = 27,
+        GetUserToastNotificationMode = 26,
     }
 }
