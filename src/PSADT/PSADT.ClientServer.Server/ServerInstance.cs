@@ -27,7 +27,7 @@ namespace PSADT.ClientServer
     /// of <see cref="ServerInstance"/>, calling <see cref="OpenAsync"/> to start the client-server communication, and
     /// using a number of predefined methods to send commands to the client. Once the communication is
     /// complete, the <see cref="DisposeAsync()"/> method should be called to release resources. </para></remarks>
-    public sealed record class ServerInstance : IAsyncDisposable
+    public sealed class ServerInstance : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerInstance"/> class, setting up inter-process communication

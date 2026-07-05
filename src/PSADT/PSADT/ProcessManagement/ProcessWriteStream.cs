@@ -7,5 +7,5 @@ namespace PSADT.ProcessManagement
     /// operations.
     /// </summary>
     /// <param name="Task">The task that performs the asynchronous write operation to the process stream. Cannot be null.</param>
-    internal sealed record class ProcessWriteStream(Task Task) : ProcessStream(Task);
+    internal sealed class ProcessWriteStream(Task Task) : ProcessStream(Task);
 }

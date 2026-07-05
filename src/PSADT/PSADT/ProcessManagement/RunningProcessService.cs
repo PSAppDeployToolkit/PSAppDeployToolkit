@@ -11,7 +11,7 @@ namespace PSADT.ProcessManagement
     /// Service for managing running processes.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0182: Avoid unused internal types.", Justification = "This is used across InternalsVisibleTo boundaries.")]
-    internal sealed record class RunningProcessService : IAsyncDisposable
+    internal sealed class RunningProcessService : IAsyncDisposable
     {
         /// <summary>
         /// Initializes a new instance of the RunningProcessService class with the specified process definitions.
