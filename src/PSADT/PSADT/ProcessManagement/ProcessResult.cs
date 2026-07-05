@@ -12,7 +12,7 @@ namespace PSADT.ProcessManagement
     /// </summary>
     /// <param name="ExitCode">The exit code of the process.</param>
     [DataContract]
-    public sealed record class ProcessResult(int ExitCode) : IDisposable
+    public sealed class ProcessResult(int ExitCode) : IDisposable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessResult"/> struct.
