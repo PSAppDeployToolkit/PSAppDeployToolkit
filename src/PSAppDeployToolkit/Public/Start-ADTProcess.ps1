@@ -1042,7 +1042,7 @@ function Start-ADTProcess
                 if ($waleParams.Message.StartsWith("Execution failed"))
                 {
                     $naerParams = @{
-                        Exception = [System.Runtime.InteropServices.ExternalException]::new($waleParams.Message, $result.ExitCode)
+                        Exception = [PSADT.ProcessManagement.ProcessException]::new($waleParams.Message, $result)
                         Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                         ErrorId = 'ProcessExitCodeError'
                         TargetObject = $(if (!$SecureArgumentList) { $result })
@@ -1086,7 +1086,7 @@ function Start-ADTProcess
             $sessionClosed = $false
             switch -Regex ($_.Exception.GetType().FullName)
             {
-                '^System\.(Runtime\.InteropServices\.ExternalException|Threading\.SynchronizationLockException)$'
+                '^(System\.Threading\.SynchronizationLockException|PSADT\.ProcessManagement\.ProcessException)$'
                 {
                     # Handle requirements for when there's an active session.
                     if ($adtSession -and $extInvoker)

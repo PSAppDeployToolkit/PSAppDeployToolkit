@@ -98,7 +98,7 @@ function Update-ADTGroupPolicy
                         if (($result = Start-ADTProcess @sapParams -ErrorAction SilentlyContinue -PassThru).ExitCode -ne 0)
                         {
                             $naerParams = @{
-                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$($result.ExitCode)].", $result.ExitCode)
+                                Exception = [PSADT.ProcessManagement.ProcessException]::new("$msg failed with exit code [$($result.ExitCode)].", $result)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'GpUpdateComputerFailure'
                                 TargetObject = $result
@@ -150,7 +150,7 @@ function Update-ADTGroupPolicy
                         if (($result = Invoke-ADTClientServerOperation @iacsoParams).ExitCode -ne 0)
                         {
                             $naerParams = @{
-                                Exception = [System.Runtime.InteropServices.ExternalException]::new("$msg failed with exit code [$($result.ExitCode)].", $result.ExitCode)
+                                Exception = [PSADT.ProcessManagement.ProcessException]::new("$msg failed with exit code [$($result.ExitCode)].", $result)
                                 Category = [System.Management.Automation.ErrorCategory]::InvalidResult
                                 ErrorId = 'GpUpdateUserFailure'
                                 TargetObject = $result

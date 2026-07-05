@@ -353,7 +353,7 @@ function Copy-ADTFile
                                 if (!$ContinueFileCopyOnError)
                                 {
                                     $naerParams = @{
-                                        Exception = [System.Runtime.InteropServices.ExternalException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult.ExitCode)
+                                        Exception = [PSADT.ProcessManagement.ProcessException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult)
                                         Category = [System.Management.Automation.ErrorCategory]::OperationStopped
                                         ErrorId = 'RobocopyError'
                                         TargetObject = $srcPath
@@ -369,7 +369,7 @@ function Copy-ADTFile
                                 if (!$ContinueFileCopyOnError)
                                 {
                                     $naerParams = @{
-                                        Exception = [System.Runtime.InteropServices.ExternalException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult.ExitCode)
+                                        Exception = [PSADT.ProcessManagement.ProcessException]::new("Robocopy error $($robocopyResult.ExitCode): Failed to copy file(s) in path [$srcPath] to destination [$Destination]: $robocopyOutput", $robocopyResult)
                                         Category = [System.Management.Automation.ErrorCategory]::OperationStopped
                                         ErrorId = 'RobocopyError'
                                         TargetObject = $srcPath
