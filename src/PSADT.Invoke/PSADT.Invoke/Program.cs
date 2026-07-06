@@ -119,7 +119,7 @@ namespace PSADT.Invoke
                         WriteDebugMessage($"{errorMessage} {ex}", isError: true);
                         if (!inDebugMode)
                         {
-                            Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                            Environment.FailFast($"{errorMessage}{Environment.NewLine}Exception Info: {ex}", ex);
                         }
                         return 60011;
                         throw;
@@ -131,7 +131,7 @@ namespace PSADT.Invoke
                     WriteDebugMessage($"{errorMessage} {ex}", isError: true);
                     if (!inDebugMode)
                     {
-                        Environment.FailFast($"{errorMessage}\nException Info: {ex}", ex);
+                        Environment.FailFast($"{errorMessage}{Environment.NewLine}Exception Info: {ex}", ex);
                     }
                     return 60010;
                     throw;

@@ -56,7 +56,7 @@ namespace PSADT.ClientServer
             static void UnhandledExceptionHandler(Exception ex)
             {
                 Console.Error.WriteLine(DataSerialization.SerializeToString(ex));
-                Environment.FailFast($"An unhandled exception occurred that resulted in client termination: {ex}", ex);
+                Environment.FailFast($"An unhandled exception occurred that resulted in client termination.{Environment.NewLine}Exception Info: {ex}", ex);
             }
 
             // Exception handler for the dialog thread.
@@ -1064,9 +1064,9 @@ namespace PSADT.ClientServer
             {
                 Console.Error.WriteLine(DataSerialization.SerializeToString(exception));
             }
-            catch (Exception ex)
+            catch (Exception inner)
             {
-                Environment.FailFast($"An unexpected exception occurred while serializing main exception [{ex}].{Environment.NewLine}Exception Info: {exception}", exception);
+                Environment.FailFast($"An unexpected exception occurred while serializing main exception.{Environment.NewLine}Exception Info: {inner}{Environment.NewLine}Caller Exception: {exception}", inner);
                 throw;
             }
             return (int?)exitCode ?? exception.HResult;
