@@ -732,20 +732,18 @@ function Start-ADTProcess
                 # to become available grabs the MSI Installer mutex before we do. Not too concerned about this possible race condition.
                 if (($FilePath -match 'msiexec') -or $WaitForMsiExec)
                 {
-                    $MsiExecAvailable = Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime $MsiExecWaitTime
-                    [System.Threading.Thread]::Sleep(1000)
-                    if (!$MsiExecAvailable)
+                    if (!(Test-ADTMutexAvailability -MutexName 'Global\_MSIExecute' -MutexWaitTime $MsiExecWaitTime))
                     {
                         # Default MSI exit code for install already in progress.
-                        Write-ADTLogEntry -Message 'Another MSI installation is already in progress and needs to be completed before proceeding with this installation.' -Severity Error
-                        $result = [PSADT.ProcessManagement.ProcessResult]::new(1618)
                         $naerParams = @{
-                            Exception = [System.Threading.SynchronizationLockException]::new('Another MSI installation is already in progress and needs to be completed before proceeding with this installation.')
+                            Exception = [PSADT.WindowsInstaller.MsiUtilities]::GetExceptionForMsiExitCode(1618)
                             Category = [System.Management.Automation.ErrorCategory]::ResourceBusy
                             ErrorId = 'MsiExecUnavailable'
                             TargetObject = $FilePath
                             RecommendedAction = "Please wait for the current MSI operation to finish and try again."
                         }
+                        $result = [PSADT.ProcessManagement.ProcessResult]::new($naerParams.Exception.NativeErrorCode)
+                        Write-ADTLogEntry -Message $naerParams.Exception.Message -Severity Error
                         throw (New-ADTErrorRecord @naerParams)
                     }
                 }
@@ -996,10 +994,6 @@ function Start-ADTProcess
                 {
                     @{ Message = "Execution completed successfully with exit code [$($result.ExitCode)]. A reboot is required."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Warning }
                 }
-                elseif (($result.ExitCode -eq 1605) -and ($FilePath -match 'msiexec'))
-                {
-                    @{ Message = "Execution failed with exit code [$($result.ExitCode)] because the product is not currently installed."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Error }
-                }
                 elseif (($result.ExitCode -eq -2145124329) -and ($FilePath -match 'wusa'))
                 {
                     @{ Message = "Execution failed with exit code [$($result.ExitCode)] because the Windows Update is not applicable to this system."; Severity = [PSAppDeployToolkit.Logging.LogSeverity]::Error }
@@ -1083,55 +1077,46 @@ function Start-ADTProcess
             }
 
             # Switch on the exception type's name.
-            $sessionClosed = $false
-            switch -Regex ($_.Exception.GetType().FullName)
+            $sessionClosed = if (($_.Exception -is [System.Runtime.InteropServices.ExternalException]) -and ($null -ne $result))
             {
-                '^(System\.Threading\.SynchronizationLockException|PSADT\.ProcessManagement\.ProcessException)$'
+                # Handle requirements for when there's an active session.
+                if ($adtSession -and $extInvoker)
                 {
-                    # Handle requirements for when there's an active session.
-                    if ($adtSession -and $extInvoker)
+                    if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -and $canSetExitCode)
                     {
-                        if (($OriginalErrorAction -notmatch '^(SilentlyContinue|Ignore)$') -and $canSetExitCode)
-                        {
-                            Set-ADTSessionExitCode -ExitCode $result.ExitCode
-                        }
-                        if ($ExitOnProcessFailure -and !$PSBoundParameters.ContainsKey('ErrorAction'))
-                        {
-                            $iafehParams.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
-                        }
+                        Set-ADTSessionExitCode -ExitCode $result.ExitCode
                     }
+                    if ($ExitOnProcessFailure -and !$PSBoundParameters.ContainsKey('ErrorAction'))
+                    {
+                        $iafehParams.ErrorAction = [System.Management.Automation.ActionPreference]::SilentlyContinue
+                    }
+                }
 
-                    # Process the error and potentially close out the session.
-                    # This isn't logged as it's already been logged before the throw.
-                    Invoke-ADTFunctionErrorHandler @iafehParams -Silent
-                    if ($ExitOnProcessFailure)
-                    {
-                        $sessionClosed = $true
-                        Close-ADTSession
-                    }
-                    break
-                }
-                '^(System\.(TimeoutException|OperationCanceledException))$'
+                # Process the error and potentially close out the session. This isn't logged as it's already been logged before the throw.
+                Invoke-ADTFunctionErrorHandler @iafehParams -Silent
+                if ($ExitOnProcessFailure)
                 {
-                    # Process the ErrorRecord.
-                    if ($PSBoundParameters.ContainsKey('TimeoutAction'))
-                    {
-                        $iafehParams.ErrorAction = $TimeoutAction
-                    }
-                    $null = $iafehParams.Remove('ResolveErrorProperties')
-                    Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
-                    break
+                    Close-ADTSession -PassThru
                 }
-                default
+            }
+            elseif (($_.Exception -is [System.TimeoutException]) -or ($_.Exception -is [System.OperationCanceledException]))
+            {
+                # Process the ErrorRecord.
+                if ($PSBoundParameters.ContainsKey('TimeoutAction'))
                 {
-                    # This is the handler for any other error/exception that may occur.
-                    Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -ErrorAction Stop
-                    break
+                    $iafehParams.ErrorAction = $TimeoutAction
                 }
+                $null = $iafehParams.Remove('ResolveErrorProperties')
+                Invoke-ADTFunctionErrorHandler @iafehParams -DisableErrorResolving
+            }
+            else
+            {
+                # This is the handler for any other error/exception that may occur.
+                Invoke-ADTFunctionErrorHandler @iafehParams -LogMessage "Error occurred while attempting to start the specified process." -ErrorAction Stop
             }
 
             # Break if the session has closed as Close-ADTSession won't be able to break out of the above switch.
-            if ($sessionClosed)
+            if ($null -ne $sessionClosed)
             {
                 break
             }
