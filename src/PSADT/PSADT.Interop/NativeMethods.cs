@@ -3053,65 +3053,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Loads a string resource from the specified module instance using the provided resource identifier.
-        /// </summary>
-        /// <remarks>If the function fails and a Windows error code is set, an exception is thrown to
-        /// indicate the specific error. The caller must ensure that the provided module handle remains valid for the
-        /// duration of the call.</remarks>
-        /// <param name="hInstance">A handle to the module that contains the string resource. This handle must be valid and is typically
-        /// obtained from a previous call to a function such as LoadLibrary.</param>
-        /// <param name="uID">The identifier of the string resource to load. This value must correspond to a valid string resource in the
-        /// specified module.</param>
-        /// <param name="lpBuffer">When this method returns, contains a pointer to the buffer that receives the string resource. The caller is
-        /// responsible for managing the memory of this buffer.</param>
-        /// <returns>The length of the loaded string, in characters. Returns zero if the function fails; in that case, an
-        /// exception is thrown if a Windows error code is set.</returns>
-        internal static int LoadString(SafeHandle hInstance, uint uID, out nint lpBuffer)
-        {
-            [DllImport("USER32.dll", ExactSpelling = true, EntryPoint = "LoadStringW", SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-            static extern int LoadString(HINSTANCE hInstance, uint uID, out nint lpBuffer, int cchBufferMax);
-            ArgumentException.ThrowIfNullOrInvalid(hInstance);
-            bool hInstanceAddRef = false;
-            int res;
-            try
-            {
-                hInstance.DangerousAddRef(ref hInstanceAddRef); PInvoke.SetLastError(WIN32_ERROR.NO_ERROR);
-                res = LoadString((HINSTANCE)hInstance.DangerousGetHandle(), uID, out lpBuffer, 0);
-                WIN32_ERROR lastWin32Error = ExceptionUtilities.GetLastWin32Error();
-                if (lastWin32Error is not WIN32_ERROR.NO_ERROR)
-                {
-                    throw ExceptionUtilities.GetException(lastWin32Error);
-                }
-            }
-            finally
-            {
-                if (hInstanceAddRef)
-                {
-                    hInstance.DangerousRelease();
-                }
-            }
-            InvalidOperationException.ThrowIfZeroOrInvalid(lpBuffer, "The buffer pointer returned from 'LoadString()' is null or invalid.");
-            return res;
-        }
-
-        /// <summary>
-        /// Loads a string resource from the specified module instance using the given resource identifier.
-        /// </summary>
-        /// <remarks>This method retrieves a string resource from a native module and converts it to a
-        /// managed string. Ensure that the resource identifier is valid and that the module handle is properly
-        /// initialized before calling this method.</remarks>
-        /// <param name="hInstance">A handle to the module instance that contains the string resource to be loaded.</param>
-        /// <param name="uID">The identifier of the string resource to load.</param>
-        /// <param name="lpBuffer">When this method returns, contains the loaded string if successful; otherwise, null.</param>
-        /// <returns>The number of characters copied to the buffer, or zero if the string resource could not be loaded.</returns>
-        internal static int LoadString(SafeHandle hInstance, uint uID, out string? lpBuffer)
-        {
-            int res = LoadString(hInstance, uID, out nint lpBufferPtr);
-            lpBuffer = res > 0 ? Marshal.PtrToStringUni(lpBufferPtr, res) : null;
-            return res;
-        }
-
-        /// <summary>
         /// Enumerates all top-level windows on the screen by passing the handle of each window to a specified callback
         /// function.
         /// </summary>

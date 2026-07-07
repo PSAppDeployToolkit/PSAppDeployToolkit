@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text.RegularExpressions;
 using System.Xml;
 using PSADT.Interop;
+using PSADT.Interop.Utilities;
 using PSADT.Utilities;
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.System.ApplicationInstallationAndServicing;
-using Windows.Win32.System.LibraryLoader;
 using Windows.Win32.System.Variant;
 
 namespace PSADT.WindowsInstaller
@@ -23,24 +24,14 @@ namespace PSADT.WindowsInstaller
     public static class MsiUtilities
     {
         /// <summary>
-        /// Retrieves the message string associated with an MSI exit code from the msimsg.dll resource.
+        /// Retrieves a Win32Exception corresponding to a given MSI exit code, including the associated message.
         /// </summary>
-        /// <param name="exitCode">The MSI exit code.</param>
-        /// <returns>The message string associated with the given MSI exit code.</returns>
-        public static string? GetMessageFromMsiExitCode(uint exitCode)
+        /// <param name="exitCode">The MSI exit code for which to retrieve the corresponding Win32Exception.</param>
+        /// <returns>A Win32Exception representing the error associated with the specified MSI exit code.</returns>
+        public static Win32Exception GetExceptionForMsiExitCode(int exitCode)
         {
-            using FreeLibrarySafeHandle hInstance = NativeMethods.LoadLibraryEx("msimsg.dll", LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_FLAGS.LOAD_LIBRARY_AS_DATAFILE);
-            string? lpBuffer;
-            try
-            {
-                _ = NativeMethods.LoadString(hInstance, exitCode, out lpBuffer);
-            }
-            catch
-            {
-                return null;
-                throw;
-            }
-            return !string.IsNullOrWhiteSpace(lpBuffer) ? DoubleSpaceRegex.Replace(lpBuffer, " ") : null;
+            string message = ExceptionUtilities.GetMessageForWin32Error((WIN32_ERROR)exitCode, disableSuffix: true);
+            return new(exitCode, message.TrimEnd('.') + $" ({(WIN32_ERROR)exitCode}).");
         }
 
         /// <summary>
@@ -691,10 +682,5 @@ namespace PSADT.WindowsInstaller
             ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
             return !resSpan.IsEmpty ? resSpan.ToString() : null;
         }
-
-        /// <summary>
-        /// A regular expression used to remove insert placeholders (e.g., "{0}", "{1}") from the messages returned by FormatMessage. This is necessary because the FORMAT_MESSAGE_IGNORE_INSERTS flag is used, which leaves the placeholders in the message string. The regex matches any substring that starts with '{', followed by one or more characters, and ends with '}', effectively identifying all insert placeholders for removal.
-        /// </summary>
-        private static readonly Regex DoubleSpaceRegex = new(@"\s{2,}", RegexOptions.Compiled);
     }
 }

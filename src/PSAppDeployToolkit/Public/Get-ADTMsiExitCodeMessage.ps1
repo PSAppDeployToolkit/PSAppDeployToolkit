@@ -68,11 +68,8 @@ function Get-ADTMsiExitCodeMessage
         {
             try
             {
-                # Only return the output if we receive something from the library.
-                if (![System.String]::IsNullOrWhiteSpace(($msg = [PSADT.WindowsInstaller.MsiUtilities]::GetMessageFromMsiExitCode($MsiExitCode))))
-                {
-                    return $msg
-                }
+                # The underlying Win32Exception always contains a valid message for a given msiexec.exe code.
+                return [PSADT.WindowsInstaller.MsiUtilities]::GetExceptionForMsiExitCode($MsiExitCode).Message
             }
             catch
             {
