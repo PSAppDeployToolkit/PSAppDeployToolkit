@@ -11,9 +11,9 @@ namespace PSADT.ProcessManagement
     public sealed class ProcessException(string message, ProcessResult result) : ExternalException(message)
     {
         /// <summary>
-        /// Gets the exit code of the process that caused the exception, if available.
+        /// Gets the error code of the process that caused the exception, if available.
         /// </summary>
-        public int ExitCode => Result.ExitCode;
+        public override int ErrorCode => Result.ExitCode;
 
         /// <summary>
         /// Gets the ProcessResult associated with the process exception, if available.
