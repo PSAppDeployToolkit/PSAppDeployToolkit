@@ -80,13 +80,13 @@ namespace PSADT.UserInterface.TestHarness
                 new("taskmgr", "Windows Task Manager"),
             ]);
 
-            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
+            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(200);
 
-            TimeSpan countdownDuration = TimeSpan.FromSeconds(100);
+            TimeSpan countdownDuration = TimeSpan.FromSeconds(120);
 
             const string customMessageText = "Read the [url=https://example.com]IT Security Policy[/url] for information on why you are receiving this update.\r\n";
 
-            const uint deferralsRemaining = 99;
+            const uint deferralsRemaining = 50;
             DateTime deferralDeadline = DateTime.Parse("2027-06-04T13:00:00", CultureInfo.InvariantCulture);
 
             const string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";
@@ -96,9 +96,9 @@ namespace PSADT.UserInterface.TestHarness
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(120); // 2 mins before the user can no longer minimize the restart dialog
 
             const string customDialogMessageText = "The installation requires you to have an extraordinary amount of patience, as well as an almost superhuman ability to [italic]not[/italic] lose your temper. Given that you haven't had much sleep and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
-            const string customDialogButtonLeftText = "LeftButton";
-            const string customDialogButtonMiddleText = "MiddleButton";
-            const string customDialogButtonRightText = "RightButton";
+            const string customDialogButtonLeftText = "Continue";
+            const string customDialogButtonMiddleText = "Jump Around";
+            const string customDialogButtonRightText = "Defer";
 
             const string listDialogMessageText = "Please choose how you’d like to use Adobe Creative Cloud on this device. You can change this later in Preferences.";
             string[] listDialogItems = ["Personal (Individual Plan)", "Team (Creative Cloud for Teams)", "Enterprise (Managed by IT)", "Education (Student / Faculty)", "Shared Device (Lab / Classroom)"];
