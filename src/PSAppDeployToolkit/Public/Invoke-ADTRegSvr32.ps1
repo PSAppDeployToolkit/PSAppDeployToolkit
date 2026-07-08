@@ -155,7 +155,7 @@ function Invoke-ADTRegSvr32
                 else
                 {
                     $naerParams = @{
-                        Exception = [System.PlatformNotSupportedException]::new("File [$filePath] cannot be $($Action.ToLowerInvariant()) because it is a 64-bit file on a 32-bit operating system.")
+                        Exception = [System.PlatformNotSupportedException]::new("File [$filePath] cannot be $($Action.ToLowerInvariant())ed because it is a 64-bit file on a 32-bit operating system.")
                         Category = [System.Management.Automation.ErrorCategory]::InvalidOperation
                         ErrorId = 'DllFileArchitectureError'
                         TargetObject = $FilePath
