@@ -27,10 +27,9 @@ namespace PSADT.Interop.Exceptions
         /// </summary>
         /// <param name="ntStatus">The NTSTATUS code that caused the exception.</param>
         /// <param name="message">A custom message that describes the error.</param>
-        internal NtStatusException(NTSTATUS ntStatus, string? message = null) : base(!string.IsNullOrWhiteSpace(message) ? message : GetMessageForNtStatus(ntStatus))
+        internal NtStatusException(NTSTATUS ntStatus, string? message = null) : base(string.IsNullOrWhiteSpace(message) ? GetMessageForNtStatus(ntStatus) : message, ExceptionUtilities.HRESULT_FROM_NT(ntStatus).Value)
         {
-            HResult = ExceptionUtilities.HRESULT_FROM_NT(ntStatus).Value;
-            NtStatus = ntStatus.Value;
+            ErrorCode = ntStatus.Value;
         }
 
         /// <summary>
@@ -43,7 +42,7 @@ namespace PSADT.Interop.Exceptions
 #endif
         private protected NtStatusException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-            NtStatus = info.GetInt32(nameof(NtStatus));
+            ErrorCode = info.GetInt32(nameof(ErrorCode));
         }
 
         /// <summary>
@@ -57,13 +56,18 @@ namespace PSADT.Interop.Exceptions
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-            info.AddValue(nameof(NtStatus), NtStatus);
+            info.AddValue(nameof(ErrorCode), ErrorCode);
         }
 
         /// <summary>
-        /// Gets the NTSTATUS value as a CsWin32 NTSTATUS struct.
+        /// Gets the error code associated with this exception, which is the NTSTATUS value that caused the exception.
         /// </summary>
-        public int NtStatus { get; }
+        public override int ErrorCode { get; }
+
+        /// <summary>
+        /// Gets the NTSTATUS value as a CsWin32 NTSTATUS struct. This provides a strongly-typed representation of the NTSTATUS code.
+        /// </summary>
+        internal NTSTATUS NtStatus => (NTSTATUS)ErrorCode;
 
         /// <summary>
         /// Gets the error message for the specified NTSTATUS code using FormatMessage with ntdll.dll.
