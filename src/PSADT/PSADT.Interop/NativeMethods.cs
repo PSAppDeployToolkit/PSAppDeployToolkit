@@ -3968,7 +3968,12 @@ namespace PSADT.Interop
         internal static HRESULT DWriteCreateFactory<T>(DWRITE_FACTORY_TYPE factoryType, out T factory) where T : class
         {
             HRESULT res = PInvoke.DWriteCreateFactory(factoryType, out factory);
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+            if (res != HRESULT.S_OK)
+            {
+                throw ExceptionUtilities.GetException(res);
+            }
+            InvalidOperationException.ThrowIfNull(factory, "The interface pointer returned from 'DWriteCreateFactory()' is null, which indicates an unexpected condition.");
+            return res;
         }
 
         /// <summary>
@@ -4254,7 +4259,12 @@ namespace PSADT.Interop
         internal static HRESULT CoCreateInstance<T>(in Guid rclsid, CLSCTX dwClsContext, out T ppv) where T : class
         {
             HRESULT res = PInvoke.CoCreateInstance(in rclsid, pUnkOuter: null, dwClsContext, out ppv);
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+            if (res != HRESULT.S_OK)
+            {
+                throw ExceptionUtilities.GetException(res);
+            }
+            InvalidOperationException.ThrowIfNull(ppv, "The interface pointer returned from 'CoCreateInstance()' is null, which indicates an unexpected condition.");
+            return res;
         }
 
         /// <summary>
@@ -4271,7 +4281,12 @@ namespace PSADT.Interop
         internal static HRESULT SHCreateStreamOnFileEx(string pszFile, STGM grfMode, FileAttributes dwAttributes, BOOL fCreate, [Optional] IStream? pstmTemplate, out IStream ppstm)
         {
             HRESULT res = PInvoke.SHCreateStreamOnFileEx(pszFile.ThrowIfFileDoesNotExist(), (uint)grfMode, (uint)dwAttributes, fCreate, pstmTemplate, out ppstm);
-            return res != HRESULT.S_OK ? throw ExceptionUtilities.GetException(res) : res;
+            if (res != HRESULT.S_OK)
+            {
+                throw ExceptionUtilities.GetException(res);
+            }
+            InvalidOperationException.ThrowIfNull(ppstm, "The stream interface pointer returned from 'SHCreateStreamOnFileEx()' is null, which indicates an unexpected condition.");
+            return res;
         }
 
         /// <summary>
