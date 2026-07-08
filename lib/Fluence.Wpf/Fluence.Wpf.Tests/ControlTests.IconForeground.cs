@@ -32,7 +32,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using Fluent = Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Tests
 {
@@ -52,10 +51,10 @@ namespace Fluence.Wpf.Tests
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
-                Fluent.Button button = new()
+                Controls.Button button = new()
                 {
                     Content = "Send",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new() { Content = button };
 
@@ -110,11 +109,11 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.Button button = new()
+                Controls.Button button = new()
                 {
                     Appearance = ControlAppearance.Accent,
                     Content = "Send",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724", Foreground = Brushes.Red },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724", Foreground = Brushes.Red },
                 };
                 Window window = new() { Content = button };
 
@@ -149,10 +148,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.HyperlinkButton link = new()
+                Controls.HyperlinkButton link = new()
                 {
                     Content = "Learn more",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new() { Content = link };
 
@@ -194,10 +193,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.NavigationViewItem item = new()
+                Controls.NavigationViewItem item = new()
                 {
                     Content = "Home",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new()
                 {
@@ -245,13 +244,13 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.TabViewItem iconTab = new()
+                Controls.TabViewItem iconTab = new()
                 {
                     Header = "Details",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
-                Fluent.TabView tabView = new();
-                _ = tabView.Items.Add(new Fluent.TabViewItem { Header = "First" });
+                Controls.TabView tabView = new();
+                _ = tabView.Items.Add(new Controls.TabViewItem { Header = "First" });
                 _ = tabView.Items.Add(iconTab);
                 tabView.SelectedIndex = 0;
                 Window window = new()
@@ -299,10 +298,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.MenuItem menuItem = new()
+                Controls.MenuItem menuItem = new()
                 {
                     Header = "Open",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new()
                 {
@@ -345,15 +344,15 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.InfoBar custom = new()
+                Controls.InfoBar custom = new()
                 {
                     Title = "Saved",
                     Message = "All changes were written.",
                     Severity = InfoBarSeverity.Error,
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                     IsOpen = true,
                 };
-                Fluent.InfoBar standard = new()
+                Controls.InfoBar standard = new()
                 {
                     Title = "Failure",
                     Message = "Something broke.",
@@ -413,10 +412,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.Card card = new()
+                Controls.Card card = new()
                 {
                     Header = "Storage",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                     Content = "Body",
                 };
                 Window window = new()
@@ -460,9 +459,9 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.ComboBox combo = new()
+                Controls.ComboBox combo = new()
                 {
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 _ = combo.Items.Add("First");
                 combo.SelectedIndex = 0;
@@ -507,9 +506,9 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.TextBox textBox = new()
+                Controls.TextBox textBox = new()
                 {
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                     IconPlacement = ElementPlacement.Left,
                     Text = "Value",
                 };
@@ -556,10 +555,10 @@ namespace Fluence.Wpf.Tests
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 // Secondary / overflow style: icon column + label column side by side.
-                Fluent.AppBarButton secondary = new()
+                Controls.AppBarButton secondary = new()
                 {
                     Label = "Share",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE72A" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE72A" },
                     Style = (Style)Application.Current.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"),
                 };
                 Window secondaryWindow = new()
@@ -603,10 +602,10 @@ namespace Fluence.Wpf.Tests
                 }
 
                 // Compact / primary style (implicit style, no key) with Light->Dark switch.
-                Fluent.AppBarButton compact = new()
+                Controls.AppBarButton compact = new()
                 {
                     Label = "Copy",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE72A" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE72A" },
                 };
                 Window compactWindow = new()
                 {
@@ -658,7 +657,7 @@ namespace Fluence.Wpf.Tests
 
         private static Color GetIconForegroundColor(DependencyObject root)
         {
-            Fluent.FontIcon? icon = FindVisualChildren<Fluent.FontIcon>(root).FirstOrDefault();
+            Controls.FontIcon? icon = FindVisualChildren<Controls.FontIcon>(root).FirstOrDefault();
             Assert.IsNotNull(icon, "A FontIcon icon should be present in the visual tree.");
             SolidColorBrush? brush = icon.Foreground as SolidColorBrush;
             Assert.IsNotNull(brush, "The FontIcon Foreground should be a SolidColorBrush.");

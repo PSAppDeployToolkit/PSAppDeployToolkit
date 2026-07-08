@@ -29,6 +29,7 @@
 using Fluence.Wpf.Automation;
 using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 
@@ -58,6 +59,9 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(InfoBar),
                 new FrameworkPropertyMetadata(typeof(InfoBar)));
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(InfoBar),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Polite));
         }
 
         /// <summary>
@@ -68,7 +72,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Title),
                 typeof(string),
                 typeof(InfoBar),
-                new FrameworkPropertyMetadata(propertyChangedCallback: null));
+                new FrameworkPropertyMetadata(OnAnnouncingPropertyChanged));
 
         /// <summary>
         /// Gets or sets the title text displayed in the info bar.
@@ -87,7 +91,7 @@ namespace Fluence.Wpf.Controls
                 nameof(Message),
                 typeof(string),
                 typeof(InfoBar),
-                new FrameworkPropertyMetadata(propertyChangedCallback: null));
+                new FrameworkPropertyMetadata(OnAnnouncingPropertyChanged));
 
         /// <summary>
         /// Gets or sets the message text displayed in the info bar.
@@ -118,6 +122,45 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
+        /// Returns the Segoe Fluent Icons glyph that represents <paramref name="severity"/>. This is the
+        /// single programmatic source for the severity glyphs; it mirrors the <c>Severity</c> triggers in
+        /// Themes/Controls/InfoBar.xaml (WPF property triggers cannot call this method, so keep both in sync).
+        /// </summary>
+        /// <param name="severity">The severity to map.</param>
+        /// <returns>A single-character glyph string in the Segoe Fluent Icons font.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="severity"/> is not a defined <see cref="InfoBarSeverity"/> value.</exception>
+        public static string GetSeverityGlyph(InfoBarSeverity severity)
+        {
+            return severity switch
+            {
+                InfoBarSeverity.Informational => "",
+                InfoBarSeverity.Success => "",
+                InfoBarSeverity.Warning => "",
+                InfoBarSeverity.Error => "",
+                _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, message: null),
+            };
+        }
+
+        /// <summary>
+        /// Returns the theme brush resource key (for a <c>DynamicResource</c> reference) that colors
+        /// <paramref name="severity"/>. Mirrors the <c>Severity</c> triggers in Themes/Controls/InfoBar.xaml.
+        /// </summary>
+        /// <param name="severity">The severity to map.</param>
+        /// <returns>A brush key resolvable against the Fluence theme dictionaries.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="severity"/> is not a defined <see cref="InfoBarSeverity"/> value.</exception>
+        public static string GetSeverityBrushKey(InfoBarSeverity severity)
+        {
+            return severity switch
+            {
+                InfoBarSeverity.Informational => "SystemFillColorAttentionBrush",
+                InfoBarSeverity.Success => "SystemFillColorSuccessBrush",
+                InfoBarSeverity.Warning => "SystemFillColorCautionBrush",
+                InfoBarSeverity.Error => "SystemFillColorCriticalBrush",
+                _ => throw new ArgumentOutOfRangeException(nameof(severity), severity, message: null),
+            };
+        }
+
+        /// <summary>
         /// Identifies the <see cref="IsOpen"/> dependency property.
         /// </summary>
         public static readonly DependencyProperty IsOpenProperty =
@@ -125,7 +168,7 @@ namespace Fluence.Wpf.Controls
                 nameof(IsOpen),
                 typeof(bool),
                 typeof(InfoBar),
-                new FrameworkPropertyMetadata(defaultValue: true));
+                new FrameworkPropertyMetadata(defaultValue: true, propertyChangedCallback: OnIsOpenChanged));
 
         /// <summary>
         /// Gets or sets a value indicating whether the info bar is visible.
@@ -260,7 +303,48 @@ namespace Fluence.Wpf.Controls
 
         private static void OnSeverityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((InfoBar)d).UpdateSeverityState(useTransitions: true);
+            InfoBar bar = (InfoBar)d;
+            bar.UpdateSeverityState(useTransitions: true);
+            if (bar.IsOpen)
+            {
+                bar.AnnounceLiveRegion();
+            }
+        }
+
+        private static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            InfoBar bar = (InfoBar)d;
+            if ((bool)e.NewValue)
+            {
+                bar.AnnounceLiveRegion();
+            }
+        }
+
+        private static void OnAnnouncingPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            InfoBar bar = (InfoBar)d;
+            if (bar.IsOpen)
+            {
+                bar.AnnounceLiveRegion();
+            }
+        }
+
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this control's automation peer
+        /// so Narrator announces the current content without moving focus.
+        /// Uses only net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
         /// <summary>

@@ -29,6 +29,7 @@
 using Fluence.Wpf.Automation;
 using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -66,6 +67,9 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(TeachingTip),
                 new FrameworkPropertyMetadata(typeof(TeachingTip)));
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(TeachingTip),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Polite));
         }
 
         /// <summary>
@@ -371,7 +375,7 @@ namespace Fluence.Wpf.Controls
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
             base.OnPreviewKeyDown(e);
-            if (!e.Handled && e.Key == Key.Escape && IsOpen)
+            if (!e.Handled && e.Key is Key.Escape && IsOpen)
             {
                 SetCurrentValue(IsOpenProperty, value: false);
                 e.Handled = true;
@@ -389,6 +393,7 @@ namespace Fluence.Wpf.Controls
             if ((bool)e.NewValue)
             {
                 tip.OpenPopup();
+                tip.AnnounceLiveRegion();
             }
             else
             {
@@ -396,10 +401,28 @@ namespace Fluence.Wpf.Controls
             }
         }
 
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this control's automation peer
+        /// so Narrator announces the tip content without moving focus when the tip opens.
+        /// Uses only net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+
         private static void OnPlacementInputChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             TeachingTip tip = (TeachingTip)d;
-            if (tip.HostPopup?.IsOpen == true)
+            if ((tip.HostPopup?.IsOpen) is true)
             {
                 tip.ApplyPlacement(tip.HostPopup);
             }
@@ -440,7 +463,7 @@ namespace Fluence.Wpf.Controls
         /// <returns>The resolved placement mode.</returns>
         private static TeachingTipPlacementMode ResolvePlacement(TeachingTipPlacementMode preferred)
         {
-            return preferred == TeachingTipPlacementMode.Auto
+            return preferred is TeachingTipPlacementMode.Auto
                 ? TeachingTipPlacementMode.Bottom
                 : preferred;
         }
@@ -490,7 +513,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void ClosePopup()
         {
-            if (HostPopup?.IsOpen == true)
+            if ((HostPopup?.IsOpen) is true)
             {
                 HostPopup.IsOpen = false;
             }
@@ -513,7 +536,7 @@ namespace Fluence.Wpf.Controls
             {
                 popup.PlacementTarget = target;
                 TeachingTipPlacementMode resolved = ResolvePlacement(PreferredPlacement);
-                if (resolved == TeachingTipPlacementMode.Center)
+                if (resolved is TeachingTipPlacementMode.Center)
                 {
                     popup.CustomPopupPlacementCallback = null;
                     popup.Placement = PlacementMode.Center;
@@ -529,7 +552,7 @@ namespace Fluence.Wpf.Controls
             else
             {
                 popup.PlacementTarget = ResolveFallbackPlacementTarget();
-                if (PreferredPlacement == TeachingTipPlacementMode.Auto)
+                if (PreferredPlacement is TeachingTipPlacementMode.Auto)
                 {
                     popup.CustomPopupPlacementCallback = GetBottomRightPlacements;
                     popup.Placement = PlacementMode.Custom;
@@ -671,7 +694,7 @@ namespace Fluence.Wpf.Controls
         {
             ActionButtonClick?.Invoke(this, EventArgs.Empty);
             ICommand? command = ActionButtonCommand;
-            if (command?.CanExecute(ActionButtonCommandParameter) == true)
+            if ((command?.CanExecute(ActionButtonCommandParameter)) is true)
             {
                 command.Execute(ActionButtonCommandParameter);
             }

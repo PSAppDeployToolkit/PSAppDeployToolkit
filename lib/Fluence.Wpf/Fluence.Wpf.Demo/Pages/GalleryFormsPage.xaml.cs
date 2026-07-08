@@ -29,7 +29,6 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using FluencePasswordBox = Fluence.Wpf.Controls.PasswordBox;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -272,10 +271,16 @@ namespace Fluence.Wpf.Demo.Pages
                                                      "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
                                                      "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
                                                      "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                     "    <!--\n" +
+                                                     "        The text-entry area shows an RGB/HSV selector, per-channel inputs, an alpha\n" +
+                                                     "        percentage input, and a hex input. Set IsMoreButtonVisible=\"True\" to collapse\n" +
+                                                     "        it behind a More/Less toggle; the Is*Visible properties hide individual parts.\n" +
+                                                     "    -->\n" +
                                                      "    <ui:ColorPicker\n" +
                                                      "        x:Name=\"AccentColorPicker\"\n" +
                                                      "        ColorChanged=\"AccentColorPicker_ColorChanged\"\n" +
-                                                     "        IsAlphaEnabled=\"True\" />\n" +
+                                                     "        IsAlphaEnabled=\"True\"\n" +
+                                                     "        IsMoreButtonVisible=\"False\" />\n" +
                                                      "</UserControl>\n";
 
         private const string ColorPickerCSharpSource = "using System.Windows.Controls;\n" +
@@ -320,7 +325,7 @@ namespace Fluence.Wpf.Demo.Pages
         {
             Loaded -= GalleryFormsPage_Loaded;
             DependencyPropertyDescriptor
-                .FromProperty(FluencePasswordBox.PasswordProperty, typeof(FluencePasswordBox))
+                .FromProperty(Controls.PasswordBox.PasswordProperty, typeof(Controls.PasswordBox))
                 .AddValueChanged(SignInPasswordBox, SignInPassword_Changed);
         }
 

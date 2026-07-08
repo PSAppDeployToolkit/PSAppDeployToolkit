@@ -63,13 +63,13 @@ namespace Fluence.Wpf.Controls
             double spacing = Spacing;
             UIElementCollection children = InternalChildren;
             int count = children.Count;
-            if (count == 0)
+            if (count is 0)
             {
                 return new(0, 0);
             }
 
             double totalMain = 0; double maxCross = 0;
-            if (orientation == Orientation.Vertical)
+            if (orientation is Orientation.Vertical)
             {
                 double remainingHeight = constraint.Height;
                 for (int i = 0; i < count; i++)
@@ -122,7 +122,7 @@ namespace Fluence.Wpf.Controls
             double spacing = Spacing;
             UIElementCollection children = InternalChildren;
             int count = children.Count;
-            if (orientation == Orientation.Vertical)
+            if (orientation is Orientation.Vertical)
             {
                 double y = 0.0;
                 for (int i = 0; i < count; i++)

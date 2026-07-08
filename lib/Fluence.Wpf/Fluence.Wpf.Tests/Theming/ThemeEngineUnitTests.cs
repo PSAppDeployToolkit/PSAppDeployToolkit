@@ -30,6 +30,7 @@ using Fluence.Wpf.Theming;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 
@@ -306,6 +307,58 @@ namespace Fluence.Wpf.Tests.Theming
                 ApplicationAccentColorManager.ResetForTesting();
                 FluenceThemeEngine.ResetForTesting();
                 Helpers.AcrylicNoiseHelper.ResetForTesting();
+            });
+        }
+
+        /// <summary>
+        /// FluenceThemeEngine.Apply must not raise Published when Application.Current is null (the
+        /// headless / early-startup case), because Publish's early-return means nothing was actually
+        /// published into application resources. Application.Current is a process-wide static shared
+        /// by every fixture on WpfTestSta's single STA dispatcher, so this test cannot call
+        /// Application.Shutdown() to reach that state: WPF forbids constructing a second Application
+        /// in the same AppDomain, which would permanently break every later fixture. Instead the live
+        /// Application instance is detached from the private static backing field for the duration of
+        /// the Apply call and restored immediately afterward, leaving the shared instance untouched.
+        /// </summary>
+        [TestMethod]
+        public void FluenceThemeEngine_Apply_DoesNotRaisePublished_WhenApplicationIsNull()
+        {
+            WpfTestSta.Dispatcher!.Invoke(static () =>
+            {
+                Application app = WpfTestSta.EnsureApplication()!;
+                FieldInfo appInstanceField = typeof(Application).GetField("_appInstance", BindingFlags.Static | BindingFlags.NonPublic)
+                    ?? throw new InvalidOperationException("Application._appInstance field not found; WPF internals changed.");
+
+                FluenceThemeEngine.ResetForTesting();
+                FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(TestBlue));
+
+                int raised = 0;
+                void OnPublished(object? sender, EventArgs e) { raised++; }
+                FluenceThemeEngine.Published += OnPublished;
+                try
+                {
+                    appInstanceField.SetValue(obj: null, value: null);
+                    Assert.IsNull(Application.Current, "Test precondition: Application.Current must be null.");
+
+                    FluenceThemeEngine.Apply(ApplicationTheme.Light);
+                }
+                finally
+                {
+                    appInstanceField.SetValue(obj: null, value: app);
+                    FluenceThemeEngine.Published -= OnPublished;
+                }
+
+                Assert.AreEqual(0, raised, "Published must not fire when Application.Current is null.");
+                Assert.IsNotNull(Application.Current, "Application.Current must be restored for subsequent tests.");
+                Assert.AreSame(app, Application.Current, "The restored Application must be the same shared instance.");
+            });
+
+            // Tear down
+            WpfTestSta.Dispatcher!.Invoke(static () =>
+            {
+                FluenceThemeEngine.ResetForTesting();
+                ApplicationThemeManager.ResetForTesting();
+                ApplicationAccentColorManager.ResetForTesting();
             });
         }
     }

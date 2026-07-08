@@ -78,7 +78,7 @@ namespace Fluence.Wpf
 
         private static AccentPalette Palette => FluenceThemeEngine.CurrentPalette;
 
-        private static bool IsDark => FluenceThemeEngine.ResolvedTheme == ApplicationTheme.Dark;
+        private static bool IsDark => FluenceThemeEngine.ResolvedTheme is ApplicationTheme.Dark;
 
         /// <summary>
         /// Gets the current base system accent color (ARGB). Default is a Windows blue until <see cref="ApplySystemAccent"/> runs.

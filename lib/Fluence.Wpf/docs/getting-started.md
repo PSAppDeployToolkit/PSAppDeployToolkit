@@ -1,4 +1,4 @@
-## Reference the library
+﻿## Reference the library
 
 1. Add a **project reference** to `Fluence.Wpf/Fluence.Wpf.csproj` (recommended until a NuGet package is published):
 

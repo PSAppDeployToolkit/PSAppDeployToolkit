@@ -224,6 +224,85 @@
                     Text="Clicks: 0" />
             </ContentControl>
             <local:DemoSampleControl SampleDescription="Use RepeatButton when holding the pointer should raise Click repeatedly." />
+
+
+            <ContentControl x:Name="DemoSampleSlot07DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:ToggleButton
+                        x:Name="WrapToggleButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Checked="WrapToggleButton_CheckedChanged"
+                        Content="Wrap text"
+                        Unchecked="WrapToggleButton_CheckedChanged" />
+                    <ui:ToggleButton
+                        x:Name="ThreeStateToggleButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Three-state"
+                        IsThreeState="True" />
+                    <ui:ToggleButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled checked"
+                        IsChecked="True"
+                        IsEnabled="False" />
+                </WrapPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot07OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="ToggleButtonStateText"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="Wrap text: Off" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ToggleButton when a command switches a state on or off and should look pressed while active." />
+
+
+            <ContentControl x:Name="DemoSampleSlot08DemoContentHost" Visibility="Collapsed">
+                <WrapPanel VerticalAlignment="Center">
+                    <ui:ToggleSplitButton
+                        x:Name="ListToggleSplitButton"
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Bulleted list"
+                        IsCheckedChanged="ListToggleSplitButton_IsCheckedChanged">
+                        <ui:ToggleSplitButton.Flyout>
+                            <StackPanel MinWidth="180" Margin="{DynamicResource DemoSampleInnerCardPadding}">
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Click="ListStyleButton_Click"
+                                    Content="Bulleted list" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Click="ListStyleButton_Click"
+                                    Content="Numbered list" />
+                                <ui:Button
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Appearance="Subtle"
+                                    Click="ListStyleButton_Click"
+                                    Content="Checklist" />
+                            </StackPanel>
+                        </ui:ToggleSplitButton.Flyout>
+                    </ui:ToggleSplitButton>
+                    <ui:ToggleSplitButton
+                        Margin="{DynamicResource DemoControlGroupItemMargin}"
+                        Content="Disabled"
+                        IsChecked="True"
+                        IsEnabled="False">
+                        <ui:ToggleSplitButton.Flyout>
+                            <TextBlock Margin="{DynamicResource DemoSampleInnerCardPadding}" Text="Unavailable" />
+                        </ui:ToggleSplitButton.Flyout>
+                    </ui:ToggleSplitButton>
+                </WrapPanel>
+            </ContentControl>
+            <ContentControl x:Name="DemoSampleSlot08OutputContentHost" Visibility="Collapsed">
+                <TextBlock
+                    x:Name="ToggleSplitButtonStateText"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                    Text="List formatting: Off" />
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ToggleSplitButton when the primary half toggles a state and the flyout chooses which variant of that state to apply." />
         </StackPanel>
     </ui:SmoothScrollViewer>
 </UserControl>

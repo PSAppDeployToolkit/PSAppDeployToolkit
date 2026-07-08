@@ -179,7 +179,7 @@ namespace Fluence.Wpf.Tests
                         Icon = new Controls.FontIcon { Glyph = "\uE74D" },
                         Label = "Delete",
                     });
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => moreButton.Visibility == Visibility.Visible),
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => moreButton.Visibility is Visibility.Visible),
                         "The more button must become visible once SecondaryCommands is non-empty.");
                 }
                 finally

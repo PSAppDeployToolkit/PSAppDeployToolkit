@@ -31,7 +31,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows;
 using System.Windows.Threading;
-using WpfButton = System.Windows.Controls.Button;
 
 namespace Fluence.Wpf.Tests
 {
@@ -64,9 +63,9 @@ namespace Fluence.Wpf.Tests
             return window;
         }
 
-        private static WpfButton GetCaptionButton(FluenceWindow window, string name)
+        private static System.Windows.Controls.Button GetCaptionButton(FluenceWindow window, string name)
         {
-            WpfButton? button = FindVisualChildByName<WpfButton>(window, name);
+            System.Windows.Controls.Button? button = FindVisualChildByName<System.Windows.Controls.Button>(window, name);
             Assert.IsNotNull(button,
                 string.Format("Caption template part '{0}' must exist on FluenceWindow.", name));
             return button;
@@ -85,10 +84,10 @@ namespace Fluence.Wpf.Tests
                 {
                     window = CreateAndShowOffScreenFluenceWindow();
 
-                    WpfButton minimize = GetCaptionButton(window, "PART_MinimizeButton");
-                    WpfButton maximize = GetCaptionButton(window, "PART_MaximizeButton");
-                    WpfButton restore = GetCaptionButton(window, "PART_RestoreButton");
-                    WpfButton close = GetCaptionButton(window, "PART_CloseButton");
+                    System.Windows.Controls.Button minimize = GetCaptionButton(window, "PART_MinimizeButton");
+                    System.Windows.Controls.Button maximize = GetCaptionButton(window, "PART_MaximizeButton");
+                    System.Windows.Controls.Button restore = GetCaptionButton(window, "PART_RestoreButton");
+                    System.Windows.Controls.Button close = GetCaptionButton(window, "PART_CloseButton");
 
                     Assert.AreSame(SystemCommands.MinimizeWindowCommand, minimize.Command,
                         "PART_MinimizeButton must bind to SystemCommands.MinimizeWindowCommand.");
@@ -119,10 +118,10 @@ namespace Fluence.Wpf.Tests
                 {
                     window = CreateAndShowOffScreenFluenceWindow();
 
-                    WpfButton minimize = GetCaptionButton(window, "PART_MinimizeButton");
-                    WpfButton maximize = GetCaptionButton(window, "PART_MaximizeButton");
-                    WpfButton restore = GetCaptionButton(window, "PART_RestoreButton");
-                    WpfButton close = GetCaptionButton(window, "PART_CloseButton");
+                    System.Windows.Controls.Button minimize = GetCaptionButton(window, "PART_MinimizeButton");
+                    System.Windows.Controls.Button maximize = GetCaptionButton(window, "PART_MaximizeButton");
+                    System.Windows.Controls.Button restore = GetCaptionButton(window, "PART_RestoreButton");
+                    System.Windows.Controls.Button close = GetCaptionButton(window, "PART_CloseButton");
 
                     Assert.AreEqual(0, System.Windows.Controls.Grid.GetColumn(minimize));
                     Assert.AreEqual(1, System.Windows.Controls.Grid.GetColumn(maximize));

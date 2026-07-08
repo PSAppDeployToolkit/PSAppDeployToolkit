@@ -32,8 +32,6 @@ using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Threading;
-using FluenceListView = Fluence.Wpf.Controls.ListView;
-using WpfListViewItem = System.Windows.Controls.ListViewItem;
 
 namespace Fluence.Wpf.Tests
 {
@@ -94,7 +92,7 @@ namespace Fluence.Wpf.Tests
         {
             RunOnFreshStaThread(static () =>
             {
-                FluenceListView lv = new();
+                Controls.ListView lv = new();
                 Assert.IsTrue(lv.IsItemSelectable);
             });
         }
@@ -108,7 +106,7 @@ namespace Fluence.Wpf.Tests
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
-                FluenceListView lv = new() { Width = 260, Height = 120 };
+                Controls.ListView lv = new() { Width = 260, Height = 120 };
                 _ = lv.Items.Add("a");
                 _ = lv.Items.Add("b");
 
@@ -146,7 +144,7 @@ namespace Fluence.Wpf.Tests
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
-                FluenceListView lv = new()
+                Controls.ListView lv = new()
                 {
                     Width = 260,
                     Height = 120,
@@ -185,7 +183,7 @@ namespace Fluence.Wpf.Tests
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
-                FluenceListView lv = new()
+                Controls.ListView lv = new()
                 {
                     Width = 260,
                     Height = 120,
@@ -200,10 +198,10 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfListViewItem? container = lv.ItemContainerGenerator.ContainerFromIndex(0) as WpfListViewItem;
+                    System.Windows.Controls.ListViewItem? container = lv.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.ListViewItem;
                     Assert.IsNotNull(container, "Item container should be generated.");
                     Assert.IsFalse(container.Focusable);
-                    Assert.IsFalse(FluenceListView.GetParentIsItemSelectable(container));
+                    Assert.IsFalse(Controls.ListView.GetParentIsItemSelectable(container));
                 }
                 finally
                 {
@@ -225,7 +223,7 @@ namespace Fluence.Wpf.Tests
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Window window = new();
-                FluenceListView lv = new()
+                Controls.ListView lv = new()
                 {
                     Width = 260,
                     Height = 120,
@@ -240,10 +238,10 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfListViewItem? container = lv.ItemContainerGenerator.ContainerFromIndex(0) as WpfListViewItem;
+                    System.Windows.Controls.ListViewItem? container = lv.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.ListViewItem;
                     Assert.IsNotNull(container);
                     Assert.IsTrue(container.Focusable);
-                    Assert.IsTrue(FluenceListView.GetParentIsItemSelectable(container));
+                    Assert.IsTrue(Controls.ListView.GetParentIsItemSelectable(container));
                 }
                 finally
                 {
@@ -261,7 +259,7 @@ namespace Fluence.Wpf.Tests
         {
             RunOnFreshStaThread(static () =>
             {
-                FluenceListView lv = new() { IsItemSelectable = false, ItemAnimationsEnabled = true };
+                Controls.ListView lv = new() { IsItemSelectable = false, ItemAnimationsEnabled = true };
                 Assert.IsFalse(lv.IsItemSelectable);
                 Assert.IsTrue(lv.ItemAnimationsEnabled);
 

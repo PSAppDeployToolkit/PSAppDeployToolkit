@@ -28,7 +28,10 @@
 
 using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -287,6 +290,45 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual(20.0, tx.X, 0.5, "Committed drag should finish on the checked side.");
 
                 w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void ToggleSwitch_HeaderContent_BecomesAccessibleName()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    ToggleSwitch ts = new() { HeaderContent = "Airplane mode" };
+                    window.Content = ts;
+                    window.Width = 240;
+                    window.Height = 120;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(ts);
+                    Assert.IsTrue(
+                        string.Equals("Airplane mode", peer.GetName(), StringComparison.Ordinal),
+                        "ToggleSwitch HeaderContent must be the accessible name when no explicit AutomationProperties.Name is set.");
+
+                    ts.SetValue(AutomationProperties.NameProperty, "Explicit");
+                    Assert.IsTrue(
+                        string.Equals("Explicit", peer.GetName(), StringComparison.Ordinal),
+                        "Explicit AutomationProperties.Name must win over HeaderContent.");
+                }
+                finally
+                {
+                    window.Close();
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
             });
         }
 

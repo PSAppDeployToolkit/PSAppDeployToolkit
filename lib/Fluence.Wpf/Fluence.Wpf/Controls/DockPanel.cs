@@ -80,7 +80,7 @@ namespace Fluence.Wpf.Controls
         {
             UIElementCollection children = InternalChildren;
             int count = children.Count;
-            if (count == 0)
+            if (count is 0)
             {
                 return new(0, 0);
             }
@@ -141,7 +141,7 @@ namespace Fluence.Wpf.Controls
         {
             UIElementCollection children = InternalChildren;
             int count = children.Count;
-            if (count == 0)
+            if (count is 0)
             {
                 return finalSize;
             }

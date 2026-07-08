@@ -29,6 +29,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
@@ -295,7 +297,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public async Task ContentDialog_OwnerWindowClose_CompletesPendingTaskWithNone()
+        public async Task ContentDialog_OwnerWindowClose_CompletesPendingTaskWithNoneAsync()
         {
             Task<ContentDialogResult>? dialogTask = null;
             RunOnStaThread(() =>
@@ -388,7 +390,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public async Task ContentDialog_PrimaryButtonClick_CompletesTaskWithPrimaryAndRemovesOverlay()
+        public async Task ContentDialog_PrimaryButtonClick_CompletesTaskWithPrimaryAndRemovesOverlayAsync()
         {
             Task<ContentDialogResult>? dialogTask = null;
             RunOnStaThread(() =>
@@ -443,7 +445,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public async Task ContentDialog_CloseButtonClick_CompletesTaskWithNone()
+        public async Task ContentDialog_CloseButtonClick_CompletesTaskWithNoneAsync()
         {
             Task<ContentDialogResult>? dialogTask = null;
             RunOnStaThread(() =>
@@ -491,7 +493,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public async Task ContentDialog_EscapeKey_CompletesTaskWithNone()
+        public async Task ContentDialog_EscapeKey_CompletesTaskWithNoneAsync()
         {
             Task<ContentDialogResult>? dialogTask = null;
             RunOnStaThread(() =>
@@ -832,8 +834,58 @@ namespace Fluence.Wpf.Tests
                         "Over a FluenceWindow the dialog overlay must be hosted in PART_DialogOverlayHost so the smoke covers the title bar.");
 
                     dialog.Hide();
-                    bool removed = WaitUntil(window.Dispatcher, 2000, () => host.Children.Count == 0);
+                    bool removed = WaitUntil(window.Dispatcher, 2000, () => host.Children.Count is 0);
                     Assert.IsTrue(removed, "Closing the dialog must remove the overlay from PART_DialogOverlayHost.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ContentDialog_DeclaresAssertiveLiveSetting()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.ContentDialog dialog = new() { Title = "Confirm" };
+
+                // A modal dialog is not a real HWND, so nothing prompts Narrator to read it on
+                // open. The net472 target has no AutomationProperties.IsDialog, so the dialog
+                // instead declares an assertive live region and announces it via
+                // LiveRegionChanged as it appears (see ContentDialog.AnnounceLiveRegion).
+                Assert.AreEqual(AutomationLiveSetting.Assertive, AutomationProperties.GetLiveSetting(dialog),
+                    "ContentDialog must declare an assertive live region so Narrator announces the dialog when it opens (net472-safe substitute for AutomationProperties.IsDialog).");
+            });
+        }
+
+        [TestMethod]
+        public void ContentDialog_AutomationPeer_ReportsWindowRoleAndTitleName()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.ContentDialog dialog = new() { Title = "Delete file?" };
+                Window window = new() { Width = 320, Height = 240, Content = dialog };
+
+                try
+                {
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(dialog);
+                    _ = Assert.IsInstanceOfType<Automation.ContentDialogAutomationPeer>(peer,
+                        "ContentDialog.OnCreateAutomationPeer must return a ContentDialogAutomationPeer.");
+                    Assert.AreEqual(AutomationControlType.Window, peer.GetAutomationControlType(),
+                        "ContentDialog must report the Window control type so assistive technologies treat it as a modal dialog surface.");
+                    Assert.AreEqual("Delete file?", peer.GetName(),
+                        "ContentDialog automation name must come from Title so the live-region announcement reads it when the dialog opens.");
                 }
                 finally
                 {

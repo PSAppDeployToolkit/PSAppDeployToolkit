@@ -7,7 +7,7 @@
 - [ ] `dotnet build Fluence.Wpf.sln -c Release --no-restore -v minimal` (0 errors / 0 warnings, both TFMs)
 - [ ] `dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net472 --no-build`
 - [ ] `dotnet test Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Release -f net10.0-windows10.0.26100.0 --no-build`
-- [ ] `pwsh eng/Format-Xaml.ps1 -Check` passes (authored XAML conforms to `Settings.XamlStyler`).
+- [ ] `pwsh .claude/hooks/post-tool-util.ps1 -CheckAll` passes (UTF-8 BOM, LF, banned APIs, no hard-coded hex or em/en dashes).
 - [ ] Visual pass completed in `Fluence.Wpf.Demo` for Light, Dark, High Contrast, accent swap, and relevant backdrop.
 
 ## Checklist

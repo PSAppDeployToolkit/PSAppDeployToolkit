@@ -205,7 +205,9 @@
                         <StackPanel Orientation="{TemplateBinding Orientation}">
                             <Button
                                 x:Name="PART_PreviousButton"
+                                AutomationProperties.Name="Previous page"
                                 Style="{StaticResource PipsPagerNavigationButtonStyle}"
+                                ToolTip="Previous page"
                                 Visibility="Collapsed">
                                 <controls:FontIcon
                                     x:Name="PreviousGlyph"
@@ -218,7 +220,9 @@
                             <StackPanel x:Name="PART_PipsHost" Orientation="{TemplateBinding Orientation}" />
                             <Button
                                 x:Name="PART_NextButton"
+                                AutomationProperties.Name="Next page"
                                 Style="{StaticResource PipsPagerNavigationButtonStyle}"
+                                ToolTip="Next page"
                                 Visibility="Collapsed">
                                 <controls:FontIcon
                                     x:Name="NextGlyph"

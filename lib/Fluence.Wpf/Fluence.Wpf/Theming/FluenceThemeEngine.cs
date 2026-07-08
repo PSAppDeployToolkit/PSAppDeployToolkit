@@ -93,8 +93,11 @@ namespace Fluence.Wpf.Theming
             CurrentPalette = palette;
 
             ResourceDictionary dict = BuildComputedDictionary(theme, palette);
-            Publish(dict);
-            Published?.Invoke(sender: null, EventArgs.Empty);
+            bool published = Publish(dict);
+            if (published)
+            {
+                Published?.Invoke(sender: null, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -149,9 +152,15 @@ namespace Fluence.Wpf.Theming
             return computed;
         }
 
-        private static void Publish(ResourceDictionary computed)
+        /// <summary>
+        /// Publishes <paramref name="computed"/> into application resources.
+        /// </summary>
+        /// <param name="computed">The computed dictionary to publish.</param>
+        /// <returns><see langword="true"/> if the dictionary was actually published; <see langword="false"/>
+        /// if <see cref="Application.Current"/> was null and the call was a no-op.</returns>
+        private static bool Publish(ResourceDictionary computed)
         {
-            if (Application.Current is null) { return; }
+            if (Application.Current is null) { return false; }
             Collection<ResourceDictionary> dicts = Application.Current.Resources.MergedDictionaries;
             if (!_initialized)
             {
@@ -170,6 +179,8 @@ namespace Fluence.Wpf.Theming
             {
                 dicts[0] = computed; // replace -> DynamicResource consumers re-resolve
             }
+
+            return true;
         }
 
         private static ResourceDictionary Load(string rel)

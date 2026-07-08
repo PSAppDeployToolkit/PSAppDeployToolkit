@@ -17,7 +17,6 @@
     Background="{DynamicResource ApplicationBackgroundBrush}"
     CornerStyle="Round"
     ExtendsContentIntoTitleBar="False"
-    Icon="Resources/fluence-wpf-appicon-256.ico"
     SystemBackdropType="Mica"
     UseLayoutRounding="True"
     mc:Ignorable="d">

@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
                     Controls.Border panel = new() { Width = 10, Height = 10 };
                     window.Content = panel;
                     window.Show();
-                    window.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Loaded, default);
                     DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(panel);
                     Assert.IsTrue(dpi.PixelsPerDip > 0, "DpiScale.PixelsPerDip should be positive.");
                 }

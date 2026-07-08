@@ -367,14 +367,14 @@ namespace Fluence.Wpf.Demo
 
         private void NavSearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Enter)
+            if (e.Key is not Key.Enter)
             {
                 return;
             }
 
             string query = (NavSearchBox?.Text) ?? string.Empty;
             query = query.Trim();
-            if (query.Length == 0)
+            if (query.Length is 0)
             {
                 return;
             }
@@ -445,7 +445,7 @@ namespace Fluence.Wpf.Demo
             }
 
             string query = (NavSearchBox.Text ?? string.Empty).Trim();
-            if (query.Length == 0)
+            if (query.Length is 0)
             {
                 foreach (object obj in DemoNav.Items)
                 {
@@ -670,7 +670,7 @@ namespace Fluence.Wpf.Demo
 
         private void ShellTitleBar_BackRequested(object sender, EventArgs e)
         {
-            if (DemoNav is null || _navigationBackStack.Count == 0)
+            if (DemoNav is null || _navigationBackStack.Count is 0)
             {
                 UpdateBackNavigationState();
                 return;
@@ -731,8 +731,8 @@ namespace Fluence.Wpf.Demo
                 System.Windows.Controls.TextBlock? titleText = GetTitleBarTemplatePart<System.Windows.Controls.TextBlock>("PART_TitleText");
                 if (titleText is null
                     || NavSearchBox is null
-                    || titleText.Visibility != Visibility.Visible
-                    || NavSearchBox.Visibility != Visibility.Visible
+                    || titleText.Visibility is not Visibility.Visible
+                    || NavSearchBox.Visibility is not Visibility.Visible
                     || !titleText.IsVisible
                     || !NavSearchBox.IsVisible)
                 {
@@ -748,8 +748,7 @@ namespace Fluence.Wpf.Demo
                 // If the app icon itself already overlaps the search box there is no room for the
                 // title at all; clear it and bail early rather than attempting to constrain width.
                 ContentPresenter? titleIcon = GetTitleBarTemplatePart<ContentPresenter>("PART_IconPresenter");
-                if (titleIcon is not null
-                    && titleIcon.Visibility == Visibility.Visible
+                if (titleIcon?.Visibility is Visibility.Visible
                     && titleIcon.IsVisible
                     && TryGetVisualX(titleIcon, this, out double titleIconLeft)
                     && titleIconLeft + titleIcon.ActualWidth > searchLeft - 12.0)

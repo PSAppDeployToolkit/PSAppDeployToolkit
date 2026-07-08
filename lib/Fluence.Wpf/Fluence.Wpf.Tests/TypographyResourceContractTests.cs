@@ -29,7 +29,6 @@
 using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -49,7 +48,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    WpfTextBlock textBlock = new();
+                    System.Windows.Controls.TextBlock textBlock = new();
                     textBlock.SetTypography(FluentTypography.BodyLarge);
 
                     Assert.AreSame(

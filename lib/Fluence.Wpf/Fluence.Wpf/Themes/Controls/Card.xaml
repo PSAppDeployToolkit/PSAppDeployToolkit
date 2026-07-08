@@ -182,9 +182,17 @@
                             <Setter TargetName="VariantBackground" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
                             <Setter TargetName="VariantBackground" Property="BorderThickness" Value="1" />
                         </Trigger>
+                        <!--
+                            Filled uses ControlAltFillColorQuarternaryBrush, not the near-transparent
+                            CardBackgroundFillColorSecondaryBrush: the latter composites to roughly the
+                            host surface color (SolidBackgroundFillColorBase) and renders invisible. The
+                            alt-fill is a clear tonal step, giving the "stronger container presence" the
+                            variant is meant to convey, distinct from both the Default white card and the
+                            fainter Subtle fill.
+                        -->
                         <Trigger Property="Variant" Value="{x:Static ui:CardVariant.Filled}">
-                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
-                            <Setter TargetName="VariantBackground" Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}" />
+                            <Setter TargetName="OuterBorder" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
+                            <Setter TargetName="VariantBackground" Property="Background" Value="{DynamicResource ControlAltFillColorQuarternaryBrush}" />
                             <Setter TargetName="VariantBackground" Property="BorderThickness" Value="0" />
                         </Trigger>
                         <Trigger Property="Variant" Value="{x:Static ui:CardVariant.Subtle}">

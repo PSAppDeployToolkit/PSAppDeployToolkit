@@ -321,6 +321,10 @@ namespace Fluence.Wpf.Controls
         protected virtual void OnValueChanged(double oldValue, double newValue)
         {
             ValueChanged?.Invoke(this, new NumberBoxValueChangedEventArgs(oldValue, newValue));
+            if (UIElementAutomationPeer.FromElement(this) is NumberBoxAutomationPeer peer)
+            {
+                peer.RaiseValueChanged(oldValue, newValue);
+            }
         }
 
         /// <summary>
@@ -349,7 +353,7 @@ namespace Fluence.Wpf.Controls
         protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
         {
             base.OnGotKeyboardFocus(e);
-            if (_partTextBox?.IsKeyboardFocusWithin == false)
+            if ((_partTextBox?.IsKeyboardFocusWithin) is false)
             {
                 _ = _partTextBox.Focus();
             }
@@ -359,7 +363,7 @@ namespace Fluence.Wpf.Controls
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseLeftButtonDown(e);
-            if (_partTextBox?.IsKeyboardFocusWithin == false)
+            if ((_partTextBox?.IsKeyboardFocusWithin) is false)
             {
                 _ = _partTextBox.Focus();
             }
@@ -430,18 +434,18 @@ namespace Fluence.Wpf.Controls
 
         private void OnPartTextBoxKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key is Key.Enter)
             {
                 _ = TryParseText();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Up)
+            else if (e.Key is Key.Up)
             {
                 _ = TryParseText();
                 OnUpClick();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Down)
+            else if (e.Key is Key.Down)
             {
                 _ = TryParseText();
                 OnDownClick();

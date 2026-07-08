@@ -17,17 +17,15 @@ dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-wi
 
 Both target frameworks (`net472` and `net10.0-windows10.0.26100.0`) must build and test green. The library builds with `TreatWarningsAsErrors=true`, `WarningLevel=9999`, and `AnalysisLevel=latest-all`: fix warnings at the root cause, do not suppress them. `string.IsNullOrEmpty()` is banned (use `string.IsNullOrWhiteSpace()`); public API needs `///` XML docs or the build fails.
 
-## Formatting XAML
+## Formatting and text policy
 
-Authored XAML is formatted by XAML Styler against the committed `Settings.XamlStyler` reference style (pinned in `.config/dotnet-tools.json`):
+XAML style (4-space indent, UTF-8 with BOM, LF line endings, final newline) is governed by `.editorconfig`, applied to `.xaml` like every other source file; there is no separate XAML formatter tool. Encoding and text policy are enforced by a repo hook and in CI:
 
 ```powershell
-dotnet tool restore
-pwsh eng/Format-Xaml.ps1            # format all authored XAML
-pwsh eng/Format-Xaml.ps1 -Check     # CI gate, non-destructive
+pwsh .claude/hooks/post-tool-util.ps1 -CheckAll   # CI gate: UTF-8 BOM, LF, banned APIs, hard-coded hex, em/en dashes
 ```
 
-Run the formatter and commit its output; do not hand-fight it. Generated XAML (`Properties/DesignTime.*.xaml`, `**/Resources/fluence-wpf-banner-*.xaml`) is excluded.
+All source and text files are UTF-8 with BOM and LF; `string.IsNullOrEmpty()` is banned (use `string.IsNullOrWhiteSpace()`); do not inline hex colors in `Themes/Controls/**` or use em/en dashes in `.cs` / `.md`. Generated XAML (`Properties/DesignTime.*.xaml`) is excluded from the repo-wide check.
 
 ## Adding or changing a control
 

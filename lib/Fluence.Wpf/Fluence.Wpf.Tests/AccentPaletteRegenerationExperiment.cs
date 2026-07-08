@@ -140,7 +140,7 @@ namespace Fluence.Wpf.Tests
 
                 WriteDword(Registry.CurrentUser, DwmKey, DwmAccentColorValue, dwmEncoded);
 
-                if (writeMode != WriteMode.DwmAccentColorOnly)
+                if (writeMode is not WriteMode.DwmAccentColorOnly)
                 {
                     WriteDword(Registry.CurrentUser, DwmKey, DwmAccentColorInactiveValue, dwmEncoded);
                     WriteDword(Registry.CurrentUser, AccentKey, NativeConstants.AccentColor, explorerEncoded);
@@ -148,7 +148,7 @@ namespace Fluence.Wpf.Tests
                     WriteDword(Registry.CurrentUser, AccentKey, StartColorMenuValue, explorerEncoded);
                 }
 
-                if (writeMode == WriteMode.AllAccentValuesAndBroadcast)
+                if (writeMode is WriteMode.AllAccentValuesAndBroadcast)
                 {
                     _ = NativeMethods.SendMessageTimeout(new IntPtr(NativeMethods.HWND_BROADCAST),
                         NativeConstants.WM_SETTINGCHANGE, IntPtr.Zero, "ImmersiveColorSet",

@@ -40,7 +40,7 @@ namespace Fluence.Wpf.Tests
     {
         private static void Drain(Dispatcher d)
         {
-            d.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
+            d.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
         }
 
         private static Application? EnsureApp()

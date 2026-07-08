@@ -80,6 +80,13 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Gets or sets the visual appearance of the toggle button.
         /// </summary>
+        /// <remarks>
+        /// The default template renders the single canonical WinUI toggle visual for
+        /// every <see cref="ControlAppearance"/> value: the checked state is the accent
+        /// state, so a separate accent rest variant would make checked and unchecked
+        /// indistinguishable. The property exists primarily for derived controls such as
+        /// <see cref="DropDownButton"/>, which consume it in their own templates.
+        /// </remarks>
         public ControlAppearance Appearance
         {
             get => (ControlAppearance)GetValue(AppearanceProperty);

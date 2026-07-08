@@ -152,7 +152,7 @@ namespace Fluence.Wpf.Controls
             {
                 _popup.PlacementTarget = this;
                 AttachPopupHandlers(_popup);
-                _popup.IsOpen = IsChecked == true;
+                _popup.IsOpen = IsChecked is true;
             }
         }
 
@@ -162,7 +162,7 @@ namespace Fluence.Wpf.Controls
             base.OnPropertyChanged(e);
             if (e.Property == IsCheckedProperty && _popup is not null)
             {
-                _popup.IsOpen = IsChecked == true;
+                _popup.IsOpen = IsChecked is true;
             }
         }
 

@@ -35,6 +35,9 @@ namespace Fluence.Wpf.Helpers
 {
     internal static class AcrylicNoiseHelper
     {
+        // UI-thread-only: this lazy init is unsynchronized. If two calls race on the first
+        // resolve, each builds its own frozen 128x128 bitmap and the last write to
+        // _cachedBrush wins; there is no corruption, just a harmless duplicate build.
         internal static ImageBrush GetNoiseBrush()
         {
             if (_cachedBrush is not null)

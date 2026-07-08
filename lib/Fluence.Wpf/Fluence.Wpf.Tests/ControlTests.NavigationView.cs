@@ -332,7 +332,7 @@ namespace Fluence.Wpf.Tests
 
                     nav.IsPaneOpen = true;
                     // Settle until the footer host reaches the asserted Visible state.
-                    _ = WaitUntil(window.Dispatcher, 2000, () => footerHost.Visibility == Visibility.Visible);
+                    _ = WaitUntil(window.Dispatcher, 2000, () => footerHost.Visibility is Visibility.Visible);
 
                     Assert.AreEqual(Visibility.Visible, footerHost.Visibility,
                         "LeftCompact footer should be visible when the pane opens.");
@@ -2682,7 +2682,7 @@ topMode: false,
                 return;
             }
 
-            if (brush is SolidColorBrush solid && solid.Color.A == 0)
+            if (brush is SolidColorBrush solid && solid.Color.A is 0)
             {
                 return;
             }

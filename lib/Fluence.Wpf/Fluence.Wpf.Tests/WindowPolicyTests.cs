@@ -219,7 +219,7 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(fallback, plan.BackgroundColor);
             Assert.AreEqual(NativeConstants.DWMWA_COLOR_DEFAULT, plan.CaptionColor,
                 "None must leave the DWM caption color at its default (system-managed).");
-            Assert.IsTrue(plan.SystemBackdropType.HasValue,
+            Assert.IsTrue(plan.SystemBackdropType is not null,
                 "On 22H2 DWM exposes DWMWA_SYSTEMBACKDROP_TYPE - None must emit DWMSBT_NONE to explicitly clear Mica/Acrylic.");
             Assert.AreEqual(NativeConstants.DWMSBT_NONE, plan.SystemBackdropType.Value);
             Assert.IsFalse(plan.UseLegacyMicaEffect);
@@ -234,7 +234,7 @@ namespace Fluence.Wpf.Tests
                 Caps(),
                 Color.FromRgb(0xFA, 0xFA, 0xFA));
 
-            Assert.IsFalse(plan.SystemBackdropType.HasValue,
+            Assert.IsFalse(plan.SystemBackdropType is not null,
                 "Windows 10 does not expose DWMWA_SYSTEMBACKDROP_TYPE - the plan must not attempt to set it.");
         }
 
@@ -257,7 +257,7 @@ namespace Fluence.Wpf.Tests
             Assert.AreEqual(Colors.Transparent, plan.BackgroundColor);
             Assert.AreEqual(NativeConstants.DWMWA_COLOR_NONE, plan.CaptionColor,
                 "Mica must force DWMWA_COLOR_NONE on the caption so the system backdrop shows through.");
-            Assert.IsFalse(plan.SystemBackdropType.HasValue,
+            Assert.IsFalse(plan.SystemBackdropType is not null,
                 "Pre-22H2 must not emit DWMWA_SYSTEMBACKDROP_TYPE - only DWMWA_MICA_EFFECT is legal there.");
             Assert.IsTrue(plan.UseLegacyMicaEffect,
                 "Pre-22H2 Win11 must set the legacy DWMWA_MICA_EFFECT attribute.");
@@ -274,7 +274,7 @@ namespace Fluence.Wpf.Tests
 
             Assert.AreEqual(BackdropType.Mica, plan.EffectiveBackdrop);
             Assert.IsTrue(plan.UseTransparentBackground);
-            Assert.IsTrue(plan.SystemBackdropType.HasValue);
+            Assert.IsTrue(plan.SystemBackdropType is not null);
             Assert.AreEqual(NativeConstants.DWMSBT_MAINWINDOW, plan.SystemBackdropType.Value,
                 "22H2 Mica must emit DWMSBT_MAINWINDOW via DWMWA_SYSTEMBACKDROP_TYPE.");
             Assert.IsFalse(plan.UseLegacyMicaEffect,

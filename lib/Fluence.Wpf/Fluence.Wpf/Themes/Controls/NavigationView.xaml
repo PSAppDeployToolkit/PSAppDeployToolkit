@@ -349,6 +349,7 @@
                                 VerticalAlignment="Center"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
+                                AutomationProperties.Name="Back"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="True"
@@ -369,6 +370,7 @@
                                 VerticalAlignment="Center"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
+                                AutomationProperties.Name="Navigation"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="True"
@@ -489,7 +491,7 @@
                             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
                         </Border>
                         <Border
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderBrush="{DynamicResource NavigationViewContentSeparatorBrush}"
                             BorderThickness="1,1,0,0"
                             CornerRadius="8,0,0,0"
                             IsHitTestVisible="False" />
@@ -599,6 +601,7 @@
                                 VerticalAlignment="Center"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
+                                AutomationProperties.Name="Back"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="True"
@@ -619,6 +622,7 @@
                                 VerticalAlignment="Center"
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center"
+                                AutomationProperties.Name="Navigation"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="True"
@@ -739,7 +743,7 @@
                             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" />
                         </Border>
                         <Border
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderBrush="{DynamicResource NavigationViewContentSeparatorBrush}"
                             BorderThickness="1,1,0,0"
                             CornerRadius="8,0,0,0"
                             IsHitTestVisible="False" />
@@ -803,12 +807,18 @@
 
     <!--  Top pane template  -->
     <ControlTemplate x:Key="NavigationViewTopPaneTemplate" TargetType="{x:Type controls:NavigationView}">
+        <!--
+            No top border or top corner rounding: in Top mode the nav strip sits directly
+            under the window title bar, so a top stroke would draw a seam between the title
+            bar and the navigation list. The sides and bottom keep the 1px outline and the
+            bottom corners keep the 8px overlay radius.
+        -->
         <Border
             Background="{TemplateBinding Background}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
+            BorderThickness="1,0,1,1"
             ClipToBounds="True"
-            CornerRadius="{DynamicResource OverlayCornerRadius}">
+            CornerRadius="0,0,8,8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="48" />
@@ -820,7 +830,7 @@
                     Grid.Row="0"
                     Padding="4,0,8,0"
                     Background="{DynamicResource AcrylicInAppFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                    BorderBrush="{DynamicResource NavigationViewContentSeparatorBrush}"
                     BorderThickness="0,0,0,1">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -835,6 +845,7 @@
                             Margin="24,0,4,0"
                             Padding="6"
                             VerticalAlignment="Center"
+                            AutomationProperties.Name="Back"
                             Background="Transparent"
                             BorderThickness="0"
                             Focusable="True"

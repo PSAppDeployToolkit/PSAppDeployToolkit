@@ -42,11 +42,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $project = $env:CLAUDE_PROJECT_DIR; if (-not $project) { $project = (Get-Location).Path }; & (Join-Path $project '.claude/hooks/post-tool-format-xaml.ps1') }\"",
-            "timeout": 60
-          },
-          {
-            "type": "command",
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $project = $env:CLAUDE_PROJECT_DIR; if (-not $project) { $project = (Get-Location).Path }; & (Join-Path $project '.claude/hooks/post-tool-util.ps1') }\"",
             "timeout": 30
           }

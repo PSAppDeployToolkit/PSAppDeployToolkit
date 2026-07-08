@@ -441,7 +441,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void NewItemBox_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key is Key.Enter)
             {
                 AddItem_Click(sender, e);
                 e.Handled = true;
@@ -486,9 +486,9 @@ namespace Fluence.Wpf.Demo.Pages
                 return;
             }
 
-            SelectionModeListView.SelectionMode = MultipleModeRadio?.IsChecked == true
+            SelectionModeListView.SelectionMode = (MultipleModeRadio?.IsChecked) is true
                 ? SelectionMode.Multiple
-                : ExtendedModeRadio?.IsChecked == true ? SelectionMode.Extended : SelectionMode.Single;
+                : (ExtendedModeRadio?.IsChecked) is true ? SelectionMode.Extended : SelectionMode.Single;
 
             SelectionModeListView.UnselectAll();
             UpdateSelectionLabel();
@@ -507,13 +507,13 @@ namespace Fluence.Wpf.Demo.Pages
             }
 
             int count = SelectionModeListView.SelectedItems.Count;
-            if (count == 0)
+            if (count is 0)
             {
                 SelectionCountLabel.Text = "Selected: none";
                 return;
             }
 
-            SelectionCountLabel.Text = count == 1
+            SelectionCountLabel.Text = count is 1
                 ? string.Format(CultureInfo.CurrentCulture, "Selected: {0}", (SelectionModeListView.SelectedItem as ListViewItem)?.Content ?? "?")
                 : string.Format(CultureInfo.CurrentCulture, "Selected: {0} items", count);
         }

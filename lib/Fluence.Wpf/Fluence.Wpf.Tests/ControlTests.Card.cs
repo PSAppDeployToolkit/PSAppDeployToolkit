@@ -30,7 +30,6 @@ using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Media.Effects;
-using WpfBorder = System.Windows.Controls.Border;
 
 namespace Fluence.Wpf.Tests
 {
@@ -58,7 +57,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
                 Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
 
                 Assert.IsNotNull(outerBorder.Effect,
@@ -82,7 +81,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
                 Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
 
                 Assert.IsNull(outerBorder.Effect,
@@ -104,7 +103,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
                 Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
 
                 Assert.IsNull(outerBorder.Effect,
@@ -126,7 +125,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
                 Assert.IsNotNull(outerBorder, "OuterBorder must exist in Card template.");
 
                 Assert.IsNull(outerBorder.Effect,
@@ -148,7 +147,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(card, "OuterBorder");
+                System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(card, "OuterBorder");
                 Assert.IsNotNull(outerBorder, "OuterBorder must exist.");
                 DropShadowEffect? shadow = outerBorder.Effect as DropShadowEffect;
                 Assert.IsNotNull(shadow, "Effect must be DropShadowEffect.");

@@ -143,6 +143,7 @@
                                     VerticalAlignment="Center"
                                     HorizontalContentAlignment="Center"
                                     VerticalContentAlignment="Center"
+                                    AutomationProperties.Name="Close"
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Cursor="Hand"

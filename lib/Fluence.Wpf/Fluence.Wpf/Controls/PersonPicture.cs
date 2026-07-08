@@ -26,14 +26,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Automation;
 using System;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using WpfGrid = System.Windows.Controls.Grid;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Controls
 {
@@ -44,10 +44,10 @@ namespace Fluence.Wpf.Controls
     /// Visual states: Photo, Initials, NoPhotoOrInitials, Group (CommonStates);
     /// NoBadge, BadgeWithoutImageSource (BadgeStates).
     /// </summary>
-    [TemplatePart(Name = PART_InitialsText, Type = typeof(WpfTextBlock))]
+    [TemplatePart(Name = PART_InitialsText, Type = typeof(System.Windows.Controls.TextBlock))]
     [TemplatePart(Name = PART_ImageEllipse, Type = typeof(Ellipse))]
-    [TemplatePart(Name = PART_BadgeGrid, Type = typeof(WpfGrid))]
-    [TemplatePart(Name = PART_BadgeText, Type = typeof(WpfTextBlock))]
+    [TemplatePart(Name = PART_BadgeGrid, Type = typeof(Grid))]
+    [TemplatePart(Name = PART_BadgeText, Type = typeof(System.Windows.Controls.TextBlock))]
     [TemplateVisualState(GroupName = GroupCommonStates, Name = StatePhoto)]
     [TemplateVisualState(GroupName = GroupCommonStates, Name = StateInitials)]
     [TemplateVisualState(GroupName = GroupCommonStates, Name = StateNoPhotoOrInitials)]
@@ -217,12 +217,18 @@ namespace Fluence.Wpf.Controls
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            _initialsText = GetTemplateChild(PART_InitialsText) as WpfTextBlock;
+            _initialsText = GetTemplateChild(PART_InitialsText) as System.Windows.Controls.TextBlock;
             _imageEllipse = GetTemplateChild(PART_ImageEllipse) as Ellipse;
-            _badgeGrid = GetTemplateChild(PART_BadgeGrid) as WpfGrid;
-            _badgeText = GetTemplateChild(PART_BadgeText) as WpfTextBlock;
+            _badgeGrid = GetTemplateChild(PART_BadgeGrid) as Grid;
+            _badgeText = GetTemplateChild(PART_BadgeText) as System.Windows.Controls.TextBlock;
             UpdateVisualState(useTransitions: false);
             UpdateBadge();
+        }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new PersonPictureAutomationPeer(this);
         }
 
         private static void OnDisplayNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -258,7 +264,7 @@ namespace Fluence.Wpf.Controls
                 if (_initialsText is not null)
                 {
                     _initialsText.Text = GlyphPeople;
-                    _initialsText.SetResourceReference(WpfTextBlock.FontFamilyProperty, "FluentFontFamily");
+                    _initialsText.SetResourceReference(System.Windows.Controls.TextBlock.FontFamilyProperty, "FluentFontFamily");
                 }
                 _ = VisualStateManager.GoToState(this, StateGroup, useTransitions);
                 return;
@@ -277,7 +283,7 @@ namespace Fluence.Wpf.Controls
                 if (_initialsText is not null)
                 {
                     _initialsText.Text = initials;
-                    _initialsText.SetResourceReference(WpfTextBlock.FontFamilyProperty, "FluentFontFamily");
+                    _initialsText.SetResourceReference(System.Windows.Controls.TextBlock.FontFamilyProperty, "FluentFontFamily");
                 }
                 _ = VisualStateManager.GoToState(this, StateInitials, useTransitions);
                 return;
@@ -307,7 +313,7 @@ namespace Fluence.Wpf.Controls
                 else if (BadgeNumber > 0)
                 {
                     _badgeText.Text = BadgeNumber > 99 ? "99+" : BadgeNumber.ToString(CultureInfo.CurrentCulture);
-                    _badgeText.SetResourceReference(WpfTextBlock.FontFamilyProperty, "FluentFontFamily");
+                    _badgeText.SetResourceReference(System.Windows.Controls.TextBlock.FontFamilyProperty, "FluentFontFamily");
                     _badgeText.FontSize = BadgeNumber > 9 ? 8 : 10;
                 }
                 else
@@ -330,7 +336,7 @@ namespace Fluence.Wpf.Controls
             string[] parts = (DisplayName ?? string.Empty).Trim().Split(InitialsSeparators, StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 1
                 ? (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpperInvariant()
-                : parts.Length == 1
+                : parts.Length is 1
                 ? parts[0][0].ToString().ToUpperInvariant()
                 : null;
         }
@@ -338,7 +344,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Represents the WPF TextBlock control used to display user initials.
         /// </summary>
-        private WpfTextBlock? _initialsText;
+        private System.Windows.Controls.TextBlock? _initialsText;
 
         /// <summary>
         /// Represents the ellipse shape used to display an image, or null if no ellipse is assigned.
@@ -348,11 +354,11 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Represents the WPF grid used to display the badge, or null if no badge grid is present.
         /// </summary>
-        private WpfGrid? _badgeGrid;
+        private Grid? _badgeGrid;
 
         /// <summary>
         /// Represents the text block used to display a badge in the WPF user interface.
         /// </summary>
-        private WpfTextBlock? _badgeText;
+        private System.Windows.Controls.TextBlock? _badgeText;
     }
 }

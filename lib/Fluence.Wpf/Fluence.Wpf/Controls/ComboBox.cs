@@ -38,6 +38,8 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// Fluent-styled combo box with placeholder, icon, and rounded dropdown.
     /// Authority: WinUI 3 ComboBox_themeresources.xaml (FocusedStates / EditableFocusedStates VSM groups - WI-3 C18).
+    /// Diverging from stock WPF, this control auto-selects index 0 when its items populate while
+    /// <see cref="System.Windows.Controls.Primitives.Selector.SelectedIndex"/> is still -1 and has never been explicitly set.
     /// </summary>
     [TemplatePart(Name = PART_Popup, Type = typeof(Popup))]
     [TemplatePart(Name = PART_DropdownBorder, Type = typeof(System.Windows.Controls.Border))]
@@ -294,7 +296,7 @@ namespace Fluence.Wpf.Controls
         private bool IsSelectedIndexExplicitlySet()
         {
             ValueSource source = DependencyPropertyHelper.GetValueSource(this, SelectedIndexProperty);
-            return source.BaseValueSource != BaseValueSource.Default;
+            return source.BaseValueSource is not BaseValueSource.Default;
         }
 
         private void TryAutoSelectFirstItem()

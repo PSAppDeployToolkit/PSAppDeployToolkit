@@ -26,13 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Automation;
 using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Shapes;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfGrid = System.Windows.Controls.Grid;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -79,13 +79,13 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfTextBlock? initialsText = FindVisualChildByName<WpfTextBlock>(pp, "PART_InitialsText");
+                System.Windows.Controls.TextBlock? initialsText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText");
                 Assert.IsNotNull(initialsText, "PART_InitialsText must be present.");
 
                 Ellipse? imageEllipse = FindVisualChildByName<Ellipse>(pp, "PART_ImageEllipse");
                 Assert.IsNotNull(imageEllipse, "PART_ImageEllipse must be present.");
 
-                WpfGrid? badgeGrid = FindVisualChildByName<WpfGrid>(pp, "PART_BadgeGrid");
+                System.Windows.Controls.Grid? badgeGrid = FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid");
                 Assert.IsNotNull(badgeGrid, "PART_BadgeGrid must be present.");
 
                 w.Close();
@@ -106,7 +106,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfTextBlock? initialsText = FindVisualChildByName<WpfTextBlock>(pp, "PART_InitialsText");
+                System.Windows.Controls.TextBlock? initialsText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText");
                 Assert.IsNotNull(initialsText);
                 // Contact glyph U+E77B
                 Assert.AreEqual("\uE77B", initialsText.Text,
@@ -130,7 +130,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfTextBlock? initialsText = FindVisualChildByName<WpfTextBlock>(pp, "PART_InitialsText");
+                System.Windows.Controls.TextBlock? initialsText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText");
                 Assert.IsNotNull(initialsText);
                 Assert.AreEqual("JD", initialsText.Text,
                     "DisplayName='John Doe' must generate initials 'JD'.");
@@ -151,7 +151,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfTextBlock? initialsText = FindVisualChildByName<WpfTextBlock>(pp, "PART_InitialsText");
+                System.Windows.Controls.TextBlock? initialsText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText");
                 Assert.IsNotNull(initialsText);
                 Assert.AreEqual("XY", initialsText.Text,
                     "Explicit Initials='XY' must override DisplayName-derived initials.");
@@ -172,7 +172,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfTextBlock? initialsText = FindVisualChildByName<WpfTextBlock>(pp, "PART_InitialsText");
+                System.Windows.Controls.TextBlock? initialsText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText");
                 Assert.IsNotNull(initialsText);
                 Assert.AreEqual("\uE716", initialsText.Text,
                     "IsGroup=true must show people glyph U+E716 per WinUI 3 PersonPicture.");
@@ -193,12 +193,12 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfGrid? badgeGrid = FindVisualChildByName<WpfGrid>(pp, "PART_BadgeGrid");
+                System.Windows.Controls.Grid? badgeGrid = FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid");
                 Assert.IsNotNull(badgeGrid);
                 Assert.AreEqual(Visibility.Visible, badgeGrid.Visibility,
                     "BadgeNumber > 0 must make PART_BadgeGrid Visible.");
 
-                WpfTextBlock? badgeText = FindVisualChildByName<WpfTextBlock>(pp, "PART_BadgeText");
+                System.Windows.Controls.TextBlock? badgeText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_BadgeText");
                 Assert.IsNotNull(badgeText);
                 Assert.AreEqual("3", badgeText.Text,
                     "PART_BadgeText must display the BadgeNumber.");
@@ -221,9 +221,9 @@ namespace Fluence.Wpf.Tests
                 w.UpdateLayout();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfGrid? badgeGrid = FindVisualChildByName<WpfGrid>(pp, "PART_BadgeGrid");
-                WpfBorder? badgeBackground = FindVisualChildByName<WpfBorder>(pp, "PART_BadgeBackground");
-                WpfTextBlock? badgeText = FindVisualChildByName<WpfTextBlock>(pp, "PART_BadgeText");
+                System.Windows.Controls.Grid? badgeGrid = FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid");
+                System.Windows.Controls.Border? badgeBackground = FindVisualChildByName<System.Windows.Controls.Border>(pp, "PART_BadgeBackground");
+                System.Windows.Controls.TextBlock? badgeText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_BadgeText");
                 Assert.IsNotNull(badgeGrid);
                 Assert.IsNotNull(badgeBackground);
                 Assert.IsNotNull(badgeText);
@@ -261,7 +261,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfGrid? badgeGrid = FindVisualChildByName<WpfGrid>(pp, "PART_BadgeGrid");
+                System.Windows.Controls.Grid? badgeGrid = FindVisualChildByName<System.Windows.Controls.Grid>(pp, "PART_BadgeGrid");
                 Assert.IsNotNull(badgeGrid);
                 Assert.AreEqual(Visibility.Collapsed, badgeGrid.Visibility,
                     "PART_BadgeGrid must be Collapsed when BadgeNumber=0 and BadgeGlyph=null.");
@@ -306,9 +306,116 @@ namespace Fluence.Wpf.Tests
                 ThemeTestHelpers.ApplyStandardThemeCycle();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfTextBlock? initialsText = FindVisualChildByName<WpfTextBlock>(pp, "PART_InitialsText");
+                System.Windows.Controls.TextBlock? initialsText = FindVisualChildByName<System.Windows.Controls.TextBlock>(pp, "PART_InitialsText");
                 Assert.IsNotNull(initialsText,
                     "PART_InitialsText must still be present after theme cycle.");
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void PersonPicture_AutomationPeer_IsPersonPictureAutomationPeer()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                PersonPicture pp = new() { DisplayName = "Ada Lovelace" };
+                Window w = new() { Content = pp, Width = 200, Height = 200 };
+                w.Show();
+                _ = pp.ApplyTemplate();
+                DrainDispatcher(w.Dispatcher);
+
+                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(pp);
+                _ = Assert.IsInstanceOfType<PersonPictureAutomationPeer>(peer,
+                    "PersonPicture must create a PersonPictureAutomationPeer.");
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void PersonPicture_AutomationPeer_ControlTypeIsImage()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                PersonPicture pp = new() { DisplayName = "Ada Lovelace" };
+                Window w = new() { Content = pp, Width = 200, Height = 200 };
+                w.Show();
+                _ = pp.ApplyTemplate();
+                DrainDispatcher(w.Dispatcher);
+
+                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(pp);
+                Assert.AreEqual(AutomationControlType.Image, peer.GetAutomationControlType(),
+                    "PersonPicture automation peer must report control type Image.");
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void PersonPicture_AutomationPeer_GetName_ReturnsDisplayName()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                PersonPicture pp = new() { DisplayName = "Ada Lovelace" };
+                Window w = new() { Content = pp, Width = 200, Height = 200 };
+                w.Show();
+                _ = pp.ApplyTemplate();
+                DrainDispatcher(w.Dispatcher);
+
+                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(pp);
+                Assert.AreEqual("Ada Lovelace", peer.GetName(),
+                    "GetName() must return the DisplayName when no AutomationProperties.Name is set.");
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void PersonPicture_AutomationPeer_GetName_FallsBackToInitials()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                // No DisplayName, but Initials set explicitly.
+                PersonPicture pp = new() { Initials = "AL" };
+                Window w = new() { Content = pp, Width = 200, Height = 200 };
+                w.Show();
+                _ = pp.ApplyTemplate();
+                DrainDispatcher(w.Dispatcher);
+
+                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(pp);
+                Assert.AreEqual("AL", peer.GetName(),
+                    "GetName() must fall back to Initials when DisplayName is empty.");
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void PersonPicture_AutomationPeer_ExplicitAutomationName_Wins()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                PersonPicture pp = new() { DisplayName = "Ada Lovelace" };
+                AutomationProperties.SetName(pp, "Profile picture for Ada");
+                Window w = new() { Content = pp, Width = 200, Height = 200 };
+                w.Show();
+                _ = pp.ApplyTemplate();
+                DrainDispatcher(w.Dispatcher);
+
+                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(pp);
+                Assert.AreEqual("Profile picture for Ada", peer.GetName(),
+                    "Explicit AutomationProperties.Name must take precedence over DisplayName.");
                 w.Close();
             });
         }

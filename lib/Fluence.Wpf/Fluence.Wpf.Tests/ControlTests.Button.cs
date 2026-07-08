@@ -32,7 +32,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Fluent = Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Tests
 {
@@ -92,8 +91,8 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
-                Fluent.ToolTip toolTip = new() { Content = "Save changes" };
-                Fluent.Button button = new()
+                Controls.ToolTip toolTip = new() { Content = "Save changes" };
+                Controls.Button button = new()
                 {
                     Width = 160,
                     Content = "Save",
@@ -126,11 +125,11 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window window = new();
-                Fluent.Button button = new()
+                Controls.Button button = new()
                 {
                     MinWidth = 32,
                     Padding = new Thickness(8, 4, 8, 4),
-                    Icon = new Fluent.FontIcon { Glyph = "", IconFontSize = 14 },
+                    Icon = new Controls.FontIcon { Glyph = "", IconFontSize = 14 },
                 };
 
                 try
@@ -174,9 +173,9 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
-                Fluent.Button standard = new() { Content = "Standard" };
-                Fluent.Button accent = new() { Appearance = ControlAppearance.Accent, Content = "Accent" };
-                Fluent.Button subtle = new() { Appearance = ControlAppearance.Subtle, Content = "Subtle" };
+                Controls.Button standard = new() { Content = "Standard" };
+                Controls.Button accent = new() { Appearance = ControlAppearance.Accent, Content = "Accent" };
+                Controls.Button subtle = new() { Appearance = ControlAppearance.Subtle, Content = "Subtle" };
                 StackPanel panel = new();
                 _ = panel.Children.Add(standard);
                 _ = panel.Children.Add(accent);
@@ -239,7 +238,7 @@ namespace Fluence.Wpf.Tests
             foreach (string resource in requiredStateResources)
             {
                 Assert.IsTrue(
-                    xaml.IndexOf(resource, StringComparison.Ordinal) >= 0,
+                    xaml.Contains(resource, StringComparison.Ordinal),
                     "Button template should include the WinUI state resource: " + resource);
             }
 
@@ -248,17 +247,17 @@ namespace Fluence.Wpf.Tests
                 "<Condition Property=\"IsPressed\" Value=\"True\" />",
                 "<Condition Property=\"Appearance\" Value=\"Accent\" />");
             Assert.IsFalse(
-                accentPressedBlock.IndexOf("AccentFillColorDisabledBrush", StringComparison.Ordinal) >= 0,
+                accentPressedBlock.Contains("AccentFillColorDisabledBrush", StringComparison.Ordinal),
                 "Accent pressed state must not reuse the disabled accent fill as the button Background.");
             Assert.IsFalse(
-                xaml.IndexOf("Value=\"Transparent\"", StringComparison.Ordinal) >= 0,
+                xaml.Contains("Value=\"Transparent\"", StringComparison.Ordinal),
                 "Button template should use theme resources rather than literal transparent brush values.");
         }
 
         private static void AssertDisabledAccentButtonUsesDarkTokens()
         {
             Window window = new();
-            Fluent.Button button = new()
+            Controls.Button button = new()
             {
                 Width = 100,
                 Appearance = ControlAppearance.Accent,
@@ -290,7 +289,7 @@ namespace Fluence.Wpf.Tests
         }
 
         private static void AssertButtonChromeMatchesResources(
-            Fluent.Button button,
+            Controls.Button button,
             string backgroundKey,
             string foregroundKey,
             string borderKey)

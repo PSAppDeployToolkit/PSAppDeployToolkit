@@ -93,14 +93,14 @@ namespace Fluence.Wpf.Demo.Mvvm.ViewModels
             get
             {
                 int total = _allTasks.Count; int done = _allTasks.Count(static t => t.IsCompleted);
-                return total == 0 ? "No tasks" : string.Format(CultureInfo.CurrentCulture, "{0} of {1} completed", done, total);
+                return total is 0 ? "No tasks" : string.Format(CultureInfo.CurrentCulture, "{0} of {1} completed", done, total);
             }
         }
 
         /// <summary>
         /// Progress bar value 0-100 based on completion ratio.
         /// </summary>
-        public double ProgressValue => _allTasks.Count != 0
+        public double ProgressValue => _allTasks.Count is not 0
             ? (double)_allTasks.Count(static t => t.IsCompleted) / _allTasks.Count * 100
             : 0;
 

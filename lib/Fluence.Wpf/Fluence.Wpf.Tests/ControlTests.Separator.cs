@@ -30,7 +30,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using FluenceSeparator = Fluence.Wpf.Controls.Separator;
 
 namespace Fluence.Wpf.Tests
 {
@@ -52,7 +51,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
@@ -72,7 +71,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
@@ -91,7 +90,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
@@ -115,7 +114,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceSeparator sep = new();
+                Controls.Separator sep = new();
                 Window w = new() { Content = sep, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);

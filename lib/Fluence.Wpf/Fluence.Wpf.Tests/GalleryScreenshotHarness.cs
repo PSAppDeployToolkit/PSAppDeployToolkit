@@ -36,12 +36,6 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using DemoMainWindow = Fluence.Wpf.Demo.MainWindow;
-using FluenceWindow = Fluence.Wpf.Controls.FluenceWindow;
-#if NET10_0_OR_GREATER
-using MvvmMainWindow = Fluence.Wpf.Demo.Mvvm.MainWindow;
-using MvvmMainViewModel = Fluence.Wpf.Demo.Mvvm.ViewModels.MainViewModel;
-#endif
 
 namespace Fluence.Wpf.Tests
 {
@@ -210,7 +204,7 @@ namespace Fluence.Wpf.Tests
             window.SizeToContent = SizeToContent.Manual;
             window.SetResourceReference(Control.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
 
-            if (window is FluenceWindow fluenceWindow)
+            if (window is Controls.FluenceWindow fluenceWindow)
             {
                 fluenceWindow.SystemBackdropType = BackdropType.None;
             }
@@ -251,7 +245,7 @@ namespace Fluence.Wpf.Tests
         }
 
         /// <summary>
-        /// Captures the gallery shell (<see cref="DemoMainWindow"/>) at <paramref name="route"/>
+        /// Captures the gallery shell (<see cref="Demo.MainWindow"/>) at <paramref name="route"/>
         /// with the navigation pane forced to <paramref name="paneMode"/>, writing
         /// <c>{outputName}-{themeSlug}.png</c>.
         /// </summary>
@@ -271,10 +265,10 @@ namespace Fluence.Wpf.Tests
         {
             _ = ResetApplication(theme, includeDemoSharedStyles: true);
 
-            DemoMainWindow? window = null;
+            Demo.MainWindow? window = null;
             try
             {
-                window = new DemoMainWindow();
+                window = new Demo.MainWindow();
                 PrepareCaptureWindow(window, GalleryCaptureWidth, GalleryCaptureHeight);
                 window.Show();
                 DrainDispatcher(window.Dispatcher);
@@ -282,7 +276,7 @@ namespace Fluence.Wpf.Tests
                 if (window.DemoNav is not null)
                 {
                     window.DemoNav.PaneDisplayMode = paneMode;
-                    window.DemoNav.IsPaneOpen = paneMode == NavigationViewPaneDisplayMode.Left;
+                    window.DemoNav.IsPaneOpen = paneMode is NavigationViewPaneDisplayMode.Left;
                 }
 
                 window.NavigateTo(route);
@@ -375,7 +369,7 @@ namespace Fluence.Wpf.Tests
         }
 
 #if NET10_0_OR_GREATER
-        private static void AddScreenshotTask(MvvmMainViewModel viewModel, string title, bool isCompleted)
+        private static void AddScreenshotTask(Demo.Mvvm.ViewModels.MainViewModel viewModel, string title, bool isCompleted)
         {
             viewModel.NewTaskText = title;
             if (viewModel.AddCommand.CanExecute(parameter: null))
@@ -389,9 +383,9 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        private static void SeedMvvmScreenshotData(MvvmMainWindow window)
+        private static void SeedMvvmScreenshotData(Demo.Mvvm.MainWindow window)
         {
-            if (window.DataContext is not MvvmMainViewModel viewModel)
+            if (window.DataContext is not Demo.Mvvm.ViewModels.MainViewModel viewModel)
             {
                 return;
             }
@@ -406,10 +400,10 @@ namespace Fluence.Wpf.Tests
         {
             _ = ResetApplication(theme, includeDemoSharedStyles: false);
 
-            MvvmMainWindow? window = null;
+            Demo.Mvvm.MainWindow? window = null;
             try
             {
-                window = new MvvmMainWindow();
+                window = new Demo.Mvvm.MainWindow();
                 SeedMvvmScreenshotData(window);
                 PrepareCaptureWindow(window, AppCaptureWidth, AppCaptureHeight);
                 string fullPath = Path.Combine(outputDirectory, Invariant("mvvm-{0}.png", themeSlug));

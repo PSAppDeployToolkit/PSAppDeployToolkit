@@ -205,12 +205,12 @@ namespace Fluence.Wpf.Tests
 
                 Uri typographySource = dictionaries[1].Source;
                 Assert.IsNotNull(typographySource, "Typography slot [1] should have a Source URI.");
-                Assert.IsTrue(typographySource.OriginalString.IndexOf("Typography", StringComparison.OrdinalIgnoreCase) >= 0,
+                Assert.IsTrue(typographySource.OriginalString.Contains("Typography", StringComparison.OrdinalIgnoreCase),
                     "Slot [1] Source should be Typography.xaml, but was " + typographySource.OriginalString);
 
                 Uri genericSource = dictionaries[2].Source;
                 Assert.IsNotNull(genericSource, "Generic slot [2] should have a Source URI.");
-                Assert.IsTrue(genericSource.OriginalString.IndexOf("Generic", StringComparison.OrdinalIgnoreCase) >= 0,
+                Assert.IsTrue(genericSource.OriginalString.Contains("Generic", StringComparison.OrdinalIgnoreCase),
                     "Slot [2] Source should be Generic.xaml, but was " + genericSource.OriginalString);
             });
         }

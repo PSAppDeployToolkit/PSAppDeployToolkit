@@ -29,13 +29,13 @@
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.8.0</VersionPrefix>
+    <VersionPrefix>0.8.9</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
-    <PackageVersion>0.8.0-preview</PackageVersion>
-    <AssemblyVersion>0.8.0.0</AssemblyVersion>
-    <FileVersion>0.8.0.0</FileVersion>
-    <InformationalVersion>0.8.0-preview</InformationalVersion>
-    <BuildDate>2026-06-10</BuildDate>
+    <PackageVersion>0.8.9-preview</PackageVersion>
+    <AssemblyVersion>0.8.9.0</AssemblyVersion>
+    <FileVersion>0.8.9.0</FileVersion>
+    <InformationalVersion>0.8.9-preview</InformationalVersion>
+    <BuildDate>2026-07-07</BuildDate>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
 
@@ -83,6 +83,9 @@
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
+  <PropertyGroup>
+    <MeziantouAnalysisMode>all-errors</MeziantouAnalysisMode>
+  </PropertyGroup>
 
   <!-- Common embedded resource for license -->
   <ItemGroup>

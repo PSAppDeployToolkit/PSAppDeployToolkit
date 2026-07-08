@@ -425,7 +425,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void RemoveListItem_Click(object sender, RoutedEventArgs e)
         {
-            if (EmptyStateListView is null || EmptyStateListView.Items.Count == 0)
+            if (EmptyStateListView is null || EmptyStateListView.Items.Count is 0)
             {
                 return;
             }

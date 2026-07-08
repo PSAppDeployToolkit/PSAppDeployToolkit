@@ -67,6 +67,7 @@
     <Color x:Key="LayerOnMicaBaseAltFillColorTertiary">#FFF9F9F9</Color>
     <Color x:Key="LayerOnMicaBaseAltFillColorTransparent">#00000000</Color>
     <Color x:Key="NavigationViewContentBackground">#80FFFFFF</Color>
+    <Color x:Key="NavigationViewContentSeparator">#29000000</Color>
     <Color x:Key="SmokeFillColorDefault">#4D000000</Color>
     <Color x:Key="SolidBackgroundFillColorBase">#FFF3F3F3</Color>
     <Color x:Key="SolidBackgroundFillColorBaseAlt">#FFDADADA</Color>
@@ -189,6 +190,7 @@
     <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTertiaryBrush" Color="#FFF9F9F9" />
     <SolidColorBrush x:Key="LayerOnMicaBaseAltFillColorTransparentBrush" Color="#00000000" />
     <SolidColorBrush x:Key="NavigationViewContentBackgroundBrush" Color="#80FFFFFF" />
+    <SolidColorBrush x:Key="NavigationViewContentSeparatorBrush" Color="#29000000" />
     <SolidColorBrush x:Key="NavigationViewSelectionIndicatorBrush" Color="#FF0078D4" />
     <SolidColorBrush x:Key="ScrollBarTrackFillBrush" Color="#F0F9F9F9" />
     <SolidColorBrush x:Key="SmokeFillColorDefaultBrush" Color="#4D000000" />

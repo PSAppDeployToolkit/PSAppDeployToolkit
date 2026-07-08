@@ -29,9 +29,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Input;
-using FluentTreeView = Fluence.Wpf.Controls.TreeView;
-using FluentTreeViewItem = Fluence.Wpf.Controls.TreeViewItem;
-using WpfCheckBox = System.Windows.Controls.CheckBox;
 
 namespace Fluence.Wpf.Tests
 {
@@ -47,7 +44,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeView treeView = new();
+                    Controls.TreeView treeView = new();
 
                     Assert.AreEqual(TreeViewSelectionMode.Single, treeView.SelectionMode);
                     Assert.IsNotNull(treeView.SelectedItems, "SelectedItems should be a live collection.");
@@ -74,9 +71,9 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem first = new() { Header = "First" };
-                    FluentTreeViewItem second = new() { Header = "Second" };
-                    FluentTreeView treeView = new()
+                    Controls.TreeViewItem first = new() { Header = "First" };
+                    Controls.TreeViewItem second = new() { Header = "Second" };
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -89,7 +86,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfCheckBox? firstCheckBox = FindVisualChildByName<WpfCheckBox>(first, "SelectionCheckBox");
+                    System.Windows.Controls.CheckBox? firstCheckBox = FindVisualChildByName<System.Windows.Controls.CheckBox>(first, "SelectionCheckBox");
                     Assert.IsNotNull(firstCheckBox, "Multiple-selection TreeViewItem template should expose a checkbox.");
                     Assert.AreEqual(Visibility.Visible, firstCheckBox.Visibility,
                         "TreeViewItem checkbox should be visible when the owning TreeView is in Multiple mode.");
@@ -133,8 +130,8 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem item = new() { Header = "Contracts" };
-                    FluentTreeView treeView = new()
+                    Controls.TreeViewItem item = new() { Header = "Contracts" };
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -150,8 +147,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FluentTreeViewItem keyboardItem =
-                        treeView.ItemContainerGenerator.ContainerFromItem(item) as FluentTreeViewItem ?? item;
+                    Controls.TreeViewItem keyboardItem =
+                        treeView.ItemContainerGenerator.ContainerFromItem(item) as Controls.TreeViewItem ?? item;
 
                     _ = keyboardItem.ApplyTemplate();
                     _ = keyboardItem.Focus();
@@ -196,8 +193,8 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem item = new() { Header = "Leaf" };
-                    FluentTreeView treeView = new()
+                    Controls.TreeViewItem item = new() { Header = "Leaf" };
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };
@@ -216,7 +213,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfCheckBox? checkBox = FindVisualChildByName<WpfCheckBox>(item, "SelectionCheckBox");
+                    System.Windows.Controls.CheckBox? checkBox = FindVisualChildByName<System.Windows.Controls.CheckBox>(item, "SelectionCheckBox");
                     Assert.IsNotNull(checkBox, "TreeViewItem template should keep the checkbox part available.");
                     Assert.AreEqual(Visibility.Collapsed, checkBox.Visibility,
                         "TreeViewItem checkbox should be hidden when selection is disabled.");
@@ -247,15 +244,15 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    FluentTreeViewItem parent = new() { Header = "Documents", IsExpanded = true };
-                    FluentTreeViewItem first = new() { Header = "Contracts" };
-                    FluentTreeViewItem second = new() { Header = "Invoices" };
-                    FluentTreeViewItem third = new() { Header = "Receipts" };
+                    Controls.TreeViewItem parent = new() { Header = "Documents", IsExpanded = true };
+                    Controls.TreeViewItem first = new() { Header = "Contracts" };
+                    Controls.TreeViewItem second = new() { Header = "Invoices" };
+                    Controls.TreeViewItem third = new() { Header = "Receipts" };
                     _ = parent.Items.Add(first);
                     _ = parent.Items.Add(second);
                     _ = parent.Items.Add(third);
 
-                    FluentTreeView treeView = new()
+                    Controls.TreeView treeView = new()
                     {
                         SelectionMode = TreeViewSelectionMode.Multiple,
                     };

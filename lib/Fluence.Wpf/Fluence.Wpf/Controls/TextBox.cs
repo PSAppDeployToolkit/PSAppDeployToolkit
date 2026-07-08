@@ -28,6 +28,8 @@
 
 using System.Globalization;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 
 namespace Fluence.Wpf.Controls
@@ -62,6 +64,9 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(TextBox),
                 new FrameworkPropertyMetadata(typeof(TextBox)));
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(TextBox),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Assertive));
         }
 
         /// <summary>
@@ -297,6 +302,28 @@ namespace Fluence.Wpf.Controls
             counter.Text = string.Format(CultureInfo.CurrentCulture, "{0}/{1}", Text?.Length ?? 0, MaxLength);
         }
 
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on the helper-text element so
+        /// Narrator announces the current validation message without moving focus. The helper text
+        /// (whose <see cref="System.Windows.Controls.TextBlock.Text"/> is the message and which declares
+        /// <see cref="AutomationProperties.LiveSettingProperty"/> in the template) is the correct target;
+        /// the control falls back to its own peer only when the part is unavailable. Uses only
+        /// net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            UIElement target = GetTemplateChild(PART_HelperText) as System.Windows.Controls.TextBlock ?? (UIElement)this;
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(target) ?? UIElementAutomationPeer.CreatePeerForElement(target);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+
         private void UpdateHelperText()
         {
             System.Windows.Controls.TextBlock? icon = GetTemplateChild(PART_ValidationIcon) as System.Windows.Controls.TextBlock;
@@ -305,7 +332,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (ValidationState != ValidationState.None)
+            if (ValidationState is not ValidationState.None)
             {
                 string message = !string.IsNullOrWhiteSpace(ValidationMessage) ? ValidationMessage : HelperText;
                 helper.Text = message;
@@ -337,13 +364,29 @@ namespace Fluence.Wpf.Controls
                 switch (ValidationState)
                 {
                     case ValidationState.Success:
+                        // Success clears the error/warning text, so reset the announce gate: a
+                        // later transition back to Warning/Error must re-announce even if the
+                        // message is identical to the one announced before this success.
+                        _lastAnnouncedState = ValidationState.None;
+                        _lastAnnouncedMessage = string.Empty;
+                        AutomationProperties.SetHelpText(this, string.Empty);
                         helper.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "SystemFillColorSuccessBrush");
                         break;
                     case ValidationState.Warning:
+                        AutomationProperties.SetHelpText(this, message);
                         helper.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "SystemFillColorCautionBrush");
+                        if (ShouldAnnounce(ValidationState.Warning, message))
+                        {
+                            AnnounceLiveRegion();
+                        }
                         break;
                     case ValidationState.Error:
+                        AutomationProperties.SetHelpText(this, message);
                         helper.SetResourceReference(System.Windows.Controls.TextBlock.ForegroundProperty, "SystemFillColorCriticalBrush");
+                        if (ShouldAnnounce(ValidationState.Error, message))
+                        {
+                            AnnounceLiveRegion();
+                        }
                         break;
                     case ValidationState.None:
                         break;
@@ -352,6 +395,11 @@ namespace Fluence.Wpf.Controls
                 }
                 return;
             }
+            // Leaving an active validation state: reset tracked announce state so a subsequent
+            // transition back to Warning/Error fires a fresh announcement.
+            _lastAnnouncedState = ValidationState.None;
+            _lastAnnouncedMessage = string.Empty;
+            AutomationProperties.SetHelpText(this, string.Empty);
             _ = icon?.Visibility = Visibility.Collapsed;
             helper.Text = HelperText;
             helper.Visibility = string.IsNullOrWhiteSpace(HelperText) ? Visibility.Collapsed : Visibility.Visible;
@@ -362,5 +410,38 @@ namespace Fluence.Wpf.Controls
         /// Represents a reference to the clear button control.
         /// </summary>
         private System.Windows.Controls.Button? _clearButton;
+
+        /// <summary>
+        /// Tracks the last validation state for which a live-region announcement was raised,
+        /// so repeated calls to <see cref="UpdateHelperText"/> while the control stays in the
+        /// same state do not re-announce on every keystroke.
+        /// </summary>
+        private ValidationState _lastAnnouncedState = ValidationState.None;
+
+        /// <summary>
+        /// Tracks the last validation message for which a live-region announcement was raised.
+        /// An announcement is re-raised when the message changes even if the state did not.
+        /// </summary>
+        private string _lastAnnouncedMessage = string.Empty;
+
+        /// <summary>
+        /// Returns <see langword="true"/> when the announce should fire and, if so, updates
+        /// the tracked state so subsequent identical calls are suppressed.
+        /// A transition is considered real when either the <see cref="ValidationState"/> or the
+        /// effective <paramref name="message"/> differs from the last announced combination.
+        /// </summary>
+        /// <param name="state">The current validation state that would trigger an announcement.</param>
+        /// <param name="message">The effective message text that would be announced.</param>
+        private bool ShouldAnnounce(ValidationState state, string message)
+        {
+            if (state == _lastAnnouncedState && string.Equals(message, _lastAnnouncedMessage, System.StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            _lastAnnouncedState = state;
+            _lastAnnouncedMessage = message;
+            return true;
+        }
     }
 }

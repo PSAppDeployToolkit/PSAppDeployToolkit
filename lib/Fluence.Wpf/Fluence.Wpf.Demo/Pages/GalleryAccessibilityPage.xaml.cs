@@ -26,15 +26,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
     /// <summary>
-    /// Gallery page demonstrating accessibility features: focus rings, tab order, HC brush mapping, and RTL layout.
+    /// Gallery page demonstrating accessibility features: focus rings, tab order, HC brush mapping, RTL layout, live regions, and keyboard operability.
     /// </summary>
     public partial class GalleryAccessibilityPage : UserControl
     {
@@ -421,6 +425,123 @@ namespace Fluence.Wpf.Demo.Pages
                                                    "    </StackPanel>\n" +
                                                    "</UserControl>\n";
 
+        private const string LiveRegionXamlSource = "<UserControl\n" +
+                                                   "    x:Class=\"Fluence.Wpf.Demo.Pages.Accessibility.LiveRegion\"\n" +
+                                                   "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                   "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                   "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\"\n" +
+                                                   "    xmlns:uicore=\"clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf\">\n" +
+                                                   "    <StackPanel>\n" +
+                                                   "        <StackPanel Margin=\"0,0,0,12\" Orientation=\"Horizontal\">\n" +
+                                                   "            <ui:Button\n" +
+                                                   "                x:Name=\"LiveRegionInfoButton\"\n" +
+                                                   "                Margin=\"0,0,8,0\"\n" +
+                                                   "                Appearance=\"Accent\"\n" +
+                                                   "                AutomationProperties.Name=\"Show informational announcement\"\n" +
+                                                   "                Click=\"LiveRegionInfoButton_Click\"\n" +
+                                                   "                Content=\"Show InfoBar\" />\n" +
+                                                   "            <ui:Button\n" +
+                                                   "                x:Name=\"LiveRegionDismissButton\"\n" +
+                                                   "                AutomationProperties.Name=\"Dismiss announcement\"\n" +
+                                                   "                Click=\"LiveRegionDismissButton_Click\"\n" +
+                                                   "                Content=\"Dismiss\" />\n" +
+                                                   "        </StackPanel>\n" +
+                                                   "        <ui:InfoBar\n" +
+                                                   "            x:Name=\"LiveRegionInfoBar\"\n" +
+                                                   "            Title=\"Live region demo\"\n" +
+                                                   "            IsClosable=\"True\"\n" +
+                                                   "            IsOpen=\"False\"\n" +
+                                                   "            Message=\"This message was announced by a live region when the InfoBar opened.\"\n" +
+                                                   "            Severity=\"{x:Static uicore:InfoBarSeverity.Informational}\" />\n" +
+                                                   "        <ui:TextBox\n" +
+                                                   "            x:Name=\"LiveRegionValidationTextBox\"\n" +
+                                                   "            Width=\"200\"\n" +
+                                                   "            Margin=\"0,16,0,0\"\n" +
+                                                   "            Header=\"Email\"\n" +
+                                                   "            PlaceholderText=\"Enter an email address\"\n" +
+                                                   "            TextChanged=\"LiveRegionValidation_TextChanged\" />\n" +
+                                                   "        <TextBlock\n" +
+                                                   "            x:Name=\"LiveRegionValidationStatus\"\n" +
+                                                   "            Foreground=\"{DynamicResource SystemFillColorCriticalBrush}\"\n" +
+                                                   "            Text=\"\" />\n" +
+                                                   "    </StackPanel>\n" +
+                                                   "</UserControl>\n";
+
+        private const string LiveRegionCSharpSource = "using System.Windows;\n" +
+                                                      "using System.Windows.Controls;\n" +
+                                                      "\n" +
+                                                      "namespace Fluence.Wpf.Demo.Pages.Accessibility\n" +
+                                                      "{\n" +
+                                                      "    // InfoBar.IsOpen = true causes InfoBarAutomationPeer to call\n" +
+                                                      "    // RaiseAutomationEvent(AutomationEvents.LiveRegionChanged) because\n" +
+                                                      "    // AutomationProperties.LiveSetting=Polite is set in InfoBar.xaml.\n" +
+                                                      "    // Screen readers (Narrator, NVDA, JAWS) then read the peer name.\n" +
+                                                      "    public partial class LiveRegion : UserControl\n" +
+                                                      "    {\n" +
+                                                      "        public LiveRegion()\n" +
+                                                      "        {\n" +
+                                                      "            InitializeComponent();\n" +
+                                                      "        }\n" +
+                                                      "\n" +
+                                                      "        private void LiveRegionInfoButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                      "            => LiveRegionInfoBar.IsOpen = true;\n" +
+                                                      "\n" +
+                                                      "        private void LiveRegionDismissButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                      "            => LiveRegionInfoBar.IsOpen = false;\n" +
+                                                      "\n" +
+                                                      "        private void LiveRegionValidation_TextChanged(object sender, TextChangedEventArgs e)\n" +
+                                                      "        {\n" +
+                                                      "            bool isValid = LiveRegionValidationTextBox.Text.Contains(\"@\", StringComparison.Ordinal);\n" +
+                                                      "            LiveRegionValidationStatus.Text = isValid ? string.Empty : \"Must contain @\";\n" +
+                                                      "        }\n" +
+                                                      "    }\n" +
+                                                      "}\n";
+
+        private const string RatingKeyboardXamlSource = "<UserControl\n" +
+                                                        "    x:Class=\"Fluence.Wpf.Demo.Pages.Accessibility.RatingKeyboard\"\n" +
+                                                        "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                        "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                        "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                        "    <StackPanel>\n" +
+                                                        "        <ui:RatingControl\n" +
+                                                        "            x:Name=\"A11yRatingControl\"\n" +
+                                                        "            Margin=\"0,0,0,8\"\n" +
+                                                        "            AutomationProperties.Name=\"Keyboard rating demo\"\n" +
+                                                        "            Caption=\"Use arrow keys to change the rating\"\n" +
+                                                        "            MaxRating=\"5\"\n" +
+                                                        "            Value=\"3\" />\n" +
+                                                        "        <TextBlock x:Name=\"A11yRatingStatusText\" Text=\"Current rating: 3 of 5\" />\n" +
+                                                        "    </StackPanel>\n" +
+                                                        "</UserControl>\n";
+
+        private const string RatingKeyboardCSharpSource = "using System.ComponentModel;\n" +
+                                                          "using System.Windows;\n" +
+                                                          "using System.Windows.Controls;\n" +
+                                                          "using Fluence.Wpf.Controls;\n" +
+                                                          "\n" +
+                                                          "namespace Fluence.Wpf.Demo.Pages.Accessibility\n" +
+                                                          "{\n" +
+                                                          "    // RatingControl.Value is a DP; subscribe via DependencyPropertyDescriptor.\n" +
+                                                          "    // RatingControlAutomationPeer exposes the RangeValue pattern so\n" +
+                                                          "    // Narrator announces the new value without any extra code here.\n" +
+                                                          "    public partial class RatingKeyboard : UserControl\n" +
+                                                          "    {\n" +
+                                                          "        public RatingKeyboard()\n" +
+                                                          "        {\n" +
+                                                          "            InitializeComponent();\n" +
+                                                          "            DependencyPropertyDescriptor\n" +
+                                                          "                .FromProperty(RatingControl.ValueProperty, typeof(RatingControl))\n" +
+                                                          "                .AddValueChanged(A11yRatingControl, OnRatingValueChanged);\n" +
+                                                          "        }\n" +
+                                                          "\n" +
+                                                          "        private void OnRatingValueChanged(object sender, EventArgs e)\n" +
+                                                          "        {\n" +
+                                                          "            int v = (int)A11yRatingControl.Value;\n" +
+                                                          "            A11yRatingStatusText.Text = $\"Current rating: {v} of {A11yRatingControl.MaxRating}\";\n" +
+                                                          "        }\n" +
+                                                          "    }\n" +
+                                                          "}\n";
+
         private const string RtlLayoutCSharpSource = "using System.Windows;\n" +
                                                      "using System.Windows.Controls;\n" +
                                                      "\n" +
@@ -471,15 +592,51 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(1, FocusAndTabOrderXamlSource, FocusAndTabOrderCSharpSource),
                 new DemoSampleSource(2, HighContrastMappingXamlSource, HighContrastMappingCSharpSource),
                 new DemoSampleSource(3, AutomationPropertiesXamlSource, AutomationPropertiesCSharpSource),
-                new DemoSampleSource(4, RtlLayoutXamlSource, RtlLayoutCSharpSource));
+                new DemoSampleSource(4, RtlLayoutXamlSource, RtlLayoutCSharpSource),
+                new DemoSampleSource(5, LiveRegionXamlSource, LiveRegionCSharpSource),
+                new DemoSampleSource(6, RatingKeyboardXamlSource, RatingKeyboardCSharpSource));
 
             Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnLoaded;
             PopulateHcTable();
+            SubscribeRatingValueChanged();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            Unloaded -= OnUnloaded;
+            UnsubscribeRatingValueChanged();
+        }
+
+        private void SubscribeRatingValueChanged()
+        {
+            if (A11yRatingControl is null)
+            {
+                return;
+            }
+
+            DependencyPropertyDescriptor descriptor = DependencyPropertyDescriptor.FromProperty(
+                RatingControl.ValueProperty,
+                typeof(RatingControl));
+            descriptor.AddValueChanged(A11yRatingControl, A11yRatingControl_ValueChanged);
+        }
+
+        private void UnsubscribeRatingValueChanged()
+        {
+            if (A11yRatingControl is null)
+            {
+                return;
+            }
+
+            DependencyPropertyDescriptor descriptor = DependencyPropertyDescriptor.FromProperty(
+                RatingControl.ValueProperty,
+                typeof(RatingControl));
+            descriptor.RemoveValueChanged(A11yRatingControl, A11yRatingControl_ValueChanged);
         }
 
         private void PopulateHcTable()
@@ -511,9 +668,55 @@ namespace Fluence.Wpf.Demo.Pages
                 return;
             }
 
-            RtlDemoCard.FlowDirection = RtlToggle.IsChecked == true
+            RtlDemoCard.FlowDirection = RtlToggle.IsChecked is true
                 ? FlowDirection.RightToLeft
                 : FlowDirection.LeftToRight;
+        }
+
+        private void LiveRegionInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (LiveRegionInfoBar is null)
+            {
+                return;
+            }
+
+            LiveRegionInfoBar.IsOpen = true;
+        }
+
+        private void LiveRegionDismissButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (LiveRegionInfoBar is null)
+            {
+                return;
+            }
+
+            LiveRegionInfoBar.IsOpen = false;
+        }
+
+        private void LiveRegionValidation_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (LiveRegionValidationTextBox is null || LiveRegionValidationStatus is null)
+            {
+                return;
+            }
+
+            bool isValid = LiveRegionValidationTextBox.Text.Contains("@", StringComparison.Ordinal);
+            LiveRegionValidationStatus.Text = isValid ? string.Empty : "Must contain @";
+        }
+
+        private void A11yRatingControl_ValueChanged(object? sender, EventArgs e)
+        {
+            if (A11yRatingStatusText is null || A11yRatingControl is null)
+            {
+                return;
+            }
+
+            int value = (int)A11yRatingControl.Value;
+            A11yRatingStatusText.Text = string.Format(
+                CultureInfo.CurrentCulture,
+                "Current rating: {0} of {1}",
+                value,
+                A11yRatingControl.MaxRating);
         }
     }
 }

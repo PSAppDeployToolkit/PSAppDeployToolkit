@@ -27,6 +27,7 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Automation.Peers;
@@ -555,6 +556,505 @@ namespace Fluence.Wpf.Tests
                 Assert.IsNotNull(app?.TryFindResource("ControlFillColorDefaultBrush"),
                     "ControlFillColorDefaultBrush (hex text box fill) must resolve after a full theme cycle.");
             });
+        }
+
+        // Boilerplate runner for the option-surface tests: constructs the picker on the
+        // STA thread, shows it, asserts the template applied, and hands both to verify.
+        private static void RunColorPickerOptionTest(Func<Controls.ColorPicker> createPicker, Action<Controls.ColorPicker, ControlTemplate, Window> verify)
+        {
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 520, Height = 860 };
+                Controls.ColorPicker picker = createPicker();
+
+                try
+                {
+                    window.Content = picker;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    ControlTemplate? template = picker.Template;
+                    Assert.IsNotNull(template, "ColorPicker must receive its themed template.");
+                    verify(picker, template, window);
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        private static void RaiseEnterKey(TextBox textBox)
+        {
+            PresentationSource? source = PresentationSource.FromVisual(textBox);
+            Assert.IsNotNull(source, "The text box must have a presentation source once the window is shown.");
+            textBox.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Enter)
+            {
+                RoutedEvent = Keyboard.KeyDownEvent,
+            });
+        }
+
+        private static T GetTemplateElement<T>(ControlTemplate template, Controls.ColorPicker picker, string name) where T : class
+        {
+            T? element = template.FindName(name, picker) as T;
+            Assert.IsNotNull(element, name + " must be present in the default template.");
+            return element;
+        }
+
+        [TestMethod]
+        public void ColorPicker_OptionSurfaceDefaults_MatchWinUi()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, _, _) =>
+                {
+                    Assert.IsTrue(picker.IsColorPreviewVisible, "IsColorPreviewVisible must default to true.");
+                    Assert.IsTrue(picker.IsColorSliderVisible, "IsColorSliderVisible must default to true.");
+                    Assert.IsTrue(picker.IsHexInputVisible, "IsHexInputVisible must default to true.");
+                    Assert.IsFalse(picker.IsMoreButtonVisible, "IsMoreButtonVisible must default to false.");
+                    Assert.IsTrue(picker.IsAlphaSliderVisible, "IsAlphaSliderVisible must default to true.");
+                    Assert.IsTrue(picker.IsAlphaTextInputVisible, "IsAlphaTextInputVisible must default to true.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_IsColorPreviewVisible_TogglesSwatchSection()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    FrameworkElement swatchSection = GetTemplateElement<FrameworkElement>(template, picker, "SwatchSection");
+                    Assert.AreEqual(Visibility.Visible, swatchSection.Visibility);
+
+                    picker.IsColorPreviewVisible = false;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.AreEqual(Visibility.Collapsed, swatchSection.Visibility,
+                        "Turning IsColorPreviewVisible off must collapse the swatch row.");
+
+                    picker.IsColorPreviewVisible = true;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.AreEqual(Visibility.Visible, swatchSection.Visibility);
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_IsColorSliderVisible_TogglesHueSection()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    FrameworkElement hueSection = GetTemplateElement<FrameworkElement>(template, picker, "HueSection");
+                    FrameworkElement spectrumSection = GetTemplateElement<FrameworkElement>(template, picker, "SpectrumSection");
+                    TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+
+                    picker.IsColorSliderVisible = false;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Visibility.Collapsed, hueSection.Visibility,
+                        "Turning IsColorSliderVisible off must collapse the third-dimension hue slider row.");
+                    Assert.AreEqual(Visibility.Visible, spectrumSection.Visibility,
+                        "Hiding the color slider must not affect the spectrum.");
+                    Assert.AreEqual(Visibility.Visible, hexTextBox.Visibility,
+                        "Hiding the color slider must not affect the hex input.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_IsHexInputVisible_TogglesHexTextBoxOnly()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+                    FrameworkElement representationComboBox = GetTemplateElement<FrameworkElement>(template, picker, "ColorRepresentationComboBox");
+                    FrameworkElement channelPanel = GetTemplateElement<FrameworkElement>(template, picker, "ColorChannelTextInputPanel");
+
+                    picker.IsHexInputVisible = false;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Visibility.Collapsed, hexTextBox.Visibility,
+                        "Turning IsHexInputVisible off must collapse the hex box.");
+                    Assert.AreEqual(Visibility.Visible, representationComboBox.Visibility,
+                        "Hiding the hex input must not affect the representation selector.");
+                    Assert.AreEqual(Visibility.Visible, channelPanel.Visibility,
+                        "Hiding the hex input must not affect the channel inputs.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_AlphaVisibilityFlags_AndWithIsAlphaEnabled()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                (picker, template, window) =>
+                {
+                    FrameworkElement alphaSection = GetTemplateElement<FrameworkElement>(template, picker, "AlphaSection");
+                    FrameworkElement alphaInputPanel = GetTemplateElement<FrameworkElement>(template, picker, "AlphaInputPanel");
+
+                    Assert.AreEqual(Visibility.Visible, alphaSection.Visibility, "Alpha enabled: the slider row shows.");
+                    Assert.AreEqual(Visibility.Visible, alphaInputPanel.Visibility, "Alpha enabled: the alpha input shows.");
+
+                    picker.IsAlphaSliderVisible = false;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.AreEqual(Visibility.Collapsed, alphaSection.Visibility,
+                        "IsAlphaSliderVisible=false must collapse the slider row even while alpha is enabled.");
+                    Assert.AreEqual(Visibility.Visible, alphaInputPanel.Visibility,
+                        "IsAlphaSliderVisible must not affect the alpha text input.");
+
+                    picker.IsAlphaSliderVisible = true;
+                    picker.IsAlphaTextInputVisible = false;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.AreEqual(Visibility.Visible, alphaSection.Visibility,
+                        "IsAlphaTextInputVisible must not affect the alpha slider row.");
+                    Assert.AreEqual(Visibility.Collapsed, alphaInputPanel.Visibility,
+                        "IsAlphaTextInputVisible=false must collapse the alpha text input.");
+
+                    picker.IsAlphaTextInputVisible = true;
+                    picker.IsAlphaEnabled = false;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.AreEqual(Visibility.Collapsed, alphaSection.Visibility,
+                        "Disabling alpha must collapse the slider row regardless of the visibility flags.");
+                    Assert.AreEqual(Visibility.Collapsed, alphaInputPanel.Visibility,
+                        "Disabling alpha must collapse the alpha text input regardless of the visibility flags.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_MoreButton_DefaultCollapsedWithTextEntryVisible()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, _) =>
+                {
+                    FrameworkElement moreButton = GetTemplateElement<FrameworkElement>(template, picker, "MoreButton");
+                    FrameworkElement textEntryGrid = GetTemplateElement<FrameworkElement>(template, picker, "TextEntryGrid");
+
+                    Assert.AreEqual(Visibility.Collapsed, moreButton.Visibility,
+                        "With IsMoreButtonVisible false (the default) no More toggle is shown.");
+                    Assert.AreEqual(Visibility.Visible, textEntryGrid.Visibility,
+                        "With IsMoreButtonVisible false the text-entry area is always visible.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_MoreButton_TogglesTextEntryGridAndLabel()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker { IsMoreButtonVisible = true },
+                (picker, template, window) =>
+                {
+                    Controls.ToggleButton moreButton = GetTemplateElement<Controls.ToggleButton>(template, picker, "MoreButton");
+                    FrameworkElement textEntryGrid = GetTemplateElement<FrameworkElement>(template, picker, "TextEntryGrid");
+                    TextBlock moreButtonLabel = GetTemplateElement<TextBlock>(template, picker, "MoreButtonLabel");
+
+                    Assert.AreEqual(Visibility.Visible, moreButton.Visibility, "IsMoreButtonVisible must show the toggle.");
+                    Assert.AreEqual(Visibility.Collapsed, textEntryGrid.Visibility,
+                        "In More mode the text-entry grid stays collapsed until the toggle is checked.");
+                    Assert.AreEqual("More", moreButtonLabel.Text);
+
+                    moreButton.IsChecked = true;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Visibility.Visible, textEntryGrid.Visibility,
+                        "Checking the More toggle must reveal the text-entry grid.");
+                    Assert.AreEqual("Less", moreButtonLabel.Text, "The checked toggle must read Less.");
+
+                    moreButton.IsChecked = false;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Visibility.Collapsed, textEntryGrid.Visibility,
+                        "Unchecking the More toggle must collapse the text-entry grid again.");
+                    Assert.AreEqual("More", moreButtonLabel.Text);
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_ColorRepresentationComboBox_SwapsRgbAndHsvPanels()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    Controls.ComboBox representationComboBox = GetTemplateElement<Controls.ComboBox>(template, picker, "ColorRepresentationComboBox");
+                    FrameworkElement rgbPanel = GetTemplateElement<FrameworkElement>(template, picker, "RgbChannelPanel");
+                    FrameworkElement hsvPanel = GetTemplateElement<FrameworkElement>(template, picker, "HsvChannelPanel");
+
+                    Assert.AreEqual(0, representationComboBox.SelectedIndex, "The selector must default to RGB.");
+                    Assert.AreEqual(Visibility.Visible, rgbPanel.Visibility);
+                    Assert.AreEqual(Visibility.Collapsed, hsvPanel.Visibility);
+
+                    representationComboBox.SelectedIndex = 1;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Visibility.Collapsed, rgbPanel.Visibility,
+                        "Selecting HSV must collapse the RGB channel panel.");
+                    Assert.AreEqual(Visibility.Visible, hsvPanel.Visibility,
+                        "Selecting HSV must reveal the HSV channel panel.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_RgbTextEntry_CommitsLivePreservingExactRgb()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    TextBox redTextBox = GetTemplateElement<TextBox>(template, picker, "PART_RedTextBox");
+                    TextBox greenTextBox = GetTemplateElement<TextBox>(template, picker, "PART_GreenTextBox");
+                    TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+
+                    Assert.AreEqual("255", redTextBox.Text, "The red box must show the default color's channel.");
+                    Assert.AreEqual("0", greenTextBox.Text, "The green box must show the default color's channel.");
+
+                    redTextBox.Text = "10";
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Color.FromArgb(255, 10, 0, 0), picker.Color,
+                        "A red channel edit must commit live with the typed value preserved exactly, no Enter needed.");
+                    Assert.AreEqual("10", redTextBox.Text,
+                        "The live commit must not rewrite the box the user is typing in.");
+                    Assert.AreEqual("#0A0000", hexTextBox.Text, "The hex box must follow the live channel commit.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_HsvTextEntry_GoesThroughHsvModelWithoutQuantizingSiblings()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(template, picker, "PART_SpectrumArea");
+                    TextBox hueTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HueTextBox");
+                    RangeBase hueSlider = GetTemplateElement<RangeBase>(template, picker, "PART_HueSlider");
+
+                    // Park saturation on a fractional value the integer display would
+                    // quantize away (0.503 displays as 50).
+                    const double fractionalSaturation = 0.503;
+                    picker.ApplySpectrumPoint(new Point(spectrumArea.ActualWidth * fractionalSaturation, 0));
+                    DrainDispatcher(window.Dispatcher);
+
+                    hueTextBox.Text = "240";
+                    DrainDispatcher(window.Dispatcher);
+
+                    Color expected = Helpers.HsvColorHelper.WithAlpha(
+                        Helpers.HsvColorHelper.HsvToRgb(240, fractionalSaturation, 1.0), 255);
+                    Color quantized = Helpers.HsvColorHelper.WithAlpha(
+                        Helpers.HsvColorHelper.HsvToRgb(240, 0.50, 1.0), 255);
+
+                    Assert.AreEqual(expected, picker.Color,
+                        "A hue text edit must replace only the hue component, keeping the fractional saturation.");
+                    Assert.AreNotEqual(quantized, picker.Color,
+                        "The untouched saturation must not be quantized to the displayed integer percentage.");
+                    Assert.AreEqual(240d, hueSlider.Value, "The hue slider must follow the hue text edit.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_ChannelTextEntry_InvalidInputRestoredOnEnter()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    TextBox redTextBox = GetTemplateElement<TextBox>(template, picker, "PART_RedTextBox");
+
+                    redTextBox.Text = "999";
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Color.FromArgb(255, 255, 0, 0), picker.Color,
+                        "An out-of-range channel entry must not change the color.");
+
+                    RaiseEnterKey(redTextBox);
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual("255", redTextBox.Text,
+                        "Enter must restore invalid channel text from the current color.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_AlphaTextEntry_ParsesPercentAndNormalizes()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                (picker, template, window) =>
+                {
+                    TextBox alphaTextBox = GetTemplateElement<TextBox>(template, picker, "PART_AlphaTextBox");
+
+                    Assert.AreEqual("100%", alphaTextBox.Text, "The alpha box must display a percentage with a percent sign.");
+
+                    alphaTextBox.Text = "50";
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(128, picker.Color.A, "A 50 percent alpha entry must map to alpha byte 128.");
+
+                    RaiseEnterKey(alphaTextBox);
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual("50%", alphaTextBox.Text, "Enter must normalize the alpha text with the percent sign.");
+
+                    alphaTextBox.Text = "200";
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(128, picker.Color.A, "An out-of-range alpha entry must not change the alpha.");
+
+                    RaiseEnterKey(alphaTextBox);
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual("50%", alphaTextBox.Text, "Enter must restore invalid alpha text from the model.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_IsColorChannelTextInputVisible_CollapsesChannelPanelNotHexOrAlpha()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker { IsAlphaEnabled = true },
+                (picker, template, window) =>
+                {
+                    FrameworkElement representationComboBox = GetTemplateElement<FrameworkElement>(template, picker, "ColorRepresentationComboBox");
+                    FrameworkElement channelPanel = GetTemplateElement<FrameworkElement>(template, picker, "ColorChannelTextInputPanel");
+                    FrameworkElement alphaInputPanel = GetTemplateElement<FrameworkElement>(template, picker, "AlphaInputPanel");
+                    TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+
+                    picker.IsColorChannelTextInputVisible = false;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(Visibility.Collapsed, representationComboBox.Visibility,
+                        "Hiding the channel input must collapse the representation selector.");
+                    Assert.AreEqual(Visibility.Collapsed, channelPanel.Visibility,
+                        "Hiding the channel input must collapse the channel panel.");
+                    Assert.AreEqual(Visibility.Visible, hexTextBox.Visibility,
+                        "Hiding the channel input must leave the hex input visible (governed by IsHexInputVisible).");
+                    Assert.AreEqual(0, System.Windows.Controls.Grid.GetColumn(hexTextBox),
+                        "With the channel input hidden the hex box shifts into the freed left column, matching WinUI.");
+                    Assert.AreEqual(Visibility.Visible, alphaInputPanel.Visibility,
+                        "Hiding the channel input must leave the alpha input visible, matching WinUI.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_HexMaxLength_TracksIsAlphaEnabled()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, window) =>
+                {
+                    TextBox hexTextBox = GetTemplateElement<TextBox>(template, picker, "PART_HexTextBox");
+
+                    Assert.AreEqual(7, hexTextBox.MaxLength,
+                        "With alpha disabled the hex box must cap at seven characters (#RRGGBB).");
+
+                    picker.IsAlphaEnabled = true;
+                    DrainDispatcher(window.Dispatcher);
+
+                    Assert.AreEqual(9, hexTextBox.MaxLength,
+                        "With alpha enabled the hex box must cap at nine characters (#AARRGGBB).");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_SpectrumArea_IsFocusableTabStop()
+        {
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker(),
+                (picker, template, _) =>
+                {
+                    FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(
+                        template, picker, "PART_SpectrumArea");
+
+                    Assert.IsTrue(spectrumArea.Focusable,
+                        "PART_SpectrumArea must be Focusable so keyboard users can reach the spectrum.");
+                    Assert.IsTrue(KeyboardNavigation.GetIsTabStop(spectrumArea),
+                        "PART_SpectrumArea must be a tab stop so it is reachable via Tab.");
+                    string automationName = AutomationProperties.GetName(spectrumArea);
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(automationName),
+                        "PART_SpectrumArea must have a non-empty AutomationProperties.Name.");
+                    Assert.AreEqual("Color spectrum", automationName,
+                        "The AutomationProperties.Name on PART_SpectrumArea must be \"Color spectrum\".");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_SpectrumKeyboard_RightKeyIncreasesSaturation()
+        {
+            // Start with a mid-saturation color: FromRgb(128, 64, 64) has saturation ~0.5
+            // (Max=128, Min=64, S=(128-64)/128=0.5) so pressing Right has room to increase it.
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker { Color = Color.FromRgb(0x80, 0x40, 0x40) },
+                (picker, template, window) =>
+                {
+                    FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(
+                        template, picker, "PART_SpectrumArea");
+                    Color colorBefore = picker.Color;
+
+                    _ = spectrumArea.Focus();
+                    DrainDispatcher(window.Dispatcher);
+
+                    PresentationSource? source = PresentationSource.FromVisual(spectrumArea);
+                    Assert.IsNotNull(source,
+                        "PART_SpectrumArea must have a PresentationSource once the window is shown.");
+
+                    spectrumArea.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Right)
+                    {
+                        RoutedEvent = Keyboard.KeyDownEvent,
+                    });
+                    DrainDispatcher(window.Dispatcher);
+
+                    Color colorAfter = picker.Color;
+                    Assert.AreNotEqual(colorBefore, colorAfter,
+                        "Key.Right on the focused spectrum must change the color.");
+
+                    // For this orange hue saturation steps right -> R channel brightens.
+                    Assert.IsTrue(
+                        colorAfter.R >= colorBefore.R,
+                        "Pressing Right on the spectrum must increase saturation, brightening the hue channel.");
+                });
+        }
+
+        [TestMethod]
+        public void ColorPicker_SpectrumKeyboard_UpKeyIncreasesValue()
+        {
+            // Start dark so Value (brightness) has room to increase.
+            RunColorPickerOptionTest(
+                () => new Controls.ColorPicker { Color = Color.FromRgb(0x40, 0x20, 0x00) },
+                (picker, template, window) =>
+                {
+                    FrameworkElement spectrumArea = GetTemplateElement<FrameworkElement>(
+                        template, picker, "PART_SpectrumArea");
+                    Color colorBefore = picker.Color;
+
+                    _ = spectrumArea.Focus();
+                    DrainDispatcher(window.Dispatcher);
+
+                    PresentationSource? source = PresentationSource.FromVisual(spectrumArea);
+                    Assert.IsNotNull(source,
+                        "PART_SpectrumArea must have a PresentationSource once the window is shown.");
+
+                    spectrumArea.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Up)
+                    {
+                        RoutedEvent = Keyboard.KeyDownEvent,
+                    });
+                    DrainDispatcher(window.Dispatcher);
+
+                    Color colorAfter = picker.Color;
+                    Assert.AreNotEqual(colorBefore, colorAfter,
+                        "Key.Up on the focused spectrum must change the color.");
+
+                    // Value (brightness) increases: at least one channel brightens.
+                    Assert.IsTrue(
+                        colorAfter.R > colorBefore.R || colorAfter.G > colorBefore.G || colorAfter.B > colorBefore.B,
+                        "Pressing Up on the spectrum must increase Value, making channels brighter.");
+                });
         }
     }
 }

@@ -291,51 +291,189 @@ namespace Fluence.Wpf.Demo.Pages
                                                         "        }\n" +
                                                         "    }\n" +
                                                         "}\n";
-        private const string ToggleAndRepeatButtonsXamlSource = "<UserControl\n" +
-                                                                "    x:Class=\"Fluence.Wpf.Demo.Pages.Buttons.ToggleAndRepeatButtons\"\n" +
-                                                                "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                                "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                                "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
-                                                                "    <WrapPanel VerticalAlignment=\"Center\">\n" +
-                                                                "        <ui:RepeatButton\n" +
-                                                                "            x:Name=\"RepeatCounterButton\"\n" +
-                                                                "            Margin=\"0,0,8,8\"\n" +
-                                                                "            Click=\"RepeatCounterButton_Click\"\n" +
-                                                                "            Content=\"Hold to repeat\" />\n" +
-                                                                "        <TextBlock\n" +
-                                                                "            x:Name=\"RepeatButtonCountText\"\n" +
-                                                                "            Margin=\"0,0,16,8\"\n" +
-                                                                "            VerticalAlignment=\"Center\"\n" +
-                                                                "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
-                                                                "            Text=\"Clicks: 0\" />\n" +
-                                                                "    </WrapPanel>\n" +
-                                                                "</UserControl>\n";
+        private const string RepeatButtonsXamlSource = "<UserControl\n" +
+                                                       "    x:Class=\"Fluence.Wpf.Demo.Pages.Buttons.RepeatButtons\"\n" +
+                                                       "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                       "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                       "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                       "    <WrapPanel VerticalAlignment=\"Center\">\n" +
+                                                       "        <ui:RepeatButton\n" +
+                                                       "            x:Name=\"RepeatCounterButton\"\n" +
+                                                       "            Margin=\"0,0,8,8\"\n" +
+                                                       "            Click=\"RepeatCounterButton_Click\"\n" +
+                                                       "            Content=\"Hold to repeat\" />\n" +
+                                                       "        <TextBlock\n" +
+                                                       "            x:Name=\"RepeatButtonCountText\"\n" +
+                                                       "            Margin=\"0,0,16,8\"\n" +
+                                                       "            VerticalAlignment=\"Center\"\n" +
+                                                       "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                       "            Text=\"Clicks: 0\" />\n" +
+                                                       "    </WrapPanel>\n" +
+                                                       "</UserControl>\n";
 
-        private const string ToggleAndRepeatButtonsCSharpSource = "using System.Globalization;\n" +
-                                                                  "using System.Windows;\n" +
-                                                                  "using System.Windows.Controls;\n" +
-                                                                  "\n" +
-                                                                  "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
-                                                                  "{\n" +
-                                                                  "    public partial class ToggleAndRepeatButtons : UserControl\n" +
-                                                                  "    {\n" +
-                                                                  "        private int repeatButtonClickCount;\n" +
-                                                                  "\n" +
-                                                                  "        public ToggleAndRepeatButtons()\n" +
-                                                                  "        {\n" +
-                                                                  "            InitializeComponent();\n" +
-                                                                  "        }\n" +
-                                                                  "\n" +
-                                                                  "        private void RepeatCounterButton_Click(object sender, RoutedEventArgs e)\n" +
-                                                                  "        {\n" +
-                                                                  "            repeatButtonClickCount++;\n" +
-                                                                  "            RepeatButtonCountText.Text = string.Format(\n" +
-                                                                  "                CultureInfo.CurrentCulture,\n" +
-                                                                  "                \"Clicks: {0}\",\n" +
-                                                                  "                repeatButtonClickCount);\n" +
-                                                                  "        }\n" +
-                                                                  "    }\n" +
-                                                                  "}\n";
+        private const string RepeatButtonsCSharpSource = "using System.Globalization;\n" +
+                                                         "using System.Windows;\n" +
+                                                         "using System.Windows.Controls;\n" +
+                                                         "\n" +
+                                                         "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
+                                                         "{\n" +
+                                                         "    public partial class RepeatButtons : UserControl\n" +
+                                                         "    {\n" +
+                                                         "        private int repeatButtonClickCount;\n" +
+                                                         "\n" +
+                                                         "        public RepeatButtons()\n" +
+                                                         "        {\n" +
+                                                         "            InitializeComponent();\n" +
+                                                         "        }\n" +
+                                                         "\n" +
+                                                         "        private void RepeatCounterButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                         "        {\n" +
+                                                         "            repeatButtonClickCount++;\n" +
+                                                         "            RepeatButtonCountText.Text = string.Format(\n" +
+                                                         "                CultureInfo.CurrentCulture,\n" +
+                                                         "                \"Clicks: {0}\",\n" +
+                                                         "                repeatButtonClickCount);\n" +
+                                                         "        }\n" +
+                                                         "    }\n" +
+                                                         "}\n";
+        private const string ToggleButtonsXamlSource = "<UserControl\n" +
+                                                       "    x:Class=\"Fluence.Wpf.Demo.Pages.Buttons.ToggleButtons\"\n" +
+                                                       "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                       "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                       "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                       "    <StackPanel>\n" +
+                                                       "        <WrapPanel VerticalAlignment=\"Center\">\n" +
+                                                       "            <ui:ToggleButton\n" +
+                                                       "                x:Name=\"WrapToggleButton\"\n" +
+                                                       "                Margin=\"0,0,8,8\"\n" +
+                                                       "                Checked=\"WrapToggleButton_CheckedChanged\"\n" +
+                                                       "                Content=\"Wrap text\"\n" +
+                                                       "                Unchecked=\"WrapToggleButton_CheckedChanged\" />\n" +
+                                                       "            <ui:ToggleButton\n" +
+                                                       "                Margin=\"0,0,8,8\"\n" +
+                                                       "                Content=\"Three-state\"\n" +
+                                                       "                IsThreeState=\"True\" />\n" +
+                                                       "            <ui:ToggleButton\n" +
+                                                       "                Margin=\"0,0,8,8\"\n" +
+                                                       "                Content=\"Disabled checked\"\n" +
+                                                       "                IsChecked=\"True\"\n" +
+                                                       "                IsEnabled=\"False\" />\n" +
+                                                       "        </WrapPanel>\n" +
+                                                       "        <TextBlock\n" +
+                                                       "            x:Name=\"ToggleButtonStateText\"\n" +
+                                                       "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                       "            Text=\"Wrap text: Off\" />\n" +
+                                                       "    </StackPanel>\n" +
+                                                       "</UserControl>\n";
+
+        private const string ToggleButtonsCSharpSource = "using System.Windows;\n" +
+                                                         "using System.Windows.Controls;\n" +
+                                                         "\n" +
+                                                         "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
+                                                         "{\n" +
+                                                         "    public partial class ToggleButtons : UserControl\n" +
+                                                         "    {\n" +
+                                                         "        public ToggleButtons()\n" +
+                                                         "        {\n" +
+                                                         "            InitializeComponent();\n" +
+                                                         "        }\n" +
+                                                         "\n" +
+                                                         "        private void WrapToggleButton_CheckedChanged(object sender, RoutedEventArgs e)\n" +
+                                                         "        {\n" +
+                                                         "            ToggleButtonStateText.Text = WrapToggleButton.IsChecked == true\n" +
+                                                         "                ? \"Wrap text: On\"\n" +
+                                                         "                : \"Wrap text: Off\";\n" +
+                                                         "        }\n" +
+                                                         "    }\n" +
+                                                         "}\n";
+        private const string ToggleSplitButtonsXamlSource = "<UserControl\n" +
+                                                            "    x:Class=\"Fluence.Wpf.Demo.Pages.Buttons.ToggleSplitButtons\"\n" +
+                                                            "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
+                                                            "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
+                                                            "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+                                                            "    <StackPanel>\n" +
+                                                            "        <WrapPanel VerticalAlignment=\"Center\">\n" +
+                                                            "            <ui:ToggleSplitButton\n" +
+                                                            "                x:Name=\"ListToggleSplitButton\"\n" +
+                                                            "                Margin=\"0,0,8,8\"\n" +
+                                                            "                Content=\"Bulleted list\"\n" +
+                                                            "                IsCheckedChanged=\"ListToggleSplitButton_IsCheckedChanged\">\n" +
+                                                            "                <ui:ToggleSplitButton.Flyout>\n" +
+                                                            "                    <StackPanel MinWidth=\"180\" Margin=\"4\">\n" +
+                                                            "                        <ui:Button\n" +
+                                                            "                            HorizontalAlignment=\"Stretch\"\n" +
+                                                            "                            HorizontalContentAlignment=\"Left\"\n" +
+                                                            "                            Appearance=\"Subtle\"\n" +
+                                                            "                            Click=\"ListStyleButton_Click\"\n" +
+                                                            "                            Content=\"Bulleted list\" />\n" +
+                                                            "                        <ui:Button\n" +
+                                                            "                            HorizontalAlignment=\"Stretch\"\n" +
+                                                            "                            HorizontalContentAlignment=\"Left\"\n" +
+                                                            "                            Appearance=\"Subtle\"\n" +
+                                                            "                            Click=\"ListStyleButton_Click\"\n" +
+                                                            "                            Content=\"Numbered list\" />\n" +
+                                                            "                        <ui:Button\n" +
+                                                            "                            HorizontalAlignment=\"Stretch\"\n" +
+                                                            "                            HorizontalContentAlignment=\"Left\"\n" +
+                                                            "                            Appearance=\"Subtle\"\n" +
+                                                            "                            Click=\"ListStyleButton_Click\"\n" +
+                                                            "                            Content=\"Checklist\" />\n" +
+                                                            "                    </StackPanel>\n" +
+                                                            "                </ui:ToggleSplitButton.Flyout>\n" +
+                                                            "            </ui:ToggleSplitButton>\n" +
+                                                            "            <ui:ToggleSplitButton\n" +
+                                                            "                Margin=\"0,0,8,8\"\n" +
+                                                            "                Content=\"Disabled\"\n" +
+                                                            "                IsChecked=\"True\"\n" +
+                                                            "                IsEnabled=\"False\">\n" +
+                                                            "                <ui:ToggleSplitButton.Flyout>\n" +
+                                                            "                    <TextBlock Margin=\"12\" Text=\"Unavailable\" />\n" +
+                                                            "                </ui:ToggleSplitButton.Flyout>\n" +
+                                                            "            </ui:ToggleSplitButton>\n" +
+                                                            "        </WrapPanel>\n" +
+                                                            "        <TextBlock\n" +
+                                                            "            x:Name=\"ToggleSplitButtonStateText\"\n" +
+                                                            "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
+                                                            "            Text=\"List formatting: Off\" />\n" +
+                                                            "    </StackPanel>\n" +
+                                                            "</UserControl>\n";
+
+        private const string ToggleSplitButtonsCSharpSource = "using System.Globalization;\n" +
+                                                              "using System.Windows;\n" +
+                                                              "using System.Windows.Controls;\n" +
+                                                              "\n" +
+                                                              "namespace Fluence.Wpf.Demo.Pages.Buttons\n" +
+                                                              "{\n" +
+                                                              "    public partial class ToggleSplitButtons : UserControl\n" +
+                                                              "    {\n" +
+                                                              "        public ToggleSplitButtons()\n" +
+                                                              "        {\n" +
+                                                              "            InitializeComponent();\n" +
+                                                              "        }\n" +
+                                                              "\n" +
+                                                              "        private void ListToggleSplitButton_IsCheckedChanged(object? sender, Fluence.Wpf.ToggleSplitButtonIsCheckedChangedEventArgs e)\n" +
+                                                              "        {\n" +
+                                                              "            UpdateListFormattingText(e.IsChecked);\n" +
+                                                              "        }\n" +
+                                                              "\n" +
+                                                              "        private void ListStyleButton_Click(object sender, RoutedEventArgs e)\n" +
+                                                              "        {\n" +
+                                                              "            if (sender is Fluence.Wpf.Controls.Button button && button.Content is string listStyle)\n" +
+                                                              "            {\n" +
+                                                              "                ListToggleSplitButton.Content = listStyle;\n" +
+                                                              "                ListToggleSplitButton.IsChecked = true;\n" +
+                                                              "                UpdateListFormattingText(isChecked: true);\n" +
+                                                              "            }\n" +
+                                                              "        }\n" +
+                                                              "\n" +
+                                                              "        private void UpdateListFormattingText(bool isChecked)\n" +
+                                                              "        {\n" +
+                                                              "            ToggleSplitButtonStateText.Text = isChecked\n" +
+                                                              "                ? string.Format(CultureInfo.CurrentCulture, \"List formatting: {0}\", ListToggleSplitButton.Content)\n" +
+                                                              "                : \"List formatting: Off\";\n" +
+                                                              "        }\n" +
+                                                              "    }\n" +
+                                                              "}\n";
 
         // Click counter for the RepeatButton interactive demo; incremented by
         // RepeatCounterButton_Click and displayed in RepeatButtonCountText.
@@ -355,7 +493,9 @@ namespace Fluence.Wpf.Demo.Pages
                 new DemoSampleSource(3, HyperlinkButtonsXamlSource, HyperlinkButtonsCSharpSource),
                 new DemoSampleSource(4, DropDownButtonsXamlSource, DropDownButtonsCSharpSource),
                 new DemoSampleSource(5, SplitButtonsXamlSource, SplitButtonsCSharpSource),
-                new DemoSampleSource(6, ToggleAndRepeatButtonsXamlSource, ToggleAndRepeatButtonsCSharpSource));
+                new DemoSampleSource(6, RepeatButtonsXamlSource, RepeatButtonsCSharpSource),
+                new DemoSampleSource(7, ToggleButtonsXamlSource, ToggleButtonsCSharpSource),
+                new DemoSampleSource(8, ToggleSplitButtonsXamlSource, ToggleSplitButtonsCSharpSource));
         }
 
         private void RepeatCounterButton_Click(object sender, RoutedEventArgs e)
@@ -365,6 +505,35 @@ namespace Fluence.Wpf.Demo.Pages
                 CultureInfo.CurrentCulture,
                 "Clicks: {0}",
                 _repeatButtonClickCount);
+        }
+
+        private void WrapToggleButton_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            ToggleButtonStateText.Text = WrapToggleButton.IsChecked is true
+                ? "Wrap text: On"
+                : "Wrap text: Off";
+        }
+
+        private void ListToggleSplitButton_IsCheckedChanged(object? sender, ToggleSplitButtonIsCheckedChangedEventArgs e)
+        {
+            UpdateListFormattingText(e.IsChecked);
+        }
+
+        private void ListStyleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Fluence.Wpf.Controls.Button button && button.Content is string listStyle)
+            {
+                ListToggleSplitButton.Content = listStyle;
+                ListToggleSplitButton.IsChecked = true;
+                UpdateListFormattingText(isChecked: true);
+            }
+        }
+
+        private void UpdateListFormattingText(bool isChecked)
+        {
+            ToggleSplitButtonStateText.Text = isChecked
+                ? string.Format(CultureInfo.CurrentCulture, "List formatting: {0}", ListToggleSplitButton.Content)
+                : "List formatting: Off";
         }
     }
 }

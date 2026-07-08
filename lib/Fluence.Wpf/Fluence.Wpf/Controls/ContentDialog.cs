@@ -30,6 +30,7 @@ using Fluence.Wpf.Automation;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -75,6 +76,14 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(ContentDialog),
                 new FrameworkPropertyMetadata(typeof(ContentDialog)));
+
+            // A modal dialog is an interrupting surface, so declare an assertive UI Automation
+            // live region. Paired with AnnounceLiveRegion on open, this is the net472-safe
+            // substitute for AutomationProperties.IsDialog (a .NET Framework 4.8 API absent on
+            // the net472 target) that makes Narrator read the dialog Title the moment it appears.
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(ContentDialog),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Assertive));
         }
 
         /// <summary>
@@ -523,7 +532,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (e.Key == Key.Escape)
+            if (e.Key is Key.Escape)
             {
                 HandleButtonInvoked(CloseButtonClick, CloseButtonCommand, CloseButtonCommandParameter, ContentDialogResult.None);
                 e.Handled = true;
@@ -544,7 +553,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (e.Key == Key.Enter)
+            if (e.Key is Key.Enter)
             {
                 IInputElement? focused = Keyboard.FocusedElement;
                 if (ReferenceEquals(focused, _primaryButton)
@@ -768,7 +777,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (command?.CanExecute(commandParameter) == true)
+            if ((command?.CanExecute(commandParameter)) is true)
             {
                 command.Execute(commandParameter);
             }
@@ -783,19 +792,19 @@ namespace Fluence.Wpf.Controls
         /// <returns><see langword="true"/> when a default button was invoked.</returns>
         private bool TryInvokeDefaultButton()
         {
-            if (DefaultButton == ContentDialogButton.Primary && IsPrimaryButtonEnabled && !string.IsNullOrWhiteSpace(PrimaryButtonText))
+            if (DefaultButton is ContentDialogButton.Primary && IsPrimaryButtonEnabled && !string.IsNullOrWhiteSpace(PrimaryButtonText))
             {
                 HandleButtonInvoked(PrimaryButtonClick, PrimaryButtonCommand, PrimaryButtonCommandParameter, ContentDialogResult.Primary);
                 return true;
             }
 
-            if (DefaultButton == ContentDialogButton.Secondary && IsSecondaryButtonEnabled && !string.IsNullOrWhiteSpace(SecondaryButtonText))
+            if (DefaultButton is ContentDialogButton.Secondary && IsSecondaryButtonEnabled && !string.IsNullOrWhiteSpace(SecondaryButtonText))
             {
                 HandleButtonInvoked(SecondaryButtonClick, SecondaryButtonCommand, SecondaryButtonCommandParameter, ContentDialogResult.Secondary);
                 return true;
             }
 
-            if (DefaultButton == ContentDialogButton.Close && !string.IsNullOrWhiteSpace(CloseButtonText))
+            if (DefaultButton is ContentDialogButton.Close && !string.IsNullOrWhiteSpace(CloseButtonText))
             {
                 HandleButtonInvoked(CloseButtonClick, CloseButtonCommand, CloseButtonCommandParameter, ContentDialogResult.None);
                 return true;
@@ -816,6 +825,10 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
+            // Announce the dialog to assistive technologies before focus moves inside it, so
+            // Narrator reads the dialog name (Title) and then the focused command button.
+            AnnounceLiveRegion();
+
             ButtonBase? defaultButton = DefaultButton switch
             {
                 ContentDialogButton.Primary => _primaryButton,
@@ -824,13 +837,33 @@ namespace Fluence.Wpf.Controls
                 ContentDialogButton.None or _ => null,
             };
 
-            if (defaultButton?.IsEnabled == true && defaultButton.Visibility == Visibility.Visible)
+            if ((defaultButton?.IsEnabled) is true && defaultButton.Visibility is Visibility.Visible)
             {
                 _ = defaultButton.Focus();
                 return;
             }
 
             _ = Focus();
+        }
+
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this dialog's automation peer
+        /// so Narrator announces the dialog by its <see cref="Title"/> (the peer name) the moment it
+        /// opens. This is the net472-safe substitute for the .NET Framework 4.8
+        /// <c>AutomationProperties.IsDialog</c> announcement, paired with the assertive live setting
+        /// declared in the static constructor. Uses only net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
         /// <summary>

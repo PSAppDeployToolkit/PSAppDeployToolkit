@@ -6,13 +6,13 @@
     <RootNamespace>Fluence.Wpf</RootNamespace>
     <AssemblyName>Fluence.Wpf</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <NoWarn>$(NoWarn);SYSLIB1045;IDE0330;S1244;VSTHRD001</NoWarn>
+    <NoWarn>$(NoWarn);SYSLIB1045;S1244;VSTHRD001</NoWarn>
     <DocumentationFile Condition="'$(TargetFramework)' != ''">bin/$(Configuration)/$(TargetFramework)/Fluence.Wpf.xml</DocumentationFile>
     <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2 and .NET 10)</Description>
     <Product>Fluence.Wpf</Product>
     <Title>Fluence.Wpf</Title>
     <PackageId>Fluence.Wpf</PackageId>
-    <VersionPrefix>0.8.0</VersionPrefix>
+    <VersionPrefix>0.8.9</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sintaxasn/Fluence.Wpf</PackageProjectUrl>
@@ -20,7 +20,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>wpf;fluent;fluent-design;windows11;controls;theme</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>fluence-wpf-nuget-icon-128.png</PackageIcon>
+    <PackageIcon>Fluence_Icon_Light_128.png</PackageIcon>
   </PropertyGroup>
 
 
@@ -34,7 +34,11 @@
 
   <ItemGroup Label="NuGet package content">
     <None Include="..\README.md" Pack="true" PackagePath="\" />
-    <None Include="..\assets\fluence-wpf-nuget-icon-128.png" Pack="true" PackagePath="\" />
+    <None Include="..\assets\Fluence_Icon_Light_128.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Label="Embedded window icon">
+    <Resource Include="Themes\Icons\Fluence_Icon_NoBackground_256.png" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
@@ -45,11 +49,22 @@
     <PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.9" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.26100.0'">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.157">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
   <PropertyGroup>
     <MeziantouPolyfill_IncludedPolyfills>
       T:System.Threading.Lock|
     </MeziantouPolyfill_IncludedPolyfills>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.26100.0' or '$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+    <NoWarn>$(NoWarn);RCS1255</NoWarn>
   </PropertyGroup>
 
 
