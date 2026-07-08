@@ -2009,8 +2009,12 @@ namespace PSADT.Interop
         /// before performing operations that depend on the installation mode.</remarks>
         /// <returns><see langword="true"/> if the system is in Terminal Services application installation mode; otherwise, <see
         /// langword="false"/>.</returns>
-        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        internal static extern BOOL TermsrvAppInstallMode();
+        internal static BOOL TermsrvAppInstallMode()
+        {
+            [DllImport("kernel32.dll", SetLastError = false, EntryPoint = "TermsrvAppInstallMode", ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            static extern BOOL TermsrvAppInstallModeImpl();
+            return TermsrvAppInstallModeImpl();
+        }
 
         /// <summary>
         /// Retrieves system firmware table data for the specified firmware table provider and table ID.
