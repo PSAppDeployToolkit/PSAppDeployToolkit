@@ -3489,7 +3489,7 @@ namespace PSADT.Interop
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MA0099:Use Explicit enum value instead of 0", Justification = "There's no zero value for this enum.")]
         internal static MESSAGEBOX_RESULT MessageBoxTimeout(string lpText, string lpCaption, MESSAGEBOX_STYLE uType, uint dwTimeout)
         {
-            [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern MESSAGEBOX_RESULT MessageBoxTimeoutW(HWND hWnd, string lpText, string lpCaption, MESSAGEBOX_STYLE uType, ushort wLanguageId, uint dwMilliseconds);
             ArgumentException.ThrowIfNullOrWhiteSpace(lpText); ArgumentException.ThrowIfNullOrWhiteSpace(lpCaption);
             MESSAGEBOX_RESULT res = MessageBoxTimeoutW(default, lpText, lpCaption, uType, 0, dwTimeout);
