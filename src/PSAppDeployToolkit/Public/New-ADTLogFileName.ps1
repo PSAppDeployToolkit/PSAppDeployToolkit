@@ -11,13 +11,13 @@ function New-ADTLogFileName
         Generates a new log file name based off the current deployment session's properties.
 
     .DESCRIPTION
-        The `New-ADTLogFileName` function generates a new log file name based off the current deployment session's properties, using the same default format that PSAppDeployTookit uses itself.
+        The `New-ADTLogFileName` function generates a new log file name based off the current deployment session's properties, using the same default format that PSAppDeployToolkit uses itself.
 
     .PARAMETER Discriminator
         The identifier to pre-format the log file name with.
 
     .PARAMETER FileNameOnly
-        If specified, just returns a log file name without and preceeding path.
+        If specified, just returns a log file name without any preceding path.
 
     .INPUTS
         None

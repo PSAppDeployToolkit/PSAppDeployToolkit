@@ -861,7 +861,7 @@ namespace PSAppDeployToolkit.Foundation
         public string? EnvOfficeChannel { get; }
 
         /// <summary>
-        /// Gets the total amount of physical system memory, in megabytes, installed on the machine.
+        /// Gets the total amount of physical system memory, in gigabytes, installed on the machine.
         /// </summary>
         /// <remarks>This property can be used to monitor available system resources or to make decisions
         /// based on the total installed RAM. The value reflects the physical memory detected by the operating system at
