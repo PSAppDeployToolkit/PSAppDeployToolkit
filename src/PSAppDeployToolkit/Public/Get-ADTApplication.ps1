@@ -378,7 +378,7 @@ function Get-ADTApplication
             }
             else
             {
-                Write-ADTLogEntry -Message "Skipped $UpdatesSkippedCounter entries while searching, because they were considered Microsoft updates."
+                Write-ADTLogEntry -Message "Skipped $updatesSkippedCounter entries while searching, because they were considered Microsoft updates."
             }
         }
 
