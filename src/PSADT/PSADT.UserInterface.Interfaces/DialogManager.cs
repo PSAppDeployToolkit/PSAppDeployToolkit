@@ -127,76 +127,78 @@ namespace PSADT.UserInterface.Interfaces
                 stopProcessService = true;
             }
 
-            // Announce whether there's apps to close.
-            IReadOnlyList<ProcessToClose>? processesToClose = null;
-            if (state.RunningProcessService is not null)
+            // Ensure we always stop the RunningProcessService if we started it, even if an exception occurs.
+            try
             {
-                if ((processesToClose = state.RunningProcessService.ProcessesToClose).Count is 0 && options.ContinueOnProcessClosure)
+                // Announce whether there's apps to close.
+                IReadOnlyList<ProcessToClose>? processesToClose = null;
+                if (state.RunningProcessService is not null)
                 {
-                    // No processes are running and ContinueOnProcessClosure is set -> skip the dialog
-                    // entirely. Avoids constructing a WPF window only to immediately close it (which
-                    // also produced an InvalidOperationException prior to the CloseAppsDialog fix).
-                    await state.LogAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
-                    if (stopProcessService)
+                    if ((processesToClose = state.RunningProcessService.ProcessesToClose).Count is 0 && options.ContinueOnProcessClosure)
                     {
-                        await state.RunningProcessService.StopAsync().ConfigureAwait(false);
+                        // No processes are running and ContinueOnProcessClosure is set -> skip the dialog
+                        // entirely. Avoids constructing a WPF window only to immediately close it (which
+                        // also produced an InvalidOperationException prior to the CloseAppsDialog fix).
+                        await state.LogAction("Previously detected running processes are no longer running.", LogSeverity.Info).ConfigureAwait(false);
+                        if (stopProcessService)
+                        {
+                            await state.RunningProcessService.StopAsync().ConfigureAwait(false);
+                        }
+                        return CloseAppsDialogResult.Continue;
                     }
-                    return CloseAppsDialogResult.Continue;
+                    if (processesToClose.Count > 0)
+                    {
+                        await state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", processesToClose.Select(static p => p.Description))}']...", LogSeverity.Info).ConfigureAwait(false);
+                    }
                 }
-                if (processesToClose.Count > 0)
-                {
-                    await state.LogAction($"Prompting the user to close application(s) ['{string.Join("', '", processesToClose.Select(static p => p.Description))}']...", LogSeverity.Info).ConfigureAwait(false);
-                }
-            }
 
-            // Announce the current countdown information.
-            if (options.CountdownDuration is not null)
+                // Announce the current countdown information.
+                if (options.CountdownDuration is not null)
+                {
+                    TimeSpan? elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
+                    if (elapsed < TimeSpan.Zero)
+                    {
+                        elapsed = TimeSpan.Zero;
+                    }
+                    if (processesToClose?.Count > 0)
+                    {
+                        await state.LogAction($"Close applications countdown has [{((int)Math.Ceiling(elapsed.Value.TotalSeconds)).ToString(CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await state.LogAction($"Countdown has [{((int)Math.Ceiling(elapsed.Value.TotalSeconds)).ToString(CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
+                    }
+                }
+
+                // Show the dialog and get the result.
+                CloseAppsDialogResult result = await ShowModalDialogAsync<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state).ConfigureAwait(false);
+
+                // Perform some result logging before returning.
+                if (options.CountdownDuration is not null && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
+                {
+                    if (result.Equals(CloseAppsDialogResult.Close))
+                    {
+                        await state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).", LogSeverity.Info).ConfigureAwait(false);
+                    }
+                    else if (result.Equals(CloseAppsDialogResult.Defer))
+                    {
+                        await state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.", LogSeverity.Info).ConfigureAwait(false);
+                    }
+                    else if (result.Equals(CloseAppsDialogResult.Continue))
+                    {
+                        await state.LogAction("Countdown timer has elapsed and no processes running. Force continue.", LogSeverity.Info).ConfigureAwait(false);
+                    }
+                }
+                return result;
+            }
+            finally
             {
-                TimeSpan? elapsed = options.CountdownDuration - state.CountdownStopwatch.Elapsed;
-                if (elapsed < TimeSpan.Zero)
+                // If we started the RunningProcessService, stop it now before returning the result.
+                if (stopProcessService)
                 {
-                    elapsed = TimeSpan.Zero;
-                }
-                if (processesToClose?.Count > 0)
-                {
-                    await state.LogAction($"Close applications countdown has [{((int)Math.Ceiling(elapsed.Value.TotalSeconds)).ToString(CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
-                }
-                else
-                {
-                    await state.LogAction($"Countdown has [{((int)Math.Ceiling(elapsed.Value.TotalSeconds)).ToString(CultureInfo.InvariantCulture)}] seconds remaining.", LogSeverity.Info).ConfigureAwait(false);
+                    await state.RunningProcessService!.StopAsync().ConfigureAwait(false);
                 }
             }
-
-            // Show the dialog and get the result.
-            CloseAppsDialogResult result = await ShowModalDialogAsync<CloseAppsDialogResult>(DialogType.CloseAppsDialog, dialogStyle, options, state).ConfigureAwait(false);
-
-            // Perform some result logging before returning.
-            if (options.CountdownDuration is not null && (options.CountdownDuration - state.CountdownStopwatch.Elapsed) <= TimeSpan.Zero)
-            {
-                if (result.Equals(CloseAppsDialogResult.Close))
-                {
-                    await state.LogAction("Close application(s) countdown timer has elapsed. Force closing application(s).", LogSeverity.Info).ConfigureAwait(false);
-                }
-                else if (result.Equals(CloseAppsDialogResult.Defer))
-                {
-                    await state.LogAction("Countdown timer has elapsed and deferrals remaining. Force deferral.", LogSeverity.Info).ConfigureAwait(false);
-                }
-                else if (result.Equals(CloseAppsDialogResult.Continue))
-                {
-                    await state.LogAction("Countdown timer has elapsed and no processes running. Force continue.", LogSeverity.Info).ConfigureAwait(false);
-                }
-            }
-
-            // If we started the RunningProcessService, stop it now before returning the result.
-            if (stopProcessService)
-            {
-                if (state.RunningProcessService is null)
-                {
-                    throw new InvalidProgramException("Unexpected null RunningProcessService. This should never happen.");
-                }
-                await state.RunningProcessService.StopAsync().ConfigureAwait(false);
-            }
-            return result;
         }
 
         /// <summary>
