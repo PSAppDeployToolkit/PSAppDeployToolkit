@@ -505,7 +505,7 @@ namespace PSADT.ClientServer
 
                                         case PipeCommand.GetProcessWindowInfo:
                                             {
-                                                await WriteSuccessAsync(WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options)).ConfigureAwait(false);
+                                                await WriteSuccessAsync(new ReadOnlyCollection<WindowInfo>([.. WindowUtilities.GetProcessWindowInfo(DeserializeBytes<GetProcessWindowInfoPayload>(requestBytes, payloadOffset).Options)])).ConfigureAwait(false);
                                                 break;
                                             }
 
@@ -661,7 +661,7 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/GetProcessWindowInfo", StringComparison.Ordinal) || arg.Equals("/gpwi", StringComparison.Ordinal))
                 {
-                    Console.WriteLine(SerializeToString(WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))));
+                    Console.WriteLine(SerializeToString(new ReadOnlyCollection<WindowInfo>([.. WindowUtilities.GetProcessWindowInfo(DeserializeString<WindowInfoOptions>(GetOptionsFromArguments(ArgvToDictionary(argv))))])));
                     return (int)ClientExitCode.Success;
                 }
                 if (arg.Equals("/GetUserNotificationState", StringComparison.Ordinal) || arg.Equals("/guns", StringComparison.Ordinal))
