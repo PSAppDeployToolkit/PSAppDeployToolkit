@@ -147,22 +147,18 @@
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
                         </Trigger>
-                        <Trigger Property="IsSelectionChecked" Value="True">
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                        </Trigger>
+                        <!--
+                            IsSelectionChecked deliberately has no background trigger: in
+                            Multiple mode the checkbox alone conveys the checked state, so
+                            checking an item must not tint the row, matching WinUI TreeView
+                            multi-select.
+                        -->
                         <DataTrigger Binding="{Binding SelectionMode, RelativeSource={RelativeSource AncestorType={x:Type controls:TreeView}}}" Value="{x:Static fluence:TreeViewSelectionMode.Multiple}">
                             <Setter TargetName="SelectionCheckBox" Property="Visibility" Value="Visible" />
                         </DataTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsSelected" Value="True" />
-                                <Condition SourceName="ItemBorder" Property="IsMouseOver" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                        </MultiTrigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsSelectionChecked" Value="True" />
                                 <Condition SourceName="ItemBorder" Property="IsMouseOver" Value="True" />
                             </MultiTrigger.Conditions>
                             <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />

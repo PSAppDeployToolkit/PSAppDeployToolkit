@@ -27,6 +27,7 @@
  */
 
 using Fluence.Wpf.Controls;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 
@@ -47,6 +48,15 @@ namespace Fluence.Wpf.Automation
         }
 
         /// <inheritdoc />
+        protected override string GetNameCore()
+        {
+            string baseName = base.GetNameCore();
+            return !string.IsNullOrWhiteSpace(baseName)
+                ? baseName
+                : AutoSuggestBox.Header?.ToString() ?? string.Empty;
+        }
+
+        /// <inheritdoc />
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Edit;
@@ -55,7 +65,7 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         public override object GetPattern(PatternInterface patternInterface)
         {
-            return patternInterface != PatternInterface.Value
+            return patternInterface is not PatternInterface.Value
                 ? base.GetPattern(patternInterface)
                 : this;
         }
@@ -63,12 +73,22 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         public virtual string Value => AutoSuggestBox.Text;
 
-        /// <inheritdoc />
-        public virtual bool IsReadOnly => !AutoSuggestBox.IsEnabled;
+        /// <summary>
+        /// Always <see langword="false"/>. <see cref="AutoSuggestBox"/> has no read-only mode;
+        /// disabled state is conveyed via <see cref="System.Windows.UIElement.IsEnabled"/>,
+        /// not <see cref="IValueProvider.IsReadOnly"/>.
+        /// </summary>
+        public virtual bool IsReadOnly => false;
 
         /// <inheritdoc />
+        /// <exception cref="ElementNotEnabledException">The control is disabled.</exception>
         public virtual void SetValue(string value)
         {
+            if (!IsEnabled())
+            {
+                throw new ElementNotEnabledException();
+            }
+
             AutoSuggestBox.Text = value;
         }
 

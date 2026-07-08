@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -668,7 +669,7 @@ defaultValue: null,
 
         internal void InvokeItem(NavigationViewItem item)
         {
-            if (item?.IsEnabled != true)
+            if ((item?.IsEnabled) is not true)
             {
                 return;
             }
@@ -915,7 +916,7 @@ defaultValue: null,
             bool animatePaneWidth = IsLeftFamilyMode(oldMode) && IsLeftFamilyMode(newMode);
             double fromWidth = nav.GetCurrentPaneColumnWidth();
 
-            if (newMode == NavigationViewPaneDisplayMode.LeftCompact)
+            if (newMode is NavigationViewPaneDisplayMode.LeftCompact)
             {
                 nav.SetCurrentValue(IsPaneOpenProperty, value: false);
             }
@@ -945,14 +946,14 @@ defaultValue: null,
         private static object CoerceIsPaneOpen(DependencyObject d, object baseValue)
         {
             NavigationView nav = (NavigationView)d;
-            return nav.PaneDisplayMode == NavigationViewPaneDisplayMode.Top || (bool)baseValue;
+            return nav.PaneDisplayMode is NavigationViewPaneDisplayMode.Top || (bool)baseValue;
         }
 
         private static object CoerceIsPaneToggleButtonVisible(DependencyObject d, object baseValue)
         {
             _ = baseValue;
             NavigationView nav = (NavigationView)d;
-            return nav.PaneDisplayMode != NavigationViewPaneDisplayMode.Top;
+            return nav.PaneDisplayMode is not NavigationViewPaneDisplayMode.Top;
         }
 
         private void CoerceTopPaneProperties()
@@ -969,11 +970,11 @@ defaultValue: null,
             }
 
             bool? desiredValue = null;
-            if (PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+            if (PaneDisplayMode is NavigationViewPaneDisplayMode.Left)
             {
                 desiredValue = true;
             }
-            else if (PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+            else if (PaneDisplayMode is NavigationViewPaneDisplayMode.Top)
             {
                 desiredValue = false;
             }
@@ -1112,7 +1113,7 @@ defaultValue: null,
             }
 
             GridLength current = _paneColumn.Width;
-            return current.GridUnitType == GridUnitType.Pixel
+            return current.GridUnitType is GridUnitType.Pixel
                 ? current.Value
                 : GetClosedPaneWidth();
         }
@@ -1153,9 +1154,9 @@ defaultValue: null,
                 return;
             }
 
-            bool topMode = PaneDisplayMode == NavigationViewPaneDisplayMode.Top;
+            bool topMode = PaneDisplayMode is NavigationViewPaneDisplayMode.Top;
             bool shouldShow = IsLoaded
-                && SelectedFooterItem?.IsVisible == true
+                && (SelectedFooterItem?.IsVisible) is true
                 && SelectedFooterItem.ActualHeight > 0;
 
             if (!shouldShow)
@@ -1320,7 +1321,7 @@ defaultValue: null,
                 return;
             }
 
-            bool topMode = PaneDisplayMode == NavigationViewPaneDisplayMode.Top;
+            bool topMode = PaneDisplayMode is NavigationViewPaneDisplayMode.Top;
             Point targetPosition = CalculateIndicatorPosition(nvi, _selectionIndicator, _indicatorHost, topMode);
             if (!animate || !_indicatorPositioned)
             {
@@ -1360,13 +1361,14 @@ defaultValue: null,
             }
             catch (Exception ex) when (ex.Message is not null)
             {
+                Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                 return new Point(0, 0);
             }
         }
 
         private bool ShouldIndentSelectionIndicator(NavigationViewItem item, bool topMode)
         {
-            return !topMode && item?.IsChildItem == true && (IsPaneOpen || (PaneDisplayMode != NavigationViewPaneDisplayMode.Left && PaneDisplayMode != NavigationViewPaneDisplayMode.LeftCompact));
+            return !topMode && (item?.IsChildItem) is true && (IsPaneOpen || (PaneDisplayMode is not (NavigationViewPaneDisplayMode.Left or NavigationViewPaneDisplayMode.LeftCompact)));
         }
 
         private Point GetCurrentIndicatorPosition()
@@ -1544,7 +1546,7 @@ defaultValue: null,
             if (topMode)
             {
                 double x = fromPosition.X + (direction * length);
-                if (previousItem?.IsVisible == true && previousItem.ActualWidth > 0)
+                if ((previousItem?.IsVisible) is true && previousItem.ActualWidth > 0)
                 {
                     try
                     {
@@ -1554,6 +1556,7 @@ defaultValue: null,
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
+                        Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                         return new Point(x, fromPosition.Y);
                     }
                 }
@@ -1561,7 +1564,7 @@ defaultValue: null,
             }
 
             double y = fromPosition.Y + (direction * length);
-            if (previousItem?.IsVisible == true && previousItem.ActualHeight > 0)
+            if ((previousItem?.IsVisible) is true && previousItem.ActualHeight > 0)
             {
                 try
                 {
@@ -1571,6 +1574,7 @@ defaultValue: null,
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
+                    Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                     return new Point(fromPosition.X, y);
                 }
             }
@@ -1587,7 +1591,7 @@ defaultValue: null,
             if (topMode)
             {
                 double x = toPosition.X - (direction * length);
-                if (targetItem?.IsVisible == true && targetItem.ActualWidth > 0)
+                if ((targetItem?.IsVisible) is true && targetItem.ActualWidth > 0)
                 {
                     try
                     {
@@ -1597,6 +1601,7 @@ defaultValue: null,
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
+                        Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                         return new Point(x, toPosition.Y);
                     }
                 }
@@ -1605,7 +1610,7 @@ defaultValue: null,
             }
 
             double y = toPosition.Y - (direction * length);
-            if (targetItem?.IsVisible == true && targetItem.ActualHeight > 0)
+            if ((targetItem?.IsVisible) is true && targetItem.ActualHeight > 0)
             {
                 try
                 {
@@ -1615,6 +1620,7 @@ defaultValue: null,
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
+                    Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                     return new Point(toPosition.X, y);
                 }
             }
@@ -1725,7 +1731,7 @@ defaultValue: null,
 
         private void OnTopOverflowButtonClick(object sender, RoutedEventArgs e)
         {
-            if (_topOverflowButton?.ContextMenu is null || _topOverflowButton.ContextMenu.Items.Count == 0)
+            if (_topOverflowButton?.ContextMenu is null || _topOverflowButton.ContextMenu.Items.Count is 0)
             {
                 return;
             }
@@ -1778,7 +1784,7 @@ defaultValue: null,
                     }
                 }
 
-                if (PaneDisplayMode != NavigationViewPaneDisplayMode.Top || _topOverflowButton is null || _topItemsHost is null)
+                if (PaneDisplayMode is not NavigationViewPaneDisplayMode.Top || _topOverflowButton is null || _topItemsHost is null)
                 {
                     if (_topOverflowButton is not null)
                     {
@@ -1804,7 +1810,7 @@ defaultValue: null,
                 double totalItemWidth = 0.0;
                 foreach (NavigationViewItem navItem in navItems)
                 {
-                    if (navItem.Visibility == Visibility.Visible)
+                    if (navItem.Visibility is Visibility.Visible)
                     {
                         totalItemWidth += GetElementWidth(navItem);
                     }
@@ -1829,7 +1835,7 @@ defaultValue: null,
 
                 foreach (NavigationViewItem navItem in navItems)
                 {
-                    if (navItem.Visibility != Visibility.Visible)
+                    if (navItem.Visibility is not Visibility.Visible)
                     {
                         continue;
                     }
@@ -1849,7 +1855,7 @@ defaultValue: null,
 
                 double overflowOffset = usedWidth;
 
-                if (overflowItems.Count == 0)
+                if (overflowItems.Count is 0)
                 {
                     _topOverflowButton.Visibility = Visibility.Collapsed;
                     SetTopOverflowButtonOffset(0.0);

@@ -206,7 +206,9 @@
                             Margin="0,8,8,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
+                            AutomationProperties.Name="Close"
                             Style="{StaticResource TeachingTipAlternateCloseButtonStyle}"
+                            ToolTip="Close"
                             Visibility="Collapsed">
                             <controls:FontIcon
                                 Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"

@@ -27,88 +27,18 @@
  */
 
 using Fluence.Wpf.Controls;
-using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 
 namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GalleryHomePage : UserControl
     {
-        private static readonly Uri LightBannerUri =
-            new("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-light.png", UriKind.Absolute);
-
-        private static readonly Uri DarkBannerUri =
-            new("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-dark.png", UriKind.Absolute);
-
-        private Uri? _currentBannerUri;
-
         public GalleryHomePage()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
-            Unloaded += OnUnloaded;
-            UpdateBrandBanner();
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
-            UpdateBrandBanner();
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
-        }
-
-        private void ApplicationThemeManager_Changed(object? sender, ThemeChangedEventArgs e)
-        {
-            UpdateBrandBanner(e.Theme);
-        }
-
-        private void UpdateBrandBanner()
-        {
-            ApplicationTheme theme = ApplicationThemeManager.CurrentTheme;
-            if (theme is ApplicationTheme.Light or ApplicationTheme.Dark or ApplicationTheme.HighContrast)
-            {
-                UpdateBrandBanner(theme);
-                return;
-            }
-
-            UpdateBrandBanner(IsCurrentBackgroundDark() ? ApplicationTheme.Dark : ApplicationTheme.Light);
-        }
-
-        private void UpdateBrandBanner(ApplicationTheme theme)
-        {
-            Uri bannerUri = theme is ApplicationTheme.Light or ApplicationTheme.HighContrast ? LightBannerUri : DarkBannerUri;
-            if (Equals(_currentBannerUri, bannerUri))
-            {
-                return;
-            }
-
-            BrandBannerImage.Source = new BitmapImage(bannerUri);
-            BrandBannerImage.Tag = bannerUri.OriginalString;
-            _currentBannerUri = bannerUri;
-        }
-
-        private static bool IsCurrentBackgroundDark()
-        {
-            Application app = Application.Current;
-            if (app?.TryFindResource("SolidBackgroundFillColorBaseBrush") is not SolidColorBrush brush)
-            {
-                return ApplicationThemeManager.CurrentTheme != ApplicationTheme.Light;
-            }
-
-            Color color = brush.Color;
-            double red = color.R / 255.0;
-            double green = color.G / 255.0;
-            double blue = color.B / 255.0;
-            return ((red * 0.2126) + (green * 0.7152) + (blue * 0.0722)) < 0.5;
         }
 
         // Handles a click on any featured-control or action Card tile; reads the Card's

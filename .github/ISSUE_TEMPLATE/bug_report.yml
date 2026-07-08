@@ -12,7 +12,7 @@ body:
     attributes:
       label: Version or commit
       description: NuGet/package version, tag, or commit SHA.
-      placeholder: "0.7.0-pre"
+      placeholder: "0.8.9-preview"
     validations:
       required: true
   - type: dropdown

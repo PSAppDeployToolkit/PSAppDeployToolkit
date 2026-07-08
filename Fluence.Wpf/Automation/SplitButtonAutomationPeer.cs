@@ -32,7 +32,6 @@ using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Input;
-using ToggleButton = System.Windows.Controls.Primitives.ToggleButton;
 
 namespace Fluence.Wpf.Automation
 {
@@ -77,7 +76,7 @@ namespace Fluence.Wpf.Automation
             // visual tree see no-op behavior; with a template applied, the overridden
             // PropertyChanged wiring flips the popup via the secondary button.
             SplitButton thisButton = SplitButton;
-            ToggleButton? toggle = thisButton.Template?.FindName("PART_SecondaryButton", thisButton) as ToggleButton;
+            System.Windows.Controls.Primitives.ToggleButton? toggle = thisButton.Template?.FindName("PART_SecondaryButton", thisButton) as System.Windows.Controls.Primitives.ToggleButton;
             _ = toggle?.IsChecked = true;
         }
 
@@ -85,7 +84,7 @@ namespace Fluence.Wpf.Automation
         public virtual void Collapse()
         {
             SplitButton thisButton = SplitButton;
-            ToggleButton? toggle = thisButton.Template?.FindName("PART_SecondaryButton", thisButton) as ToggleButton;
+            System.Windows.Controls.Primitives.ToggleButton? toggle = thisButton.Template?.FindName("PART_SecondaryButton", thisButton) as System.Windows.Controls.Primitives.ToggleButton;
             _ = toggle?.IsChecked = false;
         }
 

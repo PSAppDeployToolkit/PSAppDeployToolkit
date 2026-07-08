@@ -36,9 +36,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
-using FluenceExpander = Fluence.Wpf.Controls.Expander;
-using WpfButton = System.Windows.Controls.Button;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -48,9 +45,10 @@ namespace Fluence.Wpf.Tests
         private const string IntentionalPartialSnippetMarker = "Intentionally partial layout snippet";
         private static readonly XNamespace XamlNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
+        // GalleryIconsPage is a design reference page (WinUI Gallery Iconography catalog)
+        // and renders directly instead of through DemoSampleControl, like Typography.
         private static readonly Func<UIElement>[] SamplePageFactories =
         [
-            static () => new GalleryIconsPage(),
             static () => new GalleryAccessibilityPage(),
             static () => new GalleryButtonsPage(),
             static () => new GallerySelectionPage(),
@@ -72,8 +70,8 @@ namespace Fluence.Wpf.Tests
             DemoTestHost.RunOnSta(static delegate
             {
                 _ = DemoTestHost.EnsureDemoTheme();
-                WpfTextBlock demoContent = new() { Text = "Demo" };
-                WpfTextBlock outputContent = new() { Text = "Output" };
+                TextBlock demoContent = new() { Text = "Demo" };
+                TextBlock outputContent = new() { Text = "Output" };
                 CheckBox rightRailContent = new() { Content = "Option" };
                 ContentControl demoSlot = CreateSlot("DemoSampleSlot01DemoContentHost", demoContent);
                 ContentControl outputSlot = CreateSlot("DemoSampleSlot01OutputContentHost", outputContent);
@@ -137,7 +135,7 @@ namespace Fluence.Wpf.Tests
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot02DemoContentHost", new WpfTextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot02DemoContentHost", new TextBlock()));
                 _ = root.Children.Add(new DemoSampleControl());
 
                 AssertThrowsInvalidOperation(
@@ -152,7 +150,7 @@ namespace Fluence.Wpf.Tests
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot00DemoContentHost", new WpfTextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot00DemoContentHost", new TextBlock()));
                 _ = root.Children.Add(new DemoSampleControl());
 
                 AssertThrowsInvalidOperation(
@@ -167,8 +165,8 @@ namespace Fluence.Wpf.Tests
             {
                 _ = DemoTestHost.EnsureDemoTheme();
                 StackPanel root = new();
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new WpfTextBlock()));
-                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new WpfTextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new TextBlock()));
+                _ = root.Children.Add(CreateSlot("DemoSampleSlot01DemoContentHost", new TextBlock()));
                 _ = root.Children.Add(new DemoSampleControl());
 
                 AssertThrowsInvalidOperation(
@@ -184,13 +182,13 @@ namespace Fluence.Wpf.Tests
                 _ = DemoTestHost.EnsureDemoTheme();
                 DemoSampleControl sample = new()
                 {
-                    DemoContent = new WpfTextBlock { Text = "Body" },
+                    DemoContent = new TextBlock { Text = "Body" },
                     XamlSource = "<Grid />",
                 };
                 Window window = DemoTestHost.CreateHostWindow(sample);
                 try
                 {
-                    FluenceExpander? expander = DemoTestHost.FindByName<FluenceExpander>(sample, "SourceExpander");
+                    Controls.Expander? expander = DemoTestHost.FindByName<Controls.Expander>(sample, "SourceExpander");
                     Assert.IsNotNull(expander, "Source expander should exist.");
                     expander.IsExpanded = true;
                     DemoTestHost.Drain(window.Dispatcher);
@@ -224,7 +222,7 @@ namespace Fluence.Wpf.Tests
                     {
                         List<DemoSampleControl> samples = [.. DemoTestHost.FindVisualChildren<DemoSampleControl>(page)];
                         Assert.IsTrue(samples.Count > 0, "Page should expose DemoSampleControl samples: " + page.GetType().Name);
-                        foreach (DemoSampleControl sample in samples.Where(static sample => sample.Visibility == Visibility.Visible))
+                        foreach (DemoSampleControl sample in samples.Where(static sample => sample.Visibility is Visibility.Visible))
                         {
                             Assert.IsFalse(string.IsNullOrWhiteSpace(sample.XamlSource),
                                 "Visible DemoSampleControl should expose XAML source: " + page.GetType().Name);
@@ -312,7 +310,7 @@ namespace Fluence.Wpf.Tests
             Assert.IsNotNull(tabs, "Source tabs should exist.");
             Assert.AreEqual(1, tabs.Items.Count, "XAML-only sample should expose one source tab.");
             TabItem tab = (TabItem)tabs.Items[0];
-            WpfButton? copy = DemoTestHost.FindByName<WpfButton>(tab.Content as DependencyObject, "CopySourceButton");
+            Button? copy = DemoTestHost.FindByName<Button>(tab.Content as DependencyObject, "CopySourceButton");
             Assert.IsNotNull(copy, "Source tab should expose the copy button.");
             Assert.AreEqual(expectedSource, copy.Tag as string);
         }
@@ -328,7 +326,7 @@ namespace Fluence.Wpf.Tests
                 try
                 {
                     samples.AddRange(DemoTestHost.FindVisualChildren<DemoSampleControl>(page)
-                        .Where(static sample => sample.Visibility == Visibility.Visible));
+                        .Where(static sample => sample.Visibility is Visibility.Visible));
                 }
                 finally
                 {
@@ -436,7 +434,7 @@ namespace Fluence.Wpf.Tests
             int index = text.IndexOf(word, StringComparison.Ordinal);
             while (index >= 0)
             {
-                bool startsOnBoundary = index == 0 || !IsWordCharacter(text[index - 1]);
+                bool startsOnBoundary = index is 0 || !IsWordCharacter(text[index - 1]);
                 int end = index + word.Length;
                 bool endsOnBoundary = end == text.Length || !IsWordCharacter(text[end]);
                 if (startsOnBoundary && endsOnBoundary)

@@ -49,19 +49,19 @@ namespace Fluence.Wpf.Automation
         /// <inheritdoc />
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
-            return AutomationControlType.SplitButton;
+            return AutomationControlType.Button;
         }
 
         /// <inheritdoc />
         public override object GetPattern(PatternInterface patternInterface)
         {
-            return patternInterface != PatternInterface.ExpandCollapse
+            return patternInterface is not PatternInterface.ExpandCollapse
                 ? base.GetPattern(patternInterface)
                 : this;
         }
 
         /// <inheritdoc />
-        public virtual ExpandCollapseState ExpandCollapseState => DropDownButton.IsChecked == true
+        public virtual ExpandCollapseState ExpandCollapseState => DropDownButton.IsChecked is true
             ? ExpandCollapseState.Expanded
             : ExpandCollapseState.Collapsed;
 

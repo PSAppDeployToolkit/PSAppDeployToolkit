@@ -209,7 +209,7 @@ namespace Fluence.Wpf.Tests
         {
             lock (LockObj)
             {
-                if (_dispatcher?.Thread.IsAlive == true)
+                if ((_dispatcher?.Thread.IsAlive) is true)
                 {
                     return _dispatcher;
                 }
@@ -226,7 +226,7 @@ namespace Fluence.Wpf.Tests
                 thread.SetApartmentState(ApartmentState.STA);
                 thread.IsBackground = true;
                 thread.Start();
-                ready.Wait();
+                ready.Wait(default(CancellationToken));
                 _dispatcher = created;
                 return _dispatcher;
             }

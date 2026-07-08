@@ -28,6 +28,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -49,6 +50,11 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(Card),
                 new FrameworkPropertyMetadata(typeof(Card)));
+
+            // A Card is not interactive by default; only a clickable Card enters the tab order.
+            // Override inherited defaults so non-clickable instances do not participate in tab navigation.
+            IsTabStopProperty.OverrideMetadata(typeof(Card), new FrameworkPropertyMetadata(defaultValue: false));
+            FocusableProperty.OverrideMetadata(typeof(Card), new FrameworkPropertyMetadata(defaultValue: false));
         }
 
         /// <summary>
@@ -192,7 +198,17 @@ namespace Fluence.Wpf.Controls
                 nameof(IsClickable),
                 typeof(bool),
                 typeof(Card),
-                new FrameworkPropertyMetadata(defaultValue: false));
+                new FrameworkPropertyMetadata(defaultValue: false, propertyChangedCallback: OnIsClickableChanged));
+
+        private static void OnIsClickableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is Card card)
+            {
+                bool clickable = (bool)e.NewValue;
+                card.Focusable = clickable;
+                card.IsTabStop = clickable;
+            }
+        }
 
         /// <summary>
         /// Gets or sets whether the card responds to mouse click interactions.
@@ -316,6 +332,12 @@ namespace Fluence.Wpf.Controls
                 IsPressed = false;
                 ReleaseMouseCapture();
             }
+        }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new Automation.CardAutomationPeer(this);
         }
     }
 }

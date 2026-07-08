@@ -31,10 +31,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using FluenceBorder = Fluence.Wpf.Controls.Border;
-using FluenceButton = Fluence.Wpf.Controls.Button;
-using FluenceFontIcon = Fluence.Wpf.Controls.FontIcon;
-using FluenceStackPanel = Fluence.Wpf.Controls.StackPanel;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -223,7 +219,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateSection(ColorSection section)
         {
-            FluenceStackPanel sectionPanel = new()
+            Controls.StackPanel sectionPanel = new()
             {
                 Margin = new Thickness(0, 20, 0, 0),
                 Orientation = Orientation.Vertical,
@@ -242,7 +238,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateTextExamples()
         {
-            FluenceStackPanel examples = new()
+            Controls.StackPanel examples = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 20,
@@ -299,7 +295,7 @@ namespace Fluence.Wpf.Demo.Pages
                 new("Inverse text", "Text placed on inverse surfaces.", "TextFillColorInverseBrush"),
             ];
 
-            FluenceBorder panel = new()
+            Controls.Border panel = new()
             {
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
@@ -308,7 +304,7 @@ namespace Fluence.Wpf.Demo.Pages
             panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel stack = new()
+            Controls.StackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 12,
@@ -327,7 +323,7 @@ namespace Fluence.Wpf.Demo.Pages
             string exampleBorderKey,
             ColorToken[] tokens)
         {
-            FluenceBorder panel = new()
+            Controls.Border panel = new()
             {
                 Padding = new Thickness(16),
                 BorderThickness = new Thickness(1),
@@ -336,7 +332,7 @@ namespace Fluence.Wpf.Demo.Pages
             panel.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel stack = new()
+            Controls.StackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 12,
@@ -357,7 +353,7 @@ namespace Fluence.Wpf.Demo.Pages
             string backgroundKey,
             string borderKey)
         {
-            FluenceBorder preview = new()
+            Controls.Border preview = new()
             {
                 MinHeight = 104,
                 Padding = new Thickness(18),
@@ -382,7 +378,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateExamplePanel(ColorSection section)
         {
-            FluenceBorder panel = new()
+            Controls.Border panel = new()
             {
                 Margin = new Thickness(0, 36, 0, 8),
                 Padding = new Thickness(12),
@@ -392,7 +388,7 @@ namespace Fluence.Wpf.Demo.Pages
             panel.SetResourceReference(Border.BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
             panel.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel stack = new()
+            Controls.StackPanel stack = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 8,
@@ -406,7 +402,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static UIElement CreatePreviewSurface(ColorSection section)
         {
-            FluenceBorder preview = new()
+            Controls.Border preview = new()
             {
                 MinHeight = 92,
                 Padding = new Thickness(16),
@@ -431,7 +427,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private UIElement CreateTokenRows(ColorToken[] tokens)
         {
-            FluenceStackPanel rows = new()
+            Controls.StackPanel rows = new()
             {
                 Orientation = Orientation.Vertical,
                 Spacing = 4,
@@ -451,7 +447,7 @@ namespace Fluence.Wpf.Demo.Pages
                     _ = rowGrid.Children.Add(CreateTokenTile(tokens[start + offset], offset, count));
                 }
 
-                FluenceBorder rowBorder = new()
+                Controls.Border rowBorder = new()
                 {
                     CornerRadius = new CornerRadius(8),
                     Child = rowGrid,
@@ -466,7 +462,7 @@ namespace Fluence.Wpf.Demo.Pages
         private UIElement CreateTokenTile(ColorToken token, int index, int count)
         {
             CornerRadius cornerRadius = GetGroupedTileCornerRadius(index, count);
-            FluenceBorder tile = new()
+            Controls.Border tile = new()
             {
                 MinHeight = 166,
                 Margin = new Thickness(2),
@@ -477,7 +473,7 @@ namespace Fluence.Wpf.Demo.Pages
             tile.SetResourceReference(Border.BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
             tile.SetResourceReference(Border.BorderBrushProperty, "CardStrokeColorDefaultBrush");
 
-            FluenceStackPanel content = new()
+            Controls.StackPanel content = new()
             {
                 Margin = new Thickness(10),
                 Orientation = Orientation.Vertical,
@@ -527,10 +523,10 @@ namespace Fluence.Wpf.Demo.Pages
             Grid.SetColumn(title, 0);
             _ = header.Children.Add(title);
 
-            FluenceButton copyButton = new()
+            Controls.Button copyButton = new()
             {
                 Appearance = ControlAppearance.Subtle,
-                Icon = new FluenceFontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
+                Icon = new Controls.FontIcon { Glyph = "\uE8C8", IconFontSize = 14 },
                 MinHeight = 28,
                 MinWidth = 28,
                 Padding = new Thickness(6, 3, 6, 3),
@@ -581,7 +577,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static void CopyTokenButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FluenceButton { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
+            if (sender is Controls.Button { Tag: string resourceKey } && !string.IsNullOrWhiteSpace(resourceKey))
             {
                 Clipboard.SetText(resourceKey);
             }

@@ -6,162 +6,350 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
     d:DesignHeight="900"
-    d:DesignWidth="900"
+    d:DesignWidth="1200"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <!--
+            Iconography tile mirroring the WinUI 3 Gallery icon grid: a flat near-square card
+            (CardBackground over the SolidBackgroundFillColorBase panel), the glyph centered above a
+            caption-size name, and a 2px accent selection ring around the selected tile.
+        -->
+        <Style x:Key="IconTileButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
+            <Setter Property="Height" Value="110" />
+            <Setter Property="Margin" Value="0,0,12,12" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="SelectionRing"
+                            BorderBrush="Transparent"
+                            BorderThickness="2"
+                            CornerRadius="6">
+                            <Border
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                                <Grid>
+                                    <Border
+                                        x:Name="HoverLayer"
+                                        Background="Transparent"
+                                        CornerRadius="3" />
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontFamily="Segoe Fluent Icons"
+                                            FontSize="30"
+                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                            Text="{Binding Glyph}"
+                                            TextAlignment="Center" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Margin="8,0,8,10"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{Binding Name}"
+                                            TextAlignment="Center"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="SelectionRing" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HoverLayer" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HoverLayer" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Width" Value="115" />
+        </Style>
+
+        <!--  Monospace value text for the details rows (Consolas precedent from the previous catalog).  -->
+        <Style
+            x:Key="IconDetailValueStyle"
+            BasedOn="{StaticResource {x:Type TextBlock}}"
+            TargetType="{x:Type TextBlock}">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
     <Grid x:Name="PageRoot" Style="{StaticResource GalleryPageRootStyle}">
         <Grid x:Name="PageContent" Style="{StaticResource GalleryPageContentGridStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Icons" />
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="Iconography" />
             <TextBlock
                 Grid.Row="1"
                 Style="{StaticResource SectionDescriptionStyle}"
-                Text="FontIcon uses glyph codes to render icons from the 'Segoe Fluent Icons' font." />
+                Text="The icons below use Segoe Fluent Icons, the standard icon font on Windows 11." />
 
-            <Grid
-                x:Name="FontIconSampleContent"
+            <ui:AutoSuggestBox
+                x:Name="IconSearchBox"
                 Grid.Row="2"
-                MinHeight="48"
-                VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="56" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="96" />
-                </Grid.ColumnDefinitions>
-
-                <ui:FontIcon
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Glyph="&#xE713;"
-                    IconFontSize="24" />
-                <TextBlock
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Text="Settings" />
-                <TextBlock
-                    Grid.Column="2"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    FontFamily="Consolas"
-                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                    Text="U+E713" />
-            </Grid>
-
-            <StackPanel Grid.Row="3">
-                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Installed icon catalog" />
-                <TextBlock
-                    x:Name="IconCatalogCountText"
-                    Margin="0,0,0,24"
-                    Style="{StaticResource SectionDescriptionStyle}" />
-            </StackPanel>
+                Width="420"
+                Margin="0,0,0,16"
+                HorizontalAlignment="Left"
+                PlaceholderText="Search icons by name, code, or tags"
+                TextChanged="IconSearchBox_TextChanged">
+                <ui:AutoSuggestBox.QueryIcon>
+                    <ui:FontIcon Glyph="&#xE721;" />
+                </ui:AutoSuggestBox.QueryIcon>
+            </ui:AutoSuggestBox>
 
             <Border
                 x:Name="IconCatalogCard"
-                Grid.Row="4"
-                Padding="{DynamicResource DemoSampleCardPadding}"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Grid.Row="3"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="8">
-                <ui:ListView
-                    x:Name="IconCatalogList"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    ScrollViewer.CanContentScroll="True"
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    ScrollViewer.VerticalScrollBarVisibility="Auto"
-                    VirtualizingPanel.ScrollUnit="Pixel"
-                    VirtualizingStackPanel.IsVirtualizing="True"
-                    VirtualizingStackPanel.VirtualizationMode="Recycling">
-                    <ui:ListView.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListViewItem}">
-                            <Setter Property="Focusable" Value="False" />
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                        <ContentPresenter
-                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                            Content="{TemplateBinding Content}"
-                                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}" />
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ui:ListView.ItemContainerStyle>
-                    <ui:ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel />
-                        </ItemsPanelTemplate>
-                    </ui:ListView.ItemsPanel>
-                    <ui:ListView.ItemTemplate>
-                        <DataTemplate>
-                            <ItemsControl Margin="0,4" ItemsSource="{Binding Items}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="4" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <ui:Border
-                                            Width="176"
-                                            Height="112"
-                                            MinHeight="104"
-                                            Margin="6"
-                                            CornerRadius="8"
-                                            Style="{StaticResource IconGalleryCardStyle}">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="*" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="160" />
+                        <ColumnDefinition Width="380" />
+                    </Grid.ColumnDefinitions>
 
-                                                <TextBlock
-                                                    Margin="0,8,0,2"
-                                                    HorizontalAlignment="Center"
-                                                    FontFamily="Segoe Fluent Icons"
-                                                    FontSize="28"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="{Binding Glyph}"
-                                                    TextAlignment="Center" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Margin="8,6,8,2"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                    Text="{Binding Name}"
-                                                    TextAlignment="Center"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    TextWrapping="NoWrap" />
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Margin="0,0,0,8"
-                                                    HorizontalAlignment="Center"
-                                                    FontFamily="Consolas"
-                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                    Text="{Binding DisplayCode}" />
-                                            </Grid>
-                                        </ui:Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </DataTemplate>
-                    </ui:ListView.ItemTemplate>
-                </ui:ListView>
+                    <ui:ListView
+                        x:Name="IconCatalogList"
+                        Margin="16,16,8,16"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        KeyboardNavigation.TabNavigation="Once"
+                        ScrollViewer.CanContentScroll="True"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        SizeChanged="IconCatalogList_SizeChanged"
+                        VirtualizingPanel.ScrollUnit="Pixel"
+                        VirtualizingStackPanel.IsVirtualizing="True"
+                        VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ui:ListView.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Setter Property="Focusable" Value="False" />
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                            <ContentPresenter
+                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                Content="{TemplateBinding Content}"
+                                                ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ui:ListView.ItemContainerStyle>
+                        <ui:ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel />
+                            </ItemsPanelTemplate>
+                        </ui:ListView.ItemsPanel>
+                        <ui:ListView.ItemTemplate>
+                            <DataTemplate>
+                                <ItemsControl Focusable="False" ItemsSource="{Binding Items}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button
+                                                AutomationProperties.Name="{Binding Name}"
+                                                Click="IconTile_Click"
+                                                Style="{StaticResource IconTileButtonStyle}"
+                                                ToolTip="{Binding Name}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </ui:ListView.ItemTemplate>
+                    </ui:ListView>
+
+                    <TextBlock
+                        x:Name="IconCatalogEmptyText"
+                        Margin="24"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Text="No icons found."
+                        Visibility="Collapsed" />
+
+                    <Border
+                        x:Name="IconDetailsPanel"
+                        Grid.Column="1"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1,0,0,0"
+                        CornerRadius="0,7,7,0">
+                        <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+                            <StackPanel Margin="20,20,12,20">
+                                <Border
+                                    Width="90"
+                                    Height="90"
+                                    Margin="0,0,0,24"
+                                    HorizontalAlignment="Left"
+                                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{DynamicResource ControlCornerRadius}">
+                                    <ui:FontIcon
+                                        x:Name="IconPreviewGlyph"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IconFontSize="40" />
+                                </Border>
+
+                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Icon name" />
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconNameValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <ui:Button
+                                        x:Name="CopyIconNameButton"
+                                        Grid.Column="1"
+                                        Width="40"
+                                        Height="36"
+                                        MinWidth="40"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy icon name"
+                                        ToolTip="Copy icon name">
+                                        <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </ui:Button>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Text glyph" />
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconTextGlyphValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <ui:Button
+                                        x:Name="CopyTextGlyphButton"
+                                        Grid.Column="1"
+                                        Width="40"
+                                        Height="36"
+                                        MinWidth="40"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy text glyph"
+                                        ToolTip="Copy text glyph">
+                                        <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </ui:Button>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Code glyph" />
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconCodeGlyphValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <ui:Button
+                                        x:Name="CopyCodeGlyphButton"
+                                        Grid.Column="1"
+                                        Width="40"
+                                        Height="36"
+                                        MinWidth="40"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy code glyph"
+                                        ToolTip="Copy code glyph">
+                                        <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </ui:Button>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="FontIcon XAML" />
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconXamlValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <ui:Button
+                                        x:Name="CopyXamlButton"
+                                        Grid.Column="1"
+                                        Width="40"
+                                        Height="36"
+                                        MinWidth="40"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy FontIcon XAML"
+                                        ToolTip="Copy FontIcon XAML">
+                                        <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </ui:Button>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="FontIcon C#" />
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="IconCSharpValueText" Style="{StaticResource IconDetailValueStyle}" />
+                                    <ui:Button
+                                        x:Name="CopyCSharpButton"
+                                        Grid.Column="1"
+                                        Width="40"
+                                        Height="36"
+                                        MinWidth="40"
+                                        Margin="8,0,0,0"
+                                        Padding="0"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Copy FontIcon C#"
+                                        ToolTip="Copy FontIcon C#">
+                                        <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="16" />
+                                    </ui:Button>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Tags" />
+                                <WrapPanel x:Name="IconTagsPanel" Margin="0,2,0,0" />
+                                <TextBlock
+                                    x:Name="IconNoTagsText"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="No tags available."
+                                    Visibility="Collapsed" />
+                            </StackPanel>
+                        </ui:SmoothScrollViewer>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

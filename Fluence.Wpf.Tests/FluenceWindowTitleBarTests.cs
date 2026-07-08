@@ -130,7 +130,7 @@ namespace Fluence.Wpf.Tests
                         ShowInTaskbar = false,
                     };
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded, default);
                     testBody(window);
                 }
                 finally
@@ -540,7 +540,7 @@ namespace Fluence.Wpf.Tests
 
                     for (int i = 0; i < 5; i++)
                     {
-                        ApplicationTheme theme = i % 2 == 0 ? ApplicationTheme.Dark : ApplicationTheme.Light;
+                        ApplicationTheme theme = i % 2 is 0 ? ApplicationTheme.Dark : ApplicationTheme.Light;
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     }
 
@@ -576,13 +576,13 @@ namespace Fluence.Wpf.Tests
 
             string xaml = System.IO.File.ReadAllText(xamlPath);
             Assert.IsTrue(
-                xaml.IndexOf("MinimizeWindowCommand", StringComparison.Ordinal) >= 0,
+                xaml.Contains("MinimizeWindowCommand", StringComparison.Ordinal),
                 "Minimize button should bind MinimizeWindowCommand.");
             Assert.IsTrue(
-                xaml.IndexOf("MaximizeWindowCommand", StringComparison.Ordinal) >= 0,
+                xaml.Contains("MaximizeWindowCommand", StringComparison.Ordinal),
                 "Maximize button should bind MaximizeWindowCommand.");
             Assert.IsTrue(
-                xaml.IndexOf("CloseWindowCommand", StringComparison.Ordinal) >= 0,
+                xaml.Contains("CloseWindowCommand", StringComparison.Ordinal),
                 "Close button should bind CloseWindowCommand.");
         }
 
@@ -642,7 +642,7 @@ namespace Fluence.Wpf.Tests
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
                 Assert.IsNotNull(btn);
@@ -661,7 +661,7 @@ namespace Fluence.Wpf.Tests
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizable = false;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
                 Assert.IsNotNull(btn);
@@ -772,7 +772,7 @@ namespace Fluence.Wpf.Tests
                     new IntPtr(NativeConstants.HTMAXBUTTON),
                     IntPtr.Zero,
                     out bool handled);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.IsTrue(handled,
                     "WM_NCLBUTTONUP/HTMAXBUTTON should be handled by FluenceWindow.");
@@ -789,7 +789,7 @@ namespace Fluence.Wpf.Tests
                     new IntPtr(NativeConstants.HTMAXBUTTON),
                     IntPtr.Zero,
                     out handled);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.IsTrue(handled,
                     "Second WM_NCLBUTTONUP/HTMAXBUTTON should be handled by FluenceWindow.");
@@ -836,7 +836,7 @@ namespace Fluence.Wpf.Tests
                     BindingFlags.Instance | BindingFlags.NonPublic);
                 Assert.IsNotNull(setSnapHover, "SetSnapHover must exist for the snap-hover token test.");
                 _ = setSnapHover.Invoke(w, [max]);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreSame(expectedBackground, max.Background,
                     "Snap hover must set the maximize button Background to SubtleFillColorSecondaryBrush, matching the WindowButtonStyle PointerOver state.");
@@ -852,7 +852,7 @@ namespace Fluence.Wpf.Tests
                     BindingFlags.Instance | BindingFlags.NonPublic);
                 Assert.IsNotNull(clearSnapHover, "ClearSnapHover must exist for the snap-hover token test.");
                 _ = clearSnapHover.Invoke(w, parameters: null);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.BackgroundProperty),
                     "ClearSnapHover must ClearValue the Background local value so the style/template default applies again.");
@@ -875,7 +875,7 @@ namespace Fluence.Wpf.Tests
                 // DialogAllowMinimize is honoured (IsMinimizeButtonVisible=Visibility.Visible).
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
                 Assert.IsNotNull(btn);
@@ -884,7 +884,7 @@ namespace Fluence.Wpf.Tests
 
                 w.IsMinimizeButtonVisible = Visibility.Visible;
                 w.IsMinimizable = true;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(Visibility.Visible, btn.Visibility,
                     "Explicit flip Collapsed->Visible must override the NoResize-derived Collapsed baseline.");
@@ -900,7 +900,7 @@ namespace Fluence.Wpf.Tests
             {
                 w.ResizeMode = ResizeMode.CanResize;
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
                 Assert.IsNotNull(btn);
@@ -918,7 +918,7 @@ namespace Fluence.Wpf.Tests
             {
                 w.IsMaximizeButtonVisible = Visibility.Collapsed;
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
                 Assert.IsNotNull(max);
@@ -927,7 +927,7 @@ namespace Fluence.Wpf.Tests
 
                 w.IsMaximizeButtonVisible = Visibility.Visible;
                 w.IsMaximizable = true;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(Visibility.Visible, max.Visibility,
                     "Explicit flip Collapsed->Visible must override the NoResize-derived Collapsed baseline.");
@@ -943,7 +943,7 @@ namespace Fluence.Wpf.Tests
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
                 System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
@@ -953,7 +953,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsFalse(restore?.IsEnabled ?? false);
 
                 w.WindowState = WindowState.Maximized;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(Visibility.Collapsed, max?.Visibility);
                 Assert.AreEqual(Visibility.Hidden, restore?.Visibility);
@@ -999,14 +999,14 @@ namespace Fluence.Wpf.Tests
                     w.IsMinimizeButtonVisible = value;
                     w.IsMaximizeButtonVisible = value;
                     w.IsCloseButtonVisible = value;
-                    w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                    w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                     Assert.AreEqual(value, minimize.Visibility);
                     Assert.AreEqual(value, close.Visibility);
                     Assert.AreEqual(value, maximize.Visibility);
                     Assert.AreEqual(Visibility.Collapsed, restore.Visibility);
 
-                    bool enabled = value == Visibility.Visible;
+                    bool enabled = value is Visibility.Visible;
                     Assert.AreEqual(enabled, minimize.IsEnabled);
                     Assert.AreEqual(enabled, maximize.IsEnabled);
                     Assert.AreEqual(enabled, close.IsEnabled);
@@ -1112,7 +1112,7 @@ modifiers: null);
                 Assert.AreEqual(Visibility.Visible, closeBtn?.Visibility);
 
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(Visibility.Collapsed, minBtn?.Visibility,
                     "Pre-existing contract: untouched DPs hide min/max when ResizeMode=NoResize.");
@@ -1141,7 +1141,7 @@ modifiers: null);
                     "OnMinimizeWindow",
                     CreateExecutedArgs(SystemCommands.MinimizeWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(WindowState.Minimized, w.WindowState,
                     "OnMinimizeWindow must drive WindowState=Minimized even when HideAllWindowButtons has stripped WS_SYSMENU.");
@@ -1161,7 +1161,7 @@ modifiers: null);
                     "OnMaximizeWindow",
                     CreateExecutedArgs(SystemCommands.MaximizeWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(WindowState.Maximized, w.WindowState,
                     "OnMaximizeWindow must drive WindowState=Maximized even when HideAllWindowButtons has stripped WS_SYSMENU.");
@@ -1174,7 +1174,7 @@ modifiers: null);
             RunWithShownWindow(static w =>
             {
                 w.WindowState = WindowState.Maximized;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
                 Assert.AreEqual(WindowState.Maximized, w.WindowState,
                     "Precondition: test setup failed to drive the window to Maximized state.");
 
@@ -1183,7 +1183,7 @@ modifiers: null);
                     "OnRestoreWindow",
                     CreateExecutedArgs(SystemCommands.RestoreWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 Assert.AreEqual(WindowState.Normal, w.WindowState,
                     "OnRestoreWindow must drive WindowState=Normal regardless of sysmenu/style gating.");
@@ -1226,14 +1226,14 @@ modifiers: null);
                     };
 
                     window.Show();
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Loaded, default);
 
                     // Flip visibility after Show() to mirror PSADT's IsMinimizeButtonVisible=Visibility.Visible.
                     window.IsMinimizeButtonVisible = Visibility.Visible;
                     window.IsMinimizable = true;
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
                     CommandManager.InvalidateRequerySuggested();
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
 
                     System.Windows.Controls.Button? minBtn = GetCaptionButtonField(window, "_minimizeButton");
                     Assert.IsNotNull(minBtn, "Minimize template part must exist after Show.");
@@ -1253,8 +1253,8 @@ modifiers: null);
                     // on its own DataContext (the button is the command target, the window is
                     // the CommandBinding host via routed-command bubbling).
                     SystemCommands.MinimizeWindowCommand.Execute(parameter: null, minBtn);
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
 
                     Assert.AreEqual(WindowState.Minimized, window.WindowState,
                         "PSADT flow: SystemCommands.MinimizeWindowCommand.Execute must end with WindowState=Minimized even when Topmost=True + ResizeMode=NoResize + HideAllWindowButtons has stripped the sysmenu.");
@@ -1367,7 +1367,7 @@ modifiers: null);
                 }
                 finally
                 {
-                    if (window?.IsVisible == true)
+                    if ((window?.IsVisible) is true)
                     {
                         window.Close();
                     }
@@ -1518,9 +1518,9 @@ modifiers: null);
                     };
 
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded, default);
                     window.UpdateLayout();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
+                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Render, default);
 
                     foreach (string? fieldName in new[] { "_minimizeButton", "_maximizeButton", "_closeButton" })
                     {

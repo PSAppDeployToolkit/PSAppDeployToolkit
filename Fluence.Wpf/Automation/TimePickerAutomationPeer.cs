@@ -59,15 +59,11 @@ namespace Fluence.Wpf.Automation
         protected override string GetNameCore()
         {
             string name = base.GetNameCore();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-
-            TimeSpan? selectedTime = TimePicker.SelectedTime;
-            return selectedTime.HasValue
-                ? DateTime.Today.Add(selectedTime.Value).ToString("t", CultureInfo.CurrentCulture)
-                : TimePicker.PlaceholderText;
+            return string.IsNullOrWhiteSpace(name)
+                ? TimePicker.SelectedTime is TimeSpan selectedTime
+                ? DateTime.Today.Add(selectedTime).ToString("t", CultureInfo.CurrentCulture)
+                : TimePicker.PlaceholderText
+                : name;
         }
 
         /// <summary>

@@ -371,7 +371,7 @@ namespace Fluence.Wpf.Demo.Pages
             SourceTabControl?.Items.Clear();
 
             UpdateSourceVisibility();
-            if (SourceExpander?.IsExpanded == true)
+            if ((SourceExpander?.IsExpanded) is true)
             {
                 LoadSourceTabs();
             }
@@ -435,6 +435,7 @@ namespace Fluence.Wpf.Demo.Pages
             Border border = new()
             {
                 Name = "CopySourceButtonHost",
+                BorderThickness = new Thickness(1),
                 Child = copyButton,
                 CornerRadius = new CornerRadius(4),
                 HorizontalAlignment = HorizontalAlignment.Right,
@@ -442,6 +443,7 @@ namespace Fluence.Wpf.Demo.Pages
                 VerticalAlignment = VerticalAlignment.Top,
             };
             border.SetResourceReference(BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
+            border.SetResourceReference(BorderBrushProperty, "ControlStrokeColorDefaultBrush");
             return border;
         }
 
@@ -484,7 +486,7 @@ namespace Fluence.Wpf.Demo.Pages
                 Padding = new Thickness(0),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
-            viewer.SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+            viewer.SetResourceReference(BackgroundProperty, "SystemFillColorSolidAttentionBackgroundBrush");
             viewer.SetResourceReference(ForegroundProperty, "TextFillColorPrimaryBrush");
             viewer.Document = CreateSourceDocument(source, language);
             return viewer;
@@ -529,13 +531,13 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static void AddFormattedLine(Paragraph paragraph, string line, SourceLanguage language)
         {
-            if (language == SourceLanguage.Xaml)
+            if (language is SourceLanguage.Xaml)
             {
                 AddXamlLine(paragraph, line);
                 return;
             }
 
-            if (language == SourceLanguage.CSharp)
+            if (language is SourceLanguage.CSharp)
             {
                 AddCSharpLine(paragraph, line);
                 return;
@@ -664,7 +666,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static void AddRun(Paragraph paragraph, string text, string resourceKey)
         {
-            if (text.Length == 0)
+            if (text.Length is 0)
             {
                 return;
             }
@@ -677,7 +679,7 @@ namespace Fluence.Wpf.Demo.Pages
         private static bool StartsWith(string text, int index, string value)
         {
             return index + value.Length <= text.Length &&
-                   string.Compare(text, index, value, 0, value.Length, StringComparison.Ordinal) == 0;
+                string.Compare(text, index, value, 0, value.Length, StringComparison.Ordinal) is 0;
         }
 
         private static int FindQuotedTextEnd(string text, int start, char quote)

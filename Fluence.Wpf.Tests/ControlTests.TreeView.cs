@@ -32,9 +32,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using FluenceTreeView = Fluence.Wpf.Controls.TreeView;
-using FluenceTreeViewItem = Fluence.Wpf.Controls.TreeViewItem;
-using WpfBorder = System.Windows.Controls.Border;
 
 namespace Fluence.Wpf.Tests
 {
@@ -56,9 +53,9 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeView tv = new();
-                _ = tv.Items.Add(new FluenceTreeViewItem { Header = "Node 1" });
-                _ = tv.Items.Add(new FluenceTreeViewItem { Header = "Node 2" });
+                Controls.TreeView tv = new();
+                _ = tv.Items.Add(new Controls.TreeViewItem { Header = "Node 1" });
+                _ = tv.Items.Add(new Controls.TreeViewItem { Header = "Node 2" });
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
@@ -82,9 +79,9 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Node A" };
-                _ = item.Items.Add(new FluenceTreeViewItem { Header = "Child 1" });
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Node A" };
+                _ = item.Items.Add(new Controls.TreeViewItem { Header = "Child 1" });
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
@@ -108,9 +105,9 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Node A" };
-                _ = item.Items.Add(new FluenceTreeViewItem { Header = "Child 1" });
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Node A" };
+                _ = item.Items.Add(new Controls.TreeViewItem { Header = "Child 1" });
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
@@ -134,8 +131,8 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Leaf" };
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Leaf" };
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
@@ -158,9 +155,9 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Node A" };
-                _ = item.Items.Add(new FluenceTreeViewItem { Header = "Child 1" });
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Node A" };
+                _ = item.Items.Add(new Controls.TreeViewItem { Header = "Child 1" });
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
@@ -191,14 +188,14 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Node A" };
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Node A" };
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? itemBorder = FindVisualChildByName<WpfBorder>(item, "ItemBorder");
+                Border? itemBorder = FindVisualChildByName<Border>(item, "ItemBorder");
                 Assert.IsNotNull(itemBorder, "ItemBorder must exist in TreeViewItem template.");
 
                 // Background must be transparent (or null) in normal state
@@ -227,9 +224,9 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Parent" };
-                _ = item.Items.Add(new FluenceTreeViewItem { Header = "Child" });
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Parent" };
+                _ = item.Items.Add(new Controls.TreeViewItem { Header = "Child" });
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
@@ -289,8 +286,8 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeView tv = new();
-                _ = tv.Items.Add(new FluenceTreeViewItem { Header = "Node 1" });
+                Controls.TreeView tv = new();
+                _ = tv.Items.Add(new Controls.TreeViewItem { Header = "Node 1" });
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
@@ -315,9 +312,9 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceTreeViewItem item = new() { Header = "Node A" };
-                _ = item.Items.Add(new FluenceTreeViewItem { Header = "Child" });
-                FluenceTreeView tv = new();
+                Controls.TreeViewItem item = new() { Header = "Node A" };
+                _ = item.Items.Add(new Controls.TreeViewItem { Header = "Child" });
+                Controls.TreeView tv = new();
                 _ = tv.Items.Add(item);
                 Window w = new() { Content = tv, Width = 300, Height = 200 };
                 w.Show();

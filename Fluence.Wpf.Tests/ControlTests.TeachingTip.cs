@@ -30,6 +30,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -856,6 +857,24 @@ namespace Fluence.Wpf.Tests
                             string.Format("Resource '{0}' must resolve in TeachingTip theme cycle step: {1}", key, theme));
                     }
                 }
+            });
+        }
+
+        // ---------------------------------------------------------------------------
+        // Task 9 -- a11y: TeachingTip live-region metadata
+        // ---------------------------------------------------------------------------
+
+        [TestMethod]
+        public void TeachingTip_HasPolite_LiveSetting()
+        {
+            RunOnStaThread(static () =>
+            {
+                Controls.TeachingTip tip = new();
+                AutomationLiveSetting liveSetting = AutomationProperties.GetLiveSetting(tip);
+                Assert.AreEqual(
+                    AutomationLiveSetting.Polite,
+                    liveSetting,
+                    "TeachingTip must expose AutomationLiveSetting.Polite so Narrator announces tip content.");
             });
         }
 

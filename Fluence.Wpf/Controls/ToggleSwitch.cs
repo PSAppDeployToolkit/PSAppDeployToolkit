@@ -261,7 +261,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            CompleteThumbInteraction(IsChecked != true);
+            CompleteThumbInteraction(IsChecked is not true);
             e.Handled = true;
         }
 
@@ -312,7 +312,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            if (Mouse.LeftButton == MouseButtonState.Released)
+            if (Mouse.LeftButton is MouseButtonState.Released)
             {
                 CompleteThumbInteraction(ResolveThumbInteractionCheckedState());
                 return;
@@ -324,7 +324,7 @@ namespace Fluence.Wpf.Controls
         private bool ResolveThumbInteractionCheckedState()
         {
             return _dragDistance <= DragDistanceThreshold
-                ? IsChecked != true
+                ? IsChecked is not true
                 : (_knobTranslate?.X ?? KnobOffOffset) >= DragCommitOffset;
         }
 
@@ -339,7 +339,7 @@ namespace Fluence.Wpf.Controls
 
         private void CompleteThumbInteraction(bool nextChecked)
         {
-            bool currentChecked = IsChecked == true;
+            bool currentChecked = IsChecked is true;
             _pendingClick = false;
             _dragStarted = false;
             _dragDistance = 0.0;
@@ -360,7 +360,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            double targetOffset = IsChecked == true ? KnobOnOffset : KnobOffOffset;
+            double targetOffset = IsChecked is true ? KnobOnOffset : KnobOffOffset;
             if (!useAnimation)
             {
                 SetKnobOffset(targetOffset);

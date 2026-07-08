@@ -28,6 +28,8 @@
 
 using System;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -70,6 +72,9 @@ namespace Fluence.Wpf.Controls
             IsIndeterminateProperty.OverrideMetadata(
                 typeof(ProgressBar),
                 new FrameworkPropertyMetadata(defaultValue: false, OnIsIndeterminateChanged));
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(ProgressBar),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Polite));
         }
 
         /// <summary>
@@ -328,6 +333,25 @@ namespace Fluence.Wpf.Controls
                 return;
             }
             bar.ApplyProgressMode();
+            bar.AnnounceLiveRegion();
+        }
+
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this control's automation peer
+        /// so Narrator announces the error or paused state change without moving focus.
+        /// Uses only net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -401,10 +425,10 @@ namespace Fluence.Wpf.Controls
             _syncingMode = true;
             try
             {
-                IsIndeterminate = mode == ProgressBarMode.Indeterminate;
-                ShowError = mode == ProgressBarMode.Error;
-                ShowPaused = mode == ProgressBarMode.Paused;
-                _stepMode = mode == ProgressBarMode.StepProgress;
+                IsIndeterminate = mode is ProgressBarMode.Indeterminate;
+                ShowError = mode is ProgressBarMode.Error;
+                ShowPaused = mode is ProgressBarMode.Paused;
+                _stepMode = mode is ProgressBarMode.StepProgress;
             }
             finally
             {

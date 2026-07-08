@@ -226,7 +226,7 @@ namespace Fluence.Wpf.Tests
                     window.Width = 200;
                     window.Height = 80;
                     window.Show();
-                    WpfTestSta.Dispatcher?.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Background);
+                    WpfTestSta.Dispatcher?.Invoke(static () => { }, System.Windows.Threading.DispatcherPriority.Background, default);
                     window.UpdateLayout();
                     _ = comboBox.ApplyTemplate();
 

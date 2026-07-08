@@ -7,8 +7,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
-    xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf">
+    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf">
 
     <!--  **** Demo App Layout ****  -->
 
@@ -50,7 +49,8 @@
     <Thickness x:Key="DemoSampleOutputMargin">16,0,0,0</Thickness>
     <Thickness x:Key="DemoSampleOutputPadding">16</Thickness>
     <Thickness x:Key="DemoSampleRightRailPadding">24,20</Thickness>
-    <Thickness x:Key="DemoSampleSourceHeaderPadding">24,14</Thickness>
+    <!--  Vertical padding pairs with the 32px WinUI chevron backplate to keep the 48px source header height.  -->
+    <Thickness x:Key="DemoSampleSourceHeaderPadding">24,8</Thickness>
     <Thickness x:Key="DemoSampleSourceTabMargin">16,8,16,16</Thickness>
     <Thickness x:Key="DemoSourceCodeDocumentPadding">12</Thickness>
     <Thickness x:Key="DemoSourceCopyButtonHostMargin">0,8,8,0</Thickness>
@@ -175,14 +175,20 @@
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
                                 <ScrollViewer
                                     x:Name="PART_ContentHost"
+                                    Grid.Column="0"
                                     Padding="{TemplateBinding Padding}"
                                     Focusable="False"
                                     HorizontalScrollBarVisibility="Hidden"
                                     VerticalScrollBarVisibility="Hidden" />
                                 <TextBlock
                                     x:Name="PlaceholderTextBlock"
+                                    Grid.Column="0"
                                     Margin="13,0,0,0"
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     FontFamily="{TemplateBinding FontFamily}"
@@ -191,6 +197,14 @@
                                     IsHitTestVisible="False"
                                     Text="{TemplateBinding PlaceholderText}"
                                     Visibility="Collapsed" />
+                                <ui:FontIcon
+                                    x:Name="SearchIcon"
+                                    Grid.Column="1"
+                                    Margin="6,0,12,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE721;"
+                                    IconFontSize="16" />
                             </Grid>
 
                             <!--  Rest underline: grey stroke  -->
@@ -200,13 +214,13 @@
                                 HorizontalAlignment="Stretch"
                                 Background="{DynamicResource ControlStrokeColorDefaultBrush}" />
 
-                            <!--  Focus underline: accent colour, overlays rest line when focused  -->
+                            <!--  Underline overlay: kept visible in every state but with no colour, so focus no longer paints an accent line over the neutral rest stroke.  -->
                             <Border
                                 x:Name="FocusLine"
                                 Grid.Row="1"
                                 HorizontalAlignment="Stretch"
-                                Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                Opacity="0" />
+                                Background="Transparent"
+                                Opacity="1" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -224,7 +238,8 @@
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="MainBorder" Property="Background" Value="{DynamicResource ControlFillColorInputActiveBrush}" />
-                            <Setter TargetName="FocusLine" Property="Opacity" Value="1" />
+                            <Setter TargetName="FocusLine" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -434,68 +449,4 @@
         </Style.Triggers>
     </Style>
 
-    <!--  **** Design \ Iconography  -->
-
-    <Style x:Key="IconGalleryCardStyle" TargetType="{x:Type ui:Border}">
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Height" Value="80" />
-        <Setter Property="Padding" Value="12" />
-        <Setter Property="RenderTransform">
-            <Setter.Value>
-                <ScaleTransform ScaleX="1" ScaleY="1" />
-            </Setter.Value>
-        </Setter>
-        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
-        <Setter Property="Variant" Value="{x:Static uicore:BorderVariant.Subtle}" />
-        <Setter Property="Width" Value="100" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
-                <Trigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                To="1.12"
-                                Duration="0:0:0.100">
-                                <DoubleAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                To="1.12"
-                                Duration="0:0:0.100">
-                                <DoubleAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-                <Trigger.ExitActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                To="1"
-                                Duration="0:0:0.100">
-                                <DoubleAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                            <DoubleAnimation
-                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                To="1"
-                                Duration="0:0:0.100">
-                                <DoubleAnimation.EasingFunction>
-                                    <CubicEase EasingMode="EaseOut" />
-                                </DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.ExitActions>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
 </ResourceDictionary>

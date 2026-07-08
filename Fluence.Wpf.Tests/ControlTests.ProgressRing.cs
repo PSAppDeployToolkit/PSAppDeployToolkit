@@ -32,6 +32,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -749,6 +750,30 @@ namespace Fluence.Wpf.Tests
                 Assert.IsNotNull(arc, "PART_DeterminateArc must still exist after theme cycle.");
 
                 w.Close();
+            });
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // Live region + RangeValue accessibility
+        // ──────────────────────────────────────────────────────────────────────
+
+        [TestMethod]
+        public void ProgressRing_DeclaresPoliteLiveSetting()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ProgressRing ring = new() { Width = 64, Height = 64 };
+                Window window = new() { Content = ring };
+                window.Show();
+                _ = ring.ApplyTemplate();
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.AreEqual(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(ring),
+                    "ProgressRing must declare a polite live region so Narrator announces error/paused state changes.");
+                window.Close();
             });
         }
 

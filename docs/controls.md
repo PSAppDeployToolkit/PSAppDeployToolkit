@@ -1,7 +1,7 @@
-The **Fluence.Wpf.Demo** gallery shows every control: `FluenceWindow` chrome with a search box in the title bar, a left `NavigationView` (compact / expanded), and grouped `UserControl` pages under `Fluence.Wpf.Demo/Pages/`:
+﻿The **Fluence.Wpf.Demo** gallery shows every control: `FluenceWindow` chrome with a search box in the title bar, a left `NavigationView` (compact / expanded), and grouped `UserControl` pages under `Fluence.Wpf.Demo/Pages/`:
 
 - Home (clickable hero cards)
-- Icons (FontIcon and virtualized Segoe Fluent Icons catalog)
+- Icons (WinUI Gallery-style Iconography catalog: search, virtualized tile grid, copyable glyph details)
 - Typography (Fluent type ramp and TextBlock usage)
 - Accessibility (focus order, high contrast, automation, RTL)
 - Buttons
@@ -43,7 +43,7 @@ xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
 | Area                | Types                                                                                                                              |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | Window              | `FluenceWindow`, `TitleBar`                                                                                                         |
-| Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `RepeatButton`, `ToggleButton`                                       |
+| Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `RepeatButton`, `ToggleButton`                  |
 | Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`, `DatePicker`, `TimePicker`, `ColorPicker`            |
 | Text                | `TextBox`, `PasswordBox`, `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions`                                                    |
 | Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem`                                                                               |
@@ -76,6 +76,8 @@ Key API:
 
 Primary members include `SystemBackdropType`, `CornerStyle`, `ExtendsContentIntoTitleBar`, `TitleBar`, `TitleBarHeight`, caption-button visibility properties, and title-bar events for back and pane-toggle requests.
 
+`FluenceWindow.DefaultIcon` is a public static `BitmapSource` that exposes the rasterized Fluence brand icon. Every `FluenceWindow` defaults its `Icon` property to this value so the brand mark appears in the title bar and taskbar without any caller setup; a consumer can also apply `DefaultIcon` to its own non-`FluenceWindow` windows. A consumer-assigned `Icon` overrides the default. The value is `null` if the brand resource is unavailable (for example in a headless or session-0 process).
+
 ### Basic Actions
 
 Key API:
@@ -85,12 +87,18 @@ Key API:
   <a href="../../api/Fluence.Wpf.Controls.HyperlinkButton.html">HyperlinkButton</a>
   <a href="../../api/Fluence.Wpf.Controls.DropDownButton.html">DropDownButton</a>
   <a href="../../api/Fluence.Wpf.Controls.SplitButton.html">SplitButton</a>
+  <a href="../../api/Fluence.Wpf.Controls.ToggleSplitButton.html">ToggleSplitButton</a>
   <a href="../../api/Fluence.Wpf.Controls.RepeatButton.html">RepeatButton</a>
   <a href="../../api/Fluence.Wpf.Controls.ToggleButton.html">ToggleButton</a>
   <a href="../../api/Fluence.Wpf.ControlAppearance.html">ControlAppearance</a>
+  <a href="../../api/Fluence.Wpf.ToggleSplitButtonIsCheckedChangedEventArgs.html">ToggleSplitButtonIsCheckedChangedEventArgs</a>
 </div>
 
 The action controls keep standard WPF command, content, and click patterns. Use `Appearance="Accent"` for the primary action on a page, and standard or subtle styling for lower-emphasis commands.
+
+`ToggleButton` holds a checked state with the WinUI accent visuals: checked renders as the accent state with distinct hover and pressed tints, and `IsThreeState="True"` adds the indeterminate state (`IsChecked` of `null`) with the WinUI neutral palette. The default template renders the same canonical toggle visual for every `Appearance` value; the property exists primarily for derived controls such as `DropDownButton`.
+
+`ToggleSplitButton` derives from `SplitButton` and turns the primary half into a toggle: a primary click flips `IsChecked` and then raises `Click`, so handlers observe the already-toggled state, while the chevron half still opens the `Flyout`. Subscribe to `IsCheckedChanged` (carrying the new state in `ToggleSplitButtonIsCheckedChangedEventArgs`) for state updates from clicks, bindings, or the Toggle automation pattern. Checked renders both halves in the accent palette with the WinUI checked divider stroke. Use it when the primary half switches a mode on or off and the flyout chooses which variant of that mode applies, such as list formatting.
 
 ### Selection
 
@@ -322,6 +330,13 @@ Key API:
 
 Status controls cover severity, closable state, determinate and indeterminate progress, paused and error states, and count or attention badge styling.
 
+`InfoBar` exposes two public static helpers for use outside the bar itself:
+
+- `InfoBar.GetSeverityGlyph(InfoBarSeverity)` - returns the canonical Segoe Fluent glyph character for the given severity, so a consumer can render the severity icon in any `FontIcon` without hardcoding codepoints.
+- `InfoBar.GetSeverityBrushKey(InfoBarSeverity)` - returns the theme brush resource key for the given severity, suitable for a `SetResourceReference` call or a `DynamicResource` binding.
+
+Both helpers stay in sync with the `InfoBar` control template; use them instead of hardcoding glyph or brush values.
+
 ### Accessibility
 
 Key API:
@@ -331,9 +346,91 @@ Key API:
   <a href="../../api/Fluence.Wpf.Automation.NavigationViewAutomationPeer.html">NavigationViewAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.ToggleSwitchAutomationPeer.html">ToggleSwitchAutomationPeer</a>
   <a href="../../api/Fluence.Wpf.Automation.InfoBarAutomationPeer.html">InfoBarAutomationPeer</a>
+  <a href="../../api/Fluence.Wpf.Automation.RatingControlAutomationPeer.html">RatingControlAutomationPeer</a>
+  <a href="../../api/Fluence.Wpf.Automation.PasswordBoxAutomationPeer.html">PasswordBoxAutomationPeer</a>
+  <a href="../../api/Fluence.Wpf.Automation.PersonPictureAutomationPeer.html">PersonPictureAutomationPeer</a>
+  <a href="../../api/Fluence.Wpf.Automation.HyperlinkButtonAutomationPeer.html">HyperlinkButtonAutomationPeer</a>
+  <a href="../../api/Fluence.Wpf.Automation.CardAutomationPeer.html">CardAutomationPeer</a>
 </div>
 
 Accessibility coverage includes focus visuals, high-contrast resources, automation peers, keyboard navigation, and right-to-left layout.
+
+#### Per-control roles, names, and patterns
+
+| Control | UIA Role | Name source | Patterns |
+|---|---|---|---|
+| `Button` | Button | `Content` or `AutomationProperties.Name` | Invoke |
+| `HyperlinkButton` | Hyperlink | `Content` or `AutomationProperties.Name` | Invoke |
+| `DropDownButton` | Button | `Content` or `AutomationProperties.Name` | Invoke, ExpandCollapse |
+| `SplitButton` | SplitButton | `Content` or `AutomationProperties.Name` | Invoke (primary), ExpandCollapse (chevron) |
+| `ToggleSplitButton` | SplitButton | `Content` or `AutomationProperties.Name` | Toggle (primary), ExpandCollapse (chevron) |
+| `ToggleButton` | Button | `Content` or `AutomationProperties.Name` | Toggle |
+| `CheckBox` | CheckBox | `Content`; `AutomationProperties.HelpText` carries description | Toggle |
+| `RadioButton` | RadioButton | `Content`; `AutomationProperties.HelpText` carries description | Selection |
+| `ToggleSwitch` | Button | `Header` via automation peer `GetNameCore` / `AutomationProperties.Name` | Toggle |
+| `RatingControl` | Slider | `AutomationProperties.Name` (current and maximum value are exposed through the RangeValue pattern, not the name) | RangeValue |
+| `ComboBox` | ComboBox | `PlaceholderText` or `AutomationProperties.Name` | ExpandCollapse, Selection |
+| `Slider` | Slider | `AutomationProperties.Name` or labeled by adjacent `TextBlock` | RangeValue |
+| `NumberBox` | Spinner | `Header` via automation peer `GetNameCore` / `AutomationProperties.Name` | RangeValue |
+| `TextBox` | Edit | `Header` or `AutomationProperties.Name` | Value, Text |
+| `PasswordBox` | Edit | `AutomationProperties.Name` (app-provided label); reveal button announces its state | none |
+| `AutoSuggestBox` | Edit | `Header` via automation peer `GetNameCore` / `AutomationProperties.Name` | Value |
+| `NavigationView` | Navigation | `AutomationProperties.Name` on the control | Selection |
+| `NavigationViewItem` | ListItem | `Content` | SelectionItem |
+| `TabView` | Tab | `AutomationProperties.Name` on the control | Selection |
+| `TabViewItem` | TabItem | `Header` | SelectionItem |
+| `InfoBar` | StatusBar | `Title` (or `AutomationProperties.Name`); message is announced via the live region | none (live region) |
+| `ProgressBar` | ProgressBar | `AutomationProperties.Name` | RangeValue |
+| `ProgressRing` | ProgressBar | `AutomationProperties.Name` | RangeValue |
+| `Card` | Button (when clickable) / Group (non-clickable) | `AutomationProperties.Name` (or its content) | Invoke (when clickable) |
+| `PersonPicture` | Image | Display name or initials | none |
+| `ContentDialog` | Window | `Title` | none (focus trapped inside; assertive live region announces `Title` on open) |
+| `TeachingTip` | ToolTip | `Title` and `Subtitle` (live region) | none |
+| `AppBarButton` | Button | `Label` (surfaced as `AutomationProperties.Name`) or an explicit `AutomationProperties.Name` | Invoke |
+
+#### Live regions on net472
+
+`AutomationPeer.RaiseNotificationEvent` (which pushes ad-hoc announcements to
+screen readers) requires .NET Framework 4.8 and is not available on `net472`. All
+status-change announcements in this library instead use the net472-safe pattern:
+
+1. The control template or peer constructor sets `AutomationProperties.LiveSetting`
+   to `Polite` or `Assertive` on the announcing element.
+2. When the relevant state changes (severity, message, progress state, validation
+   message, or coaching text), the automation peer calls
+   `RaiseAutomationEvent(AutomationEvents.LiveRegionChanged)`.
+3. Screen readers that honour `LiveRegionChanged` (Narrator, NVDA, JAWS) then
+   read the element's current `GetNameCore` text.
+
+Controls that use this approach: `ContentDialog` (announces its `Title` when the
+dialog opens), `InfoBar`, `ProgressBar`, `ProgressRing`, `TeachingTip`, and
+`TextBox` validation feedback. This pattern requires no .NET 4.8 surface and works
+on both `net472` and `net10.0-windows10.0.26100.0`.
+
+#### Keyboard operability
+
+Beyond standard WPF focus and tab traversal, Fluence adds keyboard operability for
+controls that WPF does not natively make fully keyboard-accessible:
+
+- `ColorPicker` spectrum: arrow keys adjust the selected point on the hue-saturation-value
+  spectrum canvas; the spectrum canvas receives keyboard focus as a named focusable element.
+- `RatingControl`: Left/Right arrow keys decrement and increment the rating; Home and End
+  jump to the minimum and maximum values.
+- `PasswordBox` reveal button: Space and Enter toggle the reveal state when the reveal button
+  is keyboard-focused; the reveal button’s accessible name updates to announce the current state.
+- `NumberBox` spin buttons: the increment and decrement buttons are keyboard-accessible tab
+  stops with accessible names; the `LargeChange` value reported by the automation peer
+  matches the `NumberBox.LargeChange` property.
+
+#### Known net472 gaps
+
+Four UI Automation features available from .NET Framework 4.8 are absent on `net472`.
+See `KNOWN_ISSUES.md` for the full rationale and chosen fallbacks:
+
+- `AutomationPeer.RaiseNotificationEvent` - substituted with `LiveRegionChanged` (described above).
+- `AutomationProperties.IsDialog` - `ContentDialog` uses `ControlType.Window`, Tab focus trapping, and an assertive live-region announcement of its `Title` on open as the fallback.
+- `AutomationProperties.HeadingLevel` - not used by the library; app-layer concern.
+- Automatic `PositionInSet`/`SizeOfSet` for `ItemsControl` - peers do not override `GetPositionInSetCore`/`GetSizeOfSetCore` on either TFM; apps set `AutomationProperties.PositionInSet`/`SizeOfSet` explicitly on items where meaningful.
 
 ## FluenceWindow
 
@@ -349,8 +446,8 @@ Three pane display modes ship out of the box:
 
 | `PaneDisplayMode` | Rail                                            | Labels                         | Template                                |
 |-------------------|-------------------------------------------------|--------------------------------|-----------------------------------------|
-| `Left` (default)  | 48 / 280 px                                     | Shown when `IsPaneOpen="True"` | `NavigationViewLeftPaneTemplate`        |
-| `LeftCompact`     | 48 px (overlay 280 px when `IsPaneOpen="True"`) | Overlay only                   | `NavigationViewLeftCompactPaneTemplate` |
+| `Left` (default)  | 48 / 320 px                                     | Shown when `IsPaneOpen="True"` | `NavigationViewLeftPaneTemplate`        |
+| `LeftCompact`     | 48 px (overlay 320 px when `IsPaneOpen="True"`) | Overlay only                   | `NavigationViewLeftCompactPaneTemplate` |
 | `Top`             | 48 px horizontal strip                          | Always shown                   | `NavigationViewTopPaneTemplate`         |
 
 Left and LeftCompact share the same visual contract:
@@ -358,7 +455,7 @@ Left and LeftCompact share the same visual contract:
 - Pane toggle (`PART_PaneToggleButton`, glyph `E700`) and back button (`PART_BackButton`, glyph `E72B`) appear in WinUI order at the top of a 48 px rail, each 48×40 px.
 - When a closed compact-left pane shows both an enabled back button and pane toggle, the pane reserves two 48 px chrome slots so the pane toggle remains visible to the right of back.
 - Selection indicator (`PART_SelectionIndicator`) is a single `Border` that animates between items - 3 × 16 px vertical in `Left` / `LeftCompact`, 16 × 3 px horizontal in `Top`.
-- Content region is a `Border` with `CornerRadius="8,0,0,0"`, `BorderThickness="1,1,0,0"`, and `BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"`, wrapping `PART_ContentPresenter`.
+- Content region is a `Border` with `CornerRadius="8,0,0,0"`, `BorderThickness="1,1,0,0"`, and `BorderBrush="{DynamicResource NavigationViewContentSeparatorBrush}"`, wrapping `PART_ContentPresenter`.
 - `IsBackButtonVisible` / `IsBackEnabled` drive back button visibility and enabled state. The back button shows only when both are `true`; a disabled back route collapses the button and reserves no glyph slot. Route the `BackRequested` event to your own history stack.
 - `IsPaneToggleButtonVisible` controls pane toggle visibility. It defaults to `true` for left pane modes and does not show in top mode.
 - When hosted inside a `FluenceWindow`, `Left` mode sets `ExtendsContentIntoTitleBar=True`; `Top` mode sets it `False`.
@@ -604,6 +701,7 @@ Selection members:
 | `TreeViewItem.IsSelectionChecked` | `bool?`               | Mirrors checked, unchecked, and indeterminate checkbox state.    |
 
 Visual contract:
+
 - Per-level indent via `LevelToIndentConverter` (16 px per level).
 - Chevron (`U+E76C`) rotates 90° on expand - 100 ms `ControlFastOutSlowInKeySpline` easing.
 - `SubtleFillColorSecondaryBrush` on hover, `SubtleFillColorTertiaryBrush` on press, `AccentFillColorDefaultBrush` when selected.
@@ -663,11 +761,12 @@ Up and Down move through the suggestions, Enter raises `QuerySubmitted` (with `C
                SelectedTime="{Binding ReminderTime}" />
 ```
 
-`ColorPicker` combines a saturation/value spectrum at the selected hue, a hue slider, an optional alpha slider, current/previous preview swatches, and an optional hex input. `Color` (two-way bindable, opaque red by default) raises `ColorChanged` with the old and new values; `PreviousColor` fills the comparison swatch, `IsAlphaEnabled` (default `false`) adds the alpha slider and 8-digit hex editing, and `IsColorSpectrumVisible` / `IsColorChannelTextInputVisible` trim the layout. The picker keeps hue, saturation, value, and alpha as its internal source of truth, so dragging along the spectrum's grey axis does not accumulate RGB round-trip drift.
+`ColorPicker` combines a saturation/value spectrum at the selected hue, a hue slider, an optional alpha slider, current/previous preview swatches, and a text-entry area with an RGB/HSV representation selector, per-channel inputs, an alpha percentage input, and a hex input. `Color` (two-way bindable, opaque red by default) raises `ColorChanged` with the old and new values; `PreviousColor` fills the comparison swatch and `IsAlphaEnabled` (default `false`) adds the alpha editing surfaces and 8-digit hex editing. The WinUI visibility options trim the layout: `IsColorSpectrumVisible`, `IsColorPreviewVisible`, `IsColorSliderVisible`, `IsColorChannelTextInputVisible`, `IsAlphaSliderVisible`, `IsAlphaTextInputVisible`, `IsHexInputVisible`, and `IsMoreButtonVisible` (default `false`; when `true` the text-entry area collapses behind a More/Less toggle). Channel and alpha inputs commit live per keystroke; the hex input commits on Enter or focus loss. The picker keeps hue, saturation, value, and alpha as its internal source of truth, so dragging along the spectrum's grey axis does not accumulate RGB round-trip drift.
 
 ```xml
 <ui:ColorPicker Color="{Binding AccentColor, Mode=TwoWay}"
-                IsAlphaEnabled="True" />
+                IsAlphaEnabled="True"
+                IsMoreButtonVisible="True" />
 ```
 
 ## Screenshots

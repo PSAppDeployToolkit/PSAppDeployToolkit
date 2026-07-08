@@ -27,8 +27,11 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -506,6 +509,46 @@ namespace Fluence.Wpf.Tests
                 key)
             {
                 RoutedEvent = UIElement.PreviewKeyDownEvent,
+            });
+        }
+
+        [TestMethod]
+        public void AutoSuggestBox_Header_BecomesAccessibleName()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    Controls.AutoSuggestBox box = new() { Header = "Search term" };
+                    window.Content = box;
+                    window.Width = 300;
+                    window.Height = 120;
+                    window.Show();
+                    _ = box.ApplyTemplate();
+                    DrainDispatcher(window.Dispatcher);
+
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(box);
+                    Assert.IsTrue(
+                        string.Equals("Search term", peer.GetName(), StringComparison.Ordinal),
+                        "AutoSuggestBox Header must be the accessible name when no explicit AutomationProperties.Name is set.");
+
+                    box.SetValue(AutomationProperties.NameProperty, "Explicit");
+                    Assert.IsTrue(
+                        string.Equals("Explicit", peer.GetName(), StringComparison.Ordinal),
+                        "Explicit AutomationProperties.Name must win over Header.");
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
             });
         }
     }

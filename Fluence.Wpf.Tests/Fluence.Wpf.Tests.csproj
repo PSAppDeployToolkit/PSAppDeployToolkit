@@ -8,7 +8,7 @@
     <IsPackable>false</IsPackable>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <TestTfmsInParallel>false</TestTfmsInParallel>
-    <NoWarn>$(NoWarn);CA1031;CA1305;CA1707;CA1861;CA2249;CA2263;CS1591;IDE0330;VSTHRD001</NoWarn>
+    <NoWarn>$(NoWarn);CA1031;CA1707;CA2263;CS1591;VSTHRD001;MA0045</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Meziantou.Polyfill" Version="1.0.151">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.156">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

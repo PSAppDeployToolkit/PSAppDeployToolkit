@@ -65,7 +65,7 @@ namespace Fluence.Wpf.Tests
 
         private static void Drain(Dispatcher dispatcher)
         {
-            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ApplicationIdle);
+            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ApplicationIdle, default);
         }
 
         private static void MergeGeneric(Application? application)

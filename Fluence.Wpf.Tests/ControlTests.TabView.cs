@@ -30,7 +30,6 @@ using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Controls;
-using WpfRepeatButton = System.Windows.Controls.Primitives.RepeatButton;
 
 namespace Fluence.Wpf.Tests
 {
@@ -58,7 +57,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfRepeatButton? btn = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollBackButton");
+                System.Windows.Controls.Primitives.RepeatButton? btn = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton");
                 Assert.IsNotNull(btn, "PART_ScrollBackButton (RepeatButton) must exist in TabView template.");
                 w.Close();
             });
@@ -79,7 +78,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfRepeatButton? btn = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollForwardButton");
+                System.Windows.Controls.Primitives.RepeatButton? btn = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton");
                 Assert.IsNotNull(btn, "PART_ScrollForwardButton (RepeatButton) must exist in TabView template.");
                 w.Close();
             });
@@ -121,8 +120,8 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfRepeatButton? back = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollBackButton");
-                WpfRepeatButton? fwd = FindVisualChildByName<WpfRepeatButton>(tv, "PART_ScrollForwardButton");
+                System.Windows.Controls.Primitives.RepeatButton? back = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollBackButton");
+                System.Windows.Controls.Primitives.RepeatButton? fwd = FindVisualChildByName<System.Windows.Controls.Primitives.RepeatButton>(tv, "PART_ScrollForwardButton");
                 Assert.IsNotNull(back, "PART_ScrollBackButton must be in template.");
                 Assert.IsNotNull(fwd, "PART_ScrollForwardButton must be in template.");
 

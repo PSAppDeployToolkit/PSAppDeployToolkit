@@ -78,6 +78,7 @@
                                 Margin="6,0,0,0"
                                 Padding="0"
                                 VerticalAlignment="Center"
+                                AutomationProperties.Name="Close tab"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Focusable="False"
@@ -257,11 +258,13 @@
                                 Margin="2,4,0,0"
                                 Padding="0"
                                 VerticalAlignment="Center"
+                                AutomationProperties.Name="Scroll tabs backward"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Delay="400"
                                 Focusable="False"
                                 Interval="100"
+                                ToolTip="Scroll tabs backward"
                                 Visibility="Collapsed">
                                 <RepeatButton.Template>
                                     <ControlTemplate TargetType="{x:Type RepeatButton}">
@@ -320,11 +323,13 @@
                                 Margin="0,4,0,0"
                                 Padding="0"
                                 VerticalAlignment="Center"
+                                AutomationProperties.Name="Scroll tabs forward"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Delay="400"
                                 Focusable="False"
                                 Interval="100"
+                                ToolTip="Scroll tabs forward"
                                 Visibility="Collapsed">
                                 <RepeatButton.Template>
                                     <ControlTemplate TargetType="{x:Type RepeatButton}">

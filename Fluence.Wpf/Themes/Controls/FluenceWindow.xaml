@@ -204,6 +204,7 @@
                                     <Button
                                         x:Name="PART_MinimizeButton"
                                         Grid.Column="0"
+                                        AutomationProperties.Name="Minimize"
                                         Command="{x:Static SystemCommands.MinimizeWindowCommand}"
                                         Style="{StaticResource WindowButtonStyle}"
                                         ToolTip="Minimize">
@@ -217,6 +218,7 @@
                                     <Button
                                         x:Name="PART_MaximizeButton"
                                         Grid.Column="1"
+                                        AutomationProperties.Name="Maximize"
                                         Command="{x:Static SystemCommands.MaximizeWindowCommand}"
                                         Style="{StaticResource WindowButtonStyle}"
                                         ToolTip="Maximize">
@@ -230,6 +232,7 @@
                                     <Button
                                         x:Name="PART_RestoreButton"
                                         Grid.Column="1"
+                                        AutomationProperties.Name="Restore"
                                         Command="{x:Static SystemCommands.RestoreWindowCommand}"
                                         Style="{StaticResource WindowButtonStyle}"
                                         ToolTip="Restore"
@@ -244,6 +247,7 @@
                                     <Button
                                         x:Name="PART_CloseButton"
                                         Grid.Column="2"
+                                        AutomationProperties.Name="Close"
                                         Command="{x:Static SystemCommands.CloseWindowCommand}"
                                         Style="{StaticResource WindowCloseButtonStyle}"
                                         ToolTip="Close">

@@ -368,10 +368,10 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness,
                         "Left-mode content region must draw a 1,1,0,0 stroke separating it from the pane and top chrome.");
 
-                    Brush? expectedStroke = nav.FindResource("CardStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expectedStroke, "CardStrokeColorDefaultBrush should be available from the active theme.");
+                    Brush? expectedStroke = nav.FindResource("NavigationViewContentSeparatorBrush") as Brush;
+                    Assert.IsNotNull(expectedStroke, "NavigationViewContentSeparatorBrush should be available from the active theme.");
                     Assert.AreSame(expectedStroke, strokeBorder.BorderBrush,
-                        "Left-mode content region stroke must bind to CardStrokeColorDefaultBrush so theme switching updates it.");
+                        "Left-mode content region stroke must bind to NavigationViewContentSeparatorBrush (prominent in Light, fainter in Dark) so the pane/content seam reads correctly per theme.");
                 }
                 finally
                 {
@@ -435,10 +435,10 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness,
                         "LeftCompact-mode content region must draw a 1,1,0,0 stroke consistent with Left mode.");
 
-                    Brush? expectedStroke = nav.FindResource("CardStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expectedStroke, "CardStrokeColorDefaultBrush should be available from the active theme.");
+                    Brush? expectedStroke = nav.FindResource("NavigationViewContentSeparatorBrush") as Brush;
+                    Assert.IsNotNull(expectedStroke, "NavigationViewContentSeparatorBrush should be available from the active theme.");
                     Assert.AreSame(expectedStroke, strokeBorder.BorderBrush,
-                        "LeftCompact-mode content region stroke must bind to CardStrokeColorDefaultBrush so theme switching updates it.");
+                        "LeftCompact-mode content region stroke must bind to NavigationViewContentSeparatorBrush (prominent in Light, fainter in Dark) so the pane/content seam reads correctly per theme.");
                 }
                 finally
                 {

@@ -40,6 +40,9 @@
                             Inner style override: make nested Button / ToggleButton visually
                             invisible - they are behavior-only hit targets. Per-half fills
                             below own the hover / pressed visuals.
+                            Focus visuals come from the DefaultControlFocusVisualStyle adorner
+                            on each half's hit target, so WPF shows them only for keyboard
+                            navigation (Tab), never on mouse click - matching DropDownButton.
                         -->
                         <Grid x:Name="SplitButtonBody" Grid.Row="0">
                             <Grid.Resources>
@@ -47,7 +50,7 @@
                                     <Setter Property="Background" Value="Transparent" />
                                     <Setter Property="BorderBrush" Value="Transparent" />
                                     <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
                                     <Setter Property="FontFamily" Value="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type controls:SplitButton}}}" />
                                     <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type controls:SplitButton}}}" />
                                     <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type controls:SplitButton}}}" />
@@ -105,25 +108,6 @@
                                 CornerRadius="4,0,0,4"
                                 IsHitTestVisible="False" />
 
-                            <Border
-                                x:Name="PrimaryFocusOuter"
-                                Grid.Column="0"
-                                Margin="-3"
-                                BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
-                                BorderThickness="2"
-                                CornerRadius="4,0,0,4"
-                                IsHitTestVisible="False"
-                                Opacity="0" />
-                            <Border
-                                x:Name="PrimaryFocusInner"
-                                Grid.Column="0"
-                                Margin="-2"
-                                BorderBrush="{DynamicResource FocusStrokeColorInnerBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4,0,0,4"
-                                IsHitTestVisible="False"
-                                Opacity="0" />
-
                             <!--  Primary hit target. Stays transparent - visuals come from PrimaryFill.  -->
                             <Button
                                 x:Name="PART_PrimaryButton"
@@ -162,24 +146,6 @@
                                 BorderThickness="0,1,1,1"
                                 CornerRadius="0,4,4,0"
                                 IsHitTestVisible="False" />
-                            <Border
-                                x:Name="SecondaryFocusOuter"
-                                Grid.Column="2"
-                                Margin="-3"
-                                BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
-                                BorderThickness="2"
-                                CornerRadius="0,4,4,0"
-                                IsHitTestVisible="False"
-                                Opacity="0" />
-                            <Border
-                                x:Name="SecondaryFocusInner"
-                                Grid.Column="2"
-                                Margin="-2"
-                                BorderBrush="{DynamicResource FocusStrokeColorInnerBrush}"
-                                BorderThickness="1"
-                                CornerRadius="0,4,4,0"
-                                IsHitTestVisible="False"
-                                Opacity="0" />
 
                             <!--  Secondary hit target (chevron toggles PART_Popup).  -->
                             <ToggleButton
@@ -191,7 +157,7 @@
                                 Background="Transparent"
                                 BorderBrush="Transparent"
                                 BorderThickness="0"
-                                FocusVisualStyle="{x:Null}"
+                                FocusVisualStyle="{DynamicResource DefaultControlFocusVisualStyle}"
                                 IsTabStop="True">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="{x:Type ToggleButton}">
@@ -245,11 +211,6 @@
                         <Trigger SourceName="PART_PrimaryButton" Property="IsPressed" Value="True">
                             <Setter TargetName="PrimaryFill" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
                         </Trigger>
-                        <Trigger SourceName="PART_PrimaryButton" Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="PrimaryFocusOuter" Property="Opacity" Value="1" />
-                            <Setter TargetName="PrimaryFocusInner" Property="Opacity" Value="1" />
-                        </Trigger>
-
                         <!--  Secondary half hover / press (separate from primary so tints are per-half).  -->
                         <Trigger SourceName="PART_SecondaryButton" Property="IsMouseOver" Value="True">
                             <Setter TargetName="SecondaryFill" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
@@ -260,11 +221,6 @@
                         <Trigger SourceName="PART_SecondaryButton" Property="IsChecked" Value="True">
                             <Setter TargetName="SecondaryFill" Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}" />
                         </Trigger>
-                        <Trigger SourceName="PART_SecondaryButton" Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="SecondaryFocusOuter" Property="Opacity" Value="1" />
-                            <Setter TargetName="SecondaryFocusInner" Property="Opacity" Value="1" />
-                        </Trigger>
-
                         <!--  Disabled.  -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="PrimaryFill" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />

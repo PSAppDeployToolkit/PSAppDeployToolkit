@@ -31,10 +31,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using FluentButton = Fluence.Wpf.Controls.Button;
-using FluentMenuItem = Fluence.Wpf.Controls.MenuItem;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfStackPanel = System.Windows.Controls.StackPanel;
 
 namespace Fluence.Wpf.Tests
 {
@@ -190,7 +186,7 @@ namespace Fluence.Wpf.Tests
                         "Top navigation item icon presenter should keep the tighter strip while adding 2px more lead-in before the icon.");
                     Assert.AreEqual(new Thickness(2, 0, 2, 0), contentPresenter.Margin,
                         "Top navigation item text presenter should use 2px horizontal spacing.");
-                    WpfBorder? outerBorder = FindVisualChildByName<WpfBorder>(item, "OuterBorder");
+                    System.Windows.Controls.Border? outerBorder = FindVisualChildByName<System.Windows.Controls.Border>(item, "OuterBorder");
                     ContentPresenter? infoBadgePresenter = FindVisualChildByName<ContentPresenter>(item, "InfoBadgePresenter");
                     Assert.IsNotNull(outerBorder, "Top navigation item template should expose the outer border.");
                     Assert.IsNotNull(infoBadgePresenter, "Navigation item template should expose the info badge presenter.");
@@ -247,7 +243,7 @@ namespace Fluence.Wpf.Tests
                         Width = 300,
                         Height = 320,
                         PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-                        PaneFooter = new WpfStackPanel { Width = 88, Height = 36 },
+                        PaneFooter = new System.Windows.Controls.StackPanel { Width = 88, Height = 36 },
                     };
                     NavigationViewItem first = new() { Content = "Home", Icon = new FontIcon { Glyph = "\uE80F" } };
                     NavigationViewItem last = new() { Content = "Diagnostics", Icon = new FontIcon { Glyph = "\uE8A7", IconFontSize = 20 } };
@@ -264,7 +260,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    FluentButton? overflowButton = FindVisualChildByName<FluentButton>(nav, "PART_TopOverflowButton");
+                    Controls.Button? overflowButton = FindVisualChildByName<Controls.Button>(nav, "PART_TopOverflowButton");
                     Assert.IsNotNull(overflowButton, "Top pane should expose a three-dot overflow button.");
                     Assert.AreEqual(ControlAppearance.Subtle, overflowButton.Appearance,
                         "Top pane overflow button should use the same subtle Fluence button chrome as other navigation strip buttons.");
@@ -275,7 +271,7 @@ namespace Fluence.Wpf.Tests
                     double visibleItemsRight = double.MinValue;
                     foreach (object item in nav.Items)
                     {
-                        if (item is NavigationViewItem navItem && navItem.Visibility == Visibility.Visible)
+                        if (item is NavigationViewItem navItem && navItem.Visibility is Visibility.Visible)
                         {
                             double itemRight = GetNavigationElementRight(navItem, nav);
                             if (itemRight > visibleItemsRight)
@@ -288,7 +284,7 @@ namespace Fluence.Wpf.Tests
                     double overflowButtonGap = GetNavigationElementX(overflowButton, nav) - visibleItemsRight;
                     Assert.AreEqual(4.0, overflowButtonGap, 1.5,
                         "Top pane overflow button should sit after the last visible navigation item using the same 4px strip spacing.");
-                    WpfStackPanel? footer = nav.PaneFooter as WpfStackPanel;
+                    System.Windows.Controls.StackPanel? footer = nav.PaneFooter as System.Windows.Controls.StackPanel;
                     Assert.IsNotNull(footer, "Test setup should use a right-docked PaneFooter.");
                     Assert.IsTrue(GetNavigationElementRight(overflowButton, nav) <= GetNavigationElementX(footer, nav) + 0.5,
                         "Top pane overflow button should appear before the right-docked PaneFooter instead of docking to the strip edge.");
@@ -296,7 +292,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsTrue(overflowButton.ContextMenu.Items.Count > 0,
                         "Top pane overflow menu should contain hidden navigation items.");
 
-                    FluentMenuItem? overflowItem = overflowButton.ContextMenu.Items[^1] as FluentMenuItem;
+                    Controls.MenuItem? overflowItem = overflowButton.ContextMenu.Items[^1] as Controls.MenuItem;
                     Assert.IsNotNull(overflowItem, "Overflow entries should be lightweight Fluence MenuItem rows.");
                     Assert.AreEqual(280.0, overflowItem.MinWidth, 0.01,
                         "Overflow entries should use the wider WinUI-style flyout row width.");
@@ -358,7 +354,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     DrainDispatcher(window.Dispatcher);
 
-                    FluentButton? overflowButton = FindVisualChildByName<FluentButton>(nav, "PART_TopOverflowButton");
+                    Controls.Button? overflowButton = FindVisualChildByName<Controls.Button>(nav, "PART_TopOverflowButton");
                     Assert.IsNotNull(overflowButton, "Top pane should expose a three-dot overflow button.");
                     Assert.AreEqual(Visibility.Visible, overflowButton.Visibility,
                         "The overflow button should be visible when all items fit only if the button is not reserved.");
@@ -378,7 +374,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(overflowButton.ContextMenu, "Top pane overflow button should own a menu for collapsed items.");
                     Assert.AreEqual(1, overflowButton.ContextMenu.Items.Count,
                         "Measured clearance should move only the trailing item that does not fit to the overflow menu.");
-                    FluentMenuItem? firstOverflowItem = overflowButton.ContextMenu.Items[0] as FluentMenuItem;
+                    Controls.MenuItem? firstOverflowItem = overflowButton.ContextMenu.Items[0] as Controls.MenuItem;
                     Assert.AreEqual("Three", firstOverflowItem?.Header,
                         "The moved item should appear in the overflow menu.");
                 }
@@ -423,7 +419,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
                     DrainDispatcher(window.Dispatcher);
 
-                    FluentButton? overflowButton = FindVisualChildByName<FluentButton>(nav, "PART_TopOverflowButton");
+                    Controls.Button? overflowButton = FindVisualChildByName<Controls.Button>(nav, "PART_TopOverflowButton");
                     Grid? topItemsHost = FindVisualChildByName<Grid>(nav, NavigationView.PartTopItemsHost);
                     Assert.IsNotNull(overflowButton, "Top pane should expose a three-dot overflow button.");
                     Assert.IsNotNull(topItemsHost, "Top pane should expose the horizontal item host.");
@@ -435,7 +431,7 @@ namespace Fluence.Wpf.Tests
                     double overflowLeft = GetNavigationElementX(overflowButton, nav);
                     foreach (object item in nav.Items)
                     {
-                        if (item is NavigationViewItem navItem && navItem.Visibility == Visibility.Visible)
+                        if (item is NavigationViewItem navItem && navItem.Visibility is Visibility.Visible)
                         {
                             Assert.IsTrue(GetNavigationElementRight(navItem, nav) <= overflowLeft - 4.0 + 1.5,
                                 "Visible top items must clear the overflow button. item=" + navItem.Content);

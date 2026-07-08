@@ -126,7 +126,7 @@ namespace Fluence.Wpf.Controls
         /// <summary>
         /// Gets a value indicating whether the flyout is currently open.
         /// </summary>
-        public bool IsOpen => HostPopup?.IsOpen == true;
+        public bool IsOpen => (HostPopup?.IsOpen) is true;
 
         /// <summary>
         /// Gets the popup that hosts the presenter. Created lazily on the first
@@ -232,7 +232,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         public void Hide()
         {
-            if (HostPopup?.IsOpen != true)
+            if ((HostPopup?.IsOpen) is not true)
             {
                 return;
             }
@@ -300,11 +300,11 @@ namespace Fluence.Wpf.Controls
             CustomPopupPlacement below = new(new Point(centeredX, targetSize.Height + offset.Y), PopupPrimaryAxis.Horizontal);
             CustomPopupPlacement leftOf = new(new Point(-popupSize.Width + offset.X, centeredY), PopupPrimaryAxis.Vertical);
             CustomPopupPlacement rightOf = new(new Point(targetSize.Width + offset.X, centeredY), PopupPrimaryAxis.Vertical);
-            return side == PlacementMode.Top
+            return side is PlacementMode.Top
                 ? [above, below]
-                : side == PlacementMode.Left
+                : side is PlacementMode.Left
                     ? [leftOf, rightOf]
-                    : side == PlacementMode.Right ? [rightOf, leftOf] : [below, above];
+                    : side is PlacementMode.Right ? [rightOf, leftOf] : [below, above];
         }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace Fluence.Wpf.Controls
         /// <param name="e">The key event data.</param>
         private void OnPresenterPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (!e.Handled && e.Key == Key.Escape)
+            if (!e.Handled && e.Key is Key.Escape)
             {
                 Hide();
                 e.Handled = true;

@@ -31,8 +31,6 @@ using System.Collections;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using FluenceComboBox = Fluence.Wpf.Controls.ComboBox;
-using WpfBorder = System.Windows.Controls.Border;
 
 namespace Fluence.Wpf.Tests
 {
@@ -54,7 +52,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceComboBox cb = new();
+                Controls.ComboBox cb = new();
                 _ = cb.Items.Add("One");
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
@@ -81,7 +79,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceComboBox cb = new();
+                Controls.ComboBox cb = new();
                 _ = cb.Items.Add("One");
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
@@ -107,7 +105,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceComboBox cb = new();
+                Controls.ComboBox cb = new();
                 _ = cb.Items.Add("Alpha");
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
@@ -117,7 +115,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsTrue(transitioned, "GoToState('Focused') must return true.");
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? accentLine = FindVisualChildByName<WpfBorder>(cb, "FocusAccentLine");
+                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
                 Assert.IsNotNull(accentLine, "FocusAccentLine border must be present in template.");
                 Assert.AreEqual(Visibility.Collapsed, accentLine.Visibility,
                     "ComboBox should never show a focus underline; dropdown items own the selection indicator.");
@@ -135,7 +133,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceComboBox cb = new();
+                Controls.ComboBox cb = new();
                 _ = cb.Items.Add("Beta");
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
@@ -148,7 +146,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsTrue(transitioned, "GoToState('Unfocused') must return true.");
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? accentLine = FindVisualChildByName<WpfBorder>(cb, "FocusAccentLine");
+                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
                 Assert.IsNotNull(accentLine, "FocusAccentLine border must be present in template.");
                 Assert.AreEqual(0.0, accentLine.Opacity, 0.01,
                     "FocusAccentLine opacity must be 0.0 in Unfocused state.");
@@ -166,14 +164,14 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceComboBox cb = new();
+                Controls.ComboBox cb = new();
                 _ = cb.Items.Add("Alpha");
                 cb.SelectedIndex = 0;
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? accentLine = FindVisualChildByName<WpfBorder>(cb, "FocusAccentLine");
+                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
                 Assert.IsNotNull(accentLine, "FocusAccentLine border must be present in template.");
                 Assert.AreEqual(Visibility.Collapsed, accentLine.Visibility,
                     "ComboBox should not expose the focused underline visually.");
@@ -192,7 +190,7 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceComboBox cb = new();
+                Controls.ComboBox cb = new();
                 _ = cb.Items.Add("Gamma");
                 Window w = new() { Content = cb, Width = 300, Height = 100 };
                 w.Show();
@@ -208,7 +206,7 @@ namespace Fluence.Wpf.Tests
                 Assert.IsTrue(transitioned, "GoToState('Focused') must return true after theme cycle.");
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? accentLine = FindVisualChildByName<WpfBorder>(cb, "FocusAccentLine");
+                Border? accentLine = FindVisualChildByName<Border>(cb, "FocusAccentLine");
                 Assert.IsNotNull(accentLine,
                     "FocusAccentLine must be present after theme cycle.");
                 Assert.AreEqual(Visibility.Collapsed, accentLine.Visibility,

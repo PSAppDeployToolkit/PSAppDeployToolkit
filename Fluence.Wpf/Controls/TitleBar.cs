@@ -30,7 +30,6 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using WpfButton = System.Windows.Controls.Button;
 
 namespace Fluence.Wpf.Controls
 {
@@ -45,8 +44,8 @@ namespace Fluence.Wpf.Controls
     /// <see cref="BackRequested"/> and <see cref="PaneToggleRequested"/> events or the command
     /// properties <see cref="BackCommand"/> and <see cref="PaneToggleCommand"/>.
     /// </remarks>
-    [TemplatePart(Name = PART_BackButton, Type = typeof(WpfButton))]
-    [TemplatePart(Name = PART_PaneToggleButton, Type = typeof(WpfButton))]
+    [TemplatePart(Name = PART_BackButton, Type = typeof(System.Windows.Controls.Button))]
+    [TemplatePart(Name = PART_PaneToggleButton, Type = typeof(System.Windows.Controls.Button))]
     [TemplatePart(Name = "PART_IconPresenter", Type = typeof(ContentPresenter))]
     [TemplatePart(Name = "PART_TitleText", Type = typeof(TextBlock))]
     [TemplatePart(Name = "PART_SubtitleText", Type = typeof(TextBlock))]
@@ -371,8 +370,8 @@ namespace Fluence.Wpf.Controls
 
             base.OnApplyTemplate();
 
-            _backButton = GetTemplateChild(PART_BackButton) as WpfButton;
-            _paneToggleButton = GetTemplateChild(PART_PaneToggleButton) as WpfButton;
+            _backButton = GetTemplateChild(PART_BackButton) as System.Windows.Controls.Button;
+            _paneToggleButton = GetTemplateChild(PART_PaneToggleButton) as System.Windows.Controls.Button;
 
             _backButton?.Click += OnBackButtonClick;
             _paneToggleButton?.Click += OnPaneToggleButtonClick;
@@ -539,7 +538,7 @@ namespace Fluence.Wpf.Controls
 
         private static bool CanExecuteCommand(ICommand command, object parameter)
         {
-            return command?.CanExecute(parameter) != false;
+            return (command?.CanExecute(parameter)) is not false;
         }
 
         private static void SubscribeCommand(ICommand? command, EventHandler handler)
@@ -596,8 +595,8 @@ namespace Fluence.Wpf.Controls
 
         #region Private fields
 
-        private WpfButton? _backButton;
-        private WpfButton? _paneToggleButton;
+        private System.Windows.Controls.Button? _backButton;
+        private System.Windows.Controls.Button? _paneToggleButton;
         private bool _isBackCommandSubscribed;
         private bool _isPaneToggleCommandSubscribed;
 

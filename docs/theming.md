@@ -1,14 +1,14 @@
-Fluence.Wpf uses WinUI 3 naming and state behavior for theme resources, implemented as plain WPF. If you already work with WinUI keys, most token names and control roles will look familiar.
+﻿Fluence.Wpf uses WinUI 3 naming and state behavior for theme resources, implemented as plain WPF. If you already work with WinUI keys, most token names and control roles will look familiar.
 
 ## Merge order (application resources)
 
 `Application.Current.Resources.MergedDictionaries` uses a **stable 3-slot layout** after the first `ApplicationThemeManager.Apply`:
 
-| Index | Content                             | On theme or accent change                                      |
-|-------|-------------------------------------|----------------------------------------------------------------|
-| 0     | Computed colors and brushes         | **Replaced** with a freshly built dictionary on every change   |
-| 1     | Typography (`Typography.xaml`)      | Loaded once; never replaced                                    |
-| 2     | Control templates (`Generic.xaml`)  | Loaded once; never replaced                                    |
+| Index | Content                            | On theme or accent change                                    |
+| ----- | ---------------------------------- | ------------------------------------------------------------ |
+| 0     | Computed colors and brushes        | **Replaced** with a freshly built dictionary on every change |
+| 1     | Typography (`Typography.xaml`)     | Loaded once; never replaced                                  |
+| 2     | Control templates (`Generic.xaml`) | Loaded once; never replaced                                  |
 
 Slot 0 holds every canonical Color token and its frozen `SolidColorBrush` twin. It is built entirely in C# by `FluenceThemeEngine` each time `Apply` is called; replacing it causes all `DynamicResource` bindings to re-resolve with no promotion step. `Brushes.xaml` and `Accent.xaml` no longer exist; brushes are produced by `BrushFactory` (auto Color-to-Brush twins) and `SpecialBrushes` (gradient elevation borders, High Contrast SystemColors overrides, and brush-only exceptions). The per-theme XAML files (`Themes/Colors/Theme.*.xaml`) are Color-only tables read by C# at build time; they contain no brushes.
 
@@ -27,7 +27,7 @@ Repeated `Apply` calls must not accumulate extra theme dictionaries (`Dictionary
 Fluence.Wpf defines the full WinUI 3 token ramp. These are the keys you will reference most often in custom templates:
 
 - **Text**: `TextFillColorPrimary`, `TextFillColorSecondary`, `TextFillColorTertiary`, `TextFillColorDisabled`, `TextOnAccentFillColorPrimary` / `Secondary` / `Disabled`.
-- **Fill**: `ControlFillColorDefault`, `ControlFillColorSecondary`, `ControlFillColorTertiary`, `ControlFillColorInputActive`, `ControlFillColorDisabled`, `AccentFillColorDefault` / `Secondary` / `Tertiary` / `Disabled`, `SubtleFillColorSecondary` / `Tertiary`, `LayerFillColorDefault`, `CardBackgroundFillColorDefault`.
+- **Fill**: `ControlFillColorDefault`, `ControlFillColorSecondary`, `ControlFillColorTertiary`, `ControlFillColorInputActive`, `ControlFillColorDisabled`, `ControlAltFillColorSecondary` / `Tertiary` / `Quarternary` (CheckBox / RadioButton / ToggleSwitch tracks, `Card` `Filled` variant), `AccentFillColorDefault` / `Secondary` / `Tertiary` / `Disabled`, `SubtleFillColorSecondary` / `Tertiary`, `LayerFillColorDefault`, `CardBackgroundFillColorDefault`.
 - **Stroke**: `ControlStrokeColorDefault` / `Secondary`, **`ControlStrongStrokeColorDefault`** (radio / check-box rings), **`ControlStrongStrokeColorDisabled`**, `CardStrokeColorDefault`, `DividerStrokeColorDefault`, `FocusStrokeColorOuter` / `Inner`.
 - **Background**: `SolidBackgroundFillColorBase`, `ApplicationBackgroundColor`.
 - **Window controls**: `WindowCloseButtonBackgroundPointerOver`, `WindowCloseButtonBackgroundPressed`, `WindowCloseButtonForegroundPointerOver`.

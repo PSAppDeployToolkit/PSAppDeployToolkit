@@ -6,9 +6,9 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Fluence.Wpf.Demo</RootNamespace>
     <AssemblyName>Fluence.Wpf.Demo</AssemblyName>
+    <ApplicationIcon>..\assets\Fluence_Icon_Light.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <ApplicationIcon>Resources\fluence-wpf-appicon-256.ico</ApplicationIcon>
-    <NoWarn>$(NoWarn);CS1591;IDE0330;VSTHRD001</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;VSTHRD001;MA0045</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,14 +21,12 @@
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Resource Include="Resources\ControlImages\*.png" />
-    <Resource Include="Resources\fluence-wpf-appicon-256.ico" />
-    <Resource Include="Resources\fluence-wpf-banner-*.png" />
-    <Page Remove="Resources\fluence-wpf-banner-*.xaml" />
+    <Resource Include="Resources\Fluence_Lockup_SideBySide_*.png" />
     <Resource Include="Resources\SegoeFluentIcons.tsv" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Meziantou.Polyfill" Version="1.0.151">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.156">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -40,6 +38,10 @@
       T:System.Threading.Lock|
     </MeziantouPolyfill_IncludedPolyfills>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.26100.0'">
+    <NoWarn>$(NoWarn);RCS1255</NoWarn>
   </PropertyGroup>
 
 </Project>

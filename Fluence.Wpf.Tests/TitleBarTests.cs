@@ -38,9 +38,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
 using System.Windows.Threading;
-using Fluent = Fluence.Wpf.Controls;
-using WpfButton = System.Windows.Controls.Button;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -65,7 +62,7 @@ namespace Fluence.Wpf.Tests
             RunWithTitleBar(
                 static delegate
                 {
-                    return new Fluent.TitleBar
+                    return new Controls.TitleBar
                     {
                         Title = "Fluence",
                         IsBackButtonVisible = true,
@@ -74,8 +71,8 @@ namespace Fluence.Wpf.Tests
                 },
                 static titleBar =>
                 {
-                    WpfButton backButton = GetTemplateButton(titleBar, "PART_BackButton");
-                    WpfButton paneToggleButton = GetTemplateButton(titleBar, "PART_PaneToggleButton");
+                    System.Windows.Controls.Button backButton = GetTemplateButton(titleBar, "PART_BackButton");
+                    System.Windows.Controls.Button paneToggleButton = GetTemplateButton(titleBar, "PART_PaneToggleButton");
 
                     Assert.AreEqual(Visibility.Visible, backButton.Visibility,
                         "PART_BackButton must be visible when IsBackButtonVisible is true.");
@@ -94,7 +91,7 @@ namespace Fluence.Wpf.Tests
             RunWithTitleBar(
                 static delegate
                 {
-                    return new Fluent.TitleBar
+                    return new Controls.TitleBar
                     {
                         Title = "Fluence",
                         IsBackButtonVisible = true,
@@ -103,8 +100,8 @@ namespace Fluence.Wpf.Tests
                 },
                 static titleBar =>
                 {
-                    WpfButton backButton = GetTemplateButton(titleBar, "PART_BackButton");
-                    WpfButton paneToggleButton = GetTemplateButton(titleBar, "PART_PaneToggleButton");
+                    System.Windows.Controls.Button backButton = GetTemplateButton(titleBar, "PART_BackButton");
+                    System.Windows.Controls.Button paneToggleButton = GetTemplateButton(titleBar, "PART_PaneToggleButton");
 
                     Assert.AreEqual(36.0, backButton.ActualWidth, 0.5,
                         "The title-bar back button should use a smaller slot than the pane toggle.");
@@ -115,7 +112,7 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(36.0, paneToggleButton.ActualHeight, 0.5,
                         "The title-bar pane toggle should keep the compact title-bar glyph height.");
 
-                    WpfTextBlock? backGlyph = FindVisualChild<WpfTextBlock>(backButton);
+                    System.Windows.Controls.TextBlock? backGlyph = FindVisualChild<System.Windows.Controls.TextBlock>(backButton);
                     Assert.IsNotNull(backGlyph, "Back button should render a glyph text block.");
                     Assert.AreEqual(16.0, backGlyph.ActualWidth, 0.5,
                         "Back glyph should occupy a 16px visual box.");
@@ -135,7 +132,7 @@ namespace Fluence.Wpf.Tests
             RunWithTitleBar(
                 delegate
                 {
-                    return new Fluent.TitleBar
+                    return new Controls.TitleBar
                     {
                         IsPaneToggleButtonVisible = true,
                         PaneToggleCommand = command,
@@ -173,7 +170,7 @@ namespace Fluence.Wpf.Tests
             RunWithTitleBar(
                 delegate
                 {
-                    return new Fluent.TitleBar
+                    return new Controls.TitleBar
                     {
                         BackCommand = command,
                         BackCommandParameter = parameter,
@@ -181,7 +178,7 @@ namespace Fluence.Wpf.Tests
                 },
                 titleBar =>
                 {
-                    WpfButton backButton = GetTemplateButton(titleBar, "PART_BackButton");
+                    System.Windows.Controls.Button backButton = GetTemplateButton(titleBar, "PART_BackButton");
                     Assert.AreEqual(Visibility.Collapsed, backButton.Visibility,
                         "PART_BackButton must default to collapsed.");
 
@@ -213,7 +210,7 @@ namespace Fluence.Wpf.Tests
             RunWithTitleBar(
                 delegate
                 {
-                    return new Fluent.TitleBar
+                    return new Controls.TitleBar
                     {
                         IsBackButtonVisible = true,
                         IsPaneToggleButtonVisible = true,
@@ -238,14 +235,14 @@ namespace Fluence.Wpf.Tests
                 });
         }
 
-        private static void RunWithTitleBar(Func<Fluent.TitleBar> titleBarFactory, Action<Fluent.TitleBar> testBody)
+        private static void RunWithTitleBar(Func<Controls.TitleBar> titleBarFactory, Action<Controls.TitleBar> testBody)
         {
             RunOnFreshStaThread(delegate
             {
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 Window? window = null;
-                Fluent.TitleBar? titleBar = null;
+                Controls.TitleBar? titleBar = null;
 
                 try
                 {
@@ -285,9 +282,9 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        private static WpfButton GetTemplateButton(Fluent.TitleBar titleBar, string partName)
+        private static System.Windows.Controls.Button GetTemplateButton(Controls.TitleBar titleBar, string partName)
         {
-            WpfButton? button = titleBar.Template.FindName(partName, titleBar) as WpfButton;
+            System.Windows.Controls.Button? button = titleBar.Template.FindName(partName, titleBar) as System.Windows.Controls.Button;
             Assert.IsNotNull(button, partName + " must exist in the TitleBar template.");
             return button;
         }
@@ -314,7 +311,7 @@ namespace Fluence.Wpf.Tests
             return null;
         }
 
-        private static void InvokeButton(WpfButton button)
+        private static void InvokeButton(System.Windows.Controls.Button button)
         {
             AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(button);
             IInvokeProvider invoke = (IInvokeProvider)peer.GetPattern(PatternInterface.Invoke);

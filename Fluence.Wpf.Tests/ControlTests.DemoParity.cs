@@ -76,6 +76,60 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void GalleryButtonsPage_ToggleButtonSampleUpdatesStateText()
+        {
+            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            {
+                Controls.ToggleButton? wrapToggle = FindVisualChildByName<Controls.ToggleButton>(window, "WrapToggleButton");
+                Controls.ToggleButton? threeStateToggle = FindVisualChildByName<Controls.ToggleButton>(window, "ThreeStateToggleButton");
+                TextBlock? stateText = FindVisualChildByName<TextBlock>(window, "ToggleButtonStateText");
+
+                Assert.IsNotNull(wrapToggle, "Buttons page should include the named ToggleButton sample.");
+                Assert.IsNotNull(threeStateToggle, "Buttons page should include a three-state ToggleButton sample.");
+                Assert.IsNotNull(stateText, "Buttons page should include the ToggleButton state label.");
+                Assert.IsTrue(threeStateToggle.IsThreeState, "The three-state sample should opt into IsThreeState.");
+                Assert.AreEqual("Wrap text: Off", stateText.Text);
+
+                wrapToggle.IsChecked = true;
+                DrainDispatcher(window.Dispatcher);
+                Assert.AreEqual("Wrap text: On", stateText.Text);
+
+                wrapToggle.IsChecked = false;
+                DrainDispatcher(window.Dispatcher);
+                Assert.AreEqual("Wrap text: Off", stateText.Text);
+            });
+        }
+
+        [TestMethod]
+        public void GalleryButtonsPage_ToggleSplitButtonSampleTogglesStateText()
+        {
+            RunDemoPageTest(() => new GalleryButtonsPage(), window =>
+            {
+                Controls.ToggleSplitButton? listToggle = FindVisualChildByName<Controls.ToggleSplitButton>(window, "ListToggleSplitButton");
+                TextBlock? stateText = FindVisualChildByName<TextBlock>(window, "ToggleSplitButtonStateText");
+
+                Assert.IsNotNull(listToggle, "Buttons page should include the named ToggleSplitButton sample.");
+                Assert.IsNotNull(stateText, "Buttons page should include the ToggleSplitButton state label.");
+                Assert.AreEqual("List formatting: Off", stateText.Text);
+
+                System.Windows.Controls.Button? primary = listToggle.Template?.FindName("PART_PrimaryButton", listToggle) as System.Windows.Controls.Button;
+                Assert.IsNotNull(primary, "The ToggleSplitButton sample should expose its primary template part.");
+
+                primary.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.IsTrue(listToggle.IsChecked, "Clicking the primary half should check the sample.");
+                Assert.AreEqual("List formatting: Bulleted list", stateText.Text);
+
+                primary.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.IsFalse(listToggle.IsChecked, "A second primary click should uncheck the sample.");
+                Assert.AreEqual("List formatting: Off", stateText.Text);
+            });
+        }
+
+        [TestMethod]
         public void GallerySelectionPage_CheckBoxSamplesMatchWinUIGalleryStates()
         {
             RunDemoPageTest(static () => new GallerySelectionPage(), static window =>

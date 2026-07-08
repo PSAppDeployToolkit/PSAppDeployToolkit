@@ -1,27 +1,31 @@
-﻿![Fluence.Wpf](./assets/fluence-wpf-github-header.png)
+﻿# ![Fluence.WPF Banner](./assets/Fluence_OGImage.png)
+
+## Introduction
 
 Windows 11 Fluent Design controls and theming for WPF applications targeting **.NET Framework 4.7.2** and **Windows 10** (1809+), with enhanced visuals on **Windows 11**.
 
-**Current build:** `0.8.0-preview` (2026-06-10).
+**Current build:** `0.8.9-preview` (2026-07-07).
 
 **Docs:** see the Markdown guides under [`docs/`](docs/) (start with [Getting started](docs/getting-started.md)).
 
-## Features
+<!-- ## Features -->
 
 - **Theming with auto Light / Dark mode** - Auto (follow Windows), Light, Dark, or High Contrast.
 - **Accent colors** - System accent palette, app-defined accent, and custom accent ramps mapped to WinUI-style resource keys.
-- **40+ Fluent-styled controls** - accessible and themed, aligned with their WinUI 3 counterparts.
+- **50+ Fluent-styled controls** - accessible and themed, aligned with their WinUI 3 counterparts.
 - **PowerShell and .NET Framework 4.7.2 support** - build modern UIs for scripts and legacy apps without migrating to .NET 5+ or the Windows App SDK.
-- **Small footprint** - ~480 KB per assembly.
+- **Small footprint** - ~680 KB for the single library assembly.
 
 ## Key controls
+
 - **FluenceWindow** - A window with **Mica**, **Acrylic**, and **Tabbed (Mica Alt)** backdrops, rounded corners, configurable minimize / maximize / close buttons, and an extensible title bar for a WinUI-style search box or custom content.
-- **Controls** - 40+ Fluent-styled controls: Button, HyperlinkButton, DropDownButton, SplitButton, RepeatButton, ToggleButton, CheckBox, RadioButton, ToggleSwitch, TextBox, PasswordBox, ComboBox, Slider, NumberBox, ProgressBar, ProgressRing, InfoBar, InfoBadge, RatingControl, PersonPicture, ListView, ListBox, Expander, Card (clickable), NavigationView, ContextMenu, MenuItem, Menu, ToolTip, TreeView, TreeViewItem, Separator, FontIcon, Border, StackPanel, DockPanel, SmoothScrollViewer, plus TabView and ScrollBar themes.
+- **Controls** - 50+ Fluent-styled controls including Button, HyperlinkButton, DropDownButton, SplitButton, ToggleSplitButton, RepeatButton, ToggleButton, CheckBox, RadioButton, ToggleSwitch, TextBox, PasswordBox, AutoSuggestBox, ComboBox, Slider, NumberBox, DatePicker, TimePicker, ColorPicker, ProgressBar, ProgressRing, InfoBar, InfoBadge, RatingControl, PersonPicture, ListView, ListBox, Expander, Card (clickable), NavigationView, BreadcrumbBar, PipsPager, ContextMenu, MenuItem, Menu, ToolTip, Flyout, TeachingTip, CommandBarFlyout, ContentDialog, TreeView, TreeViewItem, Separator, FontIcon, Border, StackPanel, DockPanel, SmoothScrollViewer, plus TabView and ScrollBar themes. See the [control catalog](#control-catalog) for the full list.
 - **Typography** - Styles or Attached properties on `TextBlock` for the WinUI type ramp (Caption / Body / BodyStrong / Subtitle / Title / TitleLarge / Display).
 - **TabView** - Multi-document surface over `TabControl` with per-tab close (`CloseRequested` / `TabCloseRequested`), trailing add-tab button (`AddTabButtonClick`), per-tab icons, `TabWidthMode`, `CloseButtonOverlayMode`, and horizontal overflow scroll.
-- **NavigationView** - `Top`, `Left`, and `LeftCompact` pane modes with animated shared selection indicator, pane toggle + back button in the 48 px rail, and WinUI 3 content-region border (`CornerRadius="8,0,0,0"`, `CardStrokeColorDefault` top/left stroke).
+- **NavigationView** - `Top`, `Left`, and `LeftCompact` pane modes with animated shared selection indicator, pane toggle + back button in the 48 px rail, and WinUI 3 content-region border (`CornerRadius="8,0,0,0"`, `NavigationViewContentSeparatorBrush` top/left stroke).
 
 ## Demos
+
 - **Gallery** - A code-behind WPF app for visual verification: theme swatches, accent picker, DWM backdrops, grouped control pages (Colors, Icons, Typography, Buttons, Selection, Inputs, Forms, Data, Data Binding, Trees, Menus, Navigation, Tabs, Layout, Status, Accessibility, Settings), inline examples, and embedded source for each one.
 - **MVVM Pattern** - A minimal Task Manager (`Fluence.Wpf.Demo.Mvvm`) built with CommunityToolkit.Mvvm. It uses `[ObservableProperty]`, `[RelayCommand]`, filter bindings, and progress reporting with no code-behind.
 - **PowerShell** - Build UIs for scripts from Windows PowerShell 5.1, without installing PowerShell 7, .NET 9 / 10, or the Windows App SDK.
@@ -30,11 +34,11 @@ Windows 11 Fluent Design controls and theming for WPF applications targeting **.
 
 | Light Mode | Dark Mode       |
 |:----------:|:---------------:|
-| ![Home (Light)](https://github.com/user-attachments/assets/edbba17f-347e-4a7c-bb37-0a39b9e849dd) | ![Home (Dark)](https://github.com/user-attachments/assets/358f7804-9d13-4f2f-9167-1eacef6350fa) |
-| ![Buttons (Light)](https://github.com/user-attachments/assets/77eeeab8-e5bd-4b34-a3ce-186783990dc0) | ![Buttons (Dark)](https://github.com/user-attachments/assets/f6499937-f4a8-449c-959a-2e0167613d37) |
-| ![Status (Light)](https://github.com/user-attachments/assets/b5dc5bfe-3c73-49b1-8ccd-c6769027ff2e) | ![Status (Dark)](https://github.com/user-attachments/assets/9b50b401-f79c-4940-a6c8-05ba5be6355d) |
-| ![MVVM (Light)](https://github.com/user-attachments/assets/cb3d6401-59f5-46a2-81d3-404806b2ec9f) | ![MVVM (Dark)](https://github.com/user-attachments/assets/bb5d9c26-c8d9-4890-9c02-f0baed88bc97) |
-| ![PowerShell (Light)](https://github.com/user-attachments/assets/5b271459-2fe6-4edc-8431-2a7fd0b6aa71) | ![PowerShell (Dark)](https://github.com/user-attachments/assets/3b7bead7-a567-457c-a89d-4c9bd97c3a48) |
+| ![Home (Light)](./docs/screenshots/gallery-home-light.png) | ![Home (Dark)](./docs/screenshots/gallery-home-dark.png) |
+| ![Buttons (Light)](./docs/screenshots/gallery-buttons-light.png) | ![Buttons (Dark)](./docs/screenshots/gallery-buttons-dark.png) |
+| ![Status (Light)](./docs/screenshots/gallery-status-light.png) | ![Status (Dark)](./docs/screenshots/gallery-status-dark.png) |
+| ![MVVM (Light)](./docs/screenshots/mvvm-light.png) | ![MVVM (Dark)](./docs/screenshots/mvvm-dark.png) |
+| ![PowerShell (Light)](./docs/screenshots/powershell-light.png) | ![PowerShell (Dark)](./docs/screenshots/powershell-dark.png) |
 
 ## Quick Start
 
@@ -49,7 +53,7 @@ Fluence.Wpf.ApplicationThemeManager.Apply(
 Fluence.Wpf.ApplicationAccentColorManager.ApplySystemAccent();
 ```
 
-3. Use `Fluence.Wpf.Controls.FluenceWindow`, or call `ApplicationThemeManager.Apply(...)` at startup and place Fluence controls in a standard `Window`.
+1. Use `Fluence.Wpf.Controls.FluenceWindow`, or call `ApplicationThemeManager.Apply(...)` at startup and place Fluence controls in a standard `Window`.
 
 Optional XML namespace mapping:
 
@@ -62,14 +66,15 @@ xmlns:fluence="http://schemas.fluencewpf.com"
 | Area                | Types                                                                                                                                       |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Window              | `FluenceWindow`, `TitleBar`                                                                                                                  |
-| Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `RepeatButton`, `ToggleButton`                                                |
-| Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`                                                                |
-| Text                | `TextBox`, `PasswordBox`, `TextBlockExtensions`                                                                                             |
-| Data                | `ListView`, `ListBox`                                                                                                                       |
-| Tabs                | `TabView`, `TabViewItem`                                                                                                                    |
+| Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `RepeatButton`, `ToggleButton`                           |
+| Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`, `DatePicker`, `TimePicker`, `ColorPicker`                     |
+| Text                | `TextBox`, `PasswordBox`, `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions`                                                             |
+| Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem`                                                                                        |
+| Tabs                | `TabControl`, `TabItem`, `TabView`, `TabViewItem`                                                                                           |
 | Feedback            | `ProgressBar`, `ProgressRing`, `InfoBar`, `InfoBadge`, `RatingControl`                                                                      |
-| Navigation          | `NavigationView`, `NavigationViewItem`, `NavigationViewItemHeader`, `NavigationViewItemSeparator`                                           |
-| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`                                                                                                |
+| Navigation          | `NavigationView`, `NavigationViewItem`, `NavigationViewItemHeader`, `NavigationViewItemSeparator`, `BreadcrumbBar`, `BreadcrumbBarItem`, `PipsPager` |
+| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`, `FlyoutBase`, `Flyout`, `FlyoutPresenter`, `TeachingTip`, `CommandBarFlyout`, `AppBarButton` |
+| Dialogs             | `ContentDialog`                                                                                                                            |
 | Trees & collections | `TreeView`, `TreeViewItem`                                                                                                                  |
 | Layout / surfaces   | `Card`, `Expander`, `Border`, `StackPanel`, `DockPanel`, `SmoothScrollViewer`, `Separator`                                                  |
 | Person / social     | `PersonPicture`                                                                                                                             |
@@ -82,6 +87,7 @@ A NuGet package is coming. For now, use a project reference or build a local pac
 ```powershell
 dotnet pack Fluence.Wpf/Fluence.Wpf.csproj -c Release -o ./artifacts
 ```
+
 Or clone or submodule this repository and add a **project reference** to `Fluence.Wpf/Fluence.Wpf.csproj`.
 
 ## Requirements

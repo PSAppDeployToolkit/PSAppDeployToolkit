@@ -305,7 +305,7 @@ namespace Fluence.Wpf.Native
         public static bool SetWindowAttribute(IntPtr hwnd, int attribute, int value)
         {
             int result = DwmSetWindowAttribute(hwnd, attribute, ref value, sizeof(int));
-            return result == 0;
+            return result is 0;
         }
 
         /// <summary>Sets the rounded-corner preference (one of the <c>DWMWCP_*</c> values).</summary>
@@ -385,7 +385,7 @@ namespace Fluence.Wpf.Native
                 return 0;
             }
             int result = DwmGetWindowAttribute(hwnd, NativeConstants.DWMWA_CLOAKED, out int cloaked, sizeof(int));
-            return result == 0 ? cloaked : 0;
+            return result is 0 ? cloaked : 0;
         }
 
         /// <summary>Toggles the legacy Windows 11 21H2 Mica effect (<c>DWMWA_MICA_EFFECT</c>).</summary>
@@ -448,7 +448,7 @@ namespace Fluence.Wpf.Native
         {
             MARGINS margins = new() { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
             int result = DwmExtendFrameIntoClientArea(hwnd, ref margins);
-            return result == 0;
+            return result is 0;
         }
 
         /// <summary>
@@ -470,7 +470,7 @@ namespace Fluence.Wpf.Native
         public static bool IsCompositionEnabled()
         {
             int result = DwmIsCompositionEnabled(out bool enabled);
-            return result == 0 && enabled;
+            return result is 0 && enabled;
         }
 
         /// <summary>Rounds the window corners with the full radius (<c>DWMWCP_ROUND</c>).</summary>
@@ -547,7 +547,7 @@ namespace Fluence.Wpf.Native
             };
 
             int result = RtlGetVersion(ref versionInfo);
-            return result != 0
+            return result is not 0
                 ? throw new InvalidOperationException("RtlGetVersion failed.")
                 : new Version(
                     versionInfo.MajorVersion,

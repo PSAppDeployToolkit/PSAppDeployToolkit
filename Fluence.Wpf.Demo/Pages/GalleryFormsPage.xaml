@@ -56,7 +56,15 @@
                     <ui:ColorPicker
                         x:Name="DemoColorPicker"
                         ColorChanged="DemoColorPicker_ColorChanged"
-                        IsAlphaEnabled="True" />
+                        IsAlphaEnabled="{Binding IsChecked, Source={x:Reference AlphaEnabledCheckBox}}"
+                        IsAlphaSliderVisible="{Binding IsChecked, Source={x:Reference AlphaSliderVisibleCheckBox}}"
+                        IsAlphaTextInputVisible="{Binding IsChecked, Source={x:Reference AlphaTextInputVisibleCheckBox}}"
+                        IsColorChannelTextInputVisible="{Binding IsChecked, Source={x:Reference ChannelInputVisibleCheckBox}}"
+                        IsColorPreviewVisible="{Binding IsChecked, Source={x:Reference PreviewVisibleCheckBox}}"
+                        IsColorSliderVisible="{Binding IsChecked, Source={x:Reference ColorSliderVisibleCheckBox}}"
+                        IsColorSpectrumVisible="{Binding IsChecked, Source={x:Reference SpectrumVisibleCheckBox}}"
+                        IsHexInputVisible="{Binding IsChecked, Source={x:Reference HexInputVisibleCheckBox}}"
+                        IsMoreButtonVisible="{Binding IsChecked, Source={x:Reference MoreButtonVisibleCheckBox}}" />
                     <TextBlock
                         x:Name="ColorPickerResultLabel"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -64,7 +72,47 @@
                         Text="Color: #FFFF0000" />
                 </ui:StackPanel>
             </ContentControl>
-            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with hue, alpha, and hex input." />
+            <ContentControl x:Name="DemoSampleSlot03RightRailContentHost" Visibility="Collapsed">
+                <ui:StackPanel Spacing="8">
+                    <ui:CheckBox
+                        x:Name="SpectrumVisibleCheckBox"
+                        Content="Color spectrum"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="PreviewVisibleCheckBox"
+                        Content="Color preview"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="ColorSliderVisibleCheckBox"
+                        Content="Color slider"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="AlphaEnabledCheckBox"
+                        Content="Alpha enabled"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="AlphaSliderVisibleCheckBox"
+                        Content="Alpha slider"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="ChannelInputVisibleCheckBox"
+                        Content="Channel text input"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="AlphaTextInputVisibleCheckBox"
+                        Content="Alpha text input"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="HexInputVisibleCheckBox"
+                        Content="Hex input"
+                        IsChecked="True" />
+                    <ui:CheckBox
+                        x:Name="MoreButtonVisibleCheckBox"
+                        Content="More button"
+                        IsChecked="False" />
+                </ui:StackPanel>
+            </ContentControl>
+            <local:DemoSampleControl SampleDescription="Use ColorPicker for choosing a color from a saturation/value spectrum with a hue slider, alpha, RGB/HSV channel text input, and hex input." />
 
 
             <ContentControl x:Name="DemoSampleSlot04DemoContentHost" Visibility="Collapsed">

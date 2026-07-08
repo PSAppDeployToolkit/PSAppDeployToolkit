@@ -28,6 +28,7 @@
 
 using System;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -206,6 +207,12 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new Fluence.Wpf.Automation.FontIconAutomationPeer(this);
+        }
+
+        /// <inheritdoc />
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
@@ -243,7 +250,7 @@ namespace Fluence.Wpf.Controls
                 return;
             }
 
-            mirror.ScaleX = (MirroredWhenRightToLeft && FlowDirection == FlowDirection.RightToLeft) ? -1 : 1;
+            mirror.ScaleX = (MirroredWhenRightToLeft && FlowDirection is FlowDirection.RightToLeft) ? -1 : 1;
         }
 
         private void ApplySpinState()
