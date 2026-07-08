@@ -3163,7 +3163,7 @@ namespace PSADT.Interop
                 ArgumentNullException.ThrowIfNull(hWnd.Value, nameof(hWnd));
                 fixed (uint* p = &lpdwProcessId)
                 {
-                    [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+                    [DllImport("USER32.dll", SetLastError = true, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
                     static extern uint GetWindowThreadProcessId(HWND hWnd, uint* lpdwProcessId);
                     if ((res = GetWindowThreadProcessId(hWnd, p)) == 0)
                     {
@@ -3191,7 +3191,7 @@ namespace PSADT.Interop
         /// mechanisms were successfully attached or detached; otherwise, <see langword="false"/>.</returns>
         internal static BOOL AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach)
         {
-            [DllImport("USER32.dll", ExactSpelling = true, SetLastError = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+            [DllImport("USER32.dll", SetLastError = true, ExactSpelling = true), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
             static extern BOOL AttachThreadInput(uint idAttach, uint idAttachTo, BOOL fAttach);
             BOOL res = AttachThreadInput(idAttach, idAttachTo, fAttach);
             return !res ? throw ExceptionUtilities.GetExceptionForLastWin32Error() : res;
