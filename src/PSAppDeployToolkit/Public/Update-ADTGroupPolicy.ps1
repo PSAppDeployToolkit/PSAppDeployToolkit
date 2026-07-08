@@ -96,7 +96,7 @@ function Update-ADTGroupPolicy
 
             dynamicparam
             {
-                # Return early if we've been given directory input.
+                # Return early when targeting Computer because no dynamic RunAsActiveUser parameter is needed.
                 if ($PSBoundParameters.Target -eq 'Computer')
                 {
                     return

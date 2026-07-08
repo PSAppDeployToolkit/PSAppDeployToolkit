@@ -45,7 +45,7 @@ function Get-ADTApplication
     .OUTPUTS
         PSADT.AppManagement.InstalledApplication
 
-        Returns a InstalledApplication object with information about an installed application:
+        Returns an InstalledApplication object with information about an installed application:
         - PSPath
         - PSParentPath
         - PSChildName
@@ -245,7 +245,7 @@ function Get-ADTApplication
                         continue
                     }
 
-                    # Grab all available uninstall string.
+                    # Grab all available uninstall strings.
                     if (!($uninstallString = $item.GetValue('UninstallString', $null)) -or ($uninstallString -and [System.String]::IsNullOrWhiteSpace($uninstallString.Replace('"', [System.Management.Automation.Language.NullString]::Value))))
                     {
                         $uninstallString = [System.Management.Automation.Language.NullString]::Value
