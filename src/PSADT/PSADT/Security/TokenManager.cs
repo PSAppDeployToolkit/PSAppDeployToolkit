@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -207,22 +208,26 @@ namespace PSADT.Security
                             _ = Marshal.FinalReleaseComObject(servicePtr);
                         }
 
-                        // Read the token length from the pipe.
-                        int tokenLength = pipe.ReadByte();
-                        if (tokenLength == -1)
+                        // Read a single-byte token size indicator from the pipe.
+                        int tokenSizeIndicator = pipe.ReadByte();
+                        if (tokenSizeIndicator == -1)
                         {
-                            throw new InvalidProgramException("The token broker pipe closed before reading token length.");
+                            throw new InvalidProgramException("The token broker pipe closed before reading the token size indicator byte.");
                         }
-                        if (tokenLength is not 4 and not 8)
+                        if (tokenSizeIndicator is not 4 and not 8)
                         {
-                            throw new InvalidProgramException("Invalid token length received from the token broker.");
+                            throw new InvalidProgramException($"Invalid token size indicator of {tokenSizeIndicator.ToString(CultureInfo.InvariantCulture)} received from the token broker. Expected 4 or 8.");
                         }
 
-                        // Read the token from the pipe.
-                        byte[] tokenBuf = new byte[tokenLength];
-                        if (await pipe.ReadAsync(tokenBuf, 0, tokenLength, default).ConfigureAwait(false) != tokenLength)
+                        // Read the token payload based on the validated size indicator.
+                        byte[] tokenBuf = new byte[tokenSizeIndicator]; int tokenBufReadLength = await pipe.ReadAsync(tokenBuf, 0, tokenSizeIndicator, default).ConfigureAwait(false);
+                        if (tokenBufReadLength is 0)
                         {
-                            throw new InvalidProgramException("Invalid token received from the token broker.");
+                            throw new InvalidProgramException("The token broker pipe closed before reading the token payload.");
+                        }
+                        if (tokenBufReadLength != tokenSizeIndicator)
+                        {
+                            throw new InvalidProgramException($"The token broker pipe read {tokenBufReadLength.ToString(CultureInfo.InvariantCulture)} bytes, but expected {tokenSizeIndicator.ToString(CultureInfo.InvariantCulture)} bytes.");
                         }
 
                         // Return the token handle.
