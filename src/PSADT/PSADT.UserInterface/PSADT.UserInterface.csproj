@@ -29,11 +29,4 @@
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="[8.0.28,9.0.0)" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Page Update="Properties\DesignTimeResources.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
-    </Page>
-  </ItemGroup>
 </Project>

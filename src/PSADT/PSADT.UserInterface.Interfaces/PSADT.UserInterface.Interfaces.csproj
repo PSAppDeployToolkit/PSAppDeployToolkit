@@ -58,4 +58,11 @@
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Properties\DesignTimeResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+  </ItemGroup>
 </Project>

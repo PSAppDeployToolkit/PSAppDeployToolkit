@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     >
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Properties/DesignTime.Light.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Properties/DesignTime.Dark.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Themes/Typography/Typography.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Fluence.Wpf;component/Themes/Generic.xaml" />
     </ResourceDictionary.MergedDictionaries>
