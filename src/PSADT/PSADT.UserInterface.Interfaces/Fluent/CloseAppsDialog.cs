@@ -66,6 +66,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             public BitmapSource Icon { get; }
 
             /// <summary>
+            /// Returns the friendly description of the application. WPF's ItemAutomationPeer falls back to
+            /// Item.ToString() for a data-bound list item's UI Automation Name, so without this override a
+            /// screen reader reads the record-generated property dump ("AppToClose { Name = ..., Icon = ... }")
+            /// for every row.
+            /// </summary>
+            /// <returns>The application's friendly description.</returns>
+            public override string ToString()
+            {
+                return Description;
+            }
+
+            /// <summary>
             /// Retrieves the application icon as a BitmapSource from the specified executable file path.
             /// </summary>
             /// <remarks>If the icon has been previously retrieved, it will be fetched from a cache to improve
@@ -156,11 +168,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Configure buttons
             SetButtonContentWithAccelerator(ButtonRight, options.Strings.Fluent.ButtonRightText);
-            AutomationProperties.SetName(ButtonRight, options.Strings.Fluent.ButtonRightText);
             ButtonRight.Visibility = _deferralsRemaining is not null || _deferralDeadline is not null ? Visibility.Visible : Visibility.Collapsed;
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
+
+            // Esc maps to Defer when a Defer button is available; otherwise Esc does nothing (a forced
+            // close-apps prompt should not be dismissable by Esc).
+            if (ButtonRight.Visibility is Visibility.Visible)
+            {
+                SetCancelButton(ButtonRight);
+            }
 
             // Set up/process optional values.
             if (state.RunningProcessService is not null)
@@ -181,6 +199,28 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private bool DeferralsAvailable()
         {
             return _deferralsRemaining is not null || _deferralDeadline is not null;
+        }
+
+        /// <summary>
+        /// Computes the dialog result used when the countdown expires. Pure translation of the previous
+        /// accessible-name-based logic into explicit state, so it can be unit tested and so the button's
+        /// UI-Automation Name no longer doubles as program state.
+        /// </summary>
+        /// <param name="forcedCountdown">Whether the countdown is forced.</param>
+        /// <param name="hasRunningProcessService">Whether a running-process service is present.</param>
+        /// <param name="buttonLeftShowsCloseText">Whether the left button currently shows the close-apps text.</param>
+        /// <param name="hideCloseButton">Whether the close button is hidden.</param>
+        /// <param name="deferralsAvailable">Whether deferrals are available.</param>
+        /// <returns>The <see cref="CloseAppsDialogResult"/> that should be set when the countdown expires.</returns>
+        internal static CloseAppsDialogResult DecideCloseAppsCountdownResult(bool forcedCountdown, bool hasRunningProcessService, bool buttonLeftShowsCloseText, bool hideCloseButton, bool deferralsAvailable)
+        {
+            return forcedCountdown && (!hasRunningProcessService || (!buttonLeftShowsCloseText && !hideCloseButton))
+                ? CloseAppsDialogResult.Continue
+                : forcedCountdown && deferralsAvailable
+                ? CloseAppsDialogResult.Defer
+                : buttonLeftShowsCloseText
+                ? CloseAppsDialogResult.Close
+                : CloseAppsDialogResult.Continue;
         }
 
         /// <summary>
@@ -270,7 +310,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private async ValueTask UpdateRunningProcessesAsync()
         {
             // Update the UI based on the changes in the collection.
-            AutomationProperties.SetName(CloseAppsListView, $"Applications to Close: {AppsToCloseCollection.Count} items");
             UpdateRowDefinition();
             if (AppsToCloseCollection.Count > 0)
             {
@@ -279,18 +318,19 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     await _logAction($"The running processes have changed. Updating the apps to close: ['{string.Join("', '", AppsToCloseCollection.Select(static a => a.Description))}']...", LogSeverity.Info);
                 }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsMessageText);
+                AutomationProperties.SetName(MessageTextBlock, GetPlainText(MessageTextBlock));
                 CloseAppsStackPanel.Visibility = Visibility.Visible;
                 if (!_hideCloseButton)
                 {
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftText);
-                    AutomationProperties.SetName(ButtonLeft, _buttonLeftText);
                     ButtonLeft.IsEnabled = true;
+                    _buttonLeftShowsCloseText = true;
                 }
                 else
                 {
                     SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
-                    AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                     ButtonLeft.IsEnabled = false;
+                    _buttonLeftShowsCloseText = false;
                 }
             }
             else
@@ -300,10 +340,11 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     await _logAction("Previously detected running processes are no longer running.", LogSeverity.Info);
                 }
                 FormatMessageWithHyperlinks(MessageTextBlock, _closeAppsNoProcessesMessageText);
+                AutomationProperties.SetName(MessageTextBlock, GetPlainText(MessageTextBlock));
                 SetButtonContentWithAccelerator(ButtonLeft, _buttonLeftNoProcessesText);
-                AutomationProperties.SetName(ButtonLeft, _buttonLeftNoProcessesText);
                 CloseAppsStackPanel.Visibility = Visibility.Collapsed;
                 ButtonLeft.IsEnabled = true;
+                _buttonLeftShowsCloseText = false;
 
                 // Only auto-close once the window has been loaded; otherwise WPF throws
                 // "Cannot set Visibility... after a Window has closed" when ShowDialog() runs.
@@ -327,6 +368,12 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private async void AppsToCloseCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             await UpdateRunningProcessesAsync();
+        }
+
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ButtonLeft;
         }
 
         /// <summary>
@@ -366,7 +413,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private protected override void ButtonLeft_Click(object? sender, RoutedEventArgs e)
         {
             // Set the result and call base method to handle window closure.
-            DialogResult = AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftText, StringComparison.Ordinal) ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
+            DialogResult = _buttonLeftShowsCloseText ? CloseAppsDialogResult.Close : CloseAppsDialogResult.Continue;
             base.ButtonLeft_Click(sender, e);
         }
 
@@ -401,13 +448,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             base.CountdownTimer_Tick(state);
             if (_countdownStopwatch.Elapsed >= _countdownDuration)
             {
-                DialogResult = _forcedCountdown && (_runningProcessService is null || (AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftNoProcessesText, StringComparison.Ordinal) && !_hideCloseButton))
-                    ? CloseAppsDialogResult.Continue
-                    : _forcedCountdown && DeferralsAvailable()
-                    ? CloseAppsDialogResult.Defer
-                    : AutomationProperties.GetName(ButtonLeft).Equals(_buttonLeftText, StringComparison.Ordinal)
-                    ? CloseAppsDialogResult.Close
-                    : CloseAppsDialogResult.Continue;
+                DialogResult = DecideCloseAppsCountdownResult(_forcedCountdown, _runningProcessService is not null, _buttonLeftShowsCloseText, _hideCloseButton, DeferralsAvailable());
                 CloseDialog();
             }
         }
@@ -431,6 +472,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// The text for the left button when there's apps to close.
         /// </summary>
         private readonly string _buttonLeftText;
+
+        /// <summary>
+        /// Tracks whether ButtonLeft currently displays the "Close apps" text (true) versus the
+        /// "no processes / continue" text (false). Used in place of reading the button's accessible
+        /// name so the UI-Automation Name can be cleaned without affecting dialog logic.
+        /// </summary>
+        private bool _buttonLeftShowsCloseText;
 
         /// <summary>
         /// The service object for processing running applications.

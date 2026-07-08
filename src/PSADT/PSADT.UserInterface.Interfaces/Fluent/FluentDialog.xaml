@@ -12,8 +12,6 @@
     MaxWidth="580"
     MaxHeight="1050"
     x:ClassModifier="internal"
-    AutomationProperties.AutomationId="PSAppDeployToolkitDialog"
-    AutomationProperties.Name="PSAppDeployToolkit Dialog"
     Background="{DynamicResource ApplicationBackgroundBrush}"
     ExtendsContentIntoTitleBar="True"
     IsCloseButtonVisible="Collapsed"
@@ -53,7 +51,7 @@
         </ResourceDictionary>
     </ui:FluenceWindow.Resources>
 
-    <Grid AutomationProperties.Name="Main Container Grid">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="28" />
             <ColumnDefinition />
@@ -71,7 +69,6 @@
             Grid.Row="0"
             Grid.RowSpan="3"
             Grid.Column="0"
-            AutomationProperties.Name="Sidebar Panel"
             >
 
             <Rectangle
@@ -85,7 +82,6 @@
                 Margin="1,8,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                AutomationProperties.Name="PSAppDeployToolkit Logo"
                 >
                 <Image.Source>
                     <DrawingImage>
@@ -132,14 +128,12 @@
             Margin="24,24,24,16"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
-            AutomationProperties.Name="Header Panel"
             Orientation="Horizontal"
             >
             <Image
                 x:Name="AppIconImage"
                 Width="60"
                 Height="60"
-                AutomationProperties.Name="Application Icon"
                 />
             <StackPanel
                 Width="Auto"
@@ -151,7 +145,6 @@
                 <TextBlock
                     x:Name="AppTitleTextBlock"
                     Width="426"
-                    AutomationProperties.Name="Application Title"
                     Style="{DynamicResource AdtTitleTextBlockStyle}"
                     Text="Excessively Long Application Title 1.1 x64 EN"
                     TextAlignment="Left"
@@ -162,7 +155,6 @@
                 <TextBlock
                     x:Name="SubtitleTextBlock"
                     Width="426"
-                    AutomationProperties.Name="Application Subtitle"
                     Style="{DynamicResource AdtSubTitleTextBlockStyle}"
                     Text="PSAppDeployToolkit - Installation Type"
                     TextAlignment="Left"
@@ -180,7 +172,6 @@
             Grid.Column="1"
             Margin="24,0,24,16"
             VerticalAlignment="Center"
-            AutomationProperties.Name="Main Content Card"
             Background="{DynamicResource LayerFillColorAltBrush}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
@@ -197,7 +188,6 @@
                 <StackPanel
                     x:Name="MessageTextStackPanel"
                     VerticalAlignment="Top"
-                    AutomationProperties.Name="Message Container"
                     Orientation="Vertical"
                     >
 
@@ -205,7 +195,6 @@
                         x:Name="MessageTextBlock"
                         Margin="16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="Message Text"
                         Text="This is the dialog primary message. This will be replaced when the application dialog is displayed."
                         TextWrapping="Wrap"
                         />
@@ -214,7 +203,6 @@
                         x:Name="CustomMessageTextBlock"
                         Margin="16,0,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="Additional Message Text"
                         Text="This is a custom message that can be added to the CloseApps and Restart dialogs directly via PowerShell."
                         TextWrapping="Wrap"
                         />
@@ -224,7 +212,6 @@
                 <StackPanel
                     x:Name="CloseAppsStackPanel"
                     VerticalAlignment="Center"
-                    AutomationProperties.Name="Close Applications List Container"
                     Orientation="Vertical"
                     >
 
@@ -233,7 +220,7 @@
                         MaxHeight="203"
                         Margin="16,0,16,16"
                         d:ItemsSource="{d:SampleData ItemCount=3}"
-                        AutomationProperties.Name="Close Applications ListView"
+                        AutomationProperties.Name="Close Applications"
                         Background="{DynamicResource LayerFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                         BorderThickness="1"
@@ -273,7 +260,6 @@
                                         Margin="4,0,4,0"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        AutomationProperties.Name="{Binding Name, StringFormat=Icon for \{0\}}"
                                         RenderOptions.BitmapScalingMode="HighQuality"
                                         Source="{Binding Icon, Mode=OneWay}"
                                         />
@@ -283,14 +269,12 @@
                                         Grid.Column="1"
                                         Margin="24,0,16,0"
                                         VerticalAlignment="Center"
-                                        AutomationProperties.Name="Close Applications List Container"
                                         Orientation="Vertical"
                                         >
                                         <TextBlock
                                             x:Name="ListViewTitle"
                                             HorizontalAlignment="Stretch"
                                             ui:TextBlockExtensions.Typography="BodyStrong"
-                                            AutomationProperties.Name="Process Description"
                                             FontWeight="SemiBold"
                                             Text="{Binding Description, Mode=OneWay}"
                                             TextWrapping="Wrap"
@@ -299,7 +283,6 @@
                                             x:Name="ListViewSubTitle"
                                             HorizontalAlignment="Stretch"
                                             ui:TextBlockExtensions.Typography="BodyStrong"
-                                            AutomationProperties.Name="Process Name"
                                             FontSize="12"
                                             Foreground="{DynamicResource AccentFillColorTertiaryBrush}"
                                             Text="{Binding Name, Mode=OneWay}"
@@ -326,7 +309,6 @@
                         x:Name="ProgressMessageDetailTextBlock"
                         Margin="16,16,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="Progress Detail Text"
                         Text="Secondary Progress Message for more details ..."
                         TextWrapping="Wrap"
                         />
@@ -363,7 +345,7 @@
                         x:Name="InputBoxText"
                         Margin="16,16,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="InputBox"
+                        AutomationProperties.IsRequiredForForm="True"
                         Text=""
                         TextAlignment="Left"
                         TextWrapping="Wrap"
@@ -373,7 +355,7 @@
                         x:Name="InputBoxPassword"
                         Margin="16,16,16,16"
                         ui:TextBlockExtensions.Typography="Body"
-                        AutomationProperties.Name="SecureInputBox"
+                        AutomationProperties.IsRequiredForForm="True"
                         Visibility="Collapsed"
                         />
                 </StackPanel>
@@ -412,7 +394,6 @@
                             Width="248"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            AutomationProperties.Name="List Selection ComboBox"
                             />
                     </ui:DockPanel>
                 </StackPanel>
@@ -448,7 +429,8 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             ui:TextBlockExtensions.Typography="BodyStrong"
-                            AutomationProperties.Name="Countdown Timer Value"
+                            AutomationProperties.LiveSetting="Polite"
+                            AutomationProperties.Name="{Binding Text, RelativeSource={RelativeSource Self}}"
                             Text="00:00:00"
                             />
                     </ui:DockPanel>
@@ -485,6 +467,7 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             ui:TextBlockExtensions.Typography="BodyStrong"
+                            AutomationProperties.Name="{Binding Text, RelativeSource={RelativeSource Self}}"
                             Text="3"
                             TextWrapping="WrapWithOverflow"
                             />
@@ -520,6 +503,7 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             ui:TextBlockExtensions.Typography="BodyStrong"
+                            AutomationProperties.Name="{Binding Text, RelativeSource={RelativeSource Self}}"
                             Text="August 15, 2025 5:30 PM"
                             TextWrapping="WrapWithOverflow"
                             />
@@ -533,7 +517,6 @@
             x:Name="ButtonPanel"
             Grid.Row="2"
             Grid.Column="1"
-            AutomationProperties.Name="Action Buttons Panel"
             Visibility="Visible"
             >
             <Grid
@@ -577,7 +560,6 @@
                     AutomationProperties.Name="Right Action Button"
                     Click="ButtonRight_Click"
                     Content="Right Action Button"
-                    KeyboardNavigation.TabIndex="0"
                     />
             </Grid>
 

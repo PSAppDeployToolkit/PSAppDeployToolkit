@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -36,7 +37,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     {
                         throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
                     }
-                    _ = dialog.InputBoxPassword.Focus();
                     dialog.InputBoxPassword.SelectAll();
                 };
             }
@@ -50,11 +50,22 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     {
                         throw new InvalidProgramException("Unexpected Loaded event sender type. Expected InputDialog.");
                     }
-                    _ = dialog.InputBoxText.Focus();
                     dialog.InputBoxText.SelectAll();
                 };
             }
             UpdateContinueButtonState();
+
+            // Associate the input field with the visible prompt so a screen reader announces the question
+            // as the field's label. (For secure input this targets the outer wrapper; the inner password
+            // field announces as a protected field — see residual limitations.)
+            AutomationProperties.SetLabeledBy(InputBoxText, MessageTextBlock);
+            AutomationProperties.SetLabeledBy(InputBoxPassword, MessageTextBlock);
+        }
+
+        /// <inheritdoc />
+        private protected override System.Windows.FrameworkElement? GetInitialFocusElement()
+        {
+            return _secureInput ? InputBoxPassword : InputBoxText;
         }
 
         /// <summary>

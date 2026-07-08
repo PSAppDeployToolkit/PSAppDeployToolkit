@@ -10,10 +10,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Documents;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Threading;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Threading;
@@ -87,6 +90,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             AppTitleTextBlock.Text = options.AppTitle;
             SubtitleTextBlock.Text = options.Subtitle;
 
+            // The subtitle is visual branding only; it is excluded from the UI Automation tree so a
+            // screen reader's read-out of the dialog goes straight from the app title to the message.
+            _screenReaderSuppressedElements.Add(SubtitleTextBlock);
+
             // Set remaining properties from the options
             if (options.DialogPosition is not null)
             {
@@ -129,6 +136,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 FormatMessageWithHyperlinks(CustomMessageTextBlock, _customMessageText);
                 CustomMessageTextBlock.Visibility = Visibility.Visible;
+                AutomationProperties.SetName(CustomMessageTextBlock, GetPlainText(CustomMessageTextBlock));
             }
             else
             {
@@ -193,6 +201,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Configure window events
             SystemParameters.StaticPropertyChanged += SystemParameters_StaticPropertyChanged;
+            ContentRendered += FluentDialog_ContentRendered;
             SizeChanged += FluentDialog_SizeChanged;
             Loaded += FluentDialog_Loaded;
 
@@ -286,11 +295,46 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <inheritdoc />
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            // Suppress the caption minimize button from the UI Automation tree. It sits last in the tree
+            // (the title-bar grid is z-ordered above the client area), so a screen reader otherwise
+            // trails "Minimize button" at the very end of the dialog read-out; marking it IsOffscreen
+            // proved insufficient to stop that. It is not keyboard-focusable, so removing it from the
+            // tree leaves pointer activation unaffected.
+            if (GetTemplateChild("PART_MinimizeButton") is System.Windows.Controls.Button minimizeButton)
+            {
+                _screenReaderSuppressedElements.Add(minimizeButton);
+            }
+        }
+
+        /// <inheritdoc />
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new FluentDialogAutomationPeer(this);
+        }
+
+        /// <inheritdoc />
         protected override void OnSourceInitialized(EventArgs e)
         {
             // FluenceWindow.OnSourceInitialized applies the window shell (chrome, opaque/backdrop
             // background, frame) before the first paint.
             base.OnSourceInitialized(e);
+
+            // Speech-normalized accessible names for the window and the title text block, set here (not
+            // in the constructor, which must neither leak 'this' nor write static state) and before the
+            // window is shown, hence before any activation announcement. The raw title otherwise voices
+            // like a date ("2.1" as "February first", SR4). Only the first dialog the process shows
+            // announces the full title; every subsequent dialog announces the short vendor/title form
+            // (no version or language) so repeated dialog openings stay brief. The names are independent
+            // of Title, so taskbar and Alt-Tab text are unchanged.
+            string speechFriendlyTitle = Interlocked.Exchange(ref _fullSpeechTitleUsed, 1) is 0
+                ? NormalizeVersionForSpeech(Title)
+                : ShortenTitleForSpeech(Title);
+            AutomationProperties.SetName(this, speechFriendlyTitle);
+            AutomationProperties.SetName(AppTitleTextBlock, speechFriendlyTitle);
 
             // Configure all content-dependent layout and position the window BEFORE the first paint
             // so the first composed frame is already settled - no visible jump from a default
@@ -300,7 +344,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // layout pass here gives PositionWindow the final ActualWidth / ActualHeight; the wired
             // SizeChanged handler still repositions if the content size changes later (e.g. the
             // CloseApps list updating).
-            AutomationProperties.SetName(this, Title);
             UpdateButtonLayout();
             UpdateRowDefinition();
             UpdateLayout();
@@ -693,6 +736,32 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 Text = text,
             };
+
+            // Keep the button's accessible name in sync with its visible label, with the access-key
+            // marker ('_') removed so a screen reader announces "Restart Now", not "Restart _Now".
+            AutomationProperties.SetName(button, StripAccessKeyMarker(text));
+        }
+
+        /// <summary>
+        /// Removes the WPF access-key marker (<c>_</c>) from a button label string so that a screen reader
+        /// announces the clean visible text rather than the raw accelerator syntax.
+        /// </summary>
+        /// <remarks>A single leading underscore before a character is the accelerator marker and is removed.
+        /// A doubled underscore (<c>__</c>) is an escape sequence that represents a literal underscore in the
+        /// displayed text; it collapses to a single <c>_</c> in the returned string.</remarks>
+        /// <param name="text">The raw button text, potentially containing underscore access-key markers.</param>
+        /// <returns>The text with access-key markers removed and escaped double-underscores collapsed to a single
+        /// underscore.</returns>
+        internal static string StripAccessKeyMarker(string text)
+        {
+            // Collapse '__' (escaped literal underscore) first so it is not affected by the
+            // subsequent single-'_' removal.  Use a GUID-based sentinel that cannot appear in
+            // real button text to avoid any round-trip collision.
+            const string sentinel = "\x0001UNDERSCORE\x0001";
+            return text
+                .Replace(oldValue: "__", sentinel, StringComparison.Ordinal)
+                .Replace(oldValue: "_", string.Empty, StringComparison.Ordinal)
+                .Replace(sentinel, newValue: "_", StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -1016,7 +1085,29 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Format the remaining time as hh:mm:ss
             CountdownValueTextBlock.Text = $"{((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)}h {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)}m {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)}s";
-            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)} hours, {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)} minutes, {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)} seconds");
+
+            // The value's accessible name tracks the visible text via the XAML Name binding. The localized
+            // heading TextBlock immediately precedes the value in the reading order, so prefixing the
+            // heading into the name here would make a screen reader speak the heading twice in a row.
+            // Balanced announcement policy: speak at thresholds only, never every second.
+            CountdownAnnounceDecision decision = DecideCountdownAnnouncement(_countdownRemainingTime, _countdownWarningDuration, _countdownWarningAnnounced, _countdownFinalMinuteAnnounced);
+            bool thresholdCrossed = (decision.WarningAnnounced && !_countdownWarningAnnounced) || (decision.FinalMinuteAnnounced && !_countdownFinalMinuteAnnounced);
+            _countdownWarningAnnounced = decision.WarningAnnounced;
+            _countdownFinalMinuteAnnounced = decision.FinalMinuteAnnounced;
+            if (decision.Announce)
+            {
+                // Threshold crossings prefix the localized countdown heading for context; the spoken value
+                // is the visible clock text ("0h 2m 0s"), which speech engines expand and localize
+                // natively ("zero hours, two minutes..."), so no dedicated localized unit strings are
+                // needed. The final-ten-seconds ticks speak just the number ("9", "8", ...) because they
+                // fire every second. SetCurrentValue keeps the XAML Name<-Text binding alive, so the next
+                // tick's text change restores the visible value as the on-demand accessible name.
+                string announcement = thresholdCrossed
+                    ? $"{GetPlainText(CountdownHeadingTextBlock)}: {CountdownValueTextBlock.Text}"
+                    : ((int)Math.Ceiling(_countdownRemainingTime.TotalSeconds)).ToString(CultureInfo.CurrentCulture);
+                CountdownValueTextBlock.SetCurrentValue(AutomationProperties.NameProperty, announcement);
+                AnnounceLiveRegionChanged(CountdownValueTextBlock);
+            }
 
             // Update text color based on remaining time using style application
             if (_countdownRemainingTime.TotalSeconds <= 60)
@@ -1101,6 +1192,16 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// Represents the remaining time in a countdown.
         /// </summary>
         private protected TimeSpan _countdownRemainingTime;
+
+        /// <summary>
+        /// Whether the "entering warning window" countdown announcement has been spoken.
+        /// </summary>
+        private bool _countdownWarningAnnounced;
+
+        /// <summary>
+        /// Whether the "final minute" countdown announcement has been spoken.
+        /// </summary>
+        private bool _countdownFinalMinuteAnnounced;
 
         /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
@@ -1214,6 +1315,262 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                     IsBold = IsBold,
                     IsItalic = IsItalic,
                 };
+            }
+        }
+
+        /// <summary>
+        /// Result of deciding whether the countdown should be announced to assistive technology at the
+        /// current remaining time, plus the updated "already announced" flags to persist on the dialog.
+        /// </summary>
+        internal readonly struct CountdownAnnounceDecision
+        {
+            /// <summary>Initializes a new <see cref="CountdownAnnounceDecision"/>.</summary>
+            /// <param name="announce">Whether to announce the countdown value to assistive technology on this tick.</param>
+            /// <param name="warningAnnounced">The updated "warning window entered" flag to persist on the dialog.</param>
+            /// <param name="finalMinuteAnnounced">The updated "final minute crossed" flag to persist on the dialog.</param>
+            internal CountdownAnnounceDecision(bool announce, bool warningAnnounced, bool finalMinuteAnnounced)
+            {
+                Announce = announce;
+                WarningAnnounced = warningAnnounced;
+                FinalMinuteAnnounced = finalMinuteAnnounced;
+            }
+
+            /// <summary>
+            /// Gets whether to announce the countdown value to assistive technology on this tick.
+            /// </summary>
+            internal bool Announce { get; }
+
+            /// <summary>
+            /// Gets the updated "warning window entered" flag to persist on the dialog.
+            /// </summary>
+            internal bool WarningAnnounced { get; }
+
+            /// <summary>
+            /// Gets the updated "final minute crossed" flag to persist on the dialog.
+            /// </summary>
+            internal bool FinalMinuteAnnounced { get; }
+        }
+
+        /// <summary>
+        /// Decides whether to announce the countdown now (Balanced policy): once when entering the warning
+        /// window, once when crossing the final minute (≤60 s), and on every tick within the final 10 s.
+        /// Pure function for unit testing; callers persist the returned flags.
+        /// </summary>
+        /// <param name="remaining">The remaining countdown duration.</param>
+        /// <param name="warning">The optional warning window duration; null means no warning is configured.</param>
+        /// <param name="warningAnnounced">Whether the "entering warning window" announcement has already been made.</param>
+        /// <param name="finalMinuteAnnounced">Whether the "final minute" announcement has already been made.</param>
+        /// <returns>A <see cref="CountdownAnnounceDecision"/> indicating whether to announce now and the updated flags.</returns>
+        internal static CountdownAnnounceDecision DecideCountdownAnnouncement(TimeSpan remaining, TimeSpan? warning, bool warningAnnounced, bool finalMinuteAnnounced)
+        {
+            double seconds = remaining.TotalSeconds;
+            return seconds <= 10
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+                : seconds <= 60 && !finalMinuteAnnounced
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+                : warning is not null && remaining <= warning.Value && !warningAnnounced
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced)
+                : new CountdownAnnounceDecision(announce: false, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced);
+        }
+
+        /// <summary>
+        /// Rewrites dot-separated version tokens (e.g. <c>14.04.03</c>) so a screen reader speaks them
+        /// segment-by-segment with "point" between segments ("fourteen point zero four point zero three")
+        /// rather than voicing them as a date (SR4). Each segment is read as a cardinal number when it is a
+        /// one- or two-digit value with no leading zero; otherwise (leading zero, or three or more digits) it
+        /// is read digit-by-digit. Text outside a dotted digit group is returned unchanged. The transform is
+        /// scoped to the app version token; callers apply it only to the app title.
+        /// </summary>
+        /// <param name="text">The text to normalize, typically the app title.</param>
+        /// <returns>The text with any version tokens rewritten for speech.</returns>
+        internal static string NormalizeVersionForSpeech(string? text)
+        {
+            return string.IsNullOrWhiteSpace(text) ? text ?? string.Empty : VersionTokenRegex.Replace(text, static m => SpeakVersionToken(m.Value.TrimStart('v', 'V')));
+        }
+
+        /// <summary>
+        /// Matches a version token: an optional "v"/"V" prefix followed by two or more dot-separated runs of
+        /// digits (e.g. <c>1.2</c>, <c>v1.10</c>, <c>v5.50.14</c>, <c>14.04.03</c>).
+        /// </summary>
+        private static readonly Regex VersionTokenRegex = new(@"[vV]?\d+(?:\.\d+)+", RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// Shortens an app title to its vendor/product portion for speech: everything from the first
+        /// version token onward (the version itself plus trailing qualifiers such as language or
+        /// architecture) is dropped, e.g. "Adobe Creative Suite 2.1.45 EN" becomes "Adobe Creative Suite".
+        /// Falls back to the full speech-normalized title when no version token is present or when
+        /// nothing meaningful precedes it. Pure function for unit testing.
+        /// </summary>
+        /// <param name="title">The raw app title.</param>
+        /// <returns>The short spoken form of the title.</returns>
+        internal static string ShortenTitleForSpeech(string? title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return string.Empty;
+            }
+            Match match = VersionTokenRegex.Match(title);
+            if (!match.Success)
+            {
+                return NormalizeVersionForSpeech(title);
+            }
+            string prefix = title![..match.Index].Trim();
+            return prefix.Length > 0 ? prefix : NormalizeVersionForSpeech(title);
+        }
+
+        /// <summary>Speaks a whole version token by joining its spoken segments with " point ".</summary>
+        /// <param name="token">The dotted version token, e.g. <c>14.04.03</c>.</param>
+        /// <returns>The spoken form, e.g. "fourteen point zero four point zero three".</returns>
+        private static string SpeakVersionToken(string token)
+        {
+            return string.Join(" point ", token.Split('.').Select(SpeakVersionSegment));
+        }
+
+        /// <summary>
+        /// Speaks a single version segment: a one- or two-digit value with no leading zero is read as a cardinal
+        /// number (e.g. "fourteen"); any other segment (leading zero, or three or more digits) is read
+        /// digit-by-digit (e.g. "zero four", "one nine zero four one").
+        /// </summary>
+        /// <param name="segment">A single dot-delimited version segment, e.g. <c>14</c> or <c>04</c>.</param>
+        /// <returns>The spoken form of the segment.</returns>
+        private static string SpeakVersionSegment(string segment)
+        {
+            bool readAsCardinal = segment.Length <= 2 && !(segment.Length is 2 && segment[0] == '0');
+            return readAsCardinal
+                ? CardinalUnderHundred(int.Parse(segment, CultureInfo.InvariantCulture))
+                : string.Join(" ", segment.Select(static c => DigitWords[c - '0']));
+        }
+
+        /// <summary>
+        /// The spoken word for each decimal digit 0-9.
+        /// </summary>
+        private static readonly string[] DigitWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+        /// <summary>
+        /// The spoken words for the cardinal numbers 0-19.
+        /// </summary>
+        private static readonly string[] OnesWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+
+        /// <summary>
+        /// The spoken words for the tens 20, 30, ... 90.
+        /// </summary>
+        private static readonly string[] TensWords = ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+        /// <summary>Returns the spoken cardinal for a value in the range 0-99.</summary>
+        /// <param name="value">The value to speak, in the range 0-99.</param>
+        /// <returns>The spoken cardinal, e.g. "fourteen".</returns>
+        private static string CardinalUnderHundred(int value)
+        {
+            if (value < 20)
+            {
+                return OnesWords[value];
+            }
+            string tens = TensWords[(value / 10) - 2];
+            int ones = value % 10;
+            return ones is 0 ? tens : $"{tens} {OnesWords[ones]}";
+        }
+
+        /// <summary>
+        /// Raises a UI Automation LiveRegionChanged event so a screen reader announces the element's updated
+        /// content. The element must have AutomationProperties.LiveSetting set in XAML. No-op without a peer/listeners.
+        /// </summary>
+        /// <param name="element">The UI element whose live-region content has changed. Null is silently ignored.</param>
+        private protected static void AnnounceLiveRegionChanged(UIElement? element)
+        {
+            if (element is null)
+            {
+                return;
+            }
+            AutomationPeer? peer = element is FrameworkElement frameworkElement
+                ? UIElementAutomationPeer.FromElement(frameworkElement)
+                : null;
+            peer ??= UIElementAutomationPeer.CreatePeerForElement(element);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+
+        /// <summary>
+        /// Extracts the plain visible text from a TextBlock whether its content was set via Text or Inlines.
+        /// </summary>
+        /// <param name="textBlock">The TextBlock from which to extract text.</param>
+        private protected static string GetPlainText(System.Windows.Controls.TextBlock textBlock)
+        {
+            return new TextRange(textBlock.ContentStart, textBlock.ContentEnd).Text.Trim();
+        }
+
+        /// <summary>
+        /// The element that should receive initial keyboard focus when the dialog opens, or null to keep
+        /// WPF's default. Screen readers begin reading from this element.
+        /// </summary>
+        private protected virtual FrameworkElement? GetInitialFocusElement()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Handles the ContentRendered event for the dialog, activating the window and setting initial
+        /// keyboard focus. No synthetic open announcement is made: screen readers read the activated
+        /// dialog's contents from the UI Automation tree themselves, so a composed announcement (the
+        /// previous hidden live-region TextBlock) was heard as a full duplicate of that natural read.
+        /// The accessible names throughout the dialog are curated instead so the natural read is correct.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the dialog instance.</param>
+        /// <param name="e">The event data associated with the ContentRendered event.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Best-effort focus/activation; must never abort dialog display.")]
+        private void FluentDialog_ContentRendered(object? sender, EventArgs e)
+        {
+            // One-shot: initial focus must happen exactly once. ContentRendered can fire again if content
+            // re-renders (e.g. the CloseApps list updating), so unsubscribe here to guarantee a second
+            // render cannot re-run activation/focus.
+            ContentRendered -= FluentDialog_ContentRendered;
+
+            // ContentRendered fires on the UI thread; no dispatcher hop needed.
+            try
+            {
+                _ = Activate();
+                if (GetInitialFocusElement() is FrameworkElement initialFocusElement)
+                {
+                    _ = initialFocusElement.Focus();
+                    _ = Keyboard.Focus(initialFocusElement);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex); // Best-effort: activation/focus is never critical to dialog functionality.
+            }
+        }
+
+        /// <summary>
+        /// Elements excluded from the UI Automation tree by <see cref="FluentDialogAutomationPeer"/> so a
+        /// screen reader's read-out of the dialog skips them: the subtitle (visual branding), the caption
+        /// minimize button (mouse-only chrome trailing the read-out), and per-dialog additions such as the
+        /// progress dialog's custom/detail messages. None are keyboard-focusable, so removal costs nothing.
+        /// </summary>
+        private protected readonly HashSet<UIElement> _screenReaderSuppressedElements = [];
+
+        /// <summary>
+        /// Non-zero once a dialog in this process has used the full speech-normalized title. Later
+        /// dialogs announce only the short vendor/title form (no version or language) so a deployment's
+        /// dialog sequence does not repeat the full title at every window. Updated via
+        /// <see cref="Interlocked"/> from <see cref="OnSourceInitialized"/>.
+        /// </summary>
+        private static int _fullSpeechTitleUsed;
+
+        /// <summary>
+        /// A <see cref="WindowAutomationPeer"/> that omits presentation-only elements from the automation
+        /// tree: everything in <see cref="_screenReaderSuppressedElements"/> plus every separator (WPF
+        /// separators report IsEnabled false, so a screen reader interjects "disabled" between content
+        /// sections when reading the dialog). None of the removed elements are keyboard-focusable, so
+        /// removal costs no keyboard or screen-reader function.
+        /// </summary>
+        /// <param name="owner">The owning dialog window.</param>
+        private sealed class FluentDialogAutomationPeer(FluentDialog owner) : WindowAutomationPeer(owner)
+        {
+            /// <inheritdoc />
+            protected override List<AutomationPeer> GetChildrenCore()
+            {
+                List<AutomationPeer> children = base.GetChildrenCore() ?? [];
+                _ = children.RemoveAll(peer => peer is FrameworkElementAutomationPeer frameworkElementPeer && (frameworkElementPeer.Owner is System.Windows.Controls.Separator || owner._screenReaderSuppressedElements.Contains(frameworkElementPeer.Owner)));
+                return children;
             }
         }
     }

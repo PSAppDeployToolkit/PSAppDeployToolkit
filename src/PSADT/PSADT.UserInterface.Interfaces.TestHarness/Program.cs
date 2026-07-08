@@ -82,16 +82,12 @@ namespace PSADT.UserInterface.TestHarness
 
             TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
 
-            TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
+            TimeSpan countdownDuration = TimeSpan.FromSeconds(100);
 
-            const string customMessageText = "Basic URL: [url]https://example.com[/url]\r\n" +
-                                             "URL with Description: [url=https://example.com]Read the IT Security Policy here[/url].\r\n" +
-                                             "This is [bold]bold text[/bold] and [italic]italic text[/italic].\r\n" +
-                                             "Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]accent[/accent][/bold].\r\n" +
-                                             "Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
+            const string customMessageText = "Read the [url=https://example.com]IT Security Policy[/url] for information on why you are receiving this update.\r\n";
 
             const uint deferralsRemaining = 99;
-            DateTime deferralDeadline = DateTime.Parse("2026-06-04T13:00:00", CultureInfo.InvariantCulture);
+            DateTime deferralDeadline = DateTime.Parse("2027-06-04T13:00:00", CultureInfo.InvariantCulture);
 
             const string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";
             const string progressDetailMessageText = "Testing your [accent]system to ensure compatibility[/accent]. Please wait…";
@@ -99,7 +95,7 @@ namespace PSADT.UserInterface.TestHarness
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(540); // Set this high so we have 9 mins before we accidentally reboot ourselves
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(120); // 2 mins before the user can no longer minimize the restart dialog
 
-            const string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
+            const string customDialogMessageText = "The installation requires you to have an extraordinary amount of patience, as well as an almost superhuman ability to [italic]not[/italic] lose your temper. Given that you haven't had much sleep and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
             const string customDialogButtonLeftText = "LeftButton";
             const string customDialogButtonMiddleText = "MiddleButton";
             const string customDialogButtonRightText = "RightButton";
@@ -140,6 +136,7 @@ namespace PSADT.UserInterface.TestHarness
                 {
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00CC6A) }, // Accent Color: Green #00CC6A
+                    { "DialogTopMost", true },
                     { "DialogAllowMinimize", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
@@ -160,6 +157,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
                     { "MessageText", customDialogMessageText },
                     { "ButtonLeftText", customDialogButtonLeftText },
                     { "ButtonMiddleText", customDialogButtonMiddleText },
@@ -179,6 +177,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
                     { "MessageText", customDialogMessageText },
                     { "ButtonLeftText", customDialogButtonLeftText },
                     { "ButtonRightText", customDialogButtonRightText },
@@ -198,6 +197,9 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
                     { "MessageText", customDialogMessageText },
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
@@ -215,6 +217,9 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
                     { "MessageText", listDialogMessageText },
                     { "ButtonLeftText", listDialogButtonLeftText },
                     { "ButtonRightText", listDialogButtonRightText },
@@ -235,6 +240,9 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
                     { "MessageText", inputDialogMessageText },
                     { "InitialInputText", inputDialogTextBox },
                     { "ButtonLeftText", inputDialogButtonLeftText },
@@ -280,14 +288,14 @@ namespace PSADT.UserInterface.TestHarness
 
                 await DialogManager.ShowProgressDialogAsync(dialogStyle, progressDialogOptions).ConfigureAwait(false);
 
-                await Task.Delay(3000, default).ConfigureAwait(false); // Simulate some work being done
+                await Task.Delay(5000, default).ConfigureAwait(false); // Simulate some work being done
 
                 // Simulate a process with progress updates.
                 for (int i = 0; i <= 100; i += 10)
                 {
                     // Update progress
                     await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i.ToString(CultureInfo.InvariantCulture)}%", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
-                    await Task.Delay(250, default).ConfigureAwait(false);  // Simulate work being done
+                    await Task.Delay(1000, default).ConfigureAwait(false);  // Simulate work being done
                 }
 
                 // Close Progress Dialog

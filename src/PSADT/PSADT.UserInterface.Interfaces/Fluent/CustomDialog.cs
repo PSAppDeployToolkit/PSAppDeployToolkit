@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -37,7 +36,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 SetButtonContentWithAccelerator(ButtonLeft, options.ButtonLeftText);
                 ButtonLeft.Visibility = Visibility.Visible;
-                AutomationProperties.SetName(ButtonLeft, options.ButtonLeftText);
                 if (options.DefaultButton is DialogDefaultButton.Left)
                 {
                     SetDefaultButton(ButtonLeft);
@@ -48,7 +46,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 SetButtonContentWithAccelerator(ButtonMiddle, options.ButtonMiddleText);
                 ButtonMiddle.Visibility = Visibility.Visible;
-                AutomationProperties.SetName(ButtonMiddle, options.ButtonMiddleText);
                 if (options.DefaultButton is DialogDefaultButton.Middle)
                 {
                     SetDefaultButton(ButtonMiddle);
@@ -59,13 +56,43 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 SetButtonContentWithAccelerator(ButtonRight, options.ButtonRightText);
                 ButtonRight.Visibility = Visibility.Visible;
-                AutomationProperties.SetName(ButtonRight, options.ButtonRightText);
                 if (options.DefaultButton is DialogDefaultButton.Right)
                 {
                     SetDefaultButton(ButtonRight);
                     SetAccentButton(ButtonRight);
                 }
             }
+
+            // Wire keyboard activation conventions when more than one button is shown: Enter activates the
+            // first visible (primary) button, Esc activates the last visible (typically cancel) button.
+            // The single-button case is already handled by the base UpdateButtonLayout.
+            System.Collections.Generic.List<Fluence.Wpf.Controls.Button> visibleButtons = [];
+            if (ButtonLeft.Visibility is Visibility.Visible)
+            {
+                visibleButtons.Add(ButtonLeft);
+            }
+            if (ButtonMiddle.Visibility is Visibility.Visible)
+            {
+                visibleButtons.Add(ButtonMiddle);
+            }
+            if (ButtonRight.Visibility is Visibility.Visible)
+            {
+                visibleButtons.Add(ButtonRight);
+            }
+            if (visibleButtons.Count > 1)
+            {
+                SetDefaultButton(visibleButtons[0]);
+                SetCancelButton(visibleButtons[^1]);
+            }
+        }
+
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ButtonLeft.Visibility is Visibility.Visible ? ButtonLeft
+                : ButtonMiddle.Visibility is Visibility.Visible ? ButtonMiddle
+                : ButtonRight.Visibility is Visibility.Visible ? ButtonRight
+                : null;
         }
 
         /// <summary>
