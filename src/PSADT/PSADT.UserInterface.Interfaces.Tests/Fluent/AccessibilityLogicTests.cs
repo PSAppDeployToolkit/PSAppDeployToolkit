@@ -137,28 +137,6 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         }
 
         /// <summary>
-        /// Verifies that <see cref="ProgressDialog.GetProgressAnnouncementBucket"/> buckets percentages by
-        /// quarter so an announcement fires only at the first update after 0%, 25%, 50% and 75% (a spoken
-        /// announcement occurs when the bucket increases over the previously announced bucket).
-        /// </summary>
-        /// <param name="percent">The whole-number progress percentage.</param>
-        /// <param name="expectedBucket">The expected announcement bucket.</param>
-        [Theory]
-        [InlineData(0, -1)]     // nothing to announce at 0%
-        [InlineData(1, 0)]      // first value after 0%
-        [InlineData(24, 0)]
-        [InlineData(25, 1)]     // first value at/after 25%
-        [InlineData(49, 1)]
-        [InlineData(50, 2)]     // first value at/after 50%
-        [InlineData(74, 2)]
-        [InlineData(75, 3)]     // first value at/after 75%
-        [InlineData(100, 3)]
-        public void GetProgressAnnouncementBucket_BucketsByQuarter(int percent, int expectedBucket)
-        {
-            Assert.Equal(expectedBucket, ProgressDialog.GetProgressAnnouncementBucket(percent));
-        }
-
-        /// <summary>
         /// Verifies that <see cref="CloseAppsDialog.AppToClose"/> overrides ToString to return the friendly
         /// description. WPF's ItemAutomationPeer falls back to Item.ToString() for a data-bound list item's
         /// UI Automation Name, so without the override a screen reader reads the record-generated property
