@@ -3,7 +3,6 @@ AdjustTokenPrivileges
 AppxBundleFactory
 AppxFactory
 AssignProcessToJobObject
-AttachThreadInput
 AUTHZ_COMPUTE_PRIVILEGES
 AUTHZ_REQUIRE_S4U_LOGON
 AUTHZ_RESOURCE_MANAGER_FLAGS
@@ -67,7 +66,6 @@ GetTickCount64
 GetTokenInformation
 GetWindowText
 GetWindowTextLength
-GetWindowThreadProcessId
 GlobalMemoryStatusEx
 HIWORD
 HKEY_CLASSES_ROOT
