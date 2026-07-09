@@ -69,32 +69,59 @@ namespace PSADT.UserInterface.Interfaces.Tests.Fluent
         }
 
         /// <summary>
-        /// Verifies that <see cref="FluentDialog.DecideCountdownAnnouncement"/> announces only at the
-        /// configured thresholds (entering warning window, crossing final minute, every tick in final 10 s)
-        /// and stays silent at all other times.
+        /// Verifies that <see cref="FluentDialog.DecideCountdownAnnouncement"/> announces at the warning
+        /// window, the one-minute mark, every tick in the final ten seconds, and expiry, and stays silent
+        /// between the one-minute mark and the final ten seconds.
         /// </summary>
         /// <param name="remainingSeconds">Remaining countdown time in whole seconds.</param>
         /// <param name="warningSeconds">Warning window size in seconds, or -1 for no warning configured.</param>
         /// <param name="warnAnnounced">Whether the "entering warning window" announcement has already been made.</param>
         /// <param name="finalMinAnnounced">Whether the "final minute" announcement has already been made.</param>
+        /// <param name="expiredAnnounced">Whether the "expiry" announcement has already been made.</param>
         /// <param name="expectedAnnounce">Whether an announcement is expected at this tick.</param>
         [Theory]
-        // remainingSeconds, warningSeconds(null=-1), warnAnnounced, finalMinAnnounced => announce
-        [InlineData(120, 90, false, false, false)]  // above all thresholds => silent
-        [InlineData(90, 90, false, false, true)]    // entering warning window => announce once
-        [InlineData(85, 90, true, false, false)]    // still in warning, already announced => silent
-        [InlineData(60, 90, true, false, true)]     // crossing one minute => announce once
-        [InlineData(45, 90, true, true, false)]     // under a minute, already announced => silent
-        [InlineData(10, 90, true, true, true)]      // final ten seconds => announce every tick
-        [InlineData(3, 90, true, true, true)]       // final ten seconds => announce every tick
-        [InlineData(90, -1, false, false, false)]   // no warning configured, above one minute => silent
-        [InlineData(50, -1, false, false, true)]    // no warning configured, <=60 s => announce once (parity with 60 s visual cue)
-        public void DecideCountdownAnnouncement_AnnouncesAtThresholdsOnly(int remainingSeconds, int warningSeconds, bool warnAnnounced, bool finalMinAnnounced, bool expectedAnnounce)
+        // remainingSeconds, warningSeconds(null=-1), warnAnnounced, finalMinAnnounced, expiredAnnounced => announce
+        [InlineData(120, 90, false, false, false, false)]  // above all thresholds => silent
+        [InlineData(90, 90, false, false, false, true)]    // entering warning window => announce once
+        [InlineData(85, 90, true, false, false, false)]    // still in warning, already announced => silent
+        [InlineData(60, 90, true, false, false, true)]     // crossing one minute => announce once
+        [InlineData(45, 90, true, true, false, false)]     // 11-59 s, one-minute already announced => silent
+        [InlineData(11, 90, true, true, false, false)]     // just above the final ten seconds => silent
+        [InlineData(10, 90, true, true, false, true)]      // final ten seconds => announce every tick
+        [InlineData(3, 90, true, true, false, true)]       // final ten seconds => announce every tick
+        [InlineData(0, 90, true, true, false, true)]       // expiry => announce once
+        [InlineData(0, 90, true, true, true, false)]       // expiry already announced => silent
+        [InlineData(90, -1, false, false, false, false)]   // no warning configured, above one minute => silent
+        [InlineData(50, -1, false, false, false, true)]    // no warning configured, <=60 s => announce once (parity with 60 s visual cue)
+        public void DecideCountdownAnnouncement_AnnouncesAtThresholdsOnly(int remainingSeconds, int warningSeconds, bool warnAnnounced, bool finalMinAnnounced, bool expiredAnnounced, bool expectedAnnounce)
         {
             TimeSpan? warning = warningSeconds < 0 ? null : TimeSpan.FromSeconds(warningSeconds);
             FluentDialog.CountdownAnnounceDecision decision = FluentDialog.DecideCountdownAnnouncement(
-                TimeSpan.FromSeconds(remainingSeconds), warning, warnAnnounced, finalMinAnnounced);
+                TimeSpan.FromSeconds(remainingSeconds), warning, warnAnnounced, finalMinAnnounced, expiredAnnounced);
             Assert.Equal(expectedAnnounce, decision.Announce);
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="FluentDialog.FormatCountdownForSpeech"/> speaks only the non-zero
+        /// units, pluralizes them, and joins them with "and" before the final unit (e.g. "3 hours 2 minutes
+        /// and 10 seconds"), reading "0 seconds" when fully elapsed.
+        /// </summary>
+        /// <param name="hours">Whole hours remaining.</param>
+        /// <param name="minutes">Whole minutes remaining (0-59).</param>
+        /// <param name="seconds">Whole seconds remaining (0-59).</param>
+        /// <param name="expected">The expected spoken form.</param>
+        [Theory]
+        [InlineData(3, 2, 10, "3 hours 2 minutes and 10 seconds")]  // all three units
+        [InlineData(0, 15, 24, "15 minutes and 24 seconds")]        // hours omitted
+        [InlineData(0, 0, 10, "10 seconds")]                        // seconds only
+        [InlineData(1, 1, 1, "1 hour 1 minute and 1 second")]       // singular units
+        [InlineData(0, 2, 0, "2 minutes")]                          // minutes only
+        [InlineData(1, 0, 0, "1 hour")]                             // hours only
+        [InlineData(1, 0, 30, "1 hour and 30 seconds")]             // zero minute dropped between two units
+        [InlineData(0, 0, 0, "0 seconds")]                          // fully elapsed
+        public void FormatCountdownForSpeech_ReadsNonZeroUnitsWithAnd(int hours, int minutes, int seconds, string expected)
+        {
+            Assert.Equal(expected, FluentDialog.FormatCountdownForSpeech(new TimeSpan(hours, minutes, seconds)));
         }
 
         /// <summary>

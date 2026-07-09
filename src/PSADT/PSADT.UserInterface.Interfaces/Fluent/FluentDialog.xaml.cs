@@ -70,6 +70,9 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Initialize the window
             InitializeComponent();
 
+            // Serializes all screen-reader speech through one queue so announcements never overlap.
+            _announcer = new DialogAnnouncer(AnnouncerTextBlock);
+
             // Set up everything related to the dialog accent.
             Color? accentColorDark = options.FluentAccentColorDark is not null ? IntToColor(options.FluentAccentColorDark.Value) : null;
             Color? accentColor = options.FluentAccentColor is not null ? IntToColor(options.FluentAccentColor.Value) : null;
@@ -1083,30 +1086,32 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _countdownRemainingTime = TimeSpan.Zero;
             }
 
+            // Round up to the next whole second so the countdown lands on exact times (e.g. 60s, not 59s).
+            _countdownRemainingTime = TimeSpan.FromSeconds(Math.Ceiling(_countdownRemainingTime.TotalSeconds));
+
             // Format the remaining time as hh:mm:ss
             CountdownValueTextBlock.Text = $"{((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)}h {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)}m {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)}s";
 
-            // The value's accessible name tracks the visible text via the XAML Name binding. The localized
-            // heading TextBlock immediately precedes the value in the reading order, so prefixing the
-            // heading into the name here would make a screen reader speak the heading twice in a row.
-            // Balanced announcement policy: speak at thresholds only, never every second.
-            CountdownAnnounceDecision decision = DecideCountdownAnnouncement(_countdownRemainingTime, _countdownWarningDuration, _countdownWarningAnnounced, _countdownFinalMinuteAnnounced);
-            bool thresholdCrossed = (decision.WarningAnnounced && !_countdownWarningAnnounced) || (decision.FinalMinuteAnnounced && !_countdownFinalMinuteAnnounced);
+            // Read the value in the same spoken word form as the announcements (name only, so silent per tick).
+            CountdownValueTextBlock.SetCurrentValue(AutomationProperties.NameProperty, FormatCountdownForSpeech(_countdownRemainingTime));
+
+            // Announce at the warning window, the one-minute mark, each of the final ten seconds, and expiry.
+            CountdownAnnounceDecision decision = DecideCountdownAnnouncement(_countdownRemainingTime, _countdownWarningDuration, _countdownWarningAnnounced, _countdownFinalMinuteAnnounced, _countdownExpiredAnnounced);
             _countdownWarningAnnounced = decision.WarningAnnounced;
             _countdownFinalMinuteAnnounced = decision.FinalMinuteAnnounced;
+            _countdownExpiredAnnounced = decision.ExpiredAnnounced;
             if (decision.Announce)
             {
-                // Threshold crossings prefix the localized countdown heading for context; the spoken value
-                // is the visible clock text ("0h 2m 0s"), which speech engines expand and localize
-                // natively ("zero hours, two minutes..."), so no dedicated localized unit strings are
-                // needed. The final-ten-seconds ticks speak just the number ("9", "8", ...) because they
-                // fire every second. SetCurrentValue keeps the XAML Name<-Text binding alive, so the next
-                // tick's text change restores the visible value as the on-demand accessible name.
-                string announcement = thresholdCrossed
-                    ? $"{GetPlainText(CountdownHeadingTextBlock)}: {CountdownValueTextBlock.Text}"
-                    : ((int)Math.Ceiling(_countdownRemainingTime.TotalSeconds)).ToString(CultureInfo.CurrentCulture);
-                CountdownValueTextBlock.SetCurrentValue(AutomationProperties.NameProperty, announcement);
-                AnnounceLiveRegionChanged(CountdownValueTextBlock);
+                if (_countdownRemainingTime.TotalSeconds <= 10)
+                {
+                    // Expiry and the final ten seconds speak immediately (interrupting the previous) so the
+                    // count stays in step with real time. Just the bare number is spoken ("10", "9", ...).
+                    _announcer.AnnounceNow(((int)_countdownRemainingTime.TotalSeconds).ToString(CultureInfo.CurrentCulture), AutomationLiveSetting.Assertive);
+                }
+                else
+                {
+                    _announcer.Enqueue($"{GetPlainText(CountdownHeadingTextBlock)}: {FormatCountdownForSpeech(_countdownRemainingTime)}", AutomationLiveSetting.Assertive);
+                }
             }
 
             // Update text color based on remaining time using style application
@@ -1204,6 +1209,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         private bool _countdownFinalMinuteAnnounced;
 
         /// <summary>
+        /// Whether the countdown-expiry announcement has been spoken.
+        /// </summary>
+        private bool _countdownExpiredAnnounced;
+
+        /// <summary>
+        /// The serialized owner of all app-generated screen-reader announcements for this dialog. See
+        /// <see cref="DialogAnnouncer"/>.
+        /// </summary>
+        private readonly DialogAnnouncer _announcer;
+
+        /// <summary>
         /// A timer used to close the dialog at a configured interval after no user response.
         /// </summary>
         private readonly DispatcherTimer? _expiryTimer;
@@ -1295,6 +1311,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             // Clean up resources.
             ApplicationThemeManager.Changed -= ThemeManager_ActualThemeChanged;
             _countdownTimer?.Stop();
+            _announcer.Stop();
             Disposed = true;
         }
 
@@ -1328,11 +1345,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             /// <param name="announce">Whether to announce the countdown value to assistive technology on this tick.</param>
             /// <param name="warningAnnounced">The updated "warning window entered" flag to persist on the dialog.</param>
             /// <param name="finalMinuteAnnounced">The updated "final minute crossed" flag to persist on the dialog.</param>
-            internal CountdownAnnounceDecision(bool announce, bool warningAnnounced, bool finalMinuteAnnounced)
+            /// <param name="expiredAnnounced">The updated "expiry announced" flag to persist on the dialog.</param>
+            internal CountdownAnnounceDecision(bool announce, bool warningAnnounced, bool finalMinuteAnnounced, bool expiredAnnounced)
             {
                 Announce = announce;
                 WarningAnnounced = warningAnnounced;
                 FinalMinuteAnnounced = finalMinuteAnnounced;
+                ExpiredAnnounced = expiredAnnounced;
             }
 
             /// <summary>
@@ -1349,28 +1368,73 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             /// Gets the updated "final minute crossed" flag to persist on the dialog.
             /// </summary>
             internal bool FinalMinuteAnnounced { get; }
+
+            /// <summary>
+            /// Gets the updated "expiry announced" flag to persist on the dialog.
+            /// </summary>
+            internal bool ExpiredAnnounced { get; }
         }
 
         /// <summary>
-        /// Decides whether to announce the countdown now (Balanced policy): once when entering the warning
-        /// window, once when crossing the final minute (≤60 s), and on every tick within the final 10 s.
-        /// Pure function for unit testing; callers persist the returned flags.
+        /// Decides whether to announce the countdown now: once on entering the warning window (if any), once
+        /// crossing the final minute (≤60 s), every tick in the final ten seconds, and once at expiry (≤0 s);
+        /// silent between the one-minute mark and the final ten. Pure function; callers persist the flags.
         /// </summary>
         /// <param name="remaining">The remaining countdown duration.</param>
         /// <param name="warning">The optional warning window duration; null means no warning is configured.</param>
         /// <param name="warningAnnounced">Whether the "entering warning window" announcement has already been made.</param>
         /// <param name="finalMinuteAnnounced">Whether the "final minute" announcement has already been made.</param>
+        /// <param name="expiredAnnounced">Whether the "expiry" announcement has already been made.</param>
         /// <returns>A <see cref="CountdownAnnounceDecision"/> indicating whether to announce now and the updated flags.</returns>
-        internal static CountdownAnnounceDecision DecideCountdownAnnouncement(TimeSpan remaining, TimeSpan? warning, bool warningAnnounced, bool finalMinuteAnnounced)
+        internal static CountdownAnnounceDecision DecideCountdownAnnouncement(TimeSpan remaining, TimeSpan? warning, bool warningAnnounced, bool finalMinuteAnnounced, bool expiredAnnounced)
         {
             double seconds = remaining.TotalSeconds;
-            return seconds <= 10
-                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+            return seconds <= 0
+                ? new CountdownAnnounceDecision(announce: !expiredAnnounced, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced, expiredAnnounced: true)
+                : seconds <= 10
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true, expiredAnnounced: expiredAnnounced)
                 : seconds <= 60 && !finalMinuteAnnounced
-                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true)
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: warningAnnounced, finalMinuteAnnounced: true, expiredAnnounced: expiredAnnounced)
                 : warning is not null && remaining <= warning.Value && !warningAnnounced
-                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced)
-                : new CountdownAnnounceDecision(announce: false, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced);
+                ? new CountdownAnnounceDecision(announce: true, warningAnnounced: true, finalMinuteAnnounced: finalMinuteAnnounced, expiredAnnounced: expiredAnnounced)
+                : new CountdownAnnounceDecision(announce: false, warningAnnounced: warningAnnounced, finalMinuteAnnounced: finalMinuteAnnounced, expiredAnnounced: expiredAnnounced);
+        }
+
+        /// <summary>
+        /// Formats a remaining countdown for speech, reading only non-zero units joined with "and" before
+        /// the last, e.g. "3 hours 2 minutes and 10 seconds" or "10 seconds"; fully elapsed reads
+        /// "0 seconds". Unit words are English literals. Pure function for unit testing.
+        /// </summary>
+        /// <param name="remaining">The remaining countdown duration.</param>
+        /// <returns>The spoken form of the remaining time.</returns>
+        internal static string FormatCountdownForSpeech(TimeSpan remaining)
+        {
+            if (remaining < TimeSpan.Zero)
+            {
+                remaining = TimeSpan.Zero;
+            }
+            int hours = (int)Math.Floor(remaining.TotalHours);
+            int minutes = remaining.Minutes;
+            int seconds = remaining.Seconds;
+            List<string> parts = [];
+            if (hours > 0)
+            {
+                parts.Add($"{hours.ToString(CultureInfo.CurrentCulture)} {(hours is 1 ? "hour" : "hours")}");
+            }
+            if (minutes > 0)
+            {
+                parts.Add($"{minutes.ToString(CultureInfo.CurrentCulture)} {(minutes is 1 ? "minute" : "minutes")}");
+            }
+            if (seconds > 0)
+            {
+                parts.Add($"{seconds.ToString(CultureInfo.CurrentCulture)} {(seconds is 1 ? "second" : "seconds")}");
+            }
+            return parts.Count switch
+            {
+                0 => "0 seconds",
+                1 => parts[0],
+                _ => $"{string.Join(" ", parts.Take(parts.Count - 1))} and {parts[^1]}",
+            };
         }
 
         /// <summary>
@@ -1488,6 +1552,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
+
         /// <summary>
         /// Extracts the plain visible text from a TextBlock whether its content was set via Text or Inlines.
         /// </summary>
@@ -1572,6 +1637,127 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 _ = children.RemoveAll(peer => peer is FrameworkElementAutomationPeer frameworkElementPeer && (frameworkElementPeer.Owner is System.Windows.Controls.Separator || owner._screenReaderSuppressedElements.Contains(frameworkElementPeer.Owner)));
                 return children;
             }
+        }
+
+        /// <summary>
+        /// Serializes screen-reader announcements through one hidden live region, spacing each by an
+        /// estimated speech duration so they never overlap (net472 has no "finished speaking" callback).
+        /// </summary>
+        private sealed class DialogAnnouncer
+        {
+            /// <summary>Initializes a new <see cref="DialogAnnouncer"/> targeting the given hidden live region.</summary>
+            /// <param name="target">The zero-size live-region TextBlock whose Name is set and whose LiveRegionChanged event is raised for each announcement.</param>
+            internal DialogAnnouncer(System.Windows.Controls.TextBlock target)
+            {
+                _target = target;
+                _timer = new DispatcherTimer(DispatcherPriority.Normal, target.Dispatcher);
+                _timer.Tick += (s, e) => SpeakNext();
+            }
+
+            /// <summary>Queues text to speak after pending announcements; a duplicate of the last queued text is dropped.</summary>
+            /// <param name="text">The text to speak.</param>
+            /// <param name="urgency">The live-region urgency Narrator should apply.</param>
+            internal void Enqueue(string text, AutomationLiveSetting urgency)
+            {
+                if (string.IsNullOrWhiteSpace(text) || string.Equals(text, _lastQueued, StringComparison.Ordinal))
+                {
+                    return;
+                }
+                _lastQueued = text;
+                _queue.Enqueue(new Announcement(text, urgency));
+                if (!_speaking)
+                {
+                    SpeakNext();
+                }
+            }
+
+            /// <summary>Speaks text immediately, bypassing the queue (for expiry, raised just before the dialog closes).</summary>
+            /// <param name="text">The text to speak.</param>
+            /// <param name="urgency">The live-region urgency Narrator should apply.</param>
+            internal void AnnounceNow(string text, AutomationLiveSetting urgency)
+            {
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return;
+                }
+                Raise(text, urgency);
+            }
+
+            /// <summary>Stops the drain timer and clears any pending announcements. Called on dialog disposal.</summary>
+            internal void Stop()
+            {
+                _timer.Stop();
+                _queue.Clear();
+                _speaking = false;
+                _lastQueued = null;
+            }
+
+            /// <summary>Dequeues and speaks the next announcement, then arms the timer for its dwell time.</summary>
+            private void SpeakNext()
+            {
+                _timer.Stop();
+                if (_queue.Count is 0)
+                {
+                    _speaking = false;
+
+                    // Clear the name when drained so a scanning reader never lands on stale announcer text.
+                    AutomationProperties.SetName(_target, string.Empty);
+                    return;
+                }
+                _speaking = true;
+                Announcement announcement = _queue.Dequeue();
+                Raise(announcement.Text, announcement.Urgency);
+                _timer.Interval = ComputeDwell(announcement.Text);
+                _timer.Start();
+            }
+
+            /// <summary>Sets the live region's name and urgency, then raises the LiveRegionChanged event.</summary>
+            /// <param name="text">The text to place on the live region as its accessible name.</param>
+            /// <param name="urgency">The live-region urgency Narrator should apply.</param>
+            private void Raise(string text, AutomationLiveSetting urgency)
+            {
+                AutomationProperties.SetLiveSetting(_target, urgency);
+                _target.SetCurrentValue(AutomationProperties.NameProperty, text);
+                AnnounceLiveRegionChanged(_target);
+            }
+
+            /// <summary>Estimates speech time for spacing the next item: ~0.35 s/word, 2 s floor.</summary>
+            /// <param name="text">The announcement text.</param>
+            /// <returns>The dwell time before the next announcement.</returns>
+            private static TimeSpan ComputeDwell(string text)
+            {
+                int words = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+                return TimeSpan.FromSeconds(Math.Max(2.0, words * 0.35));
+            }
+
+            /// <summary>A single queued announcement: the text and the urgency to speak it with.</summary>
+            private readonly struct Announcement
+            {
+                internal Announcement(string text, AutomationLiveSetting urgency)
+                {
+                    Text = text;
+                    Urgency = urgency;
+                }
+
+                internal string Text { get; }
+
+                internal AutomationLiveSetting Urgency { get; }
+            }
+
+            /// <summary>The hidden live region whose Name and LiveRegionChanged event drive Narrator.</summary>
+            private readonly System.Windows.Controls.TextBlock _target;
+
+            /// <summary>Drains the queue one item at a time, spaced by each item's dwell time.</summary>
+            private readonly DispatcherTimer _timer;
+
+            /// <summary>Pending announcements in speak order.</summary>
+            private readonly Queue<Announcement> _queue = new();
+
+            /// <summary>Whether an announcement is currently being spoken or awaiting its dwell.</summary>
+            private bool _speaking;
+
+            /// <summary>The most recently queued text, used to drop consecutive duplicates.</summary>
+            private string? _lastQueued;
         }
     }
 }
