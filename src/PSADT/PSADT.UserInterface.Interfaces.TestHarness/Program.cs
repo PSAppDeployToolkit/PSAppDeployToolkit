@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -28,6 +29,19 @@ namespace PSADT.UserInterface.TestHarness
         internal static void Init()
         {
             AppDomain.CurrentDomain.SetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler", static void (Exception ex) => throw new InvalidProgramException("An unhandled WPF exception occurred.", ex));
+
+            // Handle WPF ManagedWndProcTracker race condition during shutdown
+            // This suppresses the "Invalid window handle" exception that occurs when windows
+            // are destroyed by other threads during AppDomain shutdown cleanup
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (args.ExceptionObject is Win32Exception win32Ex && win32Ex.NativeErrorCode is 1400 && (win32Ex.StackTrace?.Contains("ManagedWndProcTracker")) is true)
+                {
+                    // Suppress: This is a known race condition in WPF's window cleanup code
+                    // during shutdown where PostMessage is called on a window that was destroyed
+                    // between SetWindowLong and PostMessage calls
+                }
+            };
         }
 
         /// <summary>
