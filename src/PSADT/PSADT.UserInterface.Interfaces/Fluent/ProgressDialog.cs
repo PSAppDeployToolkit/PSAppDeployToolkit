@@ -75,7 +75,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 ProgressBar.Value = percentComplete.Value;
 
                 // Update accessibility properties
-                AutomationProperties.SetName(ProgressBar, $"Progress: {percentComplete.Value.ToString("F0", CultureInfo.InvariantCulture)}%");
+                AutomationProperties.SetName(ProgressBar, string.Create(CultureInfo.InvariantCulture, $"Progress: {percentComplete.Value:F0}%"));
             }
             else
             {
