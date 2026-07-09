@@ -1015,8 +1015,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
 
             // Format the remaining time as hh:mm:ss
-            CountdownValueTextBlock.Text = $"{((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)}h {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)}m {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)}s";
-            AutomationProperties.SetName(CountdownValueTextBlock, $"Time remaining: {((_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours).ToString(CultureInfo.InvariantCulture)} hours, {_countdownRemainingTime.Minutes.ToString(CultureInfo.InvariantCulture)} minutes, {_countdownRemainingTime.Seconds.ToString(CultureInfo.InvariantCulture)} seconds");
+            CountdownValueTextBlock.Text = string.Create(CultureInfo.InvariantCulture, $"{(_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours}h {_countdownRemainingTime.Minutes}m {_countdownRemainingTime.Seconds}s");
+            AutomationProperties.SetName(CountdownValueTextBlock, string.Create(CultureInfo.InvariantCulture, $"Time remaining: {(_countdownRemainingTime.Days * 24) + _countdownRemainingTime.Hours} hours, {_countdownRemainingTime.Minutes} minutes, {_countdownRemainingTime.Seconds} seconds"));
 
             // Update text color based on remaining time using style application
             if (_countdownRemainingTime.TotalSeconds <= 60)
