@@ -75,9 +75,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
 
-                // Set the accessible name once. The visible text still updates each call, but freezing the
-                // name means later changes fire no name-changed event on the focused element, so the reader
-                // reads the message only on open. GetPlainText drops formatting tags and the percentage.
+                // Set the name once so it is read on open; later text changes are intentionally not re-read.
                 if (!_accessibleMessageNameSet)
                 {
                     AutomationProperties.SetName(MessageTextBlock, GetPlainText(MessageTextBlock));
@@ -88,7 +86,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (progressMessageDetail is not null && !string.IsNullOrWhiteSpace(progressMessageDetail))
             {
                 // Visual update only: the detail line is excluded from the UI Automation tree and its
-                // changes are deliberately not announced (progress announcements are the terse percent).
+                // changes are deliberately never announced.
                 FormatMessageWithHyperlinks(ProgressMessageDetailTextBlock, progressMessageDetail);
             }
 
@@ -106,8 +104,8 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Set once the progress message's accessible name has been assigned, so it is announced only on
-        /// open and not re-read on later message updates.
+        /// Set once the progress message's accessible name has been assigned, so it is read during the
+        /// natural on-open read and not re-read on later message updates.
         /// </summary>
         private bool _accessibleMessageNameSet;
     }
