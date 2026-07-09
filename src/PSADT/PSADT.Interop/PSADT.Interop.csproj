@@ -54,13 +54,16 @@
       M:System.IO.StreamReader.ReadLineAsync|
       M:System.Nullable.GetValueRefOrDefaultRef|
       M:System.ObjectDisposedException.Throw|
+      M:System.String.Create|
       M:System.String.Contains|
+      M:System.String.CopyTo|
       M:System.String.EndsWith|
       M:System.String.GetHashCode|
       M:System.String.IndexOf|
       M:System.String.Join|
       M:System.String.Replace|
       M:System.String.StartsWith|
+      M:System.String.TryCopyTo|
       M:System.StringComparer.FromComparison|
       M:System.Text.Encoding.GetString|
       M:System.Threading.CancellationTokenSource.CancelAsync|
@@ -71,6 +74,9 @@
       T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|
       T:System.Diagnostics.StackTraceHiddenAttribute|
       T:System.Runtime.CompilerServices.CallerArgumentExpressionAttribute|
+      T:System.Runtime.CompilerServices.DefaultInterpolatedStringHandler|
+      T:System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute|
+      T:System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute|
       T:System.Runtime.CompilerServices.ModuleInitializerAttribute|
     </MeziantouPolyfill_IncludedPolyfills>
     <DefineConstants>$(DefineConstants);MEZIANTOU_POLYFILL_SKIP_MICROSOFT_CODEANALYSIS_EMBEDDEDATTRIBUTE</DefineConstants>

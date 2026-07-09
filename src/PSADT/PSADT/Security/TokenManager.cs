@@ -227,7 +227,7 @@ namespace PSADT.Security
                         }
                         if (tokenBufReadLength != tokenSizeIndicator)
                         {
-                            throw new InvalidProgramException($"The token broker pipe read {tokenBufReadLength.ToString(CultureInfo.InvariantCulture)} bytes, but expected {tokenSizeIndicator.ToString(CultureInfo.InvariantCulture)} bytes.");
+                            throw new InvalidProgramException(string.Create(CultureInfo.InvariantCulture, $"The token broker pipe read {tokenBufReadLength} bytes, but expected {tokenSizeIndicator} bytes."));
                         }
 
                         // Return the token handle.

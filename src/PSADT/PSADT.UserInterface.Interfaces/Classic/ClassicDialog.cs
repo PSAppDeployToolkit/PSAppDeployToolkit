@@ -155,7 +155,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <returns>A string representation of the total hours, minutes, and seconds in the format "HH:MM:SS".</returns>
         private protected static string FormatTime(TimeSpan ts)
         {
-            return $"{((ts.Days * 24) + ts.Hours).ToString(CultureInfo.InvariantCulture)}:{ts.Minutes.ToString("D2", CultureInfo.InvariantCulture)}:{ts.Seconds.ToString("D2", CultureInfo.InvariantCulture)}";
+            return string.Create(CultureInfo.InvariantCulture, $"{(ts.Days * 24) + ts.Hours}:{ts.Minutes:D2}:{ts.Seconds:D2}");
         }
 
         /// <summary>
