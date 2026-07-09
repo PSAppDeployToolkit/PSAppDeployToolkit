@@ -308,8 +308,8 @@ namespace PSADT.UserInterface.TestHarness
                 for (int i = 0; i <= 100; i += 10)
                 {
                     // Update progress
-                    await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i.ToString(CultureInfo.InvariantCulture)}%", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
-                    await Task.Delay(1000, default).ConfigureAwait(false);  // Simulate work being done
+                    await DialogManager.UpdateProgressDialogAsync("Installation in progress...", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
+                    await Task.Delay(2000, default).ConfigureAwait(false);  // Simulate work being done
                 }
 
                 // Close Progress Dialog
