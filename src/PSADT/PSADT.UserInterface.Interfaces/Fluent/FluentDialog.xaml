@@ -184,6 +184,17 @@
                 Orientation="Vertical"
                 >
 
+                <!-- Hidden zero-size live region the DialogAnnouncer targets for spoken announcements. -->
+                <TextBlock
+                    x:Name="AnnouncerTextBlock"
+                    Width="0"
+                    Height="0"
+                    Margin="0"
+                    Focusable="False"
+                    AutomationProperties.LiveSetting="Polite"
+                    Text=""
+                    />
+
                 <!-- Message Panel -->
                 <StackPanel
                     x:Name="MessageTextStackPanel"
