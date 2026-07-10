@@ -26,25 +26,45 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             ProgressStackPanel.Visibility = Visibility.Visible;
 
-            // A screen reader reads only the app title and progress message; the custom message and detail
-            // line are excluded from the UI Automation tree, and the percentage is never spoken.
+            // The custom message and detail line are excluded from the UI Automation tree.
             _screenReaderSuppressedElements.Add(CustomMessageTextBlock);
             _screenReaderSuppressedElements.Add(ProgressMessageDetailTextBlock);
 
-            // Focus the message so it is read on open (after the window's name, the app title). Focusable
-            // but not a tab stop.
-            MessageTextBlock.Focusable = true;
-            System.Windows.Input.KeyboardNavigation.SetIsTabStop(MessageTextBlock, isTabStop: false);
+            // The message and percentage are spoken through the shared live-region announcer (see
+            // AnnouncePendingMessageOnOpen and UpdateProgressImpl), like the countdown. The progress bar takes
+            // initial focus so the dialog gains UI Automation focus and Narrator processes those announcements
+            // (it has no buttons, so with nothing focused Narrator stays on the launching window and says
+            // nothing); AccessibleProgressBar's empty control type keeps that focus near-silent.
+            ContentRendered += AnnouncePendingMessageOnOpen;
+            ProgressBar.Focusable = true;
+            ProgressBar.SetResourceReference(FocusVisualStyleProperty, "DefaultControlFocusVisualStyle");
+            System.Windows.Input.KeyboardNavigation.SetIsTabStop(ProgressBar, isTabStop: true);
+        }
+
+        /// <summary>
+        /// Announces the initial progress message once the window is shown, so Narrator (which speaks only for
+        /// a visible window) does not miss it.
+        /// </summary>
+        /// <param name="sender">The dialog.</param>
+        /// <param name="e">The event data.</param>
+        private void AnnouncePendingMessageOnOpen(object? sender, EventArgs e)
+        {
+            ContentRendered -= AnnouncePendingMessageOnOpen;
+            if (_pendingOpenMessage is not null)
+            {
+                Announce(_pendingOpenMessage, AutomationLiveSetting.Polite);
+                _pendingOpenMessage = null;
+            }
         }
 
         /// <inheritdoc />
         private protected override FrameworkElement? GetInitialFocusElement()
         {
-            return MessageTextBlock;
+            return ProgressBar;
         }
 
         /// <summary>
-        /// Updates the progress display in the Progress dialog. Animates the progress bar value if `percentComplete` is provided.
+        /// Updates the progress display, animating the bar when <paramref name="progressPercentage"/> is given.
         /// </summary>
         /// <param name="progressMessage">Optional new main progress message.</param>
         /// <param name="progressMessageDetail">Optional new detail message.</param>
@@ -64,7 +84,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <summary>
-        /// Updates the progress display in the Progress dialog. Animates the progress bar value if `percentComplete` is provided.
+        /// Updates the progress display, animating the bar when <paramref name="percentComplete"/> is given.
         /// </summary>
         /// <param name="progressMessage">Optional new main progress message.</param>
         /// <param name="progressMessageDetail">Optional new detail message.</param>
@@ -74,12 +94,22 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             if (progressMessage is not null && !string.IsNullOrWhiteSpace(progressMessage))
             {
                 FormatMessageWithHyperlinks(MessageTextBlock, progressMessage);
+                string plainMessage = GetPlainText(MessageTextBlock);
 
-                // Set the name once so it is read on open; later text changes are intentionally not re-read.
-                if (!_accessibleMessageNameSet)
+                // Announce once per genuine change, deduped on the plain text. Before the window is shown the
+                // announcement is deferred to ContentRendered so the initial message is not missed.
+                if (!string.Equals(plainMessage, _lastAnnouncedMessage, StringComparison.Ordinal))
                 {
-                    AutomationProperties.SetName(MessageTextBlock, GetPlainText(MessageTextBlock));
-                    _accessibleMessageNameSet = true;
+                    _lastAnnouncedMessage = plainMessage;
+                    if (IsLoaded)
+                    {
+                        _pendingOpenMessage = null;
+                        Announce(plainMessage, AutomationLiveSetting.Polite);
+                    }
+                    else
+                    {
+                        _pendingOpenMessage = plainMessage;
+                    }
                 }
             }
 
@@ -95,6 +125,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
                 // Update the properties as well to maintain state
                 ProgressBar.ProgressMode = ProgressBarMode.StepProgress;
                 ProgressBar.Value = percentComplete.Value;
+
+                // Announce the percentage through the live-region announcer, deduped on the whole-number
+                // percent and only once the window is shown, so it is not lost or stacked on the on-open read.
+                int announcedPercent = (int)Math.Round(percentComplete.Value, MidpointRounding.ToEven);
+                if (announcedPercent != _lastAnnouncedPercent)
+                {
+                    _lastAnnouncedPercent = announcedPercent;
+                    if (IsLoaded)
+                    {
+                        Announce(announcedPercent.ToString(System.Globalization.CultureInfo.CurrentCulture) + "%", AutomationLiveSetting.Polite);
+                    }
+                }
             }
             else
             {
@@ -103,10 +145,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
         }
 
-        /// <summary>
-        /// Set once the progress message's accessible name has been assigned, so it is read during the
-        /// natural on-open read and not re-read on later message updates.
-        /// </summary>
-        private bool _accessibleMessageNameSet;
+        /// <summary>Plain text of the last announced message; suppresses re-announcing unchanged text.</summary>
+        private string? _lastAnnouncedMessage;
+
+        /// <summary>The initial message awaiting announcement once the window is shown, or null if none is pending.</summary>
+        private string? _pendingOpenMessage;
+
+        /// <summary>The last whole-number percent announced; suppresses re-announcing an unchanged percentage.</summary>
+        private int? _lastAnnouncedPercent;
     }
 }

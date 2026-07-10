@@ -1552,6 +1552,17 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
+        /// <summary>
+        /// Queues a screen-reader announcement through this dialog's serialized announcer so it is spoken
+        /// after any pending announcements without overlapping them. Used by derived dialogs.
+        /// </summary>
+        /// <param name="text">The text to announce.</param>
+        /// <param name="urgency">The UI Automation live-region urgency Narrator should apply.</param>
+        private protected void Announce(string text, AutomationLiveSetting urgency)
+        {
+            _announcer.Enqueue(text, urgency);
+        }
+
 
         /// <summary>
         /// Extracts the plain visible text from a TextBlock whether its content was set via Text or Inlines.
