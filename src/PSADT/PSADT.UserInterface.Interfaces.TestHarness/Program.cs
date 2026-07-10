@@ -98,28 +98,31 @@ namespace PSADT.UserInterface.TestHarness
 
             TimeSpan countdownDuration = TimeSpan.FromSeconds(120);
 
-            const string customMessageText = "Read the [url=https://example.com]IT Security Policy[/url] for information on why you are receiving this update.\r\n";
+            const string customMessageText = "See the [url=https://example.com/policy]IT Security Policy[/url] for why this update is required.\r\n";
 
             const uint deferralsRemaining = 50;
             DateTime deferralDeadline = DateTime.Parse("2027-06-04T13:00:00", CultureInfo.InvariantCulture);
 
             const string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";
-            const string progressDetailMessageText = "Testing your [accent]system to ensure compatibility[/accent]. Please wait…";
+            const string progressDetailMessageText = "Verifying [italic]system compatibility[/italic]. Please wait…";
 
             TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(180); // 3 mins before we accidentally reboot ourselves
             TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(90); // 90 secs before the user can no longer minimize the restart dialog
+            const string restartCustomMessageText = "Please [bold]save your work[/bold] before the device restarts.";
 
-            const string customDialogMessageText = "The installation requires you to have an extraordinary amount of patience, as well as an almost superhuman ability to [italic]not[/italic] lose your temper. Given that you haven't had much sleep and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
+            const string customDialog1MessageText = "This update makes [bold][accent]significant system changes[/accent][/bold]. Do you want to continue?";
+            const string customDialog2MessageText = "You may [italic]defer[/italic] this once, but it must be installed before the deadline. Proceed?";
+            const string customDialog3MessageText = "Need help during installation? Visit [url]https://psappdeploytoolkit.com[/url] for support.";
             const string customDialogButtonLeftText = "Continue";
             const string customDialogButtonMiddleText = "Jump Around";
             const string customDialogButtonRightText = "Defer";
 
-            const string listDialogMessageText = "Please choose how you’d like to use Adobe Creative Cloud on this device. You can change this later in Preferences.";
+            const string listDialogMessageText = "Choose how you’d like to use [accent]Adobe Creative Cloud[/accent] on this device.";
             string[] listDialogItems = ["Personal (Individual Plan)", "Team (Creative Cloud for Teams)", "Enterprise (Managed by IT)", "Education (Student / Faculty)", "Shared Device (Lab / Classroom)"];
             const string listDialogButtonLeftText = "OK";
             const string listDialogButtonRightText = "Cancel";
 
-            const string inputDialogMessageText = "Enter the server name e.g. [italic]remotesvr1.psadt.ca[/italic]";
+            const string inputDialogMessageText = "Enter the server name, e.g. [italic]remotesvr1.psadt.ca[/italic]";
             const string inputDialogTextBox = "YouCompleteMe";
             const string inputDialogButtonLeftText = "Continue";
             const string inputDialogButtonRightText = "Cancel";
@@ -172,7 +175,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
                     { "DialogTopMost", true },
-                    { "MessageText", customDialogMessageText },
+                    { "MessageText", customDialog1MessageText },
                     { "ButtonLeftText", customDialogButtonLeftText },
                     { "ButtonMiddleText", customDialogButtonMiddleText },
                     { "ButtonRightText", customDialogButtonRightText },
@@ -192,7 +195,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
                     { "DialogTopMost", true },
-                    { "MessageText", customDialogMessageText },
+                    { "MessageText", customDialog2MessageText },
                     { "ButtonLeftText", customDialogButtonLeftText },
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
@@ -214,7 +217,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "DialogTopMost", true },
                     { "DialogAllowMove", true },
                     { "DialogAllowMinimize", true },
-                    { "MessageText", customDialogMessageText },
+                    { "MessageText", customDialog3MessageText },
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
                     { "MinimizeWindows", false },
@@ -280,7 +283,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppBannerImage", appBannerImage },
                     { "CountdownDuration", restartCountdownDuration },
                     { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
-                    // { "CustomMessageText", customMessageText },
+                    { "CustomMessageText", restartCustomMessageText },
                     { "Language", CultureInfo.CurrentCulture },
                     { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
                 };
@@ -305,11 +308,11 @@ namespace PSADT.UserInterface.TestHarness
                 await Task.Delay(5000, default).ConfigureAwait(false); // Simulate some work being done
 
                 // Simulate a process with progress updates.
-                for (int i = 0; i <= 100; i += 10)
+                for (int i = 0; i <= 100; i += 20)
                 {
-                    // Update progress
-                    await DialogManager.UpdateProgressDialogAsync("Installation in progress...", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
-                    await Task.Delay(2000, default).ConfigureAwait(false);  // Simulate work being done
+                    // Install progress
+                    await DialogManager.UpdateProgressDialogAsync("Installation in progress...", $"{i.ToString(CultureInfo.InvariantCulture)}% complete. ", i).ConfigureAwait(false);
+                    await Task.Delay(2500, default).ConfigureAwait(false);  // Simulate work being done
                 }
 
                 // Close Progress Dialog
