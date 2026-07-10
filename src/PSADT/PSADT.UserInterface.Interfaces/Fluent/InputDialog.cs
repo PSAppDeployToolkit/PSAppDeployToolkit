@@ -63,7 +63,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         }
 
         /// <inheritdoc />
-        private protected override System.Windows.FrameworkElement? GetInitialFocusElement()
+        private protected override FrameworkElement? GetInitialFocusElement()
         {
             return _secureInput ? InputBoxPassword : InputBoxText;
         }
