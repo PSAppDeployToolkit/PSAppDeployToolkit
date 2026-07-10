@@ -81,7 +81,13 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             if (visibleButtons.Count > 1)
             {
-                SetDefaultButton(visibleButtons[0]);
+                // Only apply the "first visible button is the default" convention when the caller did not
+                // configure an explicit default above; otherwise two buttons would carry IsDefault=true and
+                // Enter would no longer reliably activate the caller's chosen button.
+                if (options.DefaultButton is DialogDefaultButton.None)
+                {
+                    SetDefaultButton(visibleButtons[0]);
+                }
                 SetCancelButton(visibleButtons[^1]);
             }
         }
