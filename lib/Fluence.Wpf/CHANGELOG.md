@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.11-Preview] - 2026-07-14
+
+### Fixed
+
+- Tests: `TextBox_TextViewAlignsWithPlaceholder_WhenIconIsShown` now asserts the placeholder and caret-host alignment to the nearest device pixel instead of a fixed 0.5 DIP. Layout rounding snaps the two element chains to device pixels independently, so on fractional DPI scales (for example 175%) they can legitimately land one device pixel apart; the fixed tolerance made the suite fail on such displays while the control itself was aligned as tightly as WPF layout rounding permits.
+
 ## [0.8.10-Preview] - 2026-07-14
 
 ### Added

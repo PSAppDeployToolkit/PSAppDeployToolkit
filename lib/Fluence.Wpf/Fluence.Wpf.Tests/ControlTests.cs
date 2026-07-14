@@ -693,7 +693,11 @@ namespace Fluence.Wpf.Tests
                     double placeholderX = placeholder.TransformToAncestor(window).Transform(new Point(0, 0)).X;
                     double textViewX = textView.TransformToAncestor(window).Transform(new Point(0, 0)).X;
 
-                    Assert.AreEqual(placeholderX, textViewX, 0.5, "Text caret host should start where placeholder text starts.");
+                    // UseLayoutRounding snaps the placeholder and the ScrollViewer content chain to whole
+                    // device pixels independently, so at fractional DPI scales (e.g. 175%) the two can land
+                    // one device pixel apart. Alignment is therefore asserted to the nearest device pixel.
+                    double oneDevicePixelInDips = 1.0 / VisualTreeHelper.GetDpi(textBox).DpiScaleX;
+                    Assert.AreEqual(placeholderX, textViewX, oneDevicePixelInDips + 0.01, "Text caret host should start where placeholder text starts (within one device pixel).");
                 }
                 finally
                 {
