@@ -1,6 +1,6 @@
 ﻿# Contributing
 
-Thanks for helping improve Fluence.Wpf, a Windows 11 Fluent / WinUI 3 control library for WPF on .NET Framework 4.7.2 and .NET 10.
+Thanks for helping improve Fluence.Wpf, a Windows 11 Fluent / WinUI 3 control library for WPF on .NET Framework 4.7.2, .NET 8, and .NET 10.
 
 The authoritative contributor guide is [docs/contributing.md](docs/contributing.md), and the full engineering handbook (conventions, theme architecture, reference authority, and quality gates) is [AGENTS.md](AGENTS.md). Read both before a non-trivial change. For AI-assisted work, read [AGENTS.md](AGENTS.md) first - it is the single source of truth.
 

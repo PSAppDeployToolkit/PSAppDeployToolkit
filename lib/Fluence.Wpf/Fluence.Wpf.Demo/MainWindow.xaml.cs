@@ -491,11 +491,12 @@ namespace Fluence.Wpf.Demo
             }
 
             element.BeginAnimation(OpacityProperty, animation: null);
-            element.RenderTransform = new TranslateTransform(0.0, 20.0);
             element.Opacity = 0.0;
 
             CubicEase easing = new() { EasingMode = EasingMode.EaseOut };
-            DoubleAnimation opacityAnimation = new(0.0, 1.0, new Duration(TimeSpan.FromMilliseconds(160)))
+
+            // ControlFastAnimationDuration (167 ms) fade masking the page swap.
+            DoubleAnimation opacityAnimation = new(0.0, 1.0, new Duration(TimeSpan.FromMilliseconds(167)))
             {
                 EasingFunction = easing,
             };
@@ -505,20 +506,6 @@ namespace Fluence.Wpf.Demo
                 element.Opacity = 1.0;
             };
             element.BeginAnimation(OpacityProperty, opacityAnimation);
-
-            if (element.RenderTransform is TranslateTransform transform)
-            {
-                DoubleAnimation slideAnimation = new(20.0, 0.0, new Duration(TimeSpan.FromMilliseconds(167)))
-                {
-                    EasingFunction = easing,
-                };
-                slideAnimation.Completed += delegate
-                {
-                    transform.BeginAnimation(TranslateTransform.YProperty, animation: null);
-                    transform.Y = 0.0;
-                };
-                transform.BeginAnimation(TranslateTransform.YProperty, slideAnimation);
-            }
         }
 
         /// <summary>

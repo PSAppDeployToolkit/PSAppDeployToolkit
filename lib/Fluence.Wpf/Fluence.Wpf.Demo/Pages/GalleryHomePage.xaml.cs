@@ -39,6 +39,63 @@ namespace Fluence.Wpf.Demo.Pages
         public GalleryHomePage()
         {
             InitializeComponent();
+
+            // The theme manager events are static, so scope the subscription to
+            // Loaded/Unloaded (the FluenceWindow lifetime pattern) instead of the
+            // constructor, keeping abandoned page instances collectable.
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+
+            // Resolve the hero for the active theme immediately: the XAML default is
+            // the light lockup, and correcting it only on Loaded would let a dark
+            // theme's first layout pass measure the wrong image.
+            UpdateHeroImage();
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // Remove-before-add keeps the subscription idempotent if Loaded fires
+            // again without an intervening Unloaded (re-hosting scenarios).
+            ApplicationThemeManager.Changed -= OnThemeChanged;
+            ApplicationThemeManager.Changed += OnThemeChanged;
+            UpdateHeroImage();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ApplicationThemeManager.Changed -= OnThemeChanged;
+        }
+
+        private void OnThemeChanged(object? sender, ThemeChangedEventArgs e)
+        {
+            UpdateHeroImage();
+        }
+
+        // Swaps the hero lockup to the variant drawn for the active theme: the light
+        // artwork (near-black wordmark) on light themes, the dark artwork (white
+        // wordmark) on dark themes. SetResourceReference keeps the swap dynamic so a
+        // later theme dictionary replacement re-resolves without another lookup here.
+        private void UpdateHeroImage()
+        {
+            BrandHeroImage.SetResourceReference(
+                System.Windows.Controls.Image.SourceProperty,
+                UseDarkHeader() ? "FluenceHeaderDarkDrawingImage" : "FluenceHeaderLightDrawingImage");
+        }
+
+        // High contrast has no fixed polarity (Aquatic is white-on-black, Desert is
+        // black-on-white), so under high contrast the variant follows the live system
+        // window luminance. The plain themes map directly.
+        private static bool UseDarkHeader()
+        {
+            ApplicationTheme theme = ApplicationThemeManager.CurrentTheme;
+            if (theme is ApplicationTheme.HighContrast)
+            {
+                System.Windows.Media.Color window = SystemColors.WindowColor;
+                double luminance = (0.299 * window.R) + (0.587 * window.G) + (0.114 * window.B);
+                return luminance < 128.0;
+            }
+
+            return theme is ApplicationTheme.Dark;
         }
 
         // Handles a click on any featured-control or action Card tile; reads the Card's

@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
@@ -52,6 +53,16 @@ namespace Fluence.Wpf.Tests
         {
             return Invoke(static () =>
             {
+                // Headless CI runners report SystemParameters.ClientAreaAnimation as
+                // false, which legitimately gates every code-driven animation off and
+                // fails the tests that assert in-flight motion. Force motion on here,
+                // in the setup call every test makes first, so the suite is
+                // deterministic regardless of the host's accessibility state. The
+                // reduced-motion tests override this to false for their own scope and
+                // reset to null in their finally blocks; the next test's setup call
+                // restores this deterministic default.
+                MotionHelper.OverrideIsMotionEnabled = true;
+
                 if (Application.Current is null)
                 {
                     Application app = new()

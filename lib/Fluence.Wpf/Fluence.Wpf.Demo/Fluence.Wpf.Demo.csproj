@@ -21,12 +21,10 @@
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Resource Include="Resources\ControlImages\*.png" />
-    <Resource Include="Resources\Fluence_Lockup_SideBySide_*.png" />
     <Resource Include="Resources\SegoeFluentIcons.tsv" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Meziantou.Polyfill" Version="1.0.157">
     <PackageReference Include="Meziantou.Polyfill" Version="1.0.156">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

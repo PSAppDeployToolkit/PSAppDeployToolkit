@@ -1,14 +1,15 @@
 ﻿# Security Policy
 
-Fluence.Wpf is a WPF control library (UI controls, theming, accent handling, window chrome, and a thin layer of Win32 / DWM interop) for .NET Framework 4.7.2 and .NET 10 on Windows. This policy describes how security issues are handled for it.
+Fluence.Wpf is a WPF control library (UI controls, theming, accent handling, window chrome, and a thin layer of Win32 / DWM interop) for .NET Framework 4.7.2, .NET 8, and .NET 10 on Windows. This policy describes how security issues are handled for it.
 
 ## Supported versions
 
-The project is pre-1.0 (currently a `0.8.9` preview). Only the latest tagged release and the `main` branch receive security fixes; there is no back-porting to older preview tags. Fixes land on `main` first and ship in the next tagged release. If you consume a built package or a project reference, upgrade to the newest available version once a fix is published.
+The project is pre-1.0 (currently a `0.8.10` preview). Only the latest tagged release and the `main` branch receive security fixes; there is no back-porting to older preview tags. Fixes land on `main` first and ship in the next tagged release. If you consume a built package or a project reference, upgrade to the newest available version once a fix is published.
 
-Both target frameworks are in scope:
+All three target frameworks are in scope:
 
 - `net472` (.NET Framework 4.7.2)
+- `net8.0-windows10.0.26100.0` (.NET 8, Windows)
 - `net10.0-windows10.0.26100.0` (.NET 10, Windows)
 
 ## What counts as a vulnerability
@@ -31,7 +32,7 @@ Use GitHub private vulnerability reporting for this repository (Security tab -> 
 
 Please include:
 
-- Affected version or commit, and which target framework (`net472`, `net10.0-windows10.0.26100.0`, or both).
+- Affected version or commit, and which target framework (`net472`, `net8.0-windows10.0.26100.0`, `net10.0-windows10.0.26100.0`, or several).
 - The impacted API, control, window-message path, or interop surface.
 - Minimal reproduction steps (XAML / C# snippet or a small sample project).
 - Expected and actual behavior, and the security impact.

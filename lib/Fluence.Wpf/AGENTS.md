@@ -9,7 +9,7 @@ Self-contained persistent memory for engineers (human and AI) working in this re
 ## 1. Project overview
 
 - **Fluence.Wpf** is a WPF control library that recreates the **Windows 11 Fluent / WinUI 3** visual language and interaction patterns on WPF.
-- **Target frameworks** (library + tests): `net472` (primary) and `net10.0-windows10.0.26100.0`. Gallery demo (`Fluence.Wpf.Demo`) targets `net472` and `net10.0-windows10.0.26100.0`; MVVM demo (`Fluence.Wpf.Demo.Mvvm`) targets `net10.0-windows10.0.26100.0`.
+- **Target frameworks** - library: `net472` (primary), `net8.0-windows10.0.26100.0` (PowerShell 7 in-process consumption), and `net10.0-windows10.0.26100.0`. Tests: `net472` and `net10.0-windows10.0.26100.0`. Gallery demo (`Fluence.Wpf.Demo`) targets `net472` and `net10.0-windows10.0.26100.0`; MVVM demo (`Fluence.Wpf.Demo.Mvvm`) targets `net10.0-windows10.0.26100.0`.
 - **Language**: `LangVersion=latest` across all TFMs, set centrally in `Directory.Build.props` - no per-TFM language restriction. `net472` still constrains **runtime API** availability (see [Section 4.3](#43-feasibility-test-for-net472)); avoid APIs that don't ship in `net472`, but C# language features themselves are not restricted. Nullable reference types are **enabled** (`Nullable=enable` in `Directory.Build.props`); individual projects may override with `<Nullable>disable</Nullable>` (e.g. `Fluence.Wpf.Demo.Mvvm`).
 - **License**: BSD 3-Clause. Every `.cs` file begins with the same 27-line header; copy it verbatim from any existing library file when adding new sources. Do not edit the copyright year unless the user asks.
 - **OS**: Windows 10 1809+ baseline. Mica and rounded-corner extras light up on Windows 11.
@@ -19,10 +19,10 @@ Self-contained persistent memory for engineers (human and AI) working in this re
 
 ```text
 Fluence.Wpf.sln
-├── Fluence.Wpf/             Control library (multi-TFM: net472 + net10.0-windows10.0.26100.0)
+├── Fluence.Wpf/             Control library (multi-TFM: net472 + net8.0-windows10.0.26100.0 + net10.0-windows10.0.26100.0)
 ├── Fluence.Wpf.Demo/        Gallery app (net472 + net10.0-windows10.0.26100.0) - visual verification for all controls
 ├── Fluence.Wpf.Demo.Mvvm/   MVVM Task Manager demo (net10.0-windows10.0.26100.0) - CommunityToolkit.Mvvm example
-└── Fluence.Wpf.Tests/       MSTest 4.2.2 suite (multi-TFM)
+└── Fluence.Wpf.Tests/       MSTest 4.3.0 suite (multi-TFM)
 ```
 
 ### CLR namespaces
@@ -257,12 +257,12 @@ When adding a new control or materially changing an existing one:
 
 ## 6. Testing
 
-- **Framework**: MSTest 4.2.2 (`MSTest.TestFramework` / `MSTest.TestAdapter`) via `Microsoft.NET.Test.Sdk` 17.9.0.
+- **Framework**: MSTest 4.3.0 (`MSTest.TestFramework` / `MSTest.TestAdapter`) via `Microsoft.NET.Test.Sdk` 18.6.0.
 - **TFMs**: `net472` **and** `net10.0-windows10.0.26100.0`; both must pass.
 - **Parallelization**: `[assembly: DoNotParallelize]` lives in `Fluence.Wpf.Tests/Properties/AssemblyInfo.cs`, and the test project sets `<TestTfmsInParallel>false</TestTfmsInParallel>`. WPF's shared `ResourceDictionary` / storyboard sealing is not thread-safe across parallel fixtures or target-framework lanes.
 - **STA**: `WpfTestSta` in the test project owns a single STA thread + `Dispatcher`. All UI-touching work goes through `WpfTestSta.Invoke(...)` / `RunOnStaThread(...)`.
 - **Shared test helpers** live in `WpfTestSta` (single canonical copy): `RunOnSta` (STA invoke with `ExceptionDispatchInfo` rethrow), `DrainDispatcher` (`ApplicationIdle` pump), and two explicitly named tree walkers - `FindVisualDescendants<T>` (visual tree only) and `FindLogicalAndVisualDescendants<T>` (visual + logical, cycle-guarded). Per-fixture wrappers forward to these; do not reintroduce divergent copies. Prefer the condition-based `WaitUntil(dispatcher, timeoutMs, predicate)` (sampling the value you assert) over a fixed `WaitForAnimationAndDrain(ms)` delay.
-- **Application**: `WpfTestSta.EnsureApplication()` creates an `Application` with `ShutdownMode.OnExplicitShutdown` so tests do not tear it down.
+- **Application**: `WpfTestSta.EnsureApplication()` creates an `Application` with `ShutdownMode.OnExplicitShutdown` so tests do not tear it down. It also forces `MotionHelper.OverrideIsMotionEnabled = true` so animation assertions are deterministic on headless runners (CI reports `SystemParameters.ClientAreaAnimation` as false); the reduced-motion tests override this to `false` for their own scope and reset it to null in their `finally` blocks.
 - **Theme helpers**: `ThemeTestHelpers.ApplyStandardThemeCycle` (Light -> Dark -> HighContrast -> Light); `AssertKeyThemeBrushesResolve` for canonical key sanity.
 - **Tests for controls** typically:
   1. Merge `Themes/Generic.xaml` via `MergeGenericDictionary(Application.Current.Resources)` (this also calls `Apply(Light)` to seed canonical keys).
@@ -294,7 +294,7 @@ dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-wi
 
 ### CI/CD pipeline
 
-CI is a single `build` job on `windows-latest` defined in [.github/workflows/build.yml](.github/workflows/build.yml), triggered by any push or pull request targeting `main`. It checks text policy (UTF-8 BOM, LF, banned APIs), restores, builds Release, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then (only if both test lanes pass) generates an SBOM per TFM, packs, and uploads artifacts. NuGet publish remains commented out as a deliberate manual release step.
+CI is defined in [.github/workflows/build.yml](.github/workflows/build.yml) and triggered by any push or pull request targeting `main`, plus `v*` tag pushes. The `build` job on `windows-latest` checks text policy (UTF-8 BOM, LF, banned APIs), restores, builds Release, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then packs and uploads artifacts (net472, net8.0-windows, and net10.0-windows library binaries, the demo, and the nupkg). A `v*` tag additionally runs a `release` job after `build` succeeds: it zips the per-TFM binaries and the demo, and creates the GitHub release for the tag with those assets and the nupkg attached (tags containing `-pre` are marked prerelease). NuGet publish remains commented out as a deliberate manual release step.
 
 ```mermaid
 flowchart TD
@@ -307,10 +307,10 @@ flowchart TD
     H --> I[Test net472<br/>filter TestCategory!=Screenshots, TRX]
     I --> J[Test net10.0-windows10.0.26100.0<br/>filter TestCategory!=Screenshots, TRX]
     J --> K[Upload test results<br/>always]
-    K --> S[Generate SBOM per TFM<br/>gated on passing tests]
-    S --> L[Pack NuGet]
-    L --> M[Upload artifacts<br/>dotnet10 lib, dotnet472 lib, demo, nupkg, SBOM]
+    K --> L[Pack NuGet]
+    L --> M[Upload artifacts<br/>dotnet10 lib, dotnet8 lib, dotnet472 lib, demo, nupkg]
     M --> N[NuGet publish<br/>commented out / manual]
+    M --> R[Release job, v* tags only<br/>zip per-TFM binaries + demo,<br/>gh release create with assets]
 ```
 
 ---
@@ -322,7 +322,7 @@ flowchart TD
 - `MainWindow` is a `FluenceWindow` with `ExtendsContentIntoTitleBar="False"` in source, `SystemBackdropType="Mica"`, and a custom `TitleBar` slot hosting the app icon, title, a `TextBox` **search** bound to filter menu items, and caption buttons.
 - `NavigationView` named `DemoNav`: default `PaneDisplayMode="Left"` in source and opens expanded with `IsPaneOpen="True"` to showcase the full pane.
 - Menu items carry `Tag` strings; `MainWindow.NavigateTo(string tag)` does a switch to the matching `Gallery*Page` inside the content frame. Navigation remains tag-driven, with a lightweight visited-page stack only for the shell Back button.
-- `GalleryHomePage` shows a theme-aware hero banner (`Fluence_Lockup_SideBySide_Dark.png` on a light theme, `Fluence_Lockup_SideBySide_Light.png` on a dark theme) and large **clickable `Card`** tiles that route through the same `NavigateTo` helper. Window controls and app-level theme/navigation/backdrop options live on the Settings page.
+- `GalleryHomePage` shows a theme-aware hero lockup (the `FluenceHeaderLightDrawingImage` vector on light themes, `FluenceHeaderDarkDrawingImage` on dark themes, swapped in code-behind on `ApplicationThemeManager.Changed`; high contrast picks by system window luminance) and large **clickable `Card`** tiles that route through the same `NavigateTo` helper. Window controls and app-level theme/navigation/backdrop options live on the Settings page.
 - 17 navigation-catalog pages: Home, Colors, Icons, Typography, Buttons, Selection, Inputs, Forms, Data, Data binding, Trees, Menus, Navigation, Tabs, Layout, Status, and Accessibility. Settings is a `NavigationView.FooterMenuItems` entry (a real, selectable footer nav item with the shared selection indicator), not a `DemoNavigationCatalog` item; footer navigation is routed through `DemoNav.ItemInvoked`.
 - Run: `dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -f net472` or `dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -f net10.0-windows10.0.26100.0`.
 
@@ -402,7 +402,7 @@ When you are editing this repository, you are acting as a **senior C#/.NET WPF e
 
 ### Consumer build compatibility
 
-`Fluence.Wpf` has adopted the stricter consumer build requirements used by PSADT for release gating: warnings as errors, `latest-all` analyzers, code style enforcement, banned APIs, XML documentation generation, and the `net472` plus `net10.0-windows10.0.26100.0` build matrix. Treat the stricter consumer policy as authoritative for release conformance. If this repo drifts from it, correct the drift unless an exception is explicit, documented in this handbook or the affected project file, and approved by the user.
+`Fluence.Wpf` has adopted the stricter consumer build requirements used by PSADT for release gating: warnings as errors, `latest-all` analyzers, code style enforcement, banned APIs, XML documentation generation, and the `net472` / `net8.0-windows10.0.26100.0` / `net10.0-windows10.0.26100.0` build matrix. Treat the stricter consumer policy as authoritative for release conformance. If this repo drifts from it, correct the drift unless an exception is explicit, documented in this handbook or the affected project file, and approved by the user.
 
 Consumer build compatibility is a release gate. For build-policy, public API, project metadata, resource-copy, or packaging changes that can affect downstream consumption, verify the standalone Fluence build and the current release-gate consumer build. PSADT-specific paths or build artifacts may be cited only as release-gate evidence; do not make this handbook depend on consumer-local layout.
 

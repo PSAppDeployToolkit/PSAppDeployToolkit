@@ -4,6 +4,37 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.10-Preview] - 2026-07-14
+
+### Added
+
+- CI: pushing a `v*` tag now creates the GitHub release automatically, attaching the `net472`, `net8.0-windows`, and `net10.0-windows` library binaries, the demo app, and the NuGet package (tags containing `-pre` are marked prerelease). The .NET 8 binaries are also uploaded as workflow artifacts on every build.
+- Controls respect the Windows "Show animations in Windows" accessibility setting, read via `SystemParameters.ClientAreaAnimation`. With the setting off, code-driven animations are skipped and controls jump to their final state. Covered: `ProgressRing` and `ProgressBar` indeterminate motion, `FontIcon` spin, `ContentDialog` open and close, `NavigationView` pane and indicator motion, the `Flyout`, `TeachingTip`, and `ComboBox` reveals, the `Expander` slide, `ToggleSwitch` knob and thumb motion, `ListView` insert/remove, and `SmoothScrollViewer` wheel scrolling. Hover/press micro-feedback and other XAML template storyboards are not gated; toggling the OS setting mid-session applies at each animation's next start.
+
+### Changed
+
+- Demo: the home page hero now shows the Fluence header lockup drawn for the active theme (`FluenceHeaderLightDrawingImage` on light themes, `FluenceHeaderDarkDrawingImage` on dark, chosen by system window luminance under high contrast), replacing the square brand mark and separate title text. The unused lockup PNGs are removed from the demo resources.
+- ScrollBar: hover expand/contract now runs 167 ms and the track fade 83 ms, matching WinUI's `ScrollBarExpandDuration`, `ScrollBarContractDuration`, and `ScrollBarOpacityChangeDuration`; previously 120 ms and 150 ms.
+- `ListView`: item removal eases out like the insert path, so a deleted item no longer lingers at full opacity before snapping away.
+- `ComboBox`: the dropdown opens with the standard reveal, an 8 px slide from the control edge (upward-opening dropdowns slide up) plus fade over 167 ms on the `0.8,0,0,1` spline, instead of unfolding from zero height. The reveal runs from code and honors the reduced-motion setting.
+- `Flyout`: the open reveal slides 8 px in from the requested placement side (`Top` up, `Bottom` down, `Left`/`Right` horizontally) instead of always sliding down. Timing is unchanged: 167 ms with fade on the `0.8,0,0,1` spline.
+- `TeachingTip`: the reveal slides 8 px in from the side the tip actually opened on (the resolved `ActualPlacement`, beak leading); untargeted and Center tips fade only. The 83 ms fade and 167 ms slide are unchanged, and the reveal honors the reduced-motion setting.
+- `ContentDialog`: closing plays the WinUI DialogHidden exit, a 167 ms scale back to 1.05 with an 83 ms linear fade, instead of a hard cut; input stops the moment the close starts. `ShowAsync` now completes when the exit finishes, about 167 ms later than before. With animations off, or while the owner window is closing, teardown stays immediate.
+- `ToolTip`: fades in over 83 ms on the `0.8,0,0,1` spline (WinUI `FadeInThemeAnimation` parity); close stays instant. The theme suppresses the OS tooltip popup fade so only one fade plays.
+- `CheckBox`: checking animates the glyph in with a 100 ms fade and a 167 ms scale settle from 0.7; unchecking stays instant.
+- Demo only: page navigation keeps just the 167 ms fade (the 20 px slide is removed), and the color-swatch hover scale drops from 1.08 over 120 ms to 1.05 over 100 ms.
+- `ProgressBar`: determinate value changes animate the fill's `ScaleTransform.ScaleX` instead of its layout `Width`, so each frame is composite-only. The 367 ms duration and (0.1,0.9,0.2,1.0) spline are unchanged; the template gains a `PART_FillScale` part and the indicator host's geometry clip owns the corner rounding.
+- `ToggleSwitch`: the thumb grow/shrink (12x12 rest, 14x14 hover, 17x14 pressed) animates a render-thread `ScaleTransform` instead of layout `Width`/`Height`, removing a layout pass per frame. Sizes, 83 ms timing, and easing are unchanged.
+- `Expander`: expand and collapse slide the content behind its clip by the measured height (WinUI parity), 333 ms in on the `0,0,0,1` spline and 167 ms out on `1,1,0,1`; a mid-flight re-toggle continues from the current offset. The chevron rotation is unchanged.
+- Motion consistency: stray animation timings moved onto the token scale across ToggleButton, RepeatButton, ListBox, ListView, RadioButton, Slider, TabControl, TabView, InfoBar, and the demo: 120 ms press/exit values to 100 ms, 150 and 180 ms transitions to the 167 ms Fast token, and 50 ms indicator fades to the 83 ms Faster token. The shared 100 ms press value is now the `ControlPressAnimationDuration` token in `Typography.xaml`.
+
+### Fixed
+
+- `InfoBar`: the close button now has a proper Fluent template: a `ControlCornerRadius` rounded plate, transparent at rest with `SubtleFillColorSecondary` hover and `SubtleFillColorTertiary` press, and the glyph at `TextFillColorPrimary`. It previously fell back to the OS default button chrome, with square corners and legacy hover colors.
+- `ProgressRing` / `ProgressBar`: indeterminate animations park while the control is collapsed or hidden and restart when it is shown, instead of ticking while nothing paints.
+- `FontIcon`: the `IsSpinning` rotation stops while the icon is unloaded or not visible and resumes when shown, instead of ticking forever.
+- `NavigationView`: selecting items faster than the indicator animates no longer snaps the indicator back and replays from zero; a mid-flight retarget continues from the current position, scale, and opacity. The 90 ms and 140 ms timings are unchanged.
+
 ## [0.8.9-Preview] - 2026-07-07
 
 ### Changed

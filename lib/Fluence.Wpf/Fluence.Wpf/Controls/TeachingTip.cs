@@ -27,6 +27,7 @@
  */
 
 using Fluence.Wpf.Automation;
+using Fluence.Wpf.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Automation;
@@ -35,6 +36,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Fluence.Wpf.Controls
 {
@@ -51,12 +53,44 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = PART_ActionButton, Type = typeof(ButtonBase))]
     [TemplatePart(Name = PART_CloseButton, Type = typeof(ButtonBase))]
     [TemplatePart(Name = PART_AlternateCloseButton, Type = typeof(ButtonBase))]
+    [TemplatePart(Name = TipRootPart, Type = typeof(Grid))]
+    [TemplatePart(Name = TipTranslatePart, Type = typeof(TranslateTransform))]
     public class TeachingTip : ContentControl
     {
         // Template part names.
         private const string PART_ActionButton = "PART_ActionButton";
         private const string PART_CloseButton = "PART_CloseButton";
         private const string PART_AlternateCloseButton = "PART_AlternateCloseButton";
+
+        /// <summary>
+        /// The name of the layout-root Grid template part whose opacity the open reveal fades.
+        /// </summary>
+        private const string TipRootPart = "TipRoot";
+
+        /// <summary>
+        /// The name of the TranslateTransform template part the open reveal slides.
+        /// </summary>
+        private const string TipTranslatePart = "TipTranslate";
+
+        /// <summary>
+        /// The duration of the open reveal fade, mirroring the value of the
+        /// ControlFasterAnimationDuration motion token (Themes/Typography/Typography.xaml),
+        /// which code mirrors by value like the previous template storyboard did.
+        /// </summary>
+        private const double RevealFadeMilliseconds = 83;
+
+        /// <summary>
+        /// The duration of the open reveal slide, mirroring the value of the
+        /// ControlFastAnimationDuration motion token (Themes/Typography/Typography.xaml),
+        /// which code mirrors by value like the previous template storyboard did.
+        /// </summary>
+        private const double RevealSlideMilliseconds = 167;
+
+        /// <summary>
+        /// The distance in device-independent pixels the tip slides in from the
+        /// placement side during the open reveal.
+        /// </summary>
+        private const double RevealOffsetPixels = 8;
 
         /// <summary>
         /// Initializes static members of the TeachingTip class and overrides the default
@@ -76,11 +110,14 @@ namespace Fluence.Wpf.Controls
         /// Initializes a new instance of the <see cref="TeachingTip"/> class. The tip starts
         /// collapsed so a tip declared in page XAML renders nothing inline; it becomes visible
         /// once it is re-hosted in its popup the first time it opens. SetCurrentValue keeps an
-        /// explicit consumer-set <see cref="UIElement.Visibility"/> authoritative.
+        /// explicit consumer-set <see cref="UIElement.Visibility"/> authoritative. The open
+        /// reveal subscribes to <see cref="FrameworkElement.Loaded"/>: the popup child re-raises
+        /// Loaded on every open, so the reveal replays each time the tip shows.
         /// </summary>
         public TeachingTip()
         {
             SetCurrentValue(VisibilityProperty, Visibility.Collapsed);
+            Loaded += OnLoaded;
         }
 
         /// <summary>
@@ -382,6 +419,114 @@ namespace Fluence.Wpf.Controls
             }
         }
 
+        /// <summary>
+        /// Plays the open reveal each time the tip loads inside the host popup, sliding in from
+        /// the side of the target the tip ACTUALLY opened on (read from
+        /// <see cref="ActualPlacement"/>, which <see cref="ApplyPlacement"/> stamps before the
+        /// popup opens): a tip below its target (Bottom) slides down from 8 px above the rest
+        /// position, Top slides up, Right slides right, Left slides left, and Center (untargeted
+        /// or explicitly centered, a dialog-like surface that implies no direction) fades only.
+        /// The motion mirrors the previous template storyboard: an 83 ms fade with a 167 ms
+        /// slide on the 0.8,0,0,1 spline (the Typography.xaml ControlFasterAnimationDuration,
+        /// ControlFastAnimationDuration, and ControlFastOutSlowInKeySpline motion tokens,
+        /// mirrored by value), following the <see cref="FlyoutPresenter"/> code-reveal
+        /// precedent. The animations use <see cref="FillBehavior.Stop"/>; the completed
+        /// handlers stamp the rest values and release the clocks so nothing stays animated once
+        /// the reveal settles.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // A tip whose Loaded fires without an applied template (a collapsed declaration
+            // still sitting in a panel) has no reveal parts to animate.
+            if (GetTemplateChild(TipTranslatePart) is not TranslateTransform translate ||
+                GetTemplateChild(TipRootPart) is not Grid tipRoot)
+            {
+                return;
+            }
+
+            // Motion disabled (OS "Show animations" off): skip the reveal and show the tip
+            // at rest immediately - translate (0,0), full opacity, no clocks.
+            if (!MotionHelper.IsMotionEnabled)
+            {
+                translate.BeginAnimation(TranslateTransform.XProperty, animation: null);
+                translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
+                translate.SetCurrentValue(TranslateTransform.XProperty, 0.0);
+                translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
+                tipRoot.BeginAnimation(UIElement.OpacityProperty, animation: null);
+                tipRoot.SetCurrentValue(UIElement.OpacityProperty, 1.0);
+                return;
+            }
+
+            TeachingTipPlacementMode side = ActualPlacement;
+            if (side is TeachingTipPlacementMode.Center)
+            {
+                // Centered surfaces imply no direction: release any slide clock a previous
+                // directional open may have left running and rest the translate; fade only.
+                translate.BeginAnimation(TranslateTransform.XProperty, animation: null);
+                translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
+                translate.SetCurrentValue(TranslateTransform.XProperty, 0.0);
+                translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
+            }
+            else
+            {
+                bool slidesHorizontally = side is TeachingTipPlacementMode.Left or TeachingTipPlacementMode.Right;
+                double startOffset = side is TeachingTipPlacementMode.Top or TeachingTipPlacementMode.Left
+                    ? RevealOffsetPixels
+                    : -RevealOffsetPixels;
+                DependencyProperty slideProperty = slidesHorizontally ? TranslateTransform.XProperty : TranslateTransform.YProperty;
+                DependencyProperty restProperty = slidesHorizontally ? TranslateTransform.YProperty : TranslateTransform.XProperty;
+
+                // Seed the discrete start so the first rendered frame never flashes the rest
+                // position: the offset on the chosen axis, 0 on the other, fully transparent.
+                translate.SetCurrentValue(slideProperty, startOffset);
+                translate.SetCurrentValue(restProperty, 0.0);
+
+                DoubleAnimationUsingKeyFrames slideAnimation = CreateRevealAnimation(startOffset, 0.0, RevealSlideMilliseconds);
+                slideAnimation.Completed += (_, _) =>
+                {
+                    translate.SetCurrentValue(slideProperty, 0.0);
+                    translate.BeginAnimation(slideProperty, animation: null);
+                };
+                translate.BeginAnimation(slideProperty, slideAnimation);
+            }
+
+            tipRoot.SetCurrentValue(UIElement.OpacityProperty, 0.0);
+            DoubleAnimationUsingKeyFrames fadeAnimation = CreateRevealAnimation(0.0, 1.0, RevealFadeMilliseconds);
+            fadeAnimation.Completed += (_, _) =>
+            {
+                tipRoot.SetCurrentValue(UIElement.OpacityProperty, 1.0);
+                tipRoot.BeginAnimation(UIElement.OpacityProperty, animation: null);
+            };
+            tipRoot.BeginAnimation(UIElement.OpacityProperty, fadeAnimation);
+        }
+
+        /// <summary>
+        /// Builds one track of the open reveal: a discrete start at time zero settling at the
+        /// rest value over the given duration on the decelerating Fluent key spline
+        /// (see <see cref="OnLoaded"/> for the mirrored Typography.xaml motion tokens).
+        /// </summary>
+        /// <param name="from">The discrete start value.</param>
+        /// <param name="to">The rest value reached when the reveal settles.</param>
+        /// <param name="milliseconds">The duration of the track in milliseconds.</param>
+        /// <returns>The keyframe animation for the track.</returns>
+        private static DoubleAnimationUsingKeyFrames CreateRevealAnimation(double from, double to, double milliseconds)
+        {
+            return new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.Stop,
+                KeyFrames =
+                {
+                    new DiscreteDoubleKeyFrame(from, KeyTime.FromTimeSpan(TimeSpan.Zero)),
+                    new SplineDoubleKeyFrame(
+                        to,
+                        KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(milliseconds)),
+                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                },
+            };
+        }
+
         private static object CoerceText(DependencyObject d, object? baseValue)
         {
             return baseValue ?? string.Empty;
@@ -615,8 +760,8 @@ namespace Fluence.Wpf.Controls
                 HostPopup = new Popup
                 {
                     AllowsTransparency = true,
-                    // The TeachingTip template owns the open reveal (a slide + fade storyboard
-                    // on Loaded), so the popup must not add its own fade on top.
+                    // The tip's placement-aware code reveal in OnLoaded owns the open motion,
+                    // so the popup must not add its own fade on top.
                     PopupAnimation = PopupAnimation.None,
                 };
                 HostPopup.Closed += OnPopupClosed;

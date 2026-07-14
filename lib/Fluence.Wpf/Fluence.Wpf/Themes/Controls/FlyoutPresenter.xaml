@@ -49,41 +49,16 @@
                                 TextElement.Foreground="{TemplateBinding Foreground}" />
                         </ScrollViewer>
                     </Border>
-                    <ControlTemplate.Triggers>
-                        <!--
-                            Open reveal, ContextMenu.xaml submenu precedent: slide from Y=-8 to 0 with
-                            a fade 0 to 1 over 167ms on the 0.8,0,0,1 spline (Typography.xaml motion
-                            tokens ControlFastAnimationDuration + ControlFastOutSlowInKeySpline;
-                            storyboard attributes need literal values). The presenter cannot see
-                            FlyoutBase.Placement from the template, so v1 uses this fixed reveal
-                            matching the dominant bottom placement. FlyoutBase.cs sets the popup's
-                            PopupAnimation to None so this storyboard owns the reveal.
-                            SourceName anchors the trigger to the template child so it is only
-                            hooked once the template has instantiated; a presenter whose Loaded
-                            fires without an applied template (a collapsed declaration) would
-                            otherwise fail to resolve the storyboard target names.
-                        -->
-                        <EventTrigger RoutedEvent="FrameworkElement.Loaded" SourceName="PresenterSurface">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PresenterTranslate" Storyboard.TargetProperty="Y">
-                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="-8" />
-                                        <SplineDoubleKeyFrame
-                                            KeySpline="0.8,0,0,1"
-                                            KeyTime="0:0:0.167"
-                                            Value="0" />
-                                    </DoubleAnimationUsingKeyFrames>
-                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PresenterSurface" Storyboard.TargetProperty="Opacity">
-                                        <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
-                                        <SplineDoubleKeyFrame
-                                            KeySpline="0.8,0,0,1"
-                                            KeyTime="0:0:0.167"
-                                            Value="1" />
-                                    </DoubleAnimationUsingKeyFrames>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </ControlTemplate.Triggers>
+                    <!--
+                        The open reveal (slide 8px in from the placement side with a fade 0 to 1,
+                        167ms on the 0.8,0,0,1 spline) lives in FlyoutPresenter.OnLoaded and is
+                        placement-aware: FlyoutBase.ShowAt stamps the resolved side onto the
+                        presenter's RevealPlacement before the popup opens. PresenterSurface and
+                        PresenterTranslate are the named parts the reveal animates. v2 limitation:
+                        WPF's custom popup placement offers the opposite edge as a screen-edge
+                        fallback without reporting which candidate won, so the reveal keys off the
+                        requested side, not the actual one.
+                    -->
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

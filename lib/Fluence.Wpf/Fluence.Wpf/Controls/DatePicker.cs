@@ -1014,13 +1014,19 @@ defaultValue: null,
         /// </summary>
         private enum DateField
         {
-            /// <summary>The day-of-month field.</summary>
+            /// <summary>
+            /// The day-of-month field.
+            /// </summary>
             Day = 0,
 
-            /// <summary>The month field.</summary>
+            /// <summary>
+            /// The month field.
+            /// </summary>
             Month = 1,
 
-            /// <summary>The year field.</summary>
+            /// <summary>
+            /// The year field.
+            /// </summary>
             Year = 2,
         }
     }

@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net8.0-windows10.0.26100.0;net10.0-windows10.0.26100.0</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <RootNamespace>Fluence.Wpf</RootNamespace>
     <AssemblyName>Fluence.Wpf</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);SYSLIB1045;S1244;VSTHRD001</NoWarn>
     <DocumentationFile Condition="'$(TargetFramework)' != ''">bin/$(Configuration)/$(TargetFramework)/Fluence.Wpf.xml</DocumentationFile>
-    <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2 and .NET 10)</Description>
+    <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2, .NET 8, and .NET 10)</Description>
     <Product>Fluence.Wpf</Product>
     <Title>Fluence.Wpf</Title>
     <PackageId>Fluence.Wpf</PackageId>
-    <VersionPrefix>0.8.9</VersionPrefix>
+    <VersionPrefix>0.8.10</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sintaxasn/Fluence.Wpf</PackageProjectUrl>
@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <PackageReference Include="Meziantou.Polyfill" Version="1.0.157">
+    <PackageReference Include="Meziantou.Polyfill" Version="1.0.156">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

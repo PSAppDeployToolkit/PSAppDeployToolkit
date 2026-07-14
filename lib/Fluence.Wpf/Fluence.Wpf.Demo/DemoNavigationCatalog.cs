@@ -70,7 +70,9 @@ namespace Fluence.Wpf.Demo
             new("Accessibility", "accessibility", "screen reader narrator automation keyboard focus contrast rtl", "\uE776", isDefault: false),
         ];
 
-        /// <summary>Gets the ordered sequence of navigation items that populate the gallery left pane.</summary>
+        /// <summary>
+        /// Gets the ordered sequence of navigation items that populate the gallery left pane.
+        /// </summary>
         public static IEnumerable<DemoNavigationItem> Items => CatalogItems;
     }
 }

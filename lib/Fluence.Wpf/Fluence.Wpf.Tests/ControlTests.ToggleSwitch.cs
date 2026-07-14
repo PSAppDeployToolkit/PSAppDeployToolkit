@@ -88,6 +88,10 @@ namespace Fluence.Wpf.Tests
                     "Default knob Width must be 12 (WinUI ToggleSwitch_themeresources.xaml SwitchKnobOff normal state).");
                 Assert.AreEqual(12.0, thumb.Height, 0.001,
                     "Default knob Height must be 12.");
+
+                ScaleTransform scale = GetToggleSwitchThumbScale(ts);
+                Assert.AreEqual(1.0, scale.ScaleX, 0.001, "Rest thumb ScaleX must be 1.");
+                Assert.AreEqual(1.0, scale.ScaleY, 0.001, "Rest thumb ScaleY must be 1.");
                 w.Close();
             });
         }
@@ -176,6 +180,7 @@ namespace Fluence.Wpf.Tests
                 Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
                 Assert.IsNotNull(input, "PART_SwitchThumbInput must exist.");
                 TranslateTransform tx = GetToggleSwitchKnobTranslate(ts);
+                ScaleTransform scale = GetToggleSwitchThumbScale(ts);
 
                 DragStartedEventArgs started = new(0, 0)
                 {
@@ -183,8 +188,10 @@ namespace Fluence.Wpf.Tests
                 };
                 input.RaiseEvent(started);
                 WaitForAnimationAndDrain(w.Dispatcher, 120);
-                Assert.AreEqual(17.0, thumb.Width, 0.5, "Pressed/dragged thumb should widen to 17px.");
-                Assert.AreEqual(14.0, thumb.Height, 0.5, "Pressed/dragged thumb should expand to 14px high.");
+                Assert.AreEqual(17.0 / 12.0, scale.ScaleX, 0.05, "Pressed/dragged thumb should widen to the 17px scale.");
+                Assert.AreEqual(14.0 / 12.0, scale.ScaleY, 0.05, "Pressed/dragged thumb should expand to the 14px-high scale.");
+                Assert.AreEqual(12.0, thumb.Width, 0.001, "Pressed thumb layout Width must stay 12; growth is render-transform only.");
+                Assert.AreEqual(12.0, thumb.Height, 0.001, "Pressed thumb layout Height must stay 12; growth is render-transform only.");
 
                 DragDeltaEventArgs delta = new(20, 0)
                 {
@@ -201,8 +208,57 @@ namespace Fluence.Wpf.Tests
                 Assert.AreEqual(true, ts.IsChecked, "Completing a right-side drag should commit the checked state.");
                 WaitForAnimationAndDrain(w.Dispatcher, 250);
                 Assert.AreEqual(20.0, tx.X, 0.5, "Committed drag should leave the knob on the checked side.");
-                Assert.AreEqual(12.0, thumb.Width, 0.5, "Released thumb should return to rest width.");
-                Assert.AreEqual(12.0, thumb.Height, 0.5, "Released thumb should return to rest height.");
+                Assert.AreEqual(1.0, scale.ScaleX, 0.05, "Released thumb should return to the rest scale on X.");
+                Assert.AreEqual(1.0, scale.ScaleY, 0.05, "Released thumb should return to the rest scale on Y.");
+                Assert.AreEqual(12.0, thumb.Width, 0.001, "Thumb layout Width must remain 12 after release.");
+
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void ToggleSwitch_PressedCodePath_ScalesThumbWithoutLayoutSizeChange()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ToggleSwitch ts = new() { IsChecked = false };
+                Window w = new() { Content = ts, Width = 160, Height = 60 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                Ellipse? thumb = FindVisualChildByName<Ellipse>(ts, "SwitchThumb");
+                Assert.IsNotNull(thumb, "SwitchThumb must exist.");
+                Thumb? input = FindVisualChildByName<Thumb>(ts, "PART_SwitchThumbInput");
+                Assert.IsNotNull(input, "PART_SwitchThumbInput must exist.");
+                ScaleTransform scale = GetToggleSwitchThumbScale(ts);
+                Assert.AreEqual(1.0, scale.ScaleX, 0.001, "Thumb starts at the rest scale.");
+
+                MouseButtonEventArgs pressed = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                {
+                    RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
+                };
+                input.RaiseEvent(pressed);
+                WaitForAnimationAndDrain(w.Dispatcher, 120);
+
+                Assert.AreEqual(17.0 / 12.0, scale.ScaleX, 0.05,
+                    "Pressing the thumb must grow ScaleX toward the 17px pressed footprint.");
+                Assert.AreEqual(14.0 / 12.0, scale.ScaleY, 0.05,
+                    "Pressing the thumb must grow ScaleY toward the 14px pressed footprint.");
+                Assert.AreEqual(12.0, thumb.Width, 0.001,
+                    "The Ellipse layout Width must stay 12; the grow animation is a render transform, not a layout change.");
+                Assert.AreEqual(12.0, thumb.Height, 0.001,
+                    "The Ellipse layout Height must stay 12; the grow animation is a render transform, not a layout change.");
+
+                MouseEventArgs lostCapture = new(Mouse.PrimaryDevice, 0)
+                {
+                    RoutedEvent = UIElement.LostMouseCaptureEvent,
+                };
+                input.RaiseEvent(lostCapture);
+                WaitForAnimationAndDrain(w.Dispatcher, 250);
+                Assert.AreEqual(1.0, scale.ScaleX, 0.05, "Released thumb returns to the rest scale.");
 
                 w.Close();
             });
@@ -330,6 +386,15 @@ namespace Fluence.Wpf.Tests
                     }
                 }
             });
+        }
+
+        private static ScaleTransform GetToggleSwitchThumbScale(ToggleSwitch toggleSwitch)
+        {
+            Ellipse? thumb = FindVisualChildByName<Ellipse>(toggleSwitch, "SwitchThumb");
+            Assert.IsNotNull(thumb, "SwitchThumb must exist.");
+            ScaleTransform? scale = thumb.RenderTransform as ScaleTransform;
+            Assert.IsNotNull(scale, "SwitchThumb RenderTransform must be a ScaleTransform.");
+            return scale;
         }
 
         private static TranslateTransform GetToggleSwitchKnobTranslate(ToggleSwitch toggleSwitch)

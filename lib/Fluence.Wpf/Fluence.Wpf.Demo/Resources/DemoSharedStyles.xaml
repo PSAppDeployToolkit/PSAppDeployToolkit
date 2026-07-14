@@ -110,17 +110,18 @@
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="BorderBrush" Value="{DynamicResource TextFillColorPrimaryBrush}" />
                 <Setter Property="BorderThickness" Value="2" />
+                <!--  ControlPressAnimationDuration (100 ms) hover-feedback scale.  -->
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
                             <DoubleAnimation
                                 Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                To="1.08"
-                                Duration="0:0:0.12" />
+                                To="1.05"
+                                Duration="0:0:0.1" />
                             <DoubleAnimation
                                 Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                To="1.08"
-                                Duration="0:0:0.12" />
+                                To="1.05"
+                                Duration="0:0:0.1" />
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -130,11 +131,11 @@
                             <DoubleAnimation
                                 Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
                                 To="1"
-                                Duration="0:0:0.12" />
+                                Duration="0:0:0.1" />
                             <DoubleAnimation
                                 Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
                                 To="1"
-                                Duration="0:0:0.12" />
+                                Duration="0:0:0.1" />
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.ExitActions>

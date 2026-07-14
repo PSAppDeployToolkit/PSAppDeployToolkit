@@ -39,10 +39,10 @@ maintainers.
   input commits on Enter / focus loss rather than live per keystroke, and the
   hue text input accepts 0-360 (WinUI caps at 359) because the picker's model
   and slider use 360 inclusive.
-- **`ContentDialog` smoke layer and motion** - the dialog always paints its
+- **`ContentDialog` smoke layer and sizing** - the dialog always paints its
   smoke (dimming) layer; there is **no** WinUI `DialogShowingWithoutSmokeLayer`
-  state. It also has **no** `FullDialogSizing` stretch mode and **no** exit
-  (`DialogHidden`) reverse animation; the entrance motion is implemented.
+  state, and **no** `FullDialogSizing` stretch mode. The entrance and the
+  `DialogHidden` exit animations are both implemented.
 - **`BreadcrumbBar` ellipsis overflow** - the bar does **not** collapse leading
   crumbs into an ellipsis (WinUI collapses them into an `E712` ellipsis item
   with a flyout). Long trails extend to their natural width and clip when

@@ -6,6 +6,7 @@ permissions:
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
 jobs:
@@ -66,6 +67,18 @@ jobs:
             Fluence.Wpf/bin/Release/net10.0-windows10.0.26100.0/WinRT.Runtime.dll
           retention-days: 30
 
+      - name: Upload library artifacts (.NET 8)
+        uses: actions/upload-artifact@v7
+        with:
+          name: fluence-wpf-release-dotnet8
+          path: |
+            Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0/Fluence.Wpf.dll
+            Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0/Fluence.Wpf.pdb
+            Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0/Fluence.Wpf.xml
+            Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0/Microsoft.Windows.SDK.NET.dll
+            Fluence.Wpf/bin/Release/net8.0-windows10.0.26100.0/WinRT.Runtime.dll
+          retention-days: 30
+
       - name: Upload library artifacts (.NET Framework 4.7.2)
         uses: actions/upload-artifact@v7
         with:
@@ -98,3 +111,41 @@ jobs:
       # - name: Publish to NuGet (tagged releases only)
       #   if: startsWith(github.ref, 'refs/tags/v')
       #   run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+
+  # Version tags (v*) run the full build/test/pack gates above and then publish a
+  # GitHub release with the per-TFM library binaries, the demo, and the NuGet
+  # package attached. Tags containing '-pre' are marked as prereleases. Write
+  # permission is scoped to this job only; the build job stays read-only.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+
+      - name: Stage release assets
+        run: |
+          New-Item -ItemType Directory dist | Out-Null
+          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet472/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net472.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet8/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net8.0-windows.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-release-dotnet10/* -DestinationPath "dist/Fluence.Wpf-${{ github.ref_name }}-net10.0-windows.zip"
+          Compress-Archive -Path artifacts/fluence-wpf-demo/* -DestinationPath "dist/Fluence.Wpf.Demo-${{ github.ref_name }}-net472.zip"
+          Copy-Item artifacts/fluence-wpf-nupkg/*.nupkg dist/
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # --repo makes gh operate without a local checkout (this job never checks
+          # out the tree; it only downloads the build artifacts).
+          $ghArgs = @('release', 'create', '${{ github.ref_name }}', '--repo', '${{ github.repository }}')
+          $ghArgs += (Get-ChildItem dist/* | ForEach-Object FullName)
+          $ghArgs += @('--title', 'Fluence.Wpf ${{ github.ref_name }}', '--generate-notes')
+          if ('${{ github.ref_name }}'.Contains('-pre')) { $ghArgs += '--prerelease' }
+          gh @ghArgs

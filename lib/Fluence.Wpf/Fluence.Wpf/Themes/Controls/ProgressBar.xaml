@@ -27,13 +27,24 @@
                             x:Name="ProgressBarIndicatorHost"
                             Height="{TemplateBinding MinHeight}"
                             VerticalAlignment="Center">
+                            <!--
+                                The determinate fill is laid out once at the full track width and its
+                                progress is expressed by PART_FillScale (ScaleX in [0,1]), so per-value
+                                updates cost a composite instead of a layout + paint pass. It carries no
+                                CornerRadius of its own; the indicator host's rounded geometry clip owns
+                                the rounding, so scaling never distorts a radius.
+                            -->
                             <Border
                                 x:Name="PART_Fill"
                                 Width="0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Stretch"
                                 Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                CornerRadius="{TemplateBinding CornerRadius}" />
+                                RenderTransformOrigin="0,0.5">
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="PART_FillScale" ScaleX="0" ScaleY="1" />
+                                </Border.RenderTransform>
+                            </Border>
                             <Border
                                 x:Name="PART_IndeterminateBar"
                                 Width="0"

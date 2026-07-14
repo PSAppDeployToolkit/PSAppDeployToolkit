@@ -1,6 +1,6 @@
 ﻿## Scope
 
-`Fluence.Wpf` targets WPF applications on .NET Framework 4.7.2 and .NET 10 for Windows. It mirrors the Windows 11 Fluent / WinUI 3 visual language using WPF primitives, with no dependency on the Windows App SDK.
+`Fluence.Wpf` targets WPF applications on .NET Framework 4.7.2, .NET 8, and .NET 10 for Windows. It mirrors the Windows 11 Fluent / WinUI 3 visual language using WPF primitives, with no dependency on the Windows App SDK.
 
 ## Basic Steps
 

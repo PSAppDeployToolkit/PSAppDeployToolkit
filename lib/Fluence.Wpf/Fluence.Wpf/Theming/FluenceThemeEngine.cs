@@ -55,10 +55,14 @@ namespace Fluence.Wpf.Theming
         // ThemeParityTests.CaptureResolved.
         private static bool _deterministicChromeForTesting;
 
-        /// <summary>Gets the most recently resolved <see cref="AccentPalette"/>.</summary>
+        /// <summary>
+        /// Gets the most recently resolved <see cref="AccentPalette"/>.
+        /// </summary>
         internal static AccentPalette CurrentPalette { get; private set; }
 
-        /// <summary>Gets the most recently resolved concrete theme (Light, Dark, or HighContrast).</summary>
+        /// <summary>
+        /// Gets the most recently resolved concrete theme (Light, Dark, or HighContrast).
+        /// </summary>
         internal static ApplicationTheme ResolvedTheme { get; private set; } = ApplicationTheme.Light;
 
         /// <summary>Gets the title-bar colors computed during the most recent <see cref="Apply"/> call.
@@ -213,7 +217,9 @@ namespace Fluence.Wpf.Theming
             _deterministicChromeForTesting = enabled;
         }
 
-        /// <summary>Resets engine state for test isolation.</summary>
+        /// <summary>
+        /// Resets engine state for test isolation.
+        /// </summary>
         internal static void ResetForTesting()
         {
             _initialized = false;
