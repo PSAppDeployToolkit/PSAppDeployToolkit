@@ -25,6 +25,48 @@
         </Setter>
     </Style>
 
+    <!--
+        Subtle plate for the close button. WinUI InfoBar.xaml swaps the close button's
+        brushes to the AppBarButton set: transparent rest plate, SubtleFillColorSecondary
+        hover / SubtleFillColorTertiary press, primary-to-secondary text foreground, no
+        border, ControlCornerRadius rounding (see TeachingTip.xaml / PipsPager.xaml for
+        the same plate pattern). The template is required: a stock Button without one
+        falls back to the OS default chrome, whose internal triggers paint square
+        corners and legacy hover colors regardless of the Background property.
+    -->
+    <Style x:Key="InfoBarCloseButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource InfoBarCloseButtonFocusVisual}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border
+                        x:Name="ButtonPlate"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonPlate" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Width" Value="28" />
+    </Style>
+
     <Style TargetType="{x:Type controls:InfoBar}">
         <Setter Property="Background" Value="{DynamicResource SystemFillColorAttentionBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
@@ -135,27 +177,15 @@
                                 <Button
                                     x:Name="PART_CloseButton"
                                     Grid.Column="3"
-                                    Width="28"
-                                    Height="28"
-                                    MinWidth="0"
-                                    MinHeight="0"
-                                    Padding="4"
                                     VerticalAlignment="Center"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalContentAlignment="Center"
                                     AutomationProperties.Name="Close"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    FocusVisualStyle="{StaticResource InfoBarCloseButtonFocusVisual}"
+                                    Style="{StaticResource InfoBarCloseButtonStyle}"
                                     ToolTip="Close">
-                                    <TextBlock
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
-                                        FontSize="12"
-                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                        Text="&#xE711;" />
+                                    <controls:FontIcon
+                                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                        Glyph="&#xE711;"
+                                        IconFontSize="12"
+                                        IsHitTestVisible="False" />
                                 </Button>
                             </Grid>
                         </Grid>
@@ -232,11 +262,12 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
                                             <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <!--  ControlFastAnimationDuration (167 ms) open fade  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.180"
+                                                KeyTime="0:0:0.167"
                                                 Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
@@ -245,14 +276,15 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
+                                        <!--  ControlFastAnimationDuration (167 ms) close fade  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.180"
+                                                KeyTime="0:0:0.167"
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.180" Value="{x:Static Visibility.Collapsed}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.167" Value="{x:Static Visibility.Collapsed}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -332,13 +364,6 @@
                             <Setter TargetName="DefaultIcon" Property="Text" Value="&#xEA39;" />
                         </Trigger>
 
-                        <!--  Close button hover  -->
-                        <Trigger SourceName="PART_CloseButton" Property="IsMouseOver" Value="True">
-                            <Setter TargetName="PART_CloseButton" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}" />
-                        </Trigger>
-                        <Trigger SourceName="PART_CloseButton" Property="IsPressed" Value="True">
-                            <Setter TargetName="PART_CloseButton" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
-                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

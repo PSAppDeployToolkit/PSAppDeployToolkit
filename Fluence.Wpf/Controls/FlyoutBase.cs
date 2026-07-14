@@ -211,6 +211,13 @@ namespace Fluence.Wpf.Controls
             // Flow the anchor's DataContext in for the popup lifetime (cleared on close).
             Presenter?.SetCurrentValue(FrameworkElement.DataContextProperty, placementTarget.DataContext);
 
+            // Stamp the resolved placement side onto the presenter before the popup opens so
+            // its Loaded reveal slides in from the side the flyout actually opens on.
+            if (Presenter is FlyoutPresenter presenter)
+            {
+                presenter.SetCurrentValue(FlyoutPresenter.RevealPlacementProperty, MapPlacementSide(Placement));
+            }
+
             if (popup.IsOpen)
             {
                 return;
@@ -326,8 +333,8 @@ namespace Fluence.Wpf.Controls
                     Child = Presenter,
                     CustomPopupPlacementCallback = GetPlacements,
                     Placement = PlacementMode.Custom,
-                    // The FlyoutPresenter template owns the open reveal (a slide + fade
-                    // storyboard on Loaded), so the popup must not add its own fade on top.
+                    // The FlyoutPresenter code-behind owns the open reveal (a placement-aware
+                    // slide + fade on Loaded), so the popup must not add its own fade on top.
                     PopupAnimation = PopupAnimation.None,
                     StaysOpen = false,
                 };

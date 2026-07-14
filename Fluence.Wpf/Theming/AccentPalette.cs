@@ -31,7 +31,9 @@ using System.Windows.Media;
 
 namespace Fluence.Wpf.Theming
 {
-    /// <summary>The seven-rung Windows accent ramp, lightest to darkest.</summary>
+    /// <summary>
+    /// The seven-rung Windows accent ramp, lightest to darkest.
+    /// </summary>
     /// <param name="light3">The lightest tint on the generated accent ramp.</param>
     /// <param name="light2">The second light tint on the generated accent ramp.</param>
     /// <param name="light1">The first light tint on the generated accent ramp.</param>
@@ -42,25 +44,39 @@ namespace Fluence.Wpf.Theming
     [StructLayout(LayoutKind.Auto)]
     internal readonly struct AccentPalette(Color light3, Color light2, Color light1, Color accent, Color dark1, Color dark2, Color dark3)
     {
-        /// <summary>Gets the lightest tint on the generated accent ramp.</summary>
+        /// <summary>
+        /// Gets the lightest tint on the generated accent ramp.
+        /// </summary>
         public Color Light3 { get; } = light3;
 
-        /// <summary>Gets the second light tint on the generated accent ramp.</summary>
+        /// <summary>
+        /// Gets the second light tint on the generated accent ramp.
+        /// </summary>
         public Color Light2 { get; } = light2;
 
-        /// <summary>Gets the first light tint on the generated accent ramp.</summary>
+        /// <summary>
+        /// Gets the first light tint on the generated accent ramp.
+        /// </summary>
         public Color Light1 { get; } = light1;
 
-        /// <summary>Gets the base accent color.</summary>
+        /// <summary>
+        /// Gets the base accent color.
+        /// </summary>
         public Color Accent { get; } = accent;
 
-        /// <summary>Gets the first dark shade on the generated accent ramp.</summary>
+        /// <summary>
+        /// Gets the first dark shade on the generated accent ramp.
+        /// </summary>
         public Color Dark1 { get; } = dark1;
 
-        /// <summary>Gets the second dark shade on the generated accent ramp.</summary>
+        /// <summary>
+        /// Gets the second dark shade on the generated accent ramp.
+        /// </summary>
         public Color Dark2 { get; } = dark2;
 
-        /// <summary>Gets the darkest shade on the generated accent ramp.</summary>
+        /// <summary>
+        /// Gets the darkest shade on the generated accent ramp.
+        /// </summary>
         public Color Dark3 { get; } = dark3;
     }
 }

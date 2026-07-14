@@ -27,6 +27,7 @@
  */
 
 using Fluence.Wpf.Automation;
+using Fluence.Wpf.Helpers;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -643,6 +644,16 @@ namespace Fluence.Wpf.Controls
             SetCurrentValue(RenderTransformOriginProperty, new Point(0.5, 0.5));
             SetCurrentValue(RenderTransformProperty, scale);
 
+            // Motion disabled (OS "Show animations" off): present the dialog at its final
+            // resting values immediately instead of playing the entrance.
+            if (!MotionHelper.IsMotionEnabled)
+            {
+                SetCurrentValue(OpacityProperty, 1.0);
+                scale.ScaleX = 1.0;
+                scale.ScaleY = 1.0;
+                return;
+            }
+
             // WinUI ContentDialog_themeresources.xaml "To=DialogShowing" keyframes. The timing
             // values mirror the Themes/Typography/Typography.xaml motion tokens, which XAML
             // storyboard attributes cannot reference and code therefore mirrors by value:
@@ -867,12 +878,112 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
-        /// Removes the overlay adorner, restores the previously focused element, completes
-        /// the pending <see cref="ShowAsync"/> task with <paramref name="result"/>, and
-        /// raises <see cref="Closed"/>.
+        /// Closes the dialog by playing the WinUI DialogHidden exit on the dialog surface:
+        /// input dies instantly, the scale grows back from the live value to 1.05 over the
+        /// fast motion duration on the decelerating Fluent key spline while the opacity falls
+        /// to zero linearly over the faster motion duration (held at zero until the scale
+        /// settles, like the single-duration WinUI storyboard), then the teardown runs in
+        /// <see cref="CompleteClose"/> when the scale animation completes. With motion
+        /// disabled, or when the dialog is not rendered (the owner window is closing), the
+        /// teardown runs immediately. A close requested while the exit is already playing is
+        /// ignored.
         /// </summary>
         /// <param name="result">The result to close the dialog with.</param>
         private void CloseDialog(ContentDialogResult result)
+        {
+            if (_showCompletionSource is null || _isClosing)
+            {
+                return;
+            }
+
+            // Input dies the moment the close starts, mirroring the discrete
+            // IsHitTestVisible=False keyframe at time zero in the WinUI DialogHidden
+            // transition; CompleteClose restores hit testing for the next show.
+            _isClosing = true;
+            SetCurrentValue(IsHitTestVisibleProperty, value: false);
+
+            // Motion disabled (OS "Show animations" off) or nothing rendered (the owner is
+            // closing or was never shown): tear down immediately instead of playing an exit
+            // whose clocks may never tick without a rendering surface.
+            if (!MotionHelper.IsMotionEnabled || !IsVisible)
+            {
+                CompleteClose(result);
+                return;
+            }
+
+            if (RenderTransform is not ScaleTransform scale || scale.IsFrozen)
+            {
+                // The entrance installs the transform; rebuild it exactly as the open path
+                // does if a consumer replaced or froze it.
+                scale = new ScaleTransform();
+                SetCurrentValue(RenderTransformOriginProperty, new Point(0.5, 0.5));
+                SetCurrentValue(RenderTransformProperty, scale);
+            }
+
+            // WinUI ContentDialog_themeresources.xaml "To=DialogHidden" transition: scale
+            // 1.0 to 1.05 over 167 ms (ControlFastAnimationDuration) on
+            // ControlFastOutSlowInKeySpline (0.8,0,0,1), opacity 1 to 0 linear over 83 ms
+            // (ControlFasterAnimationDuration); code mirrors the Typography.xaml token
+            // values. The keyframe tracks omit the discrete start so each animation departs
+            // from the live value, which keeps a close during the entrance continuing from
+            // the current opacity and scale instead of snapping to the rest values first.
+            DoubleAnimationUsingKeyFrames opacityAnimation = new()
+            {
+                FillBehavior = FillBehavior.Stop,
+                KeyFrames =
+                {
+                    new LinearDoubleKeyFrame(0.0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(CloseFadeMilliseconds))),
+                    new DiscreteDoubleKeyFrame(0.0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(CloseScaleMilliseconds))),
+                },
+            };
+
+            DoubleAnimationUsingKeyFrames scaleXAnimation = CreateCloseScaleAnimation();
+            DoubleAnimationUsingKeyFrames scaleYAnimation = CreateCloseScaleAnimation();
+            scaleXAnimation.Completed += (_, _) =>
+            {
+                // CompleteClose collapses the dialog before the clocks are released, so the
+                // Stop-fill revert to the base values can never paint a frame.
+                CompleteClose(result);
+                scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+                scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation: null);
+                BeginAnimation(OpacityProperty, animation: null);
+            };
+
+            BeginAnimation(OpacityProperty, opacityAnimation);
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation);
+        }
+
+        /// <summary>
+        /// Builds one axis of the exit scale animation: the live value to 1.05 over the fast
+        /// motion duration on the decelerating Fluent key spline (see
+        /// <see cref="CloseDialog"/> for the WinUI keyframe source and the mirrored
+        /// Typography.xaml motion tokens).
+        /// </summary>
+        private static DoubleAnimationUsingKeyFrames CreateCloseScaleAnimation()
+        {
+            return new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.Stop,
+                KeyFrames =
+                {
+                    new SplineDoubleKeyFrame(
+                        1.05,
+                        KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(CloseScaleMilliseconds)),
+                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                },
+            };
+        }
+
+        /// <summary>
+        /// The single teardown path: removes the overlay adorner, restores the previously
+        /// focused element, completes the pending <see cref="ShowAsync"/> task with
+        /// <paramref name="result"/>, and raises <see cref="Closed"/>. Runs when the
+        /// DialogHidden exit in <see cref="CloseDialog"/> completes, or immediately when
+        /// motion is disabled or the dialog is not rendered.
+        /// </summary>
+        /// <param name="result">The result to close the dialog with.</param>
+        private void CompleteClose(ContentDialogResult result)
         {
             if (_showCompletionSource is null)
             {
@@ -905,6 +1016,10 @@ namespace Fluence.Wpf.Controls
 
             // Back to the at-rest contract: a dialog that is not overlay-hosted renders nothing.
             SetCurrentValue(VisibilityProperty, Visibility.Collapsed);
+
+            // Undo the exit state stamped by CloseDialog so a reshown dialog is interactive.
+            SetCurrentValue(IsHitTestVisibleProperty, value: true);
+            _isClosing = false;
 
             _overlayHostPanel?.Children.Remove(_overlayRoot);
             _overlayHostPanel = null;
@@ -1058,6 +1173,27 @@ namespace Fluence.Wpf.Controls
         /// used by the WinUI DialogShowing transition.
         /// </summary>
         private const double OpenScaleMilliseconds = 250;
+
+        /// <summary>
+        /// The duration of the exit opacity fall, mirroring the value of the
+        /// ControlFasterAnimationDuration motion token (Themes/Typography/Typography.xaml)
+        /// used by the WinUI DialogHidden transition.
+        /// </summary>
+        private const double CloseFadeMilliseconds = 83;
+
+        /// <summary>
+        /// The duration of the exit scale growth (and the full exit length), mirroring the
+        /// value of the ControlFastAnimationDuration motion token
+        /// (Themes/Typography/Typography.xaml) used by the WinUI DialogHidden transition.
+        /// </summary>
+        private const double CloseScaleMilliseconds = 167;
+
+        /// <summary>
+        /// True while the DialogHidden exit is playing, so a second close request cannot
+        /// restart the exit or double-complete the teardown. Reset by
+        /// <see cref="CompleteClose"/>.
+        /// </summary>
+        private bool _isClosing;
 
         /// <summary>
         /// The overlay layout root (smoke layer plus the dialog) added to the host while open.

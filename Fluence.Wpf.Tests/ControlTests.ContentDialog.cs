@@ -340,6 +340,105 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void ContentDialog_Hide_PlaysDialogHiddenExitThenCompletesTask()
+        {
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = CreateShownContentDialogOwner();
+                Controls.ContentDialog dialog = new()
+                {
+                    Title = "Exiting",
+                    Content = "Body",
+                    CloseButtonText = "Close",
+                };
+
+                try
+                {
+                    Task<ContentDialogResult> task = dialog.ShowAsync();
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                            () => FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton") is not null),
+                        "The dialog template must apply before Hide is called.");
+
+                    dialog.Hide();
+
+                    // The DialogHidden exit runs asynchronously: input dies instantly
+                    // (WinUI's discrete IsHitTestVisible keyframe at time zero) while the
+                    // surface animates out, so on this same dispatcher frame the task must
+                    // still be pending.
+                    Assert.IsFalse(dialog.IsHitTestVisible,
+                        "The closing dialog must stop hit testing the moment the close starts.");
+                    Assert.IsFalse(task.IsCompleted,
+                        "The ShowAsync task must stay pending until the DialogHidden exit completes.");
+
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => task.IsCompleted),
+                        "The ShowAsync task must complete once the 167 ms DialogHidden exit settles.");
+                    Assert.IsTrue(dialog.IsHitTestVisible,
+                        "The teardown must restore hit testing so a reshown dialog is interactive.");
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                            () => GetContentDialogOverlayAdorners(window) is not { Length: > 0 }),
+                        "The teardown must remove the modal overlay after the exit.");
+                }
+                finally
+                {
+                    dialog.Hide();
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
+        public async Task ContentDialog_DoubleHide_CompletesExactlyOnceAsync()
+        {
+            Task<ContentDialogResult>? dialogTask = null;
+            int closedCount = 0;
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = CreateShownContentDialogOwner();
+                Controls.ContentDialog dialog = new()
+                {
+                    Title = "Mashed",
+                    Content = "Body",
+                    CloseButtonText = "Close",
+                };
+                dialog.Closed += (_, _) => closedCount++;
+
+                try
+                {
+                    dialogTask = dialog.ShowAsync();
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                            () => FindVisualChildByName<ButtonBase>(dialog, "PART_CloseButton") is not null),
+                        "The dialog template must apply before the double close.");
+
+                    // The second Hide lands while the DialogHidden exit is playing and must
+                    // be ignored by the closing guard.
+                    dialog.Hide();
+                    dialog.Hide();
+
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => dialogTask.IsCompleted),
+                        "The double close must still complete the ShowAsync task.");
+                    DrainDispatcher(window.Dispatcher);
+                }
+                finally
+                {
+                    dialog.Hide();
+                    window.Close();
+                }
+            });
+
+            Assert.IsNotNull(dialogTask, "ShowAsync must have produced a dialog task.");
+            ContentDialogResult result = await dialogTask.ConfigureAwait(false);
+            Assert.AreEqual(ContentDialogResult.None, result,
+                "Hide must complete the task with ContentDialogResult.None.");
+            Assert.AreEqual(1, closedCount, "A double Hide must raise Closed exactly once.");
+        }
+
+        [TestMethod]
         public void ContentDialog_ShowAsync_AddsOverlayAdornerAndReturnsPendingTask()
         {
             RunOnStaThread(() =>
@@ -636,7 +735,7 @@ namespace Fluence.Wpf.Tests
                         CloseButtonText = "Cancel",
                     };
 
-                    _ = dialog.ShowAsync();
+                    Task<ContentDialogResult> task = dialog.ShowAsync();
                     bool templated = WaitUntil(window.Dispatcher, 2000,
                         () => FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton") is not null);
                     Assert.IsTrue(templated, "The dialog template must apply before input is simulated.");
@@ -660,7 +759,11 @@ namespace Fluence.Wpf.Tests
                     primary.RaiseEvent(inside);
                     Assert.IsFalse(inside.Handled, "Pointer input on the dialog itself must not be blocked.");
 
+                    // The owner stays modal while the DialogHidden exit plays, so wait for
+                    // the close to complete before asserting input flows again.
                     dialog.Hide();
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => task.IsCompleted),
+                        "Hide must complete the ShowAsync task once the exit settles.");
 
                     // After the dialog closes, input outside it flows normally again.
                     MouseButtonEventArgs afterClose = new(Mouse.PrimaryDevice, 0, MouseButton.Left)
@@ -702,7 +805,7 @@ namespace Fluence.Wpf.Tests
                         CloseButtonText = "Cancel",
                     };
 
-                    _ = dialog.ShowAsync();
+                    Task<ContentDialogResult> task = dialog.ShowAsync();
                     bool templated = WaitUntil(window.Dispatcher, 2000,
                         () => FindVisualChildByName<ButtonBase>(dialog, "PART_PrimaryButton") is not null);
                     Assert.IsTrue(templated, "The dialog template must apply before key input is simulated.");
@@ -730,7 +833,11 @@ namespace Fluence.Wpf.Tests
                     primary.RaiseEvent(inside);
                     Assert.IsFalse(inside.Handled, "Key input inside the dialog must not be blocked.");
 
+                    // The owner stays modal while the DialogHidden exit plays, so wait for
+                    // the close to complete before asserting key input flows again.
                     dialog.Hide();
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => task.IsCompleted),
+                        "Hide must complete the ShowAsync task once the exit settles.");
 
                     // After the dialog closes, key input outside it flows normally again.
                     KeyEventArgs afterClose = new(Keyboard.PrimaryDevice, source, 0, Key.A)

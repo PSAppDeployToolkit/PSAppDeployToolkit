@@ -26,29 +26,28 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
+using System.Windows;
 
-namespace Fluence.Wpf.Tests
+namespace Fluence.Wpf.Helpers
 {
     /// <summary>
-    /// Suppresses a specific Slopwatch rule (the LLM anti-cheat analyzer) on the annotated member,
-    /// with a written justification. Slopwatch recognizes this attribute by name and reads the rule
-    /// id and justification; the type is declared here because the tool ships no attribute package.
-    /// Test-assembly only.
+    /// Central gate for whether Fluence controls play motion. Respects the Windows
+    /// "Show animations in Windows" accessibility setting via
+    /// <see cref="SystemParameters.ClientAreaAnimation"/>. Controls consult this gate at
+    /// each code-driven animation entry point and jump to their final visual state when
+    /// motion is disabled, matching how Windows itself behaves with the toggle off.
     /// </summary>
-    /// <param name="ruleId">The Slopwatch rule id to suppress (for example <c>SW001</c>).</param>
-    /// <param name="justification">Why the flagged pattern is acceptable here.</param>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    internal sealed class SlopwatchSuppressAttribute(string ruleId, string justification) : Attribute
+    internal static class MotionHelper
     {
         /// <summary>
-        /// Gets the suppressed Slopwatch rule id.
+        /// Gets or sets the test seam. When non-null, overrides the OS setting.
+        /// Reset to null in test cleanup.
         /// </summary>
-        public string RuleId { get; } = ruleId;
+        internal static bool? OverrideIsMotionEnabled { get; set; }
 
         /// <summary>
-        /// Gets the written justification for the suppression.
+        /// Gets a value indicating whether animations should play.
         /// </summary>
-        public string Justification { get; } = justification;
+        internal static bool IsMotionEnabled => OverrideIsMotionEnabled ?? SystemParameters.ClientAreaAnimation;
     }
 }

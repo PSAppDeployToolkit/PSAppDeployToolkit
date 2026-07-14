@@ -54,17 +54,18 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Resources>
+                        <!--  ControlPressAnimationDuration (100 ms) press scale, Button.xaml precedent  -->
                         <Storyboard x:Key="PressedScaleStoryboard">
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.12"
+                                    KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.12"
+                                    KeyTime="0:0:0.1"
                                     Value="0.98" />
                             </DoubleAnimationUsingKeyFrames>
                         </Storyboard>
@@ -72,13 +73,13 @@
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleX">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.12"
+                                    KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PressScale" Storyboard.TargetProperty="ScaleY">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.12"
+                                    KeyTime="0:0:0.1"
                                     Value="1" />
                             </DoubleAnimationUsingKeyFrames>
                         </Storyboard>

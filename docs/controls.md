@@ -46,11 +46,11 @@ xmlns:uicore="clr-namespace:Fluence.Wpf;assembly=Fluence.Wpf"
 | Basic actions       | `Button`, `HyperlinkButton`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `RepeatButton`, `ToggleButton`                  |
 | Selection           | `CheckBox`, `RadioButton`, `ToggleSwitch`, `ComboBox`, `Slider`, `NumberBox`, `DatePicker`, `TimePicker`, `ColorPicker`            |
 | Text                | `TextBox`, `PasswordBox`, `AutoSuggestBox`, `TextBlock` + `TextBlockExtensions`                                                    |
-| Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem`                                                                               |
+| Data                | `ListView`, `ListBox`, `ListBoxItem`, `ListViewItem` (stock container, restyled by the Fluence theme)                              |
 | Tabs                | `TabControl`, `TabItem`, `TabView`, `TabViewItem`                                                                                  |
 | Feedback            | `ProgressBar`, `ProgressRing`, `InfoBar`, `InfoBadge`, `RatingControl`                                                             |
 | Navigation          | `NavigationView`, `NavigationViewItem`, `NavigationViewItemHeader`, `NavigationViewItemSeparator`, `BreadcrumbBar`, `BreadcrumbBarItem`, `PipsPager` |
-| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`, `FlyoutBase`, `Flyout`, `FlyoutPresenter`, `TeachingTip`, `CommandBarFlyout`, `AppBarButton` |
+| Menus & popups      | `ContextMenu`, `MenuItem`, `Menu`, `ToolTip`, `FlyoutBase`, `Flyout`, `FlyoutPresenter`, `TeachingTip`, `CommandBarFlyout`, `CommandBarFlyoutPresenter`, `AppBarButton` |
 | Dialogs             | `ContentDialog`                                                                                                                    |
 | Trees & collections | `TreeView`, `TreeViewItem`                                                                                                         |
 | Layout / surfaces   | `Card`, `Expander`, `Border`, `StackPanel`, `DockPanel`, `SmoothScrollViewer`, `Separator`                                         |
@@ -354,6 +354,20 @@ Key API:
 </div>
 
 Accessibility coverage includes focus visuals, high-contrast resources, automation peers, keyboard navigation, and right-to-left layout.
+
+#### Reduced motion
+
+Fluence controls respect the Windows **"Show animations in Windows"** accessibility setting
+(Settings > Accessibility > Visual effects > Animation effects, surfaced to WPF as
+`SystemParameters.ClientAreaAnimation`). When the setting is off, code-driven control animations
+do not play and controls jump straight to their final visual state: the indeterminate
+`ProgressRing` and `ProgressBar` render a static resting frame instead of spinning or sweeping,
+`FontIcon.IsSpinning` holds its static rotation, and the `ContentDialog` entrance and close,
+`NavigationView` pane and selection-indicator motion, `Flyout`, `TeachingTip`, and `ComboBox`
+dropdown reveals, `Expander` content slide, `ToggleSwitch` knob and thumb motion, `ListView`
+insert/remove tweens, and `SmoothScrollViewer` wheel tween all apply their end states
+immediately. Template-level hover and press micro-feedback storyboards are not yet gated, and
+flipping the OS setting mid-session takes effect at each animation's next natural start.
 
 #### Per-control roles, names, and patterns
 

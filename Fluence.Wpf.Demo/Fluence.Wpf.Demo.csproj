@@ -21,7 +21,6 @@
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Resource Include="Resources\ControlImages\*.png" />
-    <Resource Include="Resources\Fluence_Lockup_SideBySide_*.png" />
     <Resource Include="Resources\SegoeFluentIcons.tsv" />
   </ItemGroup>
 

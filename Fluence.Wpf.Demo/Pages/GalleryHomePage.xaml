@@ -12,10 +12,12 @@
     <!--
         Home page structure. This page does NOT use the DemoSampleControl slot pattern.
         Instead it contains:
-        * A hero brand glyph (BrandHeroImage) that renders the Fluence brand vector
-        (FluenceIconBrandDrawingImage, merged into application resources by the library's
-        Generic.xaml). The mark carries no plate, so it reads cleanly on every theme and
-        needs no per-theme image swap.
+        * A theme-paired hero lockup (BrandHeroImage): FluenceHeaderLightDrawingImage on
+        light themes and FluenceHeaderDarkDrawingImage on dark themes (both merged into
+        application resources by the library's Generic.xaml). The lockup bakes the
+        wordmark into the artwork, so the code-behind swaps the resource key on
+        ApplicationThemeManager.Changed, and high contrast picks the variant whose
+        wordmark reads against the live system window color.
         * Two action Card tiles (Theming, Shell) that route to the Settings page via
         Card_Click, which calls host.NavigateTo(tag).
         * A UniformGrid of nine featured-control Card tiles; each Card carries a Tag
@@ -29,19 +31,12 @@
             <StackPanel Margin="0,8,0,28" HorizontalAlignment="Center">
                 <Image
                     x:Name="BrandHeroImage"
-                    Width="180"
-                    Height="180"
+                    Height="140"
                     HorizontalAlignment="Center"
                     RenderOptions.BitmapScalingMode="HighQuality"
-                    Source="{DynamicResource FluenceIconBrandDrawingImage}" />
+                    Source="{DynamicResource FluenceHeaderLightDrawingImage}" />
                 <TextBlock
-                    Margin="0,20,0,0"
-                    HorizontalAlignment="Center"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Style="{StaticResource TitleTextBlockStyle}"
-                    Text="Fluence.Wpf" />
-                <TextBlock
-                    Margin="0,4,0,0"
+                    Margin="0,16,0,0"
                     HorizontalAlignment="Center"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource SubtitleTextBlockStyle}"

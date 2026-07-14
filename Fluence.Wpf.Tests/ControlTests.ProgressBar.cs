@@ -353,6 +353,52 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void ProgressBar_Indeterminate_StopsAnimationWhenCollapsedAndRestartsWhenVisible()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.ProgressBar progressBar = new()
+                {
+                    Width = 240,
+                    Height = 24,
+                    IsIndeterminate = true,
+                };
+                Window w = new() { Content = progressBar, Width = 300, Height = 120 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                TranslateTransform? translate =
+                    progressBar.Template.FindName("PART_IndeterminateTranslate", progressBar) as TranslateTransform;
+                TranslateTransform? translate2 =
+                    progressBar.Template.FindName("PART_IndeterminateTranslate2", progressBar) as TranslateTransform;
+                Assert.IsNotNull(translate, "ProgressBar template must expose PART_IndeterminateTranslate.");
+                Assert.IsNotNull(translate2, "ProgressBar template must expose PART_IndeterminateTranslate2.");
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 2000, () => translate.HasAnimatedProperties),
+                    "The indeterminate animation must run while the bar is loaded and visible.");
+
+                progressBar.Visibility = Visibility.Collapsed;
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.IsFalse(translate.HasAnimatedProperties,
+                    "Collapsing the bar must stop the repeat-forever animation on the primary translate transform.");
+                Assert.IsFalse(translate2.HasAnimatedProperties,
+                    "Collapsing the bar must stop the repeat-forever animation on the secondary translate transform.");
+
+                progressBar.Visibility = Visibility.Visible;
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 2000, () => translate.HasAnimatedProperties),
+                    "Restoring visibility must restart the indeterminate animation.");
+
+                w.Close();
+                DrainDispatcher(w.Dispatcher);
+            });
+        }
+
+        [TestMethod]
         public void ProgressBar_IndeterminateMode_SetsIsIndeterminate()
         {
             WpfTestSta.Invoke(static () =>
@@ -370,6 +416,112 @@ namespace Fluence.Wpf.Tests
                 progressBar.ProgressMode = ProgressBarMode.Standard;
                 Assert.IsFalse(progressBar.IsIndeterminate,
                     "ProgressMode.Standard must clear the inherited IsIndeterminate primitive.");
+            });
+        }
+
+        [TestMethod]
+        public void ProgressBar_DeterminateFill_AnimatesScaleXAndKeepsFullLayoutWidth()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.ProgressBar progressBar = new()
+                {
+                    Width = 240,
+                    Height = 24,
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = 0,
+                };
+                Window w = new() { Content = progressBar, Width = 300, Height = 120 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                System.Windows.Controls.Border? track = FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track");
+                System.Windows.Controls.Border? fill = FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill");
+                ScaleTransform? scale = progressBar.Template.FindName("PART_FillScale", progressBar) as ScaleTransform;
+                Assert.IsNotNull(track, "ProgressBar template must expose PART_Track.");
+                Assert.IsNotNull(fill, "ProgressBar template must expose PART_Fill.");
+                Assert.IsNotNull(scale, "ProgressBar template must expose PART_FillScale.");
+
+                progressBar.Value = 60;
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.6) < 0.01),
+                    "The determinate fill scale must settle at Value / (Maximum - Minimum) after the 367 ms reposition animation.");
+                Assert.AreEqual(track.ActualWidth, fill.Width, 0.5,
+                    "The determinate fill must stay laid out at the full track width; progress is expressed by ScaleX only.");
+
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void ProgressBar_DeterminateFill_RapidValueChangesSettleAtSecondRatio()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.ProgressBar progressBar = new()
+                {
+                    Width = 240,
+                    Height = 24,
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = 0,
+                };
+                Window w = new() { Content = progressBar, Width = 300, Height = 120 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                ScaleTransform? scale = progressBar.Template.FindName("PART_FillScale", progressBar) as ScaleTransform;
+                Assert.IsNotNull(scale, "ProgressBar template must expose PART_FillScale.");
+
+                progressBar.Value = 30;
+                progressBar.Value = 75;
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.75) < 0.01),
+                    "Interrupting a running fill animation must hand off and settle at the second value's ratio.");
+
+                w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void ProgressBar_StepMode_PositionsFillScaleAtStepRatio()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Controls.ProgressBar progressBar = new()
+                {
+                    Width = 240,
+                    Height = 24,
+                    ProgressMode = ProgressBarMode.StepProgress,
+                    Steps = 4,
+                    CurrentStep = 0,
+                };
+                Window w = new() { Content = progressBar, Width = 300, Height = 120 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                System.Windows.Controls.Border? track = FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Track");
+                System.Windows.Controls.Border? fill = FindVisualChildByName<System.Windows.Controls.Border>(progressBar, "PART_Fill");
+                ScaleTransform? scale = progressBar.Template.FindName("PART_FillScale", progressBar) as ScaleTransform;
+                Assert.IsNotNull(track, "ProgressBar template must expose PART_Track.");
+                Assert.IsNotNull(fill, "ProgressBar template must expose PART_Fill.");
+                Assert.IsNotNull(scale, "ProgressBar template must expose PART_FillScale.");
+
+                progressBar.CurrentStep = 2;
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 3000, () => !scale.HasAnimatedProperties && Math.Abs(scale.ScaleX - 0.5) < 0.01),
+                    "Step mode must position the fill scale at CurrentStep / Steps.");
+                Assert.AreEqual(track.ActualWidth, fill.Width, 0.5,
+                    "Step mode must keep the fill laid out at the full track width; the step position is expressed by ScaleX.");
+
+                w.Close();
             });
         }
 

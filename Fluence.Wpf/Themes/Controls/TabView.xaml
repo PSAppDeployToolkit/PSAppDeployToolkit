@@ -138,16 +138,17 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
+                                        <!--  Indicator reveal: fade ControlFasterAnimationDuration (83 ms), scale ControlFastAnimationDuration (167 ms)  -->
                                         <DoubleAnimation
                                             Storyboard.TargetName="SelectionIndicator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"
-                                            Duration="0:0:0.05" />
+                                            Duration="0:0:0.083" />
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IndicatorScale" Storyboard.TargetProperty="ScaleX">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0" />
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
-                                                KeyTime="0:0:0.15"
+                                                KeyTime="0:0:0.167"
                                                 Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
@@ -156,6 +157,7 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
+                                        <!--  Indicator exit: ControlPressAnimationDuration (100 ms), fade delayed by ControlFasterAnimationDuration (83 ms)  -->
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="IndicatorScale" Storyboard.TargetProperty="ScaleX">
                                             <SplineDoubleKeyFrame
                                                 KeySpline="0.8,0,0,1"
@@ -163,7 +165,7 @@
                                                 Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                         <DoubleAnimation
-                                            BeginTime="0:0:0.05"
+                                            BeginTime="0:0:0.083"
                                             Storyboard.TargetName="SelectionIndicator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"

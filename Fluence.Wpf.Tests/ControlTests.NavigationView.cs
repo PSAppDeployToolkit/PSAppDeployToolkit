@@ -1307,6 +1307,113 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void NavigationView_LeftMode_RapidReselection_IndicatorSettlesOnFinalTarget()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    NavigationView nav = new()
+                    {
+                        Width = 400,
+                        Height = 320,
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    };
+                    _ = nav.Items.Add(new NavigationViewItem
+                    {
+                        Content = "Home",
+                        Icon = new FontIcon { Glyph = "\uE80F", IconFontSize = 20 },
+                    });
+                    _ = nav.Items.Add(new NavigationViewItem
+                    {
+                        Content = "Search",
+                        Icon = new FontIcon { Glyph = "\uE721", IconFontSize = 20 },
+                    });
+                    _ = nav.Items.Add(new NavigationViewItem
+                    {
+                        Content = "Settings",
+                        Icon = new FontIcon { Glyph = "\uE713", IconFontSize = 20 },
+                    });
+                    window.Content = nav;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    nav.SelectedIndex = 0;
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+                    DrainDispatcher(window.Dispatcher);
+
+                    FrameworkElement? indicator = nav.GetSelectionIndicatorForTesting();
+                    Assert.IsNotNull(indicator, "PART_SelectionIndicator should exist in the NavigationView template.");
+                    TranslateTransform translate = GetSelectionIndicatorTranslate(indicator);
+                    ScaleTransform scale = GetSelectionIndicatorScale(indicator);
+                    double homeY = translate.Y;
+
+                    // Reference pass: settle on the last item once to learn its resting slot.
+                    nav.SelectedIndex = 2;
+                    Assert.IsTrue(
+                        WaitUntil(window.Dispatcher, 3000, delegate
+                        {
+                            return !translate.HasAnimatedProperties
+                                && Math.Abs(indicator.Opacity - 1.0) <= 0.01
+                                && Math.Abs(translate.Y - homeY) > 1.0;
+                        }),
+                        "Reference selection of the last item should settle the indicator on its slot.");
+                    double settingsX = translate.X;
+                    double settingsY = translate.Y;
+
+                    // Back to the first item so the rapid burst has to cross multiple slots.
+                    nav.SelectedIndex = 0;
+                    Assert.IsTrue(
+                        WaitUntil(window.Dispatcher, 3000, delegate
+                        {
+                            return !translate.HasAnimatedProperties
+                                && Math.Abs(indicator.Opacity - 1.0) <= 0.01
+                                && Math.Abs(translate.Y - homeY) <= 0.5;
+                        }),
+                        "The indicator should settle back on the first item before the rapid burst.");
+
+                    // Rapid burst: retarget to the middle item and then immediately to the last
+                    // item without draining, interrupting the in-flight depart/arrive sequence.
+                    nav.SelectedIndex = 1;
+                    nav.SelectedIndex = 2;
+                    Assert.IsTrue(
+                        WaitUntil(window.Dispatcher, 3000, delegate
+                        {
+                            return Math.Abs(translate.Y - settingsY) <= 0.5
+                                && Math.Abs(indicator.Opacity - 1.0) <= 0.01
+                                && Math.Abs(scale.ScaleX - 1.0) <= 0.01
+                                && Math.Abs(scale.ScaleY - 1.0) <= 0.01;
+                        }),
+                        "After a rapid mid-flight retarget, the indicator should settle on the final item's slot.");
+                    Assert.AreEqual(settingsX, translate.X, 0.5,
+                        "After a rapid mid-flight retarget, the indicator X should match the final item's slot.");
+                    Assert.AreEqual(settingsY, translate.Y, 0.5,
+                        "After a rapid mid-flight retarget, the indicator Y should match the final item's slot.");
+                    Assert.AreEqual(1.0, indicator.Opacity, 0.01,
+                        "After a rapid mid-flight retarget, the indicator should rest at full opacity.");
+                    Assert.AreEqual(1.0, scale.ScaleX, 0.01,
+                        "After a rapid mid-flight retarget, the indicator should rest at full horizontal scale.");
+                    Assert.AreEqual(1.0, scale.ScaleY, 0.01,
+                        "After a rapid mid-flight retarget, the indicator should rest at full vertical scale.");
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
         public void NavigationView_LeftMode_IndicatorExitsVerticallyBeforeChangingParentChildIndent()
         {
             RunOnStaThread(() =>
@@ -2734,6 +2841,16 @@ topMode: false,
             TranslateTransform? translate = group.Children[1] as TranslateTransform;
             Assert.IsNotNull(translate, "Selection indicator transform index 1 must be a TranslateTransform.");
             return translate;
+        }
+
+        private static ScaleTransform GetSelectionIndicatorScale(FrameworkElement indicator)
+        {
+            TransformGroup? group = indicator.RenderTransform as TransformGroup;
+            Assert.IsNotNull(group, "Selection indicator must use a TransformGroup.");
+            Assert.IsGreaterThanOrEqualTo(2, group.Children.Count, "Selection indicator TransformGroup must contain scale and translate transforms.");
+            ScaleTransform? scale = group.Children[0] as ScaleTransform;
+            Assert.IsNotNull(scale, "Selection indicator transform index 0 must be a ScaleTransform.");
+            return scale;
         }
 
         [TestMethod]

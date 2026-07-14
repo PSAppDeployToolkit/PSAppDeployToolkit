@@ -143,7 +143,7 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public void GalleryHomePage_HeroUsesBrandVectorIconAcrossThemes()
+        public void GalleryHomePage_HeroSwapsHeaderLockupWithTheme()
         {
             RunOnSta(static delegate
             {
@@ -155,29 +155,35 @@ namespace Fluence.Wpf.Tests
                     Image? image = FindByName<Image>(page, "BrandHeroImage");
                     Assert.IsNotNull(image, "Home page should expose the brand hero image.");
 
-                    // The hero renders the resolution-independent brand vector, which carries no
-                    // plate and reads on every theme, so it must resolve to the same DrawingImage
-                    // the library merges into application resources - not a per-theme PNG.
-                    DrawingImage? expected = Application.Current.TryFindResource("FluenceIconBrandDrawingImage") as DrawingImage;
-                    Assert.IsNotNull(expected, "The brand vector should resolve from merged application resources.");
-                    Assert.IsInstanceOfType(image.Source, typeof(DrawingImage), "The hero should render the brand vector DrawingImage.");
-                    Assert.AreSame(expected, image.Source, "The hero should bind the merged brand DrawingImage resource.");
+                    DrawingImage? light = Application.Current.TryFindResource("FluenceHeaderLightDrawingImage") as DrawingImage;
+                    DrawingImage? dark = Application.Current.TryFindResource("FluenceHeaderDarkDrawingImage") as DrawingImage;
+                    Assert.IsNotNull(light, "The light header lockup should resolve from merged application resources.");
+                    Assert.IsNotNull(dark, "The dark header lockup should resolve from merged application resources.");
 
-                    // A theme cycle must not swap the hero image: the brand mark is theme-independent.
+                    // The hero shows the lockup drawn for the active theme and swaps on
+                    // theme changes via ApplicationThemeManager.Changed.
+                    Assert.AreSame(light, image.Source, "A light theme should show the light header lockup.");
+
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
-                    Assert.AreSame(expected, image.Source, "The brand hero should stay the same vector under the dark theme.");
+                    Assert.AreSame(dark, image.Source, "A dark theme should show the dark header lockup.");
 
+                    // High contrast has no fixed polarity, so the page picks whichever
+                    // variant reads against the live system window color.
                     ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
                     window.UpdateLayout();
                     Drain(window.Dispatcher);
-                    Assert.AreSame(expected, image.Source, "The brand hero should stay the same vector under high contrast.");
+                    Assert.IsTrue(ReferenceEquals(image.Source, light) || ReferenceEquals(image.Source, dark),
+                        "High contrast should show one of the two header lockups.");
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                     Drain(window.Dispatcher);
+                    window.UpdateLayout();
+                    Drain(window.Dispatcher);
+                    Assert.AreSame(light, image.Source, "Returning to the light theme should restore the light header lockup.");
                 }
                 finally
                 {
@@ -187,11 +193,11 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public void GalleryHomePage_UsesBrandVectorHeroAndGitHubLink()
+        public void GalleryHomePage_UsesHeaderLockupHeroAndGitHubLink()
         {
             string homePage = ReadRepositoryFile("Fluence.Wpf.Demo", "Pages", "GalleryHomePage.xaml");
-            StringAssert.Contains(homePage, "FluenceIconBrandDrawingImage", StringComparison.Ordinal,
-                "The home hero should bind the brand vector icon.");
+            StringAssert.Contains(homePage, "FluenceHeaderLightDrawingImage", StringComparison.Ordinal,
+                "The home hero should default to the light header lockup.");
             StringAssert.Contains(homePage, "https://github.com/sintaxasn/fluence.wpf", StringComparison.Ordinal);
         }
 
@@ -2515,7 +2521,13 @@ StringComparison.Ordinal, "Rendered C# source should preserve leading indentatio
 
             Assert.AreEqual(expectedStep, progressBar.CurrentStep, "Step button should update the current step.");
             double targetWidth = track.ActualWidth * expectedStep / progressBar.Steps;
-            double animatedWidth = fill.Width;
+
+            // The determinate fill is laid out at the full track width and animates
+            // PART_FillScale.ScaleX in [0,1], so the visually rendered progress width is
+            // the track width multiplied by the current (possibly animating) scale.
+            ScaleTransform? fillScale = fill.RenderTransform as ScaleTransform;
+            Assert.IsNotNull(fillScale, "The determinate fill must carry the PART_FillScale render transform.");
+            double animatedWidth = track.ActualWidth * fillScale.ScaleX;
             if (forward)
             {
                 Assert.IsLessThan(

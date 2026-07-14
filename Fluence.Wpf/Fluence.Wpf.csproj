@@ -8,11 +8,11 @@
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <NoWarn>$(NoWarn);SYSLIB1045;S1244;VSTHRD001</NoWarn>
     <DocumentationFile Condition="'$(TargetFramework)' != ''">bin/$(Configuration)/$(TargetFramework)/Fluence.Wpf.xml</DocumentationFile>
-    <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2 and .NET 10)</Description>
+    <Description>Windows 11 Fluent Design controls and theming for WPF (.NET Framework 4.7.2, .NET 8, and .NET 10)</Description>
     <Product>Fluence.Wpf</Product>
     <Title>Fluence.Wpf</Title>
     <PackageId>Fluence.Wpf</PackageId>
-    <VersionPrefix>0.8.9</VersionPrefix>
+    <VersionPrefix>0.8.10</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sintaxasn/Fluence.Wpf</PackageProjectUrl>

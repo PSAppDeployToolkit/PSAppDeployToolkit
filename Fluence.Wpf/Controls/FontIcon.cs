@@ -26,6 +26,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -56,6 +57,16 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(FontIcon),
                 new FrameworkPropertyMetadata(typeof(FontIcon)));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FontIcon"/> class.
+        /// </summary>
+        public FontIcon()
+        {
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+            IsVisibleChanged += OnIsVisibleChanged;
         }
 
         /// <summary>
@@ -243,6 +254,21 @@ namespace Fluence.Wpf.Controls
             icon.ApplySpinState();
         }
 
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ApplySpinState();
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ApplySpinState();
+        }
+
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            ApplySpinState();
+        }
+
         private void ApplyMirrorState()
         {
             if (GetTemplateChild(PART_Mirror) is not ScaleTransform mirror)
@@ -262,7 +288,7 @@ namespace Fluence.Wpf.Controls
 
             rotate.BeginAnimation(RotateTransform.AngleProperty, animation: null);
 
-            if (!IsSpinning)
+            if (!IsSpinning || !IsLoaded || !IsVisible || !MotionHelper.IsMotionEnabled)
             {
                 rotate.Angle = Rotation;
                 return;

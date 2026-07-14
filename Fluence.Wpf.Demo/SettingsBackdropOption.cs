@@ -33,19 +33,29 @@ namespace Fluence.Wpf.Demo
     /// </summary>
     public enum SettingsBackdropOption
     {
-        /// <summary>Let Fluence choose the best available backdrop.</summary>
+        /// <summary>
+        /// Let Fluence choose the best available backdrop.
+        /// </summary>
         Auto = 0,
 
-        /// <summary>Use the Mica backdrop.</summary>
+        /// <summary>
+        /// Use the Mica backdrop.
+        /// </summary>
         Mica = 1,
 
-        /// <summary>Use the Acrylic backdrop.</summary>
+        /// <summary>
+        /// Use the Acrylic backdrop.
+        /// </summary>
         Acrylic = 2,
 
-        /// <summary>Use the tabbed Mica backdrop.</summary>
+        /// <summary>
+        /// Use the tabbed Mica backdrop.
+        /// </summary>
         Tabbed = 3,
 
-        /// <summary>Use a solid window background.</summary>
+        /// <summary>
+        /// Use a solid window background.
+        /// </summary>
         None = 4,
     }
 }
