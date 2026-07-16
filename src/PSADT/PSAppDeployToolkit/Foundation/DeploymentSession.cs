@@ -905,6 +905,13 @@ namespace PSAppDeployToolkit.Foundation
                     WriteLogEntry("No processes were specified as requiring closure, not adjusting DeployMode as DeployAppScriptVersion is less than [4.2.0].");
                 }
 
+                // If we're in NonInteractive mode but can't show any UI elements, then set the deployment mode to Silent.
+                if (DeployMode is DeployMode.NonInteractive && runAsActiveUser is null && !isProcessUserInteractive)
+                {
+                    WriteLogEntry("The deployment is set to NonInteractive but there are no suitable logged on users available and this process is running non-interactively, changing deployment mode to Silent.");
+                    DeployMode = DeployMode.Silent;
+                }
+
                 // If we're still in Auto mode, then set the deployment mode to Interactive.
                 if (DeployMode is DeployMode.Auto)
                 {
