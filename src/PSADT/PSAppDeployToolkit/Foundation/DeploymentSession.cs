@@ -919,7 +919,7 @@ namespace PSAppDeployToolkit.Foundation
                 }
 
                 // Set Deploy Mode switches.
-                WriteLogEntry($"Installation is running in [{DeployMode}] mode.");
+                WriteLogEntry($"Deployment is running in [{DeployMode}] mode.");
                 if (DeployMode is DeployMode.Silent)
                 {
                     Settings |= DeploymentSettings.NonInteractive;
