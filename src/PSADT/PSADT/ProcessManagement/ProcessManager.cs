@@ -664,9 +664,17 @@ namespace PSADT.ProcessManagement
         /// <exception cref="InvalidOperationException">Thrown if the process cannot be started.</exception>
         private static BOOL CreateProcessUsingToken(SafeFileHandle hPrimaryToken, ReadOnlyCollection<SE_PRIVILEGE> callerPrivilges, string filePath, ref Span<char> commandLine, List<nint> handlesToInherit, bool hasExternalHandles, PROCESS_CREATION_FLAGS creationFlags, SafeEnvironmentBlockHandle? lpEnvironment, string? workingDirectory, bool runAsInvoker, in STARTUPINFOW startupInfo, out PROCESS_INFORMATION pi)
         {
+            // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
+            // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
+            // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
+            bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
+            if (!isCallerToken)
+            {
+                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
+            }
+
             // Attempt to use CreateProcessAsUser() first as it's gold standard, otherwise fall back to CreateProcessWithToken().
             // When the caller provides handles to inherit, we need to use CreateProcessAsUser() since it has bInheritHandles.
-            bool isCallerToken = TokenUtilities.GetTokenSid(hPrimaryToken) == AccountUtilities.CallerSid;
             CreateProcessUsingTokenStatus createProcessAsUserAbility = CanUseCreateProcessAsUser(isCallerToken, callerPrivilges);
             bool forceBreakaway = createProcessAsUserAbility is CreateProcessUsingTokenStatus.JobBreakawayNotPermitted;
             if (createProcessAsUserAbility is CreateProcessUsingTokenStatus.OK || forceBreakaway || runAsInvoker)
@@ -682,14 +690,6 @@ namespace PSADT.ProcessManagement
                         return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, lpProcessAttributes: null, lpThreadAttributes: null, bInheritHandles: true, creationFlags | PROCESS_CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT, lpEnvironment, workingDirectory, in startupInfoEx, out pi);
                     }
                 }
-
-                // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
-                // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
-                // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-                if (!isCallerToken)
-                {
-                    creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
-                }
                 return NativeMethods.CreateProcessAsUser(hPrimaryToken, filePath, ref commandLine, lpProcessAttributes: null, lpThreadAttributes: null, bInheritHandles: false, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
             }
             if (hasExternalHandles)
@@ -704,14 +704,6 @@ namespace PSADT.ProcessManagement
                 throw new InvalidOperationException($"Unable to create a new process using CreateProcessWithToken(): {createProcessWithTokenAbility.GetDescription()}");
             }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeImpersonatePrivilege);
-
-            // If the parent process is associated with an existing job object, using the CREATE_BREAKAWAY_FROM_JOB flag can help
-            // with E_ACCESSDENIED errors from CreateProcessWithToken() as processes in a job all need to be in the same session.
-            // The use of this flag has effect if the parent is part of a job and that job has JOB_OBJECT_LIMIT_BREAKAWAY_OK set.
-            if (!isCallerToken)
-            {
-                creationFlags |= PROCESS_CREATION_FLAGS.CREATE_BREAKAWAY_FROM_JOB;
-            }
             return NativeMethods.CreateProcessWithToken(hPrimaryToken, CREATE_PROCESS_LOGON_FLAGS.LOGON_WITH_PROFILE, filePath, ref commandLine, creationFlags, lpEnvironment, workingDirectory, in startupInfo, out pi);
         }
 
