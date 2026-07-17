@@ -138,7 +138,7 @@ try
                 }).AsReadOnly()
             RequiredModules = ([System.Collections.ObjectModel.ReadOnlyCollection[Microsoft.PowerShell.Commands.ModuleSpecification]][Microsoft.PowerShell.Commands.ModuleSpecification[]]$(
                     @{ ModuleName = 'PSScriptAnalyzer'; Guid = 'd6245802-193d-4068-a631-8863a4342a18'; ModuleVersion = '1.25.0' }
-                    @{ ModuleName = 'Pester'; Guid = 'a699dea5-2c73-4616-a270-1f7abb777e71'; ModuleVersion = '5.7.1' }
+                    @{ ModuleName = 'Pester'; Guid = 'a699dea5-2c73-4616-a270-1f7abb777e71'; ModuleVersion = '5.9.0' }
                 ))
             ModuleName = 'PSAppDeployToolkit'
             ModuleSpecification = [Microsoft.PowerShell.Commands.ModuleSpecification]@{ ModuleName = [System.Management.Automation.WildcardPattern]::Escape([System.IO.Path]::Combine($PSScriptRoot -replace '\.Build$', 'PSAppDeployToolkit.psd1')); Guid = '8c3c366b-8606-4576-9f2d-4051144f7ca2'; ModuleVersion = '4.2.0' }
