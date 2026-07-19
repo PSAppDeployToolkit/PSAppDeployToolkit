@@ -143,6 +143,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             else
             {
+                CustomMessageTextBlock.Text = string.Empty;
                 CustomMessageTextBlock.Visibility = Visibility.Collapsed;
             }
 
