@@ -134,6 +134,10 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             _countdownStopwatch = countdownStopwatch ?? new();
             CountdownStackPanel.Visibility = _countdownDuration is not null ? Visibility.Visible : Visibility.Collapsed;
 
+            // Set the initial text of the message blocks to empty, so they aren't read aloud by a screen reader before the custom message is formatted and applied.
+            CustomMessageTextBlock.Text = string.Empty;
+            ProgressMessageDetailTextBlock.Text = string.Empty;
+
             // Pre-format the custom message if we have one
             if (_customMessageText is not null && !string.IsNullOrWhiteSpace(_customMessageText))
             {
@@ -143,7 +147,6 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             }
             else
             {
-                CustomMessageTextBlock.Text = string.Empty;
                 CustomMessageTextBlock.Visibility = Visibility.Collapsed;
             }
 
