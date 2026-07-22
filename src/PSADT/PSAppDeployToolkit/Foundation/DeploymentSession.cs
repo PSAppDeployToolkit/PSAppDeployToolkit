@@ -1012,12 +1012,13 @@ namespace PSAppDeployToolkit.Foundation
         /// <summary>
         /// Closes the session and releases resources.
         /// </summary>
+        /// <param name="exitMessage">An optional exit message to use when closing the session.</param>
         /// <returns>The exit code.</returns>
         /// <exception cref="ObjectDisposedException">Thrown if this method is called after the session has already been closed.</exception>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S6561:Avoid using \"DateTime.Now\" for benchmarking or timing operations", Justification = "We don't require nanosecond precision here.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3458:Empty \"case\" clauses that fall through to the \"default\" should be omitted", Justification = "The fallthrough is deliberate.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1069:Remove unnecessary case label", Justification = "The fallthrough is deliberate to silence other analyser warnings.")]
-        public int Close()
+        public int Close(string? exitMessage = null)
         {
             // Throw if this object has already been disposed.
             if (Settings.HasFlag(DeploymentSettings.Disposed))
@@ -1035,7 +1036,7 @@ namespace PSAppDeployToolkit.Foundation
             }
 
             // Process resulting exit code.
-            string deployString = string.Create(CultureInfo.InvariantCulture, $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallNameFormatterRegex.Replace(InstallName, "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}].");
+            string deployString = string.Create(CultureInfo.InvariantCulture, $"{(!string.IsNullOrWhiteSpace(InstallName) ? $"[{InstallNameFormatterRegex.Replace(InstallName, "$0$0")}] {DeploymentType.ToString().ToLowerInvariant()}" : $"{ModuleDatabase.GetEnvironment().AppDeployToolkitName} deployment")} {{0}} in [{(DateTime.Now - CurrentDateTime).TotalSeconds}] seconds with exit code [{ExitCode}]{(exitMessage is not null && !string.IsNullOrWhiteSpace(exitMessage) ? $": {exitMessage.TrimEnd('.')}" : null)}.");
             DeploymentStatus deploymentStatus = GetDeploymentStatus();
             switch (deploymentStatus)
             {
