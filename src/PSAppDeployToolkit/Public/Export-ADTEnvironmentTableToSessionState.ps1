@@ -79,7 +79,7 @@ function Export-ADTEnvironmentTableToSessionState
         {
             try
             {
-                $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1].PSObject.Properties | . { process { & $args[0] -Name $_.Name -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv)
+                $null = $ExecutionContext.InvokeCommand.InvokeScript($SessionState, { $args[1] | . { process { & $args[0] -Name $_.Name -Value $_.Value -Option ReadOnly -Force } } $args[0] }.Ast.GetScriptBlock(), $Script:CommandTable.'New-Variable', $adtEnv.PSObject.Properties)
             }
             catch
             {
