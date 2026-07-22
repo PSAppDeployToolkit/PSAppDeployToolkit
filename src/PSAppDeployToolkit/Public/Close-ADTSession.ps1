@@ -16,6 +16,9 @@ function Close-ADTSession
     .PARAMETER ExitCode
         The exit code to set for the session.
 
+    .PARAMETER ExitMessage
+        A specific exit message to incorporate upon closure.
+
     .PARAMETER NoShellExit
         Doesn't exit PowerShell upon closing of the final session.
 
@@ -74,6 +77,12 @@ function Close-ADTSession
         [Parameter(Mandatory = $false, ParameterSetName = 'Force')]
         [ValidateNotNullOrEmpty()]
         [System.Nullable[System.Int32]]$ExitCode,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'None')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'NoShellExit')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Force')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$ExitMessage,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'NoShellExit')]
         [System.Management.Automation.SwitchParameter]$NoShellExit,
@@ -160,7 +169,7 @@ function Close-ADTSession
         {
             try
             {
-                $ExitCode = $adtSession.Close()
+                $ExitCode = $adtSession.Close($PSBoundParameters["ExitMessage"])
             }
             catch
             {
