@@ -10,7 +10,7 @@
         "dependencies": {
           "PSADT": "1.0.0",
           "PSAppDeployToolkit": "1.0.0",
-          "System.Drawing.Common": "8.0.28"
+          "System.Drawing.Common": "8.0.29"
         },
         "runtime": {
           "PSADT.UserInterface.dll": {}
@@ -54,14 +54,14 @@
           }
         }
       },
-      "System.Drawing.Common/8.0.28": {
+      "System.Drawing.Common/8.0.29": {
         "dependencies": {
           "Microsoft.Win32.SystemEvents": "8.0.0"
         },
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.2826.26901"
+            "fileVersion": "8.0.2926.32502"
           }
         }
       },
@@ -158,12 +158,12 @@
       "path": "system.diagnostics.eventlog/8.0.1",
       "hashPath": "system.diagnostics.eventlog.8.0.1.nupkg.sha512"
     },
-    "System.Drawing.Common/8.0.28": {
+    "System.Drawing.Common/8.0.29": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1w0El5UNX2w8YJZoCMwDfGFzt+S+G1OjZdmQFocAA+XVs3sUuxtbpEdQsJdhEbEOurrLq008eUON2DEZWPBMHg==",
-      "path": "system.drawing.common/8.0.28",
-      "hashPath": "system.drawing.common.8.0.28.nupkg.sha512"
+      "sha512": "sha512-sJZ5BBGGRU8rnVYeaeolaaYQg9grIixN/lZvr3mzJAygZKFiW/v8qdD28EO+ZccWLl2yjLQSz3jgeApJLnhoEA==",
+      "path": "system.drawing.common/8.0.29",
+      "hashPath": "system.drawing.common.8.0.29.nupkg.sha512"
     },
     "System.IO.Packaging/8.0.1": {
       "type": "package",
