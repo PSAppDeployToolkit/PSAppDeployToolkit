@@ -936,9 +936,9 @@ namespace PSADT.ClientServer
                         ? throw new ClientException($"The specified ArgumentsDictionary registry key [{argvDictValue}] does not exist or is invalid.", ClientExitCode.InvalidArguments)
                         : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictContent);
                 }
-                return File.Exists(argvDictValue)
-                    ? DeserializeString<ReadOnlyDictionary<string, string>>(File.ReadAllText(argvDictValue))
-                    : DeserializeString<ReadOnlyDictionary<string, string>>(argvDictValue);
+                return DeserializeString<ReadOnlyDictionary<string, string>>(File.Exists(argvDictValue)
+                    ? File.ReadAllText(argvDictValue)
+                    : argvDictValue);
             }
 
             // This data should never change once read, so return read-only.
