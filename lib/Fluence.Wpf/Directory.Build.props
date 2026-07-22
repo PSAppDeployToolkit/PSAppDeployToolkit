@@ -63,7 +63,7 @@
 
   <!-- Banned API analyzer -->
   <ItemGroup>
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.117">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.124">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -71,7 +71,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.7.0">
+    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.8.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

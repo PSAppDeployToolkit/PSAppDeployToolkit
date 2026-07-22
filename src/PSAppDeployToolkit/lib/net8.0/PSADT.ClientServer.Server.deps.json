@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "PSADT.ClientServer.Server/1.0.0": {
         "dependencies": {
-          "Microsoft.Bcl.Cryptography": "10.0.9",
+          "Microsoft.Bcl.Cryptography": "10.0.10",
           "PSADT": "1.0.0",
           "PSADT.Interop": "1.0.0",
           "PSADT.UserInterface": "1.0.0",
@@ -18,14 +18,14 @@
           "PSADT.ClientServer.Server.dll": {}
         }
       },
-      "Microsoft.Bcl.Cryptography/10.0.9": {
+      "Microsoft.Bcl.Cryptography/10.0.10": {
         "dependencies": {
-          "System.Formats.Asn1": "10.0.9"
+          "System.Formats.Asn1": "10.0.10"
         },
         "runtime": {
           "lib/net8.0/Microsoft.Bcl.Cryptography.dll": {
-            "assemblyVersion": "10.0.0.9",
-            "fileVersion": "10.0.926.27113"
+            "assemblyVersion": "10.0.0.10",
+            "fileVersion": "10.0.1026.32716"
           }
         }
       },
@@ -67,22 +67,22 @@
           }
         }
       },
-      "System.Drawing.Common/8.0.28": {
+      "System.Drawing.Common/8.0.29": {
         "dependencies": {
           "Microsoft.Win32.SystemEvents": "8.0.0"
         },
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.2826.26901"
+            "fileVersion": "8.0.2926.32502"
           }
         }
       },
-      "System.Formats.Asn1/10.0.9": {
+      "System.Formats.Asn1/10.0.10": {
         "runtime": {
           "lib/net8.0/System.Formats.Asn1.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.926.27113"
+            "fileVersion": "10.0.1026.32716"
           }
         }
       },
@@ -149,7 +149,7 @@
         "dependencies": {
           "PSADT": "1.0.0",
           "PSAppDeployToolkit": "1.0.0",
-          "System.Drawing.Common": "8.0.28"
+          "System.Drawing.Common": "8.0.29"
         },
         "runtime": {
           "PSADT.UserInterface.dll": {
@@ -178,12 +178,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Microsoft.Bcl.Cryptography/10.0.9": {
+    "Microsoft.Bcl.Cryptography/10.0.10": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-iSljz/oaqFzH7c4mNKwYt8GqK1mxoDMgP0wliKaEF9TejFxyZ3acLopin1v5PAQIa9GE0flOESkwOnik83X0YA==",
-      "path": "microsoft.bcl.cryptography/10.0.9",
-      "hashPath": "microsoft.bcl.cryptography.10.0.9.nupkg.sha512"
+      "sha512": "sha512-Qdx/MB+kxJoPIWZ0PpKpGSj8C02oaGXgue59HixUX/vinLsBIDYTX3RNW8mj9fBCeCmCp5+28KojlvI1N9hQPw==",
+      "path": "microsoft.bcl.cryptography/10.0.10",
+      "hashPath": "microsoft.bcl.cryptography.10.0.10.nupkg.sha512"
     },
     "Microsoft.Win32.SystemEvents/8.0.0": {
       "type": "package",
@@ -199,19 +199,19 @@
       "path": "system.diagnostics.eventlog/8.0.1",
       "hashPath": "system.diagnostics.eventlog.8.0.1.nupkg.sha512"
     },
-    "System.Drawing.Common/8.0.28": {
+    "System.Drawing.Common/8.0.29": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1w0El5UNX2w8YJZoCMwDfGFzt+S+G1OjZdmQFocAA+XVs3sUuxtbpEdQsJdhEbEOurrLq008eUON2DEZWPBMHg==",
-      "path": "system.drawing.common/8.0.28",
-      "hashPath": "system.drawing.common.8.0.28.nupkg.sha512"
+      "sha512": "sha512-sJZ5BBGGRU8rnVYeaeolaaYQg9grIixN/lZvr3mzJAygZKFiW/v8qdD28EO+ZccWLl2yjLQSz3jgeApJLnhoEA==",
+      "path": "system.drawing.common/8.0.29",
+      "hashPath": "system.drawing.common.8.0.29.nupkg.sha512"
     },
-    "System.Formats.Asn1/10.0.9": {
+    "System.Formats.Asn1/10.0.10": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-8bZO8fKrV3yzHt28pJleimT66buB+xSHxqQl2wOa6IYfn6JQ6VUVh9cdpBTb4mwgAVu7IuX2EW1wywBhXKyeJA==",
-      "path": "system.formats.asn1/10.0.9",
-      "hashPath": "system.formats.asn1.10.0.9.nupkg.sha512"
+      "sha512": "sha512-Lt7KTFei7vmp/+JtTCLB3D3MNDFIfyFl9zETGtKFuoeaThNeHCyE7sJTZ10wfwHbd2z0rW72fjIpNXPkxEObaA==",
+      "path": "system.formats.asn1/10.0.10",
+      "hashPath": "system.formats.asn1.10.0.10.nupkg.sha512"
     },
     "System.IO.Packaging/8.0.1": {
       "type": "package",
