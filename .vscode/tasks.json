@@ -239,7 +239,7 @@
         {
             "label": "DevCC-Single",
             "type": "shell",
-            "command": "Import-Module -Name '${workspaceFolder}/src/${workspaceFolderBasename}/${workspaceFolderBasename}.psm1';$pesterConfig = New-PesterConfiguration;$pesterConfig.run.Path = '${workspaceFolder}/src/Tests/Unit/*/${input:functionName}.Tests.ps1';$pesterConfig.CodeCoverage.Enabled = $true;$pesterConfig.CodeCoverage.Path = '${workspaceFolder}/src/${workspaceFolderBasename}/*/${input:functionName}.ps1';$pesterConfig.CodeCoverage.OutputPath = '${workspaceFolder}/cov.xml';$pesterConfig.CodeCoverage.OutputFormat = 'CoverageGutters';Invoke-Pester -Configuration $pesterConfig",
+            "command": "Import-Module -Name '${workspaceFolder}/src/${workspaceFolderBasename}/${workspaceFolderBasename}.psm1';$pesterConfig = New-PesterConfiguration;$pesterConfig.run.Path = '${workspaceFolder}/src/Tests/Unit/*/${input:functionName}.Tests.ps1';$pesterConfig.CodeCoverage.Enabled = $true;$pesterConfig.CodeCoverage.Path = '${workspaceFolder}/src/${workspaceFolderBasename}/*/${input:functionName}.ps1';$pesterConfig.CodeCoverage.OutputPath = '${workspaceFolder}/cov.xml';$pesterConfig.CodeCoverage.OutputFormat = 'JaCoCo';Invoke-Pester -Configuration $pesterConfig",
             "problemMatcher": "$pester",
             "presentation": {
                 "echo": false,
