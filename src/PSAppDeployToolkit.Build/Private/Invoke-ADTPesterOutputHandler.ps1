@@ -12,7 +12,7 @@ filter Invoke-ADTPesterOutputHandler
     {
         # Skip over the messages we don't want.
         $rawLine = $_.MessageData.Message -replace '\x1B\[[0-9;]*m'
-        if (!$rawLine.Length -or ($rawLine -cmatch '^(Pester v\d+|Running tests\.|\s\d+|Missed commands:|\r\nFile\s+Class\s+Function\s+Line\s+Command)'))
+        if (!$rawLine.Length -or ($rawLine -cmatch '^(Pester v\d+|Running tests( from \d+ files?)?\.|\s\d+|Missed commands:|\r\nFile\s+Class\s+Function\s+Line\s+Command)'))
         {
             return
         }
