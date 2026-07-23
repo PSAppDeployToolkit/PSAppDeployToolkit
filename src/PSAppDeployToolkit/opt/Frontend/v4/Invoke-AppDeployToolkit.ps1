@@ -71,7 +71,7 @@ $adtSession = @{
 }
 
 ## MARK: Pre-Install
-New-Variable -Name Pre-Install -Value {
+New-Variable -Name Pre-Install -Force -Value {
     $saiwParams = @{
         AllowDefer = $true
         DeferTimes = 3
@@ -87,16 +87,16 @@ New-Variable -Name Pre-Install -Value {
 }
 
 ## MARK: Install
-New-Variable -Name Install -Value {
+New-Variable -Name Install -Force -Value {
 }
 
 ## MARK: Post-Install
-New-Variable -Name Post-Install -Value {
+New-Variable -Name Post-Install -Force -Value {
     Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) complete." -ButtonRightText 'OK' -NoWait
 }
 
 ## MARK: Pre-Uninstall
-New-Variable -Name Pre-Uninstall -Value {
+New-Variable -Name Pre-Uninstall -Force -Value {
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
         Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
@@ -105,15 +105,15 @@ New-Variable -Name Pre-Uninstall -Value {
 }
 
 ## MARK: Uninstall
-New-Variable -Name Uninstall -Value {
+New-Variable -Name Uninstall -Force -Value {
 }
 
 ## MARK: Post-Uninstall
-New-Variable -Name Post-Uninstall -Value {
+New-Variable -Name Post-Uninstall -Force -Value {
 }
 
 ## MARK: Pre-Repair
-New-Variable -Name Pre-Repair -Value {
+New-Variable -Name Pre-Repair -Force -Value {
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
         Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
@@ -122,11 +122,11 @@ New-Variable -Name Pre-Repair -Value {
 }
 
 ## MARK: Repair
-New-Variable -Name Repair -Value {
+New-Variable -Name Repair -Force -Value {
 }
 
 ## MARK: Post-Repair
-New-Variable -Name Post-Repair -Value {
+New-Variable -Name Post-Repair -Force -Value {
     Show-ADTInstallationPrompt -Message "$($adtSession.DeploymentType) complete." -ButtonRightText 'OK' -NoWait
 }
 
