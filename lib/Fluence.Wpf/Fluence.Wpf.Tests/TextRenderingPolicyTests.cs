@@ -35,8 +35,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -84,7 +82,7 @@ namespace Fluence.Wpf.Tests
                 Application? application = WpfTestSta.EnsureApplication();
                 ResetApplication(application);
 
-                WpfBorder child = new();
+                System.Windows.Controls.Border child = new();
                 FluenceWindow window = new()
                 {
                     Width = 320,
@@ -162,7 +160,7 @@ namespace Fluence.Wpf.Tests
             string[] offenders =
             [
                 .. EnumerateProductionSources(productionRoots)
-                    .Where(path => !string.Equals(GetRepoRelativePath(path), allowedPath, StringComparison.OrdinalIgnoreCase) && File.ReadAllText(path).IndexOf("SnapsToDevicePixels", StringComparison.Ordinal) >= 0)
+                    .Where(path => !string.Equals(GetRepoRelativePath(path), allowedPath, StringComparison.OrdinalIgnoreCase) && File.ReadAllText(path).Contains("SnapsToDevicePixels", StringComparison.Ordinal))
                     .Select(GetRepoRelativePath),
             ];
 
@@ -199,7 +197,7 @@ namespace Fluence.Wpf.Tests
                 Application? application = WpfTestSta.EnsureApplication();
                 ResetApplication(application);
 
-                WpfTextBlock textBlock = new();
+                System.Windows.Controls.TextBlock textBlock = new();
                 textBlock.SetTypography(FluentTypography.Title);
 
                 Assert.AreSame(
@@ -218,7 +216,7 @@ namespace Fluence.Wpf.Tests
         {
             WpfTestSta.Invoke(static () =>
             {
-                WpfTextBlock textBlock = new();
+                System.Windows.Controls.TextBlock textBlock = new();
                 textBlock.SetTypography(FluentTypography.Body);
 
                 FontFamily fontFamily = new("Arial");
@@ -256,7 +254,7 @@ namespace Fluence.Wpf.Tests
             Style? style = application?.TryFindResource(styleKey) as Style;
             Assert.IsNotNull(style, styleKey + " should resolve.");
 
-            WpfTextBlock textBlock = new()
+            System.Windows.Controls.TextBlock textBlock = new()
             {
                 Style = style,
             };
@@ -294,8 +292,8 @@ namespace Fluence.Wpf.Tests
         {
             string normalized = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             string separator = Path.DirectorySeparatorChar.ToString();
-            return normalized.IndexOf(separator + "bin" + separator, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                normalized.IndexOf(separator + "obj" + separator, StringComparison.OrdinalIgnoreCase) >= 0;
+            return normalized.Contains(separator + "bin" + separator, StringComparison.OrdinalIgnoreCase) ||
+                normalized.Contains(separator + "obj" + separator, StringComparison.OrdinalIgnoreCase);
         }
 
         private static IEnumerable<string> FindBannedFragments(string path, IEnumerable<string> bannedFragments)
@@ -303,7 +301,7 @@ namespace Fluence.Wpf.Tests
             string source = File.ReadAllText(path);
             foreach (string bannedFragment in bannedFragments)
             {
-                if (source.IndexOf(bannedFragment, StringComparison.Ordinal) >= 0)
+                if (source.Contains(bannedFragment, StringComparison.Ordinal))
                 {
                     yield return GetRepoRelativePath(path) + ": " + bannedFragment;
                 }

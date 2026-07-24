@@ -73,6 +73,69 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void DemoSampleControl_SourceExpander_ReopensAfterCollapse()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? application = EnsureApplication();
+                _ = MergeGenericDictionary(application);
+                MergeDemoSharedStyles(application);
+
+                DemoSampleControl sample = new()
+                {
+                    SampleDescription = "Sample",
+                    DemoContent = new TextBlock { Text = "Body" },
+                    XamlSource = "<Grid />",
+                    CSharpSource = "public void Demo() { }",
+                };
+                Window window = new()
+                {
+                    Content = sample,
+                    Width = 480,
+                    Height = 360,
+                };
+
+                try
+                {
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+
+                    Controls.Expander? expander = sample.FindName("SourceExpander") as Controls.Expander;
+                    Assert.IsNotNull(expander, "DemoSampleControl must expose SourceExpander.");
+
+                    expander.IsExpanded = true;
+                    Assert.IsTrue(
+                        WaitUntil(window.Dispatcher, milliseconds: 4000, () => SourceContentRowHeight(expander) > 1d),
+                        "First expand should open the source content row.");
+
+                    expander.IsExpanded = false;
+                    Assert.IsTrue(
+                        WaitUntil(window.Dispatcher, milliseconds: 4000, () => SourceContentRowHeight(expander) <= 0.5d),
+                        "Collapse should close the source content row.");
+
+                    // Regression guard: re-expanding after a collapse must reopen the row.
+                    // The collapse animation keeps filling and so holds the row closed, and a
+                    // filling animation outranks the trigger setter, so the expand path has to
+                    // re-animate the row back open or the dropdown never comes back.
+                    expander.IsExpanded = true;
+                    Assert.IsTrue(
+                        WaitUntil(window.Dispatcher, milliseconds: 4000, () => SourceContentRowHeight(expander) > 1d),
+                        "Re-expanding after a collapse must reopen the source content row.");
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        private static double SourceContentRowHeight(Controls.Expander expander)
+        {
+            FrameworkElement? clip = FindVisualChildByName<FrameworkElement>(expander, "SourceContentClip");
+            return clip?.ActualHeight ?? 0d;
+        }
+
+        [TestMethod]
         public void GalleryButtonsPage_SubtleButtonsUseWinUiTransparentRestBorderAndToggleButtonSampleIsRemoved()
         {
             RunDemoPageTest(static () => new GalleryButtonsPage(), static window =>
@@ -92,37 +155,130 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
-        public void GalleryIconsPage_FontIconDescriptionIsUniqueAndSampleRowIsCentered()
+        public void GalleryIconsPage_IconographyHeaderAndSearchFollowWinUiGallery()
         {
             RunDemoPageTest(static () => new GalleryIconsPage(), static window =>
             {
-                List<TextBlock> duplicateDescriptions = [.. FindVisualChildren<TextBlock>(window)
-                    .Where(static text => string.Equals(
-                        text.Text,
-                        "FontIcon uses glyph codes to render icons from the 'Segoe Fluent Icons' font.",
-                        StringComparison.Ordinal))];
-                Grid? sampleRow = FindVisualChildByName<Grid>(window, "FontIconSampleContent");
+                List<TextBlock> titles = [.. FindVisualChildren<TextBlock>(window)
+                    .Where(static text => string.Equals(text.Text, "Iconography", StringComparison.Ordinal))];
+                Controls.AutoSuggestBox? search = FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox");
 
-                Assert.AreEqual(1, duplicateDescriptions.Count,
-                    "Icons page should show the FontIcon guidance sentence once.");
-                Assert.IsNotNull(sampleRow, "Icons page should expose the FontIcon sample row.");
-                Assert.AreEqual(VerticalAlignment.Center, sampleRow.VerticalAlignment,
-                    "FontIcon sample row should be centered inside the sample surface.");
-                Assert.IsTrue(sampleRow.MinHeight >= 48.0,
-                    "FontIcon sample row should reserve enough height for vertical centering.");
-
-                Controls.FontIcon? glyph = FindVisualChildren<Controls.FontIcon>(sampleRow)
-                    .FirstOrDefault(static icon => string.Equals(icon.Glyph, "\uE713", StringComparison.Ordinal));
-                TextBlock? label = FindVisualChildren<TextBlock>(sampleRow)
-                    .FirstOrDefault(static text => string.Equals(text.Text, "Settings", StringComparison.Ordinal));
-
-                Assert.IsNotNull(glyph, "Settings glyph should exist.");
-                Assert.IsNotNull(label, "Settings text should exist.");
-                Assert.AreEqual(VerticalAlignment.Center, glyph.VerticalAlignment,
-                    "Settings glyph should be vertically centered.");
-                Assert.AreEqual(VerticalAlignment.Center, label.VerticalAlignment,
-                    "Settings text should be vertically centered.");
+                Assert.AreEqual(1, titles.Count, "Icons page should show the Iconography title once.");
+                Assert.IsNotNull(search, "Icons page should expose the icon search box.");
+                Assert.AreEqual("Search icons by name, code, or tags", search.PlaceholderText,
+                    "Search box should use the WinUI Gallery placeholder text.");
+                Assert.AreEqual(420.0, search.Width, 0.1,
+                    "Search box should keep the WinUI Gallery width.");
+                Assert.AreEqual(0, FindVisualChildren<DemoSampleControl>(window).Count(),
+                    "Iconography is a design reference page and should not host DemoSampleControl samples.");
             });
+        }
+
+        [TestMethod]
+        public void GalleryIconsPage_SearchFiltersCatalogAndSelectsFirstResult()
+        {
+            RunDemoPageTest(() => new GalleryIconsPage(), window =>
+            {
+                Controls.AutoSuggestBox? search = FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox");
+                Controls.ListView? list = FindVisualChildByName<Controls.ListView>(window, "IconCatalogList");
+                Assert.IsNotNull(search, "Search box should exist.");
+                Assert.IsNotNull(list, "Icon catalog list should exist.");
+
+                int totalIcons = GetIconCatalogItems(list).Count;
+                Assert.IsTrue(totalIcons > 500, "Catalog should load the full Segoe Fluent Icons set before filtering.");
+
+                search.Text = "zoom";
+                DrainDispatcher(window.Dispatcher);
+
+                List<GalleryIconsPage.IconCatalogItem> filtered = GetIconCatalogItems(list);
+                Assert.IsTrue(filtered.Count > 0, "Searching for zoom should keep matching icons.");
+                Assert.IsTrue(filtered.Count < totalIcons, "Searching for zoom should remove non-matching icons.");
+                foreach (GalleryIconsPage.IconCatalogItem item in filtered)
+                {
+                    Assert.IsTrue(item.Name.Contains("zoom", StringComparison.OrdinalIgnoreCase),
+                        "Filtered icons should match the search term: " + item.Name);
+                }
+
+                TextBlock? nameValue = FindVisualChildByName<TextBlock>(window, "IconNameValueText");
+                Assert.IsNotNull(nameValue, "Sidebar icon name field should exist.");
+                Assert.AreEqual(filtered[0].Name, nameValue.Text, "Filtering should select the first matching icon.");
+            });
+        }
+
+        [TestMethod]
+        public void GalleryIconsPage_ClickingTileSelectsIconAndPopulatesSidebar()
+        {
+            RunDemoPageTest(() => new GalleryIconsPage(), window =>
+            {
+                Controls.ListView? list = FindVisualChildByName<Controls.ListView>(window, "IconCatalogList");
+                Assert.IsNotNull(list, "Icon catalog list should exist.");
+
+                List<Button> tiles = [.. FindVisualChildren<Button>(list)
+                    .Where(static tile => tile.DataContext is GalleryIconsPage.IconCatalogItem)];
+                Assert.IsTrue(tiles.Count >= 2, "The initial viewport should realize icon tiles.");
+
+                GalleryIconsPage.IconCatalogItem first = (GalleryIconsPage.IconCatalogItem)tiles[0].DataContext;
+                GalleryIconsPage.IconCatalogItem second = (GalleryIconsPage.IconCatalogItem)tiles[1].DataContext;
+                Assert.IsTrue(first.IsSelected, "The first icon should be selected initially so the sidebar is never empty.");
+                Assert.IsFalse(second.IsSelected, "The second icon should start unselected.");
+
+                tiles[1].RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.IsTrue(second.IsSelected, "Clicking a tile should select its icon.");
+                Assert.IsFalse(first.IsSelected, "Selecting a tile should clear the previous selection.");
+
+                TextBlock? nameValue = FindVisualChildByName<TextBlock>(window, "IconNameValueText");
+                Controls.FontIcon? preview = FindVisualChildByName<Controls.FontIcon>(window, "IconPreviewGlyph");
+                Assert.IsNotNull(nameValue, "Sidebar icon name field should exist.");
+                Assert.IsNotNull(preview, "Sidebar preview glyph should exist.");
+                Assert.AreEqual(second.Name, nameValue.Text, "Sidebar should show the clicked icon's name.");
+                Assert.AreEqual(second.Glyph, preview.Glyph, "Sidebar preview should show the clicked icon's glyph.");
+            });
+        }
+
+        [TestMethod]
+        public void GalleryIconsPage_SidebarGlyphFieldsMatchWinUiGalleryFormats()
+        {
+            RunDemoPageTest(() => new GalleryIconsPage(), window =>
+            {
+                Controls.AutoSuggestBox? search = FindVisualChildByName<Controls.AutoSuggestBox>(window, "IconSearchBox");
+                Assert.IsNotNull(search, "Search box should exist.");
+
+                search.Text = "E71F";
+                DrainDispatcher(window.Dispatcher);
+
+                AssertIconSidebarValue(window, "IconNameValueText", "CopyIconNameButton", "ZoomOut");
+                AssertIconSidebarValue(window, "IconTextGlyphValueText", "CopyTextGlyphButton", "&#xE71F;");
+                AssertIconSidebarValue(window, "IconCodeGlyphValueText", "CopyCodeGlyphButton", "\\uE71F");
+                AssertIconSidebarValue(window, "IconXamlValueText", "CopyXamlButton", "<ui:FontIcon Glyph=\"&#xE71F;\" />");
+                AssertIconSidebarValue(window, "IconCSharpValueText", "CopyCSharpButton",
+                    "FontIcon icon = new FontIcon();" + Environment.NewLine + "icon.Glyph = \"\\uE71F\";");
+            });
+        }
+
+        private static List<GalleryIconsPage.IconCatalogItem> GetIconCatalogItems(Controls.ListView list)
+        {
+            List<GalleryIconsPage.IconCatalogItem> items = [];
+            if (list.ItemsSource is IEnumerable<GalleryIconsPage.IconCatalogRow> rows)
+            {
+                foreach (GalleryIconsPage.IconCatalogRow row in rows)
+                {
+                    items.AddRange(row.Items);
+                }
+            }
+
+            return items;
+        }
+
+        private static void AssertIconSidebarValue(Window window, string valueName, string buttonName, string expected)
+        {
+            TextBlock? value = FindVisualChildByName<TextBlock>(window, valueName);
+            Controls.Button? copy = FindVisualChildByName<Controls.Button>(window, buttonName);
+            Assert.IsNotNull(value, valueName + " should exist.");
+            Assert.IsNotNull(copy, buttonName + " should exist.");
+            Assert.AreEqual(expected, value.Text, valueName + " should show the WinUI Gallery value format.");
+            Assert.AreEqual(expected, copy.Tag as string, buttonName + " should copy the displayed value.");
         }
 
         [TestMethod]
@@ -506,11 +662,11 @@ namespace Fluence.Wpf.Tests
             {
                 List<string> descriptions = [.. FindVisualChildren<DemoSampleControl>(window).Select(static sample => sample.SampleDescription)];
 
-                Assert.IsTrue(descriptions.Exists(static description => description.IndexOf("Separator", StringComparison.OrdinalIgnoreCase) >= 0),
+                Assert.IsTrue(descriptions.Exists(static description => description.Contains("Separator", StringComparison.OrdinalIgnoreCase)),
                     "Layout page should have a dedicated Separator DemoSampleControl.");
-                Assert.IsTrue(descriptions.Exists(static description => description.IndexOf("DockPanel", StringComparison.OrdinalIgnoreCase) >= 0),
+                Assert.IsTrue(descriptions.Exists(static description => description.Contains("DockPanel", StringComparison.OrdinalIgnoreCase)),
                     "Layout page should have a dedicated DockPanel DemoSampleControl.");
-                Assert.IsTrue(descriptions.Exists(static description => description.IndexOf("Expander", StringComparison.OrdinalIgnoreCase) >= 0),
+                Assert.IsTrue(descriptions.Exists(static description => description.Contains("Expander", StringComparison.OrdinalIgnoreCase)),
                     "Layout page should have a dedicated Expander DemoSampleControl.");
 
                 Controls.Expander? dockPanelExpander = FindVisualChildByName<Controls.Expander>(window, "DockPanelOptionsExpander");

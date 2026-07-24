@@ -26,11 +26,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 namespace Fluence.Wpf.Controls
@@ -38,6 +41,8 @@ namespace Fluence.Wpf.Controls
     /// <summary>
     /// Fluent-styled combo box with placeholder, icon, and rounded dropdown.
     /// Authority: WinUI 3 ComboBox_themeresources.xaml (FocusedStates / EditableFocusedStates VSM groups - WI-3 C18).
+    /// Diverging from stock WPF, this control auto-selects index 0 when its items populate while
+    /// <see cref="System.Windows.Controls.Primitives.Selector.SelectedIndex"/> is still -1 and has never been explicitly set.
     /// </summary>
     [TemplatePart(Name = PART_Popup, Type = typeof(Popup))]
     [TemplatePart(Name = PART_DropdownBorder, Type = typeof(System.Windows.Controls.Border))]
@@ -50,6 +55,19 @@ namespace Fluence.Wpf.Controls
         // Template part names.
         private const string PART_DropdownBorder = "PART_DropdownBorder";
         private const string PART_Popup = "PART_Popup";
+
+        /// <summary>
+        /// The duration of the dropdown open reveal slide and fade, mirroring the value of the
+        /// ControlFastAnimationDuration motion token (Themes/Typography/Typography.xaml),
+        /// which code mirrors by value like the previous template storyboard did.
+        /// </summary>
+        private const double RevealMilliseconds = 167;
+
+        /// <summary>
+        /// The distance in device-independent pixels the dropdown slides in from the control
+        /// edge during the open reveal.
+        /// </summary>
+        private const double RevealOffsetPixels = 8;
 
         // Read-only dependency properties for selected content and text.
         private static readonly DependencyPropertyKey SelectedContentPropertyKey =
@@ -225,6 +243,9 @@ namespace Fluence.Wpf.Controls
         {
             base.OnDropDownOpened(e);
             UpdateDropDownDirection();
+
+            // The reveal runs after the upward/downward decision is final for this open.
+            BeginDropdownReveal();
         }
 
         /// <inheritdoc />
@@ -291,10 +312,92 @@ namespace Fluence.Wpf.Controls
             _popup.Placement = openUpward ? PlacementMode.Top : PlacementMode.Bottom;
         }
 
+        /// <summary>
+        /// Plays the dropdown open reveal each time the dropdown opens: the dropdown surface
+        /// slides 8 px in from the control edge (down from above for a downward dropdown, up
+        /// from below for an upward one, per <see cref="IsDropDownOpenedUpward"/>) while
+        /// fading 0 to 1, mirroring the previous template storyboard: 167 ms on the 0.8,0,0,1
+        /// spline (the Typography.xaml ControlFastAnimationDuration and
+        /// ControlFastOutSlowInKeySpline motion tokens, mirrored by value). The reveal moved
+        /// from the template's MultiTrigger storyboards into code (FlyoutPresenter precedent)
+        /// so it can consult the reduced-motion gate; a re-templated control without the
+        /// canonical dropdown parts is left alone. The animations use
+        /// <see cref="FillBehavior.Stop"/>; the completed handlers stamp the rest values and
+        /// release the clocks so nothing stays animated once the reveal settles.
+        /// </summary>
+        private void BeginDropdownReveal()
+        {
+            if (GetTemplateChild(PART_DropdownBorder) is not System.Windows.Controls.Border border ||
+                border.RenderTransform is not TranslateTransform translate)
+            {
+                return;
+            }
+
+            // Motion disabled (OS "Show animations" off): skip the reveal and show the
+            // dropdown at rest immediately - translate 0, full opacity, no clocks.
+            if (!MotionHelper.IsMotionEnabled)
+            {
+                translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
+                translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
+                border.BeginAnimation(UIElement.OpacityProperty, animation: null);
+                border.SetCurrentValue(UIElement.OpacityProperty, 1.0);
+                return;
+            }
+
+            double startOffset = IsDropDownOpenedUpward ? RevealOffsetPixels : -RevealOffsetPixels;
+
+            // Seed the discrete start so the first rendered frame never flashes the rest
+            // position: the offset toward the control edge, fully transparent.
+            translate.SetCurrentValue(TranslateTransform.YProperty, startOffset);
+            border.SetCurrentValue(UIElement.OpacityProperty, 0.0);
+
+            DoubleAnimationUsingKeyFrames slideAnimation = CreateRevealAnimation(startOffset, 0.0);
+            slideAnimation.Completed += (_, _) =>
+            {
+                translate.SetCurrentValue(TranslateTransform.YProperty, 0.0);
+                translate.BeginAnimation(TranslateTransform.YProperty, animation: null);
+            };
+
+            DoubleAnimationUsingKeyFrames fadeAnimation = CreateRevealAnimation(0.0, 1.0);
+            fadeAnimation.Completed += (_, _) =>
+            {
+                border.SetCurrentValue(UIElement.OpacityProperty, 1.0);
+                border.BeginAnimation(UIElement.OpacityProperty, animation: null);
+            };
+
+            translate.BeginAnimation(TranslateTransform.YProperty, slideAnimation);
+            border.BeginAnimation(UIElement.OpacityProperty, fadeAnimation);
+        }
+
+        /// <summary>
+        /// Builds one track of the dropdown open reveal: a discrete start at time zero
+        /// settling at the rest value over the fast motion duration on the decelerating
+        /// Fluent key spline (see <see cref="BeginDropdownReveal"/> for the mirrored
+        /// Typography.xaml motion tokens).
+        /// </summary>
+        /// <param name="from">The discrete start value.</param>
+        /// <param name="to">The rest value reached when the reveal settles.</param>
+        /// <returns>The keyframe animation for the track.</returns>
+        private static DoubleAnimationUsingKeyFrames CreateRevealAnimation(double from, double to)
+        {
+            return new DoubleAnimationUsingKeyFrames
+            {
+                FillBehavior = FillBehavior.Stop,
+                KeyFrames =
+                {
+                    new DiscreteDoubleKeyFrame(from, KeyTime.FromTimeSpan(TimeSpan.Zero)),
+                    new SplineDoubleKeyFrame(
+                        to,
+                        KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(RevealMilliseconds)),
+                        new KeySpline(0.8, 0.0, 0.0, 1.0)),
+                },
+            };
+        }
+
         private bool IsSelectedIndexExplicitlySet()
         {
             ValueSource source = DependencyPropertyHelper.GetValueSource(this, SelectedIndexProperty);
-            return source.BaseValueSource != BaseValueSource.Default;
+            return source.BaseValueSource is not BaseValueSource.Default;
         }
 
         private void TryAutoSelectFirstItem()

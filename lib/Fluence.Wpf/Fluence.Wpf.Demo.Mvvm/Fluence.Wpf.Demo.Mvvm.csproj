@@ -7,8 +7,8 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Fluence.Wpf.Demo.Mvvm</RootNamespace>
     <AssemblyName>Fluence.Wpf.Demo.Mvvm</AssemblyName>
+    <ApplicationIcon>..\assets\Fluence_Icon_Light.ico</ApplicationIcon>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <ApplicationIcon>Resources\fluence-wpf-appicon-256.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);CS1591;VSTHRD001</NoWarn>
   </PropertyGroup>
 
@@ -18,10 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Fluence.Wpf\Fluence.Wpf.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Resources\fluence-wpf-appicon-256.ico" />
   </ItemGroup>
 
   <ItemGroup>

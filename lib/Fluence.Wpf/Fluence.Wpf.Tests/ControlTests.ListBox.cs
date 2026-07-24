@@ -29,9 +29,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Windows;
 using System.Windows.Media;
-using FluenceListBox = Fluence.Wpf.Controls.ListBox;
-using FluenceListBoxItem = Fluence.Wpf.Controls.ListBoxItem;
-using WpfBorder = System.Windows.Controls.Border;
 
 namespace Fluence.Wpf.Tests
 {
@@ -51,17 +48,17 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceListBox lb = new();
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item A" });
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item B" });
+                Controls.ListBox lb = new();
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item A" });
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item B" });
                 Window w = new() { Content = lb, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                FluenceListBoxItem? item = FindVisualChild<FluenceListBoxItem>(lb);
+                Controls.ListBoxItem? item = FindVisualChild<Controls.ListBoxItem>(lb);
                 Assert.IsNotNull(item, "ListBoxItem must exist in visual tree after Show.");
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(item, "SelectionIndicator");
+                System.Windows.Controls.Border? indicator = FindVisualChildByName<System.Windows.Controls.Border>(item, "SelectionIndicator");
                 Assert.IsNotNull(indicator, "SelectionIndicator border must be present in ListBoxItem template.");
 
                 Assert.AreEqual(3.0, indicator.Width, 0.01,
@@ -93,16 +90,16 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                FluenceListBox lb = new();
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item A" });
-                _ = lb.Items.Add(new FluenceListBoxItem { Content = "Item B" });
+                Controls.ListBox lb = new();
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item A" });
+                _ = lb.Items.Add(new Controls.ListBoxItem { Content = "Item B" });
                 Window w = new() { Content = lb, Width = 300, Height = 200 };
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                FluenceListBoxItem? item = FindVisualChild<FluenceListBoxItem>(lb);
+                Controls.ListBoxItem? item = FindVisualChild<Controls.ListBoxItem>(lb);
                 Assert.IsNotNull(item, "ListBoxItem must exist.");
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(item, "SelectionIndicator");
+                System.Windows.Controls.Border? indicator = FindVisualChildByName<System.Windows.Controls.Border>(item, "SelectionIndicator");
                 Assert.IsNotNull(indicator, "SelectionIndicator must be present.");
                 Assert.AreEqual(0.0, indicator.Opacity, 0.01,
                     "SelectionIndicator must be hidden while the item is unselected.");

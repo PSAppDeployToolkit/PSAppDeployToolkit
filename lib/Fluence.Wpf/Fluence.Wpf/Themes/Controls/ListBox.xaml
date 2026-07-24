@@ -86,16 +86,17 @@
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
+                                        <!--  ControlPressAnimationDuration (100 ms) selection pill exit  -->
                                         <DoubleAnimation
                                             Storyboard.TargetName="SelectionIndicator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"
-                                            Duration="0:0:0.12" />
+                                            Duration="0:0:0.1" />
                                         <DoubleAnimation
                                             Storyboard.TargetName="SelectionIndicatorTranslate"
                                             Storyboard.TargetProperty="X"
                                             To="-4"
-                                            Duration="0:0:0.12" />
+                                            Duration="0:0:0.1" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>

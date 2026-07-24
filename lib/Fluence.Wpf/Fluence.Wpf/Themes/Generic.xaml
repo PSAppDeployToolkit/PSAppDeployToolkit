@@ -1,6 +1,9 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <ResourceDictionary.MergedDictionaries>
+        <!--  Brand icons (resolution-independent vector DrawingImages)  -->
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Icons/FluenceIcons.xaml" />
+
         <!--  FluenceWindow  -->
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/FluenceWindow.xaml" />
 
@@ -53,6 +56,7 @@
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/CommandBarFlyout.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/BreadcrumbBar.xaml" />
         <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/PipsPager.xaml" />
+        <ResourceDictionary Source="/Fluence.Wpf;component/Themes/Controls/ToggleSplitButton.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
 </ResourceDictionary>

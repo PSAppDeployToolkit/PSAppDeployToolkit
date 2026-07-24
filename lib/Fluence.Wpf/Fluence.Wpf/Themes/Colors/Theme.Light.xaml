@@ -55,6 +55,8 @@
     <!--  Control Stroke Colors  -->
     <Color x:Key="ControlStrokeColorDefault">#0F000000</Color>
     <Color x:Key="ControlStrokeColorSecondary">#29000000</Color>
+    <!--  Seam between the NavigationView pane/header and the content presenter. Matches ControlStrokeColorSecondary in Light, but is intentionally fainter in Dark.  -->
+    <Color x:Key="NavigationViewContentSeparator">#29000000</Color>
     <Color x:Key="ControlStrokeColorTertiary">#9E000000</Color>
     <Color x:Key="ControlStrokeColorOnAccentDefault">#14FFFFFF</Color>
     <Color x:Key="ControlStrokeColorOnAccentSecondary">#66000000</Color>

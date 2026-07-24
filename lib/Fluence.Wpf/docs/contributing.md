@@ -1,4 +1,4 @@
-## Build and test
+﻿## Build and test
 
 ```powershell
 dotnet restore Fluence.Wpf.sln

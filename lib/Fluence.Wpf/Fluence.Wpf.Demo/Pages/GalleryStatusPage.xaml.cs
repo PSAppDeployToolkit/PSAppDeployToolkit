@@ -467,7 +467,7 @@ namespace Fluence.Wpf.Demo.Pages
                 return;
             }
 
-            IndeterminateProgressBar.ProgressMode = IndeterminateToggle.IsChecked == true
+            IndeterminateProgressBar.ProgressMode = IndeterminateToggle.IsChecked is true
                 ? ProgressBarMode.Indeterminate
                 : ProgressBarMode.Standard;
         }

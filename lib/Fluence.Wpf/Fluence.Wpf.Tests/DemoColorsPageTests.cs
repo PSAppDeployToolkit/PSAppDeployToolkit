@@ -229,7 +229,7 @@ namespace Fluence.Wpf.Tests
             List<string> violations = [];
             foreach (string value in forbidden)
             {
-                if (source.IndexOf(value, StringComparison.Ordinal) >= 0)
+                if (source.Contains(value, StringComparison.Ordinal))
                 {
                     violations.Add(value);
                 }

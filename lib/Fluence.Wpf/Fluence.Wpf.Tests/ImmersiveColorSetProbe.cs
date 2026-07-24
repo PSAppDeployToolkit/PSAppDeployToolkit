@@ -161,7 +161,7 @@ namespace Fluence.Wpf.Tests
             byte g = (byte)((nativeColor >> 8) & 0xFF);
             byte b = (byte)((nativeColor >> 16) & 0xFF);
             byte a = (byte)((nativeColor >> 24) & 0xFF);
-            return Color.FromArgb(a == 0 ? (byte)0xFF : a, r, g, b);
+            return Color.FromArgb(a is 0 ? (byte)0xFF : a, r, g, b);
         }
 
         private static int Pack(Color c)

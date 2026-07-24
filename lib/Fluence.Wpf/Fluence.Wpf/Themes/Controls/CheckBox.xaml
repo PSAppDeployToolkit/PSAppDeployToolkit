@@ -200,7 +200,54 @@
                             </Setter>
                         </MultiTrigger>
 
+                        <!--
+                            Check-in: fade ControlPressAnimationDuration (100 ms), scale settle
+                            ControlFastAnimationDuration (167 ms) on ControlFastOutSlowInKeySpline;
+                            WinUI AnimatedIcon draw-in approximation. FillBehavior="Stop" hands the
+                            steady state back to the trigger setters (opacity 1) and the inline
+                            ScaleTransform (1.0), so uncheck reverts instantly with no ExitActions.
+                            Known transient: pressing while the check-in storyboard runs swaps the
+                            RenderTransform to the 0.9 press squash and the scale animation finishes
+                            on the orphaned transform; WPF tolerates this and the storyboard is only
+                            167 ms, so it is accepted.
+                        -->
                         <Trigger Property="IsChecked" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                            FillBehavior="Stop"
+                                            Storyboard.TargetName="CheckGlyph"
+                                            Storyboard.TargetProperty="Opacity">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.1"
+                                                Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames
+                                            FillBehavior="Stop"
+                                            Storyboard.TargetName="CheckGlyph"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.7" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="1.0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames
+                                            FillBehavior="Stop"
+                                            Storyboard.TargetName="CheckGlyph"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0.7" />
+                                            <SplineDoubleKeyFrame
+                                                KeySpline="0.8,0,0,1"
+                                                KeyTime="0:0:0.167"
+                                                Value="1.0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
                             <Setter TargetName="IndicatorFill" Property="Opacity" Value="0" />
                             <Setter TargetName="IndicatorHover" Property="Opacity" Value="0" />
                             <Setter TargetName="IndicatorPressed" Property="Opacity" Value="0" />

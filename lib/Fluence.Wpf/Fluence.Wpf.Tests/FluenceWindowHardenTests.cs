@@ -360,7 +360,8 @@ namespace Fluence.Wpf.Tests
         {
             WpfTestSta.Dispatcher?.Invoke(
                 new Action(static () => { }),
-                DispatcherPriority.ContextIdle);
+                DispatcherPriority.ContextIdle,
+                default);
         }
 
         [TestMethod]

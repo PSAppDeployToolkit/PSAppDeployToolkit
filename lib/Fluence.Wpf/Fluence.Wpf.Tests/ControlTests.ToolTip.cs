@@ -96,6 +96,68 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void ToolTip_OpenFade_SettlesAtFullOpacity()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 300, Height = 200 };
+                Button target = new() { Content = "Hover me" };
+                ToolTip tip = new() { Content = "Tip body" };
+                target.ToolTip = tip;
+
+                try
+                {
+                    window.Content = target;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    tip.PlacementTarget = target;
+                    tip.IsOpen = true;
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                            () => tip.Template?.FindName("ToolTipSurface", tip) is System.Windows.Controls.Border),
+                        "The tooltip template must apply once the tooltip opens.");
+
+                    System.Windows.Controls.Border? surface =
+                        tip.Template.FindName("ToolTipSurface", tip) as System.Windows.Controls.Border;
+                    Assert.IsNotNull(surface, "ToolTipSurface must exist in the ToolTip template.");
+
+                    // The 83 ms open fade (WinUI FadeInThemeAnimation parity) must settle at
+                    // full opacity. The trigger-begun HoldEnd clock keeps
+                    // HasAnimatedProperties true forever (see plan 011), so only the settled
+                    // value is asserted.
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => surface.Opacity >= 1.0),
+                        "The open fade must settle at full opacity.");
+                }
+                finally
+                {
+                    tip.IsOpen = false;
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ToolTip_SystemPopupFade_IsSuppressedByThemeResource()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                // The WPF tooltip pipeline resolves its host popup animation through this
+                // system resource key, and the theme overrides it so the template
+                // storyboard owns the single fade.
+                object? animation = app?.TryFindResource(SystemParameters.ToolTipPopupAnimationKey);
+                Assert.AreEqual(System.Windows.Controls.Primitives.PopupAnimation.None, animation,
+                    "The theme must suppress the system tooltip popup fade in favor of the template's 83 ms fade.");
+            });
+        }
+
+        [TestMethod]
         public void ToolTip_ThemeCycle_BrushesResolveAfterEachSwitch()
         {
             WpfTestSta.Invoke(static () =>

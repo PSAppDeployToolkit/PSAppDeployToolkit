@@ -28,8 +28,6 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using NavigationView = Fluence.Wpf.Controls.NavigationView;
-using NavigationViewItem = Fluence.Wpf.Controls.NavigationViewItem;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -363,10 +361,10 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void NavigationDemo_ItemInvoked(object sender, NavigationViewItemInvokedEventArgs e)
         {
-            SetNavigationDemoContent(sender as NavigationView, e.InvokedItemContainer);
+            SetNavigationDemoContent(sender as Controls.NavigationView, e.InvokedItemContainer);
         }
 
-        private static void SetNavigationDemoContent(NavigationView? nav, NavigationViewItem item)
+        private static void SetNavigationDemoContent(Controls.NavigationView? nav, Controls.NavigationViewItem item)
         {
             if (nav is null || item is null)
             {

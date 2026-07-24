@@ -32,6 +32,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -681,6 +682,52 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void ProgressRing_Indeterminate_StopsAnimationWhenCollapsedAndRestartsWhenVisible()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ProgressRing ring = new()
+                {
+                    IsActive = true,
+                    IsIndeterminate = true,
+                    Width = 64,
+                    Height = 64,
+                };
+                Window w = new() { Content = ring, Width = 200, Height = 200 };
+                w.Show();
+                DrainDispatcher(w.Dispatcher);
+
+                RotateTransform? rotate = GetIndeterminateRotateTransform(ring);
+                Assert.IsNotNull(rotate, "ProgressRing template must contain PART_IndeterminateRotate.");
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 2000, () => rotate.HasAnimatedProperties),
+                    "The indeterminate animation must run while the ring is loaded and visible.");
+
+                ring.Visibility = Visibility.Collapsed;
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.IsFalse(rotate.HasAnimatedProperties,
+                    "Collapsing the ring must stop the repeat-forever rotation animation.");
+                AssertDependencyPropertyNotAnimated(ring, "IndeterminateSweepFractionProperty",
+                    "Collapsing the ring must stop the sweep-fraction animation clock.");
+
+                ring.Visibility = Visibility.Visible;
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.IsTrue(WaitUntil(w.Dispatcher, 2000, () => rotate.HasAnimatedProperties),
+                    "Restoring visibility must restart the indeterminate animation.");
+
+                w.Close();
+                DrainDispatcher(w.Dispatcher);
+
+                Assert.IsFalse(rotate.HasAnimatedProperties,
+                    "Closing the hosting window must leave no active rotation animation clocks.");
+            });
+        }
+
+        [TestMethod]
         public void ProgressRing_ProgressStateAlias_MapsOntoStateFlags()
         {
             WpfTestSta.Invoke(static () =>
@@ -749,6 +796,30 @@ namespace Fluence.Wpf.Tests
                 Assert.IsNotNull(arc, "PART_DeterminateArc must still exist after theme cycle.");
 
                 w.Close();
+            });
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // Live region + RangeValue accessibility
+        // ──────────────────────────────────────────────────────────────────────
+
+        [TestMethod]
+        public void ProgressRing_DeclaresPoliteLiveSetting()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                ProgressRing ring = new() { Width = 64, Height = 64 };
+                Window window = new() { Content = ring };
+                window.Show();
+                _ = ring.ApplyTemplate();
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.AreEqual(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(ring),
+                    "ProgressRing must declare a polite live region so Narrator announces error/paused state changes.");
+                window.Close();
             });
         }
 

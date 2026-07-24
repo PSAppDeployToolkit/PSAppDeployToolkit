@@ -351,7 +351,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private void DemoAutoSuggestBox_TextChanged(object sender, Fluence.Wpf.AutoSuggestBoxTextChangedEventArgs e)
         {
-            if (e.Reason != Fluence.Wpf.AutoSuggestionBoxTextChangeReason.UserInput)
+            if (e.Reason is not Fluence.Wpf.AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 return;
             }

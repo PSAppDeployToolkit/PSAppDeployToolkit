@@ -26,8 +26,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Fluence.Wpf.Helpers;
 using System;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -41,6 +44,7 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = IndicatorHostName, Type = typeof(System.Windows.Controls.Grid))]
     [TemplatePart(Name = PART_Track, Type = typeof(System.Windows.Controls.Border))]
     [TemplatePart(Name = PART_Fill, Type = typeof(System.Windows.Controls.Border))]
+    [TemplatePart(Name = PART_FillScale, Type = typeof(ScaleTransform))]
     [TemplatePart(Name = PART_IndeterminateBar, Type = typeof(System.Windows.Controls.Border))]
     [TemplatePart(Name = PART_IndeterminateBar2, Type = typeof(System.Windows.Controls.Border))]
     [TemplatePart(Name = PART_IndeterminateTranslate, Type = typeof(TranslateTransform))]
@@ -51,6 +55,7 @@ namespace Fluence.Wpf.Controls
         private const string IndicatorHostName = "ProgressBarIndicatorHost";
         private const string PART_Track = "PART_Track";
         private const string PART_Fill = "PART_Fill";
+        private const string PART_FillScale = "PART_FillScale";
         private const string PART_IndeterminateBar = "PART_IndeterminateBar";
         private const string PART_IndeterminateBar2 = "PART_IndeterminateBar2";
         private const string PART_IndeterminateTranslate = "PART_IndeterminateTranslate";
@@ -70,6 +75,9 @@ namespace Fluence.Wpf.Controls
             IsIndeterminateProperty.OverrideMetadata(
                 typeof(ProgressBar),
                 new FrameworkPropertyMetadata(defaultValue: false, OnIsIndeterminateChanged));
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(ProgressBar),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Polite));
         }
 
         /// <summary>
@@ -243,6 +251,7 @@ namespace Fluence.Wpf.Controls
             SizeChanged += OnSizeChanged;
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+            IsVisibleChanged += OnIsVisibleChanged;
         }
 
         /// <inheritdoc />
@@ -255,6 +264,7 @@ namespace Fluence.Wpf.Controls
             _track = GetTemplateChild(PART_Track) as System.Windows.Controls.Border;
             _indicatorHost = GetTemplateChild(IndicatorHostName) as System.Windows.Controls.Grid;
             _fill = GetTemplateChild(PART_Fill) as System.Windows.Controls.Border;
+            _fillScale = GetTemplateChild(PART_FillScale) as ScaleTransform;
             _indeterminateBar = GetTemplateChild(PART_IndeterminateBar) as System.Windows.Controls.Border;
             _indeterminateBar2 = GetTemplateChild(PART_IndeterminateBar2) as System.Windows.Controls.Border;
             _indeterminateTranslate = GetTemplateChild(PART_IndeterminateTranslate) as TranslateTransform;
@@ -328,6 +338,25 @@ namespace Fluence.Wpf.Controls
                 return;
             }
             bar.ApplyProgressMode();
+            bar.AnnounceLiveRegion();
+        }
+
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this control's automation peer
+        /// so Narrator announces the error or paused state change without moving focus.
+        /// Uses only net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -357,6 +386,26 @@ namespace Fluence.Wpf.Controls
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             StopIndeterminate();
+        }
+
+        /// <summary>
+        /// Parks the repeat-forever indeterminate animation while the control is not visible
+        /// (Collapsed or Hidden) and restarts it when the control is shown again. WPF does not
+        /// auto-pause animation clocks for invisible elements, so without this the clocks would
+        /// keep ticking at full rate while nothing paints.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible && IsIndeterminate)
+            {
+                RefreshIndeterminateLayout();
+            }
+            else
+            {
+                StopIndeterminate();
+            }
         }
 
         /// <summary>
@@ -401,10 +450,10 @@ namespace Fluence.Wpf.Controls
             _syncingMode = true;
             try
             {
-                IsIndeterminate = mode == ProgressBarMode.Indeterminate;
-                ShowError = mode == ProgressBarMode.Error;
-                ShowPaused = mode == ProgressBarMode.Paused;
-                _stepMode = mode == ProgressBarMode.StepProgress;
+                IsIndeterminate = mode is ProgressBarMode.Indeterminate;
+                ShowError = mode is ProgressBarMode.Error;
+                ShowPaused = mode is ProgressBarMode.Paused;
+                _stepMode = mode is ProgressBarMode.StepProgress;
             }
             finally
             {
@@ -484,9 +533,12 @@ namespace Fluence.Wpf.Controls
         {
             StopIndeterminate();
 
-            // Only animate while loaded: the repeat-forever clocks would otherwise stay rooted
-            // after the hosting window closes. OnLoaded restarts the animation on re-entry.
-            if (!IsLoaded || _indeterminateTranslate is null || _indeterminateBar is null)
+            // Only animate while loaded and visible: the repeat-forever clocks would otherwise
+            // stay rooted after the hosting window closes, or keep ticking while the control is
+            // Collapsed or Hidden. OnLoaded and OnIsVisibleChanged restart the animation on re-entry.
+            // With motion disabled (OS "Show animations" off) the StopIndeterminate call above has
+            // already parked both bars at their resting translate of 0, which is the static frame.
+            if (!IsLoaded || !IsVisible || !MotionHelper.IsMotionEnabled || _indeterminateTranslate is null || _indeterminateBar is null)
             {
                 return;
             }
@@ -539,7 +591,9 @@ namespace Fluence.Wpf.Controls
 
         private void UpdateFillWidth(bool animate = true)
         {
-            if (_track is null || _fill is null || IsIndeterminate)
+            // Motion disabled (OS "Show animations" off): always take the non-animated path.
+            animate = animate && MotionHelper.IsMotionEnabled;
+            if (_track is null || _fill is null || _fillScale is null || IsIndeterminate)
             {
                 return;
             }
@@ -549,6 +603,13 @@ namespace Fluence.Wpf.Controls
             {
                 return;
             }
+
+            // The fill is sized once per layout pass to the full track width; progress is expressed
+            // by PART_FillScale (ScaleX in [0,1]) so per-value updates cost a composite instead of a
+            // layout + paint pass. Setting Width directly here also keeps the scale base in sync on
+            // SizeChanged, and because the scale is relative, resizing mid-animation is safe. No path
+            // may re-derive the progress ratio from _fill.Width.
+            _fill.Width = trackWidth;
 
             double ratio;
             if (!_stepMode || Steps <= 0)
@@ -570,57 +631,53 @@ namespace Fluence.Wpf.Controls
                 ratio = step / (double)Steps;
             }
 
-            double targetWidth = trackWidth * ratio;
             if (!animate)
             {
                 _fillAnimationVersion++;
-                _fill.BeginAnimation(WidthProperty, animation: null);
-                _fill.Width = targetWidth;
+                _fillScale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+                _fillScale.ScaleX = ratio;
                 return;
             }
 
-            double fromWidth = _fill.Width;
-            if (double.IsNaN(fromWidth) || fromWidth < 0)
+            double fromRatio = _fillScale.ScaleX;
+            if (double.IsNaN(fromRatio) || fromRatio < 0)
             {
-                fromWidth = _fill.ActualWidth;
+                fromRatio = 0;
             }
 
-            if (double.IsNaN(fromWidth) || fromWidth < 0)
-            {
-                fromWidth = 0;
-            }
-
-            if (Math.Abs(fromWidth - targetWidth) < 0.1)
+            if (Math.Abs(fromRatio - ratio) * trackWidth < 0.1)
             {
                 _fillAnimationVersion++;
-                _fill.BeginAnimation(WidthProperty, animation: null);
-                _fill.Width = targetWidth;
+                _fillScale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+                _fillScale.ScaleX = ratio;
                 return;
             }
 
             _fillAnimationVersion++;
             int animationVersion = _fillAnimationVersion;
-            _fill.BeginAnimation(WidthProperty, animation: null);
-            _fill.Width = fromWidth;
+            _fillScale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+            _fillScale.ScaleX = fromRatio;
 
             // WinUI RepositionThemeAnimation approximation: a single 367 ms spline keyframe with
             // KeySpline (0.1,0.9 0.2,1.0) (fast start, long settle), interpolating from the committed
-            // base width set just above.
+            // base ScaleX set just above. The animated quantity is ScaleTransform.ScaleX (transform,
+            // not layout Width), so every frame is composite-only; the indicator host's rounded
+            // geometry clip owns the corner rounding, so scaling never distorts a radius.
             DoubleAnimationUsingKeyFrames animation = new()
             {
                 Duration = new Duration(TimeSpan.FromMilliseconds(367)),
                 FillBehavior = FillBehavior.Stop,
             };
-            _ = animation.KeyFrames.Add(new SplineDoubleKeyFrame(targetWidth, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(367)), new KeySpline(0.1, 0.9, 0.2, 1.0)));
+            _ = animation.KeyFrames.Add(new SplineDoubleKeyFrame(ratio, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(367)), new KeySpline(0.1, 0.9, 0.2, 1.0)));
             animation.Completed += delegate
             {
-                if (animationVersion == _fillAnimationVersion && _fill is not null)
+                if (animationVersion == _fillAnimationVersion && _fillScale is not null)
                 {
-                    _fill.BeginAnimation(WidthProperty, animation: null);
-                    _fill.Width = targetWidth;
+                    _fillScale.BeginAnimation(ScaleTransform.ScaleXProperty, animation: null);
+                    _fillScale.ScaleX = ratio;
                 }
             };
-            _fill.BeginAnimation(WidthProperty, animation, HandoffBehavior.SnapshotAndReplace);
+            _fillScale.BeginAnimation(ScaleTransform.ScaleXProperty, animation, HandoffBehavior.SnapshotAndReplace);
         }
 
         /// <summary>
@@ -636,9 +693,16 @@ namespace Fluence.Wpf.Controls
         private System.Windows.Controls.Grid? _indicatorHost;
 
         /// <summary>
-        /// Represents the fill border element used within the control.
+        /// Represents the fill border element used within the control. It is laid out once per layout
+        /// pass at the full track width; <see cref="_fillScale"/> expresses the visible progress.
         /// </summary>
         private System.Windows.Controls.Border? _fill;
+
+        /// <summary>
+        /// Represents the scale transform whose ScaleX (in [0,1]) expresses the determinate fill
+        /// progress, so value changes animate a transform instead of layout width.
+        /// </summary>
+        private ScaleTransform? _fillScale;
 
         /// <summary>
         /// Represents the border control used to display the indeterminate progress bar.
@@ -661,7 +725,7 @@ namespace Fluence.Wpf.Controls
         private TranslateTransform? _indeterminateTranslate2;
 
         /// <summary>
-        /// Tracks the active determinate fill animation so replaced clocks cannot commit stale widths.
+        /// Tracks the active determinate fill animation so replaced clocks cannot commit stale scale values.
         /// </summary>
         private int _fillAnimationVersion;
 

@@ -28,10 +28,10 @@
 
 using Fluence.Wpf.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Media;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -57,7 +57,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? root = FindVisualChildByName<WpfBorder>(bar, "RootBorder");
+                System.Windows.Controls.Border? root = FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder");
                 Assert.IsNotNull(root, "RootBorder must exist in InfoBar template (Fluence style applied).");
                 w.Close();
             });
@@ -91,6 +91,64 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void InfoBar_CloseButton_UsesFluentSubtlePlate()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                InfoBar bar = new() { IsOpen = true, Title = "Closable" };
+                Window w = new() { Content = bar, Width = 400, Height = 100 };
+                try
+                {
+                    w.Show();
+                    DrainDispatcher(w.Dispatcher);
+
+                    System.Windows.Controls.Button? close =
+                        FindVisualChildByName<System.Windows.Controls.Button>(bar, "PART_CloseButton");
+                    Assert.IsNotNull(close, "PART_CloseButton must exist in the InfoBar template.");
+                    Assert.AreEqual(28.0, close.Width, 0.01, "The close button must be 28 px wide per the Fluence compact InfoBar layout.");
+                    Assert.AreEqual(28.0, close.Height, 0.01, "The close button must be 28 px tall per the Fluence compact InfoBar layout.");
+
+                    // The subtle plate (TeachingTip / PipsPager pattern): a rounded Border
+                    // owned by the button's own template, not the OS default chrome.
+                    System.Windows.Controls.Border? plate =
+                        FindVisualChildByName<System.Windows.Controls.Border>(close, "ButtonPlate");
+                    Assert.IsNotNull(plate,
+                        "The close button must use the Fluent subtle-plate template (ButtonPlate), not the OS default button chrome.");
+                    CornerRadius expectedRadius = (CornerRadius)(app?.FindResource("ControlCornerRadius")
+                        ?? throw new AssertFailedException("ControlCornerRadius must resolve."));
+                    Assert.AreEqual(expectedRadius, plate.CornerRadius,
+                        "The close button plate must round with ControlCornerRadius per WinUI.");
+                    SolidColorBrush? restFill = plate.Background as SolidColorBrush;
+                    Assert.IsNotNull(restFill, "The rest plate must be a solid brush.");
+                    Assert.AreEqual(0, restFill.Color.A, "The rest plate must be transparent per the AppBarButton token set.");
+
+                    // Foreground contract: TextFillColorPrimary at rest, flowing into the glyph.
+                    SolidColorBrush primary = (SolidColorBrush)(app?.FindResource("TextFillColorPrimaryBrush")
+                        ?? throw new AssertFailedException("TextFillColorPrimaryBrush must resolve."));
+                    SolidColorBrush? buttonForeground = close.Foreground as SolidColorBrush;
+                    Assert.IsNotNull(buttonForeground, "The close button foreground must be a solid brush.");
+                    Assert.AreEqual(primary.Color, buttonForeground.Color,
+                        "The close button foreground must be TextFillColorPrimary at rest per the WinUI AppBarButton tokens.");
+
+                    FontIcon? glyph = FindVisualChildren<FontIcon>(close).FirstOrDefault();
+                    Assert.IsNotNull(glyph, "The close button must host a FontIcon.");
+                    Assert.AreEqual("", glyph.Glyph, "The close button must show the Fluent close glyph (E711).");
+                    SolidColorBrush? glyphForeground = glyph.Foreground as SolidColorBrush;
+                    Assert.IsNotNull(glyphForeground, "The glyph foreground must be a solid brush.");
+                    Assert.AreEqual(primary.Color, glyphForeground.Color,
+                        "The glyph must follow the button foreground (primary at rest).");
+                }
+                finally
+                {
+                    w.Close();
+                }
+            });
+        }
+
+        [TestMethod]
         public void InfoBar_DefaultSeverity_IndicatorBarHasBackground()
         {
             WpfTestSta.Invoke(static () =>
@@ -103,7 +161,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(bar, "IndicatorBar");
+                System.Windows.Controls.Border? indicator = FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar");
                 Assert.IsNotNull(indicator, "IndicatorBar must exist in InfoBar template.");
                 Assert.IsNotNull(indicator.Background, "IndicatorBar background must be set for Informational severity.");
                 w.Close();
@@ -123,9 +181,9 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(bar, "IndicatorBar");
+                System.Windows.Controls.Border? indicator = FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar");
                 Assert.IsNotNull(indicator, "IndicatorBar must exist.");
-                WpfTextBlock? defaultIcon = FindVisualChildByName<WpfTextBlock>(bar, "DefaultIcon");
+                System.Windows.Controls.TextBlock? defaultIcon = FindVisualChildByName<System.Windows.Controls.TextBlock>(bar, "DefaultIcon");
                 Assert.IsNotNull(defaultIcon, "DefaultIcon must exist.");
                 SolidColorBrush? initial = indicator.Background as SolidColorBrush;
                 Assert.IsNotNull(initial, "Informational IndicatorBar background should be a SolidColorBrush.");
@@ -164,7 +222,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? indicator = FindVisualChildByName<WpfBorder>(bar, "IndicatorBar");
+                System.Windows.Controls.Border? indicator = FindVisualChildByName<System.Windows.Controls.Border>(bar, "IndicatorBar");
                 Assert.IsNotNull(indicator, "IndicatorBar must exist.");
                 Brush brushBefore = indicator.Background;
 
@@ -175,6 +233,26 @@ namespace Fluence.Wpf.Tests
                 // Background must still be non-null after the change
                 Assert.IsNotNull(indicator.Background, "IndicatorBar background must not be null after severity change to Error.");
                 w.Close();
+            });
+        }
+
+        [TestMethod]
+        public void InfoBar_DeclaresPoliteLiveSetting()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                InfoBar bar = new() { Title = "Saved", IsOpen = true };
+                Window window = new() { Content = bar };
+                window.Show();
+                _ = bar.ApplyTemplate();
+                DrainDispatcher(window.Dispatcher);
+
+                Assert.AreEqual(AutomationLiveSetting.Polite, AutomationProperties.GetLiveSetting(bar),
+                    "InfoBar must declare a polite live region so Narrator announces it without stealing focus.");
+                window.Close();
             });
         }
 
@@ -198,7 +276,7 @@ namespace Fluence.Wpf.Tests
                 w.Show();
                 DrainDispatcher(w.Dispatcher);
 
-                WpfBorder? root = FindVisualChildByName<WpfBorder>(bar, "RootBorder");
+                System.Windows.Controls.Border? root = FindVisualChildByName<System.Windows.Controls.Border>(bar, "RootBorder");
                 Assert.IsNotNull(root, "RootBorder must exist in InfoBar template.");
                 Assert.IsFalse(root.ClipToBounds,
                     "RootBorder should not clip action-button focus visuals or shadow rendering.");

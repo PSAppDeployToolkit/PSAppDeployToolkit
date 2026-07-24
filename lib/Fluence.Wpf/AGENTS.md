@@ -1,4 +1,4 @@
-# Fluence.Wpf - Developer Handbook
+﻿# Fluence.Wpf - Developer Handbook
 
 Self-contained persistent memory for engineers (human and AI) working in this repository. Read top-to-bottom before touching code. This file is the single source of truth for conventions, architecture, reference authority, testing policy, and workflow; do **not** rely on out-of-repo agent bundles, external skill packs, or downstream-consumer-specific paths.
 
@@ -9,20 +9,20 @@ Self-contained persistent memory for engineers (human and AI) working in this re
 ## 1. Project overview
 
 - **Fluence.Wpf** is a WPF control library that recreates the **Windows 11 Fluent / WinUI 3** visual language and interaction patterns on WPF.
-- **Target frameworks** (library + tests): `net472` (primary) and `net10.0-windows10.0.26100.0`. Gallery demo (`Fluence.Wpf.Demo`) targets `net472` and `net10.0-windows10.0.26100.0`; MVVM demo (`Fluence.Wpf.Demo.Mvvm`) targets `net10.0-windows10.0.26100.0`.
+- **Target frameworks** - library: `net472` (primary), `net8.0-windows10.0.26100.0` (PowerShell 7 in-process consumption), and `net10.0-windows10.0.26100.0`. Tests: `net472` and `net10.0-windows10.0.26100.0`. Gallery demo (`Fluence.Wpf.Demo`) targets `net472` and `net10.0-windows10.0.26100.0`; MVVM demo (`Fluence.Wpf.Demo.Mvvm`) targets `net10.0-windows10.0.26100.0`.
 - **Language**: `LangVersion=latest` across all TFMs, set centrally in `Directory.Build.props` - no per-TFM language restriction. `net472` still constrains **runtime API** availability (see [Section 4.3](#43-feasibility-test-for-net472)); avoid APIs that don't ship in `net472`, but C# language features themselves are not restricted. Nullable reference types are **enabled** (`Nullable=enable` in `Directory.Build.props`); individual projects may override with `<Nullable>disable</Nullable>` (e.g. `Fluence.Wpf.Demo.Mvvm`).
 - **License**: BSD 3-Clause. Every `.cs` file begins with the same 27-line header; copy it verbatim from any existing library file when adding new sources. Do not edit the copyright year unless the user asks.
 - **OS**: Windows 10 1809+ baseline. Mica and rounded-corner extras light up on Windows 11.
-- **XML namespace URI**: `http://schemas.fluencewpf.com` - suggested prefix `fluence`.
+- **XML namespace URI**: `http://schemas.fluencewpf.com` - suggested prefix `fluence`. 
 
 ### Solution layout
 
 ```text
 Fluence.Wpf.sln
-├── Fluence.Wpf/             Control library (multi-TFM: net472 + net10.0-windows10.0.26100.0)
+├── Fluence.Wpf/             Control library (multi-TFM: net472 + net8.0-windows10.0.26100.0 + net10.0-windows10.0.26100.0)
 ├── Fluence.Wpf.Demo/        Gallery app (net472 + net10.0-windows10.0.26100.0) - visual verification for all controls
 ├── Fluence.Wpf.Demo.Mvvm/   MVVM Task Manager demo (net10.0-windows10.0.26100.0) - CommunityToolkit.Mvvm example
-└── Fluence.Wpf.Tests/       MSTest 4.2.2 suite (multi-TFM)
+└── Fluence.Wpf.Tests/       MSTest 4.3.0 suite (multi-TFM)
 ```
 
 ### CLR namespaces
@@ -31,7 +31,7 @@ Fluence.Wpf.sln
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Fluence.Wpf`            | `ApplicationThemeManager`, `ApplicationAccentColorManager`, `SystemThemeWatcher`, `ThemeChangedEventArgs`, theme enums, control enums, and event args such as `TabViewTabCloseRequestedEventArgs`         |
 | `Fluence.Wpf.Controls`   | Custom controls (`Button`, `TabView`, `Card`, `NavigationView`, etc.), `FluenceWindow`, `TitleBar`, `WindowPolicy`, layout controls, and navigation view family                                            |
-| `Fluence.Wpf.Automation` | UI Automation peers for controls such as `NavigationView`, `ToggleSwitch`, `DropDownButton`, `SplitButton`, `NumberBox`, `InfoBar`, and `ProgressRing`                                                     |
+| `Fluence.Wpf.Automation` | UI Automation peers for controls such as `NavigationView`, `ToggleSwitch`, `DropDownButton`, `SplitButton`, `ToggleSplitButton`, `NumberBox`, `InfoBar`, and `ProgressRing`                                                     |
 | `Fluence.Wpf.Helpers`    | Internal helpers (`AcrylicNoiseHelper`, `BackdropPlan`, `FramePlan`, `GridLengthAnimation`, `HsvColorHelper`, `OsVersionHelper`, `RegistryHelper`, `WindowCapabilities`)                                  |
 | `Fluence.Wpf.Native`     | P/Invoke constants, structs, and methods                                                                                                                                                                  |
 
@@ -44,7 +44,6 @@ XAML themes are under `Fluence.Wpf/Themes/` and are **not** a CLR namespace.
 ### File header (required)
 
 Every `.cs` file in the library, demo, and tests starts with the BSD 3-Clause header used by any existing source file (e.g. `Fluence.Wpf/ApplicationThemeManager.cs` lines 1-27). Never delete, shorten, or paraphrase it.
-
 
 ### Language features
 
@@ -66,11 +65,13 @@ Every `.cs` file in the library, demo, and tests starts with the BSD 3-Clause he
 - **`Microsoft.Extensions.StaticAnalysis`** (SonarAnalyzer): Sxxx rules run as errors; see `.editorconfig` for the suppressed subset.
 
 **Suppressions in `.editorconfig`** - do not re-enable without discussion:
+
 - `IDE0056` / `IDE0057` - index/range operators (net472 runtime gap)
 - `CA1307` / `CA1310` / `CA1847` / `CA1866` - string ordinal/span overloads (net472 API gap)
 - SonarAnalyzer: `S103`, `S104`, `S107`, `S109`, `S1067`, `S1121`, `S1449`, `S1659`, `S3358`, `S3458`, `S3532`, `S3869`
 
 **Per-library suppressions** (in `Fluence.Wpf.csproj` `<NoWarn>`):
+
 - `SYSLIB1045` - regex source generator (not available on `net472`)
 - `IDE0330` - `System.Threading.Lock` preference (not available on `net472`)
 - `S1244` - floating-point equality (necessary for pixel math)
@@ -108,15 +109,13 @@ Prefer `EventArgs.Empty`, `nameof(...)`, explicit `readonly`, and immutable help
 - Animation timings: **~100-167 ms** typical transitions (WinUI `ControlFastAnimationDuration`, `ControlNormalAnimationDuration`). Easing curves consistent with existing templates (`{StaticResource ControlFastOutSlowInKeySpline}` where present).
 - Focus visual: default WPF focus rectangles off; use FluentControl focus brush tokens instead, as in the existing Button / Card templates.
 
-#### XAML formatting (XAML Styler)
+#### XAML formatting and text policy
 
-Authored XAML is formatted by **XAML Styler** against the committed reference style `Settings.XamlStyler` at the repo root. The tool is pinned in `.config/dotnet-tools.json` (`dotnet tool restore`), so formatting is reproducible and does not depend on any editor plugin.
+XAML style is governed by `.editorconfig`: 4-space indentation, UTF-8 with BOM, LF line endings, a final newline, and trimmed trailing whitespace, applied to `.xaml` like every other source file. There is no separate XAML formatter tool.
 
-- **Format** all authored XAML: `pwsh eng/Format-Xaml.ps1`. Format one file: `pwsh eng/Format-Xaml.ps1 -Path <file>`.
-- **Check** (CI gate, non-destructive): `pwsh eng/Format-Xaml.ps1 -Check` - fails if any authored XAML is not conformant. Wired into `.github/workflows/build.yml` and run on every edit by `.claude/hooks/post-tool-format-xaml.ps1`.
-- The reference style is attribute-per-line beyond two attributes (`AttributesTolerance: 2`), first attribute on a new line, 4-space indent. `eng/Format-Xaml.ps1` also enforces LF + a single UTF-8 BOM.
-- **Generated XAML is excluded** from formatting and the check: `Fluence.Wpf/Properties/DesignTime.*.xaml` (emitted byte-for-byte by `DesignTimeResourceWriter`; reformatting would break the `DesignTimeResources_AreCurrent` drift guard) and `**/Resources/fluence-wpf-banner-*.xaml` (generated vector geometry). Do not run the formatter on these; update the exclusion list in `eng/Format-Xaml.ps1` if new generated XAML is added.
-- Do not hand-fight the formatter: run it and commit its output. XAML Styler's own `-p` passive mode is unreliable (false positives), which is why the check formats a temp copy and compares.
+- Encoding and text policy are enforced by `.claude/hooks/post-tool-util.ps1`: on every edit (PostToolUse hook) and repo-wide in CI via `pwsh .claude/hooks/post-tool-util.ps1 -CheckAll`.
+- The check blocks missing UTF-8 BOM, CRLF/CR line endings, `string.IsNullOrEmpty`, `TextOptions.*`, hard-coded hex in `Themes/Controls/**`, em/en dashes in `.cs` / `.md`, and `git diff --check` whitespace errors.
+- **Generated XAML is excluded** from the repo-wide check: `Fluence.Wpf/Properties/DesignTime.*.xaml` (emitted byte-for-byte by `DesignTimeResourceWriter`; the `DesignTimeResources_AreCurrent` drift guard covers it).
 
 ---
 
@@ -170,6 +169,7 @@ Names align with WinUI 3. Families currently used:
 - **Text**: `TextFillColorPrimary|Secondary|Tertiary|Disabled` (+ `Brush` suffix).
 - **Accent text**: `AccentTextFillColorPrimary|Secondary|Tertiary|Disabled`.
 - **Control fill**: `ControlFillColorDefault|Secondary|Tertiary|Disabled|InputActive|Transparent`.
+- **Control alt fill**: `ControlAltFillColorTransparent|Secondary|Tertiary|Quarternary|Disabled` (CheckBox / RadioButton / ToggleSwitch tracks, `Card` `Variant="Filled"`).
 - **Control stroke**: `ControlStrokeColorDefault|Secondary|OnAccentDefault|OnAccentSecondary|OnAccentTertiary|OnAccentDisabled`.
 - **Strong stroke** (ring-style selection / focus): `ControlStrongStrokeColorDefault|Disabled`.
 - **Card**: `CardBackgroundFillColorDefault|Secondary`, `CardStrokeColorDefault|DefaultSolid`.
@@ -205,16 +205,16 @@ Undocumented "looks right" choices are not acceptable in a PR. If nothing in the
 
 ### 4.2 Per-domain authority
 
-| Concern                                                                           | Primary authority                                                                                                                                                                                                                                     | Rationale                                                                            |
-| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Visual tokens (colors, brushes, typography, spacing, corner radii, timing curves) | [**WinUI 3 CommonStyles**](https://github.com/microsoft/microsoft-ui-xaml/tree/main/src/controls/dev/CommonStyles)                                                                                                                                    | Canonical Microsoft-owned Fluent design tokens and control visuals.                  |
-| WPF-native window chrome (`WindowChrome`, DWM extension, caption buttons)         | [**.NET 10 WPF Themes**](https://github.com/dotnet/wpf/tree/main/src/Microsoft.DotNet.Wpf/src/Themes)                                                                                                                                                 | WPF-specific idioms that WinUI 3 does not express; known to work on `net472`.        |
-| Navigation patterns (`NavigationView` layout, selection indicator, pane modes)    | [**WinUI 3 CommonStyles**](https://github.com/microsoft/microsoft-ui-xaml/tree/main/src/controls/dev/CommonStyles) (visual) + [**.NET 10 WPF Themes**](https://github.com/dotnet/wpf/tree/main/src/Microsoft.DotNet.Wpf/src/Themes) (WPF translation) | Visuals are Fluent-canonical; composition must respect WPF templating constraints.   |
-| Accent ramp generation and HSV tint math                                          | [**.NET 10 WPF Themes**](https://github.com/dotnet/wpf/tree/main/src/Microsoft.DotNet.Wpf/src/Themes)                                                                                                                                                 | Includes a proven WPF implementation of the Windows accent ramp.                     |
-| System theme detection (Light/Dark/HighContrast)                                  | [**.NET 10 WPF Themes**](https://github.com/dotnet/wpf/tree/main/src/Microsoft.DotNet.Wpf/src/Themes)                                                                                                                                                 | WPF-compatible registry reads and `WM_SETTINGCHANGE` handling suitable for `net472`. |
-| Individual controls (Button, CheckBox, RadioButton, ComboBox, ToggleSwitch, etc.) | [**WinUI 3 CommonStyles**](https://github.com/microsoft/microsoft-ui-xaml/tree/main/src/controls/dev/CommonStyles)                                                                                                                                    | Canonical Fluent templates and visual states.                                        |
-| Acrylic / Mica backdrops, rounded corners                                         | [**.NET 10 WPF Themes**](https://github.com/dotnet/wpf/tree/main/src/Microsoft.DotNet.Wpf/src/Themes) + [DWM API docs on Microsoft Learn](https://learn.microsoft.com/windows/win32/api/dwmapi/)                                                      | DWM interop is the mechanism; .NET 10 WPF demonstrates the WPF hook.                 |
-| Accessibility / automation peers                                                  | WinUI 3 CommonStyles + Windows UI Automation docs on Microsoft Learn                                                                                                                                                                                  | Behavioural contract, not visual.                                                    |
+| Concern                                                                           | Primary authority                                                                                                                                               | Rationale                                                                            |
+| --------------------------------------------------------------------------------- | -----------------------------------------------------------------------------------------------------------------------	| ------------------------------------------------------------------------------------ |
+| Visual tokens (colors, brushes, typography, spacing, corner radii, timing curves) | [**WinUI 3 CommonStyles**](https://github.com/microsoft/microsoft-ui-xaml/tree/main/src/controls/dev/CommonStyles)	| Canonical Microsoft-owned Fluent design tokens and control visuals.                  |
+| WPF-native window chrome (`WindowChrome`, DWM extension, caption buttons)         | [**.NET 10 WPF Themes**](https://github.com/dotnet/wpf/tree/main/src/Microsoft.DotNet.Wpf/src/Themes)			| WPF-specific idioms that WinUI 3 does not express; known to work on `net472`.        |
+| Navigation patterns (`NavigationView` layout, selection indicator, pane modes)    | WinUI 3 CommonStyles (visual) + .NET 10 WPF Themes (WPF translation)							| Visuals are Fluent-canonical; composition must respect WPF templating constraints.   |
+| Accent ramp generation and HSV tint math                                          | .NET 10 WPF Themes												| Includes a proven WPF implementation of the Windows accent ramp.                     |
+| System theme detection (Light/Dark/HighContrast)                                  | .NET 10 WPF Themes												| WPF-compatible registry reads and `WM_SETTINGCHANGE` handling suitable for `net472`. |
+| Individual controls (Button, CheckBox, RadioButton, ComboBox, ToggleSwitch, etc.) | WinUI 3 CommonStyles												| Canonical Fluent templates and visual states.                                        |
+| Acrylic / Mica backdrops, rounded corners                                         | .NET 10 WPF Themes + [DWM API docs on Microsoft Learn](https://learn.microsoft.com/windows/win32/api/dwmapi/)		| DWM interop is the mechanism; .NET 10 WPF demonstrates the WPF hook.                 |
+| Accessibility / automation peers                                                  | WinUI 3 CommonStyles + Windows UI Automation docs on Microsoft Learn							| Behavioural contract, not visual.                                                    |
 
 ### 4.3 Feasibility test for `net472`
 
@@ -227,6 +227,8 @@ When a reference pattern depends on an API that is not available on `net472` (Cs
 ---
 
 ## 5. Control authoring checklist
+
+When adding a new control, always use skill `new-control`
 
 When adding a new control or materially changing an existing one:
 
@@ -255,12 +257,12 @@ When adding a new control or materially changing an existing one:
 
 ## 6. Testing
 
-- **Framework**: MSTest 4.2.2 (`MSTest.TestFramework` / `MSTest.TestAdapter`) via `Microsoft.NET.Test.Sdk` 17.9.0.
+- **Framework**: MSTest 4.3.0 (`MSTest.TestFramework` / `MSTest.TestAdapter`) via `Microsoft.NET.Test.Sdk` 18.6.0.
 - **TFMs**: `net472` **and** `net10.0-windows10.0.26100.0`; both must pass.
 - **Parallelization**: `[assembly: DoNotParallelize]` lives in `Fluence.Wpf.Tests/Properties/AssemblyInfo.cs`, and the test project sets `<TestTfmsInParallel>false</TestTfmsInParallel>`. WPF's shared `ResourceDictionary` / storyboard sealing is not thread-safe across parallel fixtures or target-framework lanes.
 - **STA**: `WpfTestSta` in the test project owns a single STA thread + `Dispatcher`. All UI-touching work goes through `WpfTestSta.Invoke(...)` / `RunOnStaThread(...)`.
 - **Shared test helpers** live in `WpfTestSta` (single canonical copy): `RunOnSta` (STA invoke with `ExceptionDispatchInfo` rethrow), `DrainDispatcher` (`ApplicationIdle` pump), and two explicitly named tree walkers - `FindVisualDescendants<T>` (visual tree only) and `FindLogicalAndVisualDescendants<T>` (visual + logical, cycle-guarded). Per-fixture wrappers forward to these; do not reintroduce divergent copies. Prefer the condition-based `WaitUntil(dispatcher, timeoutMs, predicate)` (sampling the value you assert) over a fixed `WaitForAnimationAndDrain(ms)` delay.
-- **Application**: `WpfTestSta.EnsureApplication()` creates an `Application` with `ShutdownMode.OnExplicitShutdown` so tests do not tear it down.
+- **Application**: `WpfTestSta.EnsureApplication()` creates an `Application` with `ShutdownMode.OnExplicitShutdown` so tests do not tear it down. It also forces `MotionHelper.OverrideIsMotionEnabled = true` so animation assertions are deterministic on headless runners (CI reports `SystemParameters.ClientAreaAnimation` as false); the reduced-motion tests override this to `false` for their own scope and reset it to null in their `finally` blocks.
 - **Theme helpers**: `ThemeTestHelpers.ApplyStandardThemeCycle` (Light -> Dark -> HighContrast -> Light); `AssertKeyThemeBrushesResolve` for canonical key sanity.
 - **Tests for controls** typically:
   1. Merge `Themes/Generic.xaml` via `MergeGenericDictionary(Application.Current.Resources)` (this also calls `Apply(Light)` to seed canonical keys).
@@ -292,23 +294,23 @@ dotnet test    Fluence.Wpf.Tests/Fluence.Wpf.Tests.csproj -c Debug -f net10.0-wi
 
 ### CI/CD pipeline
 
-CI is a single `build` job on `windows-latest` defined in [.github/workflows/build.yml](.github/workflows/build.yml), triggered by any push or pull request targeting `main`. It restores, gates XAML formatting, builds Release, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then packs and uploads artifacts. NuGet publish and SBOM generation are present but commented out as deliberate manual release steps.
+CI is defined in [.github/workflows/build.yml](.github/workflows/build.yml) and triggered by any push or pull request targeting `main`, plus `v*` tag pushes. The `build` job on `windows-latest` checks text policy (UTF-8 BOM, LF, banned APIs), restores, builds Release, runs both TFM test lanes (excluding the `Screenshots` category) with TRX output, then packs and uploads artifacts (net472, net8.0-windows, and net10.0-windows library binaries, the demo, and the nupkg). A `v*` tag additionally runs a `release` job after `build` succeeds: it zips the per-TFM binaries and the demo, and creates the GitHub release for the tag with those assets and the nupkg attached (tags containing `-pre` are marked prerelease). NuGet publish remains commented out as a deliberate manual release step.
 
 ```mermaid
 flowchart TD
     A[Push or PR to main] --> B[Checkout]
     B --> C[Setup .NET 10]
-    C --> D[Cache NuGet packages]
+    C --> G[Text policy check<br/>pwsh .claude/hooks/post-tool-util.ps1 -CheckAll]
+    G --> D[Cache NuGet packages]
     D --> E[dotnet restore]
-    E --> F[dotnet tool restore]
-    F --> G[XAML format check<br/>pwsh eng/Format-Xaml.ps1 -Check]
-    G --> H[Build solution Release]
+    E --> H[Build solution Release]
     H --> I[Test net472<br/>filter TestCategory!=Screenshots, TRX]
     I --> J[Test net10.0-windows10.0.26100.0<br/>filter TestCategory!=Screenshots, TRX]
     J --> K[Upload test results<br/>always]
     K --> L[Pack NuGet]
-    L --> M[Upload artifacts<br/>dotnet10 lib, dotnet472 lib, demo, nupkg]
-    M --> N[NuGet publish + SBOM<br/>commented out / manual]
+    L --> M[Upload artifacts<br/>dotnet10 lib, dotnet8 lib, dotnet472 lib, demo, nupkg]
+    M --> N[NuGet publish<br/>commented out / manual]
+    M --> R[Release job, v* tags only<br/>zip per-TFM binaries + demo,<br/>gh release create with assets]
 ```
 
 ---
@@ -320,7 +322,7 @@ flowchart TD
 - `MainWindow` is a `FluenceWindow` with `ExtendsContentIntoTitleBar="False"` in source, `SystemBackdropType="Mica"`, and a custom `TitleBar` slot hosting the app icon, title, a `TextBox` **search** bound to filter menu items, and caption buttons.
 - `NavigationView` named `DemoNav`: default `PaneDisplayMode="Left"` in source and opens expanded with `IsPaneOpen="True"` to showcase the full pane.
 - Menu items carry `Tag` strings; `MainWindow.NavigateTo(string tag)` does a switch to the matching `Gallery*Page` inside the content frame. Navigation remains tag-driven, with a lightweight visited-page stack only for the shell Back button.
-- `GalleryHomePage` shows a theme-aware hero banner (`BannerLight.png` / `BannerDark.png`) and large **clickable `Card`** tiles that route through the same `NavigateTo` helper. Window controls and app-level theme/navigation/backdrop options live on the Settings page.
+- `GalleryHomePage` shows a theme-aware hero lockup (the `FluenceHeaderLightDrawingImage` vector on light themes, `FluenceHeaderDarkDrawingImage` on dark themes, swapped in code-behind on `ApplicationThemeManager.Changed`; high contrast picks by system window luminance) and large **clickable `Card`** tiles that route through the same `NavigateTo` helper. Window controls and app-level theme/navigation/backdrop options live on the Settings page.
 - 17 navigation-catalog pages: Home, Colors, Icons, Typography, Buttons, Selection, Inputs, Forms, Data, Data binding, Trees, Menus, Navigation, Tabs, Layout, Status, and Accessibility. Settings is a `NavigationView.FooterMenuItems` entry (a real, selectable footer nav item with the shared selection indicator), not a `DemoNavigationCatalog` item; footer navigation is routed through `DemoNav.ItemInvoked`.
 - Run: `dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -f net472` or `dotnet run --project Fluence.Wpf.Demo/Fluence.Wpf.Demo.csproj -f net10.0-windows10.0.26100.0`.
 
@@ -373,8 +375,6 @@ Public and repository documentation:
 - [docs/migration-guide.md](docs/migration-guide.md)
 - [docs/contributing.md](docs/contributing.md)
 - [docs/release.md](docs/release.md)
-- [docs/skill_templated-prompts.md](docs/skill_templated-prompts.md) - canonical task templates (referenced from Section 13)
-- [docs/skill_demo-sample-pages.md](docs/skill_demo-sample-pages.md) - demo sample-page standard (referenced from Section 14)
 - [KNOWN_ISSUES.md](KNOWN_ISSUES.md)
 
 Maintainer / AI context (this file and its siblings):
@@ -390,7 +390,7 @@ Anything under `docs/_internal/` is not part of the public doc set. Do not link 
 
 ## 11. Role definition and quality gates
 
-When you are editing this repository, you are acting as a **senior C#/.NET WPF engineer and Windows-theme specialist**. Every change must honour the following gates:
+When you are editing this repository, you are acting as a **senior C#/.NET WPF engineer and Windows-theme specialist**. Every change must honor the following gates:
 
 1. **Standards respected**: BSD header, `LangVersion=latest` with nullable-clean code, XML docs on public API, `DynamicResource` for theme-bound values, no hard-coded RGB, canonical WinUI key names, no banned APIs (`string.IsNullOrEmpty` etc.).
 2. **Reference authority followed**: any visual or behavioural decision is backed by [Section 4](#4-reference-priority) (in-tree precedent -> per-domain authority -> Windows 11 docs). Fabricated design choices do not pass review.
@@ -402,7 +402,7 @@ When you are editing this repository, you are acting as a **senior C#/.NET WPF e
 
 ### Consumer build compatibility
 
-`Fluence.Wpf` has adopted the stricter consumer build requirements used by PSADT for release gating: warnings as errors, `latest-all` analyzers, code style enforcement, banned APIs, XML documentation generation, and the `net472` plus `net10.0-windows10.0.26100.0` build matrix. Treat the stricter consumer policy as authoritative for release conformance. If this repo drifts from it, correct the drift unless an exception is explicit, documented in this handbook or the affected project file, and approved by the user.
+`Fluence.Wpf` has adopted the stricter consumer build requirements used by PSADT for release gating: warnings as errors, `latest-all` analyzers, code style enforcement, banned APIs, XML documentation generation, and the `net472` / `net8.0-windows10.0.26100.0` / `net10.0-windows10.0.26100.0` build matrix. Treat the stricter consumer policy as authoritative for release conformance. If this repo drifts from it, correct the drift unless an exception is explicit, documented in this handbook or the affected project file, and approved by the user.
 
 Consumer build compatibility is a release gate. For build-policy, public API, project metadata, resource-copy, or packaging changes that can affect downstream consumption, verify the standalone Fluence build and the current release-gate consumer build. PSADT-specific paths or build artifacts may be cited only as release-gate evidence; do not make this handbook depend on consumer-local layout.
 
@@ -417,23 +417,11 @@ Consumer build compatibility is a release gate. For build-policy, public API, pr
 
 ---
 
-## 13. Templated prompts
-
-Two canonical task templates (a generic development workflow plus its acceptance gates) live in [docs/skill_templated-prompts.md](docs/skiLL_templated-prompts.md). Copy the relevant block, fill in the `TASK` line, and execute end-to-end.
-
----
-
-## 14. Demo Sample Pages
-
-The full demo sample-page standard - page skeleton, color layering, the `DemoSampleControl` contract, catalog surfaces, and definition of done - lives in [docs/skill_demo-sample-pages.md](docs/skill_demo-sample-pages.md). Control samples in `Fluence.Wpf.Demo` render through `DemoSampleControl`; design reference pages that mirror WinUI Gallery catalog surfaces (such as Typography) may render directly.
-
----
-
-## 15. AI contributor workflow
+## 13. AI contributor workflow
 
 LLM-assisted work in this repo is gated through the `.claude/` automation directory. Agents are explicit review/scaffold lanes you invoke; skills are scaffolding playbooks; hooks run automatically around tool calls and either inject `<system-reminder>` context or enforce file policy. This makes the conventions above discoverable and self-enforcing instead of relying on memory.
 
-### 15.1 Agents (`.claude/agents/`)
+### 13.1 Agents (`.claude/agents/`)
 
 Read-only or scaffolding subagents. Use the one whose lane matches your change:
 
@@ -444,30 +432,29 @@ Read-only or scaffolding subagents. Use the one whose lane matches your change:
 | `net472-feasibility-checker` | After adding APIs, language features, or dependencies - confirms the code still runs on the separate `net472` test lane (Section 4.3). |
 | `documentation-updater` | After code changes that cause doc drift, or when writing/updating READMEs, getting-started guides, API references, CHANGELOGs, inline docs, or GitHub special files. |
 
-### 15.2 Skills (`.claude/skills/`)
+### 13.2 Skills (`.claude/skills/`)
 
 Step-by-step scaffolding playbooks that bake the checklists into the work:
 
 | Skill | Use when |
 | --- | --- |
 | `new-control` | Scaffold a new custom control end to end against the Section 5 control authoring checklist (CLR type, template wired into `Generic.xaml`, design-time/demo entries, MSTest partial, docs/CHANGELOG). |
-| `demo-sample-page` | Scaffold or extend a `Fluence.Wpf.Demo` gallery sample page against the Section 14 `DemoSampleControl` contract. |
+| `demo-sample-page` | Scaffold or extend a `Fluence.Wpf.Demo` gallery sample page. The full demo sample-page spec - page skeleton, color layering, the `DemoSampleControl` contract, catalog surfaces, and definition of done - lives in [.claude/skills/demo-sample-page/SPEC.md](.claude/skills/demo-sample-page/SPEC.md). Control samples in `Fluence.Wpf.Demo` render through `DemoSampleControl`; design reference pages that mirror WinUI Gallery catalog surfaces (such as Typography) may render directly. |
 
-### 15.3 Hooks (`.claude/hooks/`)
+### 13.3 Hooks (`.claude/hooks/`)
 
 Hooks run automatically on tool events; you do not invoke them:
 
 | Hook | Behavior |
 | --- | --- |
 | `pre-tool-theme-slot.ps1` | PreToolUse advisory on theme-slot-critical edits (`ApplicationThemeManager.cs`, `Themes/Generic.xaml`). Injects a non-blocking `<system-reminder>` restating the three-slot invariant and the `BrushFactory` auto-twin rule. |
-| `post-tool-format-xaml.ps1` | PostToolUse formatter that runs the pinned XAML Styler (`eng/Format-Xaml.ps1`) over each edited authored `.xaml`, enforcing the committed reference style plus LF + single UTF-8 BOM. Non-blocking; the CI `-Check` gate is the hard fail. |
-| `post-tool-util.ps1` | PostToolUse linter that blocks the write on text-policy violations: missing UTF-8 BOM, CRLF/CR line endings, `string.IsNullOrEmpty`, `TextOptions.*`, hard-coded hex in `Themes/Controls/**`, em/en dashes in `.cs` / `.md`, and `git diff --check` whitespace errors. |
+| `post-tool-util.ps1` | PostToolUse linter (and CI gate via `-CheckAll`) that blocks on text-policy violations: missing UTF-8 BOM, CRLF/CR line endings, `string.IsNullOrEmpty`, `TextOptions.*`, hard-coded hex in `Themes/Controls/**`, em/en dashes in `.cs` / `.md`, and `git diff --check` whitespace errors. |
 
-### 15.4 Gating principle
+### 13.4 Gating principle
 
 - Theme, brush, or color changes -> review with `theme-slot-auditor`.
 - Visual or control-template changes -> review with `winui-parity-reviewer`.
 - `net472` runtime-API questions -> check with `net472-feasibility-checker`.
 - New controls -> follow the `new-control` skill; new demo pages -> follow the `demo-sample-page` skill.
-- All authored XAML is auto-formatted by the post-tool hook and re-checked in CI; all touched text files are linted for encoding and text policy on write.
+- XAML style is governed by `.editorconfig`; all touched text files are linted for encoding and text policy on write (`post-tool-util.ps1`) and repo-wide in CI (`-CheckAll`).
 - Keep authoring and review in separate passes: the scaffolding skills create or revise content, and the read-only auditor/reviewer agents evaluate it as a later, independent pass.

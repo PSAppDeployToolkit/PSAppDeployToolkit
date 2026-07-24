@@ -391,9 +391,9 @@ defaultValue: null,
         /// <returns>The formatted string for the specified field.</returns>
         private static string FormatSegment(DateField field, DateTime date, CultureInfo culture)
         {
-            return field == DateField.Day
+            return field is DateField.Day
                 ? date.Day.ToString(culture)
-                : field == DateField.Month
+                : field is DateField.Month
                     ? GetGregorianFormat(culture).GetMonthName(date.Month)
                     : date.Year.ToString(culture);
         }
@@ -436,7 +436,7 @@ defaultValue: null,
         /// <returns>The star-width weight for the specified field.</returns>
         private static double GetFieldStarWidth(DateField field)
         {
-            return field == DateField.Month ? 132 : 78;
+            return field is DateField.Month ? 132 : 78;
         }
 
         /// <summary>
@@ -491,7 +491,7 @@ defaultValue: null,
         /// </summary>
         private bool IsWithinLightDismissReopenLockout()
         {
-            return _lastLightDismissTick.HasValue
+            return _lastLightDismissTick is not null
                 && unchecked(Environment.TickCount - _lastLightDismissTick.Value) < LightDismissReopenLockoutMilliseconds;
         }
 
@@ -535,19 +535,19 @@ defaultValue: null,
         /// <param name="e">The event data.</param>
         private void OnPopupPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Handled || _popup?.IsOpen != true)
+            if (e.Handled || (_popup?.IsOpen) is not true)
             {
                 return;
             }
 
-            if (e.Key == Key.Escape)
+            if (e.Key is Key.Escape)
             {
                 ClosePopup();
                 e.Handled = true;
                 return;
             }
 
-            if (e.Key == Key.Enter)
+            if (e.Key is Key.Enter)
             {
                 IInputElement? focused = Keyboard.FocusedElement;
                 if (ReferenceEquals(focused, _acceptButton) || ReferenceEquals(focused, _cancelButton))
@@ -567,7 +567,7 @@ defaultValue: null,
         /// </summary>
         private void MoveFocusIntoPopup()
         {
-            if (_popup?.IsOpen != true)
+            if ((_popup?.IsOpen) is not true)
             {
                 return;
             }
@@ -598,7 +598,7 @@ defaultValue: null,
             foreach (DateField field in GetOrderedVisibleFields())
             {
                 Selector? column = GetSelector(field);
-                if (column is not null && column.Visibility == Visibility.Visible)
+                if (column?.Visibility is Visibility.Visible)
                 {
                     return column;
                 }
@@ -728,7 +728,7 @@ defaultValue: null,
 
         private void ClosePopup()
         {
-            if (_popup?.IsOpen == true)
+            if ((_popup?.IsOpen) is true)
             {
                 // Closing through the control's own pipeline must not arm the light-dismiss
                 // reopen lockout; Popup.Closed is raised synchronously from the set below.
@@ -765,9 +765,9 @@ defaultValue: null,
         /// <returns>The selector column for the specified field.</returns>
         private Selector? GetSelector(DateField field)
         {
-            return field == DateField.Day
+            return field is DateField.Day
                 ? _dayList
-                : field == DateField.Month ? _monthList : _yearList;
+                : field is DateField.Month ? _monthList : _yearList;
         }
 
         /// <summary>
@@ -779,9 +779,9 @@ defaultValue: null,
             List<DateField> visible = [];
             foreach (DateField field in GetCultureOrderedFields(CultureInfo.CurrentCulture.DateTimeFormat))
             {
-                bool isVisible = (field == DateField.Day && DayVisible)
-                    || (field == DateField.Month && MonthVisible)
-                    || (field == DateField.Year && YearVisible);
+                bool isVisible = (field is DateField.Day && DayVisible)
+                    || (field is DateField.Month && MonthVisible)
+                    || (field is DateField.Year && YearVisible);
                 if (isVisible)
                 {
                     visible.Add(field);
@@ -816,10 +816,10 @@ defaultValue: null,
 
                 if (position < fields.Count)
                 {
-                    segment.Text = selectedDate.HasValue
+                    segment.Text = selectedDate is not null
                         ? FormatSegment(fields[position], selectedDate.Value, culture)
                         : string.Empty;
-                    segment.HorizontalAlignment = fields[position] == DateField.Month
+                    segment.HorizontalAlignment = fields[position] is DateField.Month
                         ? HorizontalAlignment.Left
                         : HorizontalAlignment.Center;
                     segment.Visibility = Visibility.Visible;
@@ -1014,13 +1014,19 @@ defaultValue: null,
         /// </summary>
         private enum DateField
         {
-            /// <summary>The day-of-month field.</summary>
+            /// <summary>
+            /// The day-of-month field.
+            /// </summary>
             Day = 0,
 
-            /// <summary>The month field.</summary>
+            /// <summary>
+            /// The month field.
+            /// </summary>
             Month = 1,
 
-            /// <summary>The year field.</summary>
+            /// <summary>
+            /// The year field.
+            /// </summary>
             Year = 2,
         }
     }

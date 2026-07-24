@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Automation;
 using PSADT.DeviceManagement;
 using PSADT.UserInterface.DialogOptions;
 
@@ -36,22 +35,20 @@ namespace PSADT.UserInterface.Interfaces.Fluent
 
             // Configure left button
             SetButtonContentWithAccelerator(ButtonLeft, options.Strings.ButtonRestartNow);
-            AutomationProperties.SetName(ButtonLeft, options.Strings.ButtonRestartNow);
             ButtonLeft.Visibility = Visibility.Visible;
             SetDefaultButton(ButtonLeft);
             SetAccentButton(ButtonLeft);
 
+            // Handle the buttons depending if cancellation is permitted.
             if (allowCancel)
             {
                 // Configure middle button (Restart Later / minimize).
                 SetButtonContentWithAccelerator(ButtonMiddle, options.Strings.ButtonRestartLater);
-                AutomationProperties.SetName(ButtonMiddle, options.Strings.ButtonRestartLater);
                 IsMinimizeButtonVisible = Visibility.Visible;
                 ButtonMiddle.Visibility = Visibility.Visible;
 
                 // Configure right button (Cancel) to close the dialog without restarting.
                 SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonCancel);
-                AutomationProperties.SetName(ButtonRight, options.Strings.ButtonCancel);
                 ButtonRight.Visibility = Visibility.Visible;
                 SetCancelButton(ButtonRight);
             }
@@ -59,11 +56,16 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 // Configure right button (Restart Later / minimize).
                 SetButtonContentWithAccelerator(ButtonRight, options.Strings.ButtonRestartLater);
-                AutomationProperties.SetName(ButtonRight, options.Strings.ButtonRestartLater);
                 IsMinimizeButtonVisible = Visibility.Visible;
                 ButtonRight.Visibility = Visibility.Visible;
                 SetCancelButton(ButtonRight);
             }
+        }
+
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ButtonLeft;
         }
 
         /// <summary>

@@ -305,10 +305,12 @@ namespace Fluence.Wpf.Native
         public static bool SetWindowAttribute(IntPtr hwnd, int attribute, int value)
         {
             int result = DwmSetWindowAttribute(hwnd, attribute, ref value, sizeof(int));
-            return result == 0;
+            return result is 0;
         }
 
-        /// <summary>Sets the rounded-corner preference (one of the <c>DWMWCP_*</c> values).</summary>
+        /// <summary>
+        /// Sets the rounded-corner preference (one of the <c>DWMWCP_*</c> values).
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="cornerPreference">The <c>DWMWCP_*</c> value.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -334,7 +336,9 @@ namespace Fluence.Wpf.Native
                 : NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD;
         }
 
-        /// <summary>Enables or disables the immersive dark caption for the current OS build.</summary>
+        /// <summary>
+        /// Enables or disables the immersive dark caption for the current OS build.
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="enabled"><see langword="true"/> to request the dark caption.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -344,7 +348,9 @@ namespace Fluence.Wpf.Native
             return SetWindowAttribute(hwnd, GetImmersiveDarkModeAttribute(OsVersionHelper.OsBuild), value);
         }
 
-        /// <summary>Sets the DWM system backdrop type (one of the <c>DWMSBT_*</c> values).</summary>
+        /// <summary>
+        /// Sets the DWM system backdrop type (one of the <c>DWMSBT_*</c> values).
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="backdropType">The <c>DWMSBT_*</c> value.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -385,10 +391,12 @@ namespace Fluence.Wpf.Native
                 return 0;
             }
             int result = DwmGetWindowAttribute(hwnd, NativeConstants.DWMWA_CLOAKED, out int cloaked, sizeof(int));
-            return result == 0 ? cloaked : 0;
+            return result is 0 ? cloaked : 0;
         }
 
-        /// <summary>Toggles the legacy Windows 11 21H2 Mica effect (<c>DWMWA_MICA_EFFECT</c>).</summary>
+        /// <summary>
+        /// Toggles the legacy Windows 11 21H2 Mica effect (<c>DWMWA_MICA_EFFECT</c>).
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="enabled"><see langword="true"/> to enable legacy Mica.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -398,7 +406,9 @@ namespace Fluence.Wpf.Native
             return SetWindowAttribute(hwnd, NativeConstants.DWMWA_MICA_EFFECT, value);
         }
 
-        /// <summary>Sets the title-bar caption color (a <c>COLORREF</c> or a <c>DWMWA_COLOR_*</c> sentinel).</summary>
+        /// <summary>
+        /// Sets the title-bar caption color (a <c>COLORREF</c> or a <c>DWMWA_COLOR_*</c> sentinel).
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="color">The caption color value.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -429,7 +439,9 @@ namespace Fluence.Wpf.Native
             return hr >= 0; // S_OK or S_FALSE
         }
 
-        /// <summary>Sets the window border color (a <c>COLORREF</c> or a <c>DWMWA_COLOR_*</c> sentinel).</summary>
+        /// <summary>
+        /// Sets the window border color (a <c>COLORREF</c> or a <c>DWMWA_COLOR_*</c> sentinel).
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <param name="color">The border color value.</param>
         /// <returns><see langword="true"/> on success.</returns>
@@ -448,7 +460,7 @@ namespace Fluence.Wpf.Native
         {
             MARGINS margins = new() { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
             int result = DwmExtendFrameIntoClientArea(hwnd, ref margins);
-            return result == 0;
+            return result is 0;
         }
 
         /// <summary>
@@ -465,15 +477,19 @@ namespace Fluence.Wpf.Native
             return (color.B << 16) | (color.G << 8) | color.R;
         }
 
-        /// <summary>Returns whether DWM desktop composition is currently enabled.</summary>
+        /// <summary>
+        /// Returns whether DWM desktop composition is currently enabled.
+        /// </summary>
         /// <returns><see langword="true"/> when composition is enabled.</returns>
         public static bool IsCompositionEnabled()
         {
             int result = DwmIsCompositionEnabled(out bool enabled);
-            return result == 0 && enabled;
+            return result is 0 && enabled;
         }
 
-        /// <summary>Rounds the window corners with the full radius (<c>DWMWCP_ROUND</c>).</summary>
+        /// <summary>
+        /// Rounds the window corners with the full radius (<c>DWMWCP_ROUND</c>).
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> on success.</returns>
         public static bool RoundWindowCorner(IntPtr hwnd)
@@ -512,7 +528,9 @@ namespace Fluence.Wpf.Native
             return hwnd != IntPtr.Zero && (IsIconic(hwnd) || ShowWindow(hwnd, SW_MINIMIZE));
         }
 
-        /// <summary>Maximizes a window through the native <c>ShowWindow</c> API.</summary>
+        /// <summary>
+        /// Maximizes a window through the native <c>ShowWindow</c> API.
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> when the window is (or becomes) maximized.</returns>
         public static bool MaximizeWindowNative(IntPtr hwnd)
@@ -520,7 +538,9 @@ namespace Fluence.Wpf.Native
             return hwnd != IntPtr.Zero && (IsZoomed(hwnd) || ShowWindow(hwnd, SW_MAXIMIZE));
         }
 
-        /// <summary>Restores a window through the native <c>ShowWindow</c> API.</summary>
+        /// <summary>
+        /// Restores a window through the native <c>ShowWindow</c> API.
+        /// </summary>
         /// <param name="hwnd">The target window handle.</param>
         /// <returns><see langword="true"/> when the restore call succeeds.</returns>
         public static bool RestoreWindowNative(IntPtr hwnd)
@@ -547,7 +567,7 @@ namespace Fluence.Wpf.Native
             };
 
             int result = RtlGetVersion(ref versionInfo);
-            return result != 0
+            return result is not 0
                 ? throw new InvalidOperationException("RtlGetVersion failed.")
                 : new Version(
                     versionInfo.MajorVersion,

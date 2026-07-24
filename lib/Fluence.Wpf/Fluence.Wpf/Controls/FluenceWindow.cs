@@ -37,6 +37,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shell;
 
 namespace Fluence.Wpf.Controls
@@ -434,6 +435,50 @@ namespace Fluence.Wpf.Controls
         #region Construction
 
         /// <summary>
+        /// The Fluence brand icon embedded in this assembly, loaded once and shared (frozen) as the
+        /// default <see cref="Window.Icon"/> for every <see cref="FluenceWindow"/>. <see langword="null"/>
+        /// only if the embedded resource cannot be loaded. Exposed so a consumer can apply the same
+        /// square, no-background brand mark to its own windows.
+        /// </summary>
+        public static ImageSource? DefaultIcon { get; } = CreateDefaultIcon();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "This is an internal resource URI.")]
+        private static ImageSource? CreateDefaultIcon()
+        {
+            try
+            {
+                // The window icon (the title-bar Image via TemplateBinding Icon, and the Win32 taskbar /
+                // alt-tab HICON that Window.Icon drives) is the square, no-background Fluence mark,
+                // embedded as a 256x256 PNG. 256 is the largest standard Windows icon size, so the shell
+                // scales the single frame down crisply. A pre-squared source avoids the aspect distortion
+                // that rasterizing the non-square brand vector into a square icon rect used to introduce.
+                BitmapImage icon = new();
+                icon.BeginInit();
+                icon.UriSource = new Uri("pack://application:,,,/Fluence.Wpf;component/Themes/Icons/Fluence_Icon_NoBackground_256.png", UriKind.Absolute);
+                icon.CacheOption = BitmapCacheOption.OnLoad;
+                icon.EndInit();
+                if (icon.CanFreeze)
+                {
+                    icon.Freeze();
+                }
+
+                return icon;
+            }
+            // The default icon is a best-effort enhancement. Any failure to load the embedded icon
+            // resource (a missing or renamed resource, or a COM / GPU / memory failure under a headless
+            // or session-0 host such as PSADT running as SYSTEM) must degrade to a null icon, never
+            // escape this static field initializer and fault the FluenceWindow type with a
+            // TypeInitializationException - that would break every window construction in the process.
+            // The when-filter is always true (Exception.Message is never null); it catches broadly while
+            // satisfying the no-general-catch analyzers, matching the filtered-catch idiom used elsewhere
+            // in this assembly.
+            catch (Exception ex) when (ex.Message is not null)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Overrides the default style key so WPF resolves the <see cref="FluenceWindow"/> style by
         /// type. Runs once before any instance is created.
         /// </summary>
@@ -466,6 +511,13 @@ namespace Fluence.Wpf.Controls
                 Source = new Uri("pack://application:,,,/Fluence.Wpf;component/Themes/Controls/FluenceWindow.xaml", UriKind.Absolute),
             };
             Style = resourceDictionary[typeof(FluenceWindow)] as Style;
+
+            // Default the window icon to the embedded Fluence brand icon. A consumer-assigned Icon
+            // (XAML attribute or code) is applied after construction and overrides this default.
+            if (DefaultIcon is not null)
+            {
+                Icon = DefaultIcon;
+            }
 
             _ = CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, OnCloseWindow));
             _ = CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, OnMaximizeWindow, OnCanResizeWindow));
@@ -523,6 +575,12 @@ namespace Fluence.Wpf.Controls
             SystemThemeWatcher.Watch(this);
             ApplicationThemeManager.Changed += OnThemeChanged;
             ApplicationAccentColorManager.AccentColorChanged += OnAccentColorChanged;
+
+            // SizeToContent leaves the template root arranged one layout pass behind the realised
+            // client size (see FillClientAreaForSizeToContent); correct it once the window has its
+            // SizeToContent-driven size and on every subsequent SizeToContent-driven resize.
+            SizeChanged += OnSizeChangedForSizeToContent;
+            FillClientAreaForSizeToContent();
         }
 
         /// <inheritdoc />
@@ -571,6 +629,7 @@ namespace Fluence.Wpf.Controls
             SystemThemeWatcher.UnWatch(this);
             ApplicationThemeManager.Changed -= OnThemeChanged;
             ApplicationAccentColorManager.AccentColorChanged -= OnAccentColorChanged;
+            SizeChanged -= OnSizeChangedForSizeToContent;
 
             // A FromHwnd source is WPF-owned; release the hook and the reference without disposing.
             _hwndSource?.RemoveHook(WndProc);
@@ -721,7 +780,7 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private void UpdateShellMetrics()
         {
-            MarginMaximized = WindowState == WindowState.Maximized ? new Thickness(6) : new Thickness(0);
+            MarginMaximized = WindowState is WindowState.Maximized ? new Thickness(6) : new Thickness(0);
             _windowChrome.ResizeBorderThickness = WindowPolicy.GetResizeBorderThickness(WindowState, ResizeMode);
         }
 
@@ -828,14 +887,99 @@ namespace Fluence.Wpf.Controls
         private static Color GetFallbackBackgroundColor()
         {
             ApplicationTheme resolvedTheme = ApplicationThemeManager.GetResolvedTheme();
-            return resolvedTheme == ApplicationTheme.Dark
+            return resolvedTheme is ApplicationTheme.Dark
                 ? Color.FromRgb(0x20, 0x20, 0x20)
-                : resolvedTheme == ApplicationTheme.HighContrast
+                : resolvedTheme is ApplicationTheme.HighContrast
                 ? SystemColors.WindowColor
                 : Color.FromRgb(0xFA, 0xFA, 0xFA);
         }
 
         #endregion Window shell (chrome, backdrop, corners, frame)
+
+        #region SizeToContent client-area fill
+
+        /// <summary>
+        /// <see cref="FrameworkElement.SizeChanged"/> handler that re-runs the SizeToContent
+        /// client-area fill on every size change while <see cref="Window.SizeToContent"/> is active.
+        /// </summary>
+        /// <param name="sender">The event source.</param>
+        /// <param name="e">The size-changed payload (unused).</param>
+        private void OnSizeChangedForSizeToContent(object sender, SizeChangedEventArgs e)
+        {
+            FillClientAreaForSizeToContent();
+        }
+
+        /// <summary>
+        /// Forces the template root visual to fill the realised client area when
+        /// <see cref="Window.SizeToContent"/> is active.
+        /// </summary>
+        /// <remarks>
+        /// A <see cref="Window"/> sizes its HWND to the latest content-desired size, but on a
+        /// SizeToContent-driven resize the root visual's arrange lags one layout pass behind the new
+        /// client size: the HWND (and <see cref="FrameworkElement.ActualWidth"/> /
+        /// <see cref="FrameworkElement.ActualHeight"/>) already reflect the grown size while the
+        /// template root <c>Border</c> is still arranged to the previous, smaller desired size. The
+        /// gap reads as a rounded accent border floating inside the DWM border (set via
+        /// <c>DWMWA_BORDER_COLOR</c>) on every edge, because the template border and the DWM border no
+        /// longer coincide. An interactive resize hides it because it ends with a real <c>WM_SIZE</c>
+        /// that re-arranges the content; a SizeToContent first paint or auto-grow never produces that
+        /// <c>WM_SIZE</c>.
+        /// <para>
+        /// The correction directly arranges the single visual child to a rect of the window's current
+        /// <see cref="FrameworkElement.ActualWidth"/> x <see cref="FrameworkElement.ActualHeight"/>
+        /// (which equal the client area in DIPs), reproducing the re-arrange a real <c>WM_SIZE</c>
+        /// would trigger without freezing <see cref="Window.SizeToContent"/> - so the window still
+        /// grows when its content grows and stays single-bordered after growing. The
+        /// <c>SizeToContent != Manual</c> guard makes it a no-op for fixed-size windows, which already
+        /// render with the borders coincident, and a re-entrancy guard prevents the child arrange from
+        /// recursing through <see cref="FrameworkElement.SizeChanged"/>.
+        /// </para>
+        /// </remarks>
+        private void FillClientAreaForSizeToContent()
+        {
+            if (SizeToContent is SizeToContent.Manual || _isFillingClientArea)
+            {
+                return;
+            }
+
+            if (VisualChildrenCount is 0 || GetVisualChild(0) is not UIElement child)
+            {
+                return;
+            }
+
+            double width = ActualWidth;
+            double height = ActualHeight;
+            if (width <= 0.0 || height <= 0.0)
+            {
+                return;
+            }
+
+            // Already filling the client area: the child's arranged size already spans it. Skip to
+            // avoid a redundant arrange pass (and the SizeChanged recursion it would otherwise risk).
+            // A sub-pixel tolerance absorbs the layout-rounding error between the DIP client size and
+            // the child's arranged render size.
+            const double tolerance = 0.5;
+            Size arranged = child.RenderSize;
+            if (Math.Abs(arranged.Width - width) <= tolerance && Math.Abs(arranged.Height - height) <= tolerance)
+            {
+                return;
+            }
+
+            _isFillingClientArea = true;
+            try
+            {
+                // Re-arrange the root visual to the full client area. This mirrors the re-arrange a
+                // real WM_SIZE performs, collapsing the inset so the template border coincides with
+                // the DWM border. SizeToContent stays active for the next content change.
+                child.Arrange(new Rect(0.0, 0.0, width, height));
+            }
+            finally
+            {
+                _isFillingClientArea = false;
+            }
+        }
+
+        #endregion SizeToContent client-area fill
 
         #region Caption-button reflow
 
@@ -859,7 +1003,7 @@ namespace Fluence.Wpf.Controls
             if (IsCaptionChromeOverrideExplicit(IsMinimizeButtonVisibleProperty))
             {
                 minimizeVisibility = IsMinimizeButtonVisible;
-                minimizeEnabled = minimizeVisibility == Visibility.Visible;
+                minimizeEnabled = minimizeVisibility is Visibility.Visible;
             }
             if (!IsMinimizable)
             {
@@ -879,9 +1023,9 @@ namespace Fluence.Wpf.Controls
             if (IsCaptionChromeOverrideExplicit(IsMaximizeButtonVisibleProperty))
             {
                 ApplyMaximizeRestoreVisibilityOverride(IsMaximizeButtonVisible, out maxVis, out restVis);
-                bool explicitlyVisible = IsMaximizeButtonVisible == Visibility.Visible;
-                maxEn = explicitlyVisible && WindowState != WindowState.Maximized;
-                restEn = explicitlyVisible && WindowState == WindowState.Maximized;
+                bool explicitlyVisible = IsMaximizeButtonVisible is Visibility.Visible;
+                maxEn = explicitlyVisible && WindowState is not WindowState.Maximized;
+                restEn = explicitlyVisible && WindowState is WindowState.Maximized;
             }
             if (!IsMaximizable)
             {
@@ -899,7 +1043,7 @@ namespace Fluence.Wpf.Controls
             if (IsCaptionChromeOverrideExplicit(IsCloseButtonVisibleProperty))
             {
                 closeVisibility = IsCloseButtonVisible;
-                closeEnabled = closeVisibility == Visibility.Visible;
+                closeEnabled = closeVisibility is Visibility.Visible;
             }
             if (!IsClosable)
             {
@@ -926,9 +1070,9 @@ namespace Fluence.Wpf.Controls
             Visibility restoreVisibility,
             Visibility closeVisibility)
         {
-            bool maximizeOccupiesSlot = maximizeVisibility != Visibility.Collapsed || restoreVisibility != Visibility.Collapsed;
-            bool minimizeOccupiesSlot = minimizeVisibility != Visibility.Collapsed;
-            bool closeOccupiesSlot = closeVisibility != Visibility.Collapsed;
+            bool maximizeOccupiesSlot = maximizeVisibility is not Visibility.Collapsed || restoreVisibility is not Visibility.Collapsed;
+            bool minimizeOccupiesSlot = minimizeVisibility is not Visibility.Collapsed;
+            bool closeOccupiesSlot = closeVisibility is not Visibility.Collapsed;
 
             Grid.SetColumn(_closeButton, 2);
             int nextSlot = 2;
@@ -965,16 +1109,16 @@ namespace Fluence.Wpf.Controls
         /// <param name="restoreVisibility">The resulting visibility of the restore button.</param>
         private void ApplyMaximizeRestoreVisibilityOverride(Visibility visibility, out Visibility maximizeVisibility, out Visibility restoreVisibility)
         {
-            if (visibility == Visibility.Visible)
+            if (visibility is Visibility.Visible)
             {
-                maximizeVisibility = WindowState == WindowState.Maximized ? Visibility.Collapsed : Visibility.Visible;
-                restoreVisibility = WindowState == WindowState.Maximized ? Visibility.Visible : Visibility.Collapsed;
+                maximizeVisibility = WindowState is WindowState.Maximized ? Visibility.Collapsed : Visibility.Visible;
+                restoreVisibility = WindowState is WindowState.Maximized ? Visibility.Visible : Visibility.Collapsed;
                 return;
             }
-            if (visibility == Visibility.Hidden)
+            if (visibility is Visibility.Hidden)
             {
-                maximizeVisibility = WindowState == WindowState.Maximized ? Visibility.Collapsed : Visibility.Hidden;
-                restoreVisibility = WindowState == WindowState.Maximized ? Visibility.Hidden : Visibility.Collapsed;
+                maximizeVisibility = WindowState is WindowState.Maximized ? Visibility.Collapsed : Visibility.Hidden;
+                restoreVisibility = WindowState is WindowState.Maximized ? Visibility.Hidden : Visibility.Collapsed;
                 return;
             }
             maximizeVisibility = Visibility.Collapsed;
@@ -1018,13 +1162,13 @@ namespace Fluence.Wpf.Controls
                 int result = HitTestTitleBar(lParam);
                 if (result == NativeConstants.HTMAXBUTTON)
                 {
-                    SetSnapHover(WindowState == WindowState.Maximized ? _restoreButton : _maximizeButton);
+                    SetSnapHover(WindowState is WindowState.Maximized ? _restoreButton : _maximizeButton);
                 }
                 else
                 {
                     ClearSnapHover();
                 }
-                if (result != 0)
+                if (result is not 0)
                 {
                     handled = true;
                     return new IntPtr(result);
@@ -1153,15 +1297,15 @@ namespace Fluence.Wpf.Controls
         private void HandleMaxButtonClick(ref bool handled)
         {
             ClearSnapHover();
-            if (WindowState == WindowState.Maximized)
+            if (WindowState is WindowState.Maximized)
             {
-                if (_restoreButton is not null && _restoreButton.Visibility == Visibility.Visible && _restoreButton.IsEnabled)
+                if (_restoreButton?.Visibility is Visibility.Visible && _restoreButton.IsEnabled)
                 {
                     handled = true;
                     RestoreWindowDirect();
                 }
             }
-            else if (_maximizeButton is not null && _maximizeButton.Visibility == Visibility.Visible && _maximizeButton.IsEnabled)
+            else if (_maximizeButton?.Visibility is Visibility.Visible && _maximizeButton.IsEnabled)
             {
                 handled = true;
                 MaximizeWindowDirect();
@@ -1202,13 +1346,13 @@ namespace Fluence.Wpf.Controls
             bool shouldExposeSnapFlyout = SnapLayoutHelper.IsSnapLayoutEnabled()
                 && IsMaximizable
                 && OsVersionHelper.IsWindows11;
-            if (_maximizeButton is not null && _maximizeButton.Visibility == Visibility.Visible &&
+            if (_maximizeButton?.Visibility is Visibility.Visible &&
                 _maximizeButton.IsEnabled &&
                 IsOverElement(_maximizeButton, point))
             {
                 return shouldExposeSnapFlyout ? NativeConstants.HTMAXBUTTON : 0;
             }
-            if (_restoreButton is not null && _restoreButton.Visibility == Visibility.Visible &&
+            if (_restoreButton?.Visibility is Visibility.Visible &&
                 _restoreButton.IsEnabled &&
                 IsOverElement(_restoreButton, point))
             {
@@ -1216,10 +1360,10 @@ namespace Fluence.Wpf.Controls
             }
 
             // Minimize and close: return 0 so hit falls through to client area; WPF Button + Command fire.
-            if ((_minimizeButton is not null && _minimizeButton.Visibility == Visibility.Visible &&
-                 IsOverElement(_minimizeButton, point)) ||
-                (_closeButton is not null && _closeButton.Visibility == Visibility.Visible &&
-                 IsOverElement(_closeButton, point)))
+            if ((_minimizeButton?.Visibility is Visibility.Visible &&
+                IsOverElement(_minimizeButton, point)) ||
+                (_closeButton?.Visibility is Visibility.Visible &&
+                IsOverElement(_closeButton, point)))
             {
                 return 0;
             }
@@ -1247,7 +1391,7 @@ namespace Fluence.Wpf.Controls
         private bool TryGetTopResizeHit(Point point, out int hit)
         {
             hit = 0;
-            if (WindowState == WindowState.Maximized ||
+            if (WindowState is WindowState.Maximized ||
                 ResizeMode is ResizeMode.NoResize or ResizeMode.CanMinimize)
             {
                 return false;
@@ -1284,7 +1428,7 @@ namespace Fluence.Wpf.Controls
             }
 
             ClearSnapHover();
-            if (button?.IsEnabled == true)
+            if ((button?.IsEnabled) is true)
             {
                 // Use resource references (not a TryFindResource snapshot) so the snap-hover colors
                 // track theme/accent/high-contrast changes and mirror the WindowButtonStyle
@@ -1319,7 +1463,7 @@ namespace Fluence.Wpf.Controls
         /// <returns><see langword="true"/> if the point falls within the element's bounds; otherwise, <see langword="false"/>.</returns>
         private bool IsOverElement(UIElement element, Point windowPoint)
         {
-            if (element is null || element.Visibility != Visibility.Visible)
+            if (element is null || element.Visibility is not Visibility.Visible)
             {
                 return false;
             }
@@ -1372,16 +1516,16 @@ namespace Fluence.Wpf.Controls
                 ResizeMode.CanResizeWithGrip;
             bool allowedByExplicitDp =
                 IsCaptionChromeOverrideExplicit(IsMaximizeButtonVisibleProperty) &&
-                IsMaximizeButtonVisible == Visibility.Visible;
+                IsMaximizeButtonVisible is Visibility.Visible;
             e.CanExecute = (allowedByResizeMode || allowedByExplicitDp) && IsMaximizable;
         }
 
         private void OnCanMinimizeWindow(object sender, CanExecuteRoutedEventArgs e)
         {
-            bool allowedByResizeMode = ResizeMode != ResizeMode.NoResize;
+            bool allowedByResizeMode = ResizeMode is not ResizeMode.NoResize;
             bool allowedByExplicitDp =
                 IsCaptionChromeOverrideExplicit(IsMinimizeButtonVisibleProperty) &&
-                IsMinimizeButtonVisible == Visibility.Visible;
+                IsMinimizeButtonVisible is Visibility.Visible;
             e.CanExecute = (allowedByResizeMode || allowedByExplicitDp) && IsMinimizable;
         }
 
@@ -1498,6 +1642,13 @@ namespace Fluence.Wpf.Controls
         /// <see langword="null"/> when none is hovered.
         /// </summary>
         private System.Windows.Controls.Button? _snapHoveredButton;
+
+        /// <summary>
+        /// Re-entrancy guard for <see cref="FillClientAreaForSizeToContent"/>: forcing the root visual
+        /// to re-arrange can itself raise <see cref="FrameworkElement.SizeChanged"/>, so the fill must
+        /// not recurse into itself.
+        /// </summary>
+        private bool _isFillingClientArea;
 
         #endregion Fields
     }

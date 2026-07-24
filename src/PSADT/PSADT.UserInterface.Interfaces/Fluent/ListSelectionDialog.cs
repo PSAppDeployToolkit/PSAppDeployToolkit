@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
@@ -46,10 +47,18 @@ namespace PSADT.UserInterface.Interfaces.Fluent
             {
                 ListSelectionComboBox.SelectedIndex = options.SelectedIndex.Value;
             }
-            _ = ListSelectionComboBox.Focus();
-
             // Set heading text from localized strings if available.
             ListSelectionHeadingTextBlock.Text = options.Strings.ListSelectionMessage;
+
+            // Associate the combo box with its visible heading so a screen reader announces the heading
+            // as the control's label.
+            AutomationProperties.SetLabeledBy(ListSelectionComboBox, ListSelectionHeadingTextBlock);
+        }
+
+        /// <inheritdoc />
+        private protected override FrameworkElement? GetInitialFocusElement()
+        {
+            return ListSelectionComboBox;
         }
 
         /// <summary>

@@ -693,7 +693,11 @@ namespace Fluence.Wpf.Tests
                     double placeholderX = placeholder.TransformToAncestor(window).Transform(new Point(0, 0)).X;
                     double textViewX = textView.TransformToAncestor(window).Transform(new Point(0, 0)).X;
 
-                    Assert.AreEqual(placeholderX, textViewX, 0.5, "Text caret host should start where placeholder text starts.");
+                    // UseLayoutRounding snaps the placeholder and the ScrollViewer content chain to whole
+                    // device pixels independently, so at fractional DPI scales (e.g. 175%) the two can land
+                    // one device pixel apart. Alignment is therefore asserted to the nearest device pixel.
+                    double oneDevicePixelInDips = 1.0 / VisualTreeHelper.GetDpi(textBox).DpiScaleX;
+                    Assert.AreEqual(placeholderX, textViewX, oneDevicePixelInDips + 0.01, "Text caret host should start where placeholder text starts (within one device pixel).");
                 }
                 finally
                 {
@@ -1503,7 +1507,7 @@ namespace Fluence.Wpf.Tests
 
                     Assert.IsNotNull(toggle);
                     Assert.IsNotNull(label);
-                    Assert.IsTrue(toggle.IsChecked == true, "ThemeWatcherToggle should default to checked.");
+                    Assert.IsTrue(toggle.IsChecked is true, "ThemeWatcherToggle should default to checked.");
                     Assert.AreEqual("Watching: Yes", label.Text);
 
                     toggle.IsChecked = false;
@@ -1708,6 +1712,56 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(selectionIndicator, "ComboBoxItem template should contain a SelectionIndicator element.");
 
                     combo.IsDropDownOpen = false;
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ComboBox_DropdownReveal_SettlesAtRestAndSurvivesReopen()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new() { Width = 400, Height = 300 };
+                Controls.ComboBox combo = new() { Width = 240 };
+                _ = combo.Items.Add(new ComboBoxItem { Content = "Alpha" });
+                _ = combo.Items.Add(new ComboBoxItem { Content = "Beta" });
+
+                try
+                {
+                    window.Content = combo;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Border? border = combo.Template.FindName("PART_DropdownBorder", combo) as Border;
+                    Assert.IsNotNull(border, "PART_DropdownBorder should exist in the template.");
+                    System.Windows.Media.TranslateTransform? translate =
+                        border.RenderTransform as System.Windows.Media.TranslateTransform;
+                    Assert.IsNotNull(translate, "PART_DropdownBorder should carry the DropdownTranslate render transform.");
+
+                    // The code-driven reveal (moved out of the template MultiTriggers) must
+                    // settle at the rest position with its Stop-fill clocks released.
+                    for (int open = 0; open < 2; open++)
+                    {
+                        combo.IsDropDownOpen = true;
+                        Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                                () => Math.Abs(translate.Y) < 0.001 && border.Opacity >= 1.0 &&
+                                    !translate.HasAnimatedProperties && !border.HasAnimatedProperties),
+                            string.Format(
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                "Open {0}: the dropdown reveal must settle at Y=0, full opacity, and release its clocks.",
+                                open));
+
+                        combo.IsDropDownOpen = false;
+                        DrainDispatcher(window.Dispatcher);
+                    }
                 }
                 finally
                 {
@@ -2002,6 +2056,88 @@ namespace Fluence.Wpf.Tests
             {
                 Controls.FontIcon icon = new() { IsSpinning = true };
                 Assert.IsTrue(icon.IsSpinning);
+            });
+        }
+
+        [TestMethod]
+        public void Stage3_FontIcon_Spin_PausesWhenCollapsed_ResumesWhenVisible()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                Window window = new();
+                Controls.FontIcon icon = new()
+                {
+                    Glyph = "\uE72C",
+                    IsSpinning = true,
+                };
+
+                try
+                {
+                    window.Content = icon;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    RotateTransform? rotate = icon.Template.FindName("PART_Rotate", icon) as RotateTransform;
+                    Assert.IsNotNull(rotate);
+                    Assert.IsTrue(rotate.HasAnimatedProperties, "Spin animation must run while the icon is loaded and visible.");
+
+                    icon.Visibility = Visibility.Collapsed;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.IsFalse(rotate.HasAnimatedProperties, "Spin animation must stop while the icon is collapsed.");
+                    Assert.AreEqual(icon.Rotation, rotate.Angle, "Angle must rest at Rotation while the spin is paused.");
+
+                    icon.Visibility = Visibility.Visible;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.IsTrue(rotate.HasAnimatedProperties, "Spin animation must resume when the icon becomes visible again.");
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
+            });
+        }
+
+        [TestMethod]
+        public void Stage3_FontIcon_Spin_StopsWhenUnloaded()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
+                Window window = new();
+                Controls.FontIcon icon = new()
+                {
+                    Glyph = "\uE72C",
+                    IsSpinning = true,
+                };
+
+                try
+                {
+                    window.Content = icon;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    RotateTransform? rotate = icon.Template.FindName("PART_Rotate", icon) as RotateTransform;
+                    Assert.IsNotNull(rotate);
+                    Assert.IsTrue(rotate.HasAnimatedProperties, "Spin animation must run while the icon is loaded and visible.");
+
+                    window.Content = null;
+                    DrainDispatcher(window.Dispatcher);
+                    Assert.IsFalse(rotate.HasAnimatedProperties, "Spin animation must stop when the icon is unloaded.");
+                    Assert.AreEqual(icon.Rotation, rotate.Angle, "Angle must rest at Rotation after the icon unloads.");
+                }
+                finally
+                {
+                    window.Close();
+                    _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                }
             });
         }
 
@@ -2570,7 +2706,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.IsTrue(radio1.IsChecked == true);
+                    Assert.IsTrue(radio1.IsChecked is true);
 
                     radio2.IsChecked = true;
                     DrainDispatcher(window.Dispatcher);
@@ -2792,8 +2928,8 @@ namespace Fluence.Wpf.Tests
 
             window.NavigateTo(itemContent);
             DrainDispatcher(dispatcher);
-            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.Loaded);
-            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ContextIdle);
+            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.Loaded, default);
+            dispatcher.Invoke(new Action(static delegate { }), DispatcherPriority.ContextIdle, default);
             window.UpdateLayout();
             DrainDispatcher(dispatcher);
 

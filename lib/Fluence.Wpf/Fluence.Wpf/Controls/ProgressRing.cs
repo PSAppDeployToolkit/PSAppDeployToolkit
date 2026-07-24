@@ -27,8 +27,10 @@
  */
 
 using Fluence.Wpf.Automation;
+using Fluence.Wpf.Helpers;
 using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -93,6 +95,9 @@ namespace Fluence.Wpf.Controls
             DefaultStyleKeyProperty.OverrideMetadata(
                 typeof(ProgressRing),
                 new FrameworkPropertyMetadata(typeof(ProgressRing)));
+            AutomationProperties.LiveSettingProperty.OverrideMetadata(
+                typeof(ProgressRing),
+                new FrameworkPropertyMetadata(AutomationLiveSetting.Polite));
         }
 
         /// <summary>
@@ -102,6 +107,7 @@ namespace Fluence.Wpf.Controls
         {
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+            IsVisibleChanged += OnIsVisibleChanged;
         }
 
         /// <summary>
@@ -440,6 +446,11 @@ namespace Fluence.Wpf.Controls
             StopIndeterminateAnimation();
         }
 
+        private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            UpdateIndeterminateAnimationState();
+        }
+
         private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((ProgressRing)d).UpdateIndeterminateAnimationState();
@@ -481,8 +492,8 @@ namespace Fluence.Wpf.Controls
             try
             {
                 ProgressRingState state = (ProgressRingState)e.NewValue;
-                ring.SetCurrentValue(ShowPausedProperty, state == ProgressRingState.Paused);
-                ring.SetCurrentValue(ShowErrorProperty, state == ProgressRingState.Error);
+                ring.SetCurrentValue(ShowPausedProperty, state is ProgressRingState.Paused);
+                ring.SetCurrentValue(ShowErrorProperty, state is ProgressRingState.Error);
             }
             finally
             {
@@ -508,6 +519,25 @@ namespace Fluence.Wpf.Controls
             {
                 RenderDeterminateArc(AnimatedFraction);
             }
+            AnnounceLiveRegion();
+        }
+
+        /// <summary>
+        /// Raises <see cref="AutomationEvents.LiveRegionChanged"/> on this control's automation peer
+        /// so Narrator announces the error or paused state change without moving focus.
+        /// Uses only net472-safe APIs (no RaiseNotificationEvent).
+        /// </summary>
+        private void AnnounceLiveRegion()
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+            {
+                return;
+            }
+
+            // CreatePeerForElement is annotated non-null, so peer is provably non-null here (CA1508
+            // rejects a redundant null guard); no NullReferenceException is possible.
+            AutomationPeer peer = UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this);
+            peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 
         private static object CoerceRingValue(DependencyObject d, object baseValue)
@@ -526,6 +556,14 @@ namespace Fluence.Wpf.Controls
         private static void OnRangePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ProgressRing ring = (ProgressRing)d;
+
+            // Raise RangeValue ValueProperty change event when Value itself changes so Narrator
+            // can read current progress on demand in determinate mode.
+            if (ReferenceEquals(e.Property, ValueProperty) && !ring.IsIndeterminate)
+            {
+                ring.RaiseRangeValueChanged((double)e.OldValue, (double)e.NewValue);
+            }
+
             if (ring.IsIndeterminate)
             {
                 return;
@@ -537,6 +575,15 @@ namespace Fluence.Wpf.Controls
             double targetFraction = ring.ComputeFraction();
             if (ring._arcPath is null)
             {
+                ring.AnimatedFraction = targetFraction;
+                return;
+            }
+
+            // Motion disabled (OS "Show animations" off): release any in-flight tween and
+            // snap the arc straight to the target fraction.
+            if (!MotionHelper.IsMotionEnabled)
+            {
+                ring.BeginAnimation(AnimatedFractionProperty, animation: null);
                 ring.AnimatedFraction = targetFraction;
                 return;
             }
@@ -561,6 +608,27 @@ namespace Fluence.Wpf.Controls
             ring.BeginAnimation(AnimatedFractionProperty, animation);
         }
 
+        /// <summary>
+        /// Raises a UI Automation <see cref="System.Windows.Automation.RangeValuePatternIdentifiers.ValueProperty"/> change
+        /// event so clients (e.g. Narrator) can read the current progress value on demand.
+        /// Only raised in determinate mode; <see cref="ProgressRingAutomationPeer.GetPattern"/>
+        /// already suppresses <see cref="PatternInterface.RangeValue"/> when indeterminate.
+        /// </summary>
+        /// <param name="oldValue">The previous value.</param>
+        /// <param name="newValue">The new value.</param>
+        private void RaiseRangeValueChanged(double oldValue, double newValue)
+        {
+            if (!AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            {
+                return;
+            }
+
+            if ((UIElementAutomationPeer.FromElement(this) ?? UIElementAutomationPeer.CreatePeerForElement(this)) is ProgressRingAutomationPeer peer)
+            {
+                peer.RaiseValuePropertyChangedEvent(oldValue, newValue);
+            }
+        }
+
         private static void OnStrokeThicknessChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ProgressRing ring = (ProgressRing)d;
@@ -577,13 +645,18 @@ namespace Fluence.Wpf.Controls
         private void UpdateIndeterminateAnimationState()
         {
             bool isPausedVisual = IsPausedVisualState;
-            if (!IsLoaded || !IsActive || !IsIndeterminate || isPausedVisual)
+            bool isMotionEnabled = MotionHelper.IsMotionEnabled;
+            if (!IsLoaded || !IsVisible || !IsActive || !IsIndeterminate || isPausedVisual || !isMotionEnabled)
             {
-                bool shouldRenderPausedFrame = IsLoaded && IsActive && IsIndeterminate && isPausedVisual;
+                // A paused-but-visible ring still renders its static frame, and a ring whose
+                // motion is disabled by the OS "Show animations" setting renders the same
+                // static frame; an invisible ring needs no frame because nothing paints while
+                // it is collapsed or hidden.
+                bool shouldRenderStaticFrame = IsLoaded && IsVisible && IsActive && IsIndeterminate && (isPausedVisual || !isMotionEnabled);
                 StopIndeterminateAnimation();
-                if (shouldRenderPausedFrame)
+                if (shouldRenderStaticFrame)
                 {
-                    // Render the static paused half-arc at peak sweep with no rotation. The
+                    // Render the static half-arc at peak sweep with no rotation. The
                     // animation has already been stopped, parking the rotate transform at its
                     // start angle of 90 degrees.
                     IndeterminateSweepFraction = IndeterminatePeakSweepFraction;

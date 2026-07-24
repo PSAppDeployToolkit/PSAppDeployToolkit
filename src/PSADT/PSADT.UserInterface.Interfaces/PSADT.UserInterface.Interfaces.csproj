@@ -24,6 +24,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.Tests" />
     <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
   </ItemGroup>
 
@@ -56,5 +57,12 @@
 
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Properties\DesignTimeResources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
   </ItemGroup>
 </Project>

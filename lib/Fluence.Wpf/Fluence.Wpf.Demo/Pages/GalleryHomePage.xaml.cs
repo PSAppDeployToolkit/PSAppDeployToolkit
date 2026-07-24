@@ -27,88 +27,75 @@
  */
 
 using Fluence.Wpf.Controls;
-using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 
 namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GalleryHomePage : UserControl
     {
-        private static readonly Uri LightBannerUri =
-            new("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-light.png", UriKind.Absolute);
-
-        private static readonly Uri DarkBannerUri =
-            new("pack://application:,,,/Fluence.Wpf.Demo;component/Resources/fluence-wpf-banner-dark.png", UriKind.Absolute);
-
-        private Uri? _currentBannerUri;
-
         public GalleryHomePage()
         {
             InitializeComponent();
+
+            // The theme manager events are static, so scope the subscription to
+            // Loaded/Unloaded (the FluenceWindow lifetime pattern) instead of the
+            // constructor, keeping abandoned page instances collectable.
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
-            UpdateBrandBanner();
+
+            // Resolve the hero for the active theme immediately: the XAML default is
+            // the light lockup, and correcting it only on Loaded would let a dark
+            // theme's first layout pass measure the wrong image.
+            UpdateHeroImage();
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            ApplicationThemeManager.Changed += ApplicationThemeManager_Changed;
-            UpdateBrandBanner();
+            // Remove-before-add keeps the subscription idempotent if Loaded fires
+            // again without an intervening Unloaded (re-hosting scenarios).
+            ApplicationThemeManager.Changed -= OnThemeChanged;
+            ApplicationThemeManager.Changed += OnThemeChanged;
+            UpdateHeroImage();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            ApplicationThemeManager.Changed -= ApplicationThemeManager_Changed;
+            ApplicationThemeManager.Changed -= OnThemeChanged;
         }
 
-        private void ApplicationThemeManager_Changed(object? sender, ThemeChangedEventArgs e)
+        private void OnThemeChanged(object? sender, ThemeChangedEventArgs e)
         {
-            UpdateBrandBanner(e.Theme);
+            UpdateHeroImage();
         }
 
-        private void UpdateBrandBanner()
+        // Swaps the hero lockup to the variant drawn for the active theme: the light
+        // artwork (near-black wordmark) on light themes, the dark artwork (white
+        // wordmark) on dark themes. SetResourceReference keeps the swap dynamic so a
+        // later theme dictionary replacement re-resolves without another lookup here.
+        private void UpdateHeroImage()
+        {
+            BrandHeroImage.SetResourceReference(
+                System.Windows.Controls.Image.SourceProperty,
+                UseDarkHeader() ? "FluenceHeaderDarkDrawingImage" : "FluenceHeaderLightDrawingImage");
+        }
+
+        // High contrast has no fixed polarity (Aquatic is white-on-black, Desert is
+        // black-on-white), so under high contrast the variant follows the live system
+        // window luminance. The plain themes map directly.
+        private static bool UseDarkHeader()
         {
             ApplicationTheme theme = ApplicationThemeManager.CurrentTheme;
-            if (theme is ApplicationTheme.Light or ApplicationTheme.Dark or ApplicationTheme.HighContrast)
+            if (theme is ApplicationTheme.HighContrast)
             {
-                UpdateBrandBanner(theme);
-                return;
+                System.Windows.Media.Color window = SystemColors.WindowColor;
+                double luminance = (0.299 * window.R) + (0.587 * window.G) + (0.114 * window.B);
+                return luminance < 128.0;
             }
 
-            UpdateBrandBanner(IsCurrentBackgroundDark() ? ApplicationTheme.Dark : ApplicationTheme.Light);
-        }
-
-        private void UpdateBrandBanner(ApplicationTheme theme)
-        {
-            Uri bannerUri = theme is ApplicationTheme.Light or ApplicationTheme.HighContrast ? LightBannerUri : DarkBannerUri;
-            if (Equals(_currentBannerUri, bannerUri))
-            {
-                return;
-            }
-
-            BrandBannerImage.Source = new BitmapImage(bannerUri);
-            BrandBannerImage.Tag = bannerUri.OriginalString;
-            _currentBannerUri = bannerUri;
-        }
-
-        private static bool IsCurrentBackgroundDark()
-        {
-            Application app = Application.Current;
-            if (app?.TryFindResource("SolidBackgroundFillColorBaseBrush") is not SolidColorBrush brush)
-            {
-                return ApplicationThemeManager.CurrentTheme != ApplicationTheme.Light;
-            }
-
-            Color color = brush.Color;
-            double red = color.R / 255.0;
-            double green = color.G / 255.0;
-            double blue = color.B / 255.0;
-            return ((red * 0.2126) + (green * 0.7152) + (blue * 0.0722)) < 0.5;
+            return theme is ApplicationTheme.Dark;
         }
 
         // Handles a click on any featured-control or action Card tile; reads the Card's

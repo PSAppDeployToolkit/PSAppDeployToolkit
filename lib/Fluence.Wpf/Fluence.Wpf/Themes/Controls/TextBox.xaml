@@ -188,7 +188,7 @@
 
                         <StackPanel
                             Grid.Row="1"
-                            Margin="12,7,12,0"
+                            Margin="12,9,12,0"
                             Orientation="Horizontal">
                             <TextBlock
                                 x:Name="PART_ValidationIcon"
@@ -200,6 +200,7 @@
                             <TextBlock
                                 x:Name="PART_HelperText"
                                 VerticalAlignment="Center"
+                                AutomationProperties.LiveSetting="Assertive"
                                 FontFamily="{TemplateBinding FontFamily}"
                                 FontSize="12"
                                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"

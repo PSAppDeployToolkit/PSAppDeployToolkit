@@ -31,7 +31,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
-using Fluent = Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -72,7 +71,7 @@ namespace Fluence.Wpf.Demo.Pages
             {
                 int rowIndex = i + 1;
                 TypographyTable.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                AddTypographyRow(rowIndex, Rows[i], i % 2 == 0);
+                AddTypographyRow(rowIndex, Rows[i], i % 2 is 0);
             }
         }
 
@@ -118,11 +117,11 @@ namespace Fluence.Wpf.Demo.Pages
             return textBlock;
         }
 
-        private static Fluent.Button CreateCopyButton(string styleKey)
+        private static Controls.Button CreateCopyButton(string styleKey)
         {
-            Fluent.Button button = new()
+            Controls.Button button = new()
             {
-                Content = new Fluent.FontIcon { Glyph = CopyGlyph, IconFontSize = 16 },
+                Content = new Controls.FontIcon { Glyph = CopyGlyph, IconFontSize = 16 },
                 Height = 36,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(12, 8, 24, 8),
@@ -147,7 +146,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static void CopyStyleKey_Click(object sender, RoutedEventArgs e)
         {
-            string? styleKey = sender is Fluent.Button button ? button.Tag as string : null;
+            string? styleKey = sender is Controls.Button button ? button.Tag as string : null;
             if (string.IsNullOrWhiteSpace(styleKey))
             {
                 return;

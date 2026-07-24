@@ -102,7 +102,7 @@ Describe $ModuleName {
                 $returnValueTypes = [System.Collections.Generic.HashSet[System.Type]]::new()
                 foreach ($returnValue in $help.returnValues.returnValue.Type.Name)
                 {
-                    $returnValueName = $returnValue.Split([System.Environment]::NewLine)[0]
+                    $returnValueName = ($returnValue -split '\r?\n')[0].Trim()
                     if ($returnValueName -eq 'None')
                     {
                         continue

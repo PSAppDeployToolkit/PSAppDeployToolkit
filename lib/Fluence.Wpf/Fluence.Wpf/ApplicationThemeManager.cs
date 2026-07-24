@@ -53,6 +53,20 @@ namespace Fluence.Wpf
         public static BackdropType CurrentBackdrop { get; private set; } = BackdropType.Auto;
 
         /// <summary>
+        /// Gets the concrete theme (Light, Dark, or HighContrast) that was resolved and applied during
+        /// the most recent theme pipeline run (that is, the last call to <see cref="Apply"/> or to any
+        /// <see cref="ApplicationAccentColorManager"/> apply method
+        /// (<see cref="ApplicationAccentColorManager.ApplySystemAccent"/>,
+        /// <see cref="ApplicationAccentColorManager.ApplyApplicationAccent"/>, or
+        /// <see cref="ApplicationAccentColorManager.ApplyCustomAccent"/>), whichever ran last. When
+        /// <see cref="CurrentTheme"/> is <see cref="ApplicationTheme.Auto"/>, this reflects the OS theme
+        /// at the time of that last pipeline run; it does not update automatically when the OS theme
+        /// changes without a subsequent pipeline run. Before the first pipeline run, this property returns
+        /// <see cref="ApplicationTheme.Light"/> as the pre-initialization default.
+        /// </summary>
+        public static ApplicationTheme ResolvedTheme => FluenceThemeEngine.ResolvedTheme;
+
+        /// <summary>
         /// Gets a value indicating whether the Windows system (window-chrome) color mode is currently Dark.
         /// Reflects the live registry value; independent of <see cref="CurrentTheme"/>.
         /// </summary>

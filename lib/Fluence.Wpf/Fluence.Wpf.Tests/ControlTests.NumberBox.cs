@@ -27,13 +27,14 @@
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using Fluent = Fluence.Wpf.Controls;
 
 namespace Fluence.Wpf.Tests
 {
@@ -50,7 +51,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         Value = 5,
                         SmallChange = 1,
@@ -103,7 +104,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         Value = 5,
                         SmallChange = 1,
@@ -157,7 +158,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         Value = 0,
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
@@ -203,7 +204,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
                         Width = 160,
@@ -251,7 +252,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Inline,
                         Width = 160,
@@ -298,7 +299,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         SpinButtonPlacementMode = SpinButtonPlacementMode.Compact,
                         Width = 180,
@@ -354,7 +355,7 @@ namespace Fluence.Wpf.Tests
         {
             RunOnStaThread(static () =>
             {
-                Fluent.NumberBox numberBox = new()
+                Controls.NumberBox numberBox = new()
                 {
                     Minimum = 0,
                     Maximum = 5,
@@ -371,7 +372,7 @@ namespace Fluence.Wpf.Tests
         {
             RunOnStaThread(static () =>
             {
-                Fluent.NumberBox numberBox = new()
+                Controls.NumberBox numberBox = new()
                 {
                     Minimum = 10,
                     Maximum = 0,
@@ -394,7 +395,7 @@ namespace Fluence.Wpf.Tests
 
                 try
                 {
-                    Fluent.NumberBox numberBox = new()
+                    Controls.NumberBox numberBox = new()
                     {
                         Minimum = 0,
                         Maximum = 5,
@@ -421,6 +422,95 @@ namespace Fluence.Wpf.Tests
 
                     Assert.AreEqual(5.0, numberBox.Value,
                         "Up-click at Maximum must clamp Value to Maximum (no overshoot).");
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void NumberBox_Header_BecomesAccessibleName()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    Controls.NumberBox numberBox = new() { Header = "Quantity" };
+                    window.Content = numberBox;
+                    window.Width = 240;
+                    window.Height = 120;
+                    window.Show();
+                    _ = numberBox.ApplyTemplate();
+                    DrainDispatcher(window.Dispatcher);
+
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(numberBox);
+                    Assert.IsTrue(
+                        string.Equals("Quantity", peer.GetName(), StringComparison.Ordinal),
+                        "NumberBox Header must be the accessible name when no explicit AutomationProperties.Name is set.");
+
+                    numberBox.SetValue(AutomationProperties.NameProperty, "Explicit");
+                    Assert.IsTrue(
+                        string.Equals("Explicit", peer.GetName(), StringComparison.Ordinal),
+                        "Explicit AutomationProperties.Name must win over Header.");
+                }
+                finally
+                {
+                    CloseWindowAndDrain(window);
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void NumberBox_Peer_LargeChange_MatchesControl()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    Controls.NumberBox numberBox = new()
+                    {
+                        SmallChange = 1,
+                        LargeChange = 10,
+                        Width = 160,
+                    };
+                    window.Content = numberBox;
+                    window.Width = 240;
+                    window.Height = 120;
+                    window.Show();
+                    _ = numberBox.ApplyTemplate();
+                    DrainDispatcher(window.Dispatcher);
+
+                    AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(numberBox);
+                    IRangeValueProvider range = (IRangeValueProvider)peer.GetPattern(PatternInterface.RangeValue);
+
+                    Assert.AreEqual(
+                        10.0,
+                        range.LargeChange,
+                        0.001,
+                        "IRangeValueProvider.LargeChange must reflect NumberBox.LargeChange, not SmallChange.");
+                    Assert.AreEqual(
+                        1.0,
+                        range.SmallChange,
+                        0.001,
+                        "IRangeValueProvider.SmallChange must reflect NumberBox.SmallChange.");
                 }
                 finally
                 {

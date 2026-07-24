@@ -62,7 +62,7 @@ namespace Fluence.Wpf.Theming
             // Ported verbatim from Theme.Light/Dark.xaml accent-brush overrides (and the legacy
             // UpdateResources isDark branch). HighContrast keeps these computed values: the legacy
             // C# accent overlay took precedence over the HC XAML for accent-derived brush keys.
-            bool dark = theme == ApplicationTheme.Dark;
+            bool dark = theme is ApplicationTheme.Dark;
             dict["SystemAccentColorPrimaryBrush"] = Solid(dark ? colors["SystemAccentColorDark3"] : colors["SystemAccentColorDark2"]);
             dict["SystemAccentColorSecondaryBrush"] = Solid(colors["SystemAccentColorDark3"]);
             dict["SystemAccentColorTertiaryBrush"] = Solid(dark ? colors["SystemAccentColorLight2"] : colors["SystemAccentColorDark1"]);
@@ -80,7 +80,7 @@ namespace Fluence.Wpf.Theming
             // SystemColors in every theme, not the computed palette.
             AddSystemColorAliases(dict);
 
-            if (theme == ApplicationTheme.HighContrast)
+            if (theme is ApplicationTheme.HighContrast)
             {
                 AddHighContrastBrushes(dict);
                 return;
@@ -301,6 +301,8 @@ namespace Fluence.Wpf.Theming
             // Control stroke
             dict["ControlStrokeColorDefaultBrush"] = Solid(controlDark);
             dict["ControlStrokeColorSecondaryBrush"] = Solid(controlDark);
+            // NavigationView pane/content seam follows the same system control-dark stroke in HC.
+            dict["NavigationViewContentSeparatorBrush"] = Solid(controlDark);
             dict["ControlStrokeColorTertiaryBrush"] = Solid(controlText);
             dict["ControlStrokeColorOnAccentDefaultBrush"] = Solid(highlightText);
             dict["ControlStrokeColorOnAccentSecondaryBrush"] = Solid(highlightText);
@@ -378,7 +380,15 @@ namespace Fluence.Wpf.Theming
             dict["SystemFillColorSolidAttentionBackgroundBrush"] = Solid(highlight);
             dict["SystemFillColorSolidNeutralBackgroundBrush"] = Solid(control);
 
-            // Window chrome close button (hover/pressed track HC accent in HC)
+            // Window chrome close button (hover/pressed track HC accent in HC). FluenceWindow.xaml
+            // binds the WindowCloseButton* keys via DynamicResource, so those are the ones that must
+            // be overridden here; the theme-independent brand red seeded by
+            // BaseColorTables.AddSharedColors would otherwise fail contrast in High Contrast.
+            // WindowCloseFillColor*/WindowCloseForeground* (below) are legacy keys nothing currently
+            // consumes; kept for parity with existing golden snapshots and tests.
+            dict["WindowCloseButtonBackgroundPointerOverBrush"] = Solid(highlight);
+            dict["WindowCloseButtonBackgroundPressedBrush"] = Solid(highlight);
+            dict["WindowCloseButtonForegroundPointerOverBrush"] = Solid(highlightText);
             dict["WindowCloseFillColorHoverBrush"] = Solid(highlight);
             dict["WindowCloseFillColorPressedBrush"] = Solid(highlight);
             dict["WindowCloseForegroundHoverBrush"] = Solid(highlightText);

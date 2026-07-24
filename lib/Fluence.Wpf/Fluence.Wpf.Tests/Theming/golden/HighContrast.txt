@@ -219,11 +219,8 @@ TitleBarInactiveColorBrush|#00000000|#FFFFFFFF
 WindowBorderColor|#FFFFFFFF|#00000000
 WindowBorderColorBrush|#00000000|#FFFFFFFF
 WindowCloseButtonBackgroundPointerOver|#FFC42B1C|#00000000
-WindowCloseButtonBackgroundPointerOverBrush|#00000000|#FFC42B1C
 WindowCloseButtonBackgroundPressed|#FFB4271C|#00000000
-WindowCloseButtonBackgroundPressedBrush|#00000000|#FFB4271C
 WindowCloseButtonForegroundPointerOver|#FFFFFFFF|#00000000
-WindowCloseButtonForegroundPointerOverBrush|#00000000|#FFFFFFFF
 WindowCloseFillColorHover|#FF1AEBFF|#00000000
 WindowCloseFillColorPressed|#FF1AEBFF|#00000000
 WindowCloseForegroundHover|#FF000000|#00000000

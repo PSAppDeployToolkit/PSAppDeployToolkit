@@ -35,13 +35,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using FluenceCheckBox = Fluence.Wpf.Controls.CheckBox;
-using FluenceExpander = Fluence.Wpf.Controls.Expander;
-using FluenceProgressBar = Fluence.Wpf.Controls.ProgressBar;
-using FluenceRadioButton = Fluence.Wpf.Controls.RadioButton;
-using FluenceToggleSwitch = Fluence.Wpf.Controls.ToggleSwitch;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfEllipse = System.Windows.Shapes.Ellipse;
 
 namespace Fluence.Wpf.Tests
 {
@@ -55,9 +48,9 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
-                FluenceCheckBox checkBox = new() { Content = "Check" };
-                FluenceRadioButton radioButton = new() { Content = "Radio" };
-                FluenceToggleSwitch toggleSwitch = new() { OffContent = "Off", OnContent = "On" };
+                Controls.CheckBox checkBox = new() { Content = "Check" };
+                Controls.RadioButton radioButton = new() { Content = "Radio" };
+                Controls.ToggleSwitch toggleSwitch = new() { OffContent = "Off", OnContent = "On" };
 
                 StackPanel panel = new();
                 _ = panel.Children.Add(checkBox);
@@ -81,9 +74,9 @@ namespace Fluence.Wpf.Tests
                     _ = radioButton.ApplyTemplate();
                     _ = toggleSwitch.ApplyTemplate();
 
-                    WpfBorder? indicatorFill = FindVisualChildByName<WpfBorder>(checkBox, "IndicatorFill");
-                    WpfBorder? indicatorHover = FindVisualChildByName<WpfBorder>(checkBox, "IndicatorHover");
-                    WpfBorder? indicatorPressed = FindVisualChildByName<WpfBorder>(checkBox, "IndicatorPressed");
+                    Border? indicatorFill = FindVisualChildByName<Border>(checkBox, "IndicatorFill");
+                    Border? indicatorHover = FindVisualChildByName<Border>(checkBox, "IndicatorHover");
+                    Border? indicatorPressed = FindVisualChildByName<Border>(checkBox, "IndicatorPressed");
                     Assert.IsNotNull(indicatorFill, "CheckBox template must expose IndicatorFill.");
                     Assert.IsNotNull(indicatorHover, "CheckBox template must expose IndicatorHover.");
                     Assert.IsNotNull(indicatorPressed, "CheckBox template must expose IndicatorPressed.");
@@ -97,9 +90,9 @@ namespace Fluence.Wpf.Tests
                     AssertBrushColor(indicatorPressed.BorderBrush, "ControlStrongStrokeColorDisabledBrush",
                         "Unchecked CheckBox pressed stroke should use the WinUI pressed stroke token.");
 
-                    WpfEllipse? outerEllipse = FindVisualChildByName<WpfEllipse>(radioButton, "OuterEllipse");
-                    WpfEllipse? outerEllipseHover = FindVisualChildByName<WpfEllipse>(radioButton, "OuterEllipseHover");
-                    WpfEllipse? outerEllipsePressed = FindVisualChildByName<WpfEllipse>(radioButton, "OuterEllipsePressed");
+                    System.Windows.Shapes.Ellipse? outerEllipse = FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipse");
+                    System.Windows.Shapes.Ellipse? outerEllipseHover = FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipseHover");
+                    System.Windows.Shapes.Ellipse? outerEllipsePressed = FindVisualChildByName<System.Windows.Shapes.Ellipse>(radioButton, "OuterEllipsePressed");
                     Assert.IsNotNull(outerEllipse, "RadioButton template must expose OuterEllipse.");
                     Assert.IsNotNull(outerEllipseHover, "RadioButton template must expose OuterEllipseHover.");
                     Assert.IsNotNull(outerEllipsePressed, "RadioButton template must expose OuterEllipsePressed.");
@@ -113,9 +106,9 @@ namespace Fluence.Wpf.Tests
                     AssertBrushColor(outerEllipsePressed.Stroke, "ControlStrongStrokeColorDisabledBrush",
                         "Unchecked RadioButton pressed stroke should use the WinUI pressed stroke token.");
 
-                    WpfBorder? trackOff = FindVisualChildByName<WpfBorder>(toggleSwitch, "TrackOff");
-                    WpfBorder? trackOffHover = FindVisualChildByName<WpfBorder>(toggleSwitch, "TrackOffHover");
-                    WpfBorder? trackOffPressed = FindVisualChildByName<WpfBorder>(toggleSwitch, "TrackOffPressed");
+                    Border? trackOff = FindVisualChildByName<Border>(toggleSwitch, "TrackOff");
+                    Border? trackOffHover = FindVisualChildByName<Border>(toggleSwitch, "TrackOffHover");
+                    Border? trackOffPressed = FindVisualChildByName<Border>(toggleSwitch, "TrackOffPressed");
                     Assert.IsNotNull(trackOff, "ToggleSwitch template must expose TrackOff.");
                     Assert.IsNotNull(trackOffHover, "ToggleSwitch template must expose TrackOffHover.");
                     Assert.IsNotNull(trackOffPressed, "ToggleSwitch template must expose TrackOffPressed.");
@@ -144,7 +137,7 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 _ = MergeGenericDictionary(application);
 
-                FluenceProgressBar progressBar = new()
+                Controls.ProgressBar progressBar = new()
                 {
                     Width = 240,
                     Height = 24,
@@ -163,7 +156,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     _ = progressBar.ApplyTemplate();
 
-                    WpfBorder? track = FindVisualChildByName<WpfBorder>(progressBar, "PART_Track");
+                    Border? track = FindVisualChildByName<Border>(progressBar, "PART_Track");
                     Assert.IsNotNull(track, "ProgressBar template must expose PART_Track.");
                     AssertBrushColor(track.Background, "ControlStrongStrokeColorDefaultBrush",
                         "ProgressBar track should use the WinUI ProgressBarBackground role.");
@@ -207,7 +200,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     _ = scrollBar.ApplyTemplate();
 
-                    WpfBorder? trackBackground = FindVisualChildByName<WpfBorder>(scrollBar, "TrackBackground");
+                    Border? trackBackground = FindVisualChildByName<Border>(scrollBar, "TrackBackground");
                     Assert.IsNotNull(trackBackground, "ScrollBar template must expose TrackBackground.");
                     AssertBrushColor(trackBackground.Background, "ScrollBarTrackFillBrush",
                         "ScrollBar rail should use the WinUI ScrollBarTrackFill role.");
@@ -250,16 +243,16 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfBorder? sampleCard = sample.FindName("SampleCard") as WpfBorder;
-                    FluenceExpander? sourceExpander = sample.FindName("SourceExpander") as FluenceExpander;
+                    Border? sampleCard = sample.FindName("SampleCard") as Border;
+                    Controls.Expander? sourceExpander = sample.FindName("SourceExpander") as Controls.Expander;
                     Assert.IsNotNull(sampleCard, "DemoSampleControl must expose SampleCard.");
                     Assert.IsNotNull(sourceExpander, "DemoSampleControl must expose SourceExpander.");
 
                     Assert.AreEqual(new CornerRadius(8, 8, 0, 0), sampleCard.CornerRadius,
                         "Demo sample display should attach to the source section with WinUI Gallery corners.");
                     Grid? demoRegionGrid = sample.FindName("DemoRegionGrid") as Grid;
-                    WpfBorder? rightRail = sample.FindName("RightRailBorder") as WpfBorder;
-                    WpfBorder? outputRegion = sample.FindName("OutputRegion") as WpfBorder;
+                    Border? rightRail = sample.FindName("RightRailBorder") as Border;
+                    Border? outputRegion = sample.FindName("OutputRegion") as Border;
                     Assert.IsNotNull(demoRegionGrid, "DemoSampleControl must expose DemoRegionGrid.");
                     Assert.IsNotNull(rightRail, "DemoSampleControl must expose RightRailBorder.");
                     Assert.IsNotNull(outputRegion, "DemoSampleControl must expose OutputRegion.");
@@ -274,8 +267,8 @@ namespace Fluence.Wpf.Tests
                         "Demo right rail should sit flush against the sample border.");
                     AssertBrushColor(rightRail.Background, "CardBackgroundFillColorSecondaryBrush",
                         "Demo right rail should use the WinUI Gallery options-pane surface.");
-                    AssertBrushColor(sourceExpander.Background, "SolidBackgroundFillColorQuarternaryBrush",
-                        "Demo source header should use the WinUI Gallery source-code header background - the darker quarternary surface so the collapsed Source-Code strip reads as a distinct dark band beneath the sample card (matches the screenshots in docs/screenshots/gallery/).");
+                    AssertBrushColor(sourceExpander.Background, "CardBackgroundFillColorSecondaryBrush",
+                        "Demo source expander should use the WinUI Gallery source-code header background (CardBackgroundFillColorSecondaryBrush), matching WinUI ControlExample.xaml.");
                     Assert.AreEqual("Source code", sourceExpander.Header,
                         "Demo source expander header should match the WinUI Gallery source label.");
 
@@ -284,11 +277,11 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     RichTextBox? sourceViewer = FindVisualChildByName<RichTextBox>(sourceExpander, "SourceTextViewer");
-                    WpfBorder? copyButtonHost = FindVisualChildByName<WpfBorder>(sourceExpander, "CopySourceButtonHost");
+                    Border? copyButtonHost = FindVisualChildByName<Border>(sourceExpander, "CopySourceButtonHost");
                     Assert.IsNotNull(sourceViewer, "Expanded source should expose the code viewer.");
                     Assert.IsNotNull(copyButtonHost, "Expanded source should expose the overlaid copy-button host.");
-                    AssertBrushColor(sourceViewer.Background, "SolidBackgroundFillColorBaseBrush",
-                        "Source code should use the darker WinUI Gallery on-image fill role.");
+                    AssertBrushColor(sourceViewer.Background, "SystemFillColorSolidAttentionBackgroundBrush",
+                        "Source code should use the solid attention background surface (F7F7F7 light / 2E2E2E dark).");
                     AssertBrushColor(copyButtonHost.Background, "CardBackgroundFillColorDefaultBrush",
                         "Copy action should sit on the WinUI Gallery on-image fill bubble.");
                 }
@@ -575,12 +568,12 @@ namespace Fluence.Wpf.Tests
 
         private static bool ContainsOrdinal(string source, string value)
         {
-            return source.IndexOf(value, StringComparison.Ordinal) >= 0;
+            return source.Contains(value, StringComparison.Ordinal);
         }
 
         private static bool IsWholeXamlAttribute(string source, int attributeIndex)
         {
-            if (attributeIndex == 0)
+            if (attributeIndex is 0)
             {
                 return true;
             }
@@ -591,7 +584,7 @@ namespace Fluence.Wpf.Tests
 
         private static bool IsLiteralBackgroundValue(string value)
         {
-            if (value.Length == 0)
+            if (value.Length is 0)
             {
                 return false;
             }
@@ -658,9 +651,7 @@ namespace Fluence.Wpf.Tests
         private static bool IsBackgroundLiteralAllowedPath(string path)
         {
             string fileName = Path.GetFileName(path);
-            return fileName.Equals("fluence-wpf-banner-light.xaml", StringComparison.OrdinalIgnoreCase) ||
-                fileName.Equals("fluence-wpf-banner-dark.xaml", StringComparison.OrdinalIgnoreCase) ||
-                fileName.Equals("GalleryAccessibilityPage.xaml", StringComparison.OrdinalIgnoreCase);
+            return fileName.Equals("GalleryAccessibilityPage.xaml", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsBackgroundLiteralAllowedValue(string path, string value)

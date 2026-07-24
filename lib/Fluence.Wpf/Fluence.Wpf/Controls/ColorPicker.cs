@@ -49,17 +49,21 @@ namespace Fluence.Wpf.Controls
 {
     /// <summary>
     /// A control that lets the user pick a color from a saturation/value spectrum, a hue
-    /// slider, an optional alpha slider, a current/previous preview swatch row, and an
-    /// optional hex text input, mirroring the WinUI 3 <c>ColorPicker</c> essentials.
+    /// slider, an optional alpha slider, a current/previous preview swatch row, and a
+    /// text-entry area with an RGB/HSV representation selector, per-channel inputs, an
+    /// alpha percentage input, and a hex input, mirroring the WinUI 3 <c>ColorPicker</c>.
     /// The picker keeps hue, saturation, value, and alpha as its internal source of truth
     /// so dragging across the grey axis does not accumulate RGB round-trip drift, the
     /// same approach WinUI uses.
     /// </summary>
     /// <remarks>
-    /// v1 scope notes: WinUI's <c>IsMoreButtonVisible</c> collapsed-input mode, the
-    /// per-channel RGB/HSV number boxes, and the <c>ColorSpectrumComponents</c>
-    /// permutations are deliberately omitted. The spectrum is fixed to saturation on the
-    /// x axis by value on the y axis at the selected hue, with hue on a horizontal slider.
+    /// Scope notes: WinUI's <c>ColorSpectrumShape</c> (the Ring spectrum), the
+    /// <c>ColorSpectrumComponents</c> permutations, <c>Orientation</c>, and the Min/Max
+    /// channel range properties are deliberately omitted. The spectrum is fixed to
+    /// saturation on the x axis by value on the y axis at the selected hue, with hue on a
+    /// horizontal slider serving as the third-dimension color slider. Channel and alpha
+    /// text inputs commit live on every valid keystroke like WinUI; the hex input commits
+    /// on Enter or focus loss, a deliberate deviation from WinUI's live hex commit.
     /// </remarks>
     [TemplatePart(Name = PART_SpectrumImage, Type = typeof(Image))]
     [TemplatePart(Name = PART_SpectrumArea, Type = typeof(FrameworkElement))]
@@ -67,6 +71,13 @@ namespace Fluence.Wpf.Controls
     [TemplatePart(Name = PART_HueSlider, Type = typeof(RangeBase))]
     [TemplatePart(Name = PART_AlphaSlider, Type = typeof(RangeBase))]
     [TemplatePart(Name = PART_HexTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_RedTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_GreenTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_BlueTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_HueTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_SaturationTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_ValueTextBox, Type = typeof(System.Windows.Controls.TextBox))]
+    [TemplatePart(Name = PART_AlphaTextBox, Type = typeof(System.Windows.Controls.TextBox))]
     public class ColorPicker : Control
     {
         // Template part names. These must match the names used in the default control template.
@@ -76,6 +87,13 @@ namespace Fluence.Wpf.Controls
         private const string PART_HueSlider = "PART_HueSlider";
         private const string PART_AlphaSlider = "PART_AlphaSlider";
         private const string PART_HexTextBox = "PART_HexTextBox";
+        private const string PART_RedTextBox = "PART_RedTextBox";
+        private const string PART_GreenTextBox = "PART_GreenTextBox";
+        private const string PART_BlueTextBox = "PART_BlueTextBox";
+        private const string PART_HueTextBox = "PART_HueTextBox";
+        private const string PART_SaturationTextBox = "PART_SaturationTextBox";
+        private const string PART_ValueTextBox = "PART_ValueTextBox";
+        private const string PART_AlphaTextBox = "PART_AlphaTextBox";
 
         // Optional named template children. A custom template may omit them; every access
         // is null-guarded. The gradient and checkerboard backgrounds are generated in code
@@ -92,6 +110,18 @@ namespace Fluence.Wpf.Controls
         /// </summary>
         private const int SpectrumSize = 256;
 
+        /// <summary>
+        /// Small step applied to saturation or value when the user presses an arrow key
+        /// on the focused spectrum area. Matches a 1% increment on the 0-1 scale.
+        /// </summary>
+        private const double SpectrumSmallStep = 0.01;
+
+        /// <summary>
+        /// Large step applied to saturation or value when the user presses PageUp or
+        /// PageDown on the focused spectrum area. Matches a 10% increment on the 0-1 scale.
+        /// </summary>
+        private const double SpectrumLargeStep = 0.1;
+
         // Frozen, theme-independent brushes shared by every picker instance: the
         // checkerboard under translucent surfaces and the hue rainbow track. Both are
         // generated in code; asset/pixel math may use literal channel values, unlike
@@ -105,6 +135,13 @@ namespace Fluence.Wpf.Controls
         private RangeBase? _hueSlider;
         private RangeBase? _alphaSlider;
         private System.Windows.Controls.TextBox? _hexTextBox;
+        private System.Windows.Controls.TextBox? _redTextBox;
+        private System.Windows.Controls.TextBox? _greenTextBox;
+        private System.Windows.Controls.TextBox? _blueTextBox;
+        private System.Windows.Controls.TextBox? _hueTextBox;
+        private System.Windows.Controls.TextBox? _saturationTextBox;
+        private System.Windows.Controls.TextBox? _valueTextBox;
+        private System.Windows.Controls.TextBox? _alphaTextBox;
         private System.Windows.Controls.Border? _alphaGradientBorder;
         private System.Windows.Controls.Border? _currentSwatchBorder;
         private System.Windows.Controls.Border? _previousSwatchBorder;
@@ -122,6 +159,18 @@ namespace Fluence.Wpf.Controls
         private bool _isUpdatingColor;
         private bool _isUpdatingVisuals;
         private bool _isDraggingSpectrum;
+        private TextInputGroup _activeTextInputGroup;
+
+        // Identifies which text-input group is currently committing so UpdateVisuals can
+        // skip rewriting the box the user is typing in (the WPF analog of WinUI's
+        // ColorUpdateReason skip; rewriting the active box would destroy the caret).
+        private enum TextInputGroup
+        {
+            None = 0,
+            Rgb = 1,
+            Hsv = 2,
+            Alpha = 3,
+        }
 
         /// <summary>
         /// Initializes static members of the ColorPicker class and overrides the default
@@ -190,10 +239,10 @@ namespace Fluence.Wpf.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether the alpha channel can be edited. When
-        /// <see langword="false"/> (the default) the alpha slider row collapses, the hex
-        /// input parses and displays six digits, and turning the property off pins the
-        /// picker's alpha back to 255. Programmatic <see cref="Color"/> assignments keep
-        /// whatever alpha they carry.
+        /// <see langword="false"/> (the default) the alpha slider row and the alpha text
+        /// input collapse, the hex input parses and displays six digits, and turning the
+        /// property off pins the picker's alpha back to 255. Programmatic
+        /// <see cref="Color"/> assignments keep whatever alpha they carry.
         /// </summary>
         public bool IsAlphaEnabled
         {
@@ -222,6 +271,134 @@ namespace Fluence.Wpf.Controls
         }
 
         /// <summary>
+        /// Identifies the <see cref="IsColorPreviewVisible"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsColorPreviewVisibleProperty =
+            DependencyProperty.Register(
+                nameof(IsColorPreviewVisible),
+                typeof(bool),
+                typeof(ColorPicker),
+                new FrameworkPropertyMetadata(defaultValue: true));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current/previous preview swatch row
+        /// is shown.
+        /// </summary>
+        public bool IsColorPreviewVisible
+        {
+            get => (bool)GetValue(IsColorPreviewVisibleProperty);
+            set => SetValue(IsColorPreviewVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="IsColorSliderVisible"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsColorSliderVisibleProperty =
+            DependencyProperty.Register(
+                nameof(IsColorSliderVisible),
+                typeof(bool),
+                typeof(ColorPicker),
+                new FrameworkPropertyMetadata(defaultValue: true));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the third-dimension color slider is
+        /// shown. With the spectrum fixed to saturation by value, the third dimension is
+        /// the hue slider, matching how WinUI assigns its color slider for that spectrum
+        /// component pairing.
+        /// </summary>
+        public bool IsColorSliderVisible
+        {
+            get => (bool)GetValue(IsColorSliderVisibleProperty);
+            set => SetValue(IsColorSliderVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="IsAlphaSliderVisible"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsAlphaSliderVisibleProperty =
+            DependencyProperty.Register(
+                nameof(IsAlphaSliderVisible),
+                typeof(bool),
+                typeof(ColorPicker),
+                new FrameworkPropertyMetadata(defaultValue: true));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the alpha slider is shown. The slider
+        /// renders only when both this property and <see cref="IsAlphaEnabled"/> are
+        /// <see langword="true"/>, matching WinUI.
+        /// </summary>
+        public bool IsAlphaSliderVisible
+        {
+            get => (bool)GetValue(IsAlphaSliderVisibleProperty);
+            set => SetValue(IsAlphaSliderVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="IsAlphaTextInputVisible"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsAlphaTextInputVisibleProperty =
+            DependencyProperty.Register(
+                nameof(IsAlphaTextInputVisible),
+                typeof(bool),
+                typeof(ColorPicker),
+                new FrameworkPropertyMetadata(defaultValue: true));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the alpha percentage text input is
+        /// shown. The input renders only when both this property and
+        /// <see cref="IsAlphaEnabled"/> are <see langword="true"/>, matching WinUI.
+        /// </summary>
+        public bool IsAlphaTextInputVisible
+        {
+            get => (bool)GetValue(IsAlphaTextInputVisibleProperty);
+            set => SetValue(IsAlphaTextInputVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="IsHexInputVisible"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsHexInputVisibleProperty =
+            DependencyProperty.Register(
+                nameof(IsHexInputVisible),
+                typeof(bool),
+                typeof(ColorPicker),
+                new FrameworkPropertyMetadata(defaultValue: true));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the hex text input is shown. The input
+        /// accepts <c>#RRGGBB</c> and <c>#AARRGGBB</c> (the leading <c>#</c> is optional)
+        /// and commits on Enter or when keyboard focus leaves the box.
+        /// </summary>
+        public bool IsHexInputVisible
+        {
+            get => (bool)GetValue(IsHexInputVisibleProperty);
+            set => SetValue(IsHexInputVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="IsMoreButtonVisible"/> dependency property.
+        /// </summary>
+        public static readonly DependencyProperty IsMoreButtonVisibleProperty =
+            DependencyProperty.Register(
+                nameof(IsMoreButtonVisible),
+                typeof(bool),
+                typeof(ColorPicker),
+                new FrameworkPropertyMetadata(defaultValue: false));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the text-entry area collapses behind a
+        /// More/Less toggle button. When <see langword="false"/> (the default) the text
+        /// inputs are always visible and no toggle is shown; when <see langword="true"/>
+        /// the toggle appears and the text-entry area stays collapsed until it is checked,
+        /// matching WinUI.
+        /// </summary>
+        public bool IsMoreButtonVisible
+        {
+            get => (bool)GetValue(IsMoreButtonVisibleProperty);
+            set => SetValue(IsMoreButtonVisibleProperty, value);
+        }
+
+        /// <summary>
         /// Identifies the <see cref="IsColorChannelTextInputVisible"/> dependency property.
         /// </summary>
         public static readonly DependencyProperty IsColorChannelTextInputVisibleProperty =
@@ -232,9 +409,12 @@ namespace Fluence.Wpf.Controls
                 new FrameworkPropertyMetadata(defaultValue: true));
 
         /// <summary>
-        /// Gets or sets a value indicating whether the hex text input row is shown. The
-        /// input accepts <c>#RRGGBB</c> and <c>#AARRGGBB</c> (the leading <c>#</c> is
-        /// optional) and commits on Enter or when keyboard focus leaves the box.
+        /// Gets or sets a value indicating whether the RGB/HSV representation selector and
+        /// the per-channel text inputs are shown. The hex input is governed separately by
+        /// <see cref="IsHexInputVisible"/> and the alpha input by
+        /// <see cref="IsAlphaTextInputVisible"/>, matching WinUI. Channel input commits
+        /// live on every valid keystroke; Enter or focus loss normalizes the text and
+        /// restores it after invalid input.
         /// </summary>
         public bool IsColorChannelTextInputVisible
         {
@@ -242,13 +422,11 @@ namespace Fluence.Wpf.Controls
             set => SetValue(IsColorChannelTextInputVisibleProperty, value);
         }
 
-        // Note: WinUI's IsMoreButtonVisible (which collapses the text inputs behind a
-        // "More" expander) is deliberately omitted for v1; IsColorChannelTextInputVisible
-        // covers the show/hide use case directly.
-
         /// <summary>
         /// Occurs after <see cref="Color"/> changes, whether through the spectrum, the
-        /// sliders, the hex input, or a programmatic update.
+        /// sliders, the channel or hex text inputs, or a programmatic update. Channel and
+        /// alpha text inputs commit live, so the event can fire once per keystroke while
+        /// the user types (for example "1", "12", "120"), matching WinUI.
         /// </summary>
         public event EventHandler<ColorPickerColorChangedEventArgs>? ColorChanged;
 
@@ -339,6 +517,14 @@ namespace Fluence.Wpf.Controls
                 _hexTextBox.LostKeyboardFocus -= OnHexTextBoxLostKeyboardFocus;
             }
 
+            DetachChannelTextBox(_redTextBox, OnRgbTextBoxTextChanged);
+            DetachChannelTextBox(_greenTextBox, OnRgbTextBoxTextChanged);
+            DetachChannelTextBox(_blueTextBox, OnRgbTextBoxTextChanged);
+            DetachChannelTextBox(_hueTextBox, OnHsvTextBoxTextChanged);
+            DetachChannelTextBox(_saturationTextBox, OnHsvTextBoxTextChanged);
+            DetachChannelTextBox(_valueTextBox, OnHsvTextBoxTextChanged);
+            DetachChannelTextBox(_alphaTextBox, OnAlphaTextBoxTextChanged);
+
             base.OnApplyTemplate();
 
             _spectrumImage = GetTemplateChild(PART_SpectrumImage) as Image;
@@ -347,6 +533,13 @@ namespace Fluence.Wpf.Controls
             _hueSlider = GetTemplateChild(PART_HueSlider) as RangeBase;
             _alphaSlider = GetTemplateChild(PART_AlphaSlider) as RangeBase;
             _hexTextBox = GetTemplateChild(PART_HexTextBox) as System.Windows.Controls.TextBox;
+            _redTextBox = GetTemplateChild(PART_RedTextBox) as System.Windows.Controls.TextBox;
+            _greenTextBox = GetTemplateChild(PART_GreenTextBox) as System.Windows.Controls.TextBox;
+            _blueTextBox = GetTemplateChild(PART_BlueTextBox) as System.Windows.Controls.TextBox;
+            _hueTextBox = GetTemplateChild(PART_HueTextBox) as System.Windows.Controls.TextBox;
+            _saturationTextBox = GetTemplateChild(PART_SaturationTextBox) as System.Windows.Controls.TextBox;
+            _valueTextBox = GetTemplateChild(PART_ValueTextBox) as System.Windows.Controls.TextBox;
+            _alphaTextBox = GetTemplateChild(PART_AlphaTextBox) as System.Windows.Controls.TextBox;
             _alphaGradientBorder = GetTemplateChild(AlphaGradientBorderName) as System.Windows.Controls.Border;
             _currentSwatchBorder = GetTemplateChild(CurrentSwatchBorderName) as System.Windows.Controls.Border;
             _previousSwatchBorder = GetTemplateChild(PreviousSwatchBorderName) as System.Windows.Controls.Border;
@@ -374,6 +567,14 @@ namespace Fluence.Wpf.Controls
                 _hexTextBox.KeyDown += OnHexTextBoxKeyDown;
                 _hexTextBox.LostKeyboardFocus += OnHexTextBoxLostKeyboardFocus;
             }
+
+            AttachChannelTextBox(_redTextBox, OnRgbTextBoxTextChanged);
+            AttachChannelTextBox(_greenTextBox, OnRgbTextBoxTextChanged);
+            AttachChannelTextBox(_blueTextBox, OnRgbTextBoxTextChanged);
+            AttachChannelTextBox(_hueTextBox, OnHsvTextBoxTextChanged);
+            AttachChannelTextBox(_saturationTextBox, OnHsvTextBoxTextChanged);
+            AttachChannelTextBox(_valueTextBox, OnHsvTextBoxTextChanged);
+            AttachChannelTextBox(_alphaTextBox, OnAlphaTextBoxTextChanged);
 
             _spectrumThumbTransform = _spectrumThumb is null ? null : new TranslateTransform();
             _spectrumThumb?.SetCurrentValue(RenderTransformProperty, _spectrumThumbTransform);
@@ -403,7 +604,7 @@ namespace Fluence.Wpf.Controls
         private static void OnIsAlphaEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ColorPicker picker = (ColorPicker)d;
-            if (e.NewValue is false && picker._alpha != 255)
+            if (e.NewValue is false && picker._alpha is not 255)
             {
                 // Disabling alpha pins the picker back to fully opaque, like WinUI.
                 picker.SetColorFromHsv(picker._hue, picker._saturation, picker._value, 255);
@@ -548,11 +749,45 @@ namespace Fluence.Wpf.Controls
                 UpdateSpectrumThumb();
                 UpdateAlphaGradient();
                 UpdateSwatches();
+                UpdateChannelTextBoxes();
                 UpdateHexText();
             }
             finally
             {
                 _isUpdatingVisuals = false;
+            }
+        }
+
+        /// <summary>
+        /// Rewrites the channel and alpha text boxes from the current model, skipping the
+        /// group the user is typing in so the live per-keystroke commit never destroys the
+        /// caret of the active box. RGB boxes display the <see cref="Color"/> channels
+        /// exactly; HSV boxes round to integers for display only (the model keeps full
+        /// precision); the alpha box displays a percentage with a trailing percent sign.
+        /// </summary>
+        private void UpdateChannelTextBoxes()
+        {
+            if (_activeTextInputGroup is not TextInputGroup.Rgb)
+            {
+                Color color = Color;
+                _redTextBox?.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, color.R.ToString(CultureInfo.InvariantCulture));
+                _greenTextBox?.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, color.G.ToString(CultureInfo.InvariantCulture));
+                _blueTextBox?.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, color.B.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (_activeTextInputGroup is not TextInputGroup.Hsv)
+            {
+                _hueTextBox?.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, ((int)Math.Round(_hue, MidpointRounding.ToEven)).ToString(CultureInfo.InvariantCulture));
+                _saturationTextBox?.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, ((int)Math.Round(_saturation * 100, MidpointRounding.ToEven)).ToString(CultureInfo.InvariantCulture));
+                _valueTextBox?.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, ((int)Math.Round(_value * 100, MidpointRounding.ToEven)).ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (_activeTextInputGroup is not TextInputGroup.Alpha)
+            {
+                int percent = (int)Math.Round(_alpha / 255.0 * 100, MidpointRounding.ToEven);
+                _alphaTextBox?.SetCurrentValue(
+                    System.Windows.Controls.TextBox.TextProperty,
+                    string.Format(CultureInfo.InvariantCulture, "{0}%", percent));
             }
         }
 
@@ -624,7 +859,7 @@ namespace Fluence.Wpf.Controls
         private void UpdatePreviousSwatch()
         {
             Color? previous = PreviousColor;
-            if (_previousSwatchBorder is null || !previous.HasValue)
+            if (_previousSwatchBorder is null || previous is null)
             {
                 return;
             }
@@ -716,6 +951,71 @@ namespace Fluence.Wpf.Controls
             _isDraggingSpectrum = false;
         }
 
+        /// <summary>
+        /// Handles arrow and page key presses when keyboard focus is on the spectrum area,
+        /// adjusting saturation (Left/Right) or value (Up/Down/PageUp/PageDown) and routing
+        /// through the HSV funnel so there is no RGB round-trip drift.
+        /// </summary>
+        /// <param name="e">The key event arguments.</param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.Handled || _spectrumArea is null)
+            {
+                return;
+            }
+
+            // Only intercept when the event originates from the spectrum area so arrow keys
+            // continue to work normally for sliders and text boxes elsewhere in the picker.
+            if (e.OriginalSource is not DependencyObject originalSource
+                || (!ReferenceEquals(originalSource, _spectrumArea)
+                    && !_spectrumArea.IsAncestorOf(originalSource)))
+            {
+                return;
+            }
+
+            double saturationDelta;
+            double valueDelta;
+
+            if (e.Key is Key.Right)
+            {
+                saturationDelta = SpectrumSmallStep;
+                valueDelta = 0;
+            }
+            else if (e.Key is Key.Left)
+            {
+                saturationDelta = -SpectrumSmallStep;
+                valueDelta = 0;
+            }
+            else if (e.Key is Key.Up)
+            {
+                saturationDelta = 0;
+                valueDelta = SpectrumSmallStep;
+            }
+            else if (e.Key is Key.Down)
+            {
+                saturationDelta = 0;
+                valueDelta = -SpectrumSmallStep;
+            }
+            else if (e.Key is Key.PageUp)
+            {
+                saturationDelta = 0;
+                valueDelta = SpectrumLargeStep;
+            }
+            else if (e.Key is Key.PageDown)
+            {
+                saturationDelta = 0;
+                valueDelta = -SpectrumLargeStep;
+            }
+            else
+            {
+                return;
+            }
+
+            SetColorFromHsv(_hue, _saturation + saturationDelta, _value + valueDelta, _alpha);
+            e.Handled = true;
+        }
+
         private void OnSpectrumAreaSizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateSpectrumThumb();
@@ -781,6 +1081,215 @@ namespace Fluence.Wpf.Controls
             UpdateHexText();
         }
 
+        private void AttachChannelTextBox(System.Windows.Controls.TextBox? textBox, TextChangedEventHandler textChangedHandler)
+        {
+            if (textBox is null)
+            {
+                return;
+            }
+
+            textBox.TextChanged += textChangedHandler;
+            textBox.KeyDown += OnChannelTextBoxKeyDown;
+            textBox.LostKeyboardFocus += OnChannelTextBoxLostKeyboardFocus;
+        }
+
+        private void DetachChannelTextBox(System.Windows.Controls.TextBox? textBox, TextChangedEventHandler textChangedHandler)
+        {
+            if (textBox is null)
+            {
+                return;
+            }
+
+            textBox.TextChanged -= textChangedHandler;
+            textBox.KeyDown -= OnChannelTextBoxKeyDown;
+            textBox.LostKeyboardFocus -= OnChannelTextBoxLostKeyboardFocus;
+        }
+
+        /// <summary>
+        /// Commits a red, green, or blue channel edit live. The target color is rebuilt
+        /// from the current <see cref="Color"/> plus the parsed channel and published
+        /// directly through the Color DP, like the hex commit, so the typed RGB value is
+        /// preserved exactly; <see cref="SyncHsvFromColor"/>'s hue/saturation retention
+        /// keeps the spectrum thumb stable on greys. Invalid text is a no-op until Enter
+        /// or focus loss restores it.
+        /// </summary>
+        /// <param name="sender">The text box that raised the event.</param>
+        /// <param name="e">Event data for the text-changed event.</param>
+        private void OnRgbTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdatingVisuals || sender is not System.Windows.Controls.TextBox box)
+            {
+                return;
+            }
+
+            if (!TryParseChannelValue(box.Text, 255, out int parsed))
+            {
+                return;
+            }
+
+            Color current = Color;
+            byte channel = (byte)parsed;
+            Color target = ReferenceEquals(box, _redTextBox)
+                ? Color.FromArgb(current.A, channel, current.G, current.B)
+                : ReferenceEquals(box, _greenTextBox)
+                    ? Color.FromArgb(current.A, current.R, channel, current.B)
+                    : Color.FromArgb(current.A, current.R, current.G, channel);
+
+            _activeTextInputGroup = TextInputGroup.Rgb;
+            try
+            {
+                SetCurrentValue(ColorProperty, target);
+            }
+            finally
+            {
+                _activeTextInputGroup = TextInputGroup.None;
+            }
+        }
+
+        /// <summary>
+        /// Commits a hue, saturation, or value channel edit live. Only the edited
+        /// component is replaced, going straight through the HSV funnel so the untouched
+        /// components keep their full precision (deliberately better than WinUI, which
+        /// re-reads all three boxes and quantizes the untouched components to integers).
+        /// Hue accepts 0 to 360 because the picker's model and slider use 360 inclusive.
+        /// </summary>
+        /// <param name="sender">The text box that raised the event.</param>
+        /// <param name="e">Event data for the text-changed event.</param>
+        private void OnHsvTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdatingVisuals || sender is not System.Windows.Controls.TextBox box)
+            {
+                return;
+            }
+
+            _activeTextInputGroup = TextInputGroup.Hsv;
+            try
+            {
+                if (ReferenceEquals(box, _hueTextBox))
+                {
+                    if (TryParseChannelValue(box.Text, 360, out int hue))
+                    {
+                        SetColorFromHsv(hue, _saturation, _value, _alpha);
+                    }
+                }
+                else if (ReferenceEquals(box, _saturationTextBox))
+                {
+                    if (TryParseChannelValue(box.Text, 100, out int saturation))
+                    {
+                        SetColorFromHsv(_hue, saturation / 100.0, _value, _alpha);
+                    }
+                }
+                else if (TryParseChannelValue(box.Text, 100, out int value))
+                {
+                    SetColorFromHsv(_hue, _saturation, value / 100.0, _alpha);
+                }
+            }
+            finally
+            {
+                _activeTextInputGroup = TextInputGroup.None;
+            }
+        }
+
+        /// <summary>
+        /// Commits an alpha percentage edit live. The box accepts 0 to 100 with an
+        /// optional trailing percent sign (auto-appended on normalize), mapped to the
+        /// 0 to 255 alpha byte, like WinUI's opacity input.
+        /// </summary>
+        /// <param name="sender">The text box that raised the event.</param>
+        /// <param name="e">Event data for the text-changed event.</param>
+        private void OnAlphaTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdatingVisuals || _alphaTextBox is null)
+            {
+                return;
+            }
+
+            if (!TryParseAlphaPercent(_alphaTextBox.Text, out int percent))
+            {
+                return;
+            }
+
+            byte alpha = (byte)Math.Round(percent / 100.0 * 255, MidpointRounding.ToEven);
+            _activeTextInputGroup = TextInputGroup.Alpha;
+            try
+            {
+                SetColorFromHsv(_hue, _saturation, _value, alpha);
+            }
+            finally
+            {
+                _activeTextInputGroup = TextInputGroup.None;
+            }
+        }
+
+        private void OnChannelTextBoxKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key is not Key.Enter)
+            {
+                return;
+            }
+
+            // Normalizes valid text ("050" -> "50", "50" -> "50%") and restores invalid
+            // text from the model, the same observable outcome as WinUI's focus-loss
+            // snapshot restore.
+            UpdateVisuals();
+            e.Handled = true;
+        }
+
+        private void OnChannelTextBoxLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            UpdateVisuals();
+        }
+
+        /// <summary>
+        /// Strictly parses a non-negative invariant integer between zero and
+        /// <paramref name="max"/> inclusive. Signs, group separators, and embedded
+        /// whitespace are rejected; surrounding whitespace is trimmed.
+        /// </summary>
+        /// <param name="text">The text to parse.</param>
+        /// <param name="max">The inclusive upper bound for the parsed value.</param>
+        /// <param name="value">The parsed integer if successful; otherwise, zero.</param>
+        /// <returns><see langword="true"/> if the text was successfully parsed and is within range; otherwise, <see langword="false"/>.</returns>
+        private static bool TryParseChannelValue(string text, int max, out int value)
+        {
+            value = 0;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            if (!int.TryParse(text.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int parsed) || parsed > max)
+            {
+                return false;
+            }
+
+            value = parsed;
+            return true;
+        }
+
+        /// <summary>
+        /// Parses the alpha box text as a 0 to 100 percentage, tolerating one trailing
+        /// percent sign.
+        /// </summary>
+        /// <param name="text">The text to parse.</param>
+        /// <param name="percent">The parsed percentage value (0 to 100) if successful; otherwise, zero.</param>
+        /// <returns><see langword="true"/> if the text was successfully parsed as a valid percentage; otherwise, <see langword="false"/>.</returns>
+        private static bool TryParseAlphaPercent(string text, out int percent)
+        {
+            percent = 0;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return false;
+            }
+
+            string trimmed = text.Trim();
+            if (trimmed[^1] == '%')
+            {
+                trimmed = trimmed[..^1];
+            }
+
+            return TryParseChannelValue(trimmed, 100, out percent);
+        }
+
         /// <summary>
         /// Parses <c>#RRGGBB</c> / <c>#AARRGGBB</c> (leading <c>#</c> optional). Six-digit
         /// input is treated as fully opaque.
@@ -812,7 +1321,7 @@ namespace Fluence.Wpf.Controls
                 return false;
             }
 
-            if (hex.Length == 6)
+            if (hex.Length is 6)
             {
                 argb |= 0xFF000000;
             }

@@ -33,6 +33,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -668,7 +669,7 @@ defaultValue: null,
 
         internal void InvokeItem(NavigationViewItem item)
         {
-            if (item?.IsEnabled != true)
+            if ((item?.IsEnabled) is not true)
             {
                 return;
             }
@@ -915,7 +916,7 @@ defaultValue: null,
             bool animatePaneWidth = IsLeftFamilyMode(oldMode) && IsLeftFamilyMode(newMode);
             double fromWidth = nav.GetCurrentPaneColumnWidth();
 
-            if (newMode == NavigationViewPaneDisplayMode.LeftCompact)
+            if (newMode is NavigationViewPaneDisplayMode.LeftCompact)
             {
                 nav.SetCurrentValue(IsPaneOpenProperty, value: false);
             }
@@ -945,14 +946,14 @@ defaultValue: null,
         private static object CoerceIsPaneOpen(DependencyObject d, object baseValue)
         {
             NavigationView nav = (NavigationView)d;
-            return nav.PaneDisplayMode == NavigationViewPaneDisplayMode.Top || (bool)baseValue;
+            return nav.PaneDisplayMode is NavigationViewPaneDisplayMode.Top || (bool)baseValue;
         }
 
         private static object CoerceIsPaneToggleButtonVisible(DependencyObject d, object baseValue)
         {
             _ = baseValue;
             NavigationView nav = (NavigationView)d;
-            return nav.PaneDisplayMode != NavigationViewPaneDisplayMode.Top;
+            return nav.PaneDisplayMode is not NavigationViewPaneDisplayMode.Top;
         }
 
         private void CoerceTopPaneProperties()
@@ -969,11 +970,11 @@ defaultValue: null,
             }
 
             bool? desiredValue = null;
-            if (PaneDisplayMode == NavigationViewPaneDisplayMode.Left)
+            if (PaneDisplayMode is NavigationViewPaneDisplayMode.Left)
             {
                 desiredValue = true;
             }
-            else if (PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
+            else if (PaneDisplayMode is NavigationViewPaneDisplayMode.Top)
             {
                 desiredValue = false;
             }
@@ -1064,7 +1065,7 @@ defaultValue: null,
             }
 
             double targetWidth = IsPaneOpen ? PaneOpenWidth : GetClosedPaneWidth();
-            if (!useAnimation)
+            if (!useAnimation || !MotionHelper.IsMotionEnabled)
             {
                 StopPaneColumnAnimation();
                 _paneColumn.Width = new GridLength(targetWidth);
@@ -1112,7 +1113,7 @@ defaultValue: null,
             }
 
             GridLength current = _paneColumn.Width;
-            return current.GridUnitType == GridUnitType.Pixel
+            return current.GridUnitType is GridUnitType.Pixel
                 ? current.Value
                 : GetClosedPaneWidth();
         }
@@ -1153,9 +1154,9 @@ defaultValue: null,
                 return;
             }
 
-            bool topMode = PaneDisplayMode == NavigationViewPaneDisplayMode.Top;
+            bool topMode = PaneDisplayMode is NavigationViewPaneDisplayMode.Top;
             bool shouldShow = IsLoaded
-                && SelectedFooterItem?.IsVisible == true
+                && (SelectedFooterItem?.IsVisible) is true
                 && SelectedFooterItem.ActualHeight > 0;
 
             if (!shouldShow)
@@ -1216,14 +1217,28 @@ defaultValue: null,
                 return;
             }
 
-            StopFooterAnimation();
+            _footerAnimationGeneration++;
+
+            // Capture-and-hold: read the current animated values BEFORE any clock is released so a
+            // retarget mid-flight continues from wherever the indicator visually is right now.
+            double currentScale = 1.0;
+            double currentOpacity = _footerSelectionIndicator.Opacity;
+            if (_footerSelectionIndicator.RenderTransform is TransformGroup liveGroup
+                && liveGroup.Children.Count >= 2
+                && liveGroup.Children[0] is ScaleTransform liveScale)
+            {
+                currentScale = topMode ? liveScale.ScaleX : liveScale.ScaleY;
+            }
+
+            // EnsureMutableTransform releases every indicator clock (properties snap to their base
+            // values); the captured values are then written back as the new base values.
             EnsureMutableTransform(_footerSelectionIndicator);
             TransformGroup group = (TransformGroup)_footerSelectionIndicator.RenderTransform;
             ScaleTransform scale = (ScaleTransform)group.Children[0];
             DependencyProperty scaleProperty = topMode ? ScaleTransform.ScaleXProperty : ScaleTransform.ScaleYProperty;
 
             double toOpacity = appearing ? 1.0 : 0.0;
-            if (!animate)
+            if (!animate || !MotionHelper.IsMotionEnabled)
             {
                 scale.ScaleX = 1.0;
                 scale.ScaleY = 1.0;
@@ -1232,24 +1247,36 @@ defaultValue: null,
             }
 
             int animationId = _footerAnimationGeneration;
-            double fromScale = appearing ? 0.72 : 1.0;
             double toScale = appearing ? 1.0 : 0.72;
-            double fromOpacity = appearing ? 0.0 : 1.0;
             Duration duration = new(TimeSpan.FromMilliseconds(appearing ? 140.0 : 90.0));
             CubicEase ease = new() { EasingMode = appearing ? EasingMode.EaseOut : EasingMode.EaseIn };
 
-            // Seed the start state; the cross axis stays at 1.0 so only the indicator's length scales.
-            scale.ScaleX = topMode ? fromScale : 1.0;
-            scale.ScaleY = topMode ? 1.0 : fromScale;
-            _footerSelectionIndicator.Opacity = fromOpacity;
-
-            DoubleAnimation scaleAnimation = new(fromScale, toScale, duration)
+            // An appear from fully hidden legitimately starts at 0.72 scale / 0.0 opacity; any other
+            // start continues from the captured live values.
+            if (appearing && currentOpacity < 0.01)
             {
+                currentScale = 0.72;
+                currentOpacity = 0.0;
+            }
+
+            // Hold the start state; the cross axis stays at 1.0 so only the indicator's length scales.
+            scale.ScaleX = topMode ? currentScale : 1.0;
+            scale.ScaleY = topMode ? 1.0 : currentScale;
+            _footerSelectionIndicator.Opacity = currentOpacity;
+
+            // To-only animations (no From): each begins from the live base value held above, so a
+            // retarget mid-flight hands off smoothly instead of replaying from the seeded start.
+            DoubleAnimation scaleAnimation = new()
+            {
+                To = toScale,
+                Duration = duration,
                 EasingFunction = ease,
                 FillBehavior = FillBehavior.Stop,
             };
-            DoubleAnimation opacityAnimation = new(fromOpacity, toOpacity, duration)
+            DoubleAnimation opacityAnimation = new()
             {
+                To = toOpacity,
+                Duration = duration,
                 EasingFunction = ease,
                 FillBehavior = FillBehavior.Stop,
             };
@@ -1320,9 +1347,9 @@ defaultValue: null,
                 return;
             }
 
-            bool topMode = PaneDisplayMode == NavigationViewPaneDisplayMode.Top;
+            bool topMode = PaneDisplayMode is NavigationViewPaneDisplayMode.Top;
             Point targetPosition = CalculateIndicatorPosition(nvi, _selectionIndicator, _indicatorHost, topMode);
-            if (!animate || !_indicatorPositioned)
+            if (!animate || !_indicatorPositioned || !MotionHelper.IsMotionEnabled)
             {
                 SnapIndicator(targetPosition);
                 return;
@@ -1360,13 +1387,14 @@ defaultValue: null,
             }
             catch (Exception ex) when (ex.Message is not null)
             {
+                Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                 return new Point(0, 0);
             }
         }
 
         private bool ShouldIndentSelectionIndicator(NavigationViewItem item, bool topMode)
         {
-            return !topMode && item?.IsChildItem == true && (IsPaneOpen || (PaneDisplayMode != NavigationViewPaneDisplayMode.Left && PaneDisplayMode != NavigationViewPaneDisplayMode.LeftCompact));
+            return !topMode && (item?.IsChildItem) is true && (IsPaneOpen || (PaneDisplayMode is not (NavigationViewPaneDisplayMode.Left or NavigationViewPaneDisplayMode.LeftCompact)));
         }
 
         private Point GetCurrentIndicatorPosition()
@@ -1423,7 +1451,29 @@ defaultValue: null,
             {
                 throw new InvalidOperationException("Selection indicator template part is missing.");
             }
-            StopAnimation(); EnsureMutableTransform(_selectionIndicator);
+            _indicatorAnimationGeneration++;
+
+            // Capture-and-hold: read the current animated values BEFORE any clock is released so a
+            // retarget mid-flight continues from wherever the indicator visually is right now.
+            double currentX = fromPosition.X;
+            double currentY = fromPosition.Y;
+            double currentScaleX = 1.0;
+            double currentScaleY = 1.0;
+            double currentOpacity = _selectionIndicator.Opacity;
+            if (_selectionIndicator.RenderTransform is TransformGroup liveGroup
+                && liveGroup.Children.Count >= 2
+                && liveGroup.Children[0] is ScaleTransform liveScale
+                && liveGroup.Children[1] is TranslateTransform liveTranslate)
+            {
+                currentX = liveTranslate.X;
+                currentY = liveTranslate.Y;
+                currentScaleX = liveScale.ScaleX;
+                currentScaleY = liveScale.ScaleY;
+            }
+
+            // EnsureMutableTransform releases every indicator clock (properties snap to their base
+            // values); the captured values are then written back as the new base values.
+            EnsureMutableTransform(_selectionIndicator);
             TransformGroup group = (TransformGroup)_selectionIndicator.RenderTransform;
             ScaleTransform scale = (ScaleTransform)group.Children[0];
             TranslateTransform translate = (TranslateTransform)group.Children[1];
@@ -1434,33 +1484,52 @@ defaultValue: null,
             double toAxis = topMode ? toPosition.X : toPosition.Y;
             double direction = toAxis < fromAxis ? -1.0 : 1.0;
 
-            scale.ScaleX = 1.0;
-            scale.ScaleY = 1.0;
-            translate.X = fromPosition.X;
-            translate.Y = fromPosition.Y;
-            _selectionIndicator.Opacity = 1.0;
+            translate.X = currentX;
+            translate.Y = currentY;
+            scale.ScaleX = currentScaleX;
+            scale.ScaleY = currentScaleY;
+            _selectionIndicator.Opacity = currentOpacity;
+
+            // Cross-axis correction: the non-animated axis must sit at the new resting values.
+            if (topMode)
+            {
+                translate.Y = toPosition.Y;
+                scale.ScaleY = 1.0;
+            }
+            else
+            {
+                translate.X = toPosition.X;
+                scale.ScaleX = 1.0;
+            }
 
             Point departPosition = CalculateDepartPosition(fromPosition, previousItem, topMode, direction);
             Point arriveStartPosition = CalculateArriveStartPosition(toPosition, targetItem, topMode, direction);
             double departAxis = topMode ? departPosition.X : departPosition.Y;
-            double arriveStartAxis = topMode ? arriveStartPosition.X : arriveStartPosition.Y;
             Duration departDuration = new(TimeSpan.FromMilliseconds(90));
             Duration arriveDuration = new(TimeSpan.FromMilliseconds(140));
             CubicEase departEase = new() { EasingMode = EasingMode.EaseIn };
             CubicEase arriveEase = new() { EasingMode = EasingMode.EaseOut };
 
-            DoubleAnimation departAxisAnimation = new(fromAxis, departAxis, departDuration)
+            // To-only animations (no From): each begins from the live base value seeded above, so a
+            // retarget mid-flight hands off smoothly instead of snapping back to the old slot.
+            DoubleAnimation departAxisAnimation = new()
             {
+                To = departAxis,
+                Duration = departDuration,
                 EasingFunction = departEase,
                 FillBehavior = FillBehavior.Stop,
             };
-            DoubleAnimation departOpacityAnimation = new(1.0, 0.0, departDuration)
+            DoubleAnimation departOpacityAnimation = new()
             {
+                To = 0.0,
+                Duration = departDuration,
                 EasingFunction = departEase,
                 FillBehavior = FillBehavior.Stop,
             };
-            DoubleAnimation departScaleAnimation = new(1.0, 0.72, departDuration)
+            DoubleAnimation departScaleAnimation = new()
             {
+                To = 0.72,
+                Duration = departDuration,
                 EasingFunction = departEase,
                 FillBehavior = FillBehavior.Stop,
             };
@@ -1490,18 +1559,24 @@ defaultValue: null,
                 }
                 _selectionIndicator.Opacity = 0.0;
 
-                DoubleAnimation arriveAxisAnimation = new(arriveStartAxis, toAxis, arriveDuration)
+                DoubleAnimation arriveAxisAnimation = new()
                 {
+                    To = toAxis,
+                    Duration = arriveDuration,
                     EasingFunction = arriveEase,
                     FillBehavior = FillBehavior.Stop,
                 };
-                DoubleAnimation arriveOpacityAnimation = new(0.0, 1.0, arriveDuration)
+                DoubleAnimation arriveOpacityAnimation = new()
                 {
+                    To = 1.0,
+                    Duration = arriveDuration,
                     EasingFunction = arriveEase,
                     FillBehavior = FillBehavior.Stop,
                 };
-                DoubleAnimation arriveScaleAnimation = new(0.72, 1.0, arriveDuration)
+                DoubleAnimation arriveScaleAnimation = new()
                 {
+                    To = 1.0,
+                    Duration = arriveDuration,
                     EasingFunction = arriveEase,
                     FillBehavior = FillBehavior.Stop,
                 };
@@ -1544,7 +1619,7 @@ defaultValue: null,
             if (topMode)
             {
                 double x = fromPosition.X + (direction * length);
-                if (previousItem?.IsVisible == true && previousItem.ActualWidth > 0)
+                if ((previousItem?.IsVisible) is true && previousItem.ActualWidth > 0)
                 {
                     try
                     {
@@ -1554,6 +1629,7 @@ defaultValue: null,
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
+                        Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                         return new Point(x, fromPosition.Y);
                     }
                 }
@@ -1561,7 +1637,7 @@ defaultValue: null,
             }
 
             double y = fromPosition.Y + (direction * length);
-            if (previousItem?.IsVisible == true && previousItem.ActualHeight > 0)
+            if ((previousItem?.IsVisible) is true && previousItem.ActualHeight > 0)
             {
                 try
                 {
@@ -1571,6 +1647,7 @@ defaultValue: null,
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
+                    Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                     return new Point(fromPosition.X, y);
                 }
             }
@@ -1587,7 +1664,7 @@ defaultValue: null,
             if (topMode)
             {
                 double x = toPosition.X - (direction * length);
-                if (targetItem?.IsVisible == true && targetItem.ActualWidth > 0)
+                if ((targetItem?.IsVisible) is true && targetItem.ActualWidth > 0)
                 {
                     try
                     {
@@ -1597,6 +1674,7 @@ defaultValue: null,
                     }
                     catch (Exception ex) when (ex.Message is not null)
                     {
+                        Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                         return new Point(x, toPosition.Y);
                     }
                 }
@@ -1605,7 +1683,7 @@ defaultValue: null,
             }
 
             double y = toPosition.Y - (direction * length);
-            if (targetItem?.IsVisible == true && targetItem.ActualHeight > 0)
+            if ((targetItem?.IsVisible) is true && targetItem.ActualHeight > 0)
             {
                 try
                 {
@@ -1615,6 +1693,7 @@ defaultValue: null,
                 }
                 catch (Exception ex) when (ex.Message is not null)
                 {
+                    Debug.WriteLine($"NavigationView indicator transform failed: {ex}");
                     return new Point(toPosition.X, y);
                 }
             }
@@ -1725,7 +1804,7 @@ defaultValue: null,
 
         private void OnTopOverflowButtonClick(object sender, RoutedEventArgs e)
         {
-            if (_topOverflowButton?.ContextMenu is null || _topOverflowButton.ContextMenu.Items.Count == 0)
+            if (_topOverflowButton?.ContextMenu is null || _topOverflowButton.ContextMenu.Items.Count is 0)
             {
                 return;
             }
@@ -1778,7 +1857,7 @@ defaultValue: null,
                     }
                 }
 
-                if (PaneDisplayMode != NavigationViewPaneDisplayMode.Top || _topOverflowButton is null || _topItemsHost is null)
+                if (PaneDisplayMode is not NavigationViewPaneDisplayMode.Top || _topOverflowButton is null || _topItemsHost is null)
                 {
                     if (_topOverflowButton is not null)
                     {
@@ -1804,7 +1883,7 @@ defaultValue: null,
                 double totalItemWidth = 0.0;
                 foreach (NavigationViewItem navItem in navItems)
                 {
-                    if (navItem.Visibility == Visibility.Visible)
+                    if (navItem.Visibility is Visibility.Visible)
                     {
                         totalItemWidth += GetElementWidth(navItem);
                     }
@@ -1829,7 +1908,7 @@ defaultValue: null,
 
                 foreach (NavigationViewItem navItem in navItems)
                 {
-                    if (navItem.Visibility != Visibility.Visible)
+                    if (navItem.Visibility is not Visibility.Visible)
                     {
                         continue;
                     }
@@ -1849,7 +1928,7 @@ defaultValue: null,
 
                 double overflowOffset = usedWidth;
 
-                if (overflowItems.Count == 0)
+                if (overflowItems.Count is 0)
                 {
                     _topOverflowButton.Visibility = Visibility.Collapsed;
                     SetTopOverflowButtonOffset(0.0);

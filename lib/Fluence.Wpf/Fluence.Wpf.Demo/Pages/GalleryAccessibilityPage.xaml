@@ -62,7 +62,7 @@
                         <ui:TextBox
                             Grid.Row="0"
                             Grid.Column="2"
-                            Margin="0,0,12,12"
+                            Margin="0,8,12,12"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Focusable text input"
@@ -239,12 +239,12 @@
             <ContentControl x:Name="DemoSampleSlot03DemoContentHost" Visibility="Collapsed">
                 <StackPanel>
                     <TextBlock
-                        Margin="0,0,0,8"
+                        Margin="0,0,0,16"
                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource BodyTextBlockStyle}"
                         Text="These icon-only buttons all have AutomationProperties.Name so Narrator announces their purpose:"
                         TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal">
+                    <ui:StackPanel Orientation="Horizontal" Spacing="16">
                         <ui:Button
                             x:Name="AutomationNewDocumentButton"
                             Width="36"
@@ -294,7 +294,7 @@
                             AutomationProperties.Name="Share">
                             <ui:FontIcon Glyph="&#xE72D;" IconFontSize="18" />
                         </ui:Button>
-                    </StackPanel>
+                    </ui:StackPanel>
                     <TextBlock
                         Margin="0,12,0,0"
                         Foreground="{DynamicResource TextFillColorTertiaryBrush}"
@@ -345,6 +345,104 @@
                 </StackPanel>
             </ContentControl>
             <pages:DemoSampleControl SampleDescription="Right-to-left layout mirrors Fluence controls for RTL locales." />
+
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="Live region announcements" />
+            <TextBlock
+                Margin="0,0,0,8"
+                Style="{StaticResource SectionDescriptionStyle}"
+                Text="Fluence uses AutomationProperties.LiveSetting and LiveRegionChanged to announce status changes to screen readers on both net472 and net10. Trigger an InfoBar or a validation error below and listen with Narrator to hear the announcement." />
+            <ContentControl x:Name="DemoSampleSlot05DemoContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <ui:StackPanel
+                        Margin="0,0,0,12"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <ui:Button
+                            x:Name="LiveRegionInfoButton"
+                            Margin="0,0,8,0"
+                            Appearance="Accent"
+                            AutomationProperties.Name="Show informational announcement"
+                            Click="LiveRegionInfoButton_Click"
+                            Content="Show InfoBar" />
+                        <ui:Button
+                            x:Name="LiveRegionDismissButton"
+                            AutomationProperties.Name="Dismiss announcement"
+                            Click="LiveRegionDismissButton_Click"
+                            Content="Dismiss" />
+                    </ui:StackPanel>
+                    <ui:InfoBar
+                        x:Name="LiveRegionInfoBar"
+                        Title="Live region demo"
+                        IsClosable="True"
+                        IsOpen="False"
+                        Message="This message was announced by a live region when the InfoBar opened."
+                        Severity="{x:Static uicore:InfoBarSeverity.Informational}" />
+                    <TextBlock
+                        Margin="0,8,0,16"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="Validation error live region:"
+                        TextWrapping="Wrap" />
+                    <StackPanel Margin="0,0,0,0" Orientation="Horizontal">
+                        <ui:TextBox
+                            x:Name="LiveRegionValidationTextBox"
+                            Width="200"
+                            Margin="0,0,8,0"
+                            AutomationProperties.Name="Email"
+                            PlaceholderText="Enter an email address"
+                            TextChanged="LiveRegionValidation_TextChanged" />
+                        <TextBlock
+                            x:Name="LiveRegionValidationStatus"
+                            VerticalAlignment="Bottom"
+                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="" />
+                    </StackPanel>
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Tip: run Windows Narrator (Win+Ctrl+Enter) and interact with these controls to hear live region announcements."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ContentControl>
+            <pages:DemoSampleControl SampleDescription="InfoBar and TextBox validation use LiveRegionChanged to announce status changes without interrupting the user." />
+
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="RatingControl keyboard operability" />
+            <TextBlock
+                Margin="0,0,0,8"
+                Style="{StaticResource SectionDescriptionStyle}"
+                Text="RatingControl is fully keyboard-operable: Tab to focus it, then use Left/Right arrow keys to change the value, Home to clear to zero, and End to set the maximum. The automation peer exposes the RangeValue pattern so Narrator reports the current rating." />
+            <ContentControl x:Name="DemoSampleSlot06DemoContentHost" Visibility="Collapsed">
+                <StackPanel>
+                    <ui:RatingControl
+                        x:Name="A11yRatingControl"
+                        Margin="0,0,0,8"
+                        AutomationProperties.Name="Keyboard rating demo"
+                        Caption="Use arrow keys to change the rating"
+                        MaxRating="5"
+                        Value="3" />
+                    <TextBlock
+                        x:Name="A11yRatingStatusText"
+                        Margin="0,4,0,0"
+                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Current rating: 3 of 5" />
+                    <TextBlock
+                        Margin="0,12,0,0"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Tip: Narrator announces the rating change as you press the arrow keys because the peer exposes the RangeValue pattern."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ContentControl>
+            <pages:DemoSampleControl SampleDescription="RatingControl supports full keyboard navigation and exposes the RangeValue automation pattern." />
         </StackPanel>
     </ui:SmoothScrollViewer>
 </UserControl>

@@ -12,28 +12,31 @@
     <!--
         Home page structure. This page does NOT use the DemoSampleControl slot pattern.
         Instead it contains:
-        * A hero banner image (BrandBannerImage) that swaps between a light and dark
-        PNG asset when the theme changes. The swap is driven by UpdateBrandBanner()
-        in the code-behind, which subscribes to ApplicationThemeManager.Changed.
+        * A theme-paired hero lockup (BrandHeroImage): FluenceHeaderLightDrawingImage on
+        light themes and FluenceHeaderDarkDrawingImage on dark themes (both merged into
+        application resources by the library's Generic.xaml). The lockup bakes the
+        wordmark into the artwork, so the code-behind swaps the resource key on
+        ApplicationThemeManager.Changed, and high contrast picks the variant whose
+        wordmark reads against the live system window color.
         * Two action Card tiles (Theming, Shell) that route to the Settings page via
         Card_Click, which calls host.NavigateTo(tag).
         * A UniformGrid of nine featured-control Card tiles; each Card carries a Tag
         string matching a gallery page route, and Card_Click resolves the navigation
         through the same host.NavigateTo(tag) helper on MainWindow.
-        See GalleryHomePage.xaml.cs for the banner-update and card-click handlers.
+        See GalleryHomePage.xaml.cs for the card-click handler.
     -->
     <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <!--  Hero brand graphic  -->
             <StackPanel Margin="0,8,0,28" HorizontalAlignment="Center">
                 <Image
-                    x:Name="BrandBannerImage"
-                    Height="224"
-                    MaxWidth="760"
-                    HorizontalAlignment="Stretch"
-                    RenderOptions.BitmapScalingMode="HighQuality" />
+                    x:Name="BrandHeroImage"
+                    Height="140"
+                    HorizontalAlignment="Center"
+                    RenderOptions.BitmapScalingMode="HighQuality"
+                    Source="{DynamicResource FluenceHeaderLightDrawingImage}" />
                 <TextBlock
-                    Margin="0,0,0,0"
+                    Margin="0,16,0,0"
                     HorizontalAlignment="Center"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource SubtitleTextBlockStyle}"

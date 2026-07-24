@@ -124,8 +124,9 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(presenter, "The popup child must be a FlyoutPresenter.");
                     Assert.AreEqual("Flyout body", presenter.Content, "Flyout.Content must flow to the presenter.");
 
-                    // The open reveal (slide from Y=-8 with a fade) must exist in the template
-                    // and settle at rest once the 167ms storyboard completes.
+                    // The open reveal (a placement-aware slide with a fade, run by
+                    // FlyoutPresenter.OnLoaded) must target the named template parts and
+                    // settle at rest once the 167ms reveal completes.
                     Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => presenter.IsLoaded),
                         "The presenter must load inside the open popup.");
                     System.Windows.Media.TranslateTransform? translate =
@@ -371,6 +372,64 @@ namespace Fluence.Wpf.Tests
                     CustomPopupPlacement[] bottomPlacements = popup.CustomPopupPlacementCallback(popupSize, targetSize, default);
                     Assert.AreEqual(new Point(-20, 20), bottomPlacements[0].Point,
                         "Bottom placement must center the popup horizontally on the target's bottom edge.");
+                }
+                finally
+                {
+                    flyout.Hide();
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
+        public void Flyout_ShowAt_StampsRevealPlacementWithMappedSide()
+        {
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 400, Height = 300 };
+                Button target = new() { Content = "Anchor" };
+                Controls.Flyout flyout = new() { Content = "Directional" };
+
+                try
+                {
+                    window.Content = target;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    Controls.FlyoutPresenter unstamped = new();
+                    Assert.AreEqual(PlacementMode.Bottom, unstamped.RevealPlacement,
+                        "RevealPlacement must default to the dominant bottom side before ShowAt stamps it.");
+
+                    foreach (FlyoutPlacementMode mode in new[]
+                    {
+                        FlyoutPlacementMode.Top,
+                        FlyoutPlacementMode.Bottom,
+                        FlyoutPlacementMode.Left,
+                        FlyoutPlacementMode.Right,
+                    })
+                    {
+                        flyout.Placement = mode;
+                        flyout.ShowAt(target);
+                        Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                            string.Format("ShowAt should open the flyout popup for placement {0}.", mode));
+
+                        Controls.FlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.FlyoutPresenter;
+                        Assert.IsNotNull(presenter,
+                            string.Format("The popup child must be a FlyoutPresenter for placement {0}.", mode));
+                        PlacementMode expectedSide = Controls.FlyoutBase.MapPlacementSide(mode);
+                        Assert.AreEqual(expectedSide, presenter.RevealPlacement,
+                            string.Format(
+                                "ShowAt must stamp RevealPlacement with the side MapPlacementSide resolves for placement {0}.",
+                                mode));
+
+                        flyout.Hide();
+                        Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                            string.Format("Hide should close the flyout popup for placement {0}.", mode));
+                    }
                 }
                 finally
                 {

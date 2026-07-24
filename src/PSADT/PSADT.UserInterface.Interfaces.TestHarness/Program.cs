@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -28,6 +29,19 @@ namespace PSADT.UserInterface.TestHarness
         internal static void Init()
         {
             AppDomain.CurrentDomain.SetData("PSADT.UserInterface.DialogManager.UnhandledExceptionHandler", static void (Exception ex) => throw new InvalidProgramException("An unhandled WPF exception occurred.", ex));
+
+            // Handle WPF ManagedWndProcTracker race condition during shutdown
+            // This suppresses the "Invalid window handle" exception that occurs when windows
+            // are destroyed by other threads during AppDomain shutdown cleanup
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (args.ExceptionObject is Win32Exception win32Ex && win32Ex.NativeErrorCode is 1400 && (win32Ex.StackTrace?.Contains("ManagedWndProcTracker")) is true)
+                {
+                    // Suppress: This is a known race condition in WPF's window cleanup code
+                    // during shutdown where PostMessage is called on a window that was destroyed
+                    // between SetWindowLong and PostMessage calls
+                }
+            };
         }
 
         /// <summary>
@@ -80,36 +94,35 @@ namespace PSADT.UserInterface.TestHarness
                 new("taskmgr", "Windows Task Manager"),
             ]);
 
-            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(580);
+            TimeSpan dialogExpiryDuration = TimeSpan.FromSeconds(200);
 
-            TimeSpan countdownDuration = TimeSpan.FromSeconds(580);
+            TimeSpan countdownDuration = TimeSpan.FromSeconds(120);
 
-            const string customMessageText = "Basic URL: [url]https://example.com[/url]\r\n" +
-                                             "URL with Description: [url=https://example.com]Read the IT Security Policy here[/url].\r\n" +
-                                             "This is [bold]bold text[/bold] and [italic]italic text[/italic].\r\n" +
-                                             "Nested tags: [bold]Bold plus [italic]italic inside[/italic], with an [accent]accent[/accent][/bold].\r\n" +
-                                             "Double nested tags: A cheeky [bold][accent][italic]bold italic accent![/italic][/accent][/bold].";
+            const string customMessageText = "See the [url=https://example.com/policy]IT Security Policy[/url] for why this update is required.\r\n";
 
-            const uint deferralsRemaining = 99;
-            DateTime deferralDeadline = DateTime.Parse("2026-06-04T13:00:00", CultureInfo.InvariantCulture);
+            const uint deferralsRemaining = 50;
+            DateTime deferralDeadline = DateTime.Parse("2027-06-04T13:00:00", CultureInfo.InvariantCulture);
 
             const string progressMessageText = "Performing [accent]pre-flight checks[/accent]…";
-            const string progressDetailMessageText = "Testing your [accent]system to ensure compatibility[/accent]. Please wait…";
+            const string progressDetailMessageText = "Verifying [italic]system compatibility[/italic]. Please wait…";
 
-            TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(540); // Set this high so we have 9 mins before we accidentally reboot ourselves
-            TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(120); // 2 mins before the user can no longer minimize the restart dialog
+            TimeSpan restartCountdownDuration = TimeSpan.FromSeconds(180); // 3 mins before we accidentally reboot ourselves
+            TimeSpan restartCountdownNoMinimizeDuration = TimeSpan.FromSeconds(90); // 90 secs before the user can no longer minimize the restart dialog
+            const string restartCustomMessageText = "Please [bold]save your work[/bold] before the device restarts.";
 
-            const string customDialogMessageText = "The installation requires you to have an exceptional amount of patience, as well an almost superhuman ability to not lose your temper. Given that you have not had much and seem to be super-cranky, are you sure you want to proceed? [bold]URL Formatting Tests:[/bold] Visit [url]https://psappdeploytoolkit.com[/url] or check our [url=https://github.com/PSAppDeployToolkit/PSAppDeployToolkit]GitHub Repository[/url] for support.";
-            const string customDialogButtonLeftText = "LeftButton";
-            const string customDialogButtonMiddleText = "MiddleButton";
-            const string customDialogButtonRightText = "RightButton";
+            const string customDialog1MessageText = "This update makes [bold][accent]significant system changes[/accent][/bold]. Do you want to continue?";
+            const string customDialog2MessageText = "You may [italic]defer[/italic] this once, but it must be installed before the deadline. Proceed?";
+            const string customDialog3MessageText = "Need help during installation? Visit [url]https://psappdeploytoolkit.com[/url] for support.";
+            const string customDialogButtonLeftText = "Continue";
+            const string customDialogButtonMiddleText = "Jump Around";
+            const string customDialogButtonRightText = "Defer";
 
-            const string listDialogMessageText = "Please choose how you’d like to use Adobe Creative Cloud on this device. You can change this later in Preferences.";
+            const string listDialogMessageText = "Choose how you’d like to use [accent]Adobe Creative Cloud[/accent] on this device.";
             string[] listDialogItems = ["Personal (Individual Plan)", "Team (Creative Cloud for Teams)", "Enterprise (Managed by IT)", "Education (Student / Faculty)", "Shared Device (Lab / Classroom)"];
             const string listDialogButtonLeftText = "OK";
             const string listDialogButtonRightText = "Cancel";
 
-            const string inputDialogMessageText = "Enter the server name e.g. [italic]remotesvr1.psadt.ca[/italic]";
+            const string inputDialogMessageText = "Enter the server name, e.g. [italic]remotesvr1.psadt.ca[/italic]";
             const string inputDialogTextBox = "YouCompleteMe";
             const string inputDialogButtonLeftText = "Continue";
             const string inputDialogButtonRightText = "Cancel";
@@ -140,6 +153,7 @@ namespace PSADT.UserInterface.TestHarness
                 {
                     { "DialogExpiryDuration", dialogExpiryDuration },
                     { "FluentAccentColor", ValueTypeConverter.ToInt(0xFF00CC6A) }, // Accent Color: Green #00CC6A
+                    { "DialogTopMost", true },
                     { "DialogAllowMinimize", true },
                     { "AppTitle", appTitle },
                     { "Subtitle", subtitle },
@@ -160,7 +174,8 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
-                    { "MessageText", customDialogMessageText },
+                    { "DialogTopMost", true },
+                    { "MessageText", customDialog1MessageText },
                     { "ButtonLeftText", customDialogButtonLeftText },
                     { "ButtonMiddleText", customDialogButtonMiddleText },
                     { "ButtonRightText", customDialogButtonRightText },
@@ -179,7 +194,8 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
-                    { "MessageText", customDialogMessageText },
+                    { "DialogTopMost", true },
+                    { "MessageText", customDialog2MessageText },
                     { "ButtonLeftText", customDialogButtonLeftText },
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
@@ -198,7 +214,10 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
-                    { "MessageText", customDialogMessageText },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
+                    { "MessageText", customDialog3MessageText },
                     { "ButtonRightText", customDialogButtonRightText },
                     { "Icon", DialogSystemIcon.Information },
                     { "MinimizeWindows", false },
@@ -215,6 +234,9 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
                     { "MessageText", listDialogMessageText },
                     { "ButtonLeftText", listDialogButtonLeftText },
                     { "ButtonRightText", listDialogButtonRightText },
@@ -235,6 +257,9 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppIconImage", appIconImage },
                     { "AppIconDarkImage", appIconDarkImage },
                     { "AppBannerImage", appBannerImage },
+                    { "DialogTopMost", true },
+                    { "DialogAllowMove", true },
+                    { "DialogAllowMinimize", true },
                     { "MessageText", inputDialogMessageText },
                     { "InitialInputText", inputDialogTextBox },
                     { "ButtonLeftText", inputDialogButtonLeftText },
@@ -258,7 +283,7 @@ namespace PSADT.UserInterface.TestHarness
                     { "AppBannerImage", appBannerImage },
                     { "CountdownDuration", restartCountdownDuration },
                     { "CountdownNoMinimizeDuration", restartCountdownNoMinimizeDuration },
-                    // { "CustomMessageText", customMessageText },
+                    { "CustomMessageText", restartCustomMessageText },
                     { "Language", CultureInfo.CurrentCulture },
                     { "Strings", (Hashtable)stringTable["RestartPrompt"]! },
                 };
@@ -280,14 +305,14 @@ namespace PSADT.UserInterface.TestHarness
 
                 await DialogManager.ShowProgressDialogAsync(dialogStyle, progressDialogOptions).ConfigureAwait(false);
 
-                await Task.Delay(3000, default).ConfigureAwait(false); // Simulate some work being done
+                await Task.Delay(5000, default).ConfigureAwait(false); // Simulate some work being done
 
                 // Simulate a process with progress updates.
-                for (int i = 0; i <= 100; i += 10)
+                for (int i = 0; i <= 100; i += 20)
                 {
-                    // Update progress
-                    await DialogManager.UpdateProgressDialogAsync($"Installation progress: {i.ToString(CultureInfo.InvariantCulture)}%", $"Step {(i / 10).ToString(CultureInfo.InvariantCulture)} of 10", i).ConfigureAwait(false);
-                    await Task.Delay(250, default).ConfigureAwait(false);  // Simulate work being done
+                    // Install progress
+                    await DialogManager.UpdateProgressDialogAsync("Installation in progress...", $"{i.ToString(CultureInfo.InvariantCulture)}% complete. ", i).ConfigureAwait(false);
+                    await Task.Delay(2500, default).ConfigureAwait(false);  // Simulate work being done
                 }
 
                 // Close Progress Dialog

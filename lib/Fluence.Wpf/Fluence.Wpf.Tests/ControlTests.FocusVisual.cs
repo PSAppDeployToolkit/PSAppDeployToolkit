@@ -31,13 +31,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows;
 using System.Windows.Input;
-using WpfBorder = System.Windows.Controls.Border;
-using WpfButton = System.Windows.Controls.Button;
-using WpfGrid = System.Windows.Controls.Grid;
-using WpfStackPanel = System.Windows.Controls.StackPanel;
-using WpfTabControl = System.Windows.Controls.TabControl;
-using WpfTabItem = System.Windows.Controls.TabItem;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Fluence.Wpf.Tests
 {
@@ -192,9 +185,9 @@ namespace Fluence.Wpf.Tests
                 Style? sharedStyle = app?.TryFindResource("DefaultCollectionFocusVisualStyle") as Style;
                 Assert.IsNotNull(sharedStyle, "DefaultCollectionFocusVisualStyle must resolve.");
 
-                WpfTabControl tabControl = new();
-                _ = tabControl.Items.Add(new WpfTabItem { Header = "Text", Content = new WpfTextBlock { Text = "A" } });
-                _ = tabControl.Items.Add(new WpfTabItem { Header = "Fill", Content = new WpfTextBlock { Text = "B" } });
+                System.Windows.Controls.TabControl tabControl = new();
+                _ = tabControl.Items.Add(new System.Windows.Controls.TabItem { Header = "Text", Content = new System.Windows.Controls.TextBlock { Text = "A" } });
+                _ = tabControl.Items.Add(new System.Windows.Controls.TabItem { Header = "Fill", Content = new System.Windows.Controls.TextBlock { Text = "B" } });
                 Window w = new() { Content = tabControl, Width = 360, Height = 180 };
 
                 try
@@ -203,7 +196,7 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(w.Dispatcher);
                     w.UpdateLayout();
 
-                    WpfTabItem? first = tabControl.ItemContainerGenerator.ContainerFromIndex(0) as WpfTabItem;
+                    System.Windows.Controls.TabItem? first = tabControl.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.TabItem;
                     Assert.IsNotNull(first, "The first TabItem container should be generated.");
                     Assert.AreSame(sharedStyle, first.FocusVisualStyle,
                         "TabItem should use WPF keyboard focus cues instead of a pointer-sticky custom focus ring.");
@@ -225,16 +218,16 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                WpfTabControl tabControl = new()
+                System.Windows.Controls.TabControl tabControl = new()
                 {
                     Width = 320,
                     Height = 140,
                 };
-                _ = tabControl.Items.Add(new WpfTabItem { Header = "First", Content = new WpfTextBlock { Text = "One" } });
-                _ = tabControl.Items.Add(new WpfTabItem { Header = "Second", Content = new WpfTextBlock { Text = "Two" } });
+                _ = tabControl.Items.Add(new System.Windows.Controls.TabItem { Header = "First", Content = new System.Windows.Controls.TextBlock { Text = "One" } });
+                _ = tabControl.Items.Add(new System.Windows.Controls.TabItem { Header = "Second", Content = new System.Windows.Controls.TextBlock { Text = "Two" } });
 
-                WpfButton afterButton = new() { Content = "After" };
-                WpfStackPanel root = new();
+                System.Windows.Controls.Button afterButton = new() { Content = "After" };
+                System.Windows.Controls.StackPanel root = new();
                 _ = root.Children.Add(tabControl);
                 _ = root.Children.Add(afterButton);
 
@@ -246,8 +239,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfTabItem? first = tabControl.ItemContainerGenerator.ContainerFromIndex(0) as WpfTabItem;
-                    WpfTabItem? second = tabControl.ItemContainerGenerator.ContainerFromIndex(1) as WpfTabItem;
+                    System.Windows.Controls.TabItem? first = tabControl.ItemContainerGenerator.ContainerFromIndex(0) as System.Windows.Controls.TabItem;
+                    System.Windows.Controls.TabItem? second = tabControl.ItemContainerGenerator.ContainerFromIndex(1) as System.Windows.Controls.TabItem;
                     Assert.IsNotNull(first, "The first TabControl header should be generated.");
                     Assert.IsNotNull(second, "The second TabControl header should be generated.");
 
@@ -293,8 +286,8 @@ namespace Fluence.Wpf.Tests
                 Application? app = EnsureApplication();
                 _ = MergeGenericDictionary(app);
 
-                TabViewItem first = new() { Header = "First", Content = new WpfTextBlock { Text = "One" } };
-                TabViewItem second = new() { Header = "Second", Content = new WpfTextBlock { Text = "Two" } };
+                TabViewItem first = new() { Header = "First", Content = new System.Windows.Controls.TextBlock { Text = "One" } };
+                TabViewItem second = new() { Header = "Second", Content = new System.Windows.Controls.TextBlock { Text = "Two" } };
                 TabView tabView = new()
                 {
                     Width = 340,
@@ -304,8 +297,8 @@ namespace Fluence.Wpf.Tests
                 _ = tabView.Items.Add(first);
                 _ = tabView.Items.Add(second);
 
-                WpfButton afterButton = new() { Content = "After" };
-                WpfStackPanel root = new();
+                System.Windows.Controls.Button afterButton = new() { Content = "After" };
+                System.Windows.Controls.StackPanel root = new();
                 _ = root.Children.Add(tabView);
                 _ = root.Children.Add(afterButton);
 
@@ -317,8 +310,8 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    WpfGrid? rootGrid = tabView.Template.FindName("RootGrid", tabView) as WpfGrid;
-                    WpfBorder? contentPanel = tabView.Template.FindName("ContentPanel", tabView) as WpfBorder;
+                    System.Windows.Controls.Grid? rootGrid = tabView.Template.FindName("RootGrid", tabView) as System.Windows.Controls.Grid;
+                    System.Windows.Controls.Border? contentPanel = tabView.Template.FindName("ContentPanel", tabView) as System.Windows.Controls.Border;
                     Assert.IsNotNull(rootGrid, "TabView template should expose RootGrid for keyboard navigation.");
                     Assert.IsNotNull(contentPanel, "TabView template should expose ContentPanel for keyboard navigation.");
                     Assert.AreEqual(KeyboardNavigationMode.Continue, KeyboardNavigation.GetTabNavigation(rootGrid),

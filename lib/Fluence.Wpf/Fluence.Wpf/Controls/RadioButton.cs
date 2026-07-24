@@ -27,6 +27,7 @@
  */
 
 using System.Windows;
+using System.Windows.Automation;
 
 namespace Fluence.Wpf.Controls
 {
@@ -57,14 +58,25 @@ namespace Fluence.Wpf.Controls
                 nameof(Description),
                 typeof(string),
                 typeof(RadioButton),
-                new FrameworkPropertyMetadata(propertyChangedCallback: null));
+                new FrameworkPropertyMetadata(propertyChangedCallback: OnDescriptionChanged));
+
+        private static void OnDescriptionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is RadioButton radioButton)
+            {
+                string? description = e.NewValue as string;
+                AutomationProperties.SetHelpText(
+                    radioButton,
+                    string.IsNullOrWhiteSpace(description) ? string.Empty : description);
+            }
+        }
 
         /// <summary>
         /// Gets or sets the description text displayed below the radio button content.
         /// </summary>
-        public string Description
+        public string? Description
         {
-            get => (string)GetValue(DescriptionProperty);
+            get => (string?)GetValue(DescriptionProperty);
             set => SetValue(DescriptionProperty, value);
         }
 

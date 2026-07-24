@@ -45,7 +45,7 @@ namespace Fluence.Wpf.Theming
         /// <param name="theme">The theme to resolve.</param>
         internal static ApplicationTheme Resolve(ApplicationTheme theme)
         {
-            if (theme != ApplicationTheme.Auto)
+            if (theme is not ApplicationTheme.Auto)
             {
                 return theme;
             }

@@ -30,6 +30,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -245,7 +246,7 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(popup, "Opening the tip must lazily create the host popup.");
                     Assert.IsTrue(popup.AllowsTransparency, "TeachingTip popups must allow transparency for the rounded surface.");
                     Assert.AreEqual(PopupAnimation.None, popup.PopupAnimation,
-                        "TeachingTip popups must disable the popup fade; the template's Loaded storyboard owns the reveal.");
+                        "TeachingTip popups must disable the popup fade; the placement-aware code reveal owns the motion.");
                     Assert.AreSame(tip, popup.Child, "The popup child must be the templated TeachingTip itself.");
                     Assert.AreSame(target, popup.PlacementTarget, "The popup must anchor to TeachingTip.Target.");
                     Assert.AreEqual(PlacementMode.Custom, popup.Placement,
@@ -274,8 +275,8 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(Visibility.Visible, topBeak.Visibility,
                         "A tip popped below its target must show the beak on its top edge.");
 
-                    // The open reveal (fade plus slide from Y=-8) must exist in the template
-                    // and settle at rest once the 167ms storyboard completes.
+                    // The open reveal (fade plus placement-aware slide, played from
+                    // TeachingTip.OnLoaded) must settle at rest once the 167ms slide completes.
                     System.Windows.Media.TranslateTransform? translate =
                         tip.Template.FindName("TipTranslate", tip) as System.Windows.Media.TranslateTransform;
                     Assert.IsNotNull(translate, "The TeachingTip template must expose the TipTranslate reveal transform.");
@@ -832,6 +833,134 @@ namespace Fluence.Wpf.Tests
         }
 
         [TestMethod]
+        public void TeachingTip_OpenReveal_SettlesAtRestForEachPlacement()
+        {
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 640, Height = 480 };
+                Button target = new() { Content = "Anchor" };
+
+                try
+                {
+                    window.Content = target;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    foreach (TeachingTipPlacementMode placement in new[]
+                    {
+                        TeachingTipPlacementMode.Top,
+                        TeachingTipPlacementMode.Bottom,
+                        TeachingTipPlacementMode.Left,
+                        TeachingTipPlacementMode.Right,
+                    })
+                    {
+                        // IsOpen last in the initializer: Target and PreferredPlacement must be
+                        // set before the open resolves the placement.
+                        Controls.TeachingTip tip = new()
+                        {
+                            Title = "Revealed",
+                            Target = target,
+                            PreferredPlacement = placement,
+                            IsOpen = true,
+                        };
+
+                        Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => tip.HostPopup is { IsOpen: true } && tip.IsLoaded),
+                            string.Format("The {0} tip must open and load inside its popup.", placement));
+                        Assert.AreEqual(placement, tip.ActualPlacement,
+                            string.Format("The {0} tip must resolve ActualPlacement to the forced placement.", placement));
+
+                        System.Windows.Media.TranslateTransform? translate =
+                            tip.Template.FindName("TipTranslate", tip) as System.Windows.Media.TranslateTransform;
+                        Assert.IsNotNull(translate,
+                            string.Format("The {0} tip template must expose the TipTranslate reveal transform.", placement));
+                        Grid? tipRoot = tip.Template.FindName("TipRoot", tip) as Grid;
+                        Assert.IsNotNull(tipRoot,
+                            string.Format("The {0} tip template must expose the TipRoot layout root.", placement));
+
+                        // The placement-aware reveal must settle at the (0,0) rest position and
+                        // full opacity, with the Stop-fill clocks released by the completed
+                        // handlers so nothing stays animated.
+                        Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                                () => Math.Abs(translate.X) < 0.001 && Math.Abs(translate.Y) < 0.001 &&
+                                    tipRoot.Opacity >= 1.0 &&
+                                    !translate.HasAnimatedProperties && !tipRoot.HasAnimatedProperties),
+                            string.Format("The {0} reveal must settle at translate (0,0), full opacity, and release its clocks.", placement));
+
+                        tip.IsOpen = false;
+                        Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => tip.HostPopup is { IsOpen: false }),
+                            string.Format("The {0} tip must close before the next placement opens.", placement));
+                    }
+                }
+                finally
+                {
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
+        public void TeachingTip_OpenReveal_CenterTipFadesWithoutSlide()
+        {
+            RunOnStaThread(() =>
+            {
+                Application? app = EnsureApplication();
+                _ = MergeGenericDictionary(app);
+
+                Window window = new() { Width = 640, Height = 480, Content = new Grid() };
+                Controls.TeachingTip tip = new()
+                {
+                    Title = "Centered",
+                    Subtitle = "Modal exemption: no directional motion",
+                };
+
+                try
+                {
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    tip.IsOpen = true;
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => tip.HostPopup is { IsOpen: true } && tip.IsLoaded),
+                        "The untargeted tip must open and load inside its popup.");
+                    Assert.AreEqual(TeachingTipPlacementMode.Center, tip.ActualPlacement,
+                        "An untargeted tip must resolve ActualPlacement to Center.");
+
+                    System.Windows.Media.TranslateTransform? translate =
+                        tip.Template.FindName("TipTranslate", tip) as System.Windows.Media.TranslateTransform;
+                    Assert.IsNotNull(translate, "The tip template must expose the TipTranslate reveal transform.");
+                    Grid? tipRoot = tip.Template.FindName("TipRoot", tip) as Grid;
+                    Assert.IsNotNull(tipRoot, "The tip template must expose the TipRoot layout root.");
+
+                    // Center tips fade only: the translate must never receive a nonzero seed or
+                    // a slide clock (sampled right after Loaded, while the fade may still run).
+                    Assert.AreEqual(0.0, translate.X, 0.001,
+                        "A Center tip must never get a nonzero X reveal seed.");
+                    Assert.AreEqual(0.0, translate.Y, 0.001,
+                        "A Center tip must never get a nonzero Y reveal seed.");
+                    Assert.IsFalse(translate.HasAnimatedProperties,
+                        "A Center tip must not carry a reveal slide clock.");
+
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                            () => tipRoot.Opacity >= 1.0 && !tipRoot.HasAnimatedProperties),
+                        "The Center fade must settle at full opacity and release its clock.");
+                    Assert.AreEqual(0.0, translate.X, 0.001,
+                        "A Center tip must still rest at X=0 after the fade settles.");
+                    Assert.AreEqual(0.0, translate.Y, 0.001,
+                        "A Center tip must still rest at Y=0 after the fade settles.");
+                }
+                finally
+                {
+                    tip.IsOpen = false;
+                    window.Close();
+                }
+            });
+        }
+
+        [TestMethod]
         public void TeachingTip_ThemeCycle_SurfaceBrushesResolve()
         {
             WpfTestSta.Invoke(static () =>
@@ -856,6 +985,24 @@ namespace Fluence.Wpf.Tests
                             string.Format("Resource '{0}' must resolve in TeachingTip theme cycle step: {1}", key, theme));
                     }
                 }
+            });
+        }
+
+        // ---------------------------------------------------------------------------
+        // Task 9 -- a11y: TeachingTip live-region metadata
+        // ---------------------------------------------------------------------------
+
+        [TestMethod]
+        public void TeachingTip_HasPolite_LiveSetting()
+        {
+            RunOnStaThread(static () =>
+            {
+                Controls.TeachingTip tip = new();
+                AutomationLiveSetting liveSetting = AutomationProperties.GetLiveSetting(tip);
+                Assert.AreEqual(
+                    AutomationLiveSetting.Polite,
+                    liveSetting,
+                    "TeachingTip must expose AutomationLiveSetting.Polite so Narrator announces tip content.");
             });
         }
 

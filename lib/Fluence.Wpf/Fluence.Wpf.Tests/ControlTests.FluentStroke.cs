@@ -194,14 +194,113 @@ namespace Fluence.Wpf.Tests
                     Assert.IsNotNull(checkGlyph, "CheckBox template should contain CheckGlyph.");
                     Assert.IsNotNull(indeterminateDash, "CheckBox template should contain IndeterminateDash.");
 
-                    Assert.AreEqual(1.0, checkGlyph.Opacity, 0.01,
-                        "Checked CheckBox state should show the check glyph.");
+                    // The check-in storyboard now fades the glyph in, so sample until it
+                    // settles at the trigger setter steady state instead of asserting
+                    // immediately after the window shows.
+                    Assert.IsTrue(WaitUntil(window.Dispatcher, 3000, () => checkGlyph.Opacity >= 0.99),
+                        "Checked CheckBox state should show the check glyph once the check-in animation settles.");
                     Assert.AreEqual(0.0, indeterminateDash.Opacity, 0.01,
                         "Checked CheckBox state should hide the indeterminate dash.");
                     Assert.AreEqual(indeterminateDash.Height, checkGlyph.StrokeThickness, 0.01,
                         "Checked CheckBox glyph stroke should be as prominent as the indeterminate dash.");
                     Assert.AreSame(indeterminateDash.Background, checkGlyph.Stroke,
                         "Checked CheckBox glyph should use the same on-accent brush as the indeterminate dash.");
+                }
+                finally
+                {
+                    window.Content = null;
+                    window.UpdateLayout();
+                    window.Close();
+                    if (genericDictionary is not null)
+                    {
+                        _ = application?.Resources.MergedDictionaries.Remove(genericDictionary);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void CheckBox_CheckIn_GlyphAnimatesInAndUncheckRevertsInstantly()
+        {
+            RunOnStaThread(static () =>
+            {
+                Application? application = EnsureApplication();
+                ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
+                Window window = new();
+
+                try
+                {
+                    Controls.CheckBox checkBox = new()
+                    {
+                        Content = "Animated check",
+                        IsChecked = false,
+                        IsHitTestVisible = false,
+                        Width = 200,
+                        Height = 40,
+                    };
+                    window.Content = checkBox;
+                    window.Width = 240;
+                    window.Height = 80;
+                    window.Show();
+                    DrainDispatcher(window.Dispatcher);
+                    window.UpdateLayout();
+
+                    _ = checkBox.ApplyTemplate();
+                    Path? checkGlyph = FindVisualChildByName<Path>(checkBox, "CheckGlyph");
+                    Assert.IsNotNull(checkGlyph, "CheckBox template should contain CheckGlyph.");
+                    Assert.AreEqual(0.0, checkGlyph.Opacity, 0.001,
+                        "Unchecked CheckBox must not show the check glyph.");
+
+                    checkBox.IsChecked = true;
+                    DrainDispatcher(window.Dispatcher);
+
+                    // The check-in storyboard uses FillBehavior="Stop", so once the clocks
+                    // finish the glyph must fall back to the setter-provided steady state:
+                    // opacity 1 from the checked trigger and 1.0/1.0 from the inline
+                    // ScaleTransform. WPF keeps the finished clocks attached (so
+                    // HasAnimatedProperties stays true); the observable contract is that
+                    // the stopped clocks hold nothing and the base values win.
+                    bool settled = WaitUntil(window.Dispatcher, 5000, () =>
+                        checkGlyph.RenderTransform is ScaleTransform liveScale
+                        && checkGlyph.Opacity >= 0.9999
+                        && liveScale.ScaleX >= 0.9999
+                        && liveScale.ScaleY >= 0.9999);
+                    Assert.IsTrue(settled,
+                        "The check-in storyboard should complete and hand the glyph back to the trigger setter steady state.");
+
+                    ScaleTransform? scale = checkGlyph.RenderTransform as ScaleTransform;
+                    Assert.IsNotNull(scale, "CheckGlyph must keep its inline ScaleTransform after the check-in animation.");
+                    Assert.AreEqual(1.0, checkGlyph.Opacity, 0.001,
+                        "Glyph opacity must settle at the checked trigger setter value.");
+                    Assert.AreEqual(1.0, scale.ScaleX, 0.001,
+                        "Glyph ScaleX must settle back to the inline transform value.");
+                    Assert.AreEqual(1.0, scale.ScaleY, 0.001,
+                        "Glyph ScaleY must settle back to the inline transform value.");
+
+                    checkBox.IsChecked = false;
+                    DrainDispatcher(window.Dispatcher);
+
+                    // Uncheck is deliberately not animated: the trigger setters revert
+                    // instantly and the finished Stop storyboard holds nothing, so the
+                    // glyph disappears in the same dispatcher pass.
+                    Assert.AreEqual(0.0, checkGlyph.Opacity, 0.001,
+                        "Uncheck must hide the glyph instantly with no exit animation.");
+                    Assert.AreEqual(1.0, scale.ScaleX, 0.001,
+                        "Uncheck must leave the inline transform at its base value.");
+                    Assert.AreEqual(1.0, scale.ScaleY, 0.001,
+                        "Uncheck must leave the inline transform at its base value.");
+
+                    // A second check-in must replay the animation and settle again
+                    // (SnapshotAndReplace hands off the finished clocks).
+                    checkBox.IsChecked = true;
+                    DrainDispatcher(window.Dispatcher);
+                    bool resettled = WaitUntil(window.Dispatcher, 5000, () =>
+                        checkGlyph.RenderTransform is ScaleTransform liveScale
+                        && checkGlyph.Opacity >= 0.9999
+                        && liveScale.ScaleX >= 0.9999
+                        && liveScale.ScaleY >= 0.9999);
+                    Assert.IsTrue(resettled,
+                        "Re-checking must replay the check-in storyboard and settle at the steady state again.");
                 }
                 finally
                 {
@@ -368,10 +467,10 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness,
                         "Left-mode content region must draw a 1,1,0,0 stroke separating it from the pane and top chrome.");
 
-                    Brush? expectedStroke = nav.FindResource("CardStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expectedStroke, "CardStrokeColorDefaultBrush should be available from the active theme.");
+                    Brush? expectedStroke = nav.FindResource("NavigationViewContentSeparatorBrush") as Brush;
+                    Assert.IsNotNull(expectedStroke, "NavigationViewContentSeparatorBrush should be available from the active theme.");
                     Assert.AreSame(expectedStroke, strokeBorder.BorderBrush,
-                        "Left-mode content region stroke must bind to CardStrokeColorDefaultBrush so theme switching updates it.");
+                        "Left-mode content region stroke must bind to NavigationViewContentSeparatorBrush (prominent in Light, fainter in Dark) so the pane/content seam reads correctly per theme.");
                 }
                 finally
                 {
@@ -435,10 +534,10 @@ namespace Fluence.Wpf.Tests
                     Assert.AreEqual(new Thickness(1, 1, 0, 0), strokeBorder.BorderThickness,
                         "LeftCompact-mode content region must draw a 1,1,0,0 stroke consistent with Left mode.");
 
-                    Brush? expectedStroke = nav.FindResource("CardStrokeColorDefaultBrush") as Brush;
-                    Assert.IsNotNull(expectedStroke, "CardStrokeColorDefaultBrush should be available from the active theme.");
+                    Brush? expectedStroke = nav.FindResource("NavigationViewContentSeparatorBrush") as Brush;
+                    Assert.IsNotNull(expectedStroke, "NavigationViewContentSeparatorBrush should be available from the active theme.");
                     Assert.AreSame(expectedStroke, strokeBorder.BorderBrush,
-                        "LeftCompact-mode content region stroke must bind to CardStrokeColorDefaultBrush so theme switching updates it.");
+                        "LeftCompact-mode content region stroke must bind to NavigationViewContentSeparatorBrush (prominent in Light, fainter in Dark) so the pane/content seam reads correctly per theme.");
                 }
                 finally
                 {
