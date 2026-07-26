@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <RootNamespace>Fluence.Wpf.Tests</RootNamespace>
-    <AssemblyName>Fluence.Wpf.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <TestTfmsInParallel>false</TestTfmsInParallel>

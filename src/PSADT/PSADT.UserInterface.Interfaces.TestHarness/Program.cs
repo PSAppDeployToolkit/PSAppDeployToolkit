@@ -11,11 +11,10 @@ using PSADT.ProcessManagement;
 using PSADT.UserInterface.DialogOptions;
 using PSADT.UserInterface.DialogResults;
 using PSADT.UserInterface.DialogState;
-using PSADT.UserInterface.Interfaces;
 using PSADT.Utilities;
 using PSAppDeployToolkit.Foundation;
 
-namespace PSADT.UserInterface.TestHarness
+namespace PSADT.UserInterface.Interfaces.TestHarness
 {
     internal static class Program
     {

@@ -5,8 +5,6 @@
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <Nullable>disable</Nullable>
     <UseWPF>true</UseWPF>
-    <RootNamespace>Fluence.Wpf.Demo.Mvvm</RootNamespace>
-    <AssemblyName>Fluence.Wpf.Demo.Mvvm</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <ApplicationIcon>Resources\fluence-wpf-appicon-256.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);CS1591;VSTHRD001</NoWarn>

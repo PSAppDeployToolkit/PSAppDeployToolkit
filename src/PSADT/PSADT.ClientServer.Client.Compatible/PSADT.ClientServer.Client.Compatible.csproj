@@ -3,7 +3,6 @@
     <TargetFramework>net472</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>PSADT.ClientServer</RootNamespace>
-    <AssemblyName>PSADT.ClientServer.Client.Compatible</AssemblyName>
     <Product>PSAppDeployToolkit Client/Server Client Executable</Product>
     <AssemblyTitle>PSAppDeployToolkit Client/Server Client Executable</AssemblyTitle>
     <AssemblyDescription>This product is utilised by PSAppDeployToolkit for performing user actions from the SYSTEM account.</AssemblyDescription>

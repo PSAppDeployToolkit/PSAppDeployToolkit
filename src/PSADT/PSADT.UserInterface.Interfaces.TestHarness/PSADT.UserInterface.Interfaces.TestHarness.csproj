@@ -2,13 +2,11 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>PSADT.UserInterface.TestHarness</RootNamespace>
-    <AssemblyName>PSADT.UserInterface.TestHarness</AssemblyName>
     <Product>PSAppDeployToolkit User Interface Test Harness</Product>
     <AssemblyTitle>PSAppDeployToolkit User Interface Test Harness</AssemblyTitle>
     <AssemblyDescription>This product serves as a test bed for PSADT.UserInterface, our client display server for PSAppDeployToolkit.</AssemblyDescription>
     <ApplicationIcon>..\..\PSADT.Invoke\PSADT.Invoke\Properties\appIcon.ico</ApplicationIcon>
-    <StartupObject>PSADT.UserInterface.TestHarness.Program</StartupObject>
+    <StartupObject>PSADT.UserInterface.Interfaces.TestHarness.Program</StartupObject>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 

@@ -2,8 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <RootNamespace>PSADT.Interop</RootNamespace>
-    <AssemblyName>PSADT.Interop</AssemblyName>
     <Product>PSAppDeployToolkit Win32 Native Methods Library</Product>
     <AssemblyTitle>PSAppDeployToolkit Win32 Native Methods Library</AssemblyTitle>
     <AssemblyDescription>This assembly provides Win32 library access to all areas of PSAppDeployToolkit.</AssemblyDescription>
@@ -19,7 +17,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.UserInterface" />
     <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
-    <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.TestHarness" />
     <InternalsVisibleTo Include="PSADT.WindowsRuntime" />
     <InternalsVisibleTo Include="PSAppDeployToolkit" />
   </ItemGroup>

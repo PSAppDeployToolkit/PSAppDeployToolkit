@@ -4,8 +4,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net472;net10.0-windows10.0.26100.0</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <RootNamespace>Fluence.Wpf.Demo</RootNamespace>
-    <AssemblyName>Fluence.Wpf.Demo</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <ApplicationIcon>Resources\fluence-wpf-appicon-256.ico</ApplicationIcon>
     <NoWarn>$(NoWarn);CS1591;IDE0330;VSTHRD001</NoWarn>

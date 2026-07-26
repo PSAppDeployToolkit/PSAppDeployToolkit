@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>PSADT.Invoke</RootNamespace>
     <AssemblyName>Invoke-AppDeployToolkit</AssemblyName>
     <Product>PSAppDeployToolkit Deployment Script Launcher</Product>
     <AssemblyTitle>PSAppDeployToolkit Deployment Script Launcher</AssemblyTitle>

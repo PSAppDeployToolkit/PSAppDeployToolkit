@@ -2,8 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <RootNamespace>PSAppDeployToolkit</RootNamespace>
-    <AssemblyName>PSAppDeployToolkit</AssemblyName>
     <Product>PSAppDeployToolkit PowerShell Module Library</Product>
     <AssemblyTitle>PSAppDeployToolkit PowerShell Module Library</AssemblyTitle>
     <AssemblyDescription>This assembly contains all PowerShell-specific elements of the solution.</AssemblyDescription>
