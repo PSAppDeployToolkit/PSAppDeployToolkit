@@ -20,7 +20,8 @@
         "runtime": {
           "lib/net8.0/System.Diagnostics.EventLog.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "System.Diagnostics.EventLog.dll"
           }
         },
         "runtimeTargets": {
@@ -28,13 +29,15 @@
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "0.0.0.0"
+            "fileVersion": "0.0.0.0",
+            "localPath": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.Messages.dll"
           },
           "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll": {
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll"
           }
         }
       },
@@ -42,7 +45,8 @@
         "runtime": {
           "lib/net8.0/System.IO.Packaging.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "System.IO.Packaging.dll"
           }
         }
       },
@@ -50,7 +54,8 @@
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.526.15411",
+            "localPath": "System.Linq.AsyncEnumerable.dll"
           }
         }
       },
@@ -61,7 +66,8 @@
         "runtime": {
           "lib/net8.0/System.ServiceProcess.ServiceController.dll": {
             "assemblyVersion": "8.0.0.1",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "System.ServiceProcess.ServiceController.dll"
           }
         },
         "runtimeTargets": {
@@ -69,7 +75,8 @@
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.1",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "runtimes/win/lib/net8.0/System.ServiceProcess.ServiceController.dll"
           }
         }
       },

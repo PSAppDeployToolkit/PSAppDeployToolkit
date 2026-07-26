@@ -4,8 +4,6 @@
     <OutputType>Library</OutputType>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <RootNamespace>PSADT.UserInterface.Interfaces</RootNamespace>
-    <AssemblyName>PSADT.UserInterface.Interfaces</AssemblyName>
     <Product>PSAppDeployToolkit User Interface Dialog Library</Product>
     <AssemblyTitle>PSAppDeployToolkit User Interface Dialog Library</AssemblyTitle>
     <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
@@ -24,7 +22,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Compatible" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
-    <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.TestHarness" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,8 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net472;net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <RootNamespace>PSADT.UserInterface</RootNamespace>
-    <AssemblyName>PSADT.UserInterface</AssemblyName>
     <Product>PSAppDeployToolkit User Interface Library</Product>
     <AssemblyTitle>PSAppDeployToolkit User Interface Library</AssemblyTitle>
     <AssemblyDescription>This product provides user interface capabilities to PSAppDeployToolkit.</AssemblyDescription>
@@ -23,7 +21,7 @@
     <InternalsVisibleTo Include="PSADT.ClientServer.Client.Launcher.Compatible" />
     <InternalsVisibleTo Include="PSADT.ClientServer.Server" />
     <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces" />
-    <InternalsVisibleTo Include="PSADT.UserInterface.TestHarness" />
+    <InternalsVisibleTo Include="PSADT.UserInterface.Interfaces.TestHarness" />
   </ItemGroup>
 
   <ItemGroup>
