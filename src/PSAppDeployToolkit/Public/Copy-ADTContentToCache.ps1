@@ -62,6 +62,8 @@ function Copy-ADTContentToCache
 
         This can be done using `Remove-ADTFile -LiteralPath "(Get-ADTConfig).Toolkit.CachePath\$($adtSession.InstallName)" -Recurse -ErrorAction Ignore`.
 
+        For security, the destination cache folder is erased and recreated on each run so that stale or maliciously planted content cannot be picked up. Additionally, when running with admin rights, the machine-wide cache folder defined by `(Get-ADTConfig).Toolkit.CachePath` has its ownership reclaimed and its permissions reset to inherit from its parent, mitigating the risk of a standard user pre-creating the folder to gain write access.
+
         This function supports the `-WhatIf` and `-Confirm` parameters for testing changes before applying them.
 
         Tags: psadt<br />
@@ -123,14 +125,84 @@ function Copy-ADTContentToCache
             $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
         }
 
-        # Create the cache folder if it does not exist.
-        if (!(Test-Path -LiteralPath $LiteralPath -PathType Container))
+        # Guard against using the root cache folder directly. The destination is erased on each run, so allowing the root
+        # would wipe every other package's cache. A per-deployment subfolder (e.g. named after the InstallName) is required.
+        $cachePath = (Get-ADTConfig).Toolkit.CachePath
+        if ([System.IO.Path]::GetFullPath($LiteralPath).TrimEnd('\') -eq [System.IO.Path]::GetFullPath($cachePath).TrimEnd('\'))
         {
-            Write-ADTLogEntry -Message "Creating cache folder [$LiteralPath]."
-            if (!$PSCmdlet.ShouldProcess($LiteralPath, 'Create cache folder'))
+            $naerParams = @{
+                Exception = [System.ArgumentException]::new("The cache path [$LiteralPath] cannot be the root cache folder [$cachePath]. Specify a subfolder, such as one named after the deployment's InstallName.")
+                Category = [System.Management.Automation.ErrorCategory]::InvalidArgument
+                ErrorId = 'CachePathIsRootDirectory'
+                TargetObject = $LiteralPath
+                RecommendedAction = "Specify a cache subfolder rather than the root cache path."
+            }
+            $PSCmdlet.ThrowTerminatingError((New-ADTErrorRecord @naerParams))
+        }
+
+        # Check if source and destination are the same (already running from cache). If so, there's nothing to do and we
+        # must never erase the destination as it would destroy the source content.
+        if ([System.IO.Path]::GetFullPath($scriptDir).TrimEnd('\') -eq [System.IO.Path]::GetFullPath($LiteralPath).TrimEnd('\'))
+        {
+            Write-ADTLogEntry -Message "Source and destination are the same path [$LiteralPath]. Skipping copy operation."
+            return
+        }
+
+        # When running with admin rights, if the cache folder is a parent of LiteralPath, set the owner to Administrators group and reset any applied permissions
+        if ((Get-ADTEnvironmentTable).IsAdmin -and (Test-Path -LiteralPath $cachePath -PathType Container) -and [System.IO.Path]::GetFullPath($LiteralPath).StartsWith("$cachePath\", [System.StringComparison]::OrdinalIgnoreCase))
+        {
+            try
             {
+                try
+                {
+                    Write-ADTLogEntry -Message "Securing root cache folder [$cachePath]."
+                    if ($PSCmdlet.ShouldProcess($cachePath, 'Secure root cache folder'))
+                    {
+                        # Using the SID instead of BUILTIN\Administrators to overcome localization issues.
+                        Set-ADTItemPermission -LiteralPath $cachePath -Owner '*S-1-5-32-544' -EnableInheritance -RemoveExplicitRules -InformationAction SilentlyContinue
+                    }
+                }
+                catch
+                {
+                    Write-Error -ErrorRecord $_
+                }
+            }
+            catch
+            {
+                Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to secure cache folder [$cachePath]."
                 return
             }
+        }
+
+        # Erase any existing destination cache folder before copying to prevent mixing with stale or maliciously planted content
+        if (Test-Path -LiteralPath $LiteralPath -PathType Container)
+        {
+            Write-ADTLogEntry -Message "Erasing existing cache folder [$LiteralPath]."
+            if ($PSCmdlet.ShouldProcess($LiteralPath, 'Erase existing cache folder'))
+            {
+                try
+                {
+                    try
+                    {
+                        Remove-Item -LiteralPath $LiteralPath -Recurse -Force
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
+                }
+                catch
+                {
+                    Invoke-ADTFunctionErrorHandler -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -ErrorRecord $_ -LogMessage "Failed to erase existing cache folder [$LiteralPath]."
+                    return
+                }
+            }
+        }
+
+        # Create the cache folder.
+        Write-ADTLogEntry -Message "Creating cache folder [$LiteralPath]."
+        if ($PSCmdlet.ShouldProcess($LiteralPath, 'Create cache folder'))
+        {
             try
             {
                 try
@@ -148,14 +220,10 @@ function Copy-ADTContentToCache
                 return
             }
         }
-        else
-        {
-            Write-ADTLogEntry -Message "Cache folder [$LiteralPath] already exists."
-        }
 
         # Copy the toolkit content to the cache folder.
         Write-ADTLogEntry -Message "Copying toolkit content to cache folder [$LiteralPath]."
-        if (!$PSCmdlet.ShouldProcess($LiteralPath, "Copy toolkit content from [$scriptDir]"))
+        if (!$PSCmdlet.ShouldProcess($LiteralPath, "Copy content from [$scriptDir]"))
         {
             return
         }
@@ -163,12 +231,7 @@ function Copy-ADTContentToCache
         {
             try
             {
-                # Check if source and destination are the same (already running from cache)
-                if ((Resolve-Path -LiteralPath $scriptDir).Path -eq (Resolve-Path -LiteralPath $LiteralPath).Path)
-                {
-                    Write-ADTLogEntry -Message "Source and destination are the same path [$LiteralPath]. Skipping copy operation."
-                }
-                elseif (!$PSBoundParameters.ContainsKey('Exclude'))
+                if (!$PSBoundParameters.ContainsKey('Exclude'))
                 {
                     # Fast path: copy everything in a single operation.
                     Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $LiteralPath -Recurse
