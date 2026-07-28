@@ -18,8 +18,7 @@
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411",
-            "localPath": "System.Linq.AsyncEnumerable.dll"
+            "fileVersion": "10.0.526.15411"
           }
         }
       }

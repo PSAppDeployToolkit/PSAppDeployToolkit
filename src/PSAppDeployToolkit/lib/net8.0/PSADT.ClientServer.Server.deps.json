@@ -25,8 +25,7 @@
         "runtime": {
           "lib/net8.0/Microsoft.Bcl.Cryptography.dll": {
             "assemblyVersion": "10.0.0.10",
-            "fileVersion": "10.0.1026.32716",
-            "localPath": "Microsoft.Bcl.Cryptography.dll"
+            "fileVersion": "10.0.1026.32716"
           }
         }
       },
@@ -34,8 +33,7 @@
         "runtime": {
           "lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103",
-            "localPath": "Microsoft.Win32.SystemEvents.dll"
+            "fileVersion": "8.0.23.53103"
           }
         },
         "runtimeTargets": {
@@ -43,8 +41,7 @@
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103",
-            "localPath": "runtimes/win/lib/net8.0/Microsoft.Win32.SystemEvents.dll"
+            "fileVersion": "8.0.23.53103"
           }
         }
       },
@@ -52,8 +49,7 @@
         "runtime": {
           "lib/net8.0/System.Diagnostics.EventLog.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610",
-            "localPath": "System.Diagnostics.EventLog.dll"
+            "fileVersion": "8.0.1024.46610"
           }
         },
         "runtimeTargets": {
@@ -61,15 +57,13 @@
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "0.0.0.0",
-            "localPath": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.Messages.dll"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll": {
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610",
-            "localPath": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll"
+            "fileVersion": "8.0.1024.46610"
           }
         }
       },
@@ -80,8 +74,7 @@
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.2926.32502",
-            "localPath": "System.Drawing.Common.dll"
+            "fileVersion": "8.0.2926.32502"
           }
         }
       },
@@ -89,8 +82,7 @@
         "runtime": {
           "lib/net8.0/System.Formats.Asn1.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.1026.32716",
-            "localPath": "System.Formats.Asn1.dll"
+            "fileVersion": "10.0.1026.32716"
           }
         }
       },
@@ -98,8 +90,7 @@
         "runtime": {
           "lib/net8.0/System.IO.Packaging.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610",
-            "localPath": "System.IO.Packaging.dll"
+            "fileVersion": "8.0.1024.46610"
           }
         }
       },
@@ -107,8 +98,7 @@
         "runtime": {
           "lib/net8.0/System.Linq.AsyncEnumerable.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411",
-            "localPath": "System.Linq.AsyncEnumerable.dll"
+            "fileVersion": "10.0.526.15411"
           }
         }
       },
@@ -119,8 +109,7 @@
         "runtime": {
           "lib/net8.0/System.ServiceProcess.ServiceController.dll": {
             "assemblyVersion": "8.0.0.1",
-            "fileVersion": "8.0.1024.46610",
-            "localPath": "System.ServiceProcess.ServiceController.dll"
+            "fileVersion": "8.0.1024.46610"
           }
         },
         "runtimeTargets": {
@@ -128,8 +117,7 @@
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.1",
-            "fileVersion": "8.0.1024.46610",
-            "localPath": "runtimes/win/lib/net8.0/System.ServiceProcess.ServiceController.dll"
+            "fileVersion": "8.0.1024.46610"
           }
         }
       },

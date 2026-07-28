@@ -1157,7 +1157,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// Dialog icon cache for improved performance.
         /// </summary>
-        private static readonly Dictionary<string, BitmapSource> _dialogIconCache = [];
+        private static readonly Dictionary<string, BitmapSource> _dialogIconCache = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// A read-only dictionary that caches accent colors for different application themes.
