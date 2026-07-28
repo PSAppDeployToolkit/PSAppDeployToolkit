@@ -64,6 +64,9 @@ function Set-ADTItemPermission
     .PARAMETER RemoveExplicitRules
         Removes non-inherited permissions from the object when enabling inheritance.
 
+    .PARAMETER Owner
+        The user or group to set as the owner of the item (ex: BUILTIN\Administrators, DOMAIN\Admin). If you want to use a SID, prefix it with an asterisk (`*`), i.e., *S-1-5-18. The owner is changed before any permissions are modified.
+
     .INPUTS
         None
 
@@ -164,7 +167,11 @@ function Set-ADTItemPermission
         [System.Management.Automation.SwitchParameter]$EnableInheritance,
 
         [Parameter(Mandatory = $false, HelpMessage = 'Removes non-inherited permissions from the object when enabling inheritance.', ParameterSetName = 'EnableInheritance')]
-        [System.Management.Automation.SwitchParameter]$RemoveExplicitRules
+        [System.Management.Automation.SwitchParameter]$RemoveExplicitRules,
+
+        [Parameter(Mandatory = $false, HelpMessage = 'The user or group to set as the owner of the item (ex: BUILTIN\Administrators). If you want to use a SID, prefix it with an asterisk * (ex: *S-1-5-18). The owner is changed before any permissions are modified.')]
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String]$Owner
     )
 
     begin
@@ -190,6 +197,24 @@ function Set-ADTItemPermission
                         TargetObject = $pathInfo
                     }
                     throw (New-ADTErrorRecord @naerParams)
+                }
+
+                # Set the owner before modifying any ACLs if one was specified.
+                if ($PSBoundParameters.ContainsKey('Owner'))
+                {
+                    $ownerAccount = if ($Owner.StartsWith('*'))
+                    {
+                        ConvertTo-ADTNTAccountOrSID -SID $Owner.Remove(0, 1)
+                    }
+                    else
+                    {
+                        [System.Security.Principal.NTAccount]$Owner
+                    }
+                    Write-ADTLogEntry -Message "Setting owner to [$ownerAccount] on path [$LiteralPath]."
+                    if ($PSCmdlet.ShouldProcess("Path [$LiteralPath]", "Set owner to [$ownerAccount]"))
+                    {
+                        [PSADT.FileSystem.FileSystemUtilities]::SetOwner($pathInfo, $ownerAccount)
+                    }
                 }
 
                 # Directly apply the permissions if an ACL object has been provided.
