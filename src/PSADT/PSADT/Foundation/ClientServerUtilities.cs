@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.Win32;
 using PSADT.AccountManagement;
+using PSADT.DeviceManagement;
 using PSADT.ProcessManagement;
 using PSADT.Security;
 
@@ -41,10 +42,10 @@ namespace PSADT.Foundation
             ClientServerDirectory = new(clientServerDirectory);
 
             // Set up calculated fields based on whether the client/server code is signed.
-            ClientAutoPath = !ClientDefaultPath.IsAuthenticodeTrusted()
+            ClientAutoPath = !ClientDefaultPath.IsAuthenticodeTrusted() || !UseUiAccess
                 ? ClientCompatiblePath
                 : ClientDefaultPath;
-            ClientLauncherAutoPath = !ClientLauncherDefaultPath.IsAuthenticodeTrusted()
+            ClientLauncherAutoPath = !ClientLauncherDefaultPath.IsAuthenticodeTrusted() || !UseUiAccess
                 ? ClientLauncherCompatiblePath
                 : ClientLauncherDefaultPath;
 
@@ -70,7 +71,7 @@ namespace PSADT.Foundation
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         public static ProcessHandle StartClientOperationAsync(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
-            return InvokeClientOperationImplAsync(ClientDefaultPath, argumentList, runAsActiveUser, elevatedTokenType);
+            return InvokeClientOperationImplAsync(ClientAutoPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace PSADT.Foundation
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         public static ProcessHandle StartClientLauncherOperationAsync(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser, ElevatedTokenType? elevatedTokenType)
         {
-            return InvokeClientOperationImplAsync(ClientLauncherDefaultPath, argumentList, runAsActiveUser, elevatedTokenType);
+            return InvokeClientOperationImplAsync(ClientLauncherAutoPath, argumentList, runAsActiveUser, elevatedTokenType);
         }
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace PSADT.Foundation
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         internal static ProcessHandle StartClientOperationAsync(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            return InvokeClientOperationImplAsync(ClientDefaultPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+            return InvokeClientOperationImplAsync(ClientAutoPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace PSADT.Foundation
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         internal static ProcessHandle StartClientLauncherOperationAsync(IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            return InvokeClientOperationImplAsync(ClientLauncherDefaultPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
+            return InvokeClientOperationImplAsync(ClientLauncherAutoPath, argumentList, runAsActiveUser, handlesToInherit: handlesToInherit, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -133,11 +134,11 @@ namespace PSADT.Foundation
         /// <exception cref="InvalidOperationException">Thrown if the client process fails to launch.</exception>
         private static ProcessHandle InvokeClientOperationImplAsync(FileInfo filePath, IReadOnlyList<string> argumentList, RunAsActiveUser? runAsActiveUser = null, ElevatedTokenType? elevatedTokenType = null, IReadOnlyList<nint>? handlesToInherit = null, CancellationToken? cancellationToken = null)
         {
-            bool denyUserTermination = true; bool runAsInvoker = false; bool useShellExecute = false;
+            bool denyUserTermination = true; bool runAsInvoker = false;
             if (runAsActiveUser?.Equals(AccountUtilities.CallerRunAsActiveUser) is not false)
             {
                 bool cannotUseToken = !AccountUtilities.CallerIsAdmin || !AccountUtilities.CallerIsLoggedOnUser;
-                if (useShellExecute = cannotUseToken && filePath == ClientLauncherAutoPath && elevatedTokenType?.Equals(ElevatedTokenType.None) is not false)
+                if (cannotUseToken && filePath == ClientLauncherAutoPath && elevatedTokenType?.Equals(ElevatedTokenType.None) is not false)
                 {
                     denyUserTermination = filePath != ClientLauncherDefaultPath || AccountUtilities.CallerIsAdmin;
                 }
@@ -146,21 +147,16 @@ namespace PSADT.Foundation
                     runAsInvoker = cannotUseToken || handlesToInherit?.Count > 0;
                 }
             }
-            if (!useShellExecute)
-            {
-                elevatedTokenType ??= DefaultElevationType;
-            }
             return ProcessManager.LaunchAsync(new(
                 filePath.FullName,
                 argumentList,
                 Environment.SystemDirectory,
                 runAsActiveUser,
                 denyUserTermination: denyUserTermination,
-                elevatedTokenType: elevatedTokenType,
+                elevatedTokenType: elevatedTokenType ?? DefaultElevationType,
                 runAsInvoker: runAsInvoker,
-                uiAccess: true,
+                uiAccess: UseUiAccess,
                 handlesToInherit: handlesToInherit,
-                useShellExecute: useShellExecute,
                 createNoWindow: !filePath.Name.Contains("Launcher", StringComparison.Ordinal),
                 waitForChildProcesses: true,
                 cancellationToken: cancellationToken
@@ -282,5 +278,10 @@ namespace PSADT.Foundation
         /// Indicates whether the current caller is the GUI executable component of the client-server architecture.
         /// </summary>
         internal static readonly bool CallerIsClientServerClientLauncher;
+
+        /// <summary>
+        /// Indicates whether the client-server architecture should use UI access, which is determined by whether the Out-of-Box Experience (OOBE) has been completed on the device.
+        /// </summary>
+        private static readonly bool UseUiAccess = !DeviceUtilities.IsOOBEComplete();
     }
 }
