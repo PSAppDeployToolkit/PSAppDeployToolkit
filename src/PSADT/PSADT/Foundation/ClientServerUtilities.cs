@@ -29,15 +29,16 @@ namespace PSADT.Foundation
         {
             // Set up the assembly path for the client/server architecture, factoring in the caller may be coming from a .NET Core client.
             string assemblyDirectory = Path.GetDirectoryName(typeof(ClientServerUtilities).Assembly.Location) ?? throw new InvalidProgramException("Failed to retrieve directory for this assembly.");
-            ClientServerDirectory = !assemblyDirectory.EndsWith("net472", StringComparison.Ordinal)
-                ? new(Path.Join(Directory.GetParent(assemblyDirectory)?.FullName ?? throw new InvalidProgramException("Failed to retrieve parent directory for this assembly."), "net472"))
-                : new(assemblyDirectory);
+            string clientServerDirectory = !assemblyDirectory.EndsWith("net472", StringComparison.Ordinal)
+                ? Path.Join(Directory.GetParent(assemblyDirectory)?.FullName ?? throw new InvalidProgramException("Failed to retrieve parent directory for this assembly."), "net472")
+                : assemblyDirectory;
 
             // Set up the paths to each client/server client executable.
-            ClientDefaultPath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.exe"));
-            ClientCompatiblePath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.Compatible.exe"));
-            ClientLauncherDefaultPath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.Launcher.exe"));
-            ClientLauncherCompatiblePath = new(Path.Join(ClientServerDirectory.FullName, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
+            ClientDefaultPath = new(Path.Join(clientServerDirectory, "PSADT.ClientServer.Client.exe"));
+            ClientCompatiblePath = new(Path.Join(clientServerDirectory, "PSADT.ClientServer.Client.Compatible.exe"));
+            ClientLauncherDefaultPath = new(Path.Join(clientServerDirectory, "PSADT.ClientServer.Client.Launcher.exe"));
+            ClientLauncherCompatiblePath = new(Path.Join(clientServerDirectory, "PSADT.ClientServer.Client.Launcher.Compatible.exe"));
+            ClientServerDirectory = new(clientServerDirectory);
 
             // Set up calculated fields based on whether the client/server code is signed.
             ClientAutoPath = !ClientDefaultPath.IsAuthenticodeTrusted()
