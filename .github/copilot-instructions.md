@@ -14,6 +14,8 @@
 - Ignore IDE0028 in this repository context because it is an IntelliSense bug and should not block work.
 - Prefer delegate-based refactors to keep delegates inlined at the call site rather than introducing named local delegate functions when possible.
 - Prefer standard, compiler/analyzer-recognizable C# patterns over custom non-standard lifecycle hooks, especially for IDisposable/disposal implementations, to keep code review and commit ownership clear.
+- Avoid changes that cause `DialogManager` static initialization when the client/server process has not used dialog functionality; do not change `DialogManager` static constructor setup unless explicitly requested. For the client/server WPF shutdown issue, prefer a narrow suppression of the known WPF Win32Exception native error 1400 during shutdown over initializing `DialogManager` or changing its static constructor setup.
+- Keep edits specific to the requested change and avoid unrelated formatting/style refactors, even when touching nearby code.
 
 ## Language-Specific Coding Conventions
 

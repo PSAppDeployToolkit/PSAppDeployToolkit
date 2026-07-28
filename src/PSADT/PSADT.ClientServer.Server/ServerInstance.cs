@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
@@ -640,7 +641,7 @@ namespace PSADT.ClientServer
                         // If the client process failed, throw a ServerException with the inner exception.
                         using (clientResult)
                         {
-                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException)
+                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException && !IsIgnorableClientShutdownException(clientException))
                             {
                                 throw new ServerException("The client process failed during shutdown.", clientException);
                             }
@@ -792,6 +793,16 @@ namespace PSADT.ClientServer
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified client exception is a known benign shutdown exception.
+        /// </summary>
+        /// <param name="exception">The exception deserialized from the client process stderr stream.</param>
+        /// <returns><see langword="true"/> if the exception should be ignored during shutdown; otherwise, <see langword="false"/>.</returns>
+        private static bool IsIgnorableClientShutdownException(Exception exception)
+        {
+            return exception is Win32Exception { NativeErrorCode: 1400 };
         }
 
         /// <summary>
