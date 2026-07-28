@@ -30,6 +30,7 @@ namespace PSAppDeployToolkit.Foundation
     /// <summary>
     /// Represents a deployment session.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0053:Make class or record sealed", Justification = "This class is intended to be inheritable.")]
     public class DeploymentSession
     {
         #region Constructors.

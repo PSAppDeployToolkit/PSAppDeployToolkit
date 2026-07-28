@@ -323,7 +323,7 @@ namespace PSADT.SMBIOS
             // Build without printing "null" when fields are missing
             string vendor = Vendor ?? string.Empty;
             string version = Version ?? string.Empty;
-            string date = $" ({ReleaseDate:yyyy-MM-dd})";
+            string date = $" ({ReleaseDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)})";
             string spaceIfBoth = string.IsNullOrWhiteSpace(vendor) || string.IsNullOrWhiteSpace(version) ? string.Empty : " ";
             return vendor + spaceIfBoth + version + date;
         }
