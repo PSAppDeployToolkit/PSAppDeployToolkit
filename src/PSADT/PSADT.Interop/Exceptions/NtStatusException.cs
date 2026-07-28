@@ -20,7 +20,7 @@ namespace PSADT.Interop.Exceptions
     [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "NTSTATUS value is required for this exception type")]
     [SuppressMessage("Roslynator", "RCS1194:Implement exception constructors", Justification = "NTSTATUS value is required for this exception type")]
     [Serializable]
-    internal class NtStatusException : ExternalException
+    internal sealed class NtStatusException : ExternalException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NtStatusException"/> class with the specified NTSTATUS code and a custom message.
@@ -40,7 +40,7 @@ namespace PSADT.Interop.Exceptions
 #if NET8_0_OR_GREATER
         [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
 #endif
-        private protected NtStatusException(SerializationInfo info, StreamingContext context) : base(info, context)
+        private NtStatusException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
             ErrorCode = info.GetInt32(nameof(ErrorCode));
         }

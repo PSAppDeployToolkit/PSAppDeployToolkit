@@ -75,6 +75,19 @@ dotnet_diagnostic.RCS1242.severity = none
 # Report collection expressions ([]) for C#14 and lower
 # C# preview reports those diagnostics by default
 MA0002.report_collection_expressions = true
+MA0007.IgnoreCatchAllArm = false
+MA0011.exclude_tostring_methods = false
+MA0053.public_class_should_be_sealed = true
+MA0053.class_with_virtual_member_should_be_sealed = true
+MA0053.exceptions_should_be_sealed = true
+MA0075.exclude_tostring_methods = false
+MA0075.consider_nullable_types = true
+MA0076.exclude_tostring_methods = false
+MA0076.consider_nullable_types = true
+MA0099.exclude_enum_without_zero_member = true
+MA0107.exclude_tostring_methods = false
+MA0134.report_discarded = true
+MA0153.report_types_with_data_classification_attributes = true
 
 # Disable Meziantou.Analyzer rules we don't want to deal with.
 dotnet_diagnostic.MA0009.severity = none
