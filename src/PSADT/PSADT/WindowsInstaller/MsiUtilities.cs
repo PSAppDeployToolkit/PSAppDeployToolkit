@@ -72,7 +72,7 @@ namespace PSADT.WindowsInstaller
             using (hView)
             {
                 _ = NativeMethods.MsiViewExecute(hView);
-                Dictionary<string, object> result = [];
+                Dictionary<string, object> result = new(StringComparer.Ordinal);
                 while (true)
                 {
                     using MsiCloseHandleSafeHandle? hRecord = ViewFetch(hView);

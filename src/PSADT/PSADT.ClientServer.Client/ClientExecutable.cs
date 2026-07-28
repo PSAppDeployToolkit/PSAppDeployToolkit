@@ -907,7 +907,7 @@ namespace PSADT.ClientServer
         private static ReadOnlyDictionary<string, string> ArgvToDictionary(string[] argv)
         {
             // Loop through arguments and match argument names to their values.
-            Dictionary<string, string> arguments = [];
+            Dictionary<string, string> arguments = new(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < argv.Length; i++)
             {
                 if (!argv[i].StartsWith("-"))

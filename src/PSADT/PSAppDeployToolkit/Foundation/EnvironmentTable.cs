@@ -151,7 +151,7 @@ namespace PSAppDeployToolkit.Foundation
             {
                 if (officeC2RKey is not null)
                 {
-                    Dictionary<string, object> officeVars = [];
+                    Dictionary<string, object> officeVars = new(StringComparer.OrdinalIgnoreCase);
                     foreach (string valueName in officeC2RKey.GetValueNames())
                     {
                         object? value = officeC2RKey.GetValue(valueName);

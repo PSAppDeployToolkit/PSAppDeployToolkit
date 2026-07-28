@@ -599,11 +599,11 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <summary>
         /// Cache for icons to avoid loading them multiple times.
         /// </summary>
-        private static readonly Dictionary<string, Icon> iconCache = [];
+        private static readonly Dictionary<string, Icon> iconCache = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Cache for banners to avoid loading them multiple times.
         /// </summary>
-        private static readonly Dictionary<string, Bitmap> imageCache = [];
+        private static readonly Dictionary<string, Bitmap> imageCache = new(StringComparer.OrdinalIgnoreCase);
     }
 }

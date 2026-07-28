@@ -72,6 +72,10 @@ dotnet_diagnostic.RCS1231.severity = none
 dotnet_diagnostic.RCS1238.severity = none
 dotnet_diagnostic.RCS1242.severity = none
 
+# Report collection expressions ([]) for C#14 and lower
+# C# preview reports those diagnostics by default
+MA0002.report_collection_expressions = true
+
 # Disable Meziantou.Analyzer rules we don't want to deal with.
 dotnet_diagnostic.MA0009.severity = none
 dotnet_diagnostic.MA0012.severity = none

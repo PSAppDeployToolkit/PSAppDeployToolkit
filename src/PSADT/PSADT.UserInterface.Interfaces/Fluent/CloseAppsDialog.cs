@@ -479,7 +479,7 @@ namespace PSADT.UserInterface.Interfaces.Fluent
         /// <summary>
         /// App/process icon cache for improved performance
         /// </summary>
-        private static readonly Dictionary<string, BitmapSource> _appIconCache = [];
+        private static readonly Dictionary<string, BitmapSource> _appIconCache = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Releases the managed resources used by the dialog.

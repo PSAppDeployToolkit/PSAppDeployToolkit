@@ -47,7 +47,7 @@ namespace PSADT.Utilities
         {
             ArgumentNullException.ThrowIfNull(fontFilePaths);
             ArgumentOutOfRangeException.ThrowIfZero(fontFilePaths.Count, nameof(fontFilePaths));
-            Dictionary<string, int> fontResults = [];
+            Dictionary<string, int> fontResults = new(StringComparer.OrdinalIgnoreCase);
             foreach (string fontFilePath in fontFilePaths)
             {
                 fontResults.Add(fontFilePath, NativeMethods.AddFontResource(fontFilePath));

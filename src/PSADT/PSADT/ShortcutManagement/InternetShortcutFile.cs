@@ -479,7 +479,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -520,7 +520,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -582,7 +582,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -626,7 +626,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -666,7 +666,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -727,7 +727,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -768,7 +768,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
@@ -809,7 +809,7 @@ namespace PSADT.ShortcutManagement
                 }
                 finally
                 {
-                    _ = NativeMethods.PropVariantClear(ref propertyValues[0]);
+                    _ = NativeMethods.PropVariantClear(ref MemoryMarshal.GetReference(propertyValues.AsSpan()));
                 }
             }
             finally
