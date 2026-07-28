@@ -59,6 +59,9 @@ try
                                                 # Specify the path for the cache folder.
                                                 CachePath = '$env:ProgramData\SoftwareCache'
 
+                                                # Specify the path for the cache folder when the caller is not an admin. Prevents non-admins caching contents accessible by all users.
+                                                CachePathNoAdminRights = '$env:LocalAppData\SoftwareCache'
+
                                                 # The name to show by default for dialog subtitles, balloon notifications, etc.
                                                 CompanyName = 'PSAppDeployToolkit'
 

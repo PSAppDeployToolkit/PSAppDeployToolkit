@@ -109,6 +109,13 @@
 				<text id="CachePath" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CachePath" required="true" expandable="true" />
 			</elements>
 		</policy>
+		<policy name="CachePathNoAdminRights" class="Machine" displayName="$(string.CachePathNoAdminRights_Display)" explainText="$(string.CachePathNoAdminRights_Explain)" presentation="$(presentation.CachePathNoAdminRights)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
+			<parentCategory ref="Toolkit" />
+			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />
+			<elements>
+				<text id="CachePathNoAdminRights" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit" valueName="CachePathNoAdminRights" required="true" expandable="true" />
+			</elements>
+		</policy>
 		<policy name="CompanyName" class="Machine" displayName="$(string.CompanyName_Display)" explainText="$(string.CompanyName_Explain)" presentation="$(presentation.CompanyName)" key="SOFTWARE\Policies\PSAppDeployToolkit\Config\Toolkit">
 			<parentCategory ref="Toolkit" />
 			<supportedOn ref="SUPPORTED_Windows_10_0_RS1" />

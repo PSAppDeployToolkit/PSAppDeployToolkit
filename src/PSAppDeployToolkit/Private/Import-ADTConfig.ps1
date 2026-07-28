@@ -193,6 +193,10 @@ function Private:Import-ADTConfig
         {
             $config.Toolkit.LogPath = $config.Toolkit.LogPathNoAdminRights
         }
+        if (![System.String]::IsNullOrWhiteSpace($config.Toolkit.CachePathNoAdminRights))
+        {
+            $config.Toolkit.CachePath = $config.Toolkit.CachePathNoAdminRights
+        }
         if (![System.String]::IsNullOrWhiteSpace($config.MSI.LogPathNoAdminRights))
         {
             $config.MSI.LogPath = $config.MSI.LogPathNoAdminRights

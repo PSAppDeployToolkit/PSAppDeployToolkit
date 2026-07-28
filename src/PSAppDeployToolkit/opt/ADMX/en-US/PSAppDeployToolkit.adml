@@ -33,6 +33,8 @@
 			<string id="Toolkit_Category">Toolkit</string>
 			<string id="CachePath_Display">CachePath</string>
 			<string id="CachePath_Explain">Specify the path for the cache folder.</string>
+			<string id="CachePathNoAdminRights_Display">CachePathNoAdminRights</string>
+			<string id="CachePathNoAdminRights_Explain">Specify the path for the cache folder when the caller is not an admin.</string>
 			<string id="CompanyName_Display">CompanyName</string>
 			<string id="CompanyName_Explain">The name to show by default for dialog subtitles, balloon notifications, etc.</string>
 			<string id="CompressLogs_Display">CompressLogs</string>
@@ -187,6 +189,11 @@ This only applies if "LogWriteToHost" is true, and the script is being ran in a 
 			<presentation id="CachePath">
 				<textBox refId="CachePath">
 					<label>CachePath</label>
+				</textBox>
+			</presentation>
+			<presentation id="CachePathNoAdminRights">
+				<textBox refId="CachePathNoAdminRights">
+					<label>CachePathNoAdminRights</label>
 				</textBox>
 			</presentation>
 			<presentation id="CompanyName">
