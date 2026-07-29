@@ -74,7 +74,7 @@ namespace PSADT.UserInterface
         }
 
         /// <summary>
-        /// Converts a bitmap to an icon, adding a square entry for each possible size without stretcing the source.
+        /// Converts a bitmap to an icon, adding a square entry for each possible size without stretching the source.
         /// </summary>
         /// <param name="img">The bitmap to resize.</param>
         /// <returns>The resized bitmap.</returns>
