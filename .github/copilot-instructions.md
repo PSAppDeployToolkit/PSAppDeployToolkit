@@ -16,6 +16,8 @@
 - Prefer standard, compiler/analyzer-recognizable C# patterns over custom non-standard lifecycle hooks, especially for IDisposable/disposal implementations, to keep code review and commit ownership clear.
 - Avoid changes that cause `DialogManager` static initialization when the client/server process has not used dialog functionality; do not change `DialogManager` static constructor setup unless explicitly requested. For the client/server WPF shutdown issue, prefer a narrow suppression of the known WPF Win32Exception native error 1400 during shutdown over initializing `DialogManager` or changing its static constructor setup.
 - Keep edits specific to the requested change and avoid unrelated formatting/style refactors, even when touching nearby code.
+- Centralize shared helper logic rather than duplicating boilerplate across call sites.
+- For Meziantou Analyzer MA0045 suppressions in this repository, use category "Design" because the analyzer declares RuleCategories.Design.
 
 ## Language-Specific Coding Conventions
 

@@ -5,7 +5,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using PSADT.Utilities;
 
 namespace PSADT.UserInterface.DialogOptions
@@ -75,8 +74,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogPersistInterval">The interval at which the dialog persists. If null, the dialog persists indefinitely.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="appTitle"/>, <paramref name="subtitle"/>, <paramref name="appIconImage"/>,
         /// <paramref name="appIconDarkImage"/>, or <paramref name="appBannerImage"/> is null or empty.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
         private protected BaseDialogOptions(string appTitle, string subtitle, string appIconImage, string? appIconDarkImage, string appBannerImage, string? appTaskbarIconImage, bool dialogTopMost, CultureInfo language, int? fluentAccentColor = null, int? fluentAccentColorDark = null, DialogPosition? dialogPosition = null, bool? dialogAllowMove = null, bool? dialogAllowMinimize = null, TimeSpan? dialogExpiryDuration = null, TimeSpan? dialogPersistInterval = null)
         {
             // Set initial string properties.
@@ -87,19 +84,19 @@ namespace PSADT.UserInterface.DialogOptions
             ArgumentException.ThrowIfNullOrWhiteSpace(appBannerImage);
             AppTitle = appTitle;
             Subtitle = subtitle;
-            AppIconImage = ThrowIfImageIsInvalidAsync(appIconImage, nameof(AppIconImage)).ConfigureAwait(false).GetAwaiter().GetResult();
-            AppBannerImage = ThrowIfImageIsInvalidAsync(appBannerImage, nameof(AppBannerImage)).ConfigureAwait(false).GetAwaiter().GetResult();
+            AppIconImage = ThrowIfImageIsInvalid(appIconImage, nameof(AppIconImage));
+            AppBannerImage = ThrowIfImageIsInvalid(appBannerImage, nameof(AppBannerImage));
 
             // AppTaskbarIconImage is optional, so only validate it if it has a value.
             if (appIconDarkImage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(appIconDarkImage);
-                AppIconDarkImage = ThrowIfImageIsInvalidAsync(appIconDarkImage, nameof(AppIconDarkImage)).ConfigureAwait(false).GetAwaiter().GetResult();
+                AppIconDarkImage = ThrowIfImageIsInvalid(appIconDarkImage, nameof(AppIconDarkImage));
             }
             if (appTaskbarIconImage is not null)
             {
                 ArgumentException.ThrowIfNullOrWhiteSpace(appTaskbarIconImage);
-                AppTaskbarIconImage = ThrowIfImageIsInvalidAsync(appTaskbarIconImage, nameof(AppTaskbarIconImage)).ConfigureAwait(false).GetAwaiter().GetResult();
+                AppTaskbarIconImage = ThrowIfImageIsInvalid(appTaskbarIconImage, nameof(AppTaskbarIconImage));
             }
 
             // Set all remaining properties.
@@ -226,7 +223,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <exception cref="FileFormatException">Thrown if the specified image file is invalid or corrupted.</exception>
         /// <exception cref="BadImageFormatException">Thrown if the specified image is not in a valid format that can be loaded as an icon or bitmap.</exception>
         [StackTraceHidden]
-        internal static async ValueTask<string> ThrowIfImageIsInvalidAsync(string image, string identifier)
+        internal static string ThrowIfImageIsInvalid(string image, string identifier)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(image); ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
             try
@@ -234,7 +231,7 @@ namespace PSADT.UserInterface.DialogOptions
                 using Stream stream = MiscUtilities.GetBase64StringBytes(image) is not byte[] bytes ? new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
                 try
                 {
-                    if (!await DrawingUtilities.IsStreamAnIconAsync(stream).ConfigureAwait(false))
+                    if (!DrawingUtilities.IsStreamAnIcon(stream))
                     {
                         using Bitmap bmp = new(stream, useIcm: true);
                         _ = bmp.Size;

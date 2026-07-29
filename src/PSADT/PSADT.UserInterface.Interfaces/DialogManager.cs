@@ -395,14 +395,14 @@ namespace PSADT.UserInterface.Interfaces
         internal static Task ShowNotifyIconAsync(NotifyIconOptions options)
         {
             // Ensure there's not already a notify icon open.
-            return notifyIcon is not null ? throw new InvalidOperationException("Cannot show a notify icon while one is already open.") : InvokeDialogActionAsync(async () =>
+            return notifyIcon is not null ? throw new InvalidOperationException("Cannot show a notify icon while one is already open.") : InvokeDialogActionAsync(() =>
             {
                 // Set the AUMID for this process so the Windows 10 toast has the correct title.
                 _ = NativeMethods.SetCurrentProcessExplicitAppUserModelID(options.AppTitle);
 
                 // Correct the registry data for the AUMID. This can reference stale info from a previous run.
                 string appIconPath = options.AppTaskbarIconImage ?? options.AppIconImage;
-                System.Drawing.Icon iconObj = await Classic.ClassicDialog.GetIconAsync(appIconPath).ConfigureAwait(true);
+                System.Drawing.Icon iconObj = Classic.ClassicDialog.GetIcon(appIconPath);
                 string regKey = $@"{(AccountUtilities.CallerIsAdmin ? "HKEY_CLASSES_ROOT" : @"HKEY_CURRENT_USER\Software\Classes")}\AppUserModelId\{options.AppTitle}";
                 Registry.SetValue(regKey, "DisplayName", options.AppTitle, RegistryValueKind.String);
                 if (MiscUtilities.GetBase64StringBytes(appIconPath) is not null)
@@ -632,17 +632,6 @@ namespace PSADT.UserInterface.Interfaces
         private static Task InvokeDialogActionAsync(Action callback)
         {
             return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task;
-        }
-
-        /// <summary>
-        /// Invokes the specified asynchronous action on the WPF UI thread.
-        /// </summary>
-        /// <param name="callback">The asynchronous action to invoke on the WPF UI thread.</param>
-        /// <returns>A task that represents the asynchronous operation.</returns>
-        [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "This is our safe implementation.")]
-        private static Task InvokeDialogActionAsync(Func<Task> callback)
-        {
-            return System.Windows.Application.Current.Dispatcher.InvokeAsync(callback, System.Windows.Threading.DispatcherPriority.Normal, default).Task.Unwrap();
         }
 
         /// <summary>

@@ -6,7 +6,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using PSADT.DeviceManagement;
@@ -45,8 +44,6 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// <param name="options">The options that configure the dialog's appearance and behavior. Must not be null.</param>
         /// <param name="dialogResult">An object representing the result of the dialog interaction, used to determine the outcome when the dialog
         /// is closed.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2012:Use ValueTasks correctly", Justification = "This is a false positive, we're directly consuming the ValueTask.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD002:Avoid problematic synchronous waits", Justification = "Synchronous wait is necessary for constructor initialization.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0056:Do not call overridable members in constructor", Justification = "This is OK here.")]
         private protected ClassicDialog(BaseDialogOptions options, IDialogResult dialogResult)
         {
@@ -59,7 +56,7 @@ namespace PSADT.UserInterface.Interfaces.Classic
                 // Base properties.
                 SuspendLayout();
                 Text = StripFormattingTags(options.AppTitle);
-                Icon = GetIconAsync(options.AppTaskbarIconImage ?? options.AppIconImage).ConfigureAwait(false).GetAwaiter().GetResult();
+                Icon = GetIcon(options.AppTaskbarIconImage ?? options.AppIconImage);
                 TopMost = options.DialogTopMost;
                 ActiveControl = buttonDefault;
                 FormClosing += Form_FormClosing;
@@ -528,13 +525,13 @@ namespace PSADT.UserInterface.Interfaces.Classic
         /// string. The path must not be null or empty.</param>
         /// <returns>An <see cref="Icon"/> object representing the icon at the specified path. Returns a cached icon if it has
         /// been previously loaded.</returns>
-        internal static async ValueTask<Icon> GetIconAsync(string path)
+        internal static Icon GetIcon(string path)
         {
             // Use a cached icon if available, otherwise load and cache it before returning it.
             if (!iconCache.TryGetValue(path, out Icon? icon))
             {
                 using Stream stream = MiscUtilities.GetBase64StringBytes(path) is not byte[] bytes ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read) : new MemoryStream(bytes, writable: false);
-                if (!await DrawingUtilities.IsStreamAnIconAsync(stream).ConfigureAwait(false))
+                if (!DrawingUtilities.IsStreamAnIcon(stream))
                 {
                     using Bitmap image = new(stream, useIcm: true);
                     icon = DrawingUtilities.ConvertBitmapToIcon(image);

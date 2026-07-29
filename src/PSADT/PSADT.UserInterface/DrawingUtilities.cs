@@ -5,7 +5,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using PSADT.Interop;
 
 namespace PSADT.UserInterface
@@ -93,10 +92,11 @@ namespace PSADT.UserInterface
         /// <param name="stream">The stream to examine. Must have a length of at least 6 bytes to be valid for icon detection.</param>
         /// <returns>true if the stream starts with the ICONDIR header indicating it is an icon file; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown if the stream is not readable or seekable.</exception>
-        internal static ValueTask<bool> IsStreamAnIconAsync(Stream stream)
+        internal static bool IsStreamAnIcon(Stream stream)
         {
             // Internal implementation method.
-            static async ValueTask<bool> IsStreamAnIconImplAsync(Stream stream)
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "MA0045:Do not use blocking calls, even when the calling method must become async", Justification = "This needs to be synchronous as we use it on WPF threads.")]
+            static bool IsStreamAnIconImpl(Stream stream)
             {
                 // Confirm the stream has enough data for an ICONDIR header.
                 int iconDirSize = Unsafe.SizeOf<ICONDIR>();
@@ -110,7 +110,7 @@ namespace PSADT.UserInterface
                 try
                 {
                     // Read the ICONDIR header and confirm it has the expected values.
-                    byte[] buffer = new byte[iconDirSize]; int bytesRead = await stream.ReadAsync(buffer, 0, iconDirSize, default).ConfigureAwait(false);
+                    byte[] buffer = new byte[iconDirSize]; int bytesRead = stream.Read(buffer, 0, iconDirSize);
                     if (bytesRead != iconDirSize)
                     {
                         return false;
@@ -130,7 +130,7 @@ namespace PSADT.UserInterface
             ArgumentNullException.ThrowIfNull(stream);
             return !stream.CanRead ? throw new ArgumentException("The stream must be readable.", nameof(stream))
                 : !stream.CanSeek ? throw new ArgumentException("The stream must be seekable.", nameof(stream))
-                : IsStreamAnIconImplAsync(stream);
+                : IsStreamAnIconImpl(stream);
         }
 
         /// <summary>
