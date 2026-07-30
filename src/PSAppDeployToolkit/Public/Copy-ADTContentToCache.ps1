@@ -18,15 +18,17 @@ function Copy-ADTContentToCache
         It is important to clean up the cache in the uninstall section for the current version and potentially also in the pre-installation section for previous versions.
 
     .PARAMETER LiteralPath
-        The path to the software cache folder.
+        The path to the software cache folder. Folder should be application specific since it is erased and recreated on each run to prevent mixing with stale or maliciously planted content.
 
-    .PARAMETER Exclude
-        Specifies one or more content categories to exclude from the cache copy.
+        Defaults to the cache folder defined by `(Get-ADTConfig).Toolkit.CachePath` with a subfolder named after the current session's InstallName.
+
+    .PARAMETER Content
+        Specifies one or more content categories to copy. Copies all by default.
 
         Valid values for this parameter are:
-        - `Files`: Excludes the Files folder and does not remap the DirFiles session property.
-        - `SupportFiles`: Excludes the SupportFiles folder and does not remap the DirSupportFiles session property.
-        - `Toolkit`: Excludes all content other than the Files and SupportFiles folders.
+        - `Files`: Copies only the Files folder and remaps the DirFiles session property.
+        - `SupportFiles`: Copies only the SupportFiles folder and remaps the DirSupportFiles session property.
+        - `Toolkit`: Copies all other content except the Files and SupportFiles folders.
 
     .INPUTS
         None
@@ -39,17 +41,17 @@ function Copy-ADTContentToCache
         This function does not generate any output.
 
     .EXAMPLE
-        Copy-ADTContentToCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit"
+        Copy-ADTContentToCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit\$(adtSession.InstallName)"
 
         This example copies the toolkit content to the specified cache folder.
 
     .EXAMPLE
-        Copy-ADTContentToCache -Exclude Files,SupportFiles
+        Copy-ADTContentToCache -Content Toolkit
 
         This example copies the toolkit content to the default cache folder, excluding the Files and SupportFiles folders and leaving DirFiles and DirSupportFiles pointing at the original location.
 
     .EXAMPLE
-        Copy-ADTContentToCache -Exclude Toolkit
+        Copy-ADTContentToCache -Content Files,SupportFiles
 
         This example copies only the Files and SupportFiles folders to the default cache folder, excluding all other content.
 
@@ -89,16 +91,13 @@ function Copy-ADTContentToCache
         [Parameter(Mandatory = $false)]
         [ValidateSet('Files', 'SupportFiles', 'Toolkit')]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
-        [System.String[]]$Exclude
+        [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
+        [System.String[]]$Content = @('Files', 'SupportFiles', 'Toolkit')
     )
 
     begin
     {
         Initialize-ADTFunction -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-        if (($null -ne $Exclude) -and (($Exclude | Select-ADTUniqueObject | Measure-Object).Count -eq $MyInvocation.MyCommand.Parameters.Exclude.Attributes.Where({ $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues.Count))
-        {
-            $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Exclude -ProvidedValue $Exclude -ExceptionMessage 'Cannot specify all possible values for [-Exclude] parameter as there would be nothing to copy.'))
-        }
         try
         {
             $adtSession = Get-ADTSession
@@ -231,7 +230,7 @@ function Copy-ADTContentToCache
         {
             try
             {
-                if (!$PSBoundParameters.ContainsKey('Exclude'))
+                if (($Content | Select-ADTUniqueObject | Measure-Object).Count -eq $MyInvocation.MyCommand.Parameters.Content.Attributes.Where({ $_ -is [System.Management.Automation.ValidateSetAttribute] }).ValidValues.Count)
                 {
                     # Fast path: copy everything in a single operation.
                     Copy-ADTFile -Path (Join-Path -Path $scriptDir -ChildPath *) -Destination $LiteralPath -Recurse
@@ -239,17 +238,17 @@ function Copy-ADTContentToCache
                 else
                 {
                     # Selective copy: enumerate top-level items and copy based on -Exclude.
-                    if ('Toolkit' -notin $Exclude)
+                    if ('Toolkit' -in $Content)
                     {
                         Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin $folderNames) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
                     }
                     $filesSourcePath = Join-Path -Path $scriptDir -ChildPath 'Files'
-                    if (('Files' -notin $Exclude) -and (Test-Path -LiteralPath $filesSourcePath -PathType Container))
+                    if (('Files' -in $Content) -and (Test-Path -LiteralPath $filesSourcePath -PathType Container))
                     {
                         Copy-ADTFile -LiteralPath $filesSourcePath -Destination $LiteralPath -Recurse
                     }
                     $supportFilesSourcePath = Join-Path -Path $scriptDir -ChildPath 'SupportFiles'
-                    if (('SupportFiles' -notin $Exclude) -and (Test-Path -LiteralPath $supportFilesSourcePath -PathType Container))
+                    if (('SupportFiles' -in $Content) -and (Test-Path -LiteralPath $supportFilesSourcePath -PathType Container))
                     {
                         Copy-ADTFile -LiteralPath $supportFilesSourcePath -Destination $LiteralPath -Recurse
                     }
@@ -257,12 +256,12 @@ function Copy-ADTContentToCache
 
                 # Remap session properties for categories that were copied.
                 $filesDestPath = Join-Path -Path $LiteralPath -ChildPath 'Files'
-                if (('Files' -notin $Exclude) -and (Test-Path -LiteralPath $filesDestPath -PathType Container))
+                if (('Files' -in $Content) -and (Test-Path -LiteralPath $filesDestPath -PathType Container))
                 {
                     $adtSession.DirFiles = $filesDestPath
                 }
                 $supportFilesDestPath = Join-Path -Path $LiteralPath -ChildPath 'SupportFiles'
-                if (('SupportFiles' -notin $Exclude) -and (Test-Path -LiteralPath $supportFilesDestPath -PathType Container))
+                if (('SupportFiles' -in $Content) -and (Test-Path -LiteralPath $supportFilesDestPath -PathType Container))
                 {
                     $adtSession.DirSupportFiles = $supportFilesDestPath
                 }
