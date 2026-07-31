@@ -30,13 +30,13 @@ dotnet_analyzer_diagnostic.category-Usage.severity = error
 dotnet_diagnostic.RS0030.severity = error
 
 # Explicitly enable what `latest-all` doesn't enable.
-dotnet_diagnostic.CA1017.severity = error
-dotnet_diagnostic.CA1045.severity = error
-dotnet_diagnostic.CA1051.severity = error
 dotnet_diagnostic.CA1005.severity = error
 dotnet_diagnostic.CA1014.severity = error
-dotnet_diagnostic.CA1060.severity = error
+dotnet_diagnostic.CA1017.severity = error
 dotnet_diagnostic.CA1021.severity = error
+dotnet_diagnostic.CA1045.severity = error
+dotnet_diagnostic.CA1051.severity = error
+dotnet_diagnostic.CA1060.severity = error
 dotnet_diagnostic.CA1501.severity = error
 dotnet_diagnostic.CA1509.severity = error
 
