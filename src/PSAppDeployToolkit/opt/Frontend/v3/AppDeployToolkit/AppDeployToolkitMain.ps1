@@ -3751,7 +3751,7 @@ function Set-ItemPermission
         [ValidateSet('ContainerInherit', 'None', 'ObjectInherit')]
         [System.String[]]$Inheritance = 'None',
 
-        [Parameter(Mandatory = $false, Position = 5, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $false, Position = 5, HelpMessage = 'Sets how to propagate inheritance flags', ParameterSetName = 'DisableInheritance')]
         [ValidateSet('None', 'InheritOnly', 'NoPropagateInherit')]
         [System.String]$Propagation = 'None',
 
