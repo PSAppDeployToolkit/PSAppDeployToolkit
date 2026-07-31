@@ -262,17 +262,14 @@ namespace PSADT.FileSystem
                         {
                             hFind = PInvoke.FindFirstFileEx(dir + "\\*", FINDEX_INFO_LEVELS.FindExInfoBasic, &data, FINDEX_SEARCH_OPS.FindExSearchNameMatch, FIND_FIRST_EX_FLAGS.FIND_FIRST_EX_LARGE_FETCH);
                         }
-                        if (hFind.IsInvalid)
-                        {
-                            using (hFind)
-                            {
-                                continue;
-                            }
-                        }
 
                         // Process the first result and then continue with FindNextFile in a loop until there are no more results. For each subdirectory, add it to the queue for processing.
                         using (hFind)
                         {
+                            if (hFind.IsInvalid)
+                            {
+                                continue;
+                            }
                             do
                             {
                                 // Validate the file name and skip "." and ".." entries.
