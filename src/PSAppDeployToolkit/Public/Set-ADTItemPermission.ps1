@@ -20,7 +20,7 @@ function Set-ADTItemPermission
         The ACL object to apply to the given path.
 
     .PARAMETER User
-        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to assign the permissions to. If you want to use a SID, prefix it with an asterisk (`*`), i.e., *S-1-5-18
+        One or more user names (ex: BUILTIN\Users, DOMAIN\Admin) to assign the permissions to. If you want to use a SID, prefix it with an asterisk (`*`), i.e., '*S-1-5-18'
 
     .PARAMETER Permission
         Permission or list of permissions to be set/added/removed/replaced. Permission DeleteSubdirectoriesAndFiles does not apply to files.
@@ -65,7 +65,7 @@ function Set-ADTItemPermission
         Removes non-inherited permissions from the object when enabling inheritance.
 
     .PARAMETER Owner
-        The user or group to set as the owner of the item (ex: BUILTIN\Administrators, DOMAIN\Admin). If you want to use a SID, prefix it with an asterisk (`*`), i.e., *S-1-5-18. The owner is changed before any permissions are modified.
+        The user or group to set as the owner of the item (ex: BUILTIN\Administrators, DOMAIN\Admin). If you want to use a SID, prefix it with an asterisk (`*`), i.e., '*S-1-5-18'. The owner is changed before any permissions are modified.
 
     .INPUTS
         None
@@ -131,7 +131,7 @@ function Set-ADTItemPermission
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.FileSystemSecurity]$AccessControlList,
 
-        [Parameter(Mandatory = $true, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: *S-1-5-18)', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $true, HelpMessage = 'One or more user names (ex: BUILTIN\Users, DOMAIN\Admin). If you want to use SID, prefix it with an asterisk * (ex: ''*S-1-5-18'')', ParameterSetName = 'DisableInheritance')]
         [Alias('Username', 'Users', 'SID', 'Usernames')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [PSAppDeployToolkit.Attributes.ValidateUnique()]
@@ -169,7 +169,7 @@ function Set-ADTItemPermission
         [Parameter(Mandatory = $false, HelpMessage = 'Removes non-inherited permissions from the object when enabling inheritance.', ParameterSetName = 'EnableInheritance')]
         [System.Management.Automation.SwitchParameter]$RemoveExplicitRules,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'The user or group to set as the owner of the item (ex: BUILTIN\Administrators). If you want to use a SID, prefix it with an asterisk * (ex: *S-1-5-18). The owner is changed before any permissions are modified.')]
+        [Parameter(Mandatory = $false, HelpMessage = 'The user or group to set as the owner of the item (ex: BUILTIN\Administrators). If you want to use a SID, prefix it with an asterisk * (ex: ''*S-1-5-18''). The owner is changed before any permissions are modified.')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]
         [System.String]$Owner
     )

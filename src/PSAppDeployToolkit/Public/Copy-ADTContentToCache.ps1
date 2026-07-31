@@ -41,7 +41,7 @@ function Copy-ADTContentToCache
         This function does not generate any output.
 
     .EXAMPLE
-        Copy-ADTContentToCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit\$(adtSession.InstallName)"
+        Copy-ADTContentToCache -LiteralPath "$envWinDir\Temp\PSAppDeployToolkit\$((Get-ADTSession).InstallName)"
 
         This example copies the toolkit content to the specified cache folder.
 
@@ -51,7 +51,7 @@ function Copy-ADTContentToCache
         This example copies the toolkit content to the default cache folder, excluding the Files and SupportFiles folders and leaving DirFiles and DirSupportFiles pointing at the original location.
 
     .EXAMPLE
-        Copy-ADTContentToCache -Content Files,SupportFiles
+        Copy-ADTContentToCache -Content Files, SupportFiles
 
         This example copies only the Files and SupportFiles folders to the default cache folder, excluding all other content.
 
@@ -238,7 +238,7 @@ function Copy-ADTContentToCache
                 }
                 else
                 {
-                    # Selective copy: enumerate top-level items and copy based on -Exclude.
+                    # Selective copy: enumerate top-level items and copy based on -Content.
                     if ('Toolkit' -in $Content)
                     {
                         Get-ChildItem -LiteralPath $scriptDir -Force | & { process { if ($_.Name -notin $folderNames) { Copy-ADTFile -LiteralPath $_.FullName -Destination $LiteralPath -Recurse } } }
