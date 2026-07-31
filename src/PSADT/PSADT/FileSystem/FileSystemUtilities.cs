@@ -93,20 +93,19 @@ namespace PSADT.FileSystem
         }
 
         /// <summary>
-        /// Sets the owner of the specified file or directory, enabling the take-ownership privilege as required.
+        /// Sets the owner of the specified directory, enabling the take-ownership privilege as required.
         /// </summary>
         /// <remarks>The <see cref="SE_PRIVILEGE.SeTakeOwnershipPrivilege"/> is required to reassign
         /// ownership when the caller does not already own the item (for example, when a folder was pre-created by
         /// another account). This privilege is held by the SYSTEM account and members of the local Administrators
         /// group.</remarks>
-        /// <param name="info">The file or directory whose owner is to be set.</param>
+        /// <param name="directoryInfo">The directory whose owner is to be set.</param>
         /// <param name="identity">The identity to set as the owner of the item.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="info"/> or <paramref name="identity"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="directoryInfo"/> or <paramref name="identity"/> is <see langword="null"/>.</exception>
         /// <exception cref="UnauthorizedAccessException">Thrown when the current process does not hold the required <see cref="SE_PRIVILEGE.SeTakeOwnershipPrivilege"/>.</exception>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="info"/> is not a supported file system object.</exception>
-        public static void SetOwner(FileSystemInfo info, IdentityReference identity)
+        public static void SetOwner(DirectoryInfo directoryInfo, IdentityReference identity)
         {
-            ArgumentNullException.ThrowIfNull(info);
+            ArgumentNullException.ThrowIfNull(directoryInfo);
             ArgumentNullException.ThrowIfNull(identity);
 
             // Confirm we've got the take-ownership privilege so we can reassign ownership of items owned by other accounts.
@@ -116,23 +115,39 @@ namespace PSADT.FileSystem
             }
             PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
 
-            // Apply the new owner to the item.
-            if (info is DirectoryInfo directoryInfo)
+            // Apply the new owner to the directory.
+            DirectorySecurity directorySecurity = directoryInfo.GetAccessControl(AccessControlSections.Owner);
+            directorySecurity.SetOwner(identity);
+            directoryInfo.SetAccessControl(directorySecurity);
+        }
+
+        /// <summary>
+        /// Sets the owner of the specified file, enabling the take-ownership privilege as required.
+        /// </summary>
+        /// <remarks>The <see cref="SE_PRIVILEGE.SeTakeOwnershipPrivilege"/> is required to reassign
+        /// ownership when the caller does not already own the item (for example, when a folder was pre-created by
+        /// another account). This privilege is held by the SYSTEM account and members of the local Administrators
+        /// group.</remarks>
+        /// <param name="fileInfo">The file whose owner is to be set.</param>
+        /// <param name="identity">The identity to set as the owner of the item.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="fileInfo"/> or <paramref name="identity"/> is <see langword="null"/>.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown when the current process does not hold the required <see cref="SE_PRIVILEGE.SeTakeOwnershipPrivilege"/>.</exception>
+        public static void SetOwner(FileInfo fileInfo, IdentityReference identity)
+        {
+            ArgumentNullException.ThrowIfNull(fileInfo);
+            ArgumentNullException.ThrowIfNull(identity);
+
+            // Confirm we've got the take-ownership privilege so we can reassign ownership of items owned by other accounts.
+            if (!PrivilegeManager.HasPrivilege(SE_PRIVILEGE.SeTakeOwnershipPrivilege))
             {
-                DirectorySecurity directorySecurity = directoryInfo.GetAccessControl(AccessControlSections.Owner);
-                directorySecurity.SetOwner(identity);
-                directoryInfo.SetAccessControl(directorySecurity);
+                throw new UnauthorizedAccessException("The current process does not have the required SeTakeOwnershipPrivilege to change the owner of the target item.");
             }
-            else if (info is FileInfo fileInfo)
-            {
-                FileSecurity fileSecurity = fileInfo.GetAccessControl(AccessControlSections.Owner);
-                fileSecurity.SetOwner(identity);
-                fileInfo.SetAccessControl(fileSecurity);
-            }
-            else
-            {
-                throw new ArgumentException($"The provided item of type [{info.GetType().FullName}] is not a supported file system object.", nameof(info));
-            }
+            PrivilegeManager.EnablePrivilegeIfDisabled(SE_PRIVILEGE.SeTakeOwnershipPrivilege);
+
+            // Apply the new owner to the file.
+            FileSecurity fileSecurity = fileInfo.GetAccessControl(AccessControlSections.Owner);
+            fileSecurity.SetOwner(identity);
+            fileInfo.SetAccessControl(fileSecurity);
         }
 
         /// <summary>
