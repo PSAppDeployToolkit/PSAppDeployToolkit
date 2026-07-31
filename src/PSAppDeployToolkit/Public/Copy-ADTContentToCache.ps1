@@ -158,7 +158,8 @@ function Copy-ADTContentToCache
                     if ($PSCmdlet.ShouldProcess($cachePath, 'Secure root cache folder'))
                     {
                         # Using the SID instead of BUILTIN\Administrators to overcome localization issues.
-                        Set-ADTItemPermission -LiteralPath $cachePath -Owner '*S-1-5-32-544' -EnableInheritance -RemoveExplicitRules -InformationAction SilentlyContinue
+                        $builtinAdministratorsSid = [System.Security.Principal.SecurityIdentifier]::new([System.Security.Principal.WellKnownSidType]::BuiltinAdministratorsSid, $null).Value
+                        Set-ADTItemPermission -LiteralPath $cachePath -Owner "*$builtinAdministratorsSid" -EnableInheritance -RemoveExplicitRules -InformationAction SilentlyContinue
                     }
                 }
                 catch
