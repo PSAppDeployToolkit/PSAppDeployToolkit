@@ -23,23 +23,18 @@ namespace PSADT.Utilities
         public static DateTime GetRegistryKeyLastWriteTime(string fullKeyPath)
         {
             using SafeRegistryHandle hKey = OpenRegistryKey(fullKeyPath);
-            _ = NativeMethods.RegQueryInfoKey(hKey, lpClass: null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
-            return lastWriteTime.ToDateTime();
+            return GetRegistryKeyLastWriteTime(hKey);
         }
 
         /// <summary>
-        /// Renames a subkey within the specified registry key path.
+        /// Retrieves the last write time of the specified registry key using a SafeRegistryHandle.
         /// </summary>
-        /// <remarks>This method uses the Windows API to rename a registry subkey. Ensure that the caller
-        /// has sufficient permissions to modify the registry and that the specified key path and subkey names are
-        /// valid.</remarks>
-        /// <param name="keyPath">The path of the registry key containing the subkey to rename. This must be a valid registry key path.</param>
-        /// <param name="subKeyName">The name of the subkey to rename. If this is null, the key path is what will be renamed.</param>
-        /// <param name="newKeyName">The new name for the subkey. This cannot be null or empty.</param>
-        public static void RenameRegistryKey(string keyPath, string? subKeyName, string newKeyName)
+        /// <param name="handle">A SafeRegistryHandle representing the registry key.</param>
+        /// <returns>A DateTime representing the last write time of the specified registry key.</returns>
+        public static DateTime GetRegistryKeyLastWriteTime(SafeRegistryHandle handle)
         {
-            using SafeRegistryHandle hKey = OpenRegistryKey(keyPath);
-            _ = NativeMethods.RegRenameKey(hKey, subKeyName, newKeyName);
+            _ = NativeMethods.RegQueryInfoKey(handle, lpClass: null, out _, out _, out _, out _, out _, out _, out _, out _, out FILETIME lastWriteTime);
+            return lastWriteTime.ToDateTime();
         }
 
         /// <summary>
