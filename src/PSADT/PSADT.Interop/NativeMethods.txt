@@ -310,7 +310,6 @@ ReadProcessMemory
 REG_OPEN_CREATE_OPTIONS
 RegOpenKeyEx
 RegQueryInfoKey
-RegRenameKey
 ReleaseCapture
 RemoveFontResource
 RemoveMenu

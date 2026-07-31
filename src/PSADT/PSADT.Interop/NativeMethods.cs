@@ -1229,25 +1229,6 @@ namespace PSADT.Interop
         }
 
         /// <summary>
-        /// Renames a subkey of the specified registry key.
-        /// </summary>
-        /// <param name="hKey">A handle to an open registry key. This handle must have the appropriate access rights for the operation.</param>
-        /// <param name="lpSubKeyName">The name of the subkey to be renamed. This cannot be <see langword="null"/> or an empty string.</param>
-        /// <param name="lpNewKeyName">The new name for the subkey. This cannot be <see langword="null"/> or an empty string.</param>
-        /// <returns>A <see cref="WIN32_ERROR"/> value indicating the result of the operation. Returns <see
-        /// cref="WIN32_ERROR.ERROR_SUCCESS"/> if the operation succeeds.</returns>
-        internal static WIN32_ERROR RegRenameKey(SafeHandle hKey, string? lpSubKeyName, string lpNewKeyName)
-        {
-            ArgumentException.ThrowIfNullOrInvalid(hKey);
-            ArgumentException.ThrowIfNullOrWhiteSpace(lpNewKeyName);
-            if (lpSubKeyName is not null)
-            {
-                ArgumentException.ThrowIfNullOrWhiteSpace(lpSubKeyName);
-            }
-            return PInvoke.RegRenameKey(hKey, lpSubKeyName, lpNewKeyName).ThrowOnFailure();
-        }
-
-        /// <summary>
         /// Opens a handle to the Local Security Authority (LSA) Policy object on a specified system.
         /// </summary>
         /// <remarks>This method wraps the native LsaOpenPolicy function and provides error handling by
