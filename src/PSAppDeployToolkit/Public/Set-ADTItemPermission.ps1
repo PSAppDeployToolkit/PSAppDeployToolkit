@@ -48,11 +48,11 @@ function Set-ADTItemPermission
         Specifies which method will be used to apply the permissions.
 
         Valid values for this parameter are:
-        * `AddAccessRule`: Adds permissions rules but it does not remove previous permissions.
+        * `AddAccessRule`: Adds permission rules but it does not remove previous permissions.
         * `SetAccessRule`: Overwrites matching permission rules with new ones.
-        * `ResetAccessRule`: Removes matching permissions rules and then adds permission rules.
+        * `ResetAccessRule`: Removes matching permission rules and then adds permission rules.
         * `RemoveAccessRule`: Removes matching permission rules.
-        * `RemoveAccessRuleAll`: Removes all permission rules for specified user/s.
+        * `RemoveAccessRuleAll`: Removes all permission rules for specified users.
         * `RemoveAccessRuleSpecific`: Removes specific permissions.
 
     .PARAMETER EnableInheritance
@@ -157,7 +157,7 @@ function Set-ADTItemPermission
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.InheritanceFlags]$Inheritance = [System.Security.AccessControl.InheritanceFlags]::None,
 
-        [Parameter(Mandatory = $false, HelpMessage = 'Sets how to propage inheritance flags', ParameterSetName = 'DisableInheritance')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Sets how to propagate inheritance flags', ParameterSetName = 'DisableInheritance')]
         [ValidateNotNullOrEmpty()]
         [System.Security.AccessControl.PropagationFlags]$Propagation = [System.Security.AccessControl.PropagationFlags]::None,
 
@@ -234,7 +234,7 @@ function Set-ADTItemPermission
                 # Directly apply the permissions if an ACL object has been provided.
                 if ($PSCmdlet.ParameterSetName.Equals('AccessControlList'))
                 {
-                    Write-ADTLogEntry -Message "Setting specifieds ACL on path [$LiteralPath]."
+                    Write-ADTLogEntry -Message "Setting specified ACL on path [$LiteralPath]."
                     if (!$PSCmdlet.ShouldProcess("Path [$LiteralPath]", 'Set ACL'))
                     {
                         return
