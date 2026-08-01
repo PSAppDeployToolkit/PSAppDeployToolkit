@@ -438,10 +438,10 @@ namespace PSAppDeployToolkit.Foundation
         public DirectoryInfo? EnvSystemRoot { get; } = GetEnvironmentFolderPath(Environment.SpecialFolder.Windows);
 
         /// <summary>
-        /// Gets the current environmental temperature as a string.
+        /// Gets the path to the temporary directory for the current environment.
         /// </summary>
-        /// <remarks>The temperature is represented in degrees Celsius and is updated periodically based
-        /// on environmental changes.</remarks>
+        /// <remarks>This property is initialized from <see cref="Path.GetTempPath"/> and returned as a
+        /// <see cref="DirectoryInfo"/> instance.</remarks>
         public DirectoryInfo EnvTemp { get; } = new(Path.GetTempPath());
 
         /// <summary>
