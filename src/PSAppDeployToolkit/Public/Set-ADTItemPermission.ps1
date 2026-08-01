@@ -88,7 +88,7 @@ function Set-ADTItemPermission
         Will grant Read permissions to 'John' on 'C:\Temp\pic.png'.
 
     .EXAMPLE
-        Set-ADTItemPermission -LiteralPath 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAll'
+        Set-ADTItemPermission -LiteralPath 'C:\Temp\Private' -User 'DOMAIN\John' -Permission 'None' -Method 'RemoveAccessRuleAll'
 
         Will remove all permissions to 'John' on 'C:\Temp\Private'.
 
