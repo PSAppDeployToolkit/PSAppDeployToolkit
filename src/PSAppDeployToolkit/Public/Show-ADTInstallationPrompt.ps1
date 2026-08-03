@@ -232,8 +232,9 @@ function Show-ADTInstallationPrompt
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.UInt32], $(
+                'Timeout', [System.TimeSpan], $(
                     [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long to show the message prompt before aborting.' }
+                    [PSAppDeployToolkit.Attributes.TimeSpanTransformationAttribute]::new()
                     [PSAppDeployToolkit.Attributes.ValidateGreaterThanZeroAttribute]::new()
                     [System.Management.Automation.ValidateScriptAttribute]::new({
                             if ($_ -gt $adtConfig.UI.DefaultTimeout)
@@ -339,10 +340,6 @@ function Show-ADTInstallationPrompt
         if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
             $PSBoundParameters.Add('Timeout', [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout))
-        }
-        else
-        {
-            $PSBoundParameters.Timeout = [System.TimeSpan]::FromSeconds($PSBoundParameters.Timeout)
         }
     }
 
