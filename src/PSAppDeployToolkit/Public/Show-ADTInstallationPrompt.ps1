@@ -246,7 +246,7 @@ function Show-ADTInstallationPrompt
                     [PSAppDeployToolkit.Attributes.TimeSpanTransformationAttribute]::new()
                     [PSAppDeployToolkit.Attributes.ValidateGreaterThanZeroAttribute]::new()
                     [System.Management.Automation.ValidateScriptAttribute]::new({
-                            if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                            if (!$PSBoundParameters.ContainsKey('NoWait') -and ($_.TotalSeconds -gt $adtConfig.UI.DefaultTimeout))
                             {
                                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the config.psd1 file.'))
                             }
