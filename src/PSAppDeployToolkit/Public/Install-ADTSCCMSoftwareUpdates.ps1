@@ -17,11 +17,11 @@ function Install-ADTSCCMSoftwareUpdates
 
         Note: This function is not compatible with versions of the Configuration Manager/SCCM Client older than 2012.
 
-    .PARAMETER SoftwareUpdatesScanWaitInSeconds
-        The amount of time to wait in seconds for the software updates scan to complete.
+    .PARAMETER SoftwareUpdatesScanWait
+        The amount of time to wait for the software updates scan to complete. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER WaitForPendingUpdatesTimeout
-        The amount of time to wait for missing and pending updates to install before exiting the function.
+        The amount of time to wait for missing and pending updates to install before exiting the function. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .INPUTS
         None
@@ -69,10 +69,13 @@ function Install-ADTSCCMSoftwareUpdates
     param
     (
         [Parameter(Mandatory = $false)]
+        [Alias('SoftwareUpdatesScanWaitInSeconds')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.UInt32]$SoftwareUpdatesScanWaitInSeconds = 180,
+        [System.TimeSpan]$SoftwareUpdatesScanWait = [System.TimeSpan]::FromSeconds(180),
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$WaitForPendingUpdatesTimeout = [System.TimeSpan]::FromMinutes(45)
     )
@@ -89,8 +92,8 @@ function Install-ADTSCCMSoftwareUpdates
         try
         {
             Write-ADTLogEntry -Message 'Triggering SCCM client scan for Software Updates...'; Invoke-ADTSCCMTask -ScheduleID ([PSADT.ConfigMgr.TriggerScheduleId]::SoftwareUpdatesScan)
-            Write-ADTLogEntry -Message "Suspending this thread for [$SoftwareUpdatesScanWaitInSeconds] seconds to let the update scan finish."
-            [System.Threading.Thread]::Sleep($SoftwareUpdatesScanWaitInSeconds * 1000)
+            Write-ADTLogEntry -Message "Suspending this thread for [$($SoftwareUpdatesScanWait.TotalSeconds)] seconds to let the update scan finish."
+            [System.Threading.Thread]::Sleep($SoftwareUpdatesScanWait)
         }
         catch
         {

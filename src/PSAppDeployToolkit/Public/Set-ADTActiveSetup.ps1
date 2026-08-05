@@ -25,6 +25,12 @@ function Set-ADTActiveSetup
         - Copies/overwrites the StubPath file to `-StubExePath` destination path if file exists in 'Files' subdirectory of script directory.
         - Executes the StubPath file for the current user based on the value of the `-NoExecuteForCurrentUser` parameter (no need to logout/login to trigger Active Setup).
 
+    .PARAMETER Key
+        Name of the registry key for the Active Setup entry. Defaults to the active session's `InstallName` value.
+
+    .PARAMETER Description
+        Description for the Active Setup. Users will see "Setting up personalized settings for: $Description" at logon. Defaults to the active session's `InstallName` value.
+
     .PARAMETER StubExePath
         Use this parameter to specify the destination path of the file that will be executed upon user login.
 

@@ -15,6 +15,12 @@ function Show-ADTInstallationProgress
 
         The first time this function is called in a script, it will display a balloon tip notification to indicate that the installation has started (provided balloon tips are enabled in the `config.psd1` file).
 
+    .PARAMETER Title
+        The title of the window to be displayed. Optionally used to override the active DeploymentSession's `InstallTitle` value.
+
+    .PARAMETER Subtitle
+        The subtitle of the window to be displayed with a fluent progress window. Optionally used to override the subtitle defined in the `strings.psd1` file.
+
     .PARAMETER StatusMessage
         The status message to be displayed. The default status message is taken from the imported `strings.psd1` file.
 

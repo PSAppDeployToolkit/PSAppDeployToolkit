@@ -15,6 +15,9 @@ function Show-ADTDialogBox
 
         `Show-ADTInstallationPrompt` is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
 
+    .PARAMETER Title
+        Title of the message dialog box. When omitted during an active deployment session, it defaults to the session's `InstallTitle` value.
+
     .PARAMETER Text
         Text in the message dialog box.
 
@@ -29,6 +32,9 @@ function Show-ADTDialogBox
 
     .PARAMETER NoWait
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
+
+    .PARAMETER Timeout
+        Specifies how long to show the message dialog box before aborting. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER ExitOnTimeout
         Specifies whether the script should continue running when the UI times out.
@@ -117,11 +123,12 @@ function Show-ADTDialogBox
                 )
             ))
         $paramDictionary.Add('Timeout', [System.Management.Automation.RuntimeDefinedParameter]::new(
-                'Timeout', [System.UInt32], $(
-                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long (in seconds) to show the message prompt before aborting.' }
+                'Timeout', [System.TimeSpan], $(
+                    [System.Management.Automation.ParameterAttribute]@{ Mandatory = $false; HelpMessage = 'Specifies how long to show the message prompt before aborting. Accepts TimeSpan objects, but also interprets numerical values as seconds.' }
+                    [PSAppDeployToolkit.Attributes.TimeSpanTransformationAttribute]::new()
                     [PSAppDeployToolkit.Attributes.ValidateGreaterThanZeroAttribute]::new()
                     [System.Management.Automation.ValidateScriptAttribute]::new({
-                            if ($_ -gt $adtConfig.UI.DefaultTimeout)
+                            if ($_.TotalSeconds -gt $adtConfig.UI.DefaultTimeout)
                             {
                                 $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName Timeout -ProvidedValue $_ -ExceptionMessage 'The installation UI dialog timeout cannot be longer than the timeout specified in the config.psd1 file.'))
                             }
@@ -150,7 +157,7 @@ function Show-ADTDialogBox
         }
         $Timeout = if (!$PSBoundParameters.ContainsKey('Timeout'))
         {
-            $adtConfig.UI.DefaultTimeout
+            [System.TimeSpan]::FromSeconds($adtConfig.UI.DefaultTimeout)
         }
         else
         {
@@ -183,7 +190,7 @@ function Show-ADTDialogBox
                     DialogButtons = $Buttons
                     DialogDefaultButton = $DefaultButton
                     DialogTopMost = !$NotTopMost
-                    DialogExpiryDuration = [System.UInt32]($Timeout * 1000)
+                    DialogExpiryDuration = [System.UInt32]$Timeout.TotalMilliseconds
                 }
                 if ($PSBoundParameters.ContainsKey('Icon'))
                 {

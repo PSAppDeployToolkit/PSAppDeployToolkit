@@ -15,6 +15,9 @@ function Show-ADTNotifyIcon
 
         For Windows 10 and above, balloon tips from notification icons automatically get translated by the system into toast notifications.
 
+    .PARAMETER ToolTipText
+        Tool tip text for the notification icon. When omitted during an active deployment session, it defaults to the session's `InstallTitle` value.
+
     .PARAMETER Force
         Creates the notification icon irrespective of whether running silently or not.
 

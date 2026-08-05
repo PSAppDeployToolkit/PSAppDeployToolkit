@@ -26,7 +26,7 @@ function Send-ADTKeys
         The sequence of keys to send. Info on Key input at: http://msdn.microsoft.com/en-us/library/System.Windows.Forms.SendKeys(v=vs.100).aspx
 
     .PARAMETER WaitDuration
-        An optional amount of time to wait after the sending of the keys.
+        An optional amount of time to wait after the sending of the keys. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .INPUTS
         None
@@ -96,6 +96,7 @@ function Send-ADTKeys
 
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowTitle')]
         [Parameter(Mandatory = $false, ParameterSetName = 'WindowHandle')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$WaitDuration
     )

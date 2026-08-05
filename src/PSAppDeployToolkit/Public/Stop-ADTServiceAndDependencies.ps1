@@ -26,7 +26,7 @@ function Stop-ADTServiceAndDependencies
         Specifies whether a service will be stopped if services that depend on it are running.
 
     .PARAMETER PendingStatusWait
-        The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds.
+        The amount of time to wait for a service to get out of a pending state before continuing. Default is 60 seconds. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER PassThru
         Return the `ServiceController` service object.
@@ -120,6 +120,7 @@ function Stop-ADTServiceAndDependencies
         [System.Management.Automation.SwitchParameter]$SkipDependentServices,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$PendingStatusWait,
 

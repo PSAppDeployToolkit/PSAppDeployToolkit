@@ -80,7 +80,7 @@ function Start-ADTProcessAsUser
         Sometimes an EXE bootstrapper will launch an MSI install. In such cases, this variable will ensure that this function waits for the msiexec engine to become available before starting the install.
 
     .PARAMETER MsiExecWaitTime
-        Specify the length of time in seconds to wait for the msiexec engine to become available.
+        Specify the length of time to wait for the msiexec engine to become available. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER WaitForChildProcesses
         Specifies whether the started process should be considered finished only when any child processes it spawns have finished also.
@@ -89,7 +89,7 @@ function Start-ADTProcessAsUser
         Specifies whether any child processes started by the provided executable should be closed when the provided executable closes. This is handy for application installs that open web browsers and other programs that cannot be suppressed.
 
     .PARAMETER Timeout
-        How long to wait for the process before timing out.
+        How long to wait for the process before timing out. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER TimeoutAction
         What action to take on timeout. Follows ErrorAction if not specified.
@@ -327,6 +327,7 @@ function Start-ADTProcessAsUser
         [System.Management.Automation.SwitchParameter]$WaitForMsiExec,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$MsiExecWaitTime,
 
@@ -342,6 +343,7 @@ function Start-ADTProcessAsUser
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateWindow_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_WindowStyle_Timeout')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Default_CreateNoWindow_Timeout')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$Timeout,
 

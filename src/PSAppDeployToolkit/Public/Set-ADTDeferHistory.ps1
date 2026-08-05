@@ -20,7 +20,7 @@ function Set-ADTDeferHistory
         Specify the deadline for the deferral.
 
     .PARAMETER DeferRunInterval
-        Specifies the time span that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral.
+        Specifies the time span that must elapse before prompting the user again if a process listed in 'CloseProcesses' is still running after a deferral. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
         This helps address the issue where Intune retries installations shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
@@ -70,6 +70,7 @@ function Set-ADTDeferHistory
         [System.DateTime]$DeferDeadline,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$DeferRunInterval,
 

@@ -20,10 +20,10 @@ function Invoke-ADTCommandWithRetries
         How many retries to perform before throwing.
 
     .PARAMETER SleepDuration
-        How long to sleep between retries.
+        How long to sleep between retries. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER MaximumElapsedTime
-        The maximum elapsed time allowed to pass while attempting retries. If the maximum elapsed time has passed and there are still attempts remaining they will be discarded.
+        The maximum elapsed time allowed to pass while attempting retries. If the maximum elapsed time has passed and there are still attempts remaining they will be discarded. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
         If this parameter is supplied and the `-Retries` parameter isn't, this command will continue to retry the provided command until the time limit runs out.
 
@@ -95,10 +95,12 @@ function Invoke-ADTCommandWithRetries
         [System.UInt32]$Retries = 3,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$SleepDuration = [System.TimeSpan]::FromSeconds(5),
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [System.TimeSpan]$MaximumElapsedTime,
 

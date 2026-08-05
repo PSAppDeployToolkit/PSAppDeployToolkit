@@ -1488,6 +1488,21 @@ function Show-InstallationRestartPrompt
         $PSBoundParameters.Add('NotTopMost', !$PSBoundParameters.TopMost)
         $null = $PSBoundParameters.Remove('TopMost')
     }
+    if ($PSBoundParameters.ContainsKey('CountdownSeconds'))
+    {
+        $PSBoundParameters.Add('Countdown', $PSBoundParameters.CountdownSeconds)
+        $null = $PSBoundParameters.Remove('CountdownSeconds')
+    }
+    if ($PSBoundParameters.ContainsKey('CountdownNoHideSeconds'))
+    {
+        $PSBoundParameters.Add('CountdownNoHide', $PSBoundParameters.CountdownNoHideSeconds)
+        $null = $PSBoundParameters.Remove('CountdownNoHideSeconds')
+    }
+    if ($PSBoundParameters.ContainsKey('SilentCountdownSeconds'))
+    {
+        $PSBoundParameters.Add('SilentCountdown', $PSBoundParameters.SilentCountdownSeconds)
+        $null = $PSBoundParameters.Remove('SilentCountdownSeconds')
+    }
     try
     {
         Show-ADTInstallationRestartPrompt @PSBoundParameters
@@ -2420,10 +2435,6 @@ function Execute-Process
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Start-ADTProcess]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
 
     # Convert out changed parameters.
-    if ($PSBoundParameters.ContainsKey('MsiExecWaitTime'))
-    {
-        $PSBoundParameters.MsiExecWaitTime = [System.TimeSpan]::FromSeconds($MsiExecWaitTime)
-    }
     if ($PSBoundParameters.ContainsKey('IgnoreExitCodes'))
     {
         $PSBoundParameters.IgnoreExitCodes = $IgnoreExitCodes.Split(',')
@@ -3928,6 +3939,11 @@ function Install-SCCMSoftwareUpdates
     {
         $PSBoundParameters.ErrorAction = [System.Management.Automation.ActionPreference]::Stop
     }
+    if ($PSBoundParameters.ContainsKey('SoftwareUpdatesScanWaitInSeconds'))
+    {
+        $PSBoundParameters.Add('SoftwareUpdatesScanWait', $SoftwareUpdatesScanWaitInSeconds)
+        $null = $PSBoundParameters.Remove('SoftwareUpdatesScanWaitInSeconds')
+    }
     try
     {
         Install-ADTSCCMSoftwareUpdates @PSBoundParameters
@@ -3980,7 +3996,7 @@ function Send-Keys
     Write-ADTLogEntry -Message "The function [$($MyInvocation.MyCommand.Name)] has been replaced by [Send-ADTKeys]. Please migrate your scripts to use the new function." -Severity Warning -DebugMessage:$noDepWarnings
     if ($PSBoundParameters.ContainsKey('WaitSeconds'))
     {
-        $PSBoundParameters.WaitDuration = [System.TimeSpan]::FromSeconds($WaitSeconds)
+        $PSBoundParameters.Add('WaitDuration', $WaitSeconds)
         $null = $PSBoundParameters.Remove('WaitSeconds')
     }
     try

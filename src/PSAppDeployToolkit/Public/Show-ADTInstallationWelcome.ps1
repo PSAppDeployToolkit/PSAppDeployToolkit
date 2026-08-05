@@ -18,6 +18,12 @@ function Show-ADTInstallationWelcome
         * Countdown until applications are automatically closed.
         * Prevent users from launching the specified applications while the deployment is in progress.
 
+    .PARAMETER Title
+        Title of the prompt. Optionally used to override the active DeploymentSession's `InstallTitle` value.
+
+    .PARAMETER Subtitle
+        Subtitle of the prompt. Optionally used to override the subtitle defined in the `strings.psd1` file.
+
     .PARAMETER CloseProcesses
         Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`
 
@@ -34,13 +40,13 @@ function Show-ADTInstallationWelcome
         Stop processes without prompting the user.
 
     .PARAMETER CloseProcessesCountdown
-        Option to provide a countdown in seconds until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired.
+        Option to provide a countdown until the specified applications are automatically closed. This only takes effect if deferral is not allowed or has expired. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER ForceCloseProcessesCountdown
-        Option to provide a countdown in seconds until the specified applications are automatically closed regardless of whether deferral is allowed.
+        Option to provide a countdown until the specified applications are automatically closed regardless of whether deferral is allowed. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER ForceCountdown
-        Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.
+        Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER DeferTimes
         Specify the number of times the deployment can be deferred.
@@ -60,7 +66,7 @@ function Show-ADTInstallationWelcome
         The deadline date will be displayed to the user in the format of their culture.
 
     .PARAMETER DeferRunInterval
-        Specifies the time span that must elapse before prompting the user again if a process specified via `-CloseProcesses` is still running after a deferral.
+        Specifies the time span that must elapse before prompting the user again if a process specified via `-CloseProcesses` is still running after a deferral. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
         This addresses the issue where Intune retries deployments shortly after a user defers, preventing multiple immediate prompts and improving the user experience.
 
@@ -268,15 +274,16 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a close processes countdown if the user has no available deferrals.', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications where deferral is not allowed or has expired.')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [ValidateScript({
-                if ($_ -gt 86400)
+                if ($_.TotalSeconds -gt 86400)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName CloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified CloseProcessesCountdown interval cannot exceed 86,400 seconds.'))
                 }
                 return !!$_
             })]
-        [System.UInt32]$CloseProcessesCountdown,
+        [System.TimeSpan]$CloseProcessesCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
@@ -284,15 +291,16 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically closing applications whether or not deferral is allowed.')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [ValidateScript({
-                if ($_ -gt 86400)
+                if ($_.TotalSeconds -gt 86400)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCloseProcessesCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCloseProcessesCountdown interval cannot exceed 86,400 seconds.'))
                 }
                 return !!$_
             })]
-        [System.UInt32]$ForceCloseProcessesCountdown,
+        [System.TimeSpan]$ForceCloseProcessesCountdown,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with deferral allowed, and with a continue countdown irrespective of deferrals.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with deferral allowed, with a continue countdown irrespective of deferrals, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
@@ -300,15 +308,16 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed irrespective of whether processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a continue/defer countdown depending on whether processes to close are open or not.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
         [Parameter(Mandatory = $true, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a continue/defer countdown depending on whether processes to close are open or not, and a free disk space check.', HelpMessage = 'Specify a countdown to display before automatically proceeding with the deployment when a deferral is enabled.')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [ValidateScript({
-                if ($_ -gt 86400)
+                if ($_.TotalSeconds -gt 86400)
                 {
                     $PSCmdlet.ThrowTerminatingError((New-ADTValidateScriptErrorRecord -ParameterName ForceCountdown -ProvidedValue $_ -ExceptionMessage 'The specified ForceCountdown interval cannot exceed 86,400 seconds.'))
                 }
                 return !!$_
             })]
-        [System.UInt32]$ForceCountdown,
+        [System.TimeSpan]$ForceCountdown,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, and with deferral allowed.', HelpMessage = 'Specify the number of times the deferral is allowed.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with deferral allowed, and a free disk space check.', HelpMessage = 'Specify the number of times the deferral is allowed.')]
@@ -399,6 +408,7 @@ function Show-ADTInstallationWelcome
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown if the user has no available deferrals, and a free disk space check.', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in [-CloseProcesses] is still running after a deferral.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, and with a close processes countdown irrespective of whether the user can defer or not.', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in [-CloseProcesses] is still running after a deferral.')]
         [Parameter(Mandatory = $false, ParameterSetName = 'Interactive, with processes to close, with deferral allowed only if the processes to close are open, with a close processes countdown irrespective of whether the user can defer or not, and a free disk space check.', HelpMessage = 'Specifies the time span that must elapse before prompting the user again if a process listed in [-CloseProcesses] is still running after a deferral.')]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$DeferRunInterval,
 
@@ -1081,11 +1091,11 @@ function Show-ADTInstallationWelcome
                     }
 
                     # Keep the same variable for countdown to simplify the code.
-                    if ($ForceCloseProcessesCountdown -gt 0)
+                    if ($ForceCloseProcessesCountdown -gt [System.TimeSpan]::Zero)
                     {
                         $CloseProcessesCountdown = $ForceCloseProcessesCountdown
                     }
-                    elseif ($ForceCountdown -gt 0)
+                    elseif ($ForceCountdown -gt [System.TimeSpan]::Zero)
                     {
                         $CloseProcessesCountdown = $ForceCountdown
                     }
@@ -1125,9 +1135,9 @@ function Show-ADTInstallationWelcome
                     }
                     if (!$dialogOptions.ContainsKey('DeferralsRemaining') -and !$dialogOptions.ContainsKey('DeferralDeadline'))
                     {
-                        if ($CloseProcessesCountdown -gt 0)
+                        if ($CloseProcessesCountdown -gt [System.TimeSpan]::Zero)
                         {
-                            $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
+                            $dialogOptions.Add('CountdownDuration', $CloseProcessesCountdown)
                             $dialogOptions.Remove('DialogExpiryDuration')
                         }
                     }
@@ -1137,7 +1147,7 @@ function Show-ADTInstallationWelcome
                     }
                     if (($PSBoundParameters.ContainsKey('ForceCloseProcessesCountdown') -or $PSBoundParameters.ContainsKey('ForceCountdown')) -and !$dialogOptions.ContainsKey('CountdownDuration'))
                     {
-                        $dialogOptions.Add('CountdownDuration', [System.TimeSpan]::FromSeconds($CloseProcessesCountdown))
+                        $dialogOptions.Add('CountdownDuration', $CloseProcessesCountdown)
                         $dialogOptions.Remove('DialogExpiryDuration')
                     }
                     if ($HideCloseButton -and ($AllowDefer -or !$dialogOptions.ContainsKey('CountdownDuration')))
@@ -1171,9 +1181,9 @@ function Show-ADTInstallationWelcome
                     {
                         $dialogOptions.Add('CloseProcesses', $CloseProcesses)
                     }
-                    if ($ForceCountdown -gt 0)
+                    if ($ForceCountdown -gt [System.TimeSpan]::Zero)
                     {
-                        $dialogOptions.Add('ForcedCountdown', !!$ForceCountdown)
+                        $dialogOptions.Add('ForcedCountdown', $true)
                     }
                     if ($null -ne $adtConfig.UI.FluentAccentColor)
                     {
@@ -1220,7 +1230,7 @@ function Show-ADTInstallationWelcome
                                 $promptResult = Show-ADTWelcomePrompt
                             }
                         }
-                        elseif ($runningApps -or !!$forceCountdown)
+                        elseif ($runningApps -or ($forceCountdown -gt [System.TimeSpan]::Zero))
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                             $promptResult = Show-ADTWelcomePrompt
