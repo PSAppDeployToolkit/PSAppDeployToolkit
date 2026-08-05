@@ -190,7 +190,7 @@ function Show-ADTDialogBox
                     DialogButtons = $Buttons
                     DialogDefaultButton = $DefaultButton
                     DialogTopMost = !$NotTopMost
-                    DialogExpiryDuration = [System.UInt32]$Timeout.TotalMilliseconds
+                    DialogExpiryDuration = [System.UInt32][System.Math]::Ceiling($Timeout.TotalMilliseconds)
                 }
                 if ($PSBoundParameters.ContainsKey('Icon'))
                 {
