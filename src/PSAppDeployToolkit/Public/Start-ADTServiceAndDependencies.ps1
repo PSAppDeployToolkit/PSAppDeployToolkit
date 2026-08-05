@@ -122,8 +122,7 @@ function Start-ADTServiceAndDependencies
         [Parameter(Mandatory = $false)]
         [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.TimeSpan]$PendingStatusWait,
-
+        [System.TimeSpan]$PendingStatusWait = [System.TimeSpan]::FromSeconds(60),
         [Parameter(Mandatory = $false)]
         [System.Management.Automation.SwitchParameter]$PassThru
     )
