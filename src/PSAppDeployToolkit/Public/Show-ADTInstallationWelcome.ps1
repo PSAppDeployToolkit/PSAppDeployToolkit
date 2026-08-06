@@ -1224,7 +1224,7 @@ function Show-ADTInstallationWelcome
                                 $promptResult = Show-ADTWelcomePrompt
                             }
                         }
-                        elseif ($runningApps -or ($dialogOptions['ForcedCountdown'] -eq $true))
+                        elseif ($runningApps -or ($dialogOptions.ForcedCountdown -eq $true))
                         {
                             # If there is no deferral and processes are running, prompt the user to close running processes with no deferral option.
                             $promptResult = Show-ADTWelcomePrompt
