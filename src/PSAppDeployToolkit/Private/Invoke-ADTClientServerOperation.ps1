@@ -98,7 +98,7 @@ function Private:Invoke-ADTClientServerOperation
         [PSADT.ProcessManagement.ProcessDefinition[]]$CloseProcesses,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'PromptToCloseApps')]
-        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
+        [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$PromptToCloseTimeout,
 
