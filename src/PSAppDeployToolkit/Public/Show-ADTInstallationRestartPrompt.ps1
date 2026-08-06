@@ -13,12 +13,6 @@ function Show-ADTInstallationRestartPrompt
     .DESCRIPTION
         The `Show-ADTInstallationRestartPrompt` function displays a restart prompt with a countdown to a forced restart. The prompt can be customized with a title, countdown duration, and whether it should be topmost. It also supports silent mode where the restart can be triggered without user interaction.
 
-    .PARAMETER Title
-        Title of the prompt. Optionally used to override the active DeploymentSession's `InstallTitle` value.
-
-    .PARAMETER Subtitle
-        Subtitle of the prompt. Optionally used to override the subtitle defined in the `strings.psd1` file.
-
     .PARAMETER Countdown
         Specifies how long to display the restart prompt. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 

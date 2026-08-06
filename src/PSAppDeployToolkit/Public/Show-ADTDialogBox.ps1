@@ -15,9 +15,6 @@ function Show-ADTDialogBox
 
         `Show-ADTInstallationPrompt` is recommended over this function as it provides more customization and uses consistent branding with the other UI components.
 
-    .PARAMETER Title
-        Title of the message dialog box. When omitted during an active deployment session, it defaults to the session's `InstallTitle` value.
-
     .PARAMETER Text
         Text in the message dialog box.
 
@@ -32,9 +29,6 @@ function Show-ADTDialogBox
 
     .PARAMETER NoWait
         Presents the dialog in a separate, independent thread so that the main process isn't stalled waiting for a response.
-
-    .PARAMETER Timeout
-        Specifies how long to show the message dialog box before aborting. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER ExitOnTimeout
         Specifies whether the script should continue running when the UI times out.

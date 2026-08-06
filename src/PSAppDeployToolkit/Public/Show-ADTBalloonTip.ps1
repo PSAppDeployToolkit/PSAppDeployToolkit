@@ -15,9 +15,6 @@ function Show-ADTBalloonTip
 
         For Windows 10 and above, balloon tips automatically get translated by the system into toast notifications.
 
-    .PARAMETER Title
-        Title of the balloon tip. When omitted during an active deployment session, it defaults to the session's `InstallTitle` value.
-
     .PARAMETER Text
         Text of the balloon tip.
 

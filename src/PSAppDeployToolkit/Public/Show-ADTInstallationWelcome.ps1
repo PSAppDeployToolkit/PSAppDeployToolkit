@@ -18,12 +18,6 @@ function Show-ADTInstallationWelcome
         * Countdown until applications are automatically closed.
         * Prevent users from launching the specified applications while the deployment is in progress.
 
-    .PARAMETER Title
-        Title of the prompt. Optionally used to override the active DeploymentSession's `InstallTitle` value.
-
-    .PARAMETER Subtitle
-        Subtitle of the prompt. Optionally used to override the subtitle defined in the `strings.psd1` file.
-
     .PARAMETER CloseProcesses
         Name of the process to stop (do not include the .exe). Specify multiple processes separated by a comma. Specify custom descriptions like this: `@{ Name = 'winword'; Description = 'Microsoft Office Word' }, @{ Name = 'excel'; Description = 'Microsoft Office Excel' }`
 

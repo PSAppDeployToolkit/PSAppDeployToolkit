@@ -13,12 +13,6 @@ function Show-ADTInstallationPrompt
     .DESCRIPTION
         The `Show-ADTInstallationPrompt` function displays a custom installation prompt with the toolkit branding and optional buttons. Any combination of Left, Middle, or Right buttons can be displayed. The return value of the button clicked by the user is the button text specified. The prompt can also display a system icon and be configured to persist, minimize other windows, or timeout after a specified period.
 
-    .PARAMETER Title
-        The title of the prompt. This parameter is required when there is no active deployment session. When omitted during an active deployment session, it defaults to the session's `InstallTitle` value.
-
-    .PARAMETER Subtitle
-        The subtitle of the prompt. When omitted, it defaults to the subtitle defined for the deployment type in the `strings.psd1` file.
-
     .PARAMETER RequestInput
         Show a text box for the user to provide an answer.
 
@@ -60,9 +54,6 @@ function Show-ADTInstallationPrompt
 
     .PARAMETER MinimizeWindows
         Specifies whether to minimize other windows when displaying prompt.
-
-    .PARAMETER Timeout
-        Specifies how long to show the message prompt before aborting. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
     .PARAMETER ListItems
         An array of strings to display as a dropdown list for user selection. When specified, a ListSelectionDialog is shown with a ComboBox containing these items. The selected item is included in the returned ListSelectionDialogResult object.
