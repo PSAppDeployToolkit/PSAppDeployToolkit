@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PSAppDeployToolkit.Utilities;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using System.Reflection;
@@ -27,31 +28,31 @@ namespace PSAppDeployToolkit.Attributes
         /// <exception cref="ArgumentException">Thrown if the input object is not supported for transformation.</exception>
         /// <exception cref="ArgumentNullException">Thrown if the input data is null.</exception>
         [SuppressMessage("Style", "IDE0046:Use conditional expression for return", Justification = "Conditional expression would be unreadable.")]
-        public override object Transform(EngineIntrinsics engineIntrinsics, object inputData)
+        public override object Transform(EngineIntrinsics engineIntrinsics, object? inputData)
         {
-            if (inputData is null)
+            if (!PowerShellUtilities.TryGetBaseObject(inputData, out inputData))
             {
-                throw new ArgumentNullException(nameof(inputData), "Cannot transform null to an IdentityReference.");
-            }
-            if (inputData is WellKnownSidType wellKnownSidType)
-            {
-                return new SecurityIdentifier(wellKnownSidType, domainSid: null);
+                throw new ArgumentNullException(paramName: nameof(inputData), "Cannot transform null to IdentityReference.");
             }
             if (inputData is IdentityReference identity)
             {
                 return identity;
             }
+            if (inputData is WellKnownSidType wellKnownSidType)
+            {
+                return new SecurityIdentifier(wellKnownSidType, domainSid: null);
+            }
             if (inputData is WindowsIdentity windowsIdentity)
             {
                 return windowsIdentity.User ?? throw new InvalidOperationException("The given WindowsIdentity did not provide the required user identity.");
             }
-            if (TryConvertPowerShellCommandObject(inputData, out SecurityIdentifier? pwshCommandSid))
-            {
-                return pwshCommandSid;
-            }
             if (inputData is string str && TryParseIdentityReference(str, out IdentityReference? strIdentity))
             {
                 return strIdentity;
+            }
+            if (TryConvertPowerShellCommandObject(inputData, out SecurityIdentifier? pwshCommandSid))
+            {
+                return pwshCommandSid;
             }
             throw new ArgumentException("Input data must be of type IdentityReference, WindowsIdentity, LocalPrincipal, WellKnownSidType or a string representing any of those types.", nameof(inputData));
         }
@@ -96,10 +97,6 @@ namespace PSAppDeployToolkit.Attributes
         private static bool TryParseSid(string identityString, [NotNullWhen(true)] out SecurityIdentifier? identity)
         {
             identity = null;
-            if (string.IsNullOrWhiteSpace(identityString))
-            {
-                return false;
-            }
             try
             {
                 identity = new SecurityIdentifier(identityString);
@@ -120,10 +117,6 @@ namespace PSAppDeployToolkit.Attributes
         private static bool TryParseNTAccount(string identityString, [NotNullWhen(true)] out NTAccount? identity)
         {
             identity = null;
-            if (string.IsNullOrWhiteSpace(identityString))
-            {
-                return false;
-            }
             try
             {
                 identity = new NTAccount(identityString);
@@ -145,15 +138,6 @@ namespace PSAppDeployToolkit.Attributes
         private static bool TryConvertPowerShellCommandObject(object identityObject, [NotNullWhen(true)] out SecurityIdentifier? identity)
         {
             identity = null;
-            // Unwrap the actual object, if it is wrapped
-            if (identityObject is PSObject psObj)
-            {
-                identityObject = psObj.BaseObject;
-            }
-            if (identityObject is null)
-            {
-                return false;
-            }
             Type objectType = identityObject.GetType();
             if (!string.Equals(objectType.Namespace, "Microsoft.PowerShell.Commands", StringComparison.Ordinal))
             {
@@ -166,12 +150,12 @@ namespace PSAppDeployToolkit.Attributes
                 identity = directSid;
                 return true;
             }
-            if (objectType.BaseType is Type parentType
-                && string.Equals(parentType.Name, "LocalPrincipal", StringComparison.Ordinal)
-                && objectType.GetProperty("SID", typeof(SecurityIdentifier)) is PropertyInfo parentProperty
-                && parentProperty.GetValue(identityObject) is SecurityIdentifier parentSid)
+            if (objectType.BaseType is Type baseType
+                && string.Equals(baseType.Name, "LocalPrincipal", StringComparison.Ordinal)
+                && objectType.GetProperty("SID", typeof(SecurityIdentifier)) is PropertyInfo baseProperty
+                && baseProperty.GetValue(identityObject) is SecurityIdentifier baseSid)
             {
-                identity = parentSid;
+                identity = baseSid;
                 return true;
             }
             return false;
