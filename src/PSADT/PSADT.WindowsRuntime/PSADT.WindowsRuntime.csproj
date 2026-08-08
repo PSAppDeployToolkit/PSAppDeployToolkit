@@ -5,6 +5,7 @@
     <Product>PSAppDeployToolkit Windows Runtime (WinRT) Interface Library</Product>
     <AssemblyTitle>PSAppDeployToolkit Windows Runtime (WinRT) Interface Library</AssemblyTitle>
     <AssemblyDescription>This assembly provides access to Windows Runtime (WinRT) interfaces for PSAppDeployToolkit.</AssemblyDescription>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
