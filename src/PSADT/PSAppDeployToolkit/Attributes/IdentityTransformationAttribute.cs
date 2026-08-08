@@ -1,9 +1,9 @@
-﻿using PSAppDeployToolkit.Utilities;
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Management.Automation;
 using System.Reflection;
 using System.Security.Principal;
+using PSAppDeployToolkit.Utilities;
 
 namespace PSAppDeployToolkit.Attributes
 {
