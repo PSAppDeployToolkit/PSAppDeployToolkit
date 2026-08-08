@@ -65,9 +65,9 @@ namespace PSAppDeployToolkit.Attributes
         /// <returns>True if parsing was successful, otherwise false.</returns>
         private static bool TryParseIdentityReference(string identityString, [NotNullWhen(true)] out IdentityReference? identity)
         {
-            identity = null;
             if (string.IsNullOrWhiteSpace(identityString))
             {
+                identity = null;
                 return false;
             }
             if (Enum.TryParse(identityString, ignoreCase: true, out WellKnownSidType wellKnownSidType))
@@ -85,6 +85,7 @@ namespace PSAppDeployToolkit.Attributes
                 identity = ntAccount;
                 return true;
             }
+            identity = null;
             return false;
         }
 
@@ -96,7 +97,6 @@ namespace PSAppDeployToolkit.Attributes
         /// <returns>True if parsing was successful, otherwise false.</returns>
         private static bool TryParseSid(string identityString, [NotNullWhen(true)] out SecurityIdentifier? identity)
         {
-            identity = null;
             try
             {
                 identity = new SecurityIdentifier(identityString);
@@ -104,6 +104,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             catch (ArgumentException)
             {
+                identity = null;
                 return false;
             }
         }
@@ -116,7 +117,6 @@ namespace PSAppDeployToolkit.Attributes
         /// <returns>True if parsing was successful, otherwise false.</returns>
         private static bool TryParseNTAccount(string identityString, [NotNullWhen(true)] out NTAccount? identity)
         {
-            identity = null;
             try
             {
                 identity = new NTAccount(identityString);
@@ -124,6 +124,7 @@ namespace PSAppDeployToolkit.Attributes
             }
             catch (IdentityNotMappedException)
             {
+                identity = null;
                 return false;
             }
         }
@@ -137,10 +138,10 @@ namespace PSAppDeployToolkit.Attributes
         /// <returns>True if extraction was successful, otherwise false.</returns>
         private static bool TryConvertPowerShellCommandObject(object identityObject, [NotNullWhen(true)] out SecurityIdentifier? identity)
         {
-            identity = null;
             Type objectType = identityObject.GetType();
             if (!string.Equals(objectType.Namespace, "Microsoft.PowerShell.Commands", StringComparison.Ordinal))
             {
+                identity = null;
                 return false;
             }
             if (string.Equals(objectType.Name, "LocalPrincipal", StringComparison.Ordinal)
@@ -158,6 +159,7 @@ namespace PSAppDeployToolkit.Attributes
                 identity = baseSid;
                 return true;
             }
+            identity = null;
             return false;
         }
     }
