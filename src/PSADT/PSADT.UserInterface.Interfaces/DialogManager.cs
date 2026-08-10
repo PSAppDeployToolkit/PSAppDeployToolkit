@@ -544,9 +544,9 @@ namespace PSADT.UserInterface.Interfaces
         /// <param name="TopMost">A value indicating whether the message box should appear as a topmost window. <see langword="true"/> to make the message box topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="Timeout">Optional timeout for the message box. If specified, the message box will automatically close after the given duration.</param>
         /// <returns>A <see cref="DialogBoxResult"/> value indicating the button clicked by the user.</returns>
-        internal static async ValueTask<DialogBoxResult> ShowDialogBoxAsync(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, uint Timeout)
+        internal static async ValueTask<DialogBoxResult> ShowDialogBoxAsync(string Title, string Prompt, DialogBoxButtons Buttons, DialogBoxDefaultButton DefaultButton, DialogBoxIcon Icon, bool TopMost, TimeSpan Timeout)
         {
-            return DialogBoxResult.FromMessageBoxResult(await ShowDialogBoxAsync(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : MESSAGEBOX_STYLE.MB_OK), Timeout).ConfigureAwait(false));
+            return DialogBoxResult.FromMessageBoxResult(await ShowDialogBoxAsync(Title, Prompt, (MESSAGEBOX_STYLE)Buttons | (MESSAGEBOX_STYLE)Icon | (MESSAGEBOX_STYLE)DefaultButton | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | (TopMost ? MESSAGEBOX_STYLE.MB_SYSTEMMODAL | MESSAGEBOX_STYLE.MB_TOPMOST : MESSAGEBOX_STYLE.MB_OK), (uint)Timeout.TotalMilliseconds).ConfigureAwait(false));
         }
 
         /// <summary>

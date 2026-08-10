@@ -27,7 +27,7 @@ namespace PSADT.UserInterface.DialogOptions
             (DialogBoxDefaultButton?)options["DialogDefaultButton"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogDefaultButton' is missing."),
             (DialogBoxIcon?)options["DialogIcon"],
             (bool?)options["DialogTopMost"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogTopMost' is missing."),
-            (uint?)options["DialogExpiryDuration"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogExpiryDuration' is missing."))
+            (TimeSpan?)options["DialogExpiryDuration"] ?? throw new ArgumentNullException(nameof(options), "The specified key 'DialogExpiryDuration' is missing."))
         {
         }
 
@@ -45,7 +45,7 @@ namespace PSADT.UserInterface.DialogOptions
         /// <param name="dialogTopMost">A value indicating whether the dialog box should appear as the topmost window. <see langword="true"/> if the
         /// dialog box is topmost; otherwise, <see langword="false"/>.</param>
         /// <param name="dialogExpiryDuration">The duration after which the dialog box will automatically close if no user action is taken.</param>
-        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, uint dialogExpiryDuration)
+        private DialogBoxOptions(string appTitle, string messageText, DialogBoxButtons dialogButtons, DialogBoxDefaultButton dialogDefaultButton, DialogBoxIcon? dialogIcon, bool dialogTopMost, TimeSpan dialogExpiryDuration)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(appTitle);
             ArgumentException.ThrowIfNullOrWhiteSpace(messageText);
@@ -98,6 +98,6 @@ namespace PSADT.UserInterface.DialogOptions
         /// The duration for which the dialog will be displayed before it automatically closes.
         /// </summary>
         [DataMember]
-        public readonly uint DialogExpiryDuration;
+        public readonly TimeSpan DialogExpiryDuration;
     }
 }

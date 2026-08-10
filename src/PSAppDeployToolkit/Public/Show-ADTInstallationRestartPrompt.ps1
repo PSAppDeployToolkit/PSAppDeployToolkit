@@ -271,7 +271,7 @@ function Show-ADTInstallationRestartPrompt
             if ($SilentRestart)
             {
                 Write-ADTLogEntry -Message "Triggering restart silently because the deploy mode is set to [$($adtSession.DeployMode)] and [-SilentRestart] has been specified. Timeout is set to [$($SilentCountdown.TotalSeconds)] seconds."
-                $Script:ADT.RestartOnExitCountdown = [System.UInt32][System.Math]::Ceiling($SilentCountdown.TotalSeconds)
+                $Script:ADT.RestartOnExitCountdown = $SilentCountdown
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
                     $Script:ADT.ShutdownReasonText = $ShutdownReasonText
@@ -290,7 +290,7 @@ function Show-ADTInstallationRestartPrompt
             Write-ADTLogEntry -Message "Triggering restart silently because there is no active user logged onto the system."
             if ($adtSession)
             {
-                $Script:ADT.RestartOnExitCountdown = [System.UInt32][System.Math]::Ceiling($SilentCountdown.TotalSeconds)
+                $Script:ADT.RestartOnExitCountdown = $SilentCountdown
                 if ($PSBoundParameters.ContainsKey('ShutdownReasonText'))
                 {
                     $Script:ADT.ShutdownReasonText = $ShutdownReasonText
@@ -298,7 +298,7 @@ function Show-ADTInstallationRestartPrompt
             }
             else
             {
-                Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay ([System.UInt32][System.Math]::Ceiling($SilentCountdown.TotalSeconds)) -NoWait
+                Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $SilentCountdown -NoWait
             }
             return
         }

@@ -162,7 +162,7 @@ function Private:Invoke-ADTClientServerOperation
 
         [Parameter(Mandatory = $true, ParameterSetName = 'SilentRestart')]
         [PSAppDeployToolkit.Attributes.ValidateGreaterThanZero()]
-        [System.UInt32]$Delay,
+        [System.TimeSpan]$Delay,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [PSAppDeployToolkit.Attributes.ValidateNotNullOrWhiteSpace()]

@@ -745,7 +745,7 @@ namespace PSADT.ClientServer
                 }
                 if (arg.Equals("/SilentRestart", StringComparison.Ordinal) || arg.Equals("/sr", StringComparison.Ordinal))
                 {
-                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Delay", out string? delayArg) || !int.TryParse(delayArg, NumberStyles.Integer, CultureInfo.InvariantCulture, out int delayValue))
+                    if (ArgvToDictionary(argv) is not ReadOnlyDictionary<string, string> arguments || !arguments.TryGetValue("Delay", out string? delayArg) || !TimeSpan.TryParse(delayArg, CultureInfo.InvariantCulture, out TimeSpan delayValue))
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
@@ -754,7 +754,7 @@ namespace PSADT.ClientServer
                         throw new ClientException("An invalid ShutdownReason was specified on the command line. If provided, it cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
-                    await Task.Delay(delayValue * 1000, default).ConfigureAwait(false);
+                    await Task.Delay(delayValue, default).ConfigureAwait(false);
                     await DeviceUtilities.RestartComputerAsync(shutdownReason).ConfigureAwait(false);
                     Console.WriteLine(SerializeToString(result: true));
                     return (int)ClientExitCode.Success;

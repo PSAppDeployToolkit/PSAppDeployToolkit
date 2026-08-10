@@ -19,7 +19,7 @@ function Test-ADTMutexAvailability
         The name of the system mutex.
 
     .PARAMETER MutexWaitTime
-        The number of milliseconds the current thread should wait to acquire an exclusive lock of a named mutex.
+        The amount of time the current thread should wait to acquire an exclusive lock of a named mutex. Accepts TimeSpan objects, but also interprets numerical values as seconds.
 
         A wait time of -1 milliseconds means to wait indefinitely. A wait time of zero does not acquire an exclusive lock but instead tests the state of the wait handle and returns immediately.
 
@@ -69,6 +69,7 @@ function Test-ADTMutexAvailability
         [System.String]$MutexName,
 
         [Parameter(Mandatory = $false)]
+        [PSAppDeployToolkit.Attributes.TimeSpanTransformation()]
         [ValidateNotNullOrEmpty()]
         [System.TimeSpan]$MutexWaitTime = [System.TimeSpan]::FromMilliseconds(1)
     )
