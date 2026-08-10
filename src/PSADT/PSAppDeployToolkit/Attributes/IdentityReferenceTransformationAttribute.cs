@@ -10,7 +10,7 @@ namespace PSAppDeployToolkit.Attributes
     /// <summary>
     /// Transforms objects into a <see cref="IdentityReference"/>.
     /// </summary>
-    public sealed class IdentityTransformationAttribute : ArgumentTransformationAttribute
+    public sealed class IdentityReferenceTransformationAttribute : ArgumentTransformationAttribute
     {
         /// <summary>
         /// Transforms input object into base <see cref="IdentityReference"/> objects for consumption in downstream PowerShell functions.
