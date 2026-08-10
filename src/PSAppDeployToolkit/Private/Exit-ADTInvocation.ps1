@@ -76,7 +76,7 @@ function Private:Exit-ADTInvocation
     {
         if ($null -ne $Script:ADT.ShutdownReasonText)
         {
-            Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $Script:ADT.RestartOnExitCountdown -MessageText $Script:ADT.ShutdownReasonText -NoWait
+            Invoke-ADTClientServerOperation -User ([PSADT.AccountManagement.AccountUtilities]::CallerRunAsActiveUser) -SilentRestart -Delay $Script:ADT.RestartOnExitCountdown -ShutdownReasonText $Script:ADT.ShutdownReasonText -NoWait
         }
         else
         {

@@ -749,9 +749,9 @@ namespace PSADT.ClientServer
                     {
                         throw new ClientException("A required Delay was not specified on the command line.", ClientExitCode.InvalidArguments);
                     }
-                    if (arguments.TryGetValue("ShutdownReason", out string? shutdownReason) && string.IsNullOrWhiteSpace(shutdownReason))
+                    if (arguments.TryGetValue("ShutdownReasonText", out string? shutdownReason) && string.IsNullOrWhiteSpace(shutdownReason))
                     {
-                        throw new ClientException("An invalid ShutdownReason was specified on the command line. If provided, it cannot be null or whitespace.", ClientExitCode.InvalidArguments);
+                        throw new ClientException("An invalid ShutdownReasonText was specified on the command line. If provided, it cannot be null or whitespace.", ClientExitCode.InvalidArguments);
                     }
                     ClientServerUtilities.SetOperationSuccessFlag();
                     await Task.Delay(delayValue, default).ConfigureAwait(false);
