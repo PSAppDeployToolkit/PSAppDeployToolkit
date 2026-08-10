@@ -171,6 +171,7 @@ function Private:Invoke-ADTClientServerOperation
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowModalDialog')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShowBalloonTip')]
         [Parameter(Mandatory = $false, ParameterSetName = 'ShellExecuteProcess')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'SilentRestart')]
         [System.Management.Automation.SwitchParameter]$NoWait
     )
 
