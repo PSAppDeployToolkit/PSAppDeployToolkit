@@ -545,8 +545,7 @@ namespace PSADT.WindowsInstaller
             }
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiSummaryInfoGetProperty(hSummaryInfo, propertyId, out _, out _, out _, bufSpan, out _);
-            ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
-            return !resSpan.IsEmpty ? resSpan.ToString() : null;
+            return bufSpan[..(int)requiredSize].Trim() is { Length: > 0 } resSpan ? resSpan.ToString() : null;
         }
 
         /// <summary>
@@ -679,8 +678,9 @@ namespace PSADT.WindowsInstaller
             _ = NativeMethods.MsiRecordGetString(hRecord, field, szValueBuf: null, out uint requiredSize);
             Span<char> bufSpan = stackalloc char[(int)requiredSize + 1];
             _ = NativeMethods.MsiRecordGetString(hRecord, field, bufSpan, out _);
-            ReadOnlySpan<char> resSpan = bufSpan[..(int)requiredSize].Trim();
-            return !resSpan.IsEmpty ? resSpan.ToString() : null;
+            return bufSpan[..(int)requiredSize].Trim() is { Length: > 0 } resSpan
+                ? resSpan.ToString()
+                : null;
         }
     }
 }
