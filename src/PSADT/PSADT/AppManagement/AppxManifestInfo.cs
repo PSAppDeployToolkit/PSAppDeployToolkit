@@ -208,7 +208,7 @@ namespace PSADT.AppManagement
         /// <returns>An IStream representing the package file.</returns>
         private static IStream CreateStreamForPackage(Uri packageUri)
         {
-            _ = NativeMethods.SHCreateStreamOnFileEx(packageUri.LocalPath, Interop.STGM.STGM_READ | Interop.STGM.STGM_SHARE_DENY_NONE, FileAttributes.Normal, fCreate: false, pstmTemplate: null, out IStream ppstm);
+            _ = NativeMethods.SHCreateStreamOnFileEx(packageUri.LocalPath, Interop.STGM.STGM_SHARE_DENY_NONE, FileAttributes.Normal, fCreate: false, pstmTemplate: null, out IStream ppstm);
             return ppstm;
         }
     }
