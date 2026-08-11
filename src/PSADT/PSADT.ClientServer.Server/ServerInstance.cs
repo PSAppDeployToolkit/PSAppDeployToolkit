@@ -639,13 +639,18 @@ namespace PSADT.ClientServer
                         }
 
                         // If the client process failed, throw a ServerException with the inner exception.
+                        bool ignoreExitCode = false;
                         using (clientResult)
                         {
-                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException && !IsIgnorableClientShutdownException(clientException))
+                            if (DataSerialization.DeserializeExceptionFromStdErr(clientResult) is Exception clientException)
                             {
-                                throw new ServerException("The client process failed during shutdown.", clientException);
+                                if (!IsIgnorableClientShutdownException(clientException))
+                                {
+                                    throw new ServerException("The client process failed during shutdown.", clientException);
+                                }
+                                ignoreExitCode = true;
                             }
-                            if (wasRunning && clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode)
+                            if (wasRunning && (clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode || ignoreExitCode))
                             {
                                 if (Enum.IsDefined(typeof(ClientExitCode), clientResult.ExitCode))
                                 {
