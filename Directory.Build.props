@@ -52,7 +52,7 @@
 
   <!-- Banned API analyzer -->
   <ItemGroup>
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.137">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.141">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -64,7 +64,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.16.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -436,7 +436,7 @@ namespace PSADT.Invoke
             ]);
             if (!inDebugMode)
             {
-                _ = PInvoke.SetProcessDPIAware(); _ = NativeMethods.MessageBox(hWnd: null, helpMessage, helpTitle, MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_DEFBUTTON1 | MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | MESSAGEBOX_STYLE.MB_ICONINFORMATION);
+                _ = PInvoke.SetProcessDPIAware(); _ = NativeMethods.MessageBox(hWnd: null, helpMessage, helpTitle, MESSAGEBOX_STYLE.MB_TASKMODAL | MESSAGEBOX_STYLE.MB_SETFOREGROUND | MESSAGEBOX_STYLE.MB_ICONINFORMATION);
             }
             else
             {
