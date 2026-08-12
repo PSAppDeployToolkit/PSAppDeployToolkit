@@ -650,7 +650,7 @@ namespace PSADT.ClientServer
                                 }
                                 ignoreExitCode = true;
                             }
-                            if (wasRunning && (clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode || ignoreExitCode))
+                            if (wasRunning && !ignoreExitCode && clientResult.ExitCode is not 0 and not ProcessManager.TimeoutExitCode)
                             {
                                 if (Enum.IsDefined(typeof(ClientExitCode), clientResult.ExitCode))
                                 {
