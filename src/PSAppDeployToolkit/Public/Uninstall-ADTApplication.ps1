@@ -41,6 +41,12 @@ function Uninstall-ADTApplication
     .PARAMETER IncludeUpdatesAndHotfixes
         Include matches against updates and hotfixes in results.
 
+    .PARAMETER IncludeNoRemoveEntries
+        Specifies that uninstall entries marked with `NoRemove=1` be included.
+
+    .PARAMETER IncludeSystemComponentEntries
+        Specifies that uninstall entries marked with `SystemComponent=1` be included.
+
     .PARAMETER FilterScript
         A script used to filter the results as they're processed.
 
@@ -173,6 +179,12 @@ function Uninstall-ADTApplication
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
         [System.Management.Automation.SwitchParameter]$IncludeUpdatesAndHotfixes,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [System.Management.Automation.SwitchParameter]$IncludeNoRemoveEntries,
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'Search')]
+        [System.Management.Automation.SwitchParameter]$IncludeSystemComponentEntries,
 
         [Parameter(Mandatory = $false, ParameterSetName = 'Search', Position = 0)]
         [ValidateNotNullOrEmpty()]
