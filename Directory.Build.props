@@ -4,6 +4,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -29,13 +30,13 @@
     <Authors>Dan Cunningham</Authors>
     <Company>Dan Cunningham</Company>
     <AssemblyCompany>Dan Cunningham</AssemblyCompany>
-    <VersionPrefix>0.8.0</VersionPrefix>
+    <VersionPrefix>0.8.13</VersionPrefix>
     <VersionSuffix>preview</VersionSuffix>
-    <PackageVersion>0.8.0-preview</PackageVersion>
-    <AssemblyVersion>0.8.0.0</AssemblyVersion>
-    <FileVersion>0.8.0.0</FileVersion>
-    <InformationalVersion>0.8.0-preview</InformationalVersion>
-    <BuildDate>2026-06-10</BuildDate>
+    <PackageVersion>0.8.13-preview</PackageVersion>
+    <AssemblyVersion>0.8.13.0</AssemblyVersion>
+    <FileVersion>0.8.13.0</FileVersion>
+    <InformationalVersion>0.8.13-preview</InformationalVersion>
+    <BuildDate>2026-08-13</BuildDate>
     <Copyright>Copyright © 2026 Dan Cunningham. All rights reserved.</Copyright>
   </PropertyGroup>
 
@@ -63,19 +64,19 @@
 
   <!-- Banned API analyzer -->
   <ItemGroup>
-    <PackageReference Include="Meziantou.Analyzer" Version="3.0.104">
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.151">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.7.0">
+    <PackageReference Include="Microsoft.Extensions.StaticAnalysis" Version="10.9.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.16.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -83,6 +84,27 @@
   <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
+  <PropertyGroup>
+    <MeziantouAnalysisMode>all-errors</MeziantouAnalysisMode>
+  </PropertyGroup>
+
+  <!--
+    Meziantou.Polyfill opt-in allowlist (prefix-matched XML doc IDs, pipe-separated). This is the
+    shared core every project needs on net472 (and net8 where the package is referenced); projects
+    append their own entries by prefixing $(MeziantouPolyfill_IncludedPolyfills). The two attribute
+    entries are the dependency closure of the generated Index/Range types.
+  -->
+  <PropertyGroup>
+    <MeziantouPolyfill_IncludedPolyfills>
+      M:System.String.Contains(System.String,System.StringComparison)|
+      T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute|
+      T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute|
+      T:System.Index|
+      T:System.Range|
+      T:System.Threading.Lock|
+    </MeziantouPolyfill_IncludedPolyfills>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
 
   <!-- Common embedded resource for license -->
   <ItemGroup>

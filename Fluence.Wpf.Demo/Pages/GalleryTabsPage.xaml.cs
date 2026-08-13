@@ -35,10 +35,8 @@ namespace Fluence.Wpf.Demo.Pages
 {
     public partial class GalleryTabsPage : UserControl
     {
-        private const string TabControlBasicsXamlSource = "<UserControl\n" +
-                                                          "    x:Class=\"Fluence.Wpf.Demo.Pages.Tabs.TabControlBasics\"\n" +
-                                                          "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                          "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">\n" +
+        private static readonly string TabControlBasicsXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Tabs.TabControlBasics",
                                                           "    <TabControl Height=\"210\">\n" +
                                                           "        <TabItem Header=\"Overview\">\n" +
                                                           "            <StackPanel Margin=\"20\">\n" +
@@ -82,8 +80,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                           "                    TextWrapping=\"Wrap\" />\n" +
                                                           "            </StackPanel>\n" +
                                                           "        </TabItem>\n" +
-                                                          "    </TabControl>\n" +
-                                                          "</UserControl>\n";
+                                                          "    </TabControl>\n");
 
         private const string TabControlBasicsCSharpSource = "using System.Windows.Controls;\n" +
                                                             "\n" +
@@ -97,10 +94,8 @@ namespace Fluence.Wpf.Demo.Pages
                                                             "        }\n" +
                                                             "    }\n" +
                                                             "}\n";
-        private const string TabControlPlacementXamlSource = "<UserControl\n" +
-                                                             "    x:Class=\"Fluence.Wpf.Demo.Pages.Tabs.TabControlPlacement\"\n" +
-                                                             "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                             "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">\n" +
+        private static readonly string TabControlPlacementXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Tabs.TabControlPlacement",
                                                              "    <TabControl\n" +
                                                              "        x:Name=\"LeftPlacementTabs\"\n" +
                                                              "        Height=\"220\"\n" +
@@ -119,8 +114,7 @@ namespace Fluence.Wpf.Demo.Pages
                                                              "                Text=\"Archived conversations and completed items.\"\n" +
                                                              "                TextWrapping=\"Wrap\" />\n" +
                                                              "        </TabItem>\n" +
-                                                             "    </TabControl>\n" +
-                                                             "</UserControl>\n";
+                                                             "    </TabControl>\n");
 
         private const string TabControlPlacementCSharpSource = "using System.Windows.Controls;\n" +
                                                                "\n" +
@@ -134,24 +128,21 @@ namespace Fluence.Wpf.Demo.Pages
                                                                "        }\n" +
                                                                "    }\n" +
                                                                "}\n";
-        private const string TabViewDocumentsXamlSource = "<UserControl\n" +
-                                                          "    x:Class=\"Fluence.Wpf.Demo.Pages.Tabs.TabViewDocuments\"\n" +
-                                                          "    xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\"\n" +
-                                                          "    xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\"\n" +
-                                                          "    xmlns:ui=\"clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf\">\n" +
+        private static readonly string TabViewDocumentsXamlSource = DemoSampleXaml.UserControl(
+            "Fluence.Wpf.Demo.Pages.Tabs.TabViewDocuments",
                                                           "    <StackPanel>\n" +
-                                                          "        <ui:TabView\n" +
+                                                          "        <fluence:TabView\n" +
                                                           "            x:Name=\"DemoTabView\"\n" +
                                                           "            Height=\"260\"\n" +
                                                           "            AddTabButtonClick=\"DemoTabView_AddTabButtonClick\"\n" +
                                                           "            CloseButtonOverlayMode=\"Auto\"\n" +
                                                           "            TabCloseRequested=\"DemoTabView_TabCloseRequested\">\n" +
-                                                          "            <ui:TabViewItem\n" +
+                                                          "            <fluence:TabViewItem\n" +
                                                           "                Header=\"Document 1\"\n" +
                                                           "                IsSelected=\"True\">\n" +
-                                                          "                <ui:TabViewItem.Icon>\n" +
-                                                          "                    <ui:FontIcon Glyph=\"&#xE8A5;\" IconFontSize=\"16\" />\n" +
-                                                          "                </ui:TabViewItem.Icon>\n" +
+                                                          "                <fluence:TabViewItem.Icon>\n" +
+                                                          "                    <fluence:FontIcon Glyph=\"&#xE8A5;\" IconFontSize=\"16\" />\n" +
+                                                          "                </fluence:TabViewItem.Icon>\n" +
                                                           "                <Border Background=\"{DynamicResource LayerFillColorDefaultBrush}\">\n" +
                                                           "                    <StackPanel Margin=\"20\">\n" +
                                                           "                        <TextBlock\n" +
@@ -166,11 +157,11 @@ namespace Fluence.Wpf.Demo.Pages
                                                           "                            TextWrapping=\"Wrap\" />\n" +
                                                           "                    </StackPanel>\n" +
                                                           "                </Border>\n" +
-                                                          "            </ui:TabViewItem>\n" +
-                                                          "            <ui:TabViewItem Header=\"Document 2\">\n" +
-                                                          "                <ui:TabViewItem.Icon>\n" +
-                                                          "                    <ui:FontIcon Glyph=\"&#xE8A5;\" IconFontSize=\"16\" />\n" +
-                                                          "                </ui:TabViewItem.Icon>\n" +
+                                                          "            </fluence:TabViewItem>\n" +
+                                                          "            <fluence:TabViewItem Header=\"Document 2\">\n" +
+                                                          "                <fluence:TabViewItem.Icon>\n" +
+                                                          "                    <fluence:FontIcon Glyph=\"&#xE8A5;\" IconFontSize=\"16\" />\n" +
+                                                          "                </fluence:TabViewItem.Icon>\n" +
                                                           "                <Border Background=\"{DynamicResource LayerFillColorDefaultBrush}\">\n" +
                                                           "                    <StackPanel Margin=\"20\">\n" +
                                                           "                        <TextBlock\n" +
@@ -185,13 +176,13 @@ namespace Fluence.Wpf.Demo.Pages
                                                           "                            TextWrapping=\"Wrap\" />\n" +
                                                           "                    </StackPanel>\n" +
                                                           "                </Border>\n" +
-                                                          "            </ui:TabViewItem>\n" +
-                                                          "            <ui:TabViewItem\n" +
+                                                          "            </fluence:TabViewItem>\n" +
+                                                          "            <fluence:TabViewItem\n" +
                                                           "                Header=\"Pinned\"\n" +
                                                           "                IsClosable=\"False\">\n" +
-                                                          "                <ui:TabViewItem.Icon>\n" +
-                                                          "                    <ui:FontIcon Glyph=\"&#xE718;\" IconFontSize=\"16\" />\n" +
-                                                          "                </ui:TabViewItem.Icon>\n" +
+                                                          "                <fluence:TabViewItem.Icon>\n" +
+                                                          "                    <fluence:FontIcon Glyph=\"&#xE718;\" IconFontSize=\"16\" />\n" +
+                                                          "                </fluence:TabViewItem.Icon>\n" +
                                                           "                <Border Background=\"{DynamicResource LayerFillColorDefaultBrush}\">\n" +
                                                           "                    <StackPanel Margin=\"20\">\n" +
                                                           "                        <TextBlock\n" +
@@ -206,15 +197,14 @@ namespace Fluence.Wpf.Demo.Pages
                                                           "                            TextWrapping=\"Wrap\" />\n" +
                                                           "                    </StackPanel>\n" +
                                                           "                </Border>\n" +
-                                                          "            </ui:TabViewItem>\n" +
-                                                          "        </ui:TabView>\n" +
+                                                          "            </fluence:TabViewItem>\n" +
+                                                          "        </fluence:TabView>\n" +
                                                           "        <TextBlock\n" +
                                                           "            x:Name=\"DemoTabViewStatus\"\n" +
                                                           "            Margin=\"0,12,0,0\"\n" +
                                                           "            Foreground=\"{DynamicResource TextFillColorSecondaryBrush}\"\n" +
                                                           "            Text=\"Tabs: 3\" />\n" +
-                                                          "    </StackPanel>\n" +
-                                                          "</UserControl>\n";
+                                                          "    </StackPanel>\n");
 
         private const string TabViewDocumentsCSharpSource = "using System.Windows;\n" +
                                                             "using System.Windows.Controls;\n" +

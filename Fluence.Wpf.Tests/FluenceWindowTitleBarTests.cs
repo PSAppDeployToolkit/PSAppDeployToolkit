@@ -26,9 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Fluence.Wpf.Controls;
-using Fluence.Wpf.Native;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
@@ -38,10 +35,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
 using System.Windows.Threading;
+using Fluence.Wpf.Controls;
+using Fluence.Wpf.Native;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class FluenceWindowTitleBarTests
     {
         private static void RunOnFreshStaThread(Action action)
@@ -130,7 +129,7 @@ namespace Fluence.Wpf.Tests
                         ShowInTaskbar = false,
                     };
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded, default);
                     testBody(window);
                 }
                 finally
@@ -150,7 +149,7 @@ namespace Fluence.Wpf.Tests
             MethodInfo? method = typeof(FluenceWindow).GetMethod(
                 "HitTestTitleBar",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(method, "HitTestTitleBar must exist for caption hit-test tests.");
+            Assert.NotNull(method);
             return (int?)method.Invoke(window, [lParam]);
         }
 
@@ -159,7 +158,7 @@ namespace Fluence.Wpf.Tests
             MethodInfo? method = typeof(FluenceWindow).GetMethod(
                 "WndProc",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(method, "WndProc must exist for native message tests.");
+            Assert.NotNull(method);
 
             object[] args = [IntPtr.Zero, msg, wParam, lParam, false];
             IntPtr? result = (IntPtr?)method.Invoke(window, args);
@@ -170,9 +169,8 @@ namespace Fluence.Wpf.Tests
         private static void AssertNativeConstantValue(string fieldName, object expectedValue)
         {
             FieldInfo? field = typeof(NativeConstants).GetField(fieldName, BindingFlags.Static | BindingFlags.Public);
-            Assert.IsNotNull(field, "NativeConstants." + fieldName + " must exist.");
-            Assert.AreEqual(expectedValue, field.GetRawConstantValue(),
-                "NativeConstants." + fieldName + " must match the Win32 value.");
+            Assert.NotNull(field);
+            Assert.Equal(expectedValue, field.GetRawConstantValue());
         }
 
         private static IntPtr MakeLParamScreen(double screenX, double screenY)
@@ -185,18 +183,18 @@ namespace Fluence.Wpf.Tests
         private static System.Windows.Controls.Button? GetCaptionButtonField(FluenceWindow window, string fieldName)
         {
             FieldInfo? field = typeof(FluenceWindow).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(field, "Caption button field must exist: " + fieldName);
+            Assert.NotNull(field);
             return field.GetValue(window) as System.Windows.Controls.Button;
         }
 
         #region 1. ExtendsContentIntoTitleBar default
 
-        [TestMethod]
+        [Fact]
         public void ExtendsContentIntoTitleBar_DefaultIsFalse()
         {
             RunWithWindow(static w =>
             {
-                Assert.IsFalse(w.ExtendsContentIntoTitleBar,
+                Assert.False(w.ExtendsContentIntoTitleBar,
                     "ExtendsContentIntoTitleBar should default to false.");
             });
         }
@@ -205,65 +203,57 @@ namespace Fluence.Wpf.Tests
 
         #region 2. FluenceWindow sizing defaults
 
-        [TestMethod]
+        [Fact]
         public void TitleBarHeight_DefaultIs48()
         {
-            RunWithWindow(static w =>
-            {
-                Assert.AreEqual(48d, w.TitleBarHeight,
-                    "TitleBarHeight should default to 48 (WinUI 3 canonical expanded title-bar height).");
-            });
+            RunWithWindow(static w => Assert.Equal(48d, w.TitleBarHeight));
         }
 
-        [TestMethod]
+        [Fact]
         public void MinWidth_DefaultRemainsUnset()
         {
-            RunWithWindow(static w =>
-            {
-                Assert.AreEqual(0d, w.MinWidth,
-                    "FluenceWindow should leave MinWidth unset by default.");
-            });
+            RunWithWindow(static w => Assert.Equal(0d, w.MinWidth));
         }
 
         #endregion 2. FluenceWindow sizing defaults
 
         #region 3. ShowIcon and ShowTitle defaults
 
-        [TestMethod]
+        [Fact]
         public void ShowIcon_DefaultIsTrue()
         {
-            RunWithWindow(static w => Assert.IsTrue(w.ShowIcon, "ShowIcon should default to true."));
+            RunWithWindow(static w => Assert.True(w.ShowIcon, "ShowIcon should default to true."));
         }
 
-        [TestMethod]
+        [Fact]
         public void ShowTitle_DefaultIsTrue()
         {
-            RunWithWindow(static w => Assert.IsTrue(w.ShowTitle, "ShowTitle should default to true."));
+            RunWithWindow(static w => Assert.True(w.ShowTitle, "ShowTitle should default to true."));
         }
 
         #endregion 3. ShowIcon and ShowTitle defaults
 
         #region 4. Caption button visibility defaults
 
-        [TestMethod]
+        [Fact]
         public void CaptionButtonVisibility_DefaultsAreVisible()
         {
             RunWithWindow(static w =>
             {
-                Assert.AreEqual(Visibility.Visible, w.IsMinimizeButtonVisible);
-                Assert.AreEqual(Visibility.Visible, w.IsMaximizeButtonVisible);
-                Assert.AreEqual(Visibility.Visible, w.IsCloseButtonVisible);
+                Assert.Equal(Visibility.Visible, w.IsMinimizeButtonVisible);
+                Assert.Equal(Visibility.Visible, w.IsMaximizeButtonVisible);
+                Assert.Equal(Visibility.Visible, w.IsCloseButtonVisible);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CaptionButtonEnabled_DefaultsAreTrue()
         {
             RunWithWindow(static w =>
             {
-                Assert.IsTrue(w.IsMinimizable);
-                Assert.IsTrue(w.IsMaximizable);
-                Assert.IsTrue(w.IsClosable);
+                Assert.True(w.IsMinimizable);
+                Assert.True(w.IsMaximizable);
+                Assert.True(w.IsClosable);
             });
         }
 
@@ -271,49 +261,43 @@ namespace Fluence.Wpf.Tests
 
         #region 5. HasShadow and WindowBorder defaults
 
-        [TestMethod]
+        [Fact]
         public void HasShadow_DefaultIsTrue()
         {
-            RunWithWindow(static w => Assert.IsTrue(w.HasShadow, "HasShadow should default to true."));
+            RunWithWindow(static w => Assert.True(w.HasShadow, "HasShadow should default to true."));
         }
 
-        [TestMethod]
+        [Fact]
         public void BorderThickness_DefaultIsOne()
         {
-            RunWithWindow(static w =>
-            {
-                Assert.AreEqual(new Thickness(1), w.BorderThickness,
-                    "BorderThickness should default to 1 (window chrome stroke from default style).");
-            });
+            RunWithWindow(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
         }
 
         #endregion 5. HasShadow and WindowBorder defaults
 
         #region 6. SetTitleBar method
 
-        [TestMethod]
+        [Fact]
         public void SetTitleBar_SetsTitleBarProperty()
         {
             RunWithWindow(static w =>
             {
                 System.Windows.Controls.TextBlock customElement = new() { Text = "Custom Title" };
                 w.SetTitleBar(customElement);
-                Assert.AreSame(customElement, w.TitleBar,
-                    "SetTitleBar should assign the element to the TitleBar property.");
+                Assert.Same(customElement, w.TitleBar);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void SetTitleBar_NullReverts()
         {
             RunWithWindow(static w =>
             {
                 System.Windows.Controls.TextBlock customElement = new() { Text = "Custom Title" };
                 w.SetTitleBar(customElement);
-                Assert.IsNotNull(w.TitleBar);
+                Assert.NotNull(w.TitleBar);
                 w.SetTitleBar(titleBar: null);
-                Assert.IsNull(w.TitleBar,
-                    "SetTitleBar(null) should clear the custom TitleBar content.");
+                Assert.Null(w.TitleBar);
             });
         }
 
@@ -321,31 +305,28 @@ namespace Fluence.Wpf.Tests
 
         #region 7. WindowChrome updates
 
-        [TestMethod]
+        [Fact]
         public void CaptionHeight_AlwaysZero_RegardlessOfExtendsContentIntoTitleBar()
         {
             RunWithWindow(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.IsNotNull(chrome, "FluenceWindow should have a WindowChrome attached.");
-                Assert.AreEqual(0d, chrome.CaptionHeight,
-                    "CaptionHeight must always be 0 - drag region is handled by WM_NCHITTEST.");
+                Assert.NotNull(chrome);
+                Assert.Equal(0d, chrome.CaptionHeight);
 
                 w.ExtendsContentIntoTitleBar = true;
 
-                Assert.AreEqual(0d, chrome.CaptionHeight,
-                    "CaptionHeight must remain 0 when content extends into title bar.");
+                Assert.Equal(0d, chrome.CaptionHeight);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HasShadow_False_SetsGlassFrameToNearZero()
         {
             RunWithWindow(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.AreEqual(new Thickness(-1), chrome.GlassFrameThickness,
-                    "Default GlassFrameThickness should be -1 (backdrop or shadow active).");
+                Assert.Equal(new Thickness(-1), chrome.GlassFrameThickness);
 
                 w.HasShadow = false;
                 w.SystemBackdropType = BackdropType.None;
@@ -354,8 +335,7 @@ namespace Fluence.Wpf.Tests
                 // is None AND HasShadow is false, so the WindowChrome resize border still
                 // hit-tests but no visible glass-frame artifact is painted on Windows 11.
                 // See WindowPolicy.GetGlassFrameThickness for the rationale.
-                Assert.AreEqual(new Thickness(0.00001), chrome.GlassFrameThickness,
-                    "GlassFrameThickness should be 0.00001 when HasShadow=false and SystemBackdropType=None.");
+                Assert.Equal(new Thickness(0.00001), chrome.GlassFrameThickness);
             });
         }
 
@@ -363,40 +343,34 @@ namespace Fluence.Wpf.Tests
 
         #region Bug Fix Tests - Title Bar Flash and Theme Switching
 
-        [TestMethod]
+        [Fact]
         public void CaptionHeight_IsZero_EvenBeforeExtendsContentIntoTitleBar()
         {
             RunWithWindow(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.IsNotNull(chrome);
-                Assert.AreEqual(0d, chrome.CaptionHeight,
-                    "CaptionHeight must be 0 from construction - WM_NCHITTEST handles all drag regions.");
+                Assert.NotNull(chrome);
+                Assert.Equal(0d, chrome.CaptionHeight);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void WindowChrome_AppliedInConstructor()
         {
             RunWithWindow(static w =>
             {
                 WindowChrome chrome = WindowChrome.GetWindowChrome(w);
-                Assert.IsNotNull(chrome,
-                    "WindowChrome must be attached during FluenceWindow construction, not deferred to Loaded.");
+                Assert.NotNull(chrome);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DefaultBorderThickness_IsOne()
         {
-            RunWithWindow(static w =>
-            {
-                Assert.AreEqual(new Thickness(1), w.BorderThickness,
-                    "FluenceWindow default BorderThickness must be 1 (chrome border).");
-            });
+            RunWithWindow(static w => Assert.Equal(new Thickness(1), w.BorderThickness));
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeSwitch_UpdatesWindowBackground()
         {
             RunOnFreshStaThread(static () =>
@@ -413,8 +387,7 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     Brush darkBg = window.Background;
 
-                    Assert.AreNotEqual(lightBg, darkBg,
-                        "Window background must change after theme switch from Light to Dark.");
+                    Assert.NotEqual(lightBg, darkBg);
                 }
                 finally
                 {
@@ -430,7 +403,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ThemeChanged_FiresOnApply()
         {
             RunOnFreshStaThread(() =>
@@ -447,8 +420,7 @@ namespace Fluence.Wpf.Tests
                 {
                     ApplicationThemeManager.Changed += handler;
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
-                    Assert.AreEqual(1, fireCount,
-                        "ApplicationThemeManager.Changed must fire exactly once per Apply call.");
+                    Assert.Equal(1, fireCount);
                 }
                 finally
                 {
@@ -463,7 +435,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindowXaml_NoStaticResourceForThemeBrushes()
         {
             string xamlPath = System.IO.Path.Combine(
@@ -487,13 +459,13 @@ namespace Fluence.Wpf.Tests
                 foreach (string key in themeBrushKeys)
                 {
                     string staticPattern = "StaticResource " + key;
-                    Assert.IsFalse(xaml.Contains(staticPattern, StringComparison.Ordinal),
+                    Assert.False(xaml.Contains(staticPattern, StringComparison.Ordinal),
                         "FluenceWindow.xaml must not use StaticResource for theme brush: " + key);
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void FullThemeCycle_KeyBrushesResolve()
         {
             RunOnFreshStaThread(static () =>
@@ -507,11 +479,9 @@ namespace Fluence.Wpf.Tests
                     {
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                         object? bg = app?.TryFindResource("ApplicationBackgroundBrush");
-                        Assert.IsNotNull(bg,
-                            "ApplicationBackgroundBrush must resolve after switching to " + theme);
+                        Assert.NotNull(bg);
                         object? fg = app?.TryFindResource("TextFillColorPrimaryBrush");
-                        Assert.IsNotNull(fg,
-                            "TextFillColorPrimaryBrush must resolve after switching to " + theme);
+                        Assert.NotNull(fg);
                     }
                 }
                 finally
@@ -526,7 +496,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void MergedDictionaries_CountStableAfterMultipleSwitches()
         {
             RunOnFreshStaThread(static () =>
@@ -540,12 +510,11 @@ namespace Fluence.Wpf.Tests
 
                     for (int i = 0; i < 5; i++)
                     {
-                        ApplicationTheme theme = i % 2 == 0 ? ApplicationTheme.Dark : ApplicationTheme.Light;
+                        ApplicationTheme theme = i % 2 is 0 ? ApplicationTheme.Dark : ApplicationTheme.Light;
                         ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     }
 
-                    Assert.AreEqual(initialCount, app?.Resources.MergedDictionaries.Count,
-                        "MergedDictionaries count must remain stable after 5 theme switches.");
+                    Assert.Equal(initialCount, app?.Resources.MergedDictionaries.Count);
                 }
                 finally
                 {
@@ -563,7 +532,7 @@ namespace Fluence.Wpf.Tests
 
         #region Caption button hit-test (WM_NCHITTEST vs WPF commands)
 
-        [TestMethod]
+        [Fact]
         public void FluenceWindowXaml_CaptionButtonsUseSystemCommands()
         {
             string xamlPath = System.IO.Path.Combine(
@@ -571,111 +540,106 @@ namespace Fluence.Wpf.Tests
                 @"..\..\..\..\Fluence.Wpf\Themes\Controls\FluenceWindow.xaml");
             xamlPath = System.IO.Path.GetFullPath(xamlPath);
 
-            Assert.IsTrue(System.IO.File.Exists(xamlPath),
+            Assert.True(System.IO.File.Exists(xamlPath),
                 "FluenceWindow.xaml should be readable at: " + xamlPath);
 
             string xaml = System.IO.File.ReadAllText(xamlPath);
-            Assert.IsTrue(
-                xaml.IndexOf("MinimizeWindowCommand", StringComparison.Ordinal) >= 0,
+            Assert.True(
+                xaml.Contains("MinimizeWindowCommand", StringComparison.Ordinal),
                 "Minimize button should bind MinimizeWindowCommand.");
-            Assert.IsTrue(
-                xaml.IndexOf("MaximizeWindowCommand", StringComparison.Ordinal) >= 0,
+            Assert.True(
+                xaml.Contains("MaximizeWindowCommand", StringComparison.Ordinal),
                 "Maximize button should bind MaximizeWindowCommand.");
-            Assert.IsTrue(
-                xaml.IndexOf("CloseWindowCommand", StringComparison.Ordinal) >= 0,
+            Assert.True(
+                xaml.Contains("CloseWindowCommand", StringComparison.Ordinal),
                 "Close button should bind CloseWindowCommand.");
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_MinimizeButton_ReturnsZero_NotHtMinButton()
         {
             RunWithShownWindow(static w =>
             {
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
-                Assert.IsNotNull(btn, "Minimize template part should exist after Show.");
-                Assert.AreEqual(Visibility.Visible, btn.Visibility);
+                Assert.NotNull(btn);
+                Assert.Equal(Visibility.Visible, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
-                Assert.AreEqual(0, hit,
-                    "Minimize area must return 0 so WPF receives client clicks (not HTMINBUTTON).");
-                Assert.AreNotEqual(NativeConstants.HTMINBUTTON, hit);
+                Assert.Equal(0, hit);
+                Assert.NotEqual(NativeConstants.HTMINBUTTON, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_CloseButton_ReturnsZero_NotHtClose()
         {
             RunWithShownWindow(static w =>
             {
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_closeButton");
-                Assert.IsNotNull(btn);
+                Assert.NotNull(btn);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
-                Assert.AreEqual(0, hit,
-                    "Close area must return 0 so WPF receives client clicks (not HTCLOSE).");
-                Assert.AreNotEqual(NativeConstants.HTCLOSE, hit);
+                Assert.Equal(0, hit);
+                Assert.NotEqual(NativeConstants.HTCLOSE, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_MaximizeButton_ReturnsHtMaxButton()
         {
             RunWithShownWindow(static w =>
             {
-                Assert.AreEqual(WindowState.Normal, w.WindowState);
+                Assert.Equal(WindowState.Normal, w.WindowState);
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.IsNotNull(btn);
-                Assert.AreEqual(Visibility.Visible, btn.Visibility);
+                Assert.NotNull(btn);
+                Assert.Equal(Visibility.Visible, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
-                Assert.AreEqual(NativeConstants.HTMAXBUTTON, hit,
-                    "Maximize area should return HTMAXBUTTON for snap layout support.");
+                Assert.Equal(NativeConstants.HTMAXBUTTON, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_MaximizeButtonHidden_DoesNotReturnHtMaxButton()
         {
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.IsNotNull(btn);
-                Assert.AreEqual(Visibility.Hidden, btn.Visibility);
+                Assert.NotNull(btn);
+                Assert.Equal(Visibility.Hidden, btn.Visibility);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
-                Assert.AreNotEqual(NativeConstants.HTMAXBUTTON, hit,
-                    "Hidden maximize chrome must not expose Windows 11 snap layout.");
+                Assert.NotEqual(NativeConstants.HTMAXBUTTON, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_MaximizeButtonDisabled_DoesNotReturnHtMaxButton()
         {
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizable = false;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.IsNotNull(btn);
-                Assert.AreEqual(Visibility.Visible, btn.Visibility);
-                Assert.IsFalse(btn.IsEnabled);
+                Assert.NotNull(btn);
+                Assert.Equal(Visibility.Visible, btn.Visibility);
+                Assert.False(btn.IsEnabled);
 
                 Point center = btn.PointToScreen(new Point(btn.RenderSize.Width / 2, btn.RenderSize.Height / 2));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(center.X, center.Y));
-                Assert.AreNotEqual(NativeConstants.HTMAXBUTTON, hit,
-                    "Disabled maximize chrome must not expose Windows 11 snap layout.");
+                Assert.NotEqual(NativeConstants.HTMAXBUTTON, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_TitleBarDragArea_ReturnsHtCaption()
         {
             RunWithShownWindow(static w =>
@@ -684,12 +648,11 @@ namespace Fluence.Wpf.Tests
                 Point clientMidTitle = new(Math.Max(40, w.ActualWidth / 2), Math.Max(1, w.TitleBarHeight / 2));
                 Point screen = w.PointToScreen(clientMidTitle);
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(screen.X, screen.Y));
-                Assert.AreEqual(NativeConstants.HTCAPTION, hit,
-                    "Title bar drag strip should return HTCAPTION.");
+                Assert.Equal(NativeConstants.HTCAPTION, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_TopResizeBand_ReturnsHtTopBeforeCaption()
         {
             RunWithShownWindow(static w =>
@@ -697,12 +660,11 @@ namespace Fluence.Wpf.Tests
                 w.UpdateLayout();
                 Point screen = w.PointToScreen(new Point(w.ActualWidth / 2.0, 1.0));
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(screen.X, screen.Y));
-                Assert.AreEqual(NativeConstants.HTTOP, hit,
-                    "The upper resize band must win over the caption drag region.");
+                Assert.Equal(NativeConstants.HTTOP, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_UpperCorners_ReturnResizeCornersBeforeCaption()
         {
             RunWithShownWindow(static w =>
@@ -711,17 +673,15 @@ namespace Fluence.Wpf.Tests
 
                 Point topLeft = w.PointToScreen(new Point(1.0, 1.0));
                 int? leftHit = InvokeHitTestTitleBar(w, MakeLParamScreen(topLeft.X, topLeft.Y));
-                Assert.AreEqual(NativeConstants.HTTOPLEFT, leftHit,
-                    "The upper-left resize corner must win over the caption drag region.");
+                Assert.Equal(NativeConstants.HTTOPLEFT, leftHit);
 
                 Point topRight = w.PointToScreen(new Point(w.ActualWidth - 1.0, 1.0));
                 int? rightHit = InvokeHitTestTitleBar(w, MakeLParamScreen(topRight.X, topRight.Y));
-                Assert.AreEqual(NativeConstants.HTTOPRIGHT, rightHit,
-                    "The upper-right resize corner must win over caption buttons and caption drag.");
+                Assert.Equal(NativeConstants.HTTOPRIGHT, rightHit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HitTestTitleBar_IsMoveableFalse_TitleBarDragAreaReturnsZero()
         {
             RunWithShownWindow(static w =>
@@ -732,39 +692,36 @@ namespace Fluence.Wpf.Tests
                 Point clientMidTitle = new(Math.Max(40, w.ActualWidth / 2), Math.Max(1, w.TitleBarHeight / 2));
                 Point screen = w.PointToScreen(clientMidTitle);
                 int? hit = InvokeHitTestTitleBar(w, MakeLParamScreen(screen.X, screen.Y));
-                Assert.AreEqual(0, hit,
-                    "IsMoveable=false must suppress HTCAPTION for title-bar drag regions.");
+                Assert.Equal(0, hit);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void WndProc_IsMoveableFalse_SuppressesSystemMove()
         {
             RunWithWindow(static w =>
             {
                 w.IsMoveable = false;
                 _ = InvokeWndProc(w, NativeConstants.WM_SYSCOMMAND, new IntPtr(NativeConstants.SC_MOVE), IntPtr.Zero, out bool handled);
-                Assert.IsTrue(handled, "IsMoveable=false must handle SC_MOVE.");
+                Assert.True(handled, "IsMoveable=false must handle SC_MOVE.");
 
                 w.IsMoveable = true;
                 _ = InvokeWndProc(w, NativeConstants.WM_SYSCOMMAND, new IntPtr(NativeConstants.SC_MOVE), IntPtr.Zero, out handled);
-                Assert.IsFalse(handled, "IsMoveable=true must leave SC_MOVE available.");
+                Assert.False(handled, "IsMoveable=true must leave SC_MOVE available.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void WndProc_NcLeftButtonUpHtMaxButton_UsesDirectMaximizeAndRefreshesCaptionButtons()
         {
             RunWithShownWindow(static w =>
             {
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
                 System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
-                Assert.IsNotNull(max, "Maximize template part should exist after Show.");
-                Assert.IsNotNull(restore, "Restore template part should exist after Show.");
-                Assert.AreEqual(Visibility.Visible, max.Visibility,
-                    "Precondition: maximize button should be visible before HTMAXBUTTON click.");
-                Assert.AreEqual(Visibility.Collapsed, restore.Visibility,
-                    "Precondition: restore button should be hidden before HTMAXBUTTON click.");
+                Assert.NotNull(max);
+                Assert.NotNull(restore);
+                Assert.Equal(Visibility.Visible, max.Visibility);
+                Assert.Equal(Visibility.Collapsed, restore.Visibility);
 
                 _ = InvokeWndProc(
                     w,
@@ -772,16 +729,13 @@ namespace Fluence.Wpf.Tests
                     new IntPtr(NativeConstants.HTMAXBUTTON),
                     IntPtr.Zero,
                     out bool handled);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.IsTrue(handled,
+                Assert.True(handled,
                     "WM_NCLBUTTONUP/HTMAXBUTTON should be handled by FluenceWindow.");
-                Assert.AreEqual(WindowState.Maximized, w.WindowState,
-                    "HTMAXBUTTON click should use the same direct WindowState path as the command handler.");
-                Assert.AreEqual(Visibility.Collapsed, max.Visibility,
-                    "After one maximize click, the maximize icon should be hidden.");
-                Assert.AreEqual(Visibility.Visible, restore.Visibility,
-                    "After one maximize click, only the restore icon should be visible.");
+                Assert.Equal(WindowState.Maximized, w.WindowState);
+                Assert.Equal(Visibility.Collapsed, max.Visibility);
+                Assert.Equal(Visibility.Visible, restore.Visibility);
 
                 _ = InvokeWndProc(
                     w,
@@ -789,20 +743,17 @@ namespace Fluence.Wpf.Tests
                     new IntPtr(NativeConstants.HTMAXBUTTON),
                     IntPtr.Zero,
                     out handled);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.IsTrue(handled,
+                Assert.True(handled,
                     "Second WM_NCLBUTTONUP/HTMAXBUTTON should be handled by FluenceWindow.");
-                Assert.AreEqual(WindowState.Normal, w.WindowState,
-                    "Second HTMAXBUTTON click should restore through the same direct path as the command handler.");
-                Assert.AreEqual(Visibility.Visible, max.Visibility,
-                    "After one restore click, only the maximize icon should be visible.");
-                Assert.AreEqual(Visibility.Collapsed, restore.Visibility,
-                    "After one restore click, the restore icon should be hidden.");
+                Assert.Equal(WindowState.Normal, w.WindowState);
+                Assert.Equal(Visibility.Visible, max.Visibility);
+                Assert.Equal(Visibility.Collapsed, restore.Visibility);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void SetSnapHover_UsesSubtleFillTokens_MatchingTemplatePointerOver()
         {
             // The Windows 11 snap-layout flyout hover over the maximize/restore button is driven by
@@ -817,8 +768,8 @@ namespace Fluence.Wpf.Tests
             RunWithShownWindow(static w =>
             {
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.IsNotNull(max, "Maximize template part should exist after Show.");
-                Assert.IsTrue(max.IsEnabled,
+                Assert.NotNull(max);
+                Assert.True(max.IsEnabled,
                     "Precondition: maximize button must be enabled for SetSnapHover to apply a hover visual.");
 
                 // The resolved brushes the template PointerOver state would show, looked up the same
@@ -826,38 +777,31 @@ namespace Fluence.Wpf.Tests
                 object? expectedBackground = w.TryFindResource("SubtleFillColorSecondaryBrush");
                 object? expectedForeground = w.TryFindResource("TextFillColorPrimaryBrush");
                 object? staleBackground = w.TryFindResource("ControlStrongFillColorDefaultBrush");
-                Assert.IsInstanceOfType(expectedBackground, typeof(Brush),
-                    "SubtleFillColorSecondaryBrush must resolve to a Brush in the test theme.");
-                Assert.IsInstanceOfType(expectedForeground, typeof(Brush),
-                    "TextFillColorPrimaryBrush must resolve to a Brush in the test theme.");
+                _ = Assert.IsAssignableFrom<Brush>(expectedBackground);
+                _ = Assert.IsAssignableFrom<Brush>(expectedForeground);
 
                 MethodInfo? setSnapHover = typeof(FluenceWindow).GetMethod(
                     "SetSnapHover",
                     BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.IsNotNull(setSnapHover, "SetSnapHover must exist for the snap-hover token test.");
+                Assert.NotNull(setSnapHover);
                 _ = setSnapHover.Invoke(w, [max]);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreSame(expectedBackground, max.Background,
-                    "Snap hover must set the maximize button Background to SubtleFillColorSecondaryBrush, matching the WindowButtonStyle PointerOver state.");
-                Assert.AreSame(expectedForeground, max.Foreground,
-                    "Snap hover must set the maximize button Foreground to TextFillColorPrimaryBrush, matching the WindowButtonStyle PointerOver state.");
-                Assert.AreNotSame(staleBackground, max.Background,
-                    "Snap hover must NOT use the pre-re-author ControlStrongFillColorDefaultBrush token.");
+                Assert.Same(expectedBackground, max.Background);
+                Assert.Same(expectedForeground, max.Foreground);
+                Assert.NotSame(staleBackground, max.Background);
 
                 // ClearSnapHover must restore the template/style defaults via ClearValue, so the
                 // local Background/Foreground values are cleared back to the unset (style-driven) state.
                 MethodInfo? clearSnapHover = typeof(FluenceWindow).GetMethod(
                     "ClearSnapHover",
                     BindingFlags.Instance | BindingFlags.NonPublic);
-                Assert.IsNotNull(clearSnapHover, "ClearSnapHover must exist for the snap-hover token test.");
+                Assert.NotNull(clearSnapHover);
                 _ = clearSnapHover.Invoke(w, parameters: null);
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.BackgroundProperty),
-                    "ClearSnapHover must ClearValue the Background local value so the style/template default applies again.");
-                Assert.AreEqual(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.ForegroundProperty),
-                    "ClearSnapHover must ClearValue the Foreground local value so the style/template default applies again.");
+                Assert.Equal(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.BackgroundProperty));
+                Assert.Equal(DependencyProperty.UnsetValue, max.ReadLocalValue(System.Windows.Controls.Control.ForegroundProperty));
             });
         }
 
@@ -865,7 +809,7 @@ namespace Fluence.Wpf.Tests
 
         #region Caption button DP overrides (authoritative when explicitly set)
 
-        [TestMethod]
+        [Fact]
         public void IsMinimizeButtonVisible_ExplicitVisible_UnderNoResize_ShowsAndEnablesButton()
         {
             RunWithShownWindow(static w =>
@@ -875,94 +819,89 @@ namespace Fluence.Wpf.Tests
                 // DialogAllowMinimize is honoured (IsMinimizeButtonVisible=Visibility.Visible).
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
-                Assert.IsNotNull(btn);
-                Assert.AreEqual(Visibility.Collapsed, btn.Visibility,
-                    "Pre-flip state: XAML-style local Collapsed must hide the minimize button under NoResize.");
+                Assert.NotNull(btn);
+                Assert.Equal(Visibility.Collapsed, btn.Visibility);
 
                 w.IsMinimizeButtonVisible = Visibility.Visible;
                 w.IsMinimizable = true;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(Visibility.Visible, btn.Visibility,
-                    "Explicit flip Collapsed->Visible must override the NoResize-derived Collapsed baseline.");
-                Assert.IsTrue(btn.IsEnabled,
+                Assert.Equal(Visibility.Visible, btn.Visibility);
+                Assert.True(btn.IsEnabled,
                     "Explicit Visible under NoResize must also enable the minimize button.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void IsMinimizeButtonVisible_ExplicitCollapsed_UnderCanResize_HidesButton()
         {
             RunWithShownWindow(static w =>
             {
                 w.ResizeMode = ResizeMode.CanResize;
                 w.IsMinimizeButtonVisible = Visibility.Collapsed;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? btn = GetCaptionButtonField(w, "_minimizeButton");
-                Assert.IsNotNull(btn);
-                Assert.AreEqual(Visibility.Collapsed, btn?.Visibility,
-                    "Explicit IsMinimizeButtonVisible=Collapsed must hide the button even under CanResize.");
-                Assert.IsFalse(btn?.IsEnabled ?? false,
+                Assert.NotNull(btn);
+                Assert.Equal(Visibility.Collapsed, btn?.Visibility);
+                Assert.False(btn?.IsEnabled ?? false,
                     "Explicit Collapsed must also disable the button.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void IsMaximizeButtonVisible_ExplicitVisible_UnderNoResize_ShowsAndEnablesMaximize()
         {
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Collapsed;
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
-                Assert.IsNotNull(max);
-                Assert.AreEqual(Visibility.Collapsed, max.Visibility,
-                    "Pre-flip state: XAML-style local Collapsed must hide the maximize button under NoResize.");
+                Assert.NotNull(max);
+                Assert.Equal(Visibility.Collapsed, max.Visibility);
 
                 w.IsMaximizeButtonVisible = Visibility.Visible;
                 w.IsMaximizable = true;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(Visibility.Visible, max.Visibility,
-                    "Explicit flip Collapsed->Visible must override the NoResize-derived Collapsed baseline.");
-                Assert.AreEqual(WindowState.Normal, w.WindowState);
-                Assert.IsTrue(max.IsEnabled,
+                Assert.Equal(Visibility.Visible, max.Visibility);
+                Assert.Equal(WindowState.Normal, w.WindowState);
+                Assert.True(max.IsEnabled,
                     "Maximize button must be enabled when the window is not already maximized and the DP is explicit.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void IsMaximizeButtonVisible_Hidden_ReservesOnlyTheActiveButtonSlot()
         {
             RunWithShownWindow(static w =>
             {
                 w.IsMaximizeButtonVisible = Visibility.Hidden;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
                 System.Windows.Controls.Button? max = GetCaptionButtonField(w, "_maximizeButton");
                 System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
-                Assert.AreEqual(Visibility.Hidden, max?.Visibility);
-                Assert.AreEqual(Visibility.Collapsed, restore?.Visibility);
-                Assert.IsFalse(max?.IsEnabled ?? false);
-                Assert.IsFalse(restore?.IsEnabled ?? false);
+                Assert.Equal(Visibility.Hidden, max?.Visibility);
+                Assert.Equal(Visibility.Collapsed, restore?.Visibility);
+                Assert.False(max?.IsEnabled ?? false);
+                Assert.False(restore?.IsEnabled ?? false);
 
                 w.WindowState = WindowState.Maximized;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(Visibility.Collapsed, max?.Visibility);
-                Assert.AreEqual(Visibility.Hidden, restore?.Visibility);
-                Assert.IsFalse(max?.IsEnabled ?? false);
-                Assert.IsFalse(restore?.IsEnabled ?? false);
+                Assert.Equal(Visibility.Collapsed, max?.Visibility);
+                Assert.Equal(Visibility.Hidden, restore?.Visibility);
+                Assert.False(max?.IsEnabled ?? false);
+                Assert.False(restore?.IsEnabled ?? false);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CaptionButtonVisibleProperties_SetTheVisibilityDps()
         {
             RunWithWindow(static w =>
@@ -973,14 +912,14 @@ namespace Fluence.Wpf.Tests
                     w.IsMaximizeButtonVisible = value;
                     w.IsCloseButtonVisible = value;
 
-                    Assert.AreEqual(value, w.IsMinimizeButtonVisible);
-                    Assert.AreEqual(value, w.IsMaximizeButtonVisible);
-                    Assert.AreEqual(value, w.IsCloseButtonVisible);
+                    Assert.Equal(value, w.IsMinimizeButtonVisible);
+                    Assert.Equal(value, w.IsMaximizeButtonVisible);
+                    Assert.Equal(value, w.IsCloseButtonVisible);
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CaptionButtonVisibilityProperties_ApplyVisibleHiddenCollapsedToTemplateButtons()
         {
             RunWithShownWindow(static w =>
@@ -989,28 +928,28 @@ namespace Fluence.Wpf.Tests
                 System.Windows.Controls.Button? maximize = GetCaptionButtonField(w, "_maximizeButton");
                 System.Windows.Controls.Button? restore = GetCaptionButtonField(w, "_restoreButton");
                 System.Windows.Controls.Button? close = GetCaptionButtonField(w, "_closeButton");
-                Assert.IsNotNull(minimize);
-                Assert.IsNotNull(maximize);
-                Assert.IsNotNull(restore);
-                Assert.IsNotNull(close);
+                Assert.NotNull(minimize);
+                Assert.NotNull(maximize);
+                Assert.NotNull(restore);
+                Assert.NotNull(close);
 
                 foreach (Visibility value in (Visibility[])[Visibility.Visible, Visibility.Hidden, Visibility.Collapsed])
                 {
                     w.IsMinimizeButtonVisible = value;
                     w.IsMaximizeButtonVisible = value;
                     w.IsCloseButtonVisible = value;
-                    w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                    w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                    Assert.AreEqual(value, minimize.Visibility);
-                    Assert.AreEqual(value, close.Visibility);
-                    Assert.AreEqual(value, maximize.Visibility);
-                    Assert.AreEqual(Visibility.Collapsed, restore.Visibility);
+                    Assert.Equal(value, minimize.Visibility);
+                    Assert.Equal(value, close.Visibility);
+                    Assert.Equal(value, maximize.Visibility);
+                    Assert.Equal(Visibility.Collapsed, restore.Visibility);
 
-                    bool enabled = value == Visibility.Visible;
-                    Assert.AreEqual(enabled, minimize.IsEnabled);
-                    Assert.AreEqual(enabled, maximize.IsEnabled);
-                    Assert.AreEqual(enabled, close.IsEnabled);
-                    Assert.IsFalse(restore.IsEnabled);
+                    bool enabled = value is Visibility.Visible;
+                    Assert.Equal(enabled, minimize.IsEnabled);
+                    Assert.Equal(enabled, maximize.IsEnabled);
+                    Assert.Equal(enabled, close.IsEnabled);
+                    Assert.False(restore.IsEnabled);
                 }
             });
         }
@@ -1022,7 +961,7 @@ namespace Fluence.Wpf.Tests
 binder: null,
                 [typeof(ICommand), typeof(object)],
 modifiers: null);
-            Assert.IsNotNull(ctor, "CanExecuteRoutedEventArgs should expose an internal (ICommand, object) ctor.");
+            Assert.NotNull(ctor);
             return (CanExecuteRoutedEventArgs)ctor.Invoke([command, null]);
         }
 
@@ -1031,7 +970,7 @@ modifiers: null);
             MethodInfo? handler = typeof(FluenceWindow).GetMethod(
                 handlerName,
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(handler, "Expected caption-button command handler: " + handlerName);
+            Assert.NotNull(handler);
             _ = handler.Invoke(window, [window, args]);
             return args.CanExecute;
         }
@@ -1043,7 +982,7 @@ modifiers: null);
 binder: null,
                 [typeof(ICommand), typeof(object)],
 modifiers: null);
-            Assert.IsNotNull(ctor, "ExecutedRoutedEventArgs should expose an internal (ICommand, object) ctor.");
+            Assert.NotNull(ctor);
             return (ExecutedRoutedEventArgs)ctor.Invoke([command, null]);
         }
 
@@ -1052,75 +991,72 @@ modifiers: null);
             MethodInfo? handler = typeof(FluenceWindow).GetMethod(
                 handlerName,
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.IsNotNull(handler, "Expected caption-button Executed handler: " + handlerName);
+            Assert.NotNull(handler);
             _ = handler.Invoke(window, [window, args]);
         }
 
-        [TestMethod]
+        [Fact]
         public void CanMinimizeWindow_RespectsExplicitDp_UnderNoResize()
         {
             RunWithWindow(static w =>
             {
                 w.ResizeMode = ResizeMode.NoResize;
 
-                Assert.IsFalse(InvokeCanHandler(w, "OnCanMinimizeWindow", CreateCanExecuteArgs(SystemCommands.MinimizeWindowCommand)),
+                Assert.False(InvokeCanHandler(w, "OnCanMinimizeWindow", CreateCanExecuteArgs(SystemCommands.MinimizeWindowCommand)),
                     "Default: ResizeMode=NoResize must block MinimizeWindowCommand when the DP is at its declared default.");
 
                 w.IsMinimizeButtonVisible = Visibility.Visible;
                 w.IsMinimizable = true;
-                Assert.IsTrue(InvokeCanHandler(w, "OnCanMinimizeWindow", CreateCanExecuteArgs(SystemCommands.MinimizeWindowCommand)),
+                Assert.True(InvokeCanHandler(w, "OnCanMinimizeWindow", CreateCanExecuteArgs(SystemCommands.MinimizeWindowCommand)),
                     "Explicit IsMinimizeButtonVisible=Visible + IsMinimizable=true must allow MinimizeWindowCommand to execute even under NoResize.");
 
                 w.IsMinimizable = false;
-                Assert.IsFalse(InvokeCanHandler(w, "OnCanMinimizeWindow", CreateCanExecuteArgs(SystemCommands.MinimizeWindowCommand)),
+                Assert.False(InvokeCanHandler(w, "OnCanMinimizeWindow", CreateCanExecuteArgs(SystemCommands.MinimizeWindowCommand)),
                     "IsMinimizable=false must gate the command regardless of DP visibility override.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CanMaximizeWindow_RespectsExplicitDp_UnderNoResize()
         {
             RunWithWindow(static w =>
             {
                 w.ResizeMode = ResizeMode.NoResize;
 
-                Assert.IsFalse(InvokeCanHandler(w, "OnCanResizeWindow", CreateCanExecuteArgs(SystemCommands.MaximizeWindowCommand)),
+                Assert.False(InvokeCanHandler(w, "OnCanResizeWindow", CreateCanExecuteArgs(SystemCommands.MaximizeWindowCommand)),
                     "Default: ResizeMode=NoResize must block MaximizeWindowCommand when the DP is at its declared default.");
 
                 w.IsMaximizeButtonVisible = Visibility.Visible;
                 w.IsMaximizable = true;
-                Assert.IsTrue(InvokeCanHandler(w, "OnCanResizeWindow", CreateCanExecuteArgs(SystemCommands.MaximizeWindowCommand)),
+                Assert.True(InvokeCanHandler(w, "OnCanResizeWindow", CreateCanExecuteArgs(SystemCommands.MaximizeWindowCommand)),
                     "Explicit IsMaximizeButtonVisible=Visible + IsMaximizable=true must allow MaximizeWindowCommand even under NoResize.");
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CaptionButtons_DefaultBehaviorUnchanged_WhenDpsNotTouched()
         {
             RunWithShownWindow(static w =>
             {
-                Assert.AreEqual(ResizeMode.CanResize, w.ResizeMode,
-                    "Default ResizeMode sanity check.");
+                Assert.Equal(ResizeMode.CanResize, w.ResizeMode);
 
                 System.Windows.Controls.Button? minBtn = GetCaptionButtonField(w, "_minimizeButton");
                 System.Windows.Controls.Button? maxBtn = GetCaptionButtonField(w, "_maximizeButton");
                 System.Windows.Controls.Button? closeBtn = GetCaptionButtonField(w, "_closeButton");
 
-                Assert.AreEqual(Visibility.Visible, minBtn?.Visibility,
-                    "Default visibility must remain Visible under CanResize.");
-                Assert.AreEqual(Visibility.Visible, maxBtn?.Visibility);
-                Assert.AreEqual(Visibility.Visible, closeBtn?.Visibility);
+                Assert.Equal(Visibility.Visible, minBtn?.Visibility);
+                Assert.Equal(Visibility.Visible, maxBtn?.Visibility);
+                Assert.Equal(Visibility.Visible, closeBtn?.Visibility);
 
                 w.ResizeMode = ResizeMode.NoResize;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(Visibility.Collapsed, minBtn?.Visibility,
-                    "Pre-existing contract: untouched DPs hide min/max when ResizeMode=NoResize.");
-                Assert.AreEqual(Visibility.Collapsed, maxBtn?.Visibility);
+                Assert.Equal(Visibility.Collapsed, minBtn?.Visibility);
+                Assert.Equal(Visibility.Collapsed, maxBtn?.Visibility);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void OnMinimizeWindow_DrivesWindowStateMinimized_EvenAfterSysMenuStripped()
         {
             // RunWithShownWindow triggers OnSourceInitialized → ApplyWindowShell →
@@ -1133,64 +1069,58 @@ modifiers: null);
             // by assigning WindowState directly so the transition always lands.
             RunWithShownWindow(static w =>
             {
-                Assert.AreEqual(WindowState.Normal, w.WindowState,
-                    "Precondition: freshly-shown window should start in Normal state.");
+                Assert.Equal(WindowState.Normal, w.WindowState);
 
                 InvokeExecutedHandler(
                     w,
                     "OnMinimizeWindow",
                     CreateExecutedArgs(SystemCommands.MinimizeWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(WindowState.Minimized, w.WindowState,
-                    "OnMinimizeWindow must drive WindowState=Minimized even when HideAllWindowButtons has stripped WS_SYSMENU.");
+                Assert.Equal(WindowState.Minimized, w.WindowState);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void OnMaximizeWindow_DrivesWindowStateMaximized_EvenAfterSysMenuStripped()
         {
             RunWithShownWindow(static w =>
             {
-                Assert.AreEqual(WindowState.Normal, w.WindowState,
-                    "Precondition: freshly-shown window should start in Normal state.");
+                Assert.Equal(WindowState.Normal, w.WindowState);
 
                 InvokeExecutedHandler(
                     w,
                     "OnMaximizeWindow",
                     CreateExecutedArgs(SystemCommands.MaximizeWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(WindowState.Maximized, w.WindowState,
-                    "OnMaximizeWindow must drive WindowState=Maximized even when HideAllWindowButtons has stripped WS_SYSMENU.");
+                Assert.Equal(WindowState.Maximized, w.WindowState);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void OnRestoreWindow_DrivesWindowStateNormal_FromMaximized()
         {
             RunWithShownWindow(static w =>
             {
                 w.WindowState = WindowState.Maximized;
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
-                Assert.AreEqual(WindowState.Maximized, w.WindowState,
-                    "Precondition: test setup failed to drive the window to Maximized state.");
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                Assert.Equal(WindowState.Maximized, w.WindowState);
 
                 InvokeExecutedHandler(
                     w,
                     "OnRestoreWindow",
                     CreateExecutedArgs(SystemCommands.RestoreWindowCommand));
 
-                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                w.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
 
-                Assert.AreEqual(WindowState.Normal, w.WindowState,
-                    "OnRestoreWindow must drive WindowState=Normal regardless of sysmenu/style gating.");
+                Assert.Equal(WindowState.Normal, w.WindowState);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void MinimizeButton_EndToEnd_ClicksActuallyMinimizeUnderPsadtConfig()
         {
             // Reproduces the exact PSADT FluentDialog topology: Topmost=True + ResizeMode=NoResize
@@ -1226,38 +1156,35 @@ modifiers: null);
                     };
 
                     window.Show();
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Loaded, default);
 
                     // Flip visibility after Show() to mirror PSADT's IsMinimizeButtonVisible=Visibility.Visible.
                     window.IsMinimizeButtonVisible = Visibility.Visible;
                     window.IsMinimizable = true;
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
                     CommandManager.InvalidateRequerySuggested();
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
 
                     System.Windows.Controls.Button? minBtn = GetCaptionButtonField(window, "_minimizeButton");
-                    Assert.IsNotNull(minBtn, "Minimize template part must exist after Show.");
-                    Assert.AreEqual(Visibility.Visible, minBtn.Visibility,
-                        "PSADT flow: post-flip IsMinimizeButtonVisible must render the button visible.");
-                    Assert.IsTrue(minBtn.IsEnabled,
+                    Assert.NotNull(minBtn);
+                    Assert.Equal(Visibility.Visible, minBtn.Visibility);
+                    Assert.True(minBtn.IsEnabled,
                         "PSADT flow: Button.IsEnabled must be true so clicks dispatch the command.");
 
-                    Assert.IsTrue(
+                    Assert.True(
                         SystemCommands.MinimizeWindowCommand.CanExecute(parameter: null, minBtn),
                         "PSADT flow: MinimizeWindowCommand.CanExecute must be true once DPs are flipped and IsMinimizable=true.");
 
-                    Assert.AreEqual(WindowState.Normal, window.WindowState,
-                        "Precondition: window must start in Normal before the command executes.");
+                    Assert.Equal(WindowState.Normal, window.WindowState);
 
                     // Drive the same code path a real click would drive: the button's Command
                     // on its own DataContext (the button is the command target, the window is
                     // the CommandBinding host via routed-command bubbling).
                     SystemCommands.MinimizeWindowCommand.Execute(parameter: null, minBtn);
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render);
-                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.Render, default);
+                    window.Dispatcher.Invoke(static () => { }, DispatcherPriority.ApplicationIdle, default);
 
-                    Assert.AreEqual(WindowState.Minimized, window.WindowState,
-                        "PSADT flow: SystemCommands.MinimizeWindowCommand.Execute must end with WindowState=Minimized even when Topmost=True + ResizeMode=NoResize + HideAllWindowButtons has stripped the sysmenu.");
+                    Assert.Equal(WindowState.Minimized, window.WindowState);
                 }
                 finally
                 {
@@ -1271,7 +1198,7 @@ modifiers: null);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void MinimizeButton_EndToEnd_WorksUnderShowDialogModalPsadtConfig()
         {
             // Same topology as the Show() variant above, but uses ShowDialog() which is what
@@ -1356,18 +1283,16 @@ modifiers: null);
 
                     scenarioExceptionInfo?.Throw();
 
-                    Assert.AreEqual(Visibility.Visible, minimizeButtonVisibility,
-                        "PSADT ShowDialog flow: IsMinimizeButtonVisible must render Visible after Loaded flip.");
-                    Assert.IsTrue(minimizeButtonIsEnabled,
+                    Assert.Equal(Visibility.Visible, minimizeButtonVisibility);
+                    Assert.True(minimizeButtonIsEnabled,
                         "PSADT ShowDialog flow: Button.IsEnabled must be true inside the modal dispatcher frame.");
-                    Assert.IsTrue(minimizeCommandCanExecute,
+                    Assert.True(minimizeCommandCanExecute,
                         "PSADT ShowDialog flow: MinimizeWindowCommand.CanExecute must be true inside the modal dispatcher frame.");
-                    Assert.AreEqual(WindowState.Minimized, observedStateAfterMinimize,
-                        "PSADT ShowDialog flow: SystemCommands.MinimizeWindowCommand.Execute must end with WindowState=Minimized even inside a modal dispatcher frame with Topmost=True + ResizeMode=NoResize + sysmenu stripped.");
+                    Assert.Equal(WindowState.Minimized, observedStateAfterMinimize);
                 }
                 finally
                 {
-                    if (window?.IsVisible == true)
+                    if ((window?.IsVisible) is true)
                     {
                         window.Close();
                     }
@@ -1384,7 +1309,7 @@ modifiers: null);
 
         #region 8. PasswordBox.SelectAll
 
-        [TestMethod]
+        [Fact]
         public void PasswordBox_SelectAll_DoesNotThrowWithoutTemplate()
         {
             RunOnFreshStaThread(static () =>
@@ -1400,8 +1325,7 @@ modifiers: null);
                     };
                     passwordBox.SelectAll();
 
-                    Assert.AreEqual("hidden", passwordBox.Password,
-                        "SelectAll without a template should not alter the password value.");
+                    Assert.Equal("hidden", passwordBox.Password, StringComparer.Ordinal);
                 }
                 finally
                 {
@@ -1417,24 +1341,24 @@ modifiers: null);
 
         #region WM_GETMINMAXINFO
 
-        [TestMethod]
+        [Fact]
         public void MinMaxInfo_StructLayout_HasCorrectSize()
         {
             // MINMAXINFO must be 5 POINTs = 5 * 8 bytes = 40 bytes.
             int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MINMAXINFO));
-            Assert.AreEqual(40, size);
+            Assert.Equal(40, size);
         }
 
-        [TestMethod]
+        [Fact]
         public void MonitorInfo_StructLayout_HasCorrectSize()
         {
             // MONITORINFO = int + 3 RECTs (16 bytes each) + uint = 4 + 16 + 16 + 16 + 4 = 40 bytes.
             // Actually: cbSize(4) + rcMonitor(16) + rcWork(16) + dwFlags(4) = 40 bytes.
             int size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(MONITORINFO));
-            Assert.AreEqual(40, size);
+            Assert.Equal(40, size);
         }
 
-        [TestMethod]
+        [Fact]
         public void MinMaxInfo_RoundTrip_PreservesValues()
         {
             MINMAXINFO mmi = new()
@@ -1452,14 +1376,14 @@ modifiers: null);
                 System.Runtime.InteropServices.Marshal.StructureToPtr(mmi, ptr, fDeleteOld: false);
                 MINMAXINFO? result = (MINMAXINFO?)System.Runtime.InteropServices.Marshal.PtrToStructure(ptr, typeof(MINMAXINFO));
 
-                Assert.AreEqual(10, result?.ptMaxPosition.X);
-                Assert.AreEqual(20, result?.ptMaxPosition.Y);
-                Assert.AreEqual(1920, result?.ptMaxSize.X);
-                Assert.AreEqual(1040, result?.ptMaxSize.Y);
-                Assert.AreEqual(3840, result?.ptMaxTrackSize.X);
-                Assert.AreEqual(2160, result?.ptMaxTrackSize.Y);
-                Assert.AreEqual(200, result?.ptMinTrackSize.X);
-                Assert.AreEqual(150, result?.ptMinTrackSize.Y);
+                Assert.Equal(10, result?.ptMaxPosition.X);
+                Assert.Equal(20, result?.ptMaxPosition.Y);
+                Assert.Equal(1920, result?.ptMaxSize.X);
+                Assert.Equal(1040, result?.ptMaxSize.Y);
+                Assert.Equal(3840, result?.ptMaxTrackSize.X);
+                Assert.Equal(2160, result?.ptMaxTrackSize.Y);
+                Assert.Equal(200, result?.ptMinTrackSize.X);
+                Assert.Equal(150, result?.ptMinTrackSize.Y);
             }
             finally
             {
@@ -1467,7 +1391,7 @@ modifiers: null);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void NativeConstants_DefineRequiredWin32Values()
         {
             AssertNativeConstantValue("WM_NCLBUTTONUP", 0x00A2);
@@ -1488,7 +1412,7 @@ modifiers: null);
         // This test plants an opaque full-size Border as the window Content. If the title bar
         // grid is correctly on top, a hit-test at a caption-button center hits the button or one
         // of its Path children - not the Border.
-        [TestMethod]
+        [Fact]
         public void CaptionButtons_AboveContent_WhenExtendsContentIntoTitleBar()
         {
             RunOnFreshStaThread(() =>
@@ -1518,15 +1442,15 @@ modifiers: null);
                     };
 
                     window.Show();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded);
+                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Loaded, default);
                     window.UpdateLayout();
-                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
+                    window.Dispatcher.Invoke(() => { }, DispatcherPriority.Render, default);
 
                     foreach (string? fieldName in new[] { "_minimizeButton", "_maximizeButton", "_closeButton" })
                     {
                         System.Windows.Controls.Button? btn = GetCaptionButtonField(window, fieldName);
-                        Assert.IsNotNull(btn, fieldName + " must exist in template.");
-                        Assert.IsTrue(btn.IsVisible, fieldName + " must be visible.");
+                        Assert.NotNull(btn);
+                        Assert.True(btn.IsVisible, fieldName + " must be visible.");
 
                         Point center = new(btn.ActualWidth / 2, btn.ActualHeight / 2);
                         Point clientPoint = btn.TranslatePoint(center, window);
@@ -1542,11 +1466,10 @@ filterCallback: null,
                             }),
                             new PointHitTestParameters(clientPoint));
 
-                        Assert.IsNotNull(hitVisual, "Hit test must return a visual at " + fieldName + " center.");
+                        Assert.NotNull(hitVisual);
                         DependencyObject? hitHost = FindLogicalHost(hitVisual);
-                        Assert.AreNotSame(occluder, hitHost,
-                            fieldName + " must be above client content in z-order when ExtendsContentIntoTitleBar=true (got occluder instead).");
-                        Assert.IsTrue(
+                        Assert.NotSame(occluder, hitHost);
+                        Assert.True(
                             IsDescendantOfButton(hitVisual, btn),
                             fieldName + " center must hit a descendant of the caption button, not the content underneath.");
                     }

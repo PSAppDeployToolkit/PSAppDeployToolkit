@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  */
 
 using Fluence.Wpf.Native;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -37,20 +37,19 @@ namespace Fluence.Wpf.Tests
     /// maximized-rect shift. These tests are deterministic and OS-independent; they do
     /// not call any P/Invoke whose result depends on the host environment.
     /// </summary>
-    [TestClass]
     public sealed class NativeMethodsTests
     {
-        [TestMethod]
+        [Fact]
         public void DwmCloakAttributeIds_MatchDwmApiContract()
         {
             // DWMWA_CLOAK (set) and DWMWA_CLOAKED (read-only) are fixed DWMWINDOWATTRIBUTE ordinals.
             // A typo here silently disables the first-paint flash guard, so pin the wire values.
-            // Read via reflection so the assertion is a runtime comparison (MSTEST0032 rejects
+            // Read via reflection so the assertion is a runtime comparison (analyzers reject
             // comparing two compile-time constants).
             int cloak = ReadConstant("DWMWA_CLOAK");
             int cloaked = ReadConstant("DWMWA_CLOAKED");
-            Assert.AreEqual(13, cloak, "DWMWA_CLOAK must be DWMWINDOWATTRIBUTE ordinal 13.");
-            Assert.AreEqual(14, cloaked, "DWMWA_CLOAKED must be DWMWINDOWATTRIBUTE ordinal 14.");
+            Assert.Equal(13, cloak);
+            Assert.Equal(14, cloaked);
         }
 
         private static int ReadConstant(string name)
@@ -58,87 +57,87 @@ namespace Fluence.Wpf.Tests
             System.Reflection.FieldInfo? field = typeof(NativeConstants).GetField(
                 name,
                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
-            Assert.IsNotNull(field, "Expected constant '" + name + "' on NativeConstants.");
+            Assert.NotNull(field);
             object? value = field.GetValue(null);
-            Assert.IsNotNull(value, "Constant '" + name + "' must have a value.");
+            Assert.NotNull(value);
             return (int)value;
         }
 
-        [TestMethod]
+        [Fact]
         public void GetImmersiveDarkModeAttribute_Returns20_For18362AndLater()
         {
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(18362));
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(19041));
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22000));
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22631));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(18362));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(19041));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22000));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE, NativeMethods.GetImmersiveDarkModeAttribute(22631));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetImmersiveDarkModeAttribute_Returns19_ForPre18362Builds()
         {
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(17763));
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18000));
-            Assert.AreEqual(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18361));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(17763));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18000));
+            Assert.Equal(NativeConstants.DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, NativeMethods.GetImmersiveDarkModeAttribute(18361));
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyAutoHideTaskbarShift_Left_MovesRightAndShrinksWidth()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
             NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_LEFT);
 
-            Assert.AreEqual(102, mmi.ptMaxPosition.X);
-            Assert.AreEqual(200, mmi.ptMaxPosition.Y);
-            Assert.AreEqual(798, mmi.ptMaxSize.X);
-            Assert.AreEqual(600, mmi.ptMaxSize.Y);
+            Assert.Equal(102, mmi.ptMaxPosition.X);
+            Assert.Equal(200, mmi.ptMaxPosition.Y);
+            Assert.Equal(798, mmi.ptMaxSize.X);
+            Assert.Equal(600, mmi.ptMaxSize.Y);
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyAutoHideTaskbarShift_Top_MovesDownAndShrinksHeight()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
             NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_TOP);
 
-            Assert.AreEqual(100, mmi.ptMaxPosition.X);
-            Assert.AreEqual(202, mmi.ptMaxPosition.Y);
-            Assert.AreEqual(800, mmi.ptMaxSize.X);
-            Assert.AreEqual(598, mmi.ptMaxSize.Y);
+            Assert.Equal(100, mmi.ptMaxPosition.X);
+            Assert.Equal(202, mmi.ptMaxPosition.Y);
+            Assert.Equal(800, mmi.ptMaxSize.X);
+            Assert.Equal(598, mmi.ptMaxSize.Y);
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyAutoHideTaskbarShift_Right_ShrinksWidthOnly()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
             NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_RIGHT);
 
-            Assert.AreEqual(100, mmi.ptMaxPosition.X);
-            Assert.AreEqual(200, mmi.ptMaxPosition.Y);
-            Assert.AreEqual(798, mmi.ptMaxSize.X);
-            Assert.AreEqual(600, mmi.ptMaxSize.Y);
+            Assert.Equal(100, mmi.ptMaxPosition.X);
+            Assert.Equal(200, mmi.ptMaxPosition.Y);
+            Assert.Equal(798, mmi.ptMaxSize.X);
+            Assert.Equal(600, mmi.ptMaxSize.Y);
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyAutoHideTaskbarShift_Bottom_ShrinksHeightOnly()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
             NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, NativeConstants.ABE_BOTTOM);
 
-            Assert.AreEqual(100, mmi.ptMaxPosition.X);
-            Assert.AreEqual(200, mmi.ptMaxPosition.Y);
-            Assert.AreEqual(800, mmi.ptMaxSize.X);
-            Assert.AreEqual(598, mmi.ptMaxSize.Y);
+            Assert.Equal(100, mmi.ptMaxPosition.X);
+            Assert.Equal(200, mmi.ptMaxPosition.Y);
+            Assert.Equal(800, mmi.ptMaxSize.X);
+            Assert.Equal(598, mmi.ptMaxSize.Y);
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyAutoHideTaskbarShift_UnrecognizedEdge_LeavesRectUnchanged()
         {
             MINMAXINFO mmi = SeedMinMaxInfo();
             NativeMethods.ApplyAutoHideTaskbarShift(ref mmi, 99);
 
-            Assert.AreEqual(100, mmi.ptMaxPosition.X);
-            Assert.AreEqual(200, mmi.ptMaxPosition.Y);
-            Assert.AreEqual(800, mmi.ptMaxSize.X);
-            Assert.AreEqual(600, mmi.ptMaxSize.Y);
+            Assert.Equal(100, mmi.ptMaxPosition.X);
+            Assert.Equal(200, mmi.ptMaxPosition.Y);
+            Assert.Equal(800, mmi.ptMaxSize.X);
+            Assert.Equal(600, mmi.ptMaxSize.Y);
         }
 
         private static MINMAXINFO SeedMinMaxInfo()

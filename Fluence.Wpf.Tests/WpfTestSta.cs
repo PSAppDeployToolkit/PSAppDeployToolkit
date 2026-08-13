@@ -34,6 +34,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
+using Fluence.Wpf.Helpers;
 
 namespace Fluence.Wpf.Tests
 {
@@ -46,12 +47,22 @@ namespace Fluence.Wpf.Tests
         private static Dispatcher? _dispatcher;
         private static readonly Lock LockObj = new();
 
-        internal static Dispatcher? Dispatcher => EnsureDispatcher();
+        internal static Dispatcher Dispatcher => EnsureDispatcher();
 
-        internal static Application? EnsureApplication()
+        internal static Application EnsureApplication()
         {
             return Invoke(static () =>
             {
+                // Headless CI runners report SystemParameters.ClientAreaAnimation as
+                // false, which legitimately gates every code-driven animation off and
+                // fails the tests that assert in-flight motion. Force motion on here,
+                // in the setup call every test makes first, so the suite is
+                // deterministic regardless of the host's accessibility state. The
+                // reduced-motion tests override this to false for their own scope and
+                // reset to null in their finally blocks; the next test's setup call
+                // restores this deterministic default.
+                MotionHelper.OverrideIsMotionEnabled = true;
+
                 if (Application.Current is null)
                 {
                     Application app = new()
@@ -60,18 +71,18 @@ namespace Fluence.Wpf.Tests
                     };
                 }
 
-                return Application.Current;
+                return Application.Current!;
             });
         }
 
         internal static void Invoke(Action action)
         {
-            EnsureDispatcher()?.Invoke(action);
+            EnsureDispatcher().Invoke(action);
         }
 
-        internal static T? Invoke<T>(Func<T> func) where T : class?
+        internal static T Invoke<T>(Func<T> func)
         {
-            return EnsureDispatcher()?.Invoke(func);
+            return EnsureDispatcher().Invoke(func);
         }
 
         /// <summary>
@@ -85,7 +96,7 @@ namespace Fluence.Wpf.Tests
         internal static void RunOnSta(Action action)
         {
             Exception? captured = null;
-            EnsureDispatcher()?.Invoke(new Action(delegate
+            EnsureDispatcher().Invoke(new Action(delegate
             {
                 try
                 {
@@ -205,11 +216,11 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        private static Dispatcher? EnsureDispatcher()
+        private static Dispatcher EnsureDispatcher()
         {
             lock (LockObj)
             {
-                if (_dispatcher?.Thread.IsAlive == true)
+                if (_dispatcher?.Thread.IsAlive is true)
                 {
                     return _dispatcher;
                 }
@@ -226,8 +237,8 @@ namespace Fluence.Wpf.Tests
                 thread.SetApartmentState(ApartmentState.STA);
                 thread.IsBackground = true;
                 thread.Start();
-                ready.Wait();
-                _dispatcher = created;
+                ready.Wait(default(CancellationToken));
+                _dispatcher = created ?? throw new InvalidOperationException("STA dispatcher thread failed to initialize.");
                 return _dispatcher;
             }
         }

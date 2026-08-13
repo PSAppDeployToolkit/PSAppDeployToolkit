@@ -1,0 +1,873 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Fluence brand icons as resolution-independent vector DrawingImages. These replace the
+        embedded multi-resolution Fluence.ico (which was ~42% of the library binary) and back both
+        the default FluenceWindow.Icon (rasterized for the Win32 taskbar HICON) and the theme-aware
+        Light/Dark window-icon examples. The geometries are reproduced verbatim from the authored
+        source under assets\ with clean resource keys.
+        
+        - FluenceIconBrandDrawingImage : the colorful mark on its own, with no surrounding plate
+        (the brand glyph). Used as the default window icon and the demo home hero.
+        - FluenceIconLightDrawingImage : the mark on a light rounded plate, for use on dark chrome.
+        - FluenceIconDarkDrawingImage  : the mark on a dark rounded plate, for use on light chrome.
+    -->
+
+    <DrawingImage x:Key="FluenceIconBrandDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V1024 H1024 V0 H0 Z">
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M167.774,328.881L64.4398,443.645C43.0386,467.413,44.9576,504.031,68.726,525.432L365.2,792.378C388.969,813.78,425.586,811.861,446.987,788.092L550.321,673.328C571.723,649.56,569.803,612.942,546.035,591.541L249.561,324.594C225.792,303.193,189.175,305.112,167.774,328.881z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="25.6895,486.682" EndPoint="408.237,831.129">
+                            <GradientStop Offset="0" Color="#FFFFC0C0" />
+                            <GradientStop Offset="0.18" Color="#FFFF7A7A" />
+                            <GradientStop Offset="1" Color="#FFEF2730" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M295.467,249.79L164.502,331.626C137.379,348.575,129.13,384.302,146.079,411.426L357.488,749.751C374.437,776.875,410.164,785.123,437.288,768.174L568.252,686.339C595.376,669.39,603.624,633.662,586.676,606.538L375.267,268.214C358.318,241.09,322.59,232.842,295.467,249.79z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="115.391,362.314" EndPoint="388.176,798.863">
+                            <GradientStop Offset="0" Color="#FFFFE0B0" />
+                            <GradientStop Offset="0.18" Color="#FFFFB454" />
+                            <GradientStop Offset="1" Color="#FFF77F00" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M440.013,208.96L291.565,251.527C260.821,260.343,243.044,292.413,251.86,323.158L361.824,706.649C370.64,737.393,402.71,755.17,433.455,746.354L581.903,703.787C612.647,694.972,630.424,662.901,621.608,632.157L511.644,248.666C502.828,217.921,470.758,200.145,440.013,208.96z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="235.897,267.49" EndPoint="377.787,762.317">
+                            <GradientStop Offset="0" Color="#FFFFF3B0" />
+                            <GradientStop Offset="0.18" Color="#FFFFE14D" />
+                            <GradientStop Offset="1" Color="#FFF5B800" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M590.215,209.555L435.784,209.555C403.801,209.555,377.873,235.482,377.873,267.466L377.873,666.411C377.873,698.395,403.801,724.323,435.784,724.323L590.215,724.323C622.199,724.323,648.126,698.395,648.126,666.411L648.126,267.466C648.126,235.482,622.199,209.555,590.215,209.555z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="377.873,209.555" EndPoint="377.873,724.323">
+                            <GradientStop Offset="0" Color="#FFC2F7D4" />
+                            <GradientStop Offset="0.18" Color="#FF5CE08A" />
+                            <GradientStop Offset="1" Color="#FF1BB257" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M734.434,251.527L585.986,208.96C555.241,200.145,523.171,217.921,514.355,248.666L404.391,632.157C395.575,662.902,413.352,694.972,444.096,703.788L592.544,746.354C623.289,755.17,655.359,737.393,664.175,706.649L774.139,323.158C782.955,292.413,765.178,260.343,734.434,251.527z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="530.318,192.998" EndPoint="388.428,687.825">
+                            <GradientStop Offset="0" Color="#FFC4F2FB" />
+                            <GradientStop Offset="0.18" Color="#FF4FD8F0" />
+                            <GradientStop Offset="1" Color="#FF12AECE" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M861.497,331.626L730.533,249.79C703.409,232.841,667.681,241.09,650.733,268.213L439.324,606.538C422.375,633.662,430.623,669.39,457.747,686.338L588.711,768.174C615.835,785.123,651.563,776.874,668.511,749.751L879.92,411.426C896.869,384.302,888.621,348.575,861.497,331.626z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="681.421,219.102" EndPoint="408.635,655.65">
+                            <GradientStop Offset="0" Color="#FFBFD6FF" />
+                            <GradientStop Offset="0.18" Color="#FF5B9BFF" />
+                            <GradientStop Offset="1" Color="#FF1F5FE0" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M961.56,443.645L858.226,328.881C836.825,305.112,800.207,303.193,776.439,324.595L479.965,591.541C456.196,612.942,454.277,649.56,475.679,673.328L579.013,788.092C600.414,811.861,637.031,813.78,660.8,792.379L957.274,525.432C981.042,504.031,982.961,467.413,961.56,443.645z">
+                    <GeometryDrawing.Brush>
+                        <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="819.476,285.844" EndPoint="436.928,630.291">
+                            <GradientStop Offset="0" Color="#FFC9A9FF" />
+                            <GradientStop Offset="0.18" Color="#FF9D6BFF" />
+                            <GradientStop Offset="1" Color="#FFB026C8" />
+                        </LinearGradientBrush>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen
+                            EndLineCap="Flat"
+                            LineJoin="Round"
+                            StartLineCap="Flat"
+                            Thickness="7.66024">
+                            <Pen.Brush>
+                                <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                            </Pen.Brush>
+                        </Pen>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="FluenceIconLightDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V1024 H1024 V0 H0 Z">
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M770.333,12L253.667,12C120.198,12,12,120.198,12,253.667L12,770.333C12,903.802,120.198,1012,253.667,1012L770.333,1012C903.802,1012,1012,903.802,1012,770.333L1012,253.667C1012,120.198,903.802,12,770.333,12z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="239.752,-51.744" EndPoint="304.953,1058.7">
+                                <GradientStop Offset="0" Color="#FFFFFFFF" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M253.667,14.5L770.333,14.5C902.421,14.5,1009.5,121.579,1009.5,253.667L1009.5,770.333C1009.5,902.421,902.421,1009.5,770.333,1009.5L253.667,1009.5C121.579,1009.5,14.5,902.421,14.5,770.333L14.5,253.667C14.5,121.579,121.579,14.5,253.667,14.5z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                Brush="#FFC3C3C3"
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="5" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M771.333,12L254.667,12C121.198,12,13,120.198,13,253.667L13,770.333C13,903.802,121.198,1012,254.667,1012L771.333,1012C904.802,1012,1013,903.802,1013,770.333L1013,253.667C1013,120.198,904.802,12,771.333,12z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="240.752,-51.744" EndPoint="305.953,1058.7">
+                                <GradientStop Offset="0.0625" Color="#FFFFFFFF" />
+                                <GradientStop Offset="0.783654" Color="#FFE9E9E9" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M166.774,328.881L63.4398,443.645C42.0386,467.413,43.9576,504.031,67.726,525.432L364.2,792.378C387.969,813.78,424.586,811.861,445.987,788.092L549.321,673.328C570.723,649.56,568.803,612.942,545.035,591.541L248.561,324.594C224.792,303.193,188.175,305.112,166.774,328.881z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="24.6895,486.682" EndPoint="407.237,831.129">
+                                <GradientStop Offset="0" Color="#FFFFC0C0" />
+                                <GradientStop Offset="0.18" Color="#FFFF7A7A" />
+                                <GradientStop Offset="1" Color="#FFEF2730" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M166.774,328.881L63.4398,443.645C42.0386,467.413,43.9576,504.031,67.726,525.432L364.2,792.378C387.969,813.78,424.586,811.861,445.987,788.092L549.321,673.328C570.723,649.56,568.803,612.942,545.035,591.541L248.561,324.594C224.792,303.193,188.175,305.112,166.774,328.881z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M294.467,249.79L163.502,331.626C136.379,348.575,128.13,384.302,145.079,411.426L356.488,749.751C373.437,776.875,409.164,785.123,436.288,768.174L567.252,686.339C594.376,669.39,602.624,633.662,585.676,606.538L374.267,268.214C357.318,241.09,321.59,232.842,294.467,249.79z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="114.391,362.314" EndPoint="387.176,798.863">
+                                <GradientStop Offset="0" Color="#FFFFE0B0" />
+                                <GradientStop Offset="0.18" Color="#FFFFB454" />
+                                <GradientStop Offset="1" Color="#FFF77F00" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M294.467,249.79L163.502,331.626C136.379,348.575,128.13,384.302,145.079,411.426L356.488,749.751C373.437,776.875,409.164,785.123,436.288,768.174L567.252,686.339C594.376,669.39,602.624,633.662,585.676,606.538L374.267,268.214C357.318,241.09,321.59,232.842,294.467,249.79z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M439.013,208.96L290.565,251.527C259.821,260.343,242.044,292.413,250.86,323.158L360.824,706.649C369.64,737.393,401.71,755.17,432.455,746.354L580.903,703.787C611.647,694.972,629.424,662.901,620.608,632.157L510.644,248.666C501.828,217.921,469.758,200.145,439.013,208.96z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="234.897,267.49" EndPoint="376.787,762.317">
+                                <GradientStop Offset="0" Color="#FFFFF3B0" />
+                                <GradientStop Offset="0.18" Color="#FFFFE14D" />
+                                <GradientStop Offset="1" Color="#FFF5B800" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M439.013,208.96L290.565,251.527C259.821,260.343,242.044,292.413,250.86,323.158L360.824,706.649C369.64,737.393,401.71,755.17,432.455,746.354L580.903,703.787C611.647,694.972,629.424,662.901,620.608,632.157L510.644,248.666C501.828,217.921,469.758,200.145,439.013,208.96z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M589.215,209.555L434.785,209.555C402.801,209.555,376.873,235.482,376.873,267.466L376.873,666.411C376.873,698.395,402.801,724.323,434.785,724.323L589.215,724.323C621.199,724.323,647.126,698.395,647.126,666.411L647.126,267.466C647.126,235.482,621.199,209.555,589.215,209.555z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="376.873,209.555" EndPoint="376.873,724.323">
+                                <GradientStop Offset="0" Color="#FFC2F7D4" />
+                                <GradientStop Offset="0.18" Color="#FF5CE08A" />
+                                <GradientStop Offset="1" Color="#FF1BB257" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M589.215,209.555L434.785,209.555C402.801,209.555,376.873,235.482,376.873,267.466L376.873,666.411C376.873,698.395,402.801,724.323,434.785,724.323L589.215,724.323C621.199,724.323,647.126,698.395,647.126,666.411L647.126,267.466C647.126,235.482,621.199,209.555,589.215,209.555z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M733.434,251.527L584.986,208.96C554.241,200.145,522.171,217.921,513.355,248.666L403.391,632.157C394.575,662.902,412.352,694.972,443.096,703.788L591.544,746.354C622.289,755.17,654.359,737.393,663.175,706.649L773.139,323.158C781.955,292.413,764.178,260.343,733.434,251.527z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="529.318,192.998" EndPoint="387.428,687.825">
+                                <GradientStop Offset="0" Color="#FFC4F2FB" />
+                                <GradientStop Offset="0.18" Color="#FF4FD8F0" />
+                                <GradientStop Offset="1" Color="#FF12AECE" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M733.434,251.527L584.986,208.96C554.241,200.145,522.171,217.921,513.355,248.666L403.391,632.157C394.575,662.902,412.352,694.972,443.096,703.788L591.544,746.354C622.289,755.17,654.359,737.393,663.175,706.649L773.139,323.158C781.955,292.413,764.178,260.343,733.434,251.527z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M860.497,331.626L729.533,249.79C702.409,232.841,666.681,241.09,649.733,268.213L438.324,606.538C421.375,633.662,429.623,669.39,456.747,686.338L587.711,768.174C614.835,785.123,650.563,776.874,667.512,749.751L878.92,411.426C895.869,384.302,887.621,348.575,860.497,331.626z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="680.421,219.102" EndPoint="407.635,655.65">
+                                <GradientStop Offset="0" Color="#FFBFD6FF" />
+                                <GradientStop Offset="0.18" Color="#FF5B9BFF" />
+                                <GradientStop Offset="1" Color="#FF1F5FE0" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M860.497,331.626L729.533,249.79C702.409,232.841,666.681,241.09,649.733,268.213L438.324,606.538C421.375,633.662,429.623,669.39,456.747,686.338L587.711,768.174C614.835,785.123,650.563,776.874,667.512,749.751L878.92,411.426C895.869,384.302,887.621,348.575,860.497,331.626z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M960.56,443.645L857.226,328.881C835.825,305.112,799.207,303.193,775.439,324.595L478.965,591.541C455.196,612.942,453.277,649.56,474.678,673.328L578.013,788.092C599.414,811.861,636.031,813.78,659.8,792.379L956.274,525.432C980.042,504.031,981.961,467.413,960.56,443.645z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="818.476,285.844" EndPoint="435.928,630.291">
+                                <GradientStop Offset="0" Color="#FFC9A9FF" />
+                                <GradientStop Offset="0.18" Color="#FF9D6BFF" />
+                                <GradientStop Offset="1" Color="#FFB026C8" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M960.56,443.645L857.226,328.881C835.825,305.112,799.207,303.193,775.439,324.595L478.965,591.541C455.196,612.942,453.277,649.56,474.678,673.328L578.013,788.092C599.414,811.861,636.031,813.78,659.8,792.379L956.274,525.432C980.042,504.031,981.961,467.413,960.56,443.645z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="FluenceIconDarkDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V1024 H1024 V0 H0 Z">
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M770.333,12L253.667,12C120.198,12,12,120.198,12,253.667L12,770.333C12,903.802,120.198,1012,253.667,1012L770.333,1012C903.802,1012,1012,903.802,1012,770.333L1012,253.667C1012,120.198,903.802,12,770.333,12z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="239.752,-51.744" EndPoint="304.953,1058.7">
+                                <GradientStop Offset="0" Color="#FF000000" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M770.333,12L253.667,12C120.198,12,12,120.198,12,253.667L12,770.333C12,903.802,120.198,1012,253.667,1012L770.333,1012C903.802,1012,1012,903.802,1012,770.333L1012,253.667C1012,120.198,903.802,12,770.333,12z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                Brush="#FF737373"
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="5" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M770.333,12L253.667,12C120.198,12,12,120.198,12,253.667L12,770.333C12,903.802,120.198,1012,253.667,1012L770.333,1012C903.802,1012,1012,903.802,1012,770.333L1012,253.667C1012,120.198,903.802,12,770.333,12z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="239.752,-51.744" EndPoint="304.953,1058.7">
+                                <GradientStop Offset="0.0576923" Color="#FF535353" />
+                                <GradientStop Offset="0.25" Color="#FF323845" />
+                                <GradientStop Offset="0.485577" Color="#FF1B1D20" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M166.774,328.881L63.4398,443.645C42.0386,467.414,43.9576,504.031,67.726,525.432L364.2,792.379C387.969,813.78,424.586,811.861,445.987,788.092L549.321,673.328C570.723,649.56,568.803,612.942,545.035,591.541L248.561,324.595C224.792,303.193,188.175,305.112,166.774,328.881z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="24.6895,486.682" EndPoint="407.237,831.129">
+                                <GradientStop Offset="0" Color="#FFFFC0C0" />
+                                <GradientStop Offset="0.18" Color="#FFFF7A7A" />
+                                <GradientStop Offset="1" Color="#FFEF2730" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M166.774,328.881L63.4398,443.645C42.0386,467.414,43.9576,504.031,67.726,525.432L364.2,792.379C387.969,813.78,424.586,811.861,445.987,788.092L549.321,673.328C570.723,649.56,568.803,612.942,545.035,591.541L248.561,324.595C224.792,303.193,188.175,305.112,166.774,328.881z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M294.467,249.79L163.502,331.626C136.379,348.575,128.13,384.302,145.079,411.426L356.488,749.751C373.437,776.874,409.164,785.123,436.288,768.174L567.252,686.338C594.376,669.39,602.624,633.662,585.676,606.538L374.267,268.213C357.318,241.09,321.59,232.841,294.467,249.79z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="114.391,362.314" EndPoint="387.176,798.862">
+                                <GradientStop Offset="0" Color="#FFFFE0B0" />
+                                <GradientStop Offset="0.18" Color="#FFFFB454" />
+                                <GradientStop Offset="1" Color="#FFF77F00" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M294.467,249.79L163.502,331.626C136.379,348.575,128.13,384.302,145.079,411.426L356.488,749.751C373.437,776.874,409.164,785.123,436.288,768.174L567.252,686.338C594.376,669.39,602.624,633.662,585.676,606.538L374.267,268.213C357.318,241.09,321.59,232.841,294.467,249.79z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M439.013,208.96L290.565,251.527C259.821,260.343,242.044,292.413,250.86,323.158L360.824,706.649C369.64,737.393,401.71,755.17,432.455,746.354L580.903,703.787C611.647,694.972,629.424,662.901,620.608,632.157L510.644,248.666C501.828,217.921,469.758,200.145,439.013,208.96z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="234.897,267.49" EndPoint="376.787,762.317">
+                                <GradientStop Offset="0" Color="#FFFFF3B0" />
+                                <GradientStop Offset="0.18" Color="#FFFFE14D" />
+                                <GradientStop Offset="1" Color="#FFF5B800" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M439.013,208.96L290.565,251.527C259.821,260.343,242.044,292.413,250.86,323.158L360.824,706.649C369.64,737.393,401.71,755.17,432.455,746.354L580.903,703.787C611.647,694.972,629.424,662.901,620.608,632.157L510.644,248.666C501.828,217.921,469.758,200.145,439.013,208.96z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M589.215,209.554L434.784,209.554C402.801,209.554,376.873,235.482,376.873,267.466L376.873,666.411C376.873,698.395,402.801,724.323,434.784,724.323L589.215,724.323C621.199,724.323,647.126,698.395,647.126,666.411L647.126,267.466C647.126,235.482,621.199,209.554,589.215,209.554z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="376.873,209.554" EndPoint="376.873,724.323">
+                                <GradientStop Offset="0" Color="#FFC2F7D4" />
+                                <GradientStop Offset="0.18" Color="#FF5CE08A" />
+                                <GradientStop Offset="1" Color="#FF1BB257" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M589.215,209.554L434.784,209.554C402.801,209.554,376.873,235.482,376.873,267.466L376.873,666.411C376.873,698.395,402.801,724.323,434.784,724.323L589.215,724.323C621.199,724.323,647.126,698.395,647.126,666.411L647.126,267.466C647.126,235.482,621.199,209.554,589.215,209.554z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M733.434,251.527L584.986,208.96C554.241,200.144,522.171,217.921,513.355,248.666L403.391,632.157C394.575,662.901,412.352,694.972,443.096,703.787L591.544,746.354C622.289,755.17,654.359,737.393,663.175,706.649L773.139,323.158C781.955,292.413,764.178,260.343,733.434,251.527z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="529.318,192.998" EndPoint="387.428,687.825">
+                                <GradientStop Offset="0" Color="#FFC4F2FB" />
+                                <GradientStop Offset="0.18" Color="#FF4FD8F0" />
+                                <GradientStop Offset="1" Color="#FF12AECE" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M733.434,251.527L584.986,208.96C554.241,200.144,522.171,217.921,513.355,248.666L403.391,632.157C394.575,662.901,412.352,694.972,443.096,703.787L591.544,746.354C622.289,755.17,654.359,737.393,663.175,706.649L773.139,323.158C781.955,292.413,764.178,260.343,733.434,251.527z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M860.497,331.626L729.533,249.79C702.409,232.841,666.681,241.09,649.733,268.213L438.324,606.538C421.375,633.662,429.623,669.39,456.747,686.338L587.711,768.174C614.835,785.123,650.563,776.874,667.512,749.751L878.92,411.426C895.869,384.302,887.621,348.575,860.497,331.626z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="680.421,219.102" EndPoint="407.635,655.65">
+                                <GradientStop Offset="0" Color="#FFBFD6FF" />
+                                <GradientStop Offset="0.18" Color="#FF5B9BFF" />
+                                <GradientStop Offset="1" Color="#FF1F5FE0" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M860.497,331.626L729.533,249.79C702.409,232.841,666.681,241.09,649.733,268.213L438.324,606.538C421.375,633.662,429.623,669.39,456.747,686.338L587.711,768.174C614.835,785.123,650.563,776.874,667.512,749.751L878.92,411.426C895.869,384.302,887.621,348.575,860.497,331.626z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M960.56,443.645L857.226,328.881C835.825,305.112,799.207,303.193,775.439,324.595L478.965,591.541C455.196,612.942,453.277,649.56,474.678,673.328L578.013,788.092C599.414,811.861,636.031,813.78,659.8,792.379L956.274,525.432C980.042,504.031,981.961,467.413,960.56,443.645z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush MappingMode="Absolute" Opacity="1" SpreadMethod="Pad" StartPoint="818.476,285.844" EndPoint="435.928,630.291">
+                                <GradientStop Offset="0" Color="#FFC9A9FF" />
+                                <GradientStop Offset="0.18" Color="#FF9D6BFF" />
+                                <GradientStop Offset="1" Color="#FFB026C8" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M1024,1024z M0,0z M960.56,443.645L857.226,328.881C835.825,305.112,799.207,303.193,775.439,324.595L478.965,591.541C455.196,612.942,453.277,649.56,474.678,673.328L578.013,788.092C599.414,811.861,636.031,813.78,659.8,792.379L956.274,525.432C980.042,504.031,981.961,467.413,960.56,443.645z">
+                        <GeometryDrawing.Pen>
+                            <Pen
+                                EndLineCap="Flat"
+                                LineJoin="Round"
+                                StartLineCap="Flat"
+                                Thickness="7.66024">
+                                <Pen.Brush>
+                                    <SolidColorBrush Opacity="0.9" Color="#FFFFFFFF" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="FluenceHeaderLightDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V637 H2537 V0 H0 Z">
+                <GeometryDrawing Brush="#FF1B1B1B" Geometry="F1 M2537,637z M0,0z M1059.71,254.782L988.555,254.782 988.555,303.298 1053.95,303.298 1053.95,340.704 988.555,340.704 988.555,418.751 943.133,418.751 943.133,217.095 1059.71,217.095 1059.71,254.782z M1085.87,418.751L1085.87,205.564 1130.3,205.564 1130.3,418.751 1085.87,418.751z M1301.73,418.611L1257.29,418.611 1257.29,400.329 1256.73,400.329C1252.23,406.892 1245.9,412.189 1237.74,416.22 1229.68,420.157 1221.57,422.126 1213.41,422.126 1196.73,422.126 1184.07,417.064 1175.45,406.939 1166.91,396.814 1162.65,382.517 1162.65,364.048L1162.65,274.611 1206.95,274.611 1206.95,357.298C1206.95,366.486 1208.91,373.845 1212.85,379.376 1216.79,384.814 1222.65,387.532 1230.43,387.532 1238.21,387.532 1244.63,384.626 1249.7,378.814 1254.76,373.001 1257.29,365.642 1257.29,356.736L1257.29,274.611 1301.73,274.611 1301.73,418.611z M1465.84,359.407L1371.9,359.407C1372.55,368.689 1375.74,376.095 1381.46,381.626 1387.27,387.064 1394.87,389.782 1404.24,389.782 1409.96,389.782 1415.16,388.376 1419.85,385.564 1424.63,382.751 1428.9,378.532 1432.65,372.907L1465.27,391.47C1457.02,402.157 1447.79,409.986 1437.57,414.954 1427.35,419.829 1416.01,422.267 1403.54,422.267 1379.73,422.267 1361.16,415.845 1347.85,403.001 1334.54,390.064 1327.88,372.064 1327.88,349.001 1327.88,325.095 1334.82,306.157 1348.7,292.189 1362.57,278.22 1379.63,271.236 1399.88,271.236 1420.88,271.236 1437.1,277.47 1448.54,289.939 1460.07,302.407 1465.84,321.157 1465.84,346.189L1465.84,359.407z M1424.63,331.282C1424.63,321.439 1422.52,314.079 1418.3,309.204 1414.18,304.236 1408.6,301.751 1401.57,301.751 1393.13,301.751 1386.29,304.564 1381.04,310.189 1375.88,315.814 1372.74,322.845 1371.62,331.282L1424.63,331.282z M1632.2,418.751L1587.9,418.751 1587.9,336.064C1587.9,326.876 1585.93,319.564 1581.99,314.126 1578.05,308.595 1572.2,305.829 1564.41,305.829 1556.63,305.829 1550.21,308.736 1545.15,314.548 1540.09,320.361 1537.55,327.72 1537.55,336.626L1537.55,418.751 1493.12,418.751 1493.12,274.751 1537.55,274.751 1537.55,293.032 1538.12,293.032C1542.8,286.47 1549.32,281.22 1557.66,277.282 1566.01,273.251 1574.4,271.236 1582.84,271.236 1599.05,271.236 1611.34,276.298 1619.68,286.423 1628.02,296.548 1632.2,310.845 1632.2,329.314L1632.2,418.751z M1794.2,385.423C1787.73,397.517 1778.91,406.704 1767.76,412.986 1756.7,419.173 1743.99,422.267 1729.65,422.267 1706.59,422.267 1688.54,415.657 1675.51,402.439 1662.57,389.126 1656.1,371.736 1656.1,350.267 1656.1,325.798 1663.27,306.532 1677.62,292.47 1691.96,278.407 1710.62,271.376 1733.59,271.376 1747.74,271.376 1760.21,274.704 1770.99,281.361 1781.77,287.923 1789.04,297.532 1792.79,310.189L1756.79,323.548C1753.98,317.454 1750.55,313.001 1746.52,310.189 1742.59,307.282 1737.71,305.829 1731.9,305.829 1723.18,305.829 1715.87,309.204 1709.96,315.954 1704.15,322.611 1701.24,333.064 1701.24,347.314 1701.24,360.814 1704.01,370.704 1709.54,376.986 1715.07,383.267 1722.1,386.407 1730.63,386.407 1737.1,386.407 1742.54,385.048 1746.95,382.329 1751.45,379.517 1755.57,375.064 1759.32,368.97L1794.2,385.423z M1949.87,359.407L1855.93,359.407C1856.59,368.689 1859.77,376.095 1865.49,381.626 1871.3,387.064 1878.9,389.782 1888.27,389.782 1893.99,389.782 1899.2,388.376 1903.88,385.564 1908.66,382.751 1912.93,378.532 1916.68,372.907L1949.3,391.47C1941.05,402.157 1931.82,409.986 1921.6,414.954 1911.38,419.829 1900.04,422.267 1887.57,422.267 1863.76,422.267 1845.2,415.845 1831.88,403.001 1818.57,390.064 1811.91,372.064 1811.91,349.001 1811.91,325.095 1818.85,306.157 1832.73,292.189 1846.6,278.22 1863.66,271.236 1883.91,271.236 1904.91,271.236 1921.13,277.47 1932.57,289.939 1944.1,302.407 1949.87,321.157 1949.87,346.189L1949.87,359.407z M1908.66,331.282C1908.66,321.439 1906.55,314.079 1902.34,309.204 1898.21,304.236 1892.63,301.751 1885.6,301.751 1877.16,301.751 1870.32,304.564 1865.07,310.189 1859.91,315.814 1856.77,322.845 1855.65,331.282L1908.66,331.282z" />
+                <GeometryDrawing Brush="#FF6B6B6B" Geometry="F1 M2537,637z M0,0z M1986.92,421.315C1981.59,421.315 1977.15,419.469 1973.59,415.778 1970.04,412.086 1968.26,407.574 1968.26,402.242 1968.26,396.637 1970.07,392.057 1973.69,388.502 1977.39,384.948 1981.97,383.17 1987.43,383.17 1992.97,383.17 1997.48,384.982 2000.97,388.605 2004.52,392.159 2006.3,396.705 2006.3,402.242 2006.3,407.848 2004.49,412.428 2000.87,415.983 1997.31,419.537 1992.66,421.315 1986.92,421.315z" />
+                <GeometryDrawing Brush="#FF2671BE" Geometry="F1 M2537,637z M0,0z M2223.79,271.71L2185.75,418.751 2148.22,418.751 2123.81,326.261C2123.2,324.005 2122.72,322.125 2122.38,320.621 2122.1,319.049 2121.76,317.067 2121.35,314.674L2120.94,314.674C2120.53,317.067 2120.12,319.083 2119.71,320.724 2119.37,322.296 2118.92,324.142 2118.38,326.261L2093.36,418.751 2054.29,418.751 2016.45,271.71 2052.14,271.71 2073.36,367.994C2073.77,369.977 2074.11,371.686 2074.39,373.121 2074.66,374.489 2075.04,376.71 2075.52,379.786L2076.13,379.786C2076.68,376.71 2077.09,374.557 2077.36,373.326 2077.63,372.096 2078.15,370.182 2078.9,367.584L2105.56,271.71 2141.04,271.71 2165.13,368.815C2165.61,370.797 2165.99,372.438 2166.26,373.737 2166.54,374.967 2166.95,376.915 2167.49,379.581L2167.9,379.581C2168.38,376.779 2168.72,374.796 2168.93,373.634 2169.13,372.404 2169.51,370.592 2170.06,368.199L2190.77,271.71 2223.79,271.71z M2274.34,370.865L2274.34,418.751 2241.22,418.751 2241.22,271.71 2292.39,271.71C2310.71,271.71 2324.65,275.709 2334.22,283.707 2343.86,291.705 2348.68,303.531 2348.68,319.186 2348.68,335.455 2343.28,348.136 2332.48,357.228 2321.75,366.32 2307.32,370.865 2289.21,370.865L2274.34,370.865z M2274.34,297.14L2274.34,345.436 2288.18,345.436C2296.38,345.436 2302.71,343.282 2307.15,338.976 2311.59,334.669 2313.82,328.483 2313.82,320.416 2313.82,312.965 2311.63,307.223 2307.25,303.19 2302.95,299.156 2296.76,297.14 2288.69,297.14L2274.34,297.14z M2453.17,299.191L2401.28,299.191 2401.28,334.567 2448.96,334.567 2448.96,361.842 2401.28,361.842 2401.28,418.751 2368.16,418.751 2368.16,271.71 2453.17,271.71 2453.17,299.191z" />
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M149.961,129.279L63.6272,225.163C45.7468,245.021,47.3501,275.614,67.2083,293.494L314.907,516.523C334.765,534.404,365.359,532.8,383.239,512.942L469.573,417.059C487.453,397.201,485.85,366.608,465.992,348.727L218.293,125.698C198.434,107.818,167.841,109.421,149.961,129.279z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="31.252,261.119" EndPoint="350.864,548.899" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFFFC0C0" Offset="0" />
+                                <GradientStop Color="#FFFF7A7A" Offset="0.18" />
+                                <GradientStop Color="#FFEF2730" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M149.961,129.279L63.6272,225.163C45.7468,245.021,47.3501,275.614,67.2083,293.494L314.907,516.523C334.765,534.404,365.359,532.8,383.239,512.942L469.573,417.059C487.453,397.201,485.85,366.608,465.992,348.727L218.293,125.698C198.434,107.818,167.841,109.421,149.961,129.279z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M256.646,63.2002L147.228,131.573C124.566,145.733,117.675,175.583,131.835,198.244L308.464,480.909C322.624,503.57,352.474,510.461,375.135,496.301L484.554,427.929C507.215,413.768,514.107,383.919,499.946,361.257L323.318,78.5926C309.158,55.9313,279.308,49.0399,256.646,63.2002z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="106.196,157.212" EndPoint="334.103,521.941" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFFFE0B0" Offset="0" />
+                                <GradientStop Color="#FFFFB454" Offset="0.18" />
+                                <GradientStop Color="#FFF77F00" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M256.646,63.2002L147.228,131.573C124.566,145.733,117.675,175.583,131.835,198.244L308.464,480.909C322.624,503.57,352.474,510.461,375.135,496.301L484.554,427.929C507.215,413.768,514.107,383.919,499.946,361.257L323.318,78.5926C309.158,55.9313,279.308,49.0399,256.646,63.2002z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M377.412,29.0876L253.387,64.6515C227.7,72.017,212.848,98.811,220.213,124.498L312.087,444.898C319.452,470.584,346.246,485.436,371.933,478.071L495.959,442.507C521.645,435.142,536.497,408.348,529.132,382.661L437.259,62.2609C429.893,36.5743,403.099,21.7221,377.412,29.0876z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="206.877,77.9879" EndPoint="325.423,491.407" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFFFF3B0" Offset="0" />
+                                <GradientStop Color="#FFFFE14D" Offset="0.18" />
+                                <GradientStop Color="#FFF5B800" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M377.412,29.0876L253.387,64.6515C227.7,72.017,212.848,98.811,220.213,124.498L312.087,444.898C319.452,470.584,346.246,485.436,371.933,478.071L495.959,442.507C521.645,435.142,536.497,408.348,529.132,382.661L437.259,62.2609C429.893,36.5743,403.099,21.7221,377.412,29.0876z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M502.903,29.5842L373.879,29.5842C347.157,29.5842,325.495,51.2465,325.495,77.9682L325.495,411.28C325.495,438.002,347.157,459.664,373.879,459.664L502.903,459.664C529.625,459.664,551.287,438.002,551.287,411.28L551.287,77.9682C551.287,51.2465,529.625,29.5842,502.903,29.5842z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="325.495,29.5842" EndPoint="325.495,459.664" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFC2F7D4" Offset="0" />
+                                <GradientStop Color="#FF5CE08A" Offset="0.18" />
+                                <GradientStop Color="#FF1BB257" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M502.903,29.5842L373.879,29.5842C347.157,29.5842,325.495,51.2465,325.495,77.9682L325.495,411.28C325.495,438.002,347.157,459.664,373.879,459.664L502.903,459.664C529.625,459.664,551.287,438.002,551.287,411.28L551.287,77.9682C551.287,51.2465,529.625,29.5842,502.903,29.5842z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M623.395,64.6515L499.37,29.0877C473.683,21.7221,446.889,36.5743,439.523,62.2609L347.65,382.661C340.285,408.348,355.137,435.142,380.823,442.507L504.849,478.071C530.536,485.436,557.33,470.584,564.695,444.898L656.569,124.498C663.934,98.811,649.082,72.017,623.395,64.6515z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="452.86,15.7512" EndPoint="334.314,429.171" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFC4F2FB" Offset="0" />
+                                <GradientStop Color="#FF4FD8F0" Offset="0.18" />
+                                <GradientStop Color="#FF12AECE" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M623.395,64.6515L499.37,29.0877C473.683,21.7221,446.889,36.5743,439.523,62.2609L347.65,382.661C340.285,408.348,355.137,435.142,380.823,442.507L504.849,478.071C530.536,485.436,557.33,470.584,564.695,444.898L656.569,124.498C663.934,98.811,649.082,72.017,623.395,64.6515z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M729.555,131.573L620.136,63.2003C597.475,49.0399,567.625,55.9313,553.464,78.5926L376.836,361.257C362.676,383.919,369.567,413.768,392.228,427.929L501.647,496.301C524.308,510.461,554.158,503.57,568.318,480.909L744.947,198.244C759.107,175.583,752.216,145.733,729.555,131.573z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="579.104,37.5607" EndPoint="351.196,402.289" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFBFD6FF" Offset="0" />
+                                <GradientStop Color="#FF5B9BFF" Offset="0.18" />
+                                <GradientStop Color="#FF1F5FE0" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M729.555,131.573L620.136,63.2003C597.475,49.0399,567.625,55.9313,553.464,78.5926L376.836,361.257C362.676,383.919,369.567,413.768,392.228,427.929L501.647,496.301C524.308,510.461,554.158,503.57,568.318,480.909L744.947,198.244C759.107,175.583,752.216,145.733,729.555,131.573z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M813.155,225.162L726.822,129.279C708.941,109.421,678.348,107.818,658.49,125.698L410.791,348.727C390.933,366.607,389.329,397.201,407.21,417.059L493.544,512.942C511.424,532.8,542.017,534.404,561.875,516.523L809.574,293.494C829.432,275.614,831.036,245.021,813.155,225.162z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="694.446,93.3226" EndPoint="374.835,381.102" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFC9A9FF" Offset="0" />
+                                <GradientStop Color="#FF9D6BFF" Offset="0.18" />
+                                <GradientStop Color="#FFB026C8" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M813.155,225.162L726.822,129.279C708.941,109.421,678.348,107.818,658.49,125.698L410.791,348.727C390.933,366.607,389.329,397.201,407.21,417.059L493.544,512.942C511.424,532.8,542.017,534.404,561.875,516.523L809.574,293.494C829.432,275.614,831.036,245.021,813.155,225.162z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="FluenceHeaderDarkDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V637 H2537 V0 H0 Z">
+                <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1 M2537,637z M0,0z M1059.71,254.782L988.555,254.782 988.555,303.298 1053.95,303.298 1053.95,340.704 988.555,340.704 988.555,418.751 943.133,418.751 943.133,217.095 1059.71,217.095 1059.71,254.782z M1085.87,418.751L1085.87,205.564 1130.3,205.564 1130.3,418.751 1085.87,418.751z M1301.73,418.611L1257.29,418.611 1257.29,400.329 1256.73,400.329C1252.23,406.892 1245.9,412.189 1237.74,416.22 1229.68,420.157 1221.57,422.126 1213.41,422.126 1196.73,422.126 1184.07,417.064 1175.45,406.939 1166.91,396.814 1162.65,382.517 1162.65,364.048L1162.65,274.611 1206.95,274.611 1206.95,357.298C1206.95,366.486 1208.91,373.845 1212.85,379.376 1216.79,384.814 1222.65,387.532 1230.43,387.532 1238.21,387.532 1244.63,384.626 1249.7,378.814 1254.76,373.001 1257.29,365.642 1257.29,356.736L1257.29,274.611 1301.73,274.611 1301.73,418.611z M1465.84,359.407L1371.9,359.407C1372.55,368.689 1375.74,376.095 1381.46,381.626 1387.27,387.064 1394.87,389.782 1404.24,389.782 1409.96,389.782 1415.16,388.376 1419.85,385.564 1424.63,382.751 1428.9,378.532 1432.65,372.907L1465.27,391.47C1457.02,402.157 1447.79,409.986 1437.57,414.954 1427.35,419.829 1416.01,422.267 1403.54,422.267 1379.73,422.267 1361.16,415.845 1347.85,403.001 1334.54,390.064 1327.88,372.064 1327.88,349.001 1327.88,325.095 1334.82,306.157 1348.7,292.189 1362.57,278.22 1379.63,271.236 1399.88,271.236 1420.88,271.236 1437.1,277.47 1448.54,289.939 1460.07,302.407 1465.84,321.157 1465.84,346.189L1465.84,359.407z M1424.63,331.282C1424.63,321.439 1422.52,314.079 1418.3,309.204 1414.18,304.236 1408.6,301.751 1401.57,301.751 1393.13,301.751 1386.29,304.564 1381.04,310.189 1375.88,315.814 1372.74,322.845 1371.62,331.282L1424.63,331.282z M1632.2,418.751L1587.9,418.751 1587.9,336.064C1587.9,326.876 1585.93,319.564 1581.99,314.126 1578.05,308.595 1572.2,305.829 1564.41,305.829 1556.63,305.829 1550.21,308.736 1545.15,314.548 1540.09,320.361 1537.55,327.72 1537.55,336.626L1537.55,418.751 1493.12,418.751 1493.12,274.751 1537.55,274.751 1537.55,293.032 1538.12,293.032C1542.8,286.47 1549.32,281.22 1557.66,277.282 1566.01,273.251 1574.4,271.236 1582.84,271.236 1599.05,271.236 1611.34,276.298 1619.68,286.423 1628.02,296.548 1632.2,310.845 1632.2,329.314L1632.2,418.751z M1794.2,385.423C1787.73,397.517 1778.91,406.704 1767.76,412.986 1756.7,419.173 1743.99,422.267 1729.65,422.267 1706.59,422.267 1688.54,415.657 1675.51,402.439 1662.57,389.126 1656.1,371.736 1656.1,350.267 1656.1,325.798 1663.27,306.532 1677.62,292.47 1691.96,278.407 1710.62,271.376 1733.59,271.376 1747.74,271.376 1760.21,274.704 1770.99,281.361 1781.77,287.923 1789.04,297.532 1792.79,310.189L1756.79,323.548C1753.98,317.454 1750.55,313.001 1746.52,310.189 1742.59,307.282 1737.71,305.829 1731.9,305.829 1723.18,305.829 1715.87,309.204 1709.96,315.954 1704.15,322.611 1701.24,333.064 1701.24,347.314 1701.24,360.814 1704.01,370.704 1709.54,376.986 1715.07,383.267 1722.1,386.407 1730.63,386.407 1737.1,386.407 1742.54,385.048 1746.95,382.329 1751.45,379.517 1755.57,375.064 1759.32,368.97L1794.2,385.423z M1949.87,359.407L1855.93,359.407C1856.59,368.689 1859.77,376.095 1865.49,381.626 1871.3,387.064 1878.9,389.782 1888.27,389.782 1893.99,389.782 1899.2,388.376 1903.88,385.564 1908.66,382.751 1912.93,378.532 1916.68,372.907L1949.3,391.47C1941.05,402.157 1931.82,409.986 1921.6,414.954 1911.38,419.829 1900.04,422.267 1887.57,422.267 1863.76,422.267 1845.2,415.845 1831.88,403.001 1818.57,390.064 1811.91,372.064 1811.91,349.001 1811.91,325.095 1818.85,306.157 1832.73,292.189 1846.6,278.22 1863.66,271.236 1883.91,271.236 1904.91,271.236 1921.13,277.47 1932.57,289.939 1944.1,302.407 1949.87,321.157 1949.87,346.189L1949.87,359.407z M1908.66,331.282C1908.66,321.439 1906.55,314.079 1902.34,309.204 1898.21,304.236 1892.63,301.751 1885.6,301.751 1877.16,301.751 1870.32,304.564 1865.07,310.189 1859.91,315.814 1856.77,322.845 1855.65,331.282L1908.66,331.282z" />
+                <GeometryDrawing Brush="#FF6B6B6B" Geometry="F1 M2537,637z M0,0z M1986.92,421.315C1981.59,421.315 1977.15,419.469 1973.59,415.778 1970.04,412.086 1968.26,407.574 1968.26,402.242 1968.26,396.637 1970.07,392.057 1973.69,388.502 1977.39,384.948 1981.97,383.17 1987.43,383.17 1992.97,383.17 1997.48,384.982 2000.97,388.605 2004.52,392.159 2006.3,396.705 2006.3,402.242 2006.3,407.848 2004.49,412.428 2000.87,415.983 1997.31,419.537 1992.66,421.315 1986.92,421.315z" />
+                <GeometryDrawing Brush="#FF4D9BFF" Geometry="F1 M2537,637z M0,0z M2223.79,271.71L2185.75,418.751 2148.22,418.751 2123.81,326.261C2123.2,324.005 2122.72,322.125 2122.38,320.621 2122.1,319.049 2121.76,317.067 2121.35,314.674L2120.94,314.674C2120.53,317.067 2120.12,319.083 2119.71,320.724 2119.37,322.296 2118.92,324.142 2118.38,326.261L2093.36,418.751 2054.29,418.751 2016.45,271.71 2052.14,271.71 2073.36,367.994C2073.77,369.977 2074.11,371.686 2074.39,373.121 2074.66,374.489 2075.04,376.71 2075.52,379.786L2076.13,379.786C2076.68,376.71 2077.09,374.557 2077.36,373.326 2077.63,372.096 2078.15,370.182 2078.9,367.584L2105.56,271.71 2141.04,271.71 2165.13,368.815C2165.61,370.797 2165.99,372.438 2166.26,373.737 2166.54,374.967 2166.95,376.915 2167.49,379.581L2167.9,379.581C2168.38,376.779 2168.72,374.796 2168.93,373.634 2169.13,372.404 2169.51,370.592 2170.06,368.199L2190.77,271.71 2223.79,271.71z M2274.34,370.865L2274.34,418.751 2241.22,418.751 2241.22,271.71 2292.39,271.71C2310.71,271.71 2324.65,275.709 2334.22,283.707 2343.86,291.705 2348.68,303.531 2348.68,319.186 2348.68,335.455 2343.28,348.136 2332.48,357.228 2321.75,366.32 2307.32,370.865 2289.21,370.865L2274.34,370.865z M2274.34,297.14L2274.34,345.436 2288.18,345.436C2296.38,345.436 2302.71,343.282 2307.15,338.976 2311.59,334.669 2313.82,328.483 2313.82,320.416 2313.82,312.965 2311.63,307.223 2307.25,303.19 2302.95,299.156 2296.76,297.14 2288.69,297.14L2274.34,297.14z M2453.17,299.191L2401.28,299.191 2401.28,334.567 2448.96,334.567 2448.96,361.842 2401.28,361.842 2401.28,418.751 2368.16,418.751 2368.16,271.71 2453.17,271.71 2453.17,299.191z" />
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M149.961,129.279L63.6272,225.163C45.7468,245.021,47.3501,275.614,67.2083,293.494L314.907,516.523C334.765,534.404,365.359,532.8,383.239,512.942L469.573,417.059C487.453,397.201,485.85,366.608,465.992,348.727L218.293,125.698C198.434,107.818,167.841,109.421,149.961,129.279z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="31.252,261.119" EndPoint="350.864,548.899" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFFFC0C0" Offset="0" />
+                                <GradientStop Color="#FFFF7A7A" Offset="0.18" />
+                                <GradientStop Color="#FFEF2730" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M149.961,129.279L63.6272,225.163C45.7468,245.021,47.3501,275.614,67.2083,293.494L314.907,516.523C334.765,534.404,365.359,532.8,383.239,512.942L469.573,417.059C487.453,397.201,485.85,366.608,465.992,348.727L218.293,125.698C198.434,107.818,167.841,109.421,149.961,129.279z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M256.646,63.2002L147.228,131.573C124.566,145.733,117.675,175.583,131.835,198.244L308.464,480.909C322.624,503.57,352.474,510.461,375.135,496.301L484.554,427.929C507.215,413.768,514.107,383.919,499.946,361.257L323.318,78.5926C309.158,55.9313,279.308,49.0399,256.646,63.2002z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="106.196,157.212" EndPoint="334.103,521.941" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFFFE0B0" Offset="0" />
+                                <GradientStop Color="#FFFFB454" Offset="0.18" />
+                                <GradientStop Color="#FFF77F00" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M256.646,63.2002L147.228,131.573C124.566,145.733,117.675,175.583,131.835,198.244L308.464,480.909C322.624,503.57,352.474,510.461,375.135,496.301L484.554,427.929C507.215,413.768,514.107,383.919,499.946,361.257L323.318,78.5926C309.158,55.9313,279.308,49.0399,256.646,63.2002z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M377.412,29.0878L253.387,64.6516C227.7,72.0171,212.848,98.8111,220.213,124.498L312.087,444.898C319.452,470.584,346.246,485.437,371.933,478.071L495.959,442.507C521.645,435.142,536.497,408.348,529.132,382.661L437.259,62.261C429.893,36.5744,403.099,21.7223,377.412,29.0878z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="206.877,77.988" EndPoint="325.423,491.407" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFFFF3B0" Offset="0" />
+                                <GradientStop Color="#FFFFE14D" Offset="0.18" />
+                                <GradientStop Color="#FFF5B800" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M377.412,29.0878L253.387,64.6516C227.7,72.0171,212.848,98.8111,220.213,124.498L312.087,444.898C319.452,470.584,346.246,485.437,371.933,478.071L495.959,442.507C521.645,435.142,536.497,408.348,529.132,382.661L437.259,62.261C429.893,36.5744,403.099,21.7223,377.412,29.0878z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M502.903,29.5842L373.879,29.5842C347.157,29.5842,325.495,51.2465,325.495,77.9682L325.495,411.28C325.495,438.002,347.157,459.664,373.879,459.664L502.903,459.664C529.625,459.664,551.287,438.002,551.287,411.28L551.287,77.9682C551.287,51.2465,529.625,29.5842,502.903,29.5842z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="325.495,29.5842" EndPoint="325.495,459.664" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFC2F7D4" Offset="0" />
+                                <GradientStop Color="#FF5CE08A" Offset="0.18" />
+                                <GradientStop Color="#FF1BB257" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M502.903,29.5842L373.879,29.5842C347.157,29.5842,325.495,51.2465,325.495,77.9682L325.495,411.28C325.495,438.002,347.157,459.664,373.879,459.664L502.903,459.664C529.625,459.664,551.287,438.002,551.287,411.28L551.287,77.9682C551.287,51.2465,529.625,29.5842,502.903,29.5842z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M623.395,64.6515L499.37,29.0877C473.683,21.7221,446.889,36.5743,439.523,62.2609L347.65,382.661C340.285,408.348,355.137,435.142,380.823,442.507L504.849,478.071C530.536,485.436,557.33,470.584,564.695,444.898L656.569,124.498C663.934,98.811,649.082,72.017,623.395,64.6515z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="452.86,15.7512" EndPoint="334.314,429.171" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFC4F2FB" Offset="0" />
+                                <GradientStop Color="#FF4FD8F0" Offset="0.18" />
+                                <GradientStop Color="#FF12AECE" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M623.395,64.6515L499.37,29.0877C473.683,21.7221,446.889,36.5743,439.523,62.2609L347.65,382.661C340.285,408.348,355.137,435.142,380.823,442.507L504.849,478.071C530.536,485.436,557.33,470.584,564.695,444.898L656.569,124.498C663.934,98.811,649.082,72.017,623.395,64.6515z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M729.555,131.572L620.136,63.2002C597.475,49.0398,567.625,55.9312,553.464,78.5925L376.836,361.257C362.676,383.918,369.567,413.768,392.228,427.929L501.647,496.301C524.308,510.461,554.158,503.57,568.318,480.909L744.947,198.244C759.107,175.583,752.216,145.733,729.555,131.572z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="579.104,37.5605" EndPoint="351.196,402.289" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFBFD6FF" Offset="0" />
+                                <GradientStop Color="#FF5B9BFF" Offset="0.18" />
+                                <GradientStop Color="#FF1F5FE0" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M729.555,131.572L620.136,63.2002C597.475,49.0398,567.625,55.9312,553.464,78.5925L376.836,361.257C362.676,383.918,369.567,413.768,392.228,427.929L501.647,496.301C524.308,510.461,554.158,503.57,568.318,480.909L744.947,198.244C759.107,175.583,752.216,145.733,729.555,131.572z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+                <DrawingGroup Opacity="1">
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M813.155,225.163L726.822,129.279C708.941,109.421,678.348,107.818,658.49,125.698L410.791,348.727C390.933,366.608,389.329,397.201,407.21,417.059L493.544,512.942C511.424,532.8,542.017,534.404,561.875,516.523L809.574,293.494C829.432,275.614,831.036,245.021,813.155,225.163z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="694.446,93.3228" EndPoint="374.835,381.102" MappingMode="Absolute" SpreadMethod="Pad" Opacity="1">
+                                <GradientStop Color="#FFC9A9FF" Offset="0" />
+                                <GradientStop Color="#FF9D6BFF" Offset="0.18" />
+                                <GradientStop Color="#FFB026C8" Offset="1" />
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="F1 M2537,637z M0,0z M813.155,225.163L726.822,129.279C708.941,109.421,678.348,107.818,658.49,125.698L410.791,348.727C390.933,366.608,389.329,397.201,407.21,417.059L493.544,512.942C511.424,532.8,542.017,534.404,561.875,516.523L809.574,293.494C829.432,275.614,831.036,245.021,813.155,225.163z">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="6.4" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Round">
+                                <Pen.Brush>
+                                    <SolidColorBrush Color="#FFFFFFFF" Opacity="0.9" />
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+
+</ResourceDictionary>

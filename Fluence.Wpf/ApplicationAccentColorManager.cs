@@ -37,7 +37,7 @@ namespace Fluence.Wpf
     /// Manages system and custom accent colors and publishes them as <c>DynamicResource</c> brush keys aligned with Windows 11.
     /// </summary>
     /// <remarks>
-    /// Call <see cref="ApplySystemAccent"/>, <see cref="ApplyApplicationAccent"/>, or <see cref="ApplyCustomAccent"/> after
+    /// Call <see cref="ApplySystemAccent"/>, <see cref="ApplyApplicationAccent"/>, or <see cref="ApplyCustomAccent(Color)"/> after
     /// <see cref="ApplicationThemeManager.Apply"/> so theme-dependent primary/secondary/tertiary accents resolve correctly.
     /// </remarks>
     /// <example>
@@ -78,7 +78,7 @@ namespace Fluence.Wpf
 
         private static AccentPalette Palette => FluenceThemeEngine.CurrentPalette;
 
-        private static bool IsDark => FluenceThemeEngine.ResolvedTheme == ApplicationTheme.Dark;
+        private static bool IsDark => FluenceThemeEngine.ResolvedTheme is ApplicationTheme.Dark;
 
         /// <summary>
         /// Gets the current base system accent color (ARGB). Default is a Windows blue until <see cref="ApplySystemAccent"/> runs.
@@ -174,6 +174,19 @@ namespace Fluence.Wpf
         public static void ApplyCustomAccent(Color color)
         {
             FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(color));
+            FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
+        }
+
+        /// <summary>
+        /// Applies per-theme custom accent seeds and regenerates the accent ramp and theme
+        /// resources. The intent is sticky: every later theme change regenerates the ramp from
+        /// the seed matching the newly resolved theme, with no re-apply call needed.
+        /// </summary>
+        /// <param name="lightThemeAccent">The ramp seed used on the light theme.</param>
+        /// <param name="darkThemeAccent">The ramp seed used on dark and high-contrast themes.</param>
+        public static void ApplyCustomAccent(Color lightThemeAccent, Color darkThemeAccent)
+        {
+            FluenceThemeEngine.SetAccentIntent(AccentIntent.FromCustom(lightThemeAccent, darkThemeAccent));
             FluenceThemeEngine.Apply(ApplicationThemeManager.CurrentTheme);
         }
 

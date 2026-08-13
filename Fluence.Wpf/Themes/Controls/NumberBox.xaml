@@ -121,7 +121,11 @@
                                         Margin="0,1,2,1"
                                         VerticalAlignment="Center"
                                         Orientation="Horizontal">
-                                        <RepeatButton x:Name="PART_UpButton" Style="{StaticResource NumberBoxSpinButton}">
+                                        <RepeatButton
+                                            x:Name="PART_UpButton"
+                                            AutomationProperties.Name="Increase"
+                                            Style="{StaticResource NumberBoxSpinButton}"
+                                            ToolTip="Increase">
                                             <Path
                                                 Width="8"
                                                 Height="5"
@@ -132,7 +136,11 @@
                                                 StrokeStartLineCap="Round"
                                                 StrokeThickness="1.5" />
                                         </RepeatButton>
-                                        <RepeatButton x:Name="PART_DownButton" Style="{StaticResource NumberBoxSpinButton}">
+                                        <RepeatButton
+                                            x:Name="PART_DownButton"
+                                            AutomationProperties.Name="Decrease"
+                                            Style="{StaticResource NumberBoxSpinButton}"
+                                            ToolTip="Decrease">
                                             <Path
                                                 Width="8"
                                                 Height="5"

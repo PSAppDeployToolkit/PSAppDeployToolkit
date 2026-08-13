@@ -1,11 +1,11 @@
-﻿<ui:FluenceWindow
+﻿<fluence:FluenceWindow
     x:Class="Fluence.Wpf.Demo.Mvvm.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:converters="clr-namespace:Fluence.Wpf.Demo.Mvvm.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
     xmlns:vm="clr-namespace:Fluence.Wpf.Demo.Mvvm.ViewModels"
     Title="Task Manager - Fluence.Wpf MVVM Demo"
     Width="680"
@@ -17,14 +17,13 @@
     Background="{DynamicResource ApplicationBackgroundBrush}"
     CornerStyle="Round"
     ExtendsContentIntoTitleBar="False"
-    Icon="Resources/fluence-wpf-appicon-256.ico"
     SystemBackdropType="Mica"
     UseLayoutRounding="True"
     mc:Ignorable="d">
 
-    <ui:FluenceWindow.Resources>
+    <fluence:FluenceWindow.Resources>
         <converters:EnumToBoolConverter x:Key="EnumToBool" />
-    </ui:FluenceWindow.Resources>
+    </fluence:FluenceWindow.Resources>
 
     <Grid Margin="24,16,24,16">
         <Grid.RowDefinitions>
@@ -50,24 +49,24 @@
             Grid.Row="1"
             Margin="0,0,0,12"
             Orientation="Horizontal">
-            <ui:RadioButton
+            <fluence:RadioButton
                 Margin="0,0,16,0"
                 Content="All"
                 GroupName="FilterGroup"
                 IsChecked="{Binding ActiveFilter, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static vm:FilterMode.All}}" />
-            <ui:RadioButton
+            <fluence:RadioButton
                 Margin="0,0,16,0"
                 Content="Pending"
                 GroupName="FilterGroup"
                 IsChecked="{Binding ActiveFilter, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static vm:FilterMode.Pending}}" />
-            <ui:RadioButton
+            <fluence:RadioButton
                 Content="Completed"
                 GroupName="FilterGroup"
                 IsChecked="{Binding ActiveFilter, Mode=TwoWay, Converter={StaticResource EnumToBool}, ConverterParameter={x:Static vm:FilterMode.Completed}}" />
         </StackPanel>
 
         <!--  Row 2: Task list  -->
-        <ui:SmoothScrollViewer
+        <fluence:SmoothScrollViewer
             Grid.Row="2"
             Margin="0,0,0,12"
             HorizontalScrollBarVisibility="Disabled"
@@ -89,7 +88,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <ui:CheckBox
+                                <fluence:CheckBox
                                     Grid.Column="0"
                                     Margin="0,0,10,0"
                                     VerticalAlignment="Center"
@@ -120,7 +119,7 @@
                                     stays free of parent references. This DataTemplate must remain
                                     hosted directly inside this window (not moved into a UserControl).
                                 -->
-                                <ui:Button
+                                <fluence:Button
                                     Grid.Column="2"
                                     Width="30"
                                     Height="30"
@@ -130,14 +129,14 @@
                                     Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                     CommandParameter="{Binding}"
                                     ToolTip="Delete task">
-                                    <ui:FontIcon Glyph="&#xE74D;" IconFontSize="12" />
-                                </ui:Button>
+                                    <fluence:FontIcon Glyph="&#xE74D;" IconFontSize="12" />
+                                </fluence:Button>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </ui:SmoothScrollViewer>
+        </fluence:SmoothScrollViewer>
 
         <!--  Row 3: Add input  -->
         <Grid Grid.Row="3" Margin="0,0,0,16">
@@ -147,16 +146,16 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <ui:TextBox
+            <fluence:TextBox
                 Grid.Column="0"
                 PlaceholderText="New task…"
                 Text="{Binding NewTaskText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                <ui:TextBox.InputBindings>
+                <fluence:TextBox.InputBindings>
                     <KeyBinding Key="Return" Command="{Binding AddCommand}" />
-                </ui:TextBox.InputBindings>
-            </ui:TextBox>
+                </fluence:TextBox.InputBindings>
+            </fluence:TextBox>
 
-            <ui:Button
+            <fluence:Button
                 Grid.Column="2"
                 MinWidth="80"
                 Appearance="Accent"
@@ -173,7 +172,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
-                <ui:ProgressBar
+                <fluence:ProgressBar
                     Margin="0,0,0,4"
                     Maximum="100"
                     Minimum="0"
@@ -185,7 +184,7 @@
                     Text="{Binding StatusText, Mode=OneWay}" />
             </StackPanel>
 
-            <ui:Button
+            <fluence:Button
                 Grid.Column="2"
                 MinWidth="120"
                 VerticalAlignment="Bottom"
@@ -193,4 +192,4 @@
                 Content="Clear Completed" />
         </Grid>
     </Grid>
-</ui:FluenceWindow>
+</fluence:FluenceWindow>

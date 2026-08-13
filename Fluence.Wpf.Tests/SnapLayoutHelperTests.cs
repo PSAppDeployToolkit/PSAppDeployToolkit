@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2026 Dan Cunningham
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,14 +26,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Microsoft.Win32;
 using Fluence.Wpf.Helpers;
 using Fluence.Wpf.Native;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Win32;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class SnapLayoutHelperTests
     {
         // The helper reads HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\EnableSnapAssistFlyout.
@@ -43,7 +42,7 @@ namespace Fluence.Wpf.Tests
         private const string KeyPath = NativeConstants.ExplorerAdvancedRegistryPath;
         private const string ValueName = NativeConstants.EnableSnapAssistFlyout;
 
-        [TestMethod]
+        [Fact]
         public void IsSnapLayoutEnabled_RegistryAbsent_ReturnsTrue()
         {
             object? saved = ReadRaw();
@@ -51,7 +50,7 @@ namespace Fluence.Wpf.Tests
             {
                 DeleteValue();
                 bool actual = SnapLayoutHelper.IsSnapLayoutEnabled();
-                Assert.IsTrue(actual, "Default Win11 behavior is enabled when registry value is absent.");
+                Assert.True(actual, "Default Win11 behavior is enabled when registry value is absent.");
             }
             finally
             {
@@ -59,7 +58,7 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void IsSnapLayoutEnabled_RegistryZero_ReturnsFalse()
         {
             object? saved = ReadRaw();
@@ -67,7 +66,7 @@ namespace Fluence.Wpf.Tests
             {
                 WriteInt(0);
                 bool actual = SnapLayoutHelper.IsSnapLayoutEnabled();
-                Assert.IsFalse(actual, "Value of 0 means user opted out.");
+                Assert.False(actual, "Value of 0 means user opted out.");
             }
             finally
             {
@@ -75,7 +74,7 @@ namespace Fluence.Wpf.Tests
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void IsSnapLayoutEnabled_RegistryOne_ReturnsTrue()
         {
             object? saved = ReadRaw();
@@ -83,7 +82,7 @@ namespace Fluence.Wpf.Tests
             {
                 WriteInt(1);
                 bool actual = SnapLayoutHelper.IsSnapLayoutEnabled();
-                Assert.IsTrue(actual, "Value of 1 means user opted in.");
+                Assert.True(actual, "Value of 1 means user opted in.");
             }
             finally
             {

@@ -26,18 +26,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows;
 using System.Windows.Media;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
-    [TestClass]
     public class AccentColorManagerTests
     {
-        [TestInitialize]
-        public void TestInitialize()
+        public AccentColorManagerTests()
         {
             WpfTestSta.Invoke(static () =>
             {
@@ -48,7 +46,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplySystemAccent_PopulatesRamp()
         {
             WpfTestSta.Invoke(static () =>
@@ -57,27 +55,20 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
                 ApplicationAccentColorManager.ApplySystemAccent();
 
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColor,
-                    "SystemAccentColor should not be default");
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColorLight1,
-                    "SystemAccentColorLight1 should not be default");
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColorLight2,
-                    "SystemAccentColorLight2 should not be default");
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColorLight3,
-                    "SystemAccentColorLight3 should not be default");
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark1,
-                    "SystemAccentColorDark1 should not be default");
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark2,
-                    "SystemAccentColorDark2 should not be default");
-                Assert.AreNotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark3,
-                    "SystemAccentColorDark3 should not be default");
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColor);
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorLight1);
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorLight2);
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorLight3);
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark1);
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark2);
+                Assert.NotEqual(default, ApplicationAccentColorManager.SystemAccentColorDark3);
 
                 object accentResource = app.Resources["SystemAccentColor"];
-                Assert.IsNotNull(accentResource, "SystemAccentColor resource should be set");
+                Assert.NotNull(accentResource);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyCustomAccent_SetsCorrectBase()
         {
             WpfTestSta.Invoke(static () =>
@@ -87,21 +78,17 @@ namespace Fluence.Wpf.Tests
                 Color customColor = Color.FromRgb(0xFF, 0x88, 0x00);
                 ApplicationAccentColorManager.ApplyCustomAccent(customColor);
 
-                Assert.AreEqual(customColor, ApplicationAccentColorManager.SystemAccentColor,
-                    "SystemAccentColor should match custom color");
+                Assert.Equal(customColor, ApplicationAccentColorManager.SystemAccentColor);
 
-                Assert.AreNotEqual(customColor, ApplicationAccentColorManager.SystemAccentColorLight1,
-                    "Light1 should differ from base");
-                Assert.AreNotEqual(customColor, ApplicationAccentColorManager.SystemAccentColorDark1,
-                    "Dark1 should differ from base");
+                Assert.NotEqual(customColor, ApplicationAccentColorManager.SystemAccentColorLight1);
+                Assert.NotEqual(customColor, ApplicationAccentColorManager.SystemAccentColorDark1);
 
-                Assert.AreNotEqual(ApplicationAccentColorManager.SystemAccentColorLight1,
-                    ApplicationAccentColorManager.SystemAccentColorDark1,
-                    "Light1 and Dark1 should differ");
+                Assert.NotEqual(ApplicationAccentColorManager.SystemAccentColorLight1,
+                    ApplicationAccentColorManager.SystemAccentColorDark1);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyApplicationAccent_RaisesAccentColorChangedOnce()
         {
             WpfTestSta.Invoke(() =>
@@ -124,12 +111,11 @@ namespace Fluence.Wpf.Tests
                     ApplicationAccentColorManager.AccentColorChanged -= OnAccentColorChanged;
                 }
 
-                Assert.AreEqual(1, eventCount,
-                    "Applying the application accent should publish one AccentColorChanged notification.");
+                Assert.Equal(1, eventCount);
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ApplyCustomAccent_RaisesAccentColorChangedOnce()
         {
             WpfTestSta.Invoke(() =>
@@ -152,12 +138,62 @@ namespace Fluence.Wpf.Tests
                     ApplicationAccentColorManager.AccentColorChanged -= OnAccentColorChanged;
                 }
 
-                Assert.AreEqual(1, eventCount,
-                    "Applying a custom accent should publish one AccentColorChanged notification.");
+                Assert.Equal(1, eventCount);
             });
         }
 
-        [TestMethod]
+        [Fact]
+        public void ApplyCustomAccent_PerThemeSeeds_FollowResolvedTheme()
+        {
+            WpfTestSta.Invoke(static () =>
+            {
+                Color lightSeed = Color.FromRgb(0x0F, 0x6C, 0xBD);
+                Color darkSeed = Color.FromRgb(0x47, 0x9E, 0xF5);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
+                ApplicationAccentColorManager.ApplyCustomAccent(lightSeed, darkSeed);
+                Assert.Equal(lightSeed, ApplicationAccentColorManager.SystemAccentColor);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None);
+                Assert.Equal(darkSeed, ApplicationAccentColorManager.SystemAccentColor);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.HighContrast, BackdropType.None);
+                Assert.Equal(darkSeed, ApplicationAccentColorManager.SystemAccentColor);
+
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None);
+                Assert.Equal(lightSeed, ApplicationAccentColorManager.SystemAccentColor);
+            });
+        }
+
+        [Fact]
+        public void ApplyCustomAccent_PerThemeSeeds_RaisesAccentColorChangedOnce()
+        {
+            WpfTestSta.Invoke(() =>
+            {
+                ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: false);
+
+                int eventCount = 0;
+                void OnAccentColorChanged(object? sender, EventArgs e)
+                {
+                    eventCount++;
+                }
+
+                ApplicationAccentColorManager.AccentColorChanged += OnAccentColorChanged;
+                try
+                {
+                    ApplicationAccentColorManager.ApplyCustomAccent(
+                        Color.FromRgb(0x0F, 0x6C, 0xBD), Color.FromRgb(0x47, 0x9E, 0xF5));
+                }
+                finally
+                {
+                    ApplicationAccentColorManager.AccentColorChanged -= OnAccentColorChanged;
+                }
+
+                Assert.Equal(1, eventCount);
+            });
+        }
+
+        [Fact]
         public void ThemeChange_UpdatesAdaptiveAccents()
         {
             WpfTestSta.Invoke(static () =>
@@ -171,13 +207,10 @@ namespace Fluence.Wpf.Tests
                 ApplicationThemeManager.Apply(ApplicationTheme.Light, BackdropType.None, updateAccent: true);
                 Color lightPrimary = ApplicationAccentColorManager.SystemAccentColorPrimary;
 
-                Assert.AreNotEqual(darkPrimary, lightPrimary,
-                    "Primary accent should differ between Dark and Light themes");
+                Assert.NotEqual(darkPrimary, lightPrimary);
 
-                Assert.AreEqual(ApplicationAccentColorManager.SystemAccentColorLight2, darkPrimary,
-                    "Dark theme Primary should use Light2 variant");
-                Assert.AreEqual(ApplicationAccentColorManager.SystemAccentColorDark1, lightPrimary,
-                    "Light theme Primary should use Dark1 variant");
+                Assert.Equal(ApplicationAccentColorManager.SystemAccentColorLight2, darkPrimary);
+                Assert.Equal(ApplicationAccentColorManager.SystemAccentColorDark1, lightPrimary);
             });
         }
 

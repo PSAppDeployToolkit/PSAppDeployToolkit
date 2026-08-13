@@ -38,19 +38,19 @@ namespace Fluence.Wpf.Helpers
         internal static bool GetAppsUseLightTheme()
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.PersonalizeRegistryPath);
-            return key?.GetValue(NativeConstants.AppsUseLightTheme) is not int intValue || intValue != 0;
+            return key?.GetValue(NativeConstants.AppsUseLightTheme) is not int intValue || intValue is not 0;
         }
 
         internal static bool GetSystemUsesLightTheme()
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.PersonalizeRegistryPath);
-            return key?.GetValue(NativeConstants.SystemUsesLightTheme) is not int intValue || intValue != 0;
+            return key?.GetValue(NativeConstants.SystemUsesLightTheme) is not int intValue || intValue is not 0;
         }
 
         internal static bool GetColorPrevalence()
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
-            return key?.GetValue(NativeConstants.ColorPrevalence) is not int intValue || intValue != 0;
+            return key?.GetValue(NativeConstants.ColorPrevalence) is not int intValue || intValue is not 0;
         }
 
         internal static bool TryGetAccentPalette(out Color[]? palette)
@@ -66,7 +66,7 @@ namespace Fluence.Wpf.Helpers
                     byte g = bytes[offset + 1];
                     byte b = bytes[offset + 2];
                     byte a = bytes[offset + 3];
-                    palette[i] = Color.FromArgb(a == 0 ? (byte)255 : a, r, g, b);
+                    palette[i] = Color.FromArgb(a is 0 ? (byte)255 : a, r, g, b);
                 }
                 return true;
             }
@@ -84,7 +84,7 @@ namespace Fluence.Wpf.Helpers
                 byte b = (byte)((color >> 16) & 0xFF);
                 byte g = (byte)((color >> 8) & 0xFF);
                 byte r = (byte)(color & 0xFF);
-                return Color.FromArgb(a == 0 ? (byte)255 : a, r, g, b);
+                return Color.FromArgb(a is 0 ? (byte)255 : a, r, g, b);
             }
             return Color.FromRgb(0x00, 0x78, 0xD4);
         }
@@ -115,7 +115,10 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads DWM AccentColor (ABGR DWORD) used for the active titlebar when ColorPrevalence is on.
         /// </summary>
-        /// <param name="color">The accent color as a <see cref="Color"/> struct. Returns transparent black if the registry value is missing or invalid.</param>
+        /// <param name="color">The decoded accent color, with a zero alpha byte coerced to fully
+        /// opaque (255) so a colorized value never reads back as invisible. Set to
+        /// <see langword="default"/> (transparent black) when the registry value is missing or invalid,
+        /// matching the <see langword="false"/> return.</param>
         internal static bool TryGetDwmAccentColor(out Color color)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
@@ -126,7 +129,7 @@ namespace Fluence.Wpf.Helpers
                 byte b = (byte)((raw >> 16) & 0xFF);
                 byte g = (byte)((raw >> 8) & 0xFF);
                 byte r = (byte)(raw & 0xFF);
-                color = Color.FromArgb(a == 0 ? (byte)255 : a, r, g, b);
+                color = Color.FromArgb(a is 0 ? (byte)255 : a, r, g, b);
                 return true;
             }
             color = default;
@@ -136,7 +139,10 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads DWM AccentColorInactive (ABGR DWORD) for the inactive titlebar.
         /// </summary>
-        /// <param name="color">The accent color as a <see cref="Color"/> struct. Returns transparent black if the registry value is missing or invalid.</param>
+        /// <param name="color">The decoded accent color, with a zero alpha byte coerced to fully
+        /// opaque (255) so a colorized value never reads back as invisible. Set to
+        /// <see langword="default"/> (transparent black) when the registry value is missing or invalid,
+        /// matching the <see langword="false"/> return.</param>
         internal static bool TryGetDwmAccentColorInactive(out Color color)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
@@ -147,7 +153,7 @@ namespace Fluence.Wpf.Helpers
                 byte b = (byte)((raw >> 16) & 0xFF);
                 byte g = (byte)((raw >> 8) & 0xFF);
                 byte r = (byte)(raw & 0xFF);
-                color = Color.FromArgb(a == 0 ? (byte)255 : a, r, g, b);
+                color = Color.FromArgb(a is 0 ? (byte)255 : a, r, g, b);
                 return true;
             }
             color = default;
@@ -157,8 +163,12 @@ namespace Fluence.Wpf.Helpers
         /// <summary>
         /// Reads DWM ColorizationColor (ARGB) and ColorizationColorBalance for Win10 border blending.
         /// </summary>
-        /// <param name="colorizationColor">The colorization color as a <see cref="Color"/> struct. Returns transparent black if the registry value is missing or invalid.</param>
-        /// <param name="balance">The colorization balance as an <see cref="int"/>. Returns 0 if the registry value is missing or invalid.</param>
+        /// <param name="colorizationColor">The decoded colorization color, with a zero alpha byte
+        /// coerced to fully opaque (255) so a colorized value never reads back as invisible. Set to
+        /// <see langword="default"/> (transparent black) when the registry value is missing or invalid,
+        /// matching the <see langword="false"/> return.</param>
+        /// <param name="balance">The colorization balance as an <see cref="int"/>. Set to 0 when the
+        /// registry value is missing or invalid, matching the <see langword="false"/> return.</param>
         internal static bool TryGetColorizationBalance(out Color colorizationColor, out int balance)
         {
             using RegistryKey? key = Registry.CurrentUser.OpenSubKey(NativeConstants.DwmRegistryPath);
@@ -169,7 +179,7 @@ namespace Fluence.Wpf.Helpers
                 byte r = (byte)((raw >> 16) & 0xFF);
                 byte g = (byte)((raw >> 8) & 0xFF);
                 byte b = (byte)(raw & 0xFF);
-                colorizationColor = Color.FromArgb(a == 0 ? (byte)255 : a, r, g, b);
+                colorizationColor = Color.FromArgb(a is 0 ? (byte)255 : a, r, g, b);
                 balance = balanceInt;
                 return true;
             }

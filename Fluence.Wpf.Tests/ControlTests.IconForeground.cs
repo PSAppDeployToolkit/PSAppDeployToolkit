@@ -26,13 +26,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using Fluent = Fluence.Wpf.Controls;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -43,7 +42,7 @@ namespace Fluence.Wpf.Tests
     /// </summary>
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void Button_FontIconIcon_MatchesTextForeground_AcrossStatesAndThemes()
         {
             RunOnStaThread(() =>
@@ -52,10 +51,10 @@ namespace Fluence.Wpf.Tests
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
-                Fluent.Button button = new()
+                Controls.Button button = new()
                 {
                     Content = "Send",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new() { Content = button };
 
@@ -65,31 +64,26 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AssertIconMatchesText(button, "MainContentPresenter",
-                        "Button icon at rest must match the button text foreground.");
+                    AssertIconMatchesText(button, "MainContentPresenter");
 
                     button.Appearance = ControlAppearance.Accent;
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
-                    AssertIconMatchesText(button, "MainContentPresenter",
-                        "Button icon with Appearance=Accent must follow the on-accent text foreground.");
-                    Assert.AreEqual(
+                    AssertIconMatchesText(button, "MainContentPresenter");
+                    Assert.Equal(
                         GetResourceColor("TextOnAccentFillColorPrimaryBrush"),
-                        GetIconForegroundColor(button),
-                        "Accent button icon must use the on-accent primary text color.");
+                        GetIconForegroundColor(button));
 
                     button.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    AssertIconMatchesText(button, "MainContentPresenter",
-                        "Disabled accent button icon must follow the disabled on-accent text foreground.");
+                    AssertIconMatchesText(button, "MainContentPresenter");
                     ContentPresenter? iconPresenter = FindVisualChildByName<ContentPresenter>(button, "IconPresenter");
-                    Assert.IsNotNull(iconPresenter, "Button template should expose IconPresenter.");
-                    Assert.AreEqual(1.0, iconPresenter.Opacity, 0.001,
-                        "Disabled icon must not be double-dimmed; the disabled foreground brush carries the dim level.");
+                    Assert.NotNull(iconPresenter);
+                    Assert.Equal(1.0, iconPresenter.Opacity, 0.001);
 
                     button.IsEnabled = true;
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
-                    Assert.IsTrue(
+                    Assert.True(
                         WaitUntil(window.Dispatcher, 2000, () => IconMatchesText(button, "MainContentPresenter")),
                         "Button icon must keep matching the text foreground after a Light to Dark theme switch.");
                 }
@@ -102,7 +96,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Button_ExplicitIconForeground_LocalValueStillWins()
         {
             RunOnStaThread(static () =>
@@ -110,11 +104,11 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.Button button = new()
+                Controls.Button button = new()
                 {
                     Appearance = ControlAppearance.Accent,
                     Content = "Send",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724", Foreground = Brushes.Red },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724", Foreground = Brushes.Red },
                 };
                 Window window = new() { Content = button };
 
@@ -124,13 +118,11 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(Colors.Red, GetIconForegroundColor(button),
-                        "A consumer-set icon Foreground (local value) must beat the icon-follows-text wiring.");
+                    Assert.Equal(Colors.Red, GetIconForegroundColor(button));
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(Colors.Red, GetIconForegroundColor(button),
-                        "A consumer-set icon Foreground must survive a theme switch.");
+                    Assert.Equal(Colors.Red, GetIconForegroundColor(button));
                 }
                 finally
                 {
@@ -141,7 +133,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void HyperlinkButton_FontIconIcon_MatchesTextForeground_AtRestAndDisabled()
         {
             RunOnStaThread(static () =>
@@ -149,10 +141,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.HyperlinkButton link = new()
+                Controls.HyperlinkButton link = new()
                 {
                     Content = "Learn more",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new() { Content = link };
 
@@ -162,21 +154,17 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AssertIconMatchesText(link, "MainContentPresenter",
-                        "HyperlinkButton icon at rest must match the accent link text foreground.");
-                    Assert.AreEqual(
+                    AssertIconMatchesText(link, "MainContentPresenter");
+                    Assert.Equal(
                         GetResourceColor("AccentTextFillColorPrimaryBrush"),
-                        GetIconForegroundColor(link),
-                        "HyperlinkButton icon at rest must use the accent link text color.");
+                        GetIconForegroundColor(link));
 
                     link.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    AssertIconMatchesText(link, "MainContentPresenter",
-                        "Disabled HyperlinkButton icon must follow the disabled text foreground.");
+                    AssertIconMatchesText(link, "MainContentPresenter");
                     ContentPresenter? iconPresenter = FindVisualChildByName<ContentPresenter>(link, "IconPresenter");
-                    Assert.IsNotNull(iconPresenter, "HyperlinkButton template should expose IconPresenter.");
-                    Assert.AreEqual(1.0, iconPresenter.Opacity, 0.001,
-                        "Disabled icon must not be double-dimmed; the disabled foreground brush carries the dim level.");
+                    Assert.NotNull(iconPresenter);
+                    Assert.Equal(1.0, iconPresenter.Opacity, 0.001);
                 }
                 finally
                 {
@@ -186,7 +174,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void NavigationViewItem_FontIconIcon_MatchesTextForeground_RestSelectedAndDisabled()
         {
             RunOnStaThread(static () =>
@@ -194,10 +182,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.NavigationViewItem item = new()
+                Controls.NavigationViewItem item = new()
                 {
                     Content = "Home",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new()
                 {
@@ -212,22 +200,18 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AssertIconMatchesText(item, "ContentPresenter",
-                        "NavigationViewItem icon at rest must match the item text foreground.");
+                    AssertIconMatchesText(item, "ContentPresenter");
 
                     item.IsSelected = true;
                     DrainDispatcher(window.Dispatcher);
-                    AssertIconMatchesText(item, "ContentPresenter",
-                        "Selected NavigationViewItem icon must match the item text foreground.");
+                    AssertIconMatchesText(item, "ContentPresenter");
 
                     item.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    AssertIconMatchesText(item, "ContentPresenter",
-                        "Disabled NavigationViewItem icon must follow the disabled text foreground.");
-                    Assert.AreEqual(
+                    AssertIconMatchesText(item, "ContentPresenter");
+                    Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
-                        GetIconForegroundColor(item),
-                        "Disabled NavigationViewItem icon must use the disabled text color.");
+                        GetIconForegroundColor(item));
                 }
                 finally
                 {
@@ -237,7 +221,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TabViewItem_FontIconIcon_MatchesTextForeground_UnselectedAndSelected()
         {
             RunOnStaThread(static () =>
@@ -245,13 +229,13 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.TabViewItem iconTab = new()
+                Controls.TabViewItem iconTab = new()
                 {
                     Header = "Details",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
-                Fluent.TabView tabView = new();
-                _ = tabView.Items.Add(new Fluent.TabViewItem { Header = "First" });
+                Controls.TabView tabView = new();
+                _ = tabView.Items.Add(new Controls.TabViewItem { Header = "First" });
                 _ = tabView.Items.Add(iconTab);
                 tabView.SelectedIndex = 0;
                 Window window = new()
@@ -267,21 +251,17 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AssertIconMatchesText(iconTab, "HeaderHost",
-                        "Unselected TabViewItem icon must match the secondary tab header foreground.");
-                    Assert.AreEqual(
+                    AssertIconMatchesText(iconTab, "HeaderHost");
+                    Assert.Equal(
                         GetResourceColor("TextFillColorSecondaryBrush"),
-                        GetIconForegroundColor(iconTab),
-                        "Unselected TabViewItem icon must use the secondary text color.");
+                        GetIconForegroundColor(iconTab));
 
                     iconTab.IsSelected = true;
                     DrainDispatcher(window.Dispatcher);
-                    AssertIconMatchesText(iconTab, "HeaderHost",
-                        "Selected TabViewItem icon must follow the promoted primary header foreground.");
-                    Assert.AreEqual(
+                    AssertIconMatchesText(iconTab, "HeaderHost");
+                    Assert.Equal(
                         GetResourceColor("TextFillColorPrimaryBrush"),
-                        GetIconForegroundColor(iconTab),
-                        "Selected TabViewItem icon must use the primary text color.");
+                        GetIconForegroundColor(iconTab));
                 }
                 finally
                 {
@@ -291,7 +271,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void MenuItem_CustomFontIconIcon_MatchesTextForeground_RestAndDisabled()
         {
             RunOnStaThread(static () =>
@@ -299,10 +279,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.MenuItem menuItem = new()
+                Controls.MenuItem menuItem = new()
                 {
                     Header = "Open",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 Window window = new()
                 {
@@ -317,17 +297,14 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(GetControlForegroundColor(menuItem), GetIconForegroundColor(menuItem),
-                        "MenuItem custom icon at rest must match the header text foreground.");
+                    Assert.Equal(GetControlForegroundColor(menuItem), GetIconForegroundColor(menuItem));
 
                     menuItem.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(GetControlForegroundColor(menuItem), GetIconForegroundColor(menuItem),
-                        "Disabled MenuItem custom icon must follow the disabled header foreground.");
-                    Assert.AreEqual(
+                    Assert.Equal(GetControlForegroundColor(menuItem), GetIconForegroundColor(menuItem));
+                    Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
-                        GetIconForegroundColor(menuItem),
-                        "Disabled MenuItem custom icon must use the disabled text color.");
+                        GetIconForegroundColor(menuItem));
                 }
                 finally
                 {
@@ -337,7 +314,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void InfoBar_CustomFontIconIcon_FollowsTextForeground_NotSeverityColor()
         {
             RunOnStaThread(static () =>
@@ -345,15 +322,15 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.InfoBar custom = new()
+                Controls.InfoBar custom = new()
                 {
                     Title = "Saved",
                     Message = "All changes were written.",
                     Severity = InfoBarSeverity.Error,
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                     IsOpen = true,
                 };
-                Fluent.InfoBar standard = new()
+                Controls.InfoBar standard = new()
                 {
                     Title = "Failure",
                     Message = "Something broke.",
@@ -377,25 +354,21 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     TextBlock? title = FindVisualChildByName<TextBlock>(custom, "TitleTextBlock");
-                    Assert.IsNotNull(title, "InfoBar template should expose TitleTextBlock.");
+                    Assert.NotNull(title);
                     SolidColorBrush? titleBrush = title.Foreground as SolidColorBrush;
-                    Assert.IsNotNull(titleBrush, "InfoBar title foreground should be a SolidColorBrush.");
-                    Assert.AreEqual(titleBrush.Color, GetIconForegroundColor(custom),
-                        "InfoBar custom icon must follow the InfoBar text foreground.");
-                    Assert.AreNotEqual(GetResourceColor("SystemFillColorCriticalBrush"), GetIconForegroundColor(custom),
-                        "InfoBar custom icon must not inherit the semantic severity color.");
+                    Assert.NotNull(titleBrush);
+                    Assert.Equal(titleBrush.Color, GetIconForegroundColor(custom));
+                    Assert.NotEqual(GetResourceColor("SystemFillColorCriticalBrush"), GetIconForegroundColor(custom));
 
                     custom.Foreground = Brushes.DarkOrchid;
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(Colors.DarkOrchid, GetIconForegroundColor(custom),
-                        "InfoBar custom icon must track a consumer-set control Foreground exactly like the title text.");
+                    Assert.Equal(Colors.DarkOrchid, GetIconForegroundColor(custom));
 
                     TextBlock? defaultIcon = FindVisualChildByName<TextBlock>(standard, "DefaultIcon");
-                    Assert.IsNotNull(defaultIcon, "InfoBar template should expose DefaultIcon.");
+                    Assert.NotNull(defaultIcon);
                     SolidColorBrush? defaultIconBrush = defaultIcon.Foreground as SolidColorBrush;
-                    Assert.IsNotNull(defaultIconBrush, "InfoBar default icon foreground should be a SolidColorBrush.");
-                    Assert.AreEqual(GetResourceColor("SystemFillColorCriticalBrush"), defaultIconBrush.Color,
-                        "The default severity icon must keep its semantic severity color.");
+                    Assert.NotNull(defaultIconBrush);
+                    Assert.Equal(GetResourceColor("SystemFillColorCriticalBrush"), defaultIconBrush.Color);
                 }
                 finally
                 {
@@ -405,7 +378,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void Card_FontIconIcon_MatchesHeaderForeground_RestAndDisabled()
         {
             RunOnStaThread(static () =>
@@ -413,10 +386,10 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.Card card = new()
+                Controls.Card card = new()
                 {
                     Header = "Storage",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                     Content = "Body",
                 };
                 Window window = new()
@@ -432,17 +405,14 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    AssertIconMatchesText(card, "HeaderPresenter",
-                        "Card icon at rest must match the card header foreground.");
+                    AssertIconMatchesText(card, "HeaderPresenter");
 
                     card.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    AssertIconMatchesText(card, "HeaderPresenter",
-                        "Disabled Card icon must follow the disabled header foreground.");
-                    Assert.AreEqual(
+                    AssertIconMatchesText(card, "HeaderPresenter");
+                    Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
-                        GetIconForegroundColor(card),
-                        "Disabled Card icon must use the disabled text color.");
+                        GetIconForegroundColor(card));
                 }
                 finally
                 {
@@ -452,7 +422,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ComboBox_FontIconIcon_MatchesTextForeground_RestAndDisabled()
         {
             RunOnStaThread(static () =>
@@ -460,9 +430,9 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.ComboBox combo = new()
+                Controls.ComboBox combo = new()
                 {
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                 };
                 _ = combo.Items.Add("First");
                 combo.SelectedIndex = 0;
@@ -479,17 +449,14 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(GetControlForegroundColor(combo), GetIconForegroundColor(combo),
-                        "ComboBox icon at rest must match the selection text foreground.");
+                    Assert.Equal(GetControlForegroundColor(combo), GetIconForegroundColor(combo));
 
                     combo.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(GetControlForegroundColor(combo), GetIconForegroundColor(combo),
-                        "Disabled ComboBox icon must follow the disabled selection foreground.");
+                    Assert.Equal(GetControlForegroundColor(combo), GetIconForegroundColor(combo));
                     ContentPresenter? leftIcon = FindVisualChildByName<ContentPresenter>(combo, "LeftIcon");
-                    Assert.IsNotNull(leftIcon, "ComboBox template should expose LeftIcon.");
-                    Assert.AreEqual(1.0, leftIcon.Opacity, 0.001,
-                        "Disabled icon must not be double-dimmed; the disabled foreground brush carries the dim level.");
+                    Assert.NotNull(leftIcon);
+                    Assert.Equal(1.0, leftIcon.Opacity, 0.001);
                 }
                 finally
                 {
@@ -499,7 +466,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void TextBox_FontIconIcon_MatchesTextForeground_RestAndDisabled()
         {
             RunOnStaThread(static () =>
@@ -507,9 +474,9 @@ namespace Fluence.Wpf.Tests
                 Application? application = EnsureApplication();
                 ResourceDictionary? genericDictionary = MergeGenericDictionary(application);
 
-                Fluent.TextBox textBox = new()
+                Controls.TextBox textBox = new()
                 {
-                    Icon = new Fluent.FontIcon { Glyph = "\uE724" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE724" },
                     IconPlacement = ElementPlacement.Left,
                     Text = "Value",
                 };
@@ -526,17 +493,14 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreEqual(GetControlForegroundColor(textBox), GetIconForegroundColor(textBox),
-                        "TextBox icon at rest must match the input text foreground.");
+                    Assert.Equal(GetControlForegroundColor(textBox), GetIconForegroundColor(textBox));
 
                     textBox.IsEnabled = false;
                     DrainDispatcher(window.Dispatcher);
-                    Assert.AreEqual(GetControlForegroundColor(textBox), GetIconForegroundColor(textBox),
-                        "Disabled TextBox icon must follow the disabled input foreground.");
-                    Assert.AreEqual(
+                    Assert.Equal(GetControlForegroundColor(textBox), GetIconForegroundColor(textBox));
+                    Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
-                        GetIconForegroundColor(textBox),
-                        "Disabled TextBox icon must use the disabled text color.");
+                        GetIconForegroundColor(textBox));
                 }
                 finally
                 {
@@ -546,7 +510,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AppBarButton_FontIconIcon_MatchesTextForeground_SecondaryAndCompact()
         {
             RunOnStaThread(() =>
@@ -556,10 +520,10 @@ namespace Fluence.Wpf.Tests
                 ApplicationAccentColorManager.ApplyCustomAccent(Color.FromRgb(0x00, 0x78, 0xD4));
 
                 // Secondary / overflow style: icon column + label column side by side.
-                Fluent.AppBarButton secondary = new()
+                Controls.AppBarButton secondary = new()
                 {
                     Label = "Share",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE72A" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE72A" },
                     Style = (Style)Application.Current.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle"),
                 };
                 Window secondaryWindow = new()
@@ -576,26 +540,22 @@ namespace Fluence.Wpf.Tests
                     secondaryWindow.UpdateLayout();
 
                     // At rest: icon Foreground must match the control Foreground (both bound via TemplateBinding Foreground).
-                    Assert.AreEqual(
+                    Assert.Equal(
                         GetControlForegroundColor(secondary),
-                        GetIconForegroundColor(secondary),
-                        "Secondary AppBarButton icon at rest must match the control Foreground (= label foreground).");
+                        GetIconForegroundColor(secondary));
 
                     // Disabled: icon tracks disabled foreground; icon opacity stays 1.0 (no double-dim).
                     secondary.IsEnabled = false;
                     DrainDispatcher(secondaryWindow.Dispatcher);
-                    Assert.AreEqual(
+                    Assert.Equal(
                         GetControlForegroundColor(secondary),
-                        GetIconForegroundColor(secondary),
-                        "Disabled secondary AppBarButton icon must follow the disabled control Foreground.");
-                    Assert.AreEqual(
+                        GetIconForegroundColor(secondary));
+                    Assert.Equal(
                         GetResourceColor("TextFillColorDisabledBrush"),
-                        GetIconForegroundColor(secondary),
-                        "Disabled secondary AppBarButton icon must use the disabled text color.");
+                        GetIconForegroundColor(secondary));
                     ContentPresenter? secondaryIconPresenter = FindVisualChildByName<ContentPresenter>(secondary, "IconPresenter");
-                    Assert.IsNotNull(secondaryIconPresenter, "Secondary AppBarButton template should expose IconPresenter.");
-                    Assert.AreEqual(1.0, secondaryIconPresenter.Opacity, 0.001,
-                        "Disabled secondary AppBarButton icon must not be double-dimmed; the disabled foreground brush carries the dim level.");
+                    Assert.NotNull(secondaryIconPresenter);
+                    Assert.Equal(1.0, secondaryIconPresenter.Opacity, 0.001);
                 }
                 finally
                 {
@@ -603,10 +563,10 @@ namespace Fluence.Wpf.Tests
                 }
 
                 // Compact / primary style (implicit style, no key) with Light->Dark switch.
-                Fluent.AppBarButton compact = new()
+                Controls.AppBarButton compact = new()
                 {
                     Label = "Copy",
-                    Icon = new Fluent.FontIcon { Glyph = "\uE72A" },
+                    Icon = new Controls.FontIcon { Glyph = "\uE72A" },
                 };
                 Window compactWindow = new()
                 {
@@ -621,14 +581,13 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(compactWindow.Dispatcher);
                     compactWindow.UpdateLayout();
 
-                    Assert.AreEqual(
+                    Assert.Equal(
                         GetControlForegroundColor(compact),
-                        GetIconForegroundColor(compact),
-                        "Compact AppBarButton icon at rest must match the control Foreground.");
+                        GetIconForegroundColor(compact));
 
                     // Switch to Dark theme; icon must re-resolve to the new Foreground brush value.
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark, BackdropType.None, updateAccent: true);
-                    Assert.IsTrue(
+                    Assert.True(
                         WaitUntil(compactWindow.Dispatcher, 2000, () =>
                             GetControlForegroundColor(compact) == GetIconForegroundColor(compact)),
                         "Compact AppBarButton icon must keep matching the control Foreground after a Light to Dark theme switch.");
@@ -645,32 +604,32 @@ namespace Fluence.Wpf.Tests
         private static Color GetControlForegroundColor(Control control)
         {
             SolidColorBrush? brush = control.Foreground as SolidColorBrush;
-            Assert.IsNotNull(brush, "The control Foreground should be a SolidColorBrush.");
+            Assert.NotNull(brush);
             return brush.Color;
         }
 
         private static Color GetResourceColor(string brushKey)
         {
             SolidColorBrush? brush = Application.Current.TryFindResource(brushKey) as SolidColorBrush;
-            Assert.IsNotNull(brush, "Resource should resolve to a SolidColorBrush: " + brushKey);
+            Assert.NotNull(brush);
             return brush.Color;
         }
 
         private static Color GetIconForegroundColor(DependencyObject root)
         {
-            Fluent.FontIcon? icon = FindVisualChildren<Fluent.FontIcon>(root).FirstOrDefault();
-            Assert.IsNotNull(icon, "A FontIcon icon should be present in the visual tree.");
+            Controls.FontIcon? icon = FindVisualChildren<Controls.FontIcon>(root).FirstOrDefault();
+            Assert.NotNull(icon);
             SolidColorBrush? brush = icon.Foreground as SolidColorBrush;
-            Assert.IsNotNull(brush, "The FontIcon Foreground should be a SolidColorBrush.");
+            Assert.NotNull(brush);
             return brush.Color;
         }
 
         private static Color GetPresenterTextColor(DependencyObject root, string presenterName)
         {
             ContentPresenter? presenter = FindVisualChildByName<ContentPresenter>(root, presenterName);
-            Assert.IsNotNull(presenter, "The template should expose the text presenter: " + presenterName);
+            Assert.NotNull(presenter);
             SolidColorBrush? brush = TextElement.GetForeground(presenter) as SolidColorBrush;
-            Assert.IsNotNull(brush, "The text presenter foreground should be a SolidColorBrush.");
+            Assert.NotNull(brush);
             return brush.Color;
         }
 
@@ -679,9 +638,9 @@ namespace Fluence.Wpf.Tests
             return GetIconForegroundColor(root) == GetPresenterTextColor(root, presenterName);
         }
 
-        private static void AssertIconMatchesText(DependencyObject root, string presenterName, string message)
+        private static void AssertIconMatchesText(DependencyObject root, string presenterName)
         {
-            Assert.AreEqual(GetPresenterTextColor(root, presenterName), GetIconForegroundColor(root), message);
+            Assert.Equal(GetPresenterTextColor(root, presenterName), GetIconForegroundColor(root));
         }
     }
 }

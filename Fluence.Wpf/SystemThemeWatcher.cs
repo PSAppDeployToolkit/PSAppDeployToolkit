@@ -234,7 +234,7 @@ namespace Fluence.Wpf
             {
                 // Settings messages arrive on the HWND hook path. Re-enter through the
                 // Dispatcher so ResourceDictionary mutation stays on the WPF UI thread.
-                if (ApplicationThemeManager.CurrentTheme != ApplicationTheme.Auto)
+                if (ApplicationThemeManager.CurrentTheme is not ApplicationTheme.Auto)
                 {
                     ApplicationAccentColorManager.RefreshAccent();
                 }

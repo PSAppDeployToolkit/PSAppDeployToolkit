@@ -115,7 +115,7 @@ namespace Fluence.Wpf.Controls
         /// <see cref="WindowChrome.GlassFrameThickness"/>.</returns>
         internal static Thickness GetGlassFrameThickness(BackdropType backdrop, bool hasShadow)
         {
-            return backdrop != BackdropType.None || hasShadow
+            return backdrop is not BackdropType.None || hasShadow
                 ? new Thickness(-1)
                 : new Thickness(0.00001);
         }
@@ -139,9 +139,9 @@ namespace Fluence.Wpf.Controls
         /// </returns>
         internal static Thickness GetResizeBorderThickness(WindowState windowState, ResizeMode resizeMode)
         {
-            return windowState == WindowState.Maximized
-                   || resizeMode == ResizeMode.NoResize
-                   || resizeMode == ResizeMode.CanMinimize
+            return windowState is WindowState.Maximized
+                || resizeMode is ResizeMode.NoResize
+                or ResizeMode.CanMinimize
                 ? new Thickness(0)
                 : new Thickness(4);
         }
@@ -191,7 +191,7 @@ namespace Fluence.Wpf.Controls
             WindowCapabilities capabilities,
             Color accentColor)
         {
-            Thickness templateBorderThickness = windowState == WindowState.Maximized
+            Thickness templateBorderThickness = windowState is WindowState.Maximized
                 ? new Thickness(0)
                 : new Thickness(2);
 
@@ -301,10 +301,10 @@ namespace Fluence.Wpf.Controls
             Color fallbackBackgroundColor)
         {
             BackdropType effectiveBackdrop = ResolveEffectiveBackdrop(requestedBackdrop, capabilities);
-            bool isDark = resolvedTheme == ApplicationTheme.Dark;
+            bool isDark = resolvedTheme is ApplicationTheme.Dark;
 
             // None path: solid background, default caption color, explicit DWMSBT_NONE on 22H2+.
-            if (effectiveBackdrop == BackdropType.None)
+            if (effectiveBackdrop is BackdropType.None)
             {
                 int? clearedSystemBackdrop = capabilities.SupportsSystemBackdropType
                     ? NativeConstants.DWMSBT_NONE
@@ -321,7 +321,7 @@ namespace Fluence.Wpf.Controls
             }
 
             // Mica on pre-22H2 Win11: legacy DWMWA_MICA_EFFECT; no DWMWA_SYSTEMBACKDROP_TYPE.
-            if (effectiveBackdrop == BackdropType.Mica
+            if (effectiveBackdrop is BackdropType.Mica
                 && !capabilities.SupportsSystemBackdropType
                 && capabilities.SupportsMicaEffect)
             {

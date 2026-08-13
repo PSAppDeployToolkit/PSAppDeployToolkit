@@ -3,20 +3,21 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fluence="http://schemas.fluencewpf.com"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="clr-namespace:Fluence.Wpf.Controls;assembly=Fluence.Wpf"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     d:DesignHeight="900"
     d:DesignWidth="980"
     mc:Ignorable="d">
-    <ui:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
+    <fluence:SmoothScrollViewer Style="{StaticResource GalleryPageScrollViewerStyle}">
         <StackPanel Style="{StaticResource GalleryPageContentStackStyle}">
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="Colors" />
             <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="Use Fluence theme brushes for text, fills, strokes, backgrounds, semantic states, and high contrast mappings." />
 
-            <ui:Border
+            <fluence:Border
                 x:Name="CodeSampleCard"
-                Margin="0,0,0,20"
-                Padding="16"
+                Margin="{DynamicResource DemoCodeCardBottomGapMargin}"
+                Padding="{DynamicResource DemoSampleCardPadding}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -28,29 +29,98 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock
                         x:Name="CodeSampleText"
-                        VerticalAlignment="Center"
-                        FontFamily="Cascadia Mono, Consolas"
-                        FontSize="13"
-                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                        Text="&lt;TextBlock Foreground=&quot;{DynamicResource TextFillColorPrimaryBrush}&quot; /&gt;"
-                        TextWrapping="Wrap" />
-                    <ui:Button
+                        Style="{StaticResource DemoCodeSampleTextStyle}"
+                        Text="&lt;TextBlock Foreground=&quot;{DynamicResource TextFillColorPrimaryBrush}&quot; /&gt;" />
+                    <fluence:Button
                         x:Name="CopyCodeSampleButton"
                         Grid.Column="1"
-                        MinWidth="32"
-                        Margin="12,0,0,0"
-                        Padding="8,4"
+                        MinWidth="{DynamicResource DemoCopyButtonMinWidth}"
+                        Margin="{DynamicResource DemoCodeCopyButtonGapMargin}"
+                        Padding="{DynamicResource DemoSourceCopyButtonPadding}"
                         Appearance="Subtle"
                         Click="CopyCodeSampleButton_Click"
                         ToolTip="Copy sample">
-                        <ui:Button.Icon>
-                            <ui:FontIcon Glyph="&#xE8C8;" IconFontSize="14" />
-                        </ui:Button.Icon>
-                    </ui:Button>
+                        <fluence:Button.Icon>
+                            <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="14" />
+                        </fluence:Button.Icon>
+                    </fluence:Button>
                 </Grid>
-            </ui:Border>
+            </fluence:Border>
 
-            <TabControl x:Name="ColorSectionTabs" Margin="0,12,0,0" />
+            <TabControl x:Name="ColorSectionTabs" Margin="{DynamicResource DemoMediumTopGapMargin}" />
+
+            <TextBlock
+                Margin="{DynamicResource DemoLargeTopGapMargin}"
+                Style="{StaticResource SectionHeaderStyle}"
+                Text="Theme dictionaries" />
+            <TextBlock Style="{StaticResource SectionDescriptionStyle}" Text="ThemeDictionary supplies per-theme values that swap automatically on theme changes, and ThemeResource references theme-reactive tokens, matching WinUI 3 markup. Themes without an entry (here HighContrast) fall back to the Default table." />
+
+            <fluence:Border
+                Margin="{DynamicResource DemoCodeCardBottomGapMargin}"
+                Padding="{DynamicResource DemoSampleCardPadding}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <fluence:ThemeDictionary>
+                            <fluence:ThemeDictionary.ThemeDictionaries>
+                                <fluence:ThemeResourceDictionary ThemeKey="Default">
+                                    <SolidColorBrush x:Key="SampleBackgroundBrush" Color="#EEEEEE" />
+                                    <SolidColorBrush x:Key="SampleTextBrush" Color="#333333" />
+                                    <sys:String x:Key="SampleThemeString">Light theme</sys:String>
+                                </fluence:ThemeResourceDictionary>
+                                <fluence:ThemeResourceDictionary ThemeKey="Dark">
+                                    <SolidColorBrush x:Key="SampleBackgroundBrush" Color="#333333" />
+                                    <SolidColorBrush x:Key="SampleTextBrush" Color="#EEEEEE" />
+                                    <sys:String x:Key="SampleThemeString">Dark theme</sys:String>
+                                </fluence:ThemeResourceDictionary>
+                            </fluence:ThemeDictionary.ThemeDictionaries>
+                        </fluence:ThemeDictionary>
+                    </StackPanel.Resources>
+                    <fluence:Border
+                        Padding="{DynamicResource DemoSampleInnerCardPadding}"
+                        Background="{DynamicResource SampleBackgroundBrush}"
+                        CornerRadius="{DynamicResource ControlCornerRadius}">
+                        <TextBlock Foreground="{DynamicResource SampleTextBrush}" Text="{DynamicResource SampleThemeString}" />
+                    </fluence:Border>
+                    <TextBlock
+                        Margin="{DynamicResource DemoTextTopGapMargin}"
+                        Foreground="{fluence:ThemeResource TextFillColorSecondaryBrush}"
+                        Text="This caption uses ThemeResource against the canonical secondary text token, so it stays readable in every theme including high contrast."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </fluence:Border>
+
+            <fluence:Border
+                Padding="{DynamicResource DemoSampleCardPadding}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource OverlayCornerRadius}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="ThemeDictionarySampleText" Style="{StaticResource DemoCodeSampleTextStyle}" />
+                    <fluence:Button
+                        x:Name="CopyThemeDictionarySampleButton"
+                        Grid.Column="1"
+                        MinWidth="{DynamicResource DemoCopyButtonMinWidth}"
+                        Margin="{DynamicResource DemoCodeCopyButtonGapMargin}"
+                        Padding="{DynamicResource DemoSourceCopyButtonPadding}"
+                        VerticalAlignment="Top"
+                        Appearance="Subtle"
+                        Click="CopyThemeDictionarySampleButton_Click"
+                        ToolTip="Copy sample">
+                        <fluence:Button.Icon>
+                            <fluence:FontIcon Glyph="&#xE8C8;" IconFontSize="14" />
+                        </fluence:Button.Icon>
+                    </fluence:Button>
+                </Grid>
+            </fluence:Border>
         </StackPanel>
-    </ui:SmoothScrollViewer>
+    </fluence:SmoothScrollViewer>
 </UserControl>

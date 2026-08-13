@@ -26,7 +26,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,6 +35,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -47,7 +47,7 @@ namespace Fluence.Wpf.Tests
     /// </summary>
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void DatePicker_DefaultStyle_AppliesTemplateParts()
         {
             RunOnStaThread(static () =>
@@ -56,7 +56,7 @@ namespace Fluence.Wpf.Tests
                 _ = MergeGenericDictionary(app);
 
                 Style? style = app?.TryFindResource(typeof(Controls.DatePicker)) as Style;
-                Assert.IsNotNull(style, "A default Style must be registered for Fluence.Wpf.Controls.DatePicker.");
+                Assert.NotNull(style);
 
                 Window window = new() { Width = 500, Height = 400 };
                 Controls.DatePicker picker = new();
@@ -69,7 +69,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
 
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
@@ -79,19 +79,17 @@ namespace Fluence.Wpf.Tests
                     ButtonBase? acceptButton = template.FindName("PART_AcceptButton", picker) as ButtonBase;
                     ButtonBase? cancelButton = template.FindName("PART_CancelButton", picker) as ButtonBase;
 
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be a ButtonBase so the field reads as a button.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be a Selector hosting the day column.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be a Selector hosting the month column.");
-                    Assert.IsNotNull(yearList, "PART_YearList must be a Selector hosting the year column.");
-                    Assert.IsNotNull(acceptButton, "PART_AcceptButton must be present in the template.");
-                    Assert.IsNotNull(cancelButton, "PART_CancelButton must be present in the template.");
-                    _ = Assert.IsInstanceOfType<Controls.ListBox>(dayList,
-                        "The default template should present the day column through the Fluence ListBox.");
-                    _ = Assert.IsInstanceOfType<Controls.Button>(flyoutButton,
-                        "The default template should render the field through the Fluence Button.");
-                    Assert.IsFalse(popup.StaysOpen, "The selector flyout must be light-dismiss (StaysOpen=false).");
-                    Assert.IsTrue(popup.AllowsTransparency, "The selector flyout must allow transparency for the rounded surface.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
+                    Assert.NotNull(yearList);
+                    Assert.NotNull(acceptButton);
+                    Assert.NotNull(cancelButton);
+                    _ = Assert.IsAssignableFrom<Controls.ListBox>(dayList);
+                    _ = Assert.IsAssignableFrom<Controls.Button>(flyoutButton);
+                    Assert.False(popup.StaysOpen, "The selector flyout must be light-dismiss (StaysOpen=false).");
+                    Assert.True(popup.AllowsTransparency, "The selector flyout must allow transparency for the rounded surface.");
                 }
                 finally
                 {
@@ -100,7 +98,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_SelectedDate_UpdatesFieldSegmentsAndPlaceholder()
         {
             RunOnStaThread(static () =>
@@ -119,7 +117,7 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
 
                     TextBlock? first = template.FindName("FirstSegmentText", picker) as TextBlock;
                     TextBlock? second = template.FindName("SecondSegmentText", picker) as TextBlock;
@@ -127,26 +125,22 @@ namespace Fluence.Wpf.Tests
                     TextBlock? placeholder = template.FindName("PlaceholderTextBlock", picker) as TextBlock;
                     FrameworkElement? segmentsHost = template.FindName("SegmentsHost", picker) as FrameworkElement;
 
-                    Assert.IsNotNull(first, "FirstSegmentText must be present in the default template.");
-                    Assert.IsNotNull(second, "SecondSegmentText must be present in the default template.");
-                    Assert.IsNotNull(third, "ThirdSegmentText must be present in the default template.");
-                    Assert.IsNotNull(placeholder, "PlaceholderTextBlock must be present in the default template.");
-                    Assert.IsNotNull(segmentsHost, "SegmentsHost must be present in the default template.");
+                    Assert.NotNull(first);
+                    Assert.NotNull(second);
+                    Assert.NotNull(third);
+                    Assert.NotNull(placeholder);
+                    Assert.NotNull(segmentsHost);
 
-                    Assert.AreEqual(Visibility.Visible, placeholder.Visibility,
-                        "The placeholder must be visible while SelectedDate is null.");
-                    Assert.AreEqual(Visibility.Collapsed, segmentsHost.Visibility,
-                        "The segment row must be collapsed while SelectedDate is null.");
-                    Assert.AreEqual("Pick a date", placeholder.Text, "PlaceholderText must flow into the placeholder text block.");
+                    Assert.Equal(Visibility.Visible, placeholder.Visibility);
+                    Assert.Equal(Visibility.Collapsed, segmentsHost.Visibility);
+                    Assert.Equal("Pick a date", placeholder.Text, StringComparer.Ordinal);
 
                     DateTime date = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = date;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(Visibility.Collapsed, placeholder.Visibility,
-                        "The placeholder must collapse once a date is selected.");
-                    Assert.AreEqual(Visibility.Visible, segmentsHost.Visibility,
-                        "The segment row must show once a date is selected.");
+                    Assert.Equal(Visibility.Collapsed, placeholder.Visibility);
+                    Assert.Equal(Visibility.Visible, segmentsHost.Visibility);
 
                     CultureInfo culture = CultureInfo.CurrentCulture;
                     List<string> expected =
@@ -156,8 +150,7 @@ namespace Fluence.Wpf.Tests
                         date.Year.ToString(culture),
                     ];
                     List<string> actual = [first.Text, second.Text, third.Text];
-                    CollectionAssert.AreEquivalent(expected, actual,
-                        "The three segments must show the day, culture month name, and year (in culture short-date order).");
+                    Assert.Equivalent(expected, actual);
                 }
                 finally
                 {
@@ -166,7 +159,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_FieldClick_OpensPopupAndPopulatesColumns()
         {
             RunOnStaThread(() =>
@@ -185,43 +178,42 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     Selector? dayList = template.FindName("PART_DayList", picker) as Selector;
                     Selector? monthList = template.FindName("PART_MonthList", picker) as Selector;
                     Selector? yearList = template.FindName("PART_YearList", picker) as Selector;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be present in the template.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be present in the template.");
-                    Assert.IsNotNull(yearList, "PART_YearList must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
+                    Assert.NotNull(yearList);
 
                     picker.SelectedDate = new DateTime(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "Clicking the field must open the selector flyout.");
 
                     // The open reveal (slide down from Y=-8 with a fade) must exist in the
                     // template and settle at rest once the 167ms storyboard completes.
                     TranslateTransform? translate =
                         template.FindName("FlyoutSurfaceTranslate", picker) as TranslateTransform;
-                    Assert.IsNotNull(translate, "The DatePicker template must expose the FlyoutSurfaceTranslate reveal transform.");
+                    Assert.NotNull(translate);
                     Border? surface = template.FindName("FlyoutSurface", picker) as Border;
-                    Assert.IsNotNull(surface, "The DatePicker template must expose the FlyoutSurface element.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    Assert.NotNull(surface);
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                             () => Math.Abs(translate.Y) < 0.001 && surface.Opacity >= 1.0),
                         "The flyout reveal must settle at Y=0 and full opacity.");
 
-                    Assert.AreEqual(12, monthList.Items.Count, "The month column must offer the twelve culture month names.");
-                    Assert.AreEqual(31, dayList.Items.Count, "The day column must offer 31 days for May.");
-                    Assert.AreEqual(picker.MaxYear - picker.MinYear + 1, yearList.Items.Count,
-                        "The year column must span MinYear..MaxYear inclusive.");
-                    Assert.AreEqual(4, monthList.SelectedIndex, "May must be preselected in the month column.");
-                    Assert.AreEqual(16, dayList.SelectedIndex, "Day 17 must be preselected in the day column.");
-                    Assert.AreEqual(2024 - picker.MinYear, yearList.SelectedIndex, "2024 must be preselected in the year column.");
+                    Assert.Equal(12, monthList.Items.Count);
+                    Assert.Equal(31, dayList.Items.Count);
+                    Assert.Equal(picker.MaxYear - picker.MinYear + 1, yearList.Items.Count);
+                    Assert.Equal(4, monthList.SelectedIndex);
+                    Assert.Equal(16, dayList.SelectedIndex);
+                    Assert.Equal(2024 - picker.MinYear, yearList.SelectedIndex);
                 }
                 finally
                 {
@@ -230,7 +222,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_Accept_CommitsSelectionAndRaisesSelectedDateChanged()
         {
             RunOnStaThread(() =>
@@ -249,26 +241,26 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     Selector? dayList = template.FindName("PART_DayList", picker) as Selector;
                     Selector? monthList = template.FindName("PART_MonthList", picker) as Selector;
                     Selector? yearList = template.FindName("PART_YearList", picker) as Selector;
                     ButtonBase? acceptButton = template.FindName("PART_AcceptButton", picker) as ButtonBase;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be present in the template.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be present in the template.");
-                    Assert.IsNotNull(yearList, "PART_YearList must be present in the template.");
-                    Assert.IsNotNull(acceptButton, "PART_AcceptButton must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
+                    Assert.NotNull(yearList);
+                    Assert.NotNull(acceptButton);
 
                     DateTime oldDate = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = oldDate;
                     DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The selector flyout must open before the accept scenario.");
 
                     DatePickerSelectedValueChangedEventArgs? captured = null;
@@ -283,11 +275,11 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
 
                     DateTime expected = new(2025, 1, 10, 0, 0, 0, DateTimeKind.Unspecified);
-                    Assert.AreEqual(expected, picker.SelectedDate, "Accept must commit the three column values into SelectedDate.");
-                    Assert.IsNotNull(captured, "Accept must raise SelectedDateChanged.");
-                    Assert.AreEqual(oldDate, captured.OldDate, "OldDate must carry the previously selected date.");
-                    Assert.AreEqual(expected, captured.NewDate, "NewDate must carry the committed date.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.Equal(expected, picker.SelectedDate);
+                    Assert.NotNull(captured);
+                    Assert.Equal(oldDate, captured.OldDate);
+                    Assert.Equal(expected, captured.NewDate);
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
                         "Accept must close the selector flyout.");
                 }
                 finally
@@ -297,7 +289,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_Cancel_RevertsPendingSelection()
         {
             RunOnStaThread(() =>
@@ -316,24 +308,24 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     Selector? dayList = template.FindName("PART_DayList", picker) as Selector;
                     Selector? monthList = template.FindName("PART_MonthList", picker) as Selector;
                     ButtonBase? cancelButton = template.FindName("PART_CancelButton", picker) as ButtonBase;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be present in the template.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be present in the template.");
-                    Assert.IsNotNull(cancelButton, "PART_CancelButton must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
+                    Assert.NotNull(cancelButton);
 
                     DateTime original = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = original;
                     DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The selector flyout must open before the cancel scenario.");
 
                     bool raised = false;
@@ -346,9 +338,9 @@ namespace Fluence.Wpf.Tests
                     RaiseButtonClick(cancelButton);
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(original, picker.SelectedDate, "Cancel must leave SelectedDate unchanged.");
-                    Assert.IsFalse(raised, "Cancel must not raise SelectedDateChanged.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.Equal(original, picker.SelectedDate);
+                    Assert.False(raised, "Cancel must not raise SelectedDateChanged.");
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
                         "Cancel must close the selector flyout.");
                 }
                 finally
@@ -358,7 +350,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_DayColumn_AdjustsToMonthLength()
         {
             RunOnStaThread(() =>
@@ -377,38 +369,38 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     Selector? dayList = template.FindName("PART_DayList", picker) as Selector;
                     Selector? monthList = template.FindName("PART_MonthList", picker) as Selector;
                     Selector? yearList = template.FindName("PART_YearList", picker) as Selector;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be present in the template.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be present in the template.");
-                    Assert.IsNotNull(yearList, "PART_YearList must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
+                    Assert.NotNull(yearList);
 
                     picker.SelectedDate = new DateTime(2023, 1, 31, 0, 0, 0, DateTimeKind.Unspecified);
                     DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The selector flyout must open before the day-count scenario.");
 
-                    Assert.AreEqual(31, dayList.Items.Count, "January must offer 31 days.");
-                    Assert.AreEqual(30, dayList.SelectedIndex, "Day 31 must be preselected.");
+                    Assert.Equal(31, dayList.Items.Count);
+                    Assert.Equal(30, dayList.SelectedIndex);
 
                     monthList.SelectedIndex = 1;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(28, dayList.Items.Count, "February 2023 must shrink the day column to 28 days.");
-                    Assert.AreEqual(27, dayList.SelectedIndex, "The pending day must clamp to 28 when February is chosen.");
+                    Assert.Equal(28, dayList.Items.Count);
+                    Assert.Equal(27, dayList.SelectedIndex);
 
                     yearList.SelectedIndex = 2024 - picker.MinYear;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(29, dayList.Items.Count, "February 2024 (leap year) must grow the day column to 29 days.");
+                    Assert.Equal(29, dayList.Items.Count);
                 }
                 finally
                 {
@@ -417,7 +409,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_AutomationPeer_ReportsNameFromDateOrPlaceholder()
         {
             RunOnStaThread(static () =>
@@ -436,21 +428,17 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     AutomationPeer? peer = UIElementAutomationPeer.CreatePeerForElement(picker);
-                    Assert.IsNotNull(peer, "DatePicker must create an automation peer.");
-                    _ = Assert.IsInstanceOfType<Automation.DatePickerAutomationPeer>(peer,
-                        "DatePicker must expose the DatePickerAutomationPeer.");
-                    Assert.AreEqual("DatePicker", peer.GetClassName(), "The peer must report the DatePicker class name.");
-                    Assert.AreEqual(AutomationControlType.Group, peer.GetAutomationControlType(),
-                        "The peer must report the Group control type.");
-                    Assert.AreEqual("Pick a date", peer.GetName(),
-                        "The peer name must fall back to PlaceholderText while no date is selected.");
+                    Assert.NotNull(peer);
+                    _ = Assert.IsAssignableFrom<Automation.DatePickerAutomationPeer>(peer);
+                    Assert.Equal("DatePicker", peer.GetClassName(), StringComparer.Ordinal);
+                    Assert.Equal(AutomationControlType.Group, peer.GetAutomationControlType());
+                    Assert.Equal("Pick a date", peer.GetName(), StringComparer.Ordinal);
 
                     DateTime date = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = date;
                     DrainDispatcher(window.Dispatcher);
 
-                    Assert.AreEqual(date.ToString("d", CultureInfo.CurrentCulture), peer.GetName(),
-                        "The peer name must report the selected date in the culture short date format.");
+                    Assert.Equal(date.ToString("d", CultureInfo.CurrentCulture), peer.GetName(), StringComparer.Ordinal);
                 }
                 finally
                 {
@@ -459,7 +447,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_FlyoutOpen_MovesKeyboardFocusIntoPopupAndCyclesTab()
         {
             RunOnStaThread(() =>
@@ -481,21 +469,20 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(popup.Child, "The selector flyout must have a popup child root.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(popup.Child);
 
-                    Assert.AreEqual(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(popup.Child),
-                        "Tab navigation must cycle inside the flyout popup root.");
+                    Assert.Equal(KeyboardNavigationMode.Cycle, KeyboardNavigation.GetTabNavigation(popup.Child));
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "Clicking the field must open the selector flyout.");
 
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () =>
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () =>
                             popup.Child is Visual root
                             && Keyboard.FocusedElement is Visual focused
                             && focused.IsDescendantOf(root)),
@@ -508,7 +495,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_FlyoutEscape_ClosesWithoutCommitting()
         {
             RunOnStaThread(() =>
@@ -527,24 +514,24 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     Selector? dayList = template.FindName("PART_DayList", picker) as Selector;
                     Selector? monthList = template.FindName("PART_MonthList", picker) as Selector;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be present in the template.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
 
                     DateTime original = new(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     picker.SelectedDate = original;
                     DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The selector flyout must open before the Escape scenario.");
-                    Assert.IsNotNull(popup.Child, "The selector flyout must have a popup child root.");
+                    Assert.NotNull(popup.Child);
 
                     bool raised = false;
                     picker.SelectedDateChanged += (_, _) => raised = true;
@@ -555,10 +542,10 @@ namespace Fluence.Wpf.Tests
 
                     RaiseKeyEvent(popup.Child, Key.Escape, UIElement.PreviewKeyDownEvent);
 
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
                         "Escape must close the selector flyout.");
-                    Assert.AreEqual(original, picker.SelectedDate, "Escape must not commit the pending column selection.");
-                    Assert.IsFalse(raised, "Escape must not raise SelectedDateChanged.");
+                    Assert.Equal(original, picker.SelectedDate);
+                    Assert.False(raised, "Escape must not raise SelectedDateChanged.");
                 }
                 finally
                 {
@@ -567,7 +554,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_FlyoutEnter_CommitsPendingSelection()
         {
             RunOnStaThread(() =>
@@ -586,25 +573,25 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     Selector? dayList = template.FindName("PART_DayList", picker) as Selector;
                     Selector? monthList = template.FindName("PART_MonthList", picker) as Selector;
                     Selector? yearList = template.FindName("PART_YearList", picker) as Selector;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(dayList, "PART_DayList must be present in the template.");
-                    Assert.IsNotNull(monthList, "PART_MonthList must be present in the template.");
-                    Assert.IsNotNull(yearList, "PART_YearList must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(dayList);
+                    Assert.NotNull(monthList);
+                    Assert.NotNull(yearList);
 
                     picker.SelectedDate = new DateTime(2024, 5, 17, 0, 0, 0, DateTimeKind.Unspecified);
                     DrainDispatcher(window.Dispatcher);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The selector flyout must open before the Enter scenario.");
-                    Assert.IsNotNull(popup.Child, "The selector flyout must have a popup child root.");
+                    Assert.NotNull(popup.Child);
 
                     monthList.SelectedIndex = 0;
                     yearList.SelectedIndex = 2025 - picker.MinYear;
@@ -613,10 +600,9 @@ namespace Fluence.Wpf.Tests
 
                     RaiseKeyEvent(popup.Child, Key.Enter, UIElement.PreviewKeyDownEvent);
 
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
                         "Enter must close the selector flyout.");
-                    Assert.AreEqual(new DateTime(2025, 1, 10, 0, 0, 0, DateTimeKind.Unspecified), picker.SelectedDate,
-                        "Enter must commit the pending column selection like the accept button.");
+                    Assert.Equal(new DateTime(2025, 1, 10, 0, 0, 0, DateTimeKind.Unspecified), picker.SelectedDate);
                 }
                 finally
                 {
@@ -625,7 +611,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_SurfaceBrushes_ResolveAfterThemeCycle()
         {
             RunOnStaThread(static () =>
@@ -635,26 +621,18 @@ namespace Fluence.Wpf.Tests
 
                 ThemeTestHelpers.ApplyStandardThemeCycle();
 
-                Assert.IsNotNull(app?.TryFindResource("ControlFillColorDefaultBrush"),
-                    "ControlFillColorDefaultBrush (field fill) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("ControlElevationBorderBrush"),
-                    "ControlElevationBorderBrush (field stroke) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("ControlStrokeColorDefaultBrush"),
-                    "ControlStrokeColorDefaultBrush (field segment dividers, WinUI DatePickerSpacerFill) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("DividerStrokeColorDefaultBrush"),
-                    "DividerStrokeColorDefaultBrush (flyout divider) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("TextFillColorSecondaryBrush"),
-                    "TextFillColorSecondaryBrush (placeholder foreground) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"),
-                    "SolidBackgroundFillColorTertiaryBrush (selector flyout fill) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"),
-                    "SurfaceStrokeColorFlyoutBrush (selector flyout stroke) must resolve after a full theme cycle.");
-                Assert.IsNotNull(app?.TryFindResource("OverlayCornerRadius"),
-                    "OverlayCornerRadius (selector flyout corner radius) must resolve after a full theme cycle.");
+                Assert.NotNull(app?.TryFindResource("ControlFillColorDefaultBrush"));
+                Assert.NotNull(app?.TryFindResource("ControlElevationBorderBrush"));
+                Assert.NotNull(app?.TryFindResource("ControlStrokeColorDefaultBrush"));
+                Assert.NotNull(app?.TryFindResource("DividerStrokeColorDefaultBrush"));
+                Assert.NotNull(app?.TryFindResource("TextFillColorSecondaryBrush"));
+                Assert.NotNull(app?.TryFindResource("SolidBackgroundFillColorTertiaryBrush"));
+                Assert.NotNull(app?.TryFindResource("SurfaceStrokeColorFlyoutBrush"));
+                Assert.NotNull(app?.TryFindResource("OverlayCornerRadius"));
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_NonGregorianDefaultCulture_UsesGregorianMonthNames()
         {
             RunOnStaThread(static () =>
@@ -685,7 +663,7 @@ namespace Fluence.Wpf.Tests
 
                     if (gregorian is null)
                     {
-                        Assert.Inconclusive("ar-SA offers no optional Gregorian calendar on this runtime.");
+                        Assert.Skip("ar-SA offers no optional Gregorian calendar on this runtime.");
                         return;
                     }
 
@@ -700,16 +678,16 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     TextBlock? first = template.FindName("FirstSegmentText", picker) as TextBlock;
                     TextBlock? second = template.FindName("SecondSegmentText", picker) as TextBlock;
                     TextBlock? third = template.FindName("ThirdSegmentText", picker) as TextBlock;
-                    Assert.IsNotNull(first, "FirstSegmentText must be present in the default template.");
-                    Assert.IsNotNull(second, "SecondSegmentText must be present in the default template.");
-                    Assert.IsNotNull(third, "ThirdSegmentText must be present in the default template.");
+                    Assert.NotNull(first);
+                    Assert.NotNull(second);
+                    Assert.NotNull(third);
 
                     List<string> segments = [first.Text, second.Text, third.Text];
-                    Assert.IsTrue(segments.Contains(expectedMonthName),
+                    Assert.True(segments.Contains(expectedMonthName),
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "The month segment must show the Gregorian month name '{0}' (segments: {1}).",
@@ -719,7 +697,7 @@ namespace Fluence.Wpf.Tests
                     string defaultCalendarName = culture.DateTimeFormat.GetMonthName(3);
                     if (!string.Equals(defaultCalendarName, expectedMonthName, StringComparison.Ordinal))
                     {
-                        Assert.IsFalse(segments.Contains(defaultCalendarName),
+                        Assert.False(segments.Contains(defaultCalendarName),
                             "The month segment must not show the non-Gregorian default-calendar month name.");
                     }
                 }
@@ -731,7 +709,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void DatePicker_FieldClickAfterLightDismiss_DoesNotImmediatelyReopen()
         {
             RunOnStaThread(() =>
@@ -750,16 +728,16 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     ControlTemplate? template = picker.Template;
-                    Assert.IsNotNull(template, "DatePicker must receive its themed template.");
+                    Assert.NotNull(template);
                     ButtonBase? flyoutButton = template.FindName("PART_FlyoutButton", picker) as ButtonBase;
                     Popup? popup = template.FindName("PART_Popup", picker) as Popup;
                     ButtonBase? acceptButton = template.FindName("PART_AcceptButton", picker) as ButtonBase;
-                    Assert.IsNotNull(flyoutButton, "PART_FlyoutButton must be present in the template.");
-                    Assert.IsNotNull(popup, "PART_Popup must be present in the template.");
-                    Assert.IsNotNull(acceptButton, "PART_AcceptButton must be present in the template.");
+                    Assert.NotNull(flyoutButton);
+                    Assert.NotNull(popup);
+                    Assert.NotNull(acceptButton);
 
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "The selector flyout must open before the light dismiss is simulated.");
 
                     // A light dismiss closes the popup outside the control's own pipeline,
@@ -770,21 +748,21 @@ namespace Fluence.Wpf.Tests
                     // The click of the same press-release gesture must not reopen the flyout.
                     RaiseButtonClick(flyoutButton);
                     DrainDispatcher(window.Dispatcher);
-                    Assert.IsFalse(popup.IsOpen,
+                    Assert.False(popup.IsOpen,
                         "A field click right after a light dismiss must not reopen the flyout (toggle, not flicker).");
 
                     // Once the lockout has elapsed, the field opens the flyout again.
                     System.Threading.Thread.Sleep(300);
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "A field click after the lockout must reopen the flyout.");
 
                     // Accept-driven closes do not arm the lockout: an immediate reopen works.
                     RaiseButtonClick(acceptButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !popup.IsOpen),
                         "Accept must close the selector flyout.");
                     RaiseButtonClick(flyoutButton);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => popup.IsOpen),
                         "A field click right after an accept close must reopen the flyout immediately.");
                 }
                 finally

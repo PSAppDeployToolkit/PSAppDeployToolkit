@@ -26,11 +26,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using Xunit;
 
 namespace Fluence.Wpf.Tests
 {
@@ -41,7 +42,7 @@ namespace Fluence.Wpf.Tests
     /// </summary>
     public partial class ControlTests
     {
-        [TestMethod]
+        [Fact]
         public void AppBarButton_DefaultStyle_AppliesCompactChromeAndLabelTooltip()
         {
             RunOnStaThread(static () =>
@@ -50,7 +51,7 @@ namespace Fluence.Wpf.Tests
                 _ = MergeGenericDictionary(app);
 
                 Style? style = app?.TryFindResource(typeof(Controls.AppBarButton)) as Style;
-                Assert.IsNotNull(style, "A default Style must be registered for Fluence.Wpf.Controls.AppBarButton.");
+                Assert.NotNull(style);
 
                 Window window = new() { Width = 400, Height = 300 };
                 Controls.FontIcon icon = new() { Glyph = "\uE8C8" };
@@ -67,14 +68,14 @@ namespace Fluence.Wpf.Tests
                     DrainDispatcher(window.Dispatcher);
                     window.UpdateLayout();
 
-                    Assert.AreSame(icon, labeled.Icon, "AppBarButton.Icon must round-trip.");
-                    Assert.AreEqual("Copy", labeled.Label, "AppBarButton.Label must round-trip.");
-                    Assert.AreEqual(string.Empty, iconOnly.Label, "AppBarButton.Label must default to an empty string.");
-                    Assert.AreEqual(40.0, labeled.MinWidth, 0.01, "Compact AppBarButton must keep the 40px hit-target width.");
-                    Assert.AreEqual(40.0, labeled.MinHeight, 0.01, "Compact AppBarButton must keep the 40px hit-target height.");
-                    Assert.AreEqual("Copy", labeled.ToolTip, "Compact AppBarButton must surface its Label as a tooltip.");
-                    Assert.IsNull(iconOnly.ToolTip, "Unlabeled AppBarButton must not show an empty tooltip balloon.");
-                    Assert.IsTrue(icon.IsVisible, "The compact template should render the hosted icon.");
+                    Assert.Same(icon, labeled.Icon);
+                    Assert.Equal("Copy", labeled.Label, StringComparer.Ordinal);
+                    Assert.Equal(string.Empty, iconOnly.Label, StringComparer.Ordinal);
+                    Assert.Equal(40.0, labeled.MinWidth, 0.01);
+                    Assert.Equal(40.0, labeled.MinHeight, 0.01);
+                    Assert.Equal("Copy", labeled.ToolTip);
+                    Assert.Null(iconOnly.ToolTip);
+                    Assert.True(icon.IsVisible, "The compact template should render the hosted icon.");
                 }
                 finally
                 {
@@ -83,7 +84,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandBarFlyout_ShowAt_PresentsPrimaryCommands()
         {
             RunOnStaThread(() =>
@@ -109,23 +110,22 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the command bar flyout popup.");
 
                     Popup? popup = flyout.HostPopup;
-                    Assert.IsNotNull(popup, "ShowAt should lazily create the host popup.");
-                    Assert.IsFalse(popup.StaysOpen, "CommandBarFlyout popups must be light-dismiss (StaysOpen=false).");
+                    Assert.NotNull(popup);
+                    Assert.False(popup.StaysOpen, "CommandBarFlyout popups must be light-dismiss (StaysOpen=false).");
 
                     Controls.CommandBarFlyoutPresenter? presenter = popup.Child as Controls.CommandBarFlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a CommandBarFlyoutPresenter.");
+                    Assert.NotNull(presenter);
 
                     DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ItemsControl? primaryItems = presenter.Template.FindName("PART_PrimaryItemsControl", presenter) as ItemsControl;
-                    Assert.IsNotNull(primaryItems, "The presenter template must expose PART_PrimaryItemsControl.");
-                    Assert.AreSame(flyout.PrimaryCommands, primaryItems.ItemsSource,
-                        "PrimaryCommands must feed the primary items control.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => copyButton.IsVisible),
+                    Assert.NotNull(primaryItems);
+                    Assert.Same(flyout.PrimaryCommands, primaryItems.ItemsSource);
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => copyButton.IsVisible),
                         "Primary AppBarButtons must materialize in the opened bar.");
                 }
                 finally
@@ -136,7 +136,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandBarFlyout_MoreButton_TracksSecondaryCommands()
         {
             RunOnStaThread(() =>
@@ -161,25 +161,24 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the command bar flyout popup.");
 
                     Controls.CommandBarFlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.CommandBarFlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a CommandBarFlyoutPresenter.");
+                    Assert.NotNull(presenter);
 
                     DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ButtonBase? moreButton = presenter.Template.FindName("PART_MoreButton", presenter) as ButtonBase;
-                    Assert.IsNotNull(moreButton, "The presenter template must expose PART_MoreButton.");
-                    Assert.AreEqual(Visibility.Collapsed, moreButton.Visibility,
-                        "The more button must stay hidden while SecondaryCommands is empty.");
+                    Assert.NotNull(moreButton);
+                    Assert.Equal(Visibility.Collapsed, moreButton.Visibility);
 
                     flyout.SecondaryCommands.Add(new Controls.AppBarButton
                     {
                         Icon = new Controls.FontIcon { Glyph = "\uE74D" },
                         Label = "Delete",
                     });
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => moreButton.Visibility == Visibility.Visible),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => moreButton.Visibility is Visibility.Visible),
                         "The more button must become visible once SecondaryCommands is non-empty.");
                 }
                 finally
@@ -190,7 +189,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandBarFlyout_MoreButton_TogglesSecondaryOverflow()
         {
             RunOnStaThread(() =>
@@ -220,51 +219,50 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the command bar flyout popup.");
 
                     Controls.CommandBarFlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.CommandBarFlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a CommandBarFlyoutPresenter.");
+                    Assert.NotNull(presenter);
 
                     DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ButtonBase? moreButton = presenter.Template.FindName("PART_MoreButton", presenter) as ButtonBase;
                     FrameworkElement? secondaryHost = presenter.Template.FindName("PART_SecondaryHost", presenter) as FrameworkElement;
-                    Assert.IsNotNull(moreButton, "The presenter template must expose PART_MoreButton.");
-                    Assert.IsNotNull(secondaryHost, "The presenter template must expose PART_SecondaryHost.");
-                    Assert.IsFalse(presenter.IsExpanded, "The presenter must open collapsed (AlwaysExpanded is omitted for v1).");
-                    Assert.AreEqual(Visibility.Collapsed, secondaryHost.Visibility,
-                        "The secondary host must stay collapsed until the more button is clicked.");
+                    Assert.NotNull(moreButton);
+                    Assert.NotNull(secondaryHost);
+                    Assert.False(presenter.IsExpanded, "The presenter must open collapsed (AlwaysExpanded is omitted for v1).");
+                    Assert.Equal(Visibility.Collapsed, secondaryHost.Visibility);
 
                     System.Windows.Media.ScaleTransform? hostScale =
                         presenter.Template.FindName("SecondaryHostScale", presenter) as System.Windows.Media.ScaleTransform;
-                    Assert.IsNotNull(hostScale, "The presenter template must expose the SecondaryHostScale reveal transform.");
+                    Assert.NotNull(hostScale);
                     System.Windows.Media.RotateTransform? chevronRotation =
                         presenter.Template.FindName("MoreButtonIconRotation", presenter) as System.Windows.Media.RotateTransform;
-                    Assert.IsNotNull(chevronRotation, "The presenter template must expose the MoreButtonIconRotation transform.");
+                    Assert.NotNull(chevronRotation);
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => presenter.IsExpanded),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => presenter.IsExpanded),
                         "Clicking the more button must expand the presenter.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => secondaryHost.IsVisible),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => secondaryHost.IsVisible),
                         "Expanding must make the secondary host visible.");
-                    Assert.IsTrue(flyout.IsOpen, "The more button must toggle the overflow without dismissing the flyout.");
+                    Assert.True(flyout.IsOpen, "The more button must toggle the overflow without dismissing the flyout.");
 
                     // The 167ms expand storyboard must settle the host scale at 1 and rotate
                     // the more-button glyph to 180.
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => hostScale.ScaleY >= 1.0),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => hostScale.ScaleY >= 1.0),
                         "Expanding must animate the secondary host ScaleY up to 1.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => chevronRotation.Angle >= 180.0),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => chevronRotation.Angle >= 180.0),
                         "Expanding must rotate the more-button glyph to 180 degrees.");
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !presenter.IsExpanded),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !presenter.IsExpanded),
                         "Clicking the more button again must collapse the presenter.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !secondaryHost.IsVisible),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !secondaryHost.IsVisible),
                         "Collapsing must hide the secondary host (the exit storyboard collapses it at the end).");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => hostScale.ScaleY <= 0.0),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => hostScale.ScaleY <= 0.0),
                         "Collapsing must animate the secondary host ScaleY back to 0.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => chevronRotation.Angle <= 0.0),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => chevronRotation.Angle <= 0.0),
                         "Collapsing must rotate the more-button glyph back to 0 degrees.");
                 }
                 finally
@@ -275,7 +273,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandBarFlyout_PrimaryCommandClick_RaisesClickAndHidesFlyout()
         {
             RunOnStaThread(() =>
@@ -303,14 +301,14 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the command bar flyout popup.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => copyButton.IsVisible),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => copyButton.IsVisible),
                         "The primary command must materialize before it is clicked.");
 
                     copyButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.IsTrue(clickRaised, "The command's own Click handlers must run.");
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
+                    Assert.True(clickRaised, "The command's own Click handlers must run.");
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => !flyout.IsOpen),
                         "Invoking a command must dismiss the flyout, per WinUI.");
                 }
                 finally
@@ -321,7 +319,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandBarFlyout_SecondaryCommands_UseOverflowStyleAndRenderLabels()
         {
             RunOnStaThread(() =>
@@ -352,30 +350,29 @@ namespace Fluence.Wpf.Tests
                     window.UpdateLayout();
 
                     flyout.ShowAt(target);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => flyout.IsOpen),
                         "ShowAt should open the command bar flyout popup.");
 
                     Controls.CommandBarFlyoutPresenter? presenter = flyout.HostPopup?.Child as Controls.CommandBarFlyoutPresenter;
-                    Assert.IsNotNull(presenter, "The popup child must be a CommandBarFlyoutPresenter.");
+                    Assert.NotNull(presenter);
 
                     DrainDispatcher(window.Dispatcher);
                     _ = presenter.ApplyTemplate();
                     ButtonBase? moreButton = presenter.Template.FindName("PART_MoreButton", presenter) as ButtonBase;
-                    Assert.IsNotNull(moreButton, "The presenter template must expose PART_MoreButton.");
+                    Assert.NotNull(moreButton);
 
                     moreButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000, () => deleteButton.IsVisible),
+                    Assert.True(WaitUntil(window.Dispatcher, 2000, () => deleteButton.IsVisible),
                         "Expanding the overflow must materialize the secondary command.");
 
                     Style? secondaryStyle = app?.TryFindResource("CommandBarFlyoutSecondaryAppBarButtonStyle") as Style;
-                    Assert.IsNotNull(secondaryStyle, "The overflow AppBarButton style must be a reachable resource.");
-                    Assert.IsNotNull(deleteButton.Style, "The secondary items control must apply an implicit overflow style.");
-                    Assert.AreSame(secondaryStyle, deleteButton.Style.BasedOn,
-                        "Secondary commands must pick up CommandBarFlyoutSecondaryAppBarButtonStyle via the implicit style.");
+                    Assert.NotNull(secondaryStyle);
+                    Assert.NotNull(deleteButton.Style);
+                    Assert.Same(secondaryStyle, deleteButton.Style.BasedOn);
 
                     TextBlock? labelText = FindVisualChildren<TextBlock>(deleteButton)
-                        .FirstOrDefault(textBlock => string.Equals(textBlock.Text, "Delete", System.StringComparison.Ordinal));
-                    Assert.IsNotNull(labelText, "Overflow AppBarButtons must render their Label next to the icon.");
+                        .FirstOrDefault(textBlock => string.Equals(textBlock.Text, "Delete", StringComparison.Ordinal));
+                    Assert.NotNull(labelText);
                 }
                 finally
                 {
@@ -385,7 +382,7 @@ namespace Fluence.Wpf.Tests
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void CommandBarFlyoutPresenter_ThemeCycle_SurfaceBrushesResolve()
         {
             WpfTestSta.Invoke(static () =>
@@ -409,14 +406,13 @@ namespace Fluence.Wpf.Tests
                     ApplicationThemeManager.Apply(theme, BackdropType.None, updateAccent: true);
                     foreach (string? key in brushKeys)
                     {
-                        Assert.IsNotNull(app?.TryFindResource(key),
-                            string.Format("Resource '{0}' must resolve in CommandBarFlyout theme cycle step: {1}", key, theme));
+                        Assert.NotNull(app?.TryFindResource(key));
                     }
                 }
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void AppBarButton_Pressed_AnimatesBackplatePressScale()
         {
             RunOnStaThread(() =>
@@ -444,18 +440,18 @@ namespace Fluence.Wpf.Tests
 
                     System.Windows.Media.ScaleTransform? pressScale =
                         button.Template.FindName("PressScale", button) as System.Windows.Media.ScaleTransform;
-                    Assert.IsNotNull(pressScale, "The AppBarButton template must expose the PressScale transform.");
-                    Assert.AreEqual(1.0, pressScale.ScaleX, 0.001, "The backplate must rest at 1.0 scale.");
+                    Assert.NotNull(pressScale);
+                    Assert.Equal(1.0, pressScale.ScaleX, 0.001);
 
                     // Press: the Button.xaml press-scale storyboard settles at 0.98.
                     button.SetPressed(pressed: true);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                             () => pressScale.ScaleX <= 0.98 && pressScale.ScaleY <= 0.98),
                         "Pressing must animate the backplate down to the 0.98 press scale.");
 
                     // Release: the release storyboard restores 1.0.
                     button.SetPressed(pressed: false);
-                    Assert.IsTrue(WaitUntil(window.Dispatcher, 2000,
+                    Assert.True(WaitUntil(window.Dispatcher, 2000,
                             () => pressScale.ScaleX >= 1.0 && pressScale.ScaleY >= 1.0),
                         "Releasing must animate the backplate back to 1.0 scale.");
                 }

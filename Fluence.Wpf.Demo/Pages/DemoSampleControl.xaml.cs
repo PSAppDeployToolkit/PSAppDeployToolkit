@@ -31,7 +31,6 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Media;
 
 namespace Fluence.Wpf.Demo.Pages
 {
@@ -138,7 +137,9 @@ namespace Fluence.Wpf.Demo.Pages
             "while",
         };
 
-        /// <summary>Identifies the <see cref="SampleDescription"/> dependency property.</summary>
+        /// <summary>
+        /// Identifies the <see cref="SampleDescription"/> dependency property.
+        /// </summary>
         public static readonly DependencyProperty SampleDescriptionProperty =
             DependencyProperty.Register(
                 "SampleDescription",
@@ -146,7 +147,9 @@ namespace Fluence.Wpf.Demo.Pages
                 typeof(DemoSampleControl),
                 new FrameworkPropertyMetadata(string.Empty, OnSampleDescriptionChanged));
 
-        /// <summary>Identifies the <see cref="XamlSource"/> dependency property.</summary>
+        /// <summary>
+        /// Identifies the <see cref="XamlSource"/> dependency property.
+        /// </summary>
         public static readonly DependencyProperty XamlSourceProperty =
             DependencyProperty.Register(
                 "XamlSource",
@@ -154,7 +157,9 @@ namespace Fluence.Wpf.Demo.Pages
                 typeof(DemoSampleControl),
                 new FrameworkPropertyMetadata(string.Empty, OnSourceChanged));
 
-        /// <summary>Identifies the <see cref="CSharpSource"/> dependency property.</summary>
+        /// <summary>
+        /// Identifies the <see cref="CSharpSource"/> dependency property.
+        /// </summary>
         public static readonly DependencyProperty CSharpSourceProperty =
             DependencyProperty.Register(
                 "CSharpSource",
@@ -162,7 +167,9 @@ namespace Fluence.Wpf.Demo.Pages
                 typeof(DemoSampleControl),
                 new FrameworkPropertyMetadata(string.Empty, OnSourceChanged));
 
-        /// <summary>Identifies the <see cref="DemoContent"/> dependency property.</summary>
+        /// <summary>
+        /// Identifies the <see cref="DemoContent"/> dependency property.
+        /// </summary>
         public static readonly DependencyProperty DemoContentProperty =
             DependencyProperty.Register(
                 "DemoContent",
@@ -170,7 +177,9 @@ namespace Fluence.Wpf.Demo.Pages
                 typeof(DemoSampleControl),
                 new FrameworkPropertyMetadata(defaultValue: null, OnDemoContentChanged));
 
-        /// <summary>Identifies the <see cref="OutputContent"/> dependency property.</summary>
+        /// <summary>
+        /// Identifies the <see cref="OutputContent"/> dependency property.
+        /// </summary>
         public static readonly DependencyProperty OutputContentProperty =
             DependencyProperty.Register(
                 "OutputContent",
@@ -178,7 +187,9 @@ namespace Fluence.Wpf.Demo.Pages
                 typeof(DemoSampleControl),
                 new FrameworkPropertyMetadata(defaultValue: null, OnOutputContentChanged));
 
-        /// <summary>Identifies the <see cref="RightRailContent"/> dependency property.</summary>
+        /// <summary>
+        /// Identifies the <see cref="RightRailContent"/> dependency property.
+        /// </summary>
         public static readonly DependencyProperty RightRailContentProperty =
             DependencyProperty.Register(
                 "RightRailContent",
@@ -371,7 +382,7 @@ namespace Fluence.Wpf.Demo.Pages
             SourceTabControl?.Items.Clear();
 
             UpdateSourceVisibility();
-            if (SourceExpander?.IsExpanded == true)
+            if ((SourceExpander?.IsExpanded) is true)
             {
                 LoadSourceTabs();
             }
@@ -435,6 +446,7 @@ namespace Fluence.Wpf.Demo.Pages
             Border border = new()
             {
                 Name = "CopySourceButtonHost",
+                BorderThickness = new Thickness(1),
                 Child = copyButton,
                 CornerRadius = new CornerRadius(4),
                 HorizontalAlignment = HorizontalAlignment.Right,
@@ -442,6 +454,7 @@ namespace Fluence.Wpf.Demo.Pages
                 VerticalAlignment = VerticalAlignment.Top,
             };
             border.SetResourceReference(BackgroundProperty, "CardBackgroundFillColorDefaultBrush");
+            border.SetResourceReference(BorderBrushProperty, "ControlStrokeColorDefaultBrush");
             return border;
         }
 
@@ -475,7 +488,6 @@ namespace Fluence.Wpf.Demo.Pages
             RichTextBox viewer = new()
             {
                 BorderThickness = new Thickness(0),
-                FontFamily = new FontFamily("Consolas"),
                 FontSize = 12,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 IsReadOnly = true,
@@ -484,8 +496,9 @@ namespace Fluence.Wpf.Demo.Pages
                 Padding = new Thickness(0),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             };
-            viewer.SetResourceReference(BackgroundProperty, "SolidBackgroundFillColorBaseBrush");
+            viewer.SetResourceReference(BackgroundProperty, "SystemFillColorSolidAttentionBackgroundBrush");
             viewer.SetResourceReference(ForegroundProperty, "TextFillColorPrimaryBrush");
+            viewer.SetResourceReference(FontFamilyProperty, "DemoMonospaceFontFamily");
             viewer.Document = CreateSourceDocument(source, language);
             return viewer;
         }
@@ -494,11 +507,11 @@ namespace Fluence.Wpf.Demo.Pages
         {
             FlowDocument document = new()
             {
-                FontFamily = new FontFamily("Consolas"),
                 FontSize = 12,
                 PagePadding = GetThicknessResource("DemoSourceCodeDocumentPadding", new Thickness(12)),
             };
             document.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush");
+            document.SetResourceReference(TextElement.FontFamilyProperty, "DemoMonospaceFontFamily");
 
             Paragraph paragraph = new()
             {
@@ -529,13 +542,13 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static void AddFormattedLine(Paragraph paragraph, string line, SourceLanguage language)
         {
-            if (language == SourceLanguage.Xaml)
+            if (language is SourceLanguage.Xaml)
             {
                 AddXamlLine(paragraph, line);
                 return;
             }
 
-            if (language == SourceLanguage.CSharp)
+            if (language is SourceLanguage.CSharp)
             {
                 AddCSharpLine(paragraph, line);
                 return;
@@ -664,7 +677,7 @@ namespace Fluence.Wpf.Demo.Pages
 
         private static void AddRun(Paragraph paragraph, string text, string resourceKey)
         {
-            if (text.Length == 0)
+            if (text.Length is 0)
             {
                 return;
             }
@@ -677,7 +690,7 @@ namespace Fluence.Wpf.Demo.Pages
         private static bool StartsWith(string text, int index, string value)
         {
             return index + value.Length <= text.Length &&
-                   string.Compare(text, index, value, 0, value.Length, StringComparison.Ordinal) == 0;
+                string.Compare(text, index, value, 0, value.Length, StringComparison.Ordinal) is 0;
         }
 
         private static int FindQuotedTextEnd(string text, int start, char quote)

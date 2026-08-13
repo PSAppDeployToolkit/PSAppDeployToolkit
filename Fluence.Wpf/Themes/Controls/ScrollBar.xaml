@@ -115,6 +115,9 @@
         ControlTemplate.Triggers are kept for direct hover expansion at runtime
         (ScrollBar does not call GoToState for ScrollingIndicatorStates itself).
         Easing upgraded from CubicEase to SplineDoubleKeyFrame (KeySpline="0.8,0,0,1", WinUI ControlFastOutSlowIn).
+        Durations mirror the WinUI ScrollBar_themeresources tokens: ScrollBarExpandDuration and
+        ScrollBarContractDuration (167 ms) for the rail size, ScrollBarOpacityChangeDuration (83 ms)
+        for the track fade; mirrored literally because storyboard attributes cannot reference them.
     -->
     <ControlTemplate x:Key="VerticalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
         <Grid
@@ -180,52 +183,58 @@
                     <VisualStateGroup.Transitions>
                         <VisualTransition From="NoIndicator" To="MouseIndicator">
                             <Storyboard>
+                                <!--  ScrollBarExpandDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Width">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.12"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarSize}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.12"
+                                        KeyTime="0:0:0.083"
                                         Value="1" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </VisualTransition>
                         <VisualTransition From="TouchIndicator" To="MouseIndicator">
                             <Storyboard>
+                                <!--  ScrollBarExpandDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Width">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.12"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarSize}" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </VisualTransition>
                         <VisualTransition From="MouseIndicator" To="NoIndicator">
                             <Storyboard>
+                                <!--  ScrollBarContractDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Width">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.15"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarCompactThumbSize}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.15"
+                                        KeyTime="0:0:0.083"
                                         Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </VisualTransition>
                         <VisualTransition From="TouchIndicator" To="NoIndicator">
                             <Storyboard>
+                                <!--  ScrollBarContractDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Width">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.15"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarCompactThumbSize}" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
@@ -281,10 +290,11 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <!--  ScrollBarExpandDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Width">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.12"
+                                    KeyTime="0:0:0.167"
                                     Value="{StaticResource ScrollBarSize}" />
                             </DoubleAnimationUsingKeyFrames>
                         </Storyboard>
@@ -293,10 +303,11 @@
                 <Trigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <!--  ScrollBarContractDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Width">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.15"
+                                    KeyTime="0:0:0.167"
                                     Value="{StaticResource ScrollBarCompactThumbSize}" />
                             </DoubleAnimationUsingKeyFrames>
                         </Storyboard>
@@ -375,52 +386,58 @@
                     <VisualStateGroup.Transitions>
                         <VisualTransition From="NoIndicator" To="MouseIndicator">
                             <Storyboard>
+                                <!--  ScrollBarExpandDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Height">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.12"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarSize}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.12"
+                                        KeyTime="0:0:0.083"
                                         Value="1" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </VisualTransition>
                         <VisualTransition From="TouchIndicator" To="MouseIndicator">
                             <Storyboard>
+                                <!--  ScrollBarExpandDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Height">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.12"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarSize}" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </VisualTransition>
                         <VisualTransition From="MouseIndicator" To="NoIndicator">
                             <Storyboard>
+                                <!--  ScrollBarContractDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Height">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.15"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarCompactThumbSize}" />
                                 </DoubleAnimationUsingKeyFrames>
+                                <!--  ScrollBarOpacityChangeDuration (83 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="TrackBackground" Storyboard.TargetProperty="Opacity">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.15"
+                                        KeyTime="0:0:0.083"
                                         Value="0" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
                         </VisualTransition>
                         <VisualTransition From="TouchIndicator" To="NoIndicator">
                             <Storyboard>
+                                <!--  ScrollBarContractDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                                 <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Height">
                                     <SplineDoubleKeyFrame
                                         KeySpline="0.8,0,0,1"
-                                        KeyTime="0:0:0.15"
+                                        KeyTime="0:0:0.167"
                                         Value="{StaticResource ScrollBarCompactThumbSize}" />
                                 </DoubleAnimationUsingKeyFrames>
                             </Storyboard>
@@ -476,10 +493,11 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <!--  ScrollBarExpandDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Height">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.12"
+                                    KeyTime="0:0:0.167"
                                     Value="{StaticResource ScrollBarSize}" />
                             </DoubleAnimationUsingKeyFrames>
                         </Storyboard>
@@ -488,10 +506,11 @@
                 <Trigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <!--  ScrollBarContractDuration (167 ms) on ControlFastOutSlowInKeySpline  -->
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Height">
                                 <SplineDoubleKeyFrame
                                     KeySpline="0.8,0,0,1"
-                                    KeyTime="0:0:0.15"
+                                    KeyTime="0:0:0.167"
                                     Value="{StaticResource ScrollBarCompactThumbSize}" />
                             </DoubleAnimationUsingKeyFrames>
                         </Storyboard>

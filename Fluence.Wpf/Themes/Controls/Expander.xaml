@@ -138,7 +138,7 @@
                                 Style="{StaticResource ExpanderHeaderToggleButton}" />
 
                             <Border
-                                x:Name="ContentBorder"
+                                x:Name="PART_ContentBorder"
                                 Grid.Row="1"
                                 ClipToBounds="True">
                                 <ContentPresenter
@@ -151,80 +151,16 @@
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <!--
+                            Row heights are owned end-to-end by Expander.cs (steady state and the
+                            WinUI content slide); only the row placement swap stays declarative.
+                        -->
                         <Trigger Property="ExpandDirection" Value="Up">
                             <Setter TargetName="PART_ToggleButton" Property="Grid.Row" Value="1" />
-                            <Setter TargetName="ContentBorder" Property="Grid.Row" Value="0" />
-                            <Setter TargetName="Row0Def" Property="Height" Value="0" />
-                            <Setter TargetName="Row1Def" Property="Height" Value="Auto" />
+                            <Setter TargetName="PART_ContentBorder" Property="Grid.Row" Value="0" />
                             <Setter TargetName="ExpandSite" Property="Margin" Value="16,16,16,0" />
                             <Setter TargetName="PART_ToggleButton" Property="Tag" Value="Up" />
                         </Trigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="ExpandDirection" Value="Down" />
-                                <Condition Property="IsExpanded" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="Row1Def" Property="Height" Value="*" />
-                            <MultiTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Row1Def" Storyboard.TargetProperty="Height">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <GridLength>1*</GridLength>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.EnterActions>
-                            <MultiTrigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Row1Def" Storyboard.TargetProperty="Height">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <GridLength>0</GridLength>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.ExitActions>
-                        </MultiTrigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="ExpandDirection" Value="Up" />
-                                <Condition Property="IsExpanded" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="Row0Def" Property="Height" Value="*" />
-                            <MultiTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Row0Def" Storyboard.TargetProperty="Height">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <GridLength>1*</GridLength>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.EnterActions>
-                            <MultiTrigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Row0Def" Storyboard.TargetProperty="Height">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <GridLength>0</GridLength>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </MultiTrigger.ExitActions>
-                        </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="RootBorder" Property="Background" Value="{DynamicResource ControlFillColorDisabledBrush}" />
                             <Setter TargetName="RootBorder" Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
