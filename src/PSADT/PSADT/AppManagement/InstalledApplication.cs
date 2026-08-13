@@ -34,7 +34,6 @@ namespace PSADT.AppManagement
         /// <param name="systemComponent">A value indicating whether the application is a system component.</param>
         /// <param name="windowsInstaller">A value indicating whether the application is an MSI.</param>
         /// <param name="noRemove">A value indicating whether the application can be removed.</param>
-        /// <param name="is64BitApplication">A value indicating whether the application is a 64-bit application.</param>
         public InstalledApplication(
             string psPath,
             string psParentPath,
@@ -53,8 +52,7 @@ namespace PSADT.AppManagement
             uint? estimatedSize,
             bool systemComponent,
             bool windowsInstaller,
-            bool noRemove,
-            bool? is64BitApplication)
+            bool noRemove)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(psPath);
             ArgumentException.ThrowIfNullOrWhiteSpace(psParentPath);
@@ -94,7 +92,6 @@ namespace PSADT.AppManagement
             SystemComponent = systemComponent;
             WindowsInstaller = windowsInstaller;
             NoRemove = noRemove;
-            Is64BitApplication = is64BitApplication;
             if (UninstallString is not null)
             {
                 IReadOnlyList<string> argumentList = CommandLineUtilities.CommandLineToArgumentList(UninstallString);
@@ -242,10 +239,5 @@ namespace PSADT.AppManagement
         /// Gets a value indicating whether the application can be removed.
         /// </summary>
         public bool NoRemove { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the application is a 64-bit application.
-        /// </summary>
-        public bool? Is64BitApplication { get; }
     }
 }
